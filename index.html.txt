@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VagaAI — Passe pelo filtro. Chegue mais forte na entrevista.</title>
+<meta name="description" content="Cole a vaga e seu currículo. O VagaAI mostra onde você está perdendo pontos, otimiza seu CV para ATS e prepara você para a entrevista com um briefing claro da empresa.">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080808;
+  --surface: #111111;
+  --surface2: #181818;
+  --surface3: #202020;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.11);
+  --text: #f0ece4;
+  --muted: rgba(240,236,228,0.5);
+  --hint: rgba(240,236,228,0.28);
+  --green: #3ecf8e;
+  --green-dim: rgba(62,207,142,0.1);
+  --green-border: rgba(62,207,142,0.22);
+  --green-glow: rgba(62,207,142,0.15);
+  --amber: #f59e0b;
+  --red: #f87171;
+  --blue: #60a5fa;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: .5;
+}
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 58px;
+  background: rgba(8,8,8,0.82);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem;
+}
+.nav-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+.nav-logo-mark {
+  font-family: 'Playfair Display', serif;
+  font-size: 19px; font-style: italic; color: var(--green);
+}
+.nav-logo-name { font-size: 15px; font-weight: 700; letter-spacing: -.01em; color: var(--text); }
+.nav-logo-badge {
+  font-size: 9px; background: var(--green-dim); border: 1px solid var(--green-border);
+  color: var(--green); padding: 1px 7px; border-radius: 20px;
+  font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+}
+.nav-links { display: flex; align-items: center; gap: 28px; }
+.nav-links a { font-size: 12px; font-weight: 500; color: var(--muted); text-decoration: none; transition: color .15s; }
+.nav-links a:hover { color: var(--text); }
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+.btn-ghost {
+  font-size: 12px; font-weight: 600; padding: 7px 16px;
+  background: transparent; border: 1px solid var(--border2);
+  color: var(--muted); border-radius: 8px; cursor: pointer;
+  font-family: 'Syne', sans-serif; transition: all .15s;
+}
+.btn-ghost:hover { border-color: rgba(255,255,255,.2); color: var(--text); }
+.btn-primary {
+  font-size: 12px; font-weight: 700; padding: 8px 20px;
+  background: var(--green); color: #080808; border: none;
+  border-radius: 8px; cursor: pointer; font-family: 'Syne', sans-serif;
+  transition: all .15s; letter-spacing: .01em;
+}
+.btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+@media(max-width:680px) { .nav-links { display: none; } }
+
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 4rem;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 8rem 2rem 5rem;
+  position: relative;
+  z-index: 1;
+}
+@media(max-width:900px) {
+  .hero { grid-template-columns: 1fr; padding: 7rem 1.5rem 4rem; }
+  .hero-visual { display: none; }
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 10%; left: -10%;
+  width: 600px; height: 600px;
+  background: radial-gradient(ellipse, rgba(62,207,142,0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 5px 14px; font-size: 11px;
+  color: var(--muted); margin-bottom: 1.4rem; letter-spacing: .03em;
+}
+.eyebrow-dot {
+  width: 6px; height: 6px; background: var(--green);
+  border-radius: 50%; animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.35;} }
+
+.hero-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 5vw, 58px);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -.03em;
+  margin-bottom: 1.2rem;
+}
+.hero-headline em { font-style: italic; color: var(--green); }
+.hero-headline span { display: block; }
+
+.hero-sub {
+  font-size: 15px; color: var(--muted); line-height: 1.75;
+  max-width: 480px; margin-bottom: 2.2rem;
+}
+
+.hero-cta-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 2.4rem; }
+.btn-hero {
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 14px 32px; background: var(--green); color: #080808;
+  border: none; border-radius: 10px; font-size: 14px; font-weight: 700;
+  font-family: 'Syne', sans-serif; cursor: pointer; letter-spacing: .01em;
+  transition: all .18s; box-shadow: 0 0 28px rgba(62,207,142,.18);
+}
+.btn-hero:hover { opacity: .88; transform: translateY(-2px); box-shadow: 0 0 40px rgba(62,207,142,.26); }
+.btn-hero-ghost {
+  font-size: 13px; font-weight: 600; color: var(--muted);
+  background: none; border: none; cursor: pointer; font-family: 'Syne', sans-serif;
+  display: flex; align-items: center; gap: 5px; transition: color .15s;
+}
+.btn-hero-ghost:hover { color: var(--text); }
+
+.hero-trust {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.trust-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--hint); }
+.trust-dot { width: 5px; height: 5px; background: var(--green); border-radius: 50%; }
+
+.final-cta {
+  padding: 7rem 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.final-cta::before {
+  content: '';
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 600px; height: 300px;
+  background: radial-gradient(ellipse, rgba(62,207,142,.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+.final-cta-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(30px, 4vw, 50px); font-weight: 600;
+  line-height: 1.1; letter-spacing: -.02em; margin-bottom: 1rem;
+  position: relative;
+}
+.final-cta-title em { font-style: italic; color: var(--green); }
+.final-cta-sub { font-size: 15px; color: var(--muted); margin-bottom: 2.2rem; position: relative; }
+.final-cta-actions { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; position: relative; }
+.final-note { font-size: 11px; color: var(--hint); margin-top: 1.2rem; position: relative; }
+
+footer {
+  background: var(--bg); border-top: 1px solid var(--border);
+  padding: 3rem 2rem; position: relative; z-index: 1;
+}
+.footer-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 1.5rem;
+}
+.footer-brand { display: flex; align-items: center; gap: 8px; }
+.footer-brand-name { font-size: 14px; font-weight: 700; }
+.footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+.footer-links a { font-size: 12px; color: var(--hint); text-decoration: none; transition: color .15s; }
+.footer-links a:hover { color: var(--muted); }
+.footer-copy { font-size: 11px; color: var(--hint); }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <span class="nav-logo-mark">V</span>
+    <span class="nav-logo-name">VagaAI</span>
+    <span class="nav-logo-badge">Beta</span>
+  </a>
+  <div class="nav-links">
+    <a href="#resources">Recursos</a>
+    <a href="#pricing">Planos</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <div class="nav-actions">
+    <button class="btn-ghost" onclick="alert('App em breve!')">Entrar</button>
+    <button class="btn-primary" onclick="alert('App em breve!')">Começar grátis →</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section>
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">
+        <span class="eyebrow-dot"></span>
+        Análise ATS + briefing da empresa em um só lugar
+      </div>
+      <h1 class="hero-headline">
+        <span>Passe pelo <em>filtro.</em></span>
+        <span>Chegue mais forte</span>
+        <span>na entrevista.</span>
+      </h1>
+      <p class="hero-sub">Cole a vaga e seu currículo. O VagaAI mostra onde você está perdendo pontos, otimiza seu CV para ATS e prepara você para a entrevista com um briefing claro da empresa.</p>
+      <div class="hero-cta-row">
+        <button class="btn-hero" onclick="alert('App em breve!')">
+          <span>⚡</span> Analisar minha vaga grátis
+        </button>
+        <button class="btn-hero-ghost" onclick="alert('App em breve!')">
+          Ver como funciona →
+        </button>
+      </div>
+      <div class="hero-trust">
+        <div class="trust-item"><span class="trust-dot"></span>1 análise grátis</div>
+        <div class="trust-item"><span class="trust-dot"></span>Sem cadastro</div>
+        <div class="trust-item"><span class="trust-dot"></span>Resultado em segundos</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="container">
+    <h2 class="final-cta-title">Sua próxima vaga merece uma<br><em>candidatura melhor.</em></h2>
+    <p class="final-cta-sub">Faça sua análise grátis e veja onde seu currículo está perdendo força antes de enviar.</p>
+    <div class="final-cta-actions">
+      <button class="btn-hero" onclick="alert('App em breve!')">⚡ Analisar minha vaga grátis</button>
+    </div>
+    <p class="final-note">Sem cadastro para começar · Resultado em segundos</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span style="font-family:'Playfair Display',serif;font-style:italic;color:var(--green);font-size:17px;">V</span>
+      <span class="footer-brand-name">VagaAI</span>
+    </div>
+    <div class="footer-links">
+      <a href="#">Termos de uso</a>
+      <a href="#">Privacidade</a>
+      <a href="#">LGPD</a>
+      <a href="mailto:contato@vagaai.app.br">Suporte</a>
+    </div>
+    <div class="footer-copy">© 2025 VagaAI · Todos os direitos reservados</div>
+  </div>
+</footer>
+
+</body>
+</html>
