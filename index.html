@@ -5,41 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VagaAI — Passe pelo filtro. Chegue mais forte na entrevista.</title>
 <meta name="description" content="Cole a vaga e seu currículo. O VagaAI mostra onde você está perdendo pontos, otimiza seu CV para ATS e prepara você para a entrevista com um briefing claro da empresa.">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root { --bg: #080808; --surface: #111111; --surface2: #181818; --surface3: #202020; --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.11); --text: #f0ece4; --muted: rgba(240,236,228,0.5); --hint: rgba(240,236,228,0.28); --green: #3ecf8e; --green-dim: rgba(62,207,142,0.1); --green-border: rgba(62,207,142,0.22); --green-glow: rgba(62,207,142,0.15); --amber: #f59e0b; --red: #f87171; --blue: #60a5fa; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
-body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; line-height: 1.6; overflow-x: hidden; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.7; overflow-x: hidden; }
 body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events: none; z-index: 0; opacity: .5; }
 nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 58px; background: rgba(8,8,8,0.82); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; }
 .nav-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
-.nav-logo-mark { font-family: 'Playfair Display', serif; font-size: 19px; font-style: italic; color: var(--green); }
+.nav-logo-mark { font-family: 'Lora', serif; font-size: 19px; font-style: italic; color: var(--green); }
 .nav-logo-name { font-size: 15px; font-weight: 700; letter-spacing: -.01em; color: var(--text); }
 .nav-logo-badge { font-size: 9px; background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); padding: 1px 7px; border-radius: 20px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
 .nav-links { display: flex; align-items: center; gap: 28px; }
-.nav-links a { font-size: 12px; font-weight: 500; color: var(--muted); text-decoration: none; transition: color .15s; }
+.nav-links a { font-size: 13px; font-weight: 500; color: var(--muted); text-decoration: none; transition: color .15s; }
 .nav-links a:hover { color: var(--text); }
 .nav-actions { display: flex; align-items: center; gap: 10px; }
-.btn-ghost { font-size: 12px; font-weight: 600; padding: 7px 16px; background: transparent; border: 1px solid var(--border2); color: var(--muted); border-radius: 8px; cursor: pointer; font-family: 'Syne', sans-serif; transition: all .15s; }
+.btn-ghost { font-size: 13px; font-weight: 600; padding: 7px 16px; background: transparent; border: 1px solid var(--border2); color: var(--muted); border-radius: 8px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .15s; }
 .btn-ghost:hover { border-color: rgba(255,255,255,.2); color: var(--text); }
-.btn-primary { font-size: 12px; font-weight: 700; padding: 8px 20px; background: var(--green); color: #080808; border: none; border-radius: 8px; cursor: pointer; font-family: 'Syne', sans-serif; transition: all .15s; letter-spacing: .01em; }
+.btn-primary { font-size: 13px; font-weight: 700; padding: 8px 20px; background: var(--green); color: #080808; border: none; border-radius: 8px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .15s; letter-spacing: .01em; }
 .btn-primary:hover { opacity: .88; transform: translateY(-1px); }
 @media(max-width:680px) { .nav-links { display: none; } }
 .hero { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 4rem; max-width: 1160px; margin: 0 auto; padding: 8rem 2rem 5rem; position: relative; z-index: 1; }
 @media(max-width:900px) { .hero { grid-template-columns: 1fr; padding: 7rem 1.5rem 4rem; } .hero-visual { display: none; } }
 .hero::before { content: ''; position: absolute; top: 10%; left: -10%; width: 600px; height: 600px; background: radial-gradient(ellipse, rgba(62,207,142,0.07) 0%, transparent 70%); pointer-events: none; }
-.hero-eyebrow { display: inline-flex; align-items: center; gap: 7px; background: var(--surface); border: 1px solid var(--border2); border-radius: 20px; padding: 5px 14px; font-size: 11px; color: var(--muted); margin-bottom: 1.4rem; letter-spacing: .03em; }
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 7px; background: var(--surface); border: 1px solid var(--border2); border-radius: 20px; padding: 5px 14px; font-size: 12px; color: var(--muted); margin-bottom: 1.4rem; letter-spacing: .02em; }
 .eyebrow-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.35;} }
-.hero-headline { font-family: 'Playfair Display', serif; font-size: clamp(36px, 5vw, 58px); font-weight: 600; line-height: 1.05; letter-spacing: -.03em; margin-bottom: 1.2rem; }
+.hero-headline { font-family: 'Lora', serif; font-size: clamp(38px, 5.5vw, 62px); font-weight: 700; line-height: 1.08; letter-spacing: -.02em; margin-bottom: 1.2rem; }
 .hero-headline em { font-style: italic; color: var(--green); }
 .hero-headline span { display: block; }
-.hero-sub { font-size: 15px; color: var(--muted); line-height: 1.75; max-width: 480px; margin-bottom: 2.2rem; }
+.hero-sub { font-size: 17px; color: var(--muted); line-height: 1.75; max-width: 480px; margin-bottom: 2.2rem; }
 .hero-cta-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 2.4rem; }
-.btn-hero { display: inline-flex; align-items: center; gap: 9px; padding: 14px 32px; background: var(--green); color: #080808; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; letter-spacing: .01em; transition: all .18s; box-shadow: 0 0 28px rgba(62,207,142,.18); }
+.btn-hero { display: inline-flex; align-items: center; gap: 9px; padding: 15px 34px; background: var(--green); color: #080808; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; letter-spacing: .01em; transition: all .18s; box-shadow: 0 0 28px rgba(62,207,142,.18); }
 .btn-hero:hover { opacity: .88; transform: translateY(-2px); box-shadow: 0 0 40px rgba(62,207,142,.26); }
-.btn-hero-ghost { font-size: 13px; font-weight: 600; color: var(--muted); background: none; border: none; cursor: pointer; font-family: 'Syne', sans-serif; display: flex; align-items: center; gap: 5px; transition: color .15s; }
+.btn-hero-ghost { font-size: 14px; font-weight: 600; color: var(--muted); background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 5px; transition: color .15s; }
 .btn-hero-ghost:hover { color: var(--text); }
 .hero-trust { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .trust-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--hint); }
@@ -47,63 +47,63 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 58px; ba
 .stats-bar { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1.8rem 2rem; position: relative; z-index: 1; }
 .stats-bar-inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center; }
 @media(max-width:600px) { .stats-bar-inner { grid-template-columns: repeat(2,1fr); } }
-.stat-n { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 600; color: var(--text); line-height: 1; }
+.stat-n { font-family: 'Lora', serif; font-size: 32px; font-weight: 600; color: var(--text); line-height: 1; }
 .stat-n em { font-style: normal; color: var(--green); }
 .stat-l { font-size: 11px; color: var(--hint); margin-top: 4px; letter-spacing: .04em; }
 section { position: relative; z-index: 1; }
 .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
-.sec-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--green); margin-bottom: .8rem; }
-.sec-title { font-family: 'Playfair Display', serif; font-size: clamp(28px, 4vw, 44px); font-weight: 600; line-height: 1.1; letter-spacing: -.02em; margin-bottom: 1rem; }
+.sec-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--green); margin-bottom: .8rem; }
+.sec-title { font-family: 'Lora', serif; font-size: clamp(30px, 4.5vw, 48px); font-weight: 700; line-height: 1.12; letter-spacing: -.02em; margin-bottom: 1rem; }
 .sec-title em { font-style: italic; color: var(--green); }
-.sec-sub { font-size: 15px; color: var(--muted); line-height: 1.7; max-width: 540px; }
+.sec-sub { font-size: 17px; color: var(--muted); line-height: 1.75; max-width: 540px; }
 .sec-center { text-align: center; }
 .sec-center .sec-sub { margin: 0 auto; }
 .pain { padding: 6rem 0; }
 .pain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; margin-top: 3.5rem; }
 @media(max-width:768px) { .pain-grid { grid-template-columns: 1fr; } }
 .pain-callout { background: var(--surface); border: 1px solid var(--border2); border-left: 3px solid var(--green); border-radius: 12px; padding: 1.4rem; margin-bottom: 1.2rem; }
-.pain-callout h4 { font-size: 13px; font-weight: 700; margin-bottom: .5rem; display: flex; align-items: center; gap: 8px; }
-.pain-callout h4 span { font-family: monospace; font-size: 11px; color: var(--green); }
-.pain-callout p { font-size: 13px; color: var(--muted); line-height: 1.65; }
+.pain-callout h4 { font-size: 14px; font-weight: 700; margin-bottom: .5rem; display: flex; align-items: center; gap: 8px; }
+.pain-callout h4 span { font-family: monospace; font-size: 12px; color: var(--green); }
+.pain-callout p { font-size: 14px; color: var(--muted); line-height: 1.7; }
 .pain-callout strong { color: var(--text); }
-.pain-sub-note { font-size: 13px; color: var(--muted); line-height: 1.7; margin-top: 1rem; }
+.pain-sub-note { font-size: 15px; color: var(--muted); line-height: 1.75; margin-top: 1rem; }
 .pain-cards { display: flex; flex-direction: column; gap: 12px; }
 .pain-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.3rem; display: flex; gap: 1rem; align-items: flex-start; transition: border-color .2s; }
 .pain-card:hover { border-color: var(--border2); }
 .pain-card-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-.pain-card h4 { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
-.pain-card p { font-size: 12px; color: var(--muted); line-height: 1.55; }
+.pain-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.pain-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
 .how { padding: 6rem 0; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 3.5rem; position: relative; }
 @media(max-width:720px) { .steps { grid-template-columns: 1fr; gap: 2rem; } }
 .steps::before { content: ''; position: absolute; top: 26px; left: calc(16.6% + 18px); right: calc(16.6% + 18px); height: 1px; background: linear-gradient(90deg, transparent, var(--border2) 20%, var(--border2) 80%, transparent); }
 @media(max-width:720px) { .steps::before { display: none; } }
 .step { padding: 0 2rem; text-align: center; }
-.step-num { width: 52px; height: 52px; border-radius: 50%; background: var(--bg); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; margin: 0 auto 1.2rem; position: relative; }
+.step-num { width: 52px; height: 52px; border-radius: 50%; background: var(--bg); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-family: 'Lora', serif; font-size: 18px; font-weight: 600; margin: 0 auto 1.2rem; position: relative; }
 .step:first-child .step-num { background: var(--green); border-color: var(--green); color: #080808; }
-.step h3 { font-size: 14px; font-weight: 700; margin-bottom: .5rem; }
-.step p { font-size: 12px; color: var(--muted); line-height: 1.65; }
+.step h3 { font-size: 15px; font-weight: 700; margin-bottom: .5rem; }
+.step p { font-size: 14px; color: var(--muted); line-height: 1.65; }
 .features { padding: 6rem 0; }
 .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-top: 3.5rem; }
 @media(max-width:768px) { .features-grid { grid-template-columns: 1fr; } }
 .feat-card { background: var(--bg); padding: 1.8rem; transition: background .2s; }
 .feat-card:hover { background: var(--surface); }
 .feat-icon { width: 42px; height: 42px; border-radius: 10px; background: var(--green-dim); border: 1px solid var(--green-border); display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 1rem; }
-.feat-card h3 { font-size: 14px; font-weight: 700; margin-bottom: .5rem; }
-.feat-card p { font-size: 12px; color: var(--muted); line-height: 1.65; }
+.feat-card h3 { font-size: 15px; font-weight: 700; margin-bottom: .5rem; }
+.feat-card p { font-size: 13px; color: var(--muted); line-height: 1.65; }
 .feat-badge { display: inline-block; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; margin-top: 8px; background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); letter-spacing: .04em; text-transform: uppercase; }
 .diff { padding: 6rem 0; }
 .diff-inner { background: var(--surface); border: 1px solid var(--border2); border-radius: 20px; padding: 3.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; position: relative; overflow: hidden; }
 @media(max-width:768px) { .diff-inner { grid-template-columns: 1fr; padding: 2rem; } }
 .diff-inner::before { content: ''; position: absolute; top: -60px; right: -60px; width: 300px; height: 300px; background: radial-gradient(ellipse, rgba(62,207,142,.08) 0%, transparent 70%); pointer-events: none; }
 .diff-label { display: inline-flex; align-items: center; gap: 6px; background: var(--green-dim); border: 1px solid var(--green-border); border-radius: 20px; padding: 4px 12px; font-size: 10px; font-weight: 700; color: var(--green); letter-spacing: .05em; text-transform: uppercase; margin-bottom: 1rem; }
-.diff-title { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 600; line-height: 1.15; margin-bottom: 1rem; }
+.diff-title { font-family: 'Lora', serif; font-size: 34px; font-weight: 700; line-height: 1.15; margin-bottom: 1rem; }
 .diff-title em { font-style: italic; color: var(--green); }
-.diff-desc { font-size: 14px; color: var(--muted); line-height: 1.75; margin-bottom: 1.5rem; }
+.diff-desc { font-size: 15px; color: var(--muted); line-height: 1.75; margin-bottom: 1.5rem; }
 .diff-checks { display: flex; flex-direction: column; gap: 10px; }
 .diff-check { display: flex; align-items: flex-start; gap: 10px; }
 .diff-check-icon { width: 20px; height: 20px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #080808; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
-.diff-check p { font-size: 13px; color: var(--muted); line-height: 1.55; }
+.diff-check p { font-size: 14px; color: var(--muted); line-height: 1.6; }
 .diff-check p strong { color: var(--text); }
 .diff-right { display: flex; flex-direction: column; gap: 12px; }
 .diff-tag-row { display: flex; flex-direction: column; gap: 10px; }
@@ -114,19 +114,19 @@ section { position: relative; z-index: 1; }
 .proof { padding: 6rem 0; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .proof-counter { display: flex; justify-content: center; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 3rem; }
 .proof-counter-item { text-align: center; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 2rem; }
-.proof-counter-n { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 600; color: var(--green); }
+.proof-counter-n { font-family: 'Lora', serif; font-size: 28px; font-weight: 600; color: var(--green); }
 .proof-counter-l { font-size: 11px; color: var(--hint); margin-top: 2px; }
 .testimonials { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
 @media(max-width:900px) { .testimonials { grid-template-columns: 1fr; } }
 .testi { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; transition: border-color .2s, transform .2s; }
 .testi:hover { border-color: var(--border2); transform: translateY(-2px); }
 .testi-stars { color: var(--amber); font-size: 12px; margin-bottom: .8rem; letter-spacing: 2px; }
-.testi-text { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 1.2rem; font-style: italic; }
+.testi-text { font-size: 14px; color: var(--muted); line-height: 1.75; margin-bottom: 1.2rem; font-style: italic; }
 .testi-text strong { color: var(--text); font-style: normal; }
 .testi-author { display: flex; align-items: center; gap: 10px; }
 .testi-av { width: 36px; height: 36px; border-radius: 50%; background: var(--green-dim); border: 1px solid var(--green-border); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--green); flex-shrink: 0; }
-.testi-name { font-size: 12px; font-weight: 600; color: var(--text); }
-.testi-role { font-size: 11px; color: var(--hint); }
+.testi-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.testi-role { font-size: 12px; color: var(--hint); }
 .testi-tag { font-size: 10px; font-weight: 700; color: var(--green); margin-top: 1px; }
 .pricing { padding: 6rem 0; }
 .pricing-note-bar { display: flex; justify-content: center; margin-top: 1.5rem; margin-bottom: 3.5rem; }
@@ -139,18 +139,18 @@ section { position: relative; z-index: 1; }
 .plan.popular { border: 2px solid var(--green); background: linear-gradient(135deg, rgba(62,207,142,.04) 0%, var(--surface) 60%); }
 .plan-popular-badge { position: absolute; top: -1px; left: 50%; transform: translateX(-50%); background: var(--green); color: #080808; font-size: 9px; font-weight: 800; padding: 3px 14px; letter-spacing: .06em; text-transform: uppercase; border-radius: 0 0 8px 8px; }
 .plan-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--hint); margin-bottom: .4rem; padding-top: .2rem; }
-.plan-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: .4rem; }
-.plan-price { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 600; line-height: 1; color: var(--text); margin-bottom: .2rem; }
-.plan-price small { font-size: 13px; font-weight: 400; color: var(--hint); font-family: 'Syne', sans-serif; }
-.plan-per-unit { font-size: 11px; color: var(--green); font-weight: 600; margin-bottom: .5rem; }
-.plan-desc { font-size: 11.5px; color: var(--muted); margin-bottom: 1.2rem; line-height: 1.5; }
+.plan-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: .4rem; }
+.plan-price { font-family: 'Lora', serif; font-size: 36px; font-weight: 700; line-height: 1; color: var(--text); margin-bottom: .2rem; }
+.plan-price small { font-size: 14px; font-weight: 400; color: var(--hint); font-family: 'Inter', sans-serif; }
+.plan-per-unit { font-size: 12px; color: var(--green); font-weight: 600; margin-bottom: .5rem; }
+.plan-desc { font-size: 13px; color: var(--muted); margin-bottom: 1.2rem; line-height: 1.55; }
 .plan-divider { height: 1px; background: var(--border); margin: 1rem 0; }
 .plan-feats { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.4rem; }
-.pf { display: flex; gap: 8px; align-items: flex-start; font-size: 11.5px; color: var(--muted); }
+.pf { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--muted); }
 .pf::before { content: '✓'; color: var(--green); font-weight: 700; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
 .pf.no { color: rgba(240,236,228,.2); }
 .pf.no::before { content: '—'; color: rgba(240,236,228,.15); }
-.plan-cta { width: 100%; padding: 11px; border-radius: 9px; font-size: 12.5px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; transition: all .15s; letter-spacing: .01em; }
+.plan-cta { width: 100%; padding: 12px; border-radius: 9px; font-size: 14px; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; transition: all .15s; letter-spacing: .01em; }
 .plan-cta-ghost { background: transparent; border: 1px solid var(--border2); color: var(--muted); }
 .plan-cta-ghost:hover { border-color: rgba(255,255,255,.2); color: var(--text); }
 .plan-cta-primary { background: var(--green); border: none; color: #080808; }
@@ -161,17 +161,17 @@ section { position: relative; z-index: 1; }
 .faq { padding: 6rem 0; }
 .faq-list { margin-top: 3rem; max-width: 720px; margin-left: auto; margin-right: auto; }
 .faq-item { border-bottom: 1px solid var(--border); }
-.faq-q { width: 100%; text-align: left; background: none; border: none; padding: 1.1rem 0; font-size: 14px; font-weight: 500; color: var(--text); font-family: 'Syne', sans-serif; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 1rem; transition: color .15s; }
+.faq-q { width: 100%; text-align: left; background: none; border: none; padding: 1.1rem 0; font-size: 15px; font-weight: 500; color: var(--text); font-family: 'Inter', sans-serif; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 1rem; transition: color .15s; }
 .faq-q:hover { color: var(--green); }
 .faq-icon { width: 20px; height: 20px; border: 1px solid var(--border2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--hint); flex-shrink: 0; transition: transform .2s; }
 .faq-item.open .faq-icon { transform: rotate(45deg); color: var(--green); border-color: var(--green-border); }
-.faq-a { font-size: 13px; color: var(--muted); line-height: 1.75; max-height: 0; overflow: hidden; transition: max-height .3s ease, padding .3s ease; }
+.faq-a { font-size: 15px; color: var(--muted); line-height: 1.8; max-height: 0; overflow: hidden; transition: max-height .3s ease, padding .3s ease; }
 .faq-item.open .faq-a { max-height: 200px; padding-bottom: 1rem; }
 .final-cta { padding: 7rem 0; background: var(--surface); border-top: 1px solid var(--border); text-align: center; position: relative; overflow: hidden; }
 .final-cta::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 600px; height: 300px; background: radial-gradient(ellipse, rgba(62,207,142,.07) 0%, transparent 70%); pointer-events: none; }
-.final-cta-title { font-family: 'Playfair Display', serif; font-size: clamp(30px, 4vw, 50px); font-weight: 600; line-height: 1.1; letter-spacing: -.02em; margin-bottom: 1rem; position: relative; }
+.final-cta-title { font-family: 'Lora', serif; font-size: clamp(32px, 4.5vw, 54px); font-weight: 700; line-height: 1.12; letter-spacing: -.02em; margin-bottom: 1rem; position: relative; }
 .final-cta-title em { font-style: italic; color: var(--green); }
-.final-cta-sub { font-size: 15px; color: var(--muted); margin-bottom: 2.2rem; position: relative; }
+.final-cta-sub { font-size: 17px; color: var(--muted); margin-bottom: 2.2rem; position: relative; }
 .final-cta-actions { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; position: relative; }
 .final-note { font-size: 11px; color: var(--hint); margin-top: 1.2rem; position: relative; }
 footer { background: var(--bg); border-top: 1px solid var(--border); padding: 3rem 2rem; position: relative; z-index: 1; }
@@ -187,11 +187,227 @@ footer { background: var(--bg); border-top: 1px solid var(--border); padding: 3r
 .reveal-delay-1 { transition-delay: .1s; }
 .reveal-delay-2 { transition-delay: .2s; }
 .reveal-delay-3 { transition-delay: .3s; }
+
+/* ===== HERO VISUAL MOCKUP ===== */
+.hero-visual { position: relative; }
+@media(min-width:901px) { .hero-visual { display: flex; align-items: center; justify-content: center; } }
+.hv-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 18px; overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04); animation: hv-float 7s ease-in-out infinite; width: 100%; max-width: 340px; }
+@keyframes hv-float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+.hv-header { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 11px 16px; display: flex; align-items: center; gap: 10px; }
+.hv-dots { display: flex; gap: 5px; }
+.hv-dots span { width: 9px; height: 9px; border-radius: 50%; display: block; }
+.hv-dots span:nth-child(1) { background: #f87171; }
+.hv-dots span:nth-child(2) { background: #f59e0b; }
+.hv-dots span:nth-child(3) { background: #3ecf8e; }
+.hv-title { font-size: 11px; font-weight: 600; color: var(--hint); letter-spacing: .03em; }
+.hv-body { padding: 22px 20px 18px; }
+.hv-score-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 18px; }
+.hv-ring-wrap { position: relative; width: 96px; height: 96px; margin-bottom: 8px; }
+.hv-ring { width: 100%; height: 100%; }
+.hv-score-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.hv-score-n { font-family: 'Lora', serif; font-size: 26px; font-weight: 600; color: var(--text); line-height: 1; }
+.hv-score-l { font-size: 10px; color: var(--hint); }
+.hv-score-label { font-size: 9.5px; color: var(--hint); letter-spacing: .06em; text-transform: uppercase; font-weight: 700; }
+.hv-factors { display: flex; flex-direction: column; gap: 9px; margin-bottom: 16px; }
+.hv-factor { display: flex; align-items: center; gap: 8px; }
+.hv-fl { font-size: 10.5px; color: var(--muted); min-width: 106px; }
+.hv-bar { flex: 1; height: 4px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+.hv-bar-fill { height: 100%; width: var(--w, 0%); background: linear-gradient(90deg, var(--green), rgba(62,207,142,.6)); border-radius: 99px; animation: bar-grow 1.4s cubic-bezier(.4,0,.2,1) both; }
+@keyframes bar-grow { from{width:0} to{width:var(--w,0%)} }
+.hv-fv { font-size: 10.5px; color: var(--green); font-weight: 700; min-width: 28px; text-align: right; }
+.hv-footer { display: flex; gap: 6px; flex-wrap: wrap; }
+.hv-tag { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+.hv-tag-ok { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+.hv-float { position: absolute; background: var(--surface2); border: 1px solid var(--border2); border-radius: 20px; padding: 7px 13px; font-size: 11px; font-weight: 600; color: var(--text); box-shadow: 0 8px 28px rgba(0,0,0,.35); white-space: nowrap; pointer-events: none; }
+.hv-float-1 { top: 10%; right: -6%; animation: hv-float 5.5s ease-in-out infinite; animation-delay: .8s; }
+.hv-float-2 { bottom: 16%; left: -6%; animation: hv-float 5.5s ease-in-out infinite; animation-delay: 1.6s; }
+
+/* ===== MOBILE NAV ===== */
+.nav-hamburger { display: none; flex-direction: column; gap: 4px; background: none; border: 1px solid var(--border2); border-radius: 7px; padding: 8px 9px; cursor: pointer; margin-left: 6px; }
+.nav-hamburger span { width: 18px; height: 2px; background: var(--muted); border-radius: 99px; transition: all .25s; display: block; }
+.nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.nav-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+@media(max-width:680px) { .nav-hamburger { display: flex; } .nav-actions .btn-ghost { display: none; } }
+.mobile-nav { display: none; position: fixed; top: 58px; left: 0; right: 0; background: rgba(8,8,8,.97); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 99; padding: 1rem 1.5rem 1.5rem; flex-direction: column; gap: 2px; }
+.mobile-nav.open { display: flex; }
+.mobile-nav a { font-size: 15px; font-weight: 500; color: var(--muted); text-decoration: none; padding: 13px 0; border-bottom: 1px solid var(--border); transition: color .15s, padding-left .15s; display: block; }
+.mobile-nav a:last-of-type { border-bottom: none; }
+.mobile-nav a:hover { color: var(--text); padding-left: 4px; }
+.mobile-nav-cta { margin-top: .9rem; width: 100%; padding: 13px; background: var(--green); color: #080808; border: none; border-radius: 9px; font-size: 14px; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; transition: opacity .15s; }
+.mobile-nav-cta:hover { opacity: .88; }
+
+/* ===== MICRO-INTERACTIONS ===== */
+.nav-links a { position: relative; }
+.nav-links a::after { content: ''; position: absolute; bottom: -3px; left: 0; width: 0; height: 1px; background: var(--green); transition: width .22s ease; }
+.nav-links a:hover::after { width: 100%; }
+.step { transition: transform .22s ease; }
+.step:hover { transform: translateY(-5px); }
+.step-num { transition: border-color .22s, color .22s, box-shadow .22s; }
+.step:hover .step-num { border-color: var(--green-border); color: var(--green); box-shadow: 0 0 18px var(--green-glow); }
+.step:first-child:hover .step-num { box-shadow: 0 0 22px rgba(62,207,142,.4); }
+.pain-card { transition: border-color .2s, transform .2s, box-shadow .2s; }
+.pain-card:hover { border-color: var(--green-border); transform: translateX(5px); box-shadow: -3px 0 0 var(--green); }
+.feat-card { transition: background .2s; }
+.feat-icon { transition: transform .22s ease; }
+.feat-card:hover .feat-icon { transform: scale(1.1) rotate(-4deg); }
+.plan { transition: transform .2s, box-shadow .2s; }
+.plan:not(.popular):hover { transform: translateY(-5px); box-shadow: 0 20px 50px rgba(0,0,0,.28); }
+.plan.popular:hover { transform: translateY(-5px); box-shadow: 0 20px 50px rgba(62,207,142,.14); }
+.diff-tag-item { transition: background .15s, border-color .15s, transform .15s; }
+.diff-tag-item:hover { background: var(--surface2); border-color: var(--border2); transform: translateX(4px); }
+.testi { transition: border-color .2s, transform .2s, box-shadow .2s; }
+.testi:hover { border-color: var(--border2); transform: translateY(-5px); box-shadow: 0 16px 40px rgba(0,0,0,.22); }
+.btn-ghost { transition: border-color .18s, color .18s, background .18s; }
+.btn-primary { transition: opacity .18s, transform .18s; }
+.btn-hero { transition: opacity .18s, transform .18s, box-shadow .18s; }
+.plan-cta { transition: opacity .18s, background .18s, border-color .18s, color .18s; }
+.pain-card-icon { transition: transform .2s ease; }
+.pain-card:hover .pain-card-icon { transform: scale(1.1); }
+
+/* ===== MOBILE IMPROVEMENTS ===== */
+html, body { overflow-x: hidden; max-width: 100%; }
+
+/* Tablet: features 2 colunas */
+@media(min-width:769px) and (max-width:960px) {
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ≤768px: ajustes gerais de seção */
+@media(max-width:768px) {
+  .pain { padding: 3.5rem 0; }
+  .how { padding: 3.5rem 0; }
+  .features { padding: 3.5rem 0; }
+  .diff { padding: 3.5rem 0; }
+  .proof { padding: 3.5rem 0; }
+  .pricing { padding: 3.5rem 0; }
+  .faq { padding: 3.5rem 0; }
+  .final-cta { padding: 4rem 0; }
+  .diff-tag-row .diff-tag-item { flex-wrap: wrap; gap: 4px; }
+  .steps::before { display: none; }
+  .steps { gap: 1.5rem; }
+  .footer-inner { flex-direction: column; align-items: flex-start; gap: 1.2rem; }
+  .footer-links { gap: 16px; }
+  .pain-grid { margin-top: 2rem; }
+  .features-grid { margin-top: 2rem; }
+  .plans { gap: 12px; }
+  .testimonials { gap: 12px; }
+  .proof-counter { margin-bottom: 2rem; }
+  .sec-title { font-size: clamp(24px, 5.5vw, 38px); }
+  .sec-sub { font-size: 14px; }
+}
+
+/* ≤600px: ajustes de stats */
+@media(max-width:600px) {
+  .stats-bar-inner { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
+  .stat-n { font-size: 26px; }
+  .stat-l { font-size: 10px; }
+}
+
+/* ≤480px: layout mobile compacto */
+@media(max-width:480px) {
+  /* Nav */
+  .nav-logo-badge { display: none; }
+  .nav-actions .btn-primary { font-size: 11px; padding: 7px 12px; }
+
+  /* Hero */
+  .hero { padding: 5.5rem 1.2rem 3rem; min-height: auto; }
+  .hero-eyebrow { font-size: 10px; padding: 4px 11px; }
+  .hero-headline { font-size: clamp(28px, 7.5vw, 38px); }
+  .hero-sub { font-size: 13.5px; margin-bottom: 1.8rem; }
+  .hero-cta-row { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 1.8rem; }
+  .btn-hero { width: 100%; justify-content: center; font-size: 14px; padding: 15px 20px; }
+  .btn-hero-ghost { justify-content: center; }
+  .hero-trust { gap: 12px; }
+  .trust-item { font-size: 10.5px; }
+
+  /* Stats */
+  .stats-bar { padding: 1.3rem 1.2rem; }
+
+  /* Pain */
+  .pain { padding: 3.5rem 0; }
+  .pain-callout { padding: 1.1rem 1rem; }
+  .pain-sub-note { font-size: 12.5px; }
+
+  /* How */
+  .how { padding: 3.5rem 0; }
+  .step { padding: 0 .5rem; }
+  .step h3 { font-size: 13px; }
+
+  /* Features */
+  .features { padding: 3.5rem 0; }
+  .feat-card { padding: 1.4rem; }
+
+  /* Diff */
+  .diff { padding: 3.5rem 0; }
+  .diff-inner { padding: 1.5rem 1.2rem; gap: 1.75rem; }
+  .diff-title { font-size: 22px; }
+  .diff-desc { font-size: 13px; }
+  .diff-check p { font-size: 12.5px; }
+
+  /* Proof */
+  .proof { padding: 3.5rem 0; }
+  .proof-counter { gap: .75rem; flex-wrap: wrap; }
+  .proof-counter-item { padding: .75rem 1rem; flex: 1 1 calc(50% - .4rem); min-width: 0; }
+  .proof-counter-n { font-size: 22px; }
+  .proof-counter-l { font-size: 10px; }
+  .testi { padding: 1.2rem; }
+  .testi-text { font-size: 12.5px; }
+
+  /* Pricing */
+  .pricing { padding: 3.5rem 0; }
+  .plans { max-width: 100%; gap: 10px; }
+  .pricing-note-bar { margin-top: 1rem; margin-bottom: 2rem; }
+  .pricing-note-bar-inner { font-size: 11px; flex-wrap: wrap; justify-content: center; gap: 4px; padding: 6px 14px; }
+  .plan { padding: 1.1rem 1rem; }
+  .plan-price { font-size: 26px; }
+  .plan-per-unit { font-size: 10px; margin-bottom: .3rem; }
+  .plan-desc { font-size: 11px; margin-bottom: .9rem; line-height: 1.45; }
+  .plan-name { font-size: 12px; margin-bottom: .3rem; }
+  .plan-tag { font-size: 8.5px; }
+  .plan-divider { margin: .7rem 0; }
+  .plan-feats { gap: 6px; margin-bottom: 1rem; }
+  .pf { font-size: 11px; gap: 6px; }
+  .plan-cta { padding: 10px; font-size: 12px; }
+  .plan-note { font-size: 9.5px; margin-top: .4rem; }
+  .pricing-bottom-note { font-size: 11px; margin-top: 1.2rem; }
+
+  /* FAQ */
+  .faq { padding: 3.5rem 0; }
+  .faq-q { font-size: 13px; }
+  .faq-a { font-size: 12.5px; }
+
+  /* Final CTA */
+  .final-cta { padding: 4rem 0; }
+  .final-cta-title { font-size: clamp(24px, 7vw, 38px); }
+  .final-cta-sub { font-size: 14px; }
+  .final-cta-actions { flex-direction: column; align-items: center; }
+  .final-cta-actions .btn-hero { width: 100%; max-width: 320px; justify-content: center; }
+
+  /* Footer */
+  .footer-links { gap: 14px; flex-wrap: wrap; }
+  .footer-copy { font-size: 10px; }
+
+  /* Títulos de seção */
+  .sec-title { font-size: clamp(22px, 6vw, 34px); }
+  .sec-sub { font-size: 13.5px; }
+}
+
+/* ≤360px: telas muito pequenas */
+@media(max-width:360px) {
+  nav { padding: 0 .9rem; }
+  .container { padding: 0 1rem; }
+  .hero { padding: 5rem 1rem 2.5rem; }
+  .hero-headline { font-size: 26px; }
+  .btn-hero { font-size: 13px; padding: 13px 16px; }
+  .plan { padding: 1.1rem; }
+  .diff-inner { padding: 1.2rem 1rem; }
+}
 </style>
 </head>
 <body>
-<nav><a href="#" class="nav-logo"><span class="nav-logo-mark">V</span><span class="nav-logo-name">VagaAI</span><span class="nav-logo-badge">Beta</span></a><div class="nav-links"><a href="#como-funciona">Como funciona</a><a href="#features">Recursos</a><a href="#planos">Planos</a><a href="#faq">FAQ</a></div><div class="nav-actions"><button class="btn-ghost" onclick="irParaProduto()">Entrar</button><button class="btn-primary" onclick="irParaProduto()">Começar grátis →</button></div></nav>
-<section><div class="hero"><div class="hero-left"><div class="hero-eyebrow"><span class="eyebrow-dot"></span>Análise ATS + briefing da empresa em um só lugar</div><h1 class="hero-headline"><span>Passe pelo <em>filtro.</em></span><span>Chegue mais forte</span><span>na entrevista.</span></h1><p class="hero-sub">Cole a vaga e seu currículo. O VagaAI mostra onde você está perdendo pontos, otimiza seu CV para ATS e prepara você para a entrevista com um briefing claro da empresa.</p><div class="hero-cta-row"><button class="btn-hero" onclick="irParaProduto()"><span>⚡</span> Analisar minha vaga grátis</button><button class="btn-hero-ghost" onclick="document.getElementById('como-funciona').scrollIntoView({behavior:'smooth'})">Ver como funciona →</button></div><div class="hero-trust"><div class="trust-item"><span class="trust-dot"></span>1 análise grátis</div><div class="trust-item"><span class="trust-dot"></span>Sem cadastro</div><div class="trust-item"><span class="trust-dot"></span>Resultado em segundos</div></div></div></div></section>
+<nav><a href="#" class="nav-logo"><span class="nav-logo-mark">V</span><span class="nav-logo-name">VagaAI</span><span class="nav-logo-badge">Beta</span></a><div class="nav-links"><a href="#como-funciona">Como funciona</a><a href="#features">Recursos</a><a href="#planos">Planos</a><a href="#faq">FAQ</a></div><div class="nav-actions"><button class="btn-ghost" onclick="irParaProduto()">Entrar</button><button class="btn-primary" onclick="irParaProduto()">Começar grátis →</button><button class="nav-hamburger" id="navHamburger" onclick="toggleMobileNav()" aria-label="Menu"><span></span><span></span><span></span></button></div></nav><div class="mobile-nav" id="mobileNav"><a href="#como-funciona" onclick="closeMobileNav()">Como funciona</a><a href="#features" onclick="closeMobileNav()">Recursos</a><a href="#planos" onclick="closeMobileNav()">Planos</a><a href="#faq" onclick="closeMobileNav()">FAQ</a><button class="mobile-nav-cta" onclick="irParaProduto()">Começar grátis →</button></div>
+<section><div class="hero"><div class="hero-left"><div class="hero-eyebrow"><span class="eyebrow-dot"></span>Análise ATS + briefing da empresa em um só lugar</div><h1 class="hero-headline"><span>Passe pelo <em>filtro.</em></span><span>Chegue mais forte</span><span>na entrevista.</span></h1><p class="hero-sub">Cole a vaga e seu currículo. O VagaAI mostra onde você está perdendo pontos, otimiza seu CV para ATS e prepara você para a entrevista com um briefing claro da empresa.</p><div class="hero-cta-row"><button class="btn-hero" onclick="irParaProduto()"><span>⚡</span> Analisar minha vaga grátis</button><button class="btn-hero-ghost" onclick="document.getElementById('como-funciona').scrollIntoView({behavior:'smooth'})">Ver como funciona →</button></div><div class="hero-trust"><div class="trust-item"><span class="trust-dot"></span>1 análise grátis</div><div class="trust-item"><span class="trust-dot"></span>Sem cadastro</div><div class="trust-item"><span class="trust-dot"></span>Resultado em segundos</div></div></div><div class="hero-visual" aria-hidden="true"><div class="hv-card"><div class="hv-header"><div class="hv-dots"><span></span><span></span><span></span></div><span class="hv-title">Análise VagaAI</span></div><div class="hv-body"><div class="hv-score-wrap"><div class="hv-ring-wrap"><svg class="hv-ring" viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/><circle cx="60" cy="60" r="50" fill="none" stroke="#3ecf8e" stroke-width="8" stroke-dasharray="314" stroke-dashoffset="79" stroke-linecap="round" transform="rotate(-90 60 60)"/></svg><div class="hv-score-inner"><div class="hv-score-n">75</div><div class="hv-score-l">/ 100</div></div></div><div class="hv-score-label">Índice de Compatibilidade</div></div><div class="hv-factors"><div class="hv-factor"><span class="hv-fl">Compatibilidade</span><div class="hv-bar"><div class="hv-bar-fill" style="--w:82%"></div></div><span class="hv-fv">82%</span></div><div class="hv-factor"><span class="hv-fl">Keywords ATS</span><div class="hv-bar"><div class="hv-bar-fill" style="--w:71%"></div></div><span class="hv-fv">71%</span></div><div class="hv-factor"><span class="hv-fl">Legibilidade</span><div class="hv-bar"><div class="hv-bar-fill" style="--w:90%"></div></div><span class="hv-fv">90%</span></div><div class="hv-factor"><span class="hv-fl">Força dos bullets</span><div class="hv-bar"><div class="hv-bar-fill" style="--w:60%"></div></div><span class="hv-fv">60%</span></div></div><div class="hv-footer"><div class="hv-tag hv-tag-ok">✓ Currículo otimizado</div><div class="hv-tag hv-tag-ok">✓ Briefing gerado</div></div></div></div><div class="hv-float hv-float-1">⚡ Análise em 30s</div><div class="hv-float hv-float-2">🎯 ATS-ready</div></div></div></section>
 <div class="stats-bar reveal"><div class="stats-bar-inner"><div><div class="stat-n"><em>75%</em></div><div class="stat-l">dos currículos são filtrados antes de chegar em um recrutador</div></div><div><div class="stat-n">30<em>s</em></div><div class="stat-l">para gerar sua análise inicial</div></div><div><div class="stat-n"><em>2</em>em1</div><div class="stat-l">currículo otimizado + briefing da empresa</div></div><div><div class="stat-n"><em>6</em></div><div class="stat-l">fatores avaliados no índice de compatibilidade</div></div></div></div>
 <section class="pain"><div class="container"><div class="sec-eyebrow">O problema</div><h2 class="sec-title">O problema não é só seu currículo.<br><em>É o filtro antes da entrevista.</em></h2><div class="pain-grid"><div class="pain-left"><div class="pain-callout reveal"><h4><span>&gt;_</span> O que é ATS?</h4><p>ATS é o sistema que filtra currículos automaticamente antes de um recrutador analisar seu perfil. Se o seu currículo não conversa com a vaga, <strong>você pode ser eliminado antes mesmo de ser visto.</strong></p></div><p class="pain-sub-note reveal reveal-delay-1">Você pode ter experiência. Pode ter repertório. Pode até ser um bom candidato. Mas, sem adaptar o currículo para a vaga certa e sem chegar preparado para a entrevista, suas chances caem muito.</p><br><button class="btn-hero" style="margin-top:1rem;" onclick="irParaProduto()">Ver meu diagnóstico grátis →</button></div><div class="pain-cards"><div class="pain-card reveal reveal-delay-1"><div class="pain-card-icon">🤖</div><div><h4>Eliminado sem retorno</h4><p>Seu currículo não conversa com a vaga e o sistema filtra antes de um humano ver.</p></div></div><div class="pain-card reveal reveal-delay-2"><div class="pain-card-icon">📋</div><div><h4>O mesmo CV para tudo</h4><p>Cada vaga pede sinais diferentes. Repetir o mesmo currículo reduz sua competitividade.</p></div></div><div class="pain-card reveal reveal-delay-3"><div class="pain-card-icon">⏱</div><div><h4>Entrevista sem contexto</h4><p>Mesmo quando avança, muita gente chega sem entender a empresa, o momento e o que realmente está sendo avaliado.</p></div></div></div></div></div></section>
 <section class="how" id="como-funciona"><div class="container"><div class="sec-center"><div class="sec-eyebrow">Como funciona</div><h2 class="sec-title reveal">Entenda em <em>3 passos</em></h2><p class="sec-sub reveal reveal-delay-1">Sem cadastro para começar. Sem complicação.</p></div><div class="steps"><div class="step reveal"><div class="step-num">1</div><h3>Cole a vaga</h3><p>Copie a descrição da vaga do Gupy, LinkedIn ou qualquer outra plataforma.</p></div><div class="step reveal reveal-delay-1"><div class="step-num">2</div><h3>Cole seu currículo atual</h3><p>Basta colar o texto do seu currículo para o VagaAI fazer a análise.</p></div><div class="step reveal reveal-delay-2"><div class="step-num">3</div><h3>Receba diagnóstico + versão otimizada</h3><p>Veja seu índice de compatibilidade, os principais ajustes e, se quiser, gere a versão pronta para enviar.</p></div></div></div></section>
@@ -201,9 +417,14 @@ footer { background: var(--bg); border-top: 1px solid var(--border); padding: 3r
 <section class="pricing" id="planos"><div class="container"><div class="sec-center"><div class="sec-eyebrow">Planos</div><h2 class="sec-title reveal">Comece grátis. Pague só quando<br>quiser <em>otimizar uma vaga.</em></h2><p class="sec-sub reveal reveal-delay-1">Use a análise gratuita para entender onde seu currículo perde força. Quando quiser aplicar melhor, libere candidaturas otimizadas sob demanda.</p></div><div class="pricing-note-bar reveal reveal-delay-2"><div class="pricing-note-bar-inner"><span>Sem assinatura obrigatória</span>·<span>Use no seu ritmo</span>·<span>Créditos sem expiração</span></div></div><div class="plans"><div class="plan reveal"><div class="plan-tag">Gratuito</div><div class="plan-name">Diagnóstico grátis</div><div class="plan-price">R$0</div><div class="plan-per-unit">&nbsp;</div><div class="plan-desc">Para entender onde seu currículo está perdendo pontos.</div><div class="plan-divider"></div><div class="plan-feats"><div class="pf">1 análise inicial</div><div class="pf">Índice de compatibilidade</div><div class="pf">Principais falhas identificadas</div><div class="pf">Sugestões de melhoria</div><div class="pf no">Currículo final otimizado</div><div class="pf no">Briefing da empresa</div><div class="pf no">PDF profissional</div><div class="pf no">Histórico salvo</div></div><button class="plan-cta plan-cta-ghost" onclick="irParaProduto()">Fazer análise grátis</button><div class="plan-note">Sem cadastro · Sem cartão</div></div><div class="plan reveal reveal-delay-1"><div class="plan-tag">Entrada</div><div class="plan-name">1 candidatura otimizada</div><div class="plan-price">R$9<small>,90</small></div><div class="plan-per-unit">pagamento único</div><div class="plan-desc">Para testar na prática antes de aplicar de verdade.</div><div class="plan-divider"></div><div class="plan-feats"><div class="pf">1 currículo otimizado para uma vaga</div><div class="pf">Ajuste de palavras-chave</div><div class="pf">Versão pronta para envio</div><div class="pf">PDF profissional</div><div class="pf">Briefing básico da empresa</div></div><button class="plan-cta plan-cta-ghost" onclick="irParaProduto()">Otimizar minha primeira vaga</button><div class="plan-note">Pagamento único · Sem assinatura</div></div><div class="plan popular reveal reveal-delay-2"><div class="plan-popular-badge">Mais escolhido</div><div class="plan-tag" style="margin-top:.5rem;">Pacote</div><div class="plan-name">10 candidaturas estratégicas</div><div class="plan-price">R$39<small>,90</small></div><div class="plan-per-unit">R$ 3,99 por candidatura</div><div class="plan-desc">Para quem está aplicando de verdade e quer manter consistência.</div><div class="plan-divider"></div><div class="plan-feats"><div class="pf">10 currículos otimizados</div><div class="pf">Briefing completo da empresa</div><div class="pf">PDF profissional</div><div class="pf">Score completo em 6 fatores</div><div class="pf">Prioridade no processamento</div><div class="pf">Créditos sem expiração</div></div><button class="plan-cta plan-cta-primary" onclick="irParaProduto()">Começar com 10 vagas</button><div class="plan-note">Pagamento único · Créditos não expiram</div></div><div class="plan reveal reveal-delay-3"><div class="plan-tag">Melhor custo</div><div class="plan-name">50 candidaturas otimizadas</div><div class="plan-price">R$97<small>,00</small></div><div class="plan-per-unit">R$ 1,94 por candidatura</div><div class="plan-desc">Para quem quer volume e o menor custo por candidatura.</div><div class="plan-divider"></div><div class="plan-feats"><div class="pf">Tudo do pacote de 10</div><div class="pf">50 currículos otimizados</div><div class="pf">Melhor custo por candidatura</div><div class="pf">Ideal para busca intensa</div><div class="pf">Créditos sem expiração</div></div><button class="plan-cta plan-cta-ghost" onclick="irParaProduto()">Garantir 50 vagas</button><div class="plan-note">Pagamento único · Créditos não expiram</div></div></div><div class="pricing-bottom-note">Sem assinatura obrigatória <span>·</span> Use no seu ritmo <span>·</span> Créditos sem expiração</div></div></section>
 <section class="faq" id="faq"><div class="container"><div class="sec-center"><div class="sec-eyebrow">Dúvidas frequentes</div><h2 class="sec-title reveal">Perguntas <em>frequentes</em></h2></div><div class="faq-list reveal reveal-delay-1"><div class="faq-item open"><button class="faq-q" onclick="toggleFaq(this)">Preciso criar conta para usar a análise grátis?<span class="faq-icon">+</span></button><div class="faq-a">Não. Você pode testar a análise inicial sem cadastro. A conta só é necessária quando quiser salvar histórico ou comprar créditos para candidaturas otimizadas.</div></div><div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">O que é ATS e por que ele rejeita meu currículo?<span class="faq-icon">+</span></button><div class="faq-a">ATS (Applicant Tracking System) é o software que a maioria das empresas usa para filtrar currículos automaticamente. O Gupy, principal plataforma de RH do Brasil, é um ATS. Ele procura palavras-chave específicas da vaga — se o seu currículo não tiver essas palavras, você pode ser descartado antes de qualquer humano ver seu perfil.</div></div><div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Como funciona o briefing da empresa?<span class="faq-icon">+</span></button><div class="faq-a">O VagaAI analisa o texto da vaga para montar um briefing estruturado em 3 camadas: dados extraídos diretamente da vaga (confiáveis), informações inferidas pelo contexto (prováveis), e conhecimento geral sobre a empresa (para verificar). Você chega na entrevista sabendo o que a empresa provavelmente valoriza além do técnico.</div></div><div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Como é calculado o Índice de Compatibilidade ATS?<span class="faq-icon">+</span></button><div class="faq-a">O índice é calculado em 6 dimensões com pesos fixos: compatibilidade com a vaga (30%), cobertura de keywords (25%), legibilidade ATS (20%), força dos bullets (15%), clareza estrutural (6%) e alinhamento de senioridade (4%). A fórmula é pública — você pode consultar clicando em "Como calculamos?" no resultado.</div></div><div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">O VagaAI inventa experiências no currículo?<span class="faq-icon">+</span></button><div class="faq-a">Não. O VagaAI reorganiza, reescreve e melhora a apresentação do que você já informou. Ele não cria cargos, experiências ou resultados que não existam no seu currículo original.</div></div><div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Os créditos têm prazo de validade?<span class="faq-icon">+</span></button><div class="faq-a">Não. Todos os créditos comprados são permanentes — você usa no seu ritmo, sem pressão de prazo. Se você está em busca ativa agora ou vai começar daqui a alguns meses, seus créditos estarão lá.</div></div><div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">O VagaAI funciona para qualquer vaga?<span class="faq-icon">+</span></button><div class="faq-a">Sim. Funciona com qualquer vaga de qualquer plataforma — Gupy, LinkedIn, 99Jobs, Vagas.com, Catho, ou qualquer site. Basta copiar o texto da descrição e colar. A otimização é específica para cada vaga individualmente.</div></div></div></div></section>
 <section class="final-cta"><div class="container"><h2 class="final-cta-title">Sua próxima vaga merece uma<br><em>candidatura melhor.</em></h2><p class="final-cta-sub">Faça sua análise grátis e veja onde seu currículo está perdendo força antes de enviar.</p><div class="final-cta-actions"><button class="btn-hero" onclick="irParaProduto()">⚡ Analisar minha vaga grátis</button></div><p class="final-note">Sem cadastro para começar · Resultado em segundos</p></div></section>
-<footer><div class="footer-inner"><div class="footer-brand"><span style="font-family:'Playfair Display',serif;font-style:italic;color:var(--green);font-size:17px;">V</span><span class="footer-brand-name">VagaAI</span></div><div class="footer-links"><a href="#">Termos de uso</a><a href="#">Privacidade</a><a href="#">LGPD</a><a href="mailto:suporte@vagaai.heapweb.com.br">Suporte</a></div><div class="footer-copy">© 2025 VagaAI · HeapWeb · Todos os direitos reservados</div></div></footer>
+<footer><div class="footer-inner"><div class="footer-brand"><span style="font-family:'Lora',serif;font-style:italic;color:var(--green);font-size:17px;">V</span><span class="footer-brand-name">VagaAI</span></div><div class="footer-links"><a href="#">Termos de uso</a><a href="#">Privacidade</a><a href="#">LGPD</a><a href="mailto:suporte@vagaai.heapweb.com.br">Suporte</a></div><div class="footer-copy">© 2025 VagaAI · HeapWeb · Todos os direitos reservados</div></div></footer>
 <script>
-function irParaProduto(){window.location.href='/app'}function toggleFaq(e){e.parentElement.classList.toggle('open')}new IntersectionObserver(e=>{e.forEach(e=>{e.isIntersecting&&(e.target.classList.add('visible'),new IntersectionObserver(()=>{}).unobserve(e.target))})},{threshold:.12,rootMargin:'0px 0px -40px 0px'}).observe(document.querySelectorAll('.reveal').forEach(e=>new IntersectionObserver(t=>{t.forEach(t=>{t.isIntersecting&&(t.target.classList.add('visible'),new IntersectionObserver(()=>{}).unobserve(t.target))})},{threshold:.12,rootMargin:'0px 0px -40px 0px'}).observe(e)))
+function irParaProduto(){window.location.href='/app'}
+function toggleFaq(e){e.parentElement.classList.toggle('open')}
+function toggleMobileNav(){var h=document.getElementById('navHamburger'),m=document.getElementById('mobileNav');h.classList.toggle('open');m.classList.toggle('open')}
+function closeMobileNav(){document.getElementById('navHamburger').classList.remove('open');document.getElementById('mobileNav').classList.remove('open')}
+var revealObserver=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');revealObserver.unobserve(entry.target)}})},{threshold:.12,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(function(el){revealObserver.observe(el)});
 </script>
 </body>
 </html>
