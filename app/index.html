@@ -115,6 +115,7 @@ textarea::placeholder{color:var(--muted)}
 .result-actions{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1.2rem}
 .btn-outline{flex:1;min-width:140px;background:transparent;border:1px solid var(--border);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;border-radius:10px;padding:.75rem 1rem;cursor:pointer;transition:all .2s;text-align:center}
 .btn-outline:hover{border-color:var(--green-border);color:var(--green)}
+.btn-outline:disabled{opacity:.4;cursor:not-allowed}
 .btn-pro{flex:1;min-width:140px;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;border:none;border-radius:10px;padding:.75rem 1rem;cursor:pointer;transition:all .2s;text-align:center}
 .btn-pro:hover{background:#4ddb9e}
 
@@ -123,6 +124,36 @@ textarea::placeholder{color:var(--muted)}
 
 /* free notice */
 .free-notice{background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px;padding:.75rem 1rem;font-size:13px;color:var(--green);display:flex;align-items:center;gap:.6rem;margin-bottom:1.5rem}
+
+/* UPSELL após resultado */
+.upsell{display:none;margin-top:2rem;border-top:1px solid var(--border);padding-top:2rem}
+.upsell.show{display:block}
+.upsell-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.upsell-title{font-family:'Lora',serif;font-size:clamp(18px,3vw,24px);font-weight:700;margin-bottom:.4rem}
+.upsell-sub{font-size:13px;color:var(--muted);margin-bottom:1.4rem}
+.upsell-plans{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
+@media(max-width:580px){.upsell-plans{grid-template-columns:1fr}}
+.upsell-plan{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem;display:flex;flex-direction:column;gap:.5rem;transition:border-color .2s}
+.upsell-plan:hover{border-color:var(--green-border)}
+.upsell-plan.featured{border-color:var(--green-border);background:linear-gradient(135deg,rgba(62,207,142,0.06),var(--surface))}
+.upsell-plan-badge{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--green);background:var(--green-dim);border:1px solid var(--green-border);padding:2px 8px;border-radius:20px;width:fit-content}
+.upsell-plan-name{font-size:13px;font-weight:700;line-height:1.3}
+.upsell-plan-price{font-family:'Lora',serif;font-size:22px;font-weight:700}
+.upsell-plan-price small{font-size:13px;font-family:'Inter',sans-serif;font-weight:400;color:var(--muted)}
+.upsell-plan-desc{font-size:12px;color:var(--muted);line-height:1.4;flex:1}
+.upsell-plan-btn{width:100%;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;border:none;border-radius:8px;padding:.65rem;cursor:pointer;transition:all .2s;margin-top:.3rem}
+.upsell-plan-btn:hover{background:#4ddb9e}
+.upsell-plan-btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.upsell-plan-btn.ghost:hover{border-color:var(--green-border);color:var(--green);background:transparent}
+
+/* LIMITE ATINGIDO */
+.limit-section{display:none;text-align:center;padding:3rem 1rem}
+.limit-section.show{display:block}
+.limit-icon{font-size:48px;margin-bottom:1rem}
+.limit-title{font-family:'Lora',serif;font-size:clamp(20px,4vw,28px);font-weight:700;margin-bottom:.6rem}
+.limit-sub{font-size:14px;color:var(--muted);max-width:440px;margin:0 auto 2rem}
+.limit-plans{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;max-width:680px;margin:0 auto}
+@media(max-width:580px){.limit-plans{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -145,11 +176,17 @@ textarea::placeholder{color:var(--muted)}
   <h1 class="page-title">Analisar minha vaga</h1>
   <p class="page-sub">Cole a descrição da vaga e seu currículo. A análise leva cerca de 15 segundos.</p>
 
-  <div class="free-notice">
-    ✓ Diagnóstico gratuito · Sem cadastro · Sem cartão
+  <!-- LIMITE ATINGIDO -->
+  <div class="limit-section" id="limitSection">
+    <div class="limit-icon">🔒</div>
+    <div class="limit-title">Você já usou sua análise gratuita</div>
+    <p class="limit-sub">O diagnóstico grátis é limitado a 1 análise. Para continuar aplicando com currículo otimizado, escolha um plano:</p>
+    <div class="limit-plans" id="limitPlans"></div>
   </div>
 
   <!-- FORM -->
+  <div id="freeNotice" class="free-notice">✓ Diagnóstico gratuito · Sem cadastro · Sem cartão</div>
+
   <div class="form-section" id="formSection">
     <div class="field">
       <label for="jobInput">Descrição da vaga <span>— Cole o texto completo da vaga</span></label>
@@ -227,17 +264,85 @@ textarea::placeholder{color:var(--muted)}
     </div>
 
     <div class="result-actions">
-      <button class="btn-outline" onclick="resetForm()">← Nova análise</button>
-      <button class="btn-pro" onclick="window.location.href='/#planos'">Otimizar currículo →</button>
+      <button class="btn-outline" id="newAnalysisBtn" onclick="tryNewAnalysis()">← Nova análise</button>
+      <button class="btn-pro" onclick="document.getElementById('upsellSection').scrollIntoView({behavior:'smooth'})">Ver planos para otimizar →</button>
+    </div>
+
+    <!-- UPSELL -->
+    <div class="upsell" id="upsellSection">
+      <div class="upsell-label">Próximo passo</div>
+      <div class="upsell-title">Quer um currículo otimizado para essa vaga?</div>
+      <p class="upsell-sub">O diagnóstico mostrou onde você perde pontos. Agora deixa o VagaAI reescrever seu currículo para passar pelo ATS e chegar mais forte na entrevista.</p>
+      <div class="upsell-plans" id="upsellPlans"></div>
     </div>
 
   </div>
 </div>
 
 <script>
+var PLANS = [
+  {
+    name: '1 candidatura',
+    badge: null,
+    price: 'R$9',
+    cents: ',90',
+    desc: 'Ideal para testar antes de aplicar de verdade.',
+    url: 'https://buy.stripe.com/cNibJ15d4aXTe5F6uj9k401',
+    featured: false
+  },
+  {
+    name: '10 candidaturas',
+    badge: 'Mais escolhido',
+    price: 'R$39',
+    cents: ',90',
+    desc: 'Para quem está em busca ativa e quer consistência.',
+    url: 'https://buy.stripe.com/00w9AT20Sfe90eP9Gv9k402',
+    featured: true
+  },
+  {
+    name: '50 candidaturas',
+    badge: null,
+    price: 'R$97',
+    cents: ',00',
+    desc: 'Melhor custo por candidatura. Créditos sem expiração.',
+    url: 'https://buy.stripe.com/5kQ28r5d4c1X0eP05V9k400',
+    featured: false
+  }
+];
+
+function planCardHTML(p, btnClass) {
+  return '<div class="upsell-plan' + (p.featured ? ' featured' : '') + '">'
+    + (p.badge ? '<div class="upsell-plan-badge">' + p.badge + '</div>' : '')
+    + '<div class="upsell-plan-name">' + p.name + '</div>'
+    + '<div class="upsell-plan-price">' + p.price + '<small>' + p.cents + '</small></div>'
+    + '<div class="upsell-plan-desc">' + p.desc + '</div>'
+    + '<button class="upsell-plan-btn ' + (p.featured ? '' : 'ghost') + '" onclick="window.open(\'' + p.url + '\',\'_blank\')">'
+    + (p.featured ? 'Começar agora' : 'Escolher') + '</button>'
+    + '</div>';
+}
+
+// Renderiza planos no upsell pós-resultado
+document.getElementById('upsellPlans').innerHTML = PLANS.map(function(p) { return planCardHTML(p); }).join('');
+
+// Renderiza planos na tela de limite atingido
+document.getElementById('limitPlans').innerHTML = PLANS.map(function(p) { return planCardHTML(p); }).join('');
+
+// Verifica se já usou a análise gratuita
+var alreadyUsed = localStorage.getItem('vagaai_analyzed');
+if (alreadyUsed) {
+  showLimitReached();
+}
+
+function showLimitReached() {
+  document.getElementById('freeNotice').style.display = 'none';
+  document.getElementById('formSection').style.display = 'none';
+  document.getElementById('limitSection').classList.add('show');
+  document.getElementById('step1').classList.remove('active');
+}
+
+// Inputs
 var jobEl = document.getElementById('jobInput');
 var cvEl = document.getElementById('cvInput');
-
 jobEl.addEventListener('input', function() {
   document.getElementById('jobCount').textContent = this.value.length + ' caracteres';
 });
@@ -267,7 +372,6 @@ function hideError() {
 async function analyze() {
   var job = jobEl.value.trim();
   var cv = cvEl.value.trim();
-
   hideError();
 
   if (!job || job.length < 50) {
@@ -281,6 +385,7 @@ async function analyze() {
 
   document.getElementById('analyzeBtn').disabled = true;
   document.getElementById('formSection').style.display = 'none';
+  document.getElementById('freeNotice').style.display = 'none';
   document.getElementById('loadingSection').classList.add('show');
   setStep(2);
 
@@ -292,10 +397,10 @@ async function analyze() {
     });
 
     var data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Erro ao processar análise.');
 
-    if (!res.ok || data.error) {
-      throw new Error(data.error || 'Erro ao processar análise.');
-    }
+    // Marca como usada
+    localStorage.setItem('vagaai_analyzed', '1');
 
     document.getElementById('loadingSection').classList.remove('show');
     showResult(data);
@@ -304,6 +409,7 @@ async function analyze() {
   } catch (err) {
     document.getElementById('loadingSection').classList.remove('show');
     document.getElementById('formSection').style.display = 'flex';
+    document.getElementById('freeNotice').style.display = 'flex';
     document.getElementById('analyzeBtn').disabled = false;
     showError(err.message || 'Erro inesperado. Tente novamente.');
     setStep(1);
@@ -314,7 +420,6 @@ function showResult(d) {
   var section = document.getElementById('resultSection');
   section.classList.add('show');
 
-  // Score ring animation
   var score = Math.max(0, Math.min(100, d.score || 0));
   var circumference = 251;
   var offset = circumference - (score / 100) * circumference;
@@ -323,47 +428,58 @@ function showResult(d) {
     animateNumber('scoreNum', 0, score, 1000);
   }, 100);
 
-  // Score color
   var color = score >= 75 ? 'var(--green)' : score >= 50 ? 'var(--yellow)' : 'var(--red)';
   document.getElementById('scoreArc').style.stroke = score >= 75 ? '#3ecf8e' : score >= 50 ? '#ffd166' : '#ff6b6b';
   document.getElementById('scoreNivel').style.color = color;
   document.getElementById('scoreNivel').textContent = d.nivel || '';
   document.getElementById('scoreResumo').textContent = d.resumo || '';
 
-  // Falhas
   renderList('falhasList', d.falhas || []);
-  // Sugestões
   renderList('sugestoesList', d.sugestoes || []);
-
-  // Keywords
   renderKeywords('kwFound', d.keywords_encontradas || [], 'found');
   renderKeywords('kwMissing', d.keywords_faltando || [], 'missing');
 
-  // Fatores
   var fatores = d.fatores || {};
-  var labels = {
-    compatibilidade: 'Compatibilidade',
-    keywords_ats: 'Keywords ATS',
-    legibilidade: 'Legibilidade',
-    forca_bullets: 'Força dos bullets'
-  };
+  var labels = { compatibilidade:'Compatibilidade', keywords_ats:'Keywords ATS', legibilidade:'Legibilidade', forca_bullets:'Força dos bullets' };
   var fl = document.getElementById('factorsList');
   fl.innerHTML = '';
   Object.keys(labels).forEach(function(k) {
     var val = fatores[k] || 0;
-    fl.innerHTML += '<div class="factor-row">'
-      + '<span class="factor-label">' + labels[k] + '</span>'
+    fl.innerHTML += '<div class="factor-row"><span class="factor-label">' + labels[k] + '</span>'
       + '<div class="factor-bar"><div class="factor-fill" style="width:0%" data-val="' + val + '%"></div></div>'
-      + '<span class="factor-val">' + val + '</span>'
-      + '</div>';
+      + '<span class="factor-val">' + val + '</span></div>';
   });
   setTimeout(function() {
-    document.querySelectorAll('.factor-fill').forEach(function(el) {
-      el.style.width = el.dataset.val;
-    });
+    document.querySelectorAll('.factor-fill').forEach(function(el) { el.style.width = el.dataset.val; });
   }, 200);
 
+  // Mostra upsell
+  document.getElementById('upsellSection').classList.add('show');
+
+  // Desativa botão de nova análise (já usou o grátis)
+  var newBtn = document.getElementById('newAnalysisBtn');
+  newBtn.disabled = true;
+  newBtn.textContent = '✓ Análise gratuita usada';
+
   section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function tryNewAnalysis() {
+  // Se já usou, mostra tela de limite
+  if (localStorage.getItem('vagaai_analyzed')) {
+    document.getElementById('resultSection').classList.remove('show');
+    showLimitReached();
+    return;
+  }
+  // Caso contrário (não deveria chegar aqui, mas por segurança)
+  document.getElementById('resultSection').classList.remove('show');
+  document.getElementById('formSection').style.display = 'flex';
+  document.getElementById('freeNotice').style.display = 'flex';
+  document.getElementById('analyzeBtn').disabled = false;
+  document.getElementById('scoreArc').style.strokeDashoffset = '251';
+  hideError();
+  setStep(1);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function renderList(id, items) {
@@ -393,16 +509,6 @@ function animateNumber(id, from, to, duration) {
     if (progress < 1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
-}
-
-function resetForm() {
-  document.getElementById('resultSection').classList.remove('show');
-  document.getElementById('formSection').style.display = 'flex';
-  document.getElementById('analyzeBtn').disabled = false;
-  document.getElementById('scoreArc').style.strokeDashoffset = '251';
-  hideError();
-  setStep(1);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
 
