@@ -33,6 +33,9 @@ nav{position:fixed;top:0;left:0;right:0;background:rgba(10,15,13,0.92);backdrop-
 .countdown span{color:var(--green);font-weight:700}
 [data-theme="light"]{--bg:#f2f6f3;--surface:#ffffff;--border:rgba(0,0,0,0.09);--text:#0d1a11;--muted:#4d6e57;--green:#1a8f5c;--green-dim:rgba(26,143,92,0.1);--green-border:rgba(26,143,92,0.25)}
 [data-theme="light"] nav{background:rgba(242,246,243,0.95)!important}
+.logo-light{display:none}
+[data-theme="light"] .logo-dark{display:none!important}
+[data-theme="light"] .logo-light{display:block!important}
 .theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;padding:0;line-height:1}
 .theme-btn:hover{border-color:var(--green-border);color:var(--green)}
 </style>
@@ -42,7 +45,7 @@ nav{position:fixed;top:0;left:0;right:0;background:rgba(10,15,13,0.92);backdrop-
 
 <nav style="display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem">
   <a href="/" class="nav-logo">
-    <img src="/logo.svg" alt="VagaAI" height="28" style="display:block;">
+    <img src="/logo.svg" alt="VagaAI" height="28" class="logo-dark" style="display:block;"><img src="/logo-icon.svg" alt="VagaAI" height="28" class="logo-light" style="display:none;">
     <span class="nav-badge">Beta</span>
   </a>
   <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">☀️</button>
