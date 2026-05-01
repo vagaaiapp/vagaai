@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VagaAI — Meu Painel</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="/_vercel/insights/script.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0f0d;--surface:#111814;--surface2:#161d19;--border:rgba(255,255,255,0.07);
+  --text:#e8ede9;--muted:#8a9e90;--green:#3ecf8e;
+  --green-dim:rgba(62,207,142,0.12);--green-border:rgba(62,207,142,0.25);
+  --red:#ff6b6b;--red-dim:rgba(255,107,107,0.12);
+  --yellow:#ffd166;--yellow-dim:rgba(255,209,102,0.12);
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-badge{font-size:9px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.nav-right{display:flex;align-items:center;gap:1rem}
+.nav-email{font-size:13px;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-nav{font-size:13px;font-weight:600;padding:.4rem .9rem;border-radius:8px;cursor:pointer;transition:all .2s;text-decoration:none;border:none;font-family:'Inter',sans-serif}
+.btn-nav.primary{background:var(--green);color:#0a0f0d}
+.btn-nav.primary:hover{background:#4ddb9e}
+.btn-nav.ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-nav.ghost:hover{border-color:var(--border);color:var(--text)}
+
+/* SKELETON */
+.skeleton{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* LAYOUT */
+.container{max-width:860px;margin:0 auto;padding:2.5rem 1.5rem 4rem}
+
+/* GREETING */
+.greeting{margin-bottom:2rem}
+.greeting-title{font-family:'Lora',serif;font-size:clamp(22px,4vw,32px);font-weight:700;margin-bottom:.3rem}
+.greeting-sub{font-size:14px;color:var(--muted)}
+
+/* TOP CARDS */
+.top-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem}
+@media(max-width:560px){.top-grid{grid-template-columns:1fr}}
+
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.4rem 1.6rem}
+.stat-card.credits{border-color:var(--green-border);background:linear-gradient(135deg,rgba(62,207,142,0.06),var(--surface))}
+.stat-label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.stat-value{font-family:'Lora',serif;font-size:42px;font-weight:700;line-height:1;color:var(--green)}
+.stat-value.zero{color:var(--yellow)}
+.stat-desc{font-size:13px;color:var(--muted);margin-top:.4rem}
+.stat-value-plain{font-family:'Lora',serif;font-size:42px;font-weight:700;line-height:1;color:var(--text)}
+
+/* BUY CREDITS */
+.buy-section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.4rem 1.6rem;margin-bottom:2rem}
+.buy-title{font-size:14px;font-weight:700;margin-bottom:.3rem}
+.buy-sub{font-size:13px;color:var(--muted);margin-bottom:1rem}
+.plans-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
+@media(max-width:600px){.plans-row{grid-template-columns:1fr}}
+.plan-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;display:flex;flex-direction:column;gap:.4rem;transition:border-color .2s}
+.plan-item:hover{border-color:var(--green-border)}
+.plan-item.featured{border-color:var(--green-border)}
+.plan-badge{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--green);background:var(--green-dim);border:1px solid var(--green-border);padding:2px 7px;border-radius:20px;width:fit-content}
+.plan-name{font-size:13px;font-weight:600}
+.plan-price{font-family:'Lora',serif;font-size:20px;font-weight:700}
+.plan-price small{font-size:12px;font-family:'Inter',sans-serif;font-weight:400;color:var(--muted)}
+.plan-btn{width:100%;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;border:none;border-radius:8px;padding:.6rem;cursor:pointer;transition:all .2s;margin-top:auto}
+.plan-btn:hover{background:#4ddb9e}
+.plan-btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.plan-btn.ghost:hover{border-color:var(--green-border);color:var(--green);background:transparent}
+
+/* HISTORY */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.section-title{font-size:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+
+.analyses-list{display:flex;flex-direction:column;gap:.7rem}
+.analysis-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.analysis-score{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:18px;font-weight:700;flex-shrink:0;border:2px solid}
+.analysis-score.green{color:var(--green);border-color:var(--green-border);background:var(--green-dim)}
+.analysis-score.yellow{color:var(--yellow);border-color:rgba(255,209,102,0.3);background:var(--yellow-dim)}
+.analysis-score.red{color:var(--red);border-color:rgba(255,107,107,0.3);background:var(--red-dim)}
+.analysis-info{flex:1;min-width:180px}
+.analysis-job{font-size:14px;font-weight:500;color:var(--text);margin-bottom:.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:360px}
+.analysis-meta{font-size:12px;color:var(--muted)}
+.analysis-nivel{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:.2rem .6rem;border-radius:5px}
+.nivel-excelente{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.nivel-bom{background:rgba(100,200,255,0.1);color:#64c8ff;border:1px solid rgba(100,200,255,0.25)}
+.nivel-regular{background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(255,209,102,0.3)}
+.nivel-fraco{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,107,107,0.3)}
+
+.empty-state{text-align:center;padding:3rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:14px}
+.empty-icon{font-size:36px;margin-bottom:.8rem}
+.empty-title{font-size:16px;font-weight:600;margin-bottom:.4rem}
+.empty-sub{font-size:13px;color:var(--muted);margin-bottom:1.2rem}
+.btn-start{display:inline-block;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;border:none;border-radius:10px;padding:.75rem 1.5rem;cursor:pointer;transition:all .2s;text-decoration:none}
+.btn-start:hover{background:#4ddb9e}
+
+/* LOADING OVERLAY */
+.page-loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:1rem}
+.page-loading .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.page-loading.hidden{display:none}
+</style>
+</head>
+<body>
+
+<!-- LOADING INICIAL -->
+<div class="page-loading" id="pageLoading">
+  <div class="spinner"></div>
+  <div style="font-size:14px;color:var(--muted)">Carregando...</div>
+</div>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="/logo.svg" alt="VagaAI" height="28" style="display:block;">
+    <span class="nav-badge">Beta</span>
+  </a>
+  <div class="nav-right">
+    <span class="nav-email" id="navEmail"></span>
+    <a href="/app" class="btn-nav primary">⚡ Nova análise</a>
+    <button class="btn-nav ghost" onclick="logout()">Sair</button>
+  </div>
+</nav>
+
+<div class="container" id="mainContent" style="display:none">
+
+  <!-- GREETING -->
+  <div class="greeting">
+    <div class="greeting-title">Meu Painel</div>
+    <p class="greeting-sub" id="greetingSub">Bem-vindo à sua área de membros.</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="top-grid">
+    <div class="stat-card credits">
+      <div class="stat-label">Créditos disponíveis</div>
+      <div class="stat-value" id="creditsValue">—</div>
+      <div class="stat-desc" id="creditsDesc">análises disponíveis</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Análises realizadas</div>
+      <div class="stat-value-plain" id="totalValue">—</div>
+      <div class="stat-desc">no total</div>
+    </div>
+  </div>
+
+  <!-- COMPRAR CRÉDITOS -->
+  <div class="buy-section">
+    <div class="buy-title">Comprar mais créditos</div>
+    <p class="buy-sub">Cada crédito equivale a 1 análise completa de currículo × vaga.</p>
+    <div class="plans-row" id="plansRow"></div>
+  </div>
+
+  <!-- HISTÓRICO -->
+  <div class="section-header">
+    <div class="section-title">Histórico de análises</div>
+  </div>
+  <div class="analyses-list" id="analysesList">
+    <!-- preenchido via JS -->
+  </div>
+
+</div>
+
+<script>
+var SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
+var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
+
+var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+var PLANS = [
+  { name: '1 candidatura', badge: null, price: 'R$9', cents: ',90', credits: 1, url: 'https://buy.stripe.com/cNibJ15d4aXTe5F6uj9k401', featured: false },
+  { name: '10 candidaturas', badge: 'Mais popular', price: 'R$39', cents: ',90', credits: 10, url: 'https://buy.stripe.com/00w9AT20Sfe90eP9Gv9k402', featured: true },
+  { name: '50 candidaturas', badge: null, price: 'R$97', cents: ',00', credits: 50, url: 'https://buy.stripe.com/5kQ28r5d4c1X0eP05V9k400', featured: false }
+];
+
+var currentUserId = null;
+var currentSession = null;
+
+async function init() {
+  // Processa magic link token da URL se presente
+  var { data: { session }, error } = await sb.auth.getSession();
+
+  if (!session) {
+    window.location.href = '/login';
+    return;
+  }
+
+  currentSession = session;
+  currentUserId = session.user.id;
+  var email = session.user.email || '';
+
+  // Nav
+  document.getElementById('navEmail').textContent = email;
+  document.getElementById('greetingSub').textContent = 'Bem-vindo, ' + email.split('@')[0] + '!';
+
+  // Renderiza planos com client_reference_id
+  renderPlans();
+
+  // Carrega dados
+  await Promise.all([loadCredits(), loadAnalyses()]);
+
+  // Mostra conteúdo
+  document.getElementById('pageLoading').classList.add('hidden');
+  document.getElementById('mainContent').style.display = 'block';
+}
+
+function renderPlans() {
+  var html = PLANS.map(function(p) {
+    var url = p.url + '?client_reference_id=' + encodeURIComponent(currentUserId)
+      + '&prefilled_email=' + encodeURIComponent(currentSession.user.email || '');
+    return '<div class="plan-item' + (p.featured ? ' featured' : '') + '">'
+      + (p.badge ? '<div class="plan-badge">' + p.badge + '</div>' : '')
+      + '<div class="plan-name">' + p.name + '</div>'
+      + '<div class="plan-price">' + p.price + '<small>' + p.cents + '</small></div>'
+      + '<button class="plan-btn ' + (p.featured ? '' : 'ghost') + '" onclick="buyPlan(\'' + url + '\',\'' + p.name + '\')">'
+      + (p.featured ? 'Comprar agora' : 'Escolher') + '</button>'
+      + '</div>';
+  }).join('');
+  document.getElementById('plansRow').innerHTML = html;
+}
+
+function buyPlan(url, name) {
+  try { window.va && window.va('event', { name: 'buy_credits_click', plan: name }); } catch(e){}
+  window.open(url, '_blank');
+}
+
+async function loadCredits() {
+  try {
+    var res = await fetch(
+      SUPABASE_URL + '/rest/v1/user_credits?user_id=eq.' + currentUserId + '&select=credits,total_purchased',
+      { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token } }
+    );
+    var rows = await res.json();
+    var credits = rows.length ? rows[0].credits : 0;
+    var total = rows.length ? (rows[0].total_purchased || 0) : 0;
+
+    var el = document.getElementById('creditsValue');
+    el.textContent = credits;
+    if (credits === 0) {
+      el.classList.remove('stat-value');
+      el.classList.add('stat-value', 'zero');
+    }
+    document.getElementById('creditsDesc').textContent = credits === 1 ? 'análise disponível' : 'análises disponíveis';
+    document.getElementById('totalValue').textContent = total;
+  } catch(e) {
+    document.getElementById('creditsValue').textContent = '—';
+  }
+}
+
+async function loadAnalyses() {
+  var listEl = document.getElementById('analysesList');
+  try {
+    var res = await fetch(
+      SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=id,score,nivel,job_excerpt,created_at&order=created_at.desc&limit=20',
+      { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token } }
+    );
+    var rows = await res.json();
+
+    if (!rows.length) {
+      listEl.innerHTML = '<div class="empty-state">'
+        + '<div class="empty-icon">📋</div>'
+        + '<div class="empty-title">Nenhuma análise ainda</div>'
+        + '<p class="empty-sub">Faça sua primeira análise e veja o resultado aqui.</p>'
+        + '<a href="/app" class="btn-start">⚡ Analisar minha vaga</a>'
+        + '</div>';
+      return;
+    }
+
+    listEl.innerHTML = rows.map(function(a) {
+      var score = a.score || 0;
+      var colorClass = score >= 75 ? 'green' : score >= 50 ? 'yellow' : 'red';
+      var nivelClass = nivelCSSClass(a.nivel);
+      var date = new Date(a.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+      var excerpt = a.job_excerpt ? escHtml(a.job_excerpt.substring(0, 80)) + (a.job_excerpt.length > 80 ? '…' : '') : 'Vaga analisada';
+      return '<div class="analysis-card">'
+        + '<div class="analysis-score ' + colorClass + '">' + score + '</div>'
+        + '<div class="analysis-info">'
+        + '<div class="analysis-job">' + excerpt + '</div>'
+        + '<div class="analysis-meta">' + date + '</div>'
+        + '</div>'
+        + '<span class="analysis-nivel ' + nivelClass + '">' + escHtml(a.nivel || '') + '</span>'
+        + '</div>';
+    }).join('');
+  } catch(e) {
+    listEl.innerHTML = '<div style="color:var(--muted);font-size:14px;padding:1rem">Erro ao carregar histórico.</div>';
+  }
+}
+
+function nivelCSSClass(nivel) {
+  if (!nivel) return '';
+  var n = nivel.toLowerCase();
+  if (n === 'excelente') return 'nivel-excelente';
+  if (n === 'bom') return 'nivel-bom';
+  if (n === 'regular') return 'nivel-regular';
+  return 'nivel-fraco';
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  window.location.href = '/';
+}
+
+// Inicia
+init();
+</script>
+</body>
+</html>

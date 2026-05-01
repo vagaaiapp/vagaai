@@ -24,6 +24,8 @@
 <meta name="twitter:image" content="https://www.vagaai.app.br/og.svg">
 <!-- Vercel Analytics -->
 <script defer src="/_vercel/insights/script.js"></script>
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -54,6 +56,8 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .nav-badge{font-size:9px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
 .nav-back{font-size:13px;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color .2s}
 .nav-back:hover{color:var(--text)}
+.nav-credits{font-size:13px;font-weight:600;color:var(--green);background:var(--green-dim);border:1px solid var(--green-border);padding:.3rem .8rem;border-radius:20px;display:none;text-decoration:none}
+.nav-credits.show{display:inline-flex;align-items:center;gap:.35rem}
 
 /* LAYOUT */
 .container{max-width:860px;margin:0 auto;padding:2.5rem 1.5rem 4rem}
@@ -183,7 +187,12 @@ textarea::placeholder{color:var(--muted)}
     <img src="/logo.svg" alt="VagaAI" height="28" style="display:block;">
     <span class="nav-badge">Beta</span>
   </a>
-  <a href="/" class="nav-back">← Voltar ao início</a>
+  <div style="display:flex;align-items:center;gap:.8rem">
+    <a href="/dashboard" class="nav-credits" id="navCredits">
+      <span id="navCreditsNum">0</span> créditos
+    </a>
+    <a href="/" class="nav-back">← Início</a>
+  </div>
 </nav>
 
 <div class="container">
@@ -198,10 +207,13 @@ textarea::placeholder{color:var(--muted)}
 
   <!-- LIMITE ATINGIDO -->
   <div class="limit-section" id="limitSection">
-    <div class="limit-icon">🔒</div>
-    <div class="limit-title">Você já usou sua análise gratuita</div>
-    <p class="limit-sub">O diagnóstico grátis é limitado a 1 análise. Para continuar aplicando com currículo otimizado, escolha um plano:</p>
+    <div class="limit-icon" id="limitIcon">🔒</div>
+    <div class="limit-title" id="limitTitle">Você já usou sua análise gratuita</div>
+    <p class="limit-sub" id="limitSub">O diagnóstico grátis é limitado a 1 análise. Para continuar aplicando com currículo otimizado, escolha um plano:</p>
     <div class="limit-plans" id="limitPlans"></div>
+    <div id="limitDashLink" style="display:none;margin-top:1rem">
+      <a href="/dashboard" style="color:var(--green);font-size:14px;text-decoration:none">→ Comprar créditos no painel</a>
+    </div>
   </div>
 
   <!-- FORM -->
@@ -302,6 +314,67 @@ textarea::placeholder{color:var(--muted)}
 <script>
 function track(name,props){try{window.va&&window.va('event',Object.assign({name:name},props||{}))}catch(e){}}
 
+// ── Supabase auth ──────────────────────────────────────────────────────────
+var sb = window.supabase.createClient(
+  'https://kbcjchjepgejdezeuwwh.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA'
+);
+
+var authSession = null;
+var userCredits = 0;
+
+async function initAuth() {
+  try {
+    var { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      authSession = session;
+      await loadUserCredits(session);
+    }
+  } catch(e) {}
+  // Verifica limite grátis (anônimos)
+  if (!authSession) {
+    var alreadyUsed = localStorage.getItem('vagaai_analyzed');
+    if (alreadyUsed) showLimitReached();
+  }
+}
+
+async function loadUserCredits(session) {
+  try {
+    var res = await fetch(
+      'https://kbcjchjepgejdezeuwwh.supabase.co/rest/v1/user_credits?user_id=eq.' + session.user.id + '&select=credits',
+      { headers: {
+        apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA',
+        Authorization: 'Bearer ' + session.access_token
+      }}
+    );
+    var rows = await res.json();
+    userCredits = rows.length ? (rows[0].credits || 0) : 0;
+    updateCreditsUI();
+    // Se sem créditos, mostra tela de limite
+    if (userCredits <= 0) showLimitReached();
+  } catch(e) {}
+}
+
+function updateCreditsUI() {
+  var navEl = document.getElementById('navCredits');
+  var numEl = document.getElementById('navCreditsNum');
+  numEl.textContent = userCredits;
+  navEl.classList.add('show');
+  // Atualiza texto do botão de análise
+  var btn = document.getElementById('analyzeBtn');
+  if (btn) {
+    btn.innerHTML = '<span>⚡</span> Analisar agora — 1 crédito';
+  }
+  // Remove aviso "grátis sem cadastro"
+  document.getElementById('freeNotice').style.display = 'none';
+  // Habilita nova análise para usuários com créditos
+  var newBtn = document.getElementById('newAnalysisBtn');
+  if (newBtn) {
+    newBtn.disabled = false;
+    newBtn.textContent = '← Nova análise';
+  }
+}
+
 var PLANS = [
   {
     name: '1 candidatura',
@@ -349,17 +422,20 @@ document.getElementById('upsellPlans').innerHTML = PLANS.map(function(p) { retur
 // Renderiza planos na tela de limite atingido
 document.getElementById('limitPlans').innerHTML = PLANS.map(function(p) { return planCardHTML(p); }).join('');
 
-// Verifica se já usou a análise gratuita
-var alreadyUsed = localStorage.getItem('vagaai_analyzed');
-if (alreadyUsed) {
-  showLimitReached();
-}
-
 function showLimitReached() {
   document.getElementById('freeNotice').style.display = 'none';
   document.getElementById('formSection').style.display = 'none';
   document.getElementById('limitSection').classList.add('show');
   document.getElementById('step1').classList.remove('active');
+
+  if (authSession) {
+    // Usuário logado sem créditos
+    document.getElementById('limitIcon').textContent = '💳';
+    document.getElementById('limitTitle').textContent = 'Seus créditos acabaram';
+    document.getElementById('limitSub').textContent = 'Você não tem créditos disponíveis. Compre mais para continuar analisando suas candidaturas.';
+    document.getElementById('limitPlans').style.display = 'none';
+    document.getElementById('limitDashLink').style.display = 'block';
+  }
 }
 
 // Inputs
@@ -413,23 +489,42 @@ async function analyze() {
   setStep(2);
 
   try {
+    var headers = { 'Content-Type': 'application/json' };
+    if (authSession && authSession.access_token) {
+      headers['Authorization'] = 'Bearer ' + authSession.access_token;
+    }
+
     var res = await fetch('/api/analyze', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
       body: JSON.stringify({ job: job, cv: cv })
     });
 
     var data = await res.json();
+
     if (res.status === 429 || data.error === 'limite_atingido') {
       document.getElementById('loadingSection').classList.remove('show');
-      localStorage.setItem('vagaai_analyzed', '1');
+      if (!authSession) localStorage.setItem('vagaai_analyzed', '1');
+      showLimitReached();
+      return;
+    }
+    if (res.status === 402 || data.error === 'sem_creditos') {
+      document.getElementById('loadingSection').classList.remove('show');
+      userCredits = 0;
       showLimitReached();
       return;
     }
     if (!res.ok || data.error) throw new Error(data.error || 'Erro ao processar análise.');
 
-    // Marca como usada
-    localStorage.setItem('vagaai_analyzed', '1');
+    // Marca como usada (anônimos)
+    if (!authSession) localStorage.setItem('vagaai_analyzed', '1');
+
+    // Atualiza créditos se retornados pelo servidor
+    if (authSession && data._credits_remaining != null) {
+      userCredits = data._credits_remaining;
+      document.getElementById('navCreditsNum').textContent = userCredits;
+    }
+
     track('analyze_complete', { score: data.score, nivel: data.nivel });
 
     document.getElementById('loadingSection').classList.remove('show');
@@ -486,25 +581,39 @@ function showResult(d) {
   // Mostra upsell
   document.getElementById('upsellSection').classList.add('show');
 
-  // Desativa botão de nova análise (já usou o grátis)
+  // Botão de nova análise
   var newBtn = document.getElementById('newAnalysisBtn');
-  newBtn.disabled = true;
-  newBtn.textContent = '✓ Análise gratuita usada';
+  if (authSession) {
+    // Usuário logado: permite nova análise se tiver créditos
+    newBtn.disabled = userCredits <= 0;
+    newBtn.textContent = userCredits > 0 ? '← Nova análise' : '← Sem créditos';
+  } else {
+    newBtn.disabled = true;
+    newBtn.textContent = '✓ Análise gratuita usada';
+  }
 
   section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function tryNewAnalysis() {
-  // Se já usou, mostra tela de limite
-  if (localStorage.getItem('vagaai_analyzed')) {
-    document.getElementById('resultSection').classList.remove('show');
-    showLimitReached();
-    return;
+  if (authSession) {
+    // Usuário logado: verifica créditos
+    if (userCredits <= 0) {
+      document.getElementById('resultSection').classList.remove('show');
+      showLimitReached();
+      return;
+    }
+  } else {
+    // Anônimo: verifica localStorage
+    if (localStorage.getItem('vagaai_analyzed')) {
+      document.getElementById('resultSection').classList.remove('show');
+      showLimitReached();
+      return;
+    }
   }
-  // Caso contrário (não deveria chegar aqui, mas por segurança)
   document.getElementById('resultSection').classList.remove('show');
   document.getElementById('formSection').style.display = 'flex';
-  document.getElementById('freeNotice').style.display = 'flex';
+  if (!authSession) document.getElementById('freeNotice').style.display = 'flex';
   document.getElementById('analyzeBtn').disabled = false;
   document.getElementById('scoreArc').style.strokeDashoffset = '251';
   hideError();
@@ -540,6 +649,9 @@ function animateNumber(id, from, to, duration) {
   }
   requestAnimationFrame(step);
 }
+
+// Inicia verificação de auth
+initAuth();
 </script>
 
 </body>

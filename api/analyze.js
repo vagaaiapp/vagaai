@@ -1,5 +1,8 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+
+// ─── Rate limit por IP (usuários anônimos) ────────────────────────────────────
 
 async function checkRateLimit(ip) {
   if (!SUPABASE_URL || !SUPABASE_KEY) return { allowed: true };
@@ -13,11 +16,11 @@ async function checkRateLimit(ip) {
     return { allowed: true };
   } catch (err) {
     console.error('Rate limit check error:', err);
-    return { allowed: true }; // fail open para não bloquear em caso de erro do Supabase
+    return { allowed: true }; // fail-open
   }
 }
 
-async function recordUsage(ip) {
+async function recordIpUsage(ip) {
   if (!SUPABASE_URL || !SUPABASE_KEY) return;
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/ip_rate_limits`, {
@@ -31,9 +34,82 @@ async function recordUsage(ip) {
       body: JSON.stringify({ ip, count: 1, last_seen: new Date().toISOString() }),
     });
   } catch (err) {
-    console.error('Record usage error:', err);
+    console.error('Record IP usage error:', err);
   }
 }
+
+// ─── Créditos (usuários autenticados) ────────────────────────────────────────
+
+async function getUserFromToken(token) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+async function checkAndDeductCredit(userId) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return { ok: false, reason: 'config' };
+  try {
+    const getRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&select=credits`,
+      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+    );
+    const rows = await getRes.json();
+    if (!rows.length || rows[0].credits <= 0) return { ok: false, reason: 'no_credits' };
+    const current = rows[0].credits;
+    const patchRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}`,
+      {
+        method: 'PATCH',
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({ credits: current - 1, updated_at: new Date().toISOString() }),
+      }
+    );
+    if (!patchRes.ok) return { ok: false, reason: 'patch_failed' };
+    return { ok: true, remaining: current - 1 };
+  } catch (err) {
+    console.error('checkAndDeductCredit error:', err);
+    return { ok: false, reason: 'error' };
+  }
+}
+
+async function saveAnalysis(userId, score, nivel, jobExcerpt, result) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/analyses`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        score: score || 0,
+        nivel: nivel || '',
+        job_excerpt: (jobExcerpt || '').substring(0, 200),
+        result: result,
+        created_at: new Date().toISOString(),
+      }),
+    });
+  } catch (err) {
+    console.error('saveAnalysis error:', err);
+  }
+}
+
+// ─── Handler principal ────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -50,14 +126,35 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Chave de API não configurada.' });
   }
 
-  // Rate limit por IP
-  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
-    || req.headers['x-real-ip']
-    || 'unknown';
+  // Tenta autenticar via Bearer token Supabase
+  const authHeader = req.headers['authorization'] || '';
+  const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+  let authenticatedUserId = null;
 
-  const { allowed } = await checkRateLimit(ip);
-  if (!allowed) {
-    return res.status(429).json({ error: 'limite_atingido' });
+  if (bearerToken) {
+    const user = await getUserFromToken(bearerToken);
+    if (user && user.id) authenticatedUserId = user.id;
+  }
+
+  // Verifica limite / créditos
+  let _ip = null;
+  if (authenticatedUserId) {
+    const deduct = await checkAndDeductCredit(authenticatedUserId);
+    if (!deduct.ok) {
+      if (deduct.reason === 'no_credits') {
+        return res.status(402).json({ error: 'sem_creditos' });
+      }
+      // Infra falhou: fail-open para não bloquear usuário pagante
+      console.warn('Credit deduction failed:', deduct.reason, '— fail-open');
+    }
+  } else {
+    _ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+      || req.headers['x-real-ip']
+      || 'unknown';
+    const { allowed } = await checkRateLimit(_ip);
+    if (!allowed) {
+      return res.status(429).json({ error: 'limite_atingido' });
+    }
   }
 
   const prompt = `Você é um especialista em recrutamento e sistemas ATS (Applicant Tracking System). Analise a compatibilidade entre o currículo e a vaga abaixo.
@@ -125,7 +222,6 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
 
     const data = await response.json();
     const text = data.content?.[0]?.text || '';
-
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       return res.status(500).json({ error: 'Resposta inválida da IA.' });
@@ -133,8 +229,20 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
 
     const result = JSON.parse(jsonMatch[0]);
 
-    // Registra o uso apenas após análise bem-sucedida
-    await recordUsage(ip);
+    // Pós-análise
+    if (authenticatedUserId) {
+      saveAnalysis(authenticatedUserId, result.score, result.nivel, job, result);
+      // Devolve créditos restantes ao cliente para atualizar o contador
+      try {
+        const credRows = await fetch(
+          `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(authenticatedUserId)}&select=credits`,
+          { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+        ).then(r => r.json());
+        result._credits_remaining = credRows[0]?.credits ?? null;
+      } catch (_) {}
+    } else {
+      await recordIpUsage(_ip);
+    }
 
     return res.status(200).json(result);
   } catch (err) {

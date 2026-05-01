@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VagaAI — Entrar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0f0d;--surface:#111814;--border:rgba(255,255,255,0.07);
+  --text:#e8ede9;--muted:#8a9e90;--green:#3ecf8e;
+  --green-dim:rgba(62,207,142,0.12);--green-border:rgba(62,207,142,0.25);
+  --red:#ff6b6b;--red-dim:rgba(255,107,107,0.12);
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem}
+nav{position:fixed;top:0;left:0;right:0;background:rgba(10,15,13,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-badge{font-size:9px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2.5rem;width:100%;max-width:400px;margin-top:58px}
+.card-title{font-family:'Lora',serif;font-size:26px;font-weight:700;margin-bottom:.4rem}
+.card-sub{font-size:14px;color:var(--muted);margin-bottom:2rem;line-height:1.5}
+.field{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem}
+label{font-size:13px;font-weight:600}
+input{background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:.85rem 1rem;width:100%;transition:border-color .2s}
+input:focus{outline:none;border-color:var(--green-border)}
+.btn{width:100%;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;border:none;border-radius:10px;padding:1rem;cursor:pointer;transition:all .2s;margin-top:.5rem}
+.btn:hover{background:#4ddb9e}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.success{background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px;padding:1.2rem;color:var(--green);font-size:14px;display:none;line-height:1.6}
+.success.show{display:block}
+.error{background:var(--red-dim);border:1px solid rgba(255,107,107,0.25);border-radius:10px;padding:1rem;color:#ff8f8f;font-size:14px;display:none;margin-top:1rem}
+.error.show{display:block}
+.divider{text-align:center;color:var(--muted);font-size:13px;margin:1.5rem 0;position:relative}
+.divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border)}
+.divider span{background:var(--surface);padding:0 .8rem;position:relative}
+.back{text-align:center;margin-top:1.5rem;font-size:13px;color:var(--muted)}
+.back a{color:var(--green);text-decoration:none}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="/logo.svg" alt="VagaAI" height="28" style="display:block;">
+    <span class="nav-badge">Beta</span>
+  </a>
+</nav>
+
+<div class="card">
+  <div id="loginView">
+    <div class="card-title">Entrar na sua conta</div>
+    <p class="card-sub">Insira seu e-mail e enviaremos um link de acesso. Sem senha para lembrar.</p>
+
+    <div class="success" id="successMsg">
+      ✓ Link enviado! Verifique seu e-mail e clique no link para entrar.<br>
+      <small style="opacity:.8">Não encontrou? Verifique o spam.</small>
+    </div>
+
+    <div id="formView">
+      <div class="field">
+        <label for="emailInput">E-mail</label>
+        <input type="email" id="emailInput" placeholder="seu@email.com" autocomplete="email">
+      </div>
+      <button class="btn" id="loginBtn" onclick="sendMagicLink()">Enviar link de acesso</button>
+      <div class="error" id="errorMsg"></div>
+    </div>
+  </div>
+
+  <div class="back"><a href="/">← Voltar ao início</a></div>
+</div>
+
+<script>
+var supabase = window.supabase.createClient(
+  'https://kbcjchjepgejdezeuwwh.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA'
+);
+
+// Se já está logado, vai para o dashboard
+supabase.auth.getSession().then(function(r) {
+  if (r.data.session) window.location.href = '/dashboard';
+});
+
+async function sendMagicLink() {
+  var email = document.getElementById('emailInput').value.trim();
+  var errEl = document.getElementById('errorMsg');
+  errEl.classList.remove('show');
+
+  if (!email || !email.includes('@')) {
+    errEl.textContent = 'Digite um e-mail válido.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  var btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  var { error } = await supabase.auth.signInWithOtp({
+    email: email,
+    options: { emailRedirectTo: 'https://www.vagaai.app.br/dashboard' }
+  });
+
+  if (error) {
+    errEl.textContent = 'Erro ao enviar o link. Tente novamente.';
+    errEl.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Enviar link de acesso';
+  } else {
+    document.getElementById('formView').style.display = 'none';
+    document.getElementById('successMsg').classList.add('show');
+  }
+}
+
+document.getElementById('emailInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') sendMagicLink();
+});
+</script>
+</body>
+</html>
