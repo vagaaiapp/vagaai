@@ -22,6 +22,8 @@
 <meta name="twitter:title" content="VagaAI — Analisar minha vaga grátis">
 <meta name="twitter:description" content="Análise ATS + briefing da empresa em segundos. Grátis, sem cadastro.">
 <meta name="twitter:image" content="https://www.vagaai.app.br/og.svg">
+<!-- Vercel Analytics -->
+<script defer src="/_vercel/insights/script.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -298,6 +300,8 @@ textarea::placeholder{color:var(--muted)}
 </div>
 
 <script>
+function track(name,props){try{window.va&&window.va('event',Object.assign({name:name},props||{}))}catch(e){}}
+
 var PLANS = [
   {
     name: '1 candidatura',
@@ -334,7 +338,7 @@ function planCardHTML(p, btnClass) {
     + '<div class="upsell-plan-name">' + p.name + '</div>'
     + '<div class="upsell-plan-price">' + p.price + '<small>' + p.cents + '</small></div>'
     + '<div class="upsell-plan-desc">' + p.desc + '</div>'
-    + '<button class="upsell-plan-btn ' + (p.featured ? '' : 'ghost') + '" onclick="window.open(\'' + p.url + '\',\'_blank\')">'
+    + '<button class="upsell-plan-btn ' + (p.featured ? '' : 'ghost') + '" onclick="track(\'upsell_click\',{plan:\'' + p.name + '\'});window.open(\'' + p.url + '\',\'_blank\')">'
     + (p.featured ? 'Começar agora' : 'Escolher') + '</button>'
     + '</div>';
 }
@@ -401,6 +405,7 @@ async function analyze() {
     return;
   }
 
+  track('analyze_start');
   document.getElementById('analyzeBtn').disabled = true;
   document.getElementById('formSection').style.display = 'none';
   document.getElementById('freeNotice').style.display = 'none';
@@ -419,6 +424,7 @@ async function analyze() {
 
     // Marca como usada
     localStorage.setItem('vagaai_analyzed', '1');
+    track('analyze_complete', { score: data.score, nivel: data.nivel });
 
     document.getElementById('loadingSection').classList.remove('show');
     showResult(data);
