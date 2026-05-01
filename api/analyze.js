@@ -62,9 +62,18 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
     });
 
     if (!response.ok) {
-      const err = await response.text();
-      console.error('Anthropic error:', err);
-      return res.status(500).json({ error: 'Erro ao chamar a API de análise.' });
+      const errText = await response.text();
+      console.error('Anthropic error status:', response.status);
+      console.error('Anthropic error body:', errText);
+      let userMsg = 'Erro ao chamar a API de análise.';
+      try {
+        const errJson = JSON.parse(errText);
+        const type = errJson?.error?.type || '';
+        if (type === 'authentication_error') userMsg = 'Chave de API inválida. Verifique a configuração.';
+        else if (type === 'overloaded_error') userMsg = 'Serviço temporariamente sobrecarregado. Tente em alguns segundos.';
+        else if (type === 'rate_limit_error') userMsg = 'Limite de uso atingido. Tente novamente em instantes.';
+      } catch (_) {}
+      return res.status(500).json({ error: userMsg });
     }
 
     const data = await response.json();
