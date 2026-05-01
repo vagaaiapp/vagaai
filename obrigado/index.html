@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VagaAI — Compra confirmada!</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script defer src="/_vercel/insights/script.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0f0d;--surface:#111814;--border:rgba(255,255,255,0.07);--text:#e8ede9;--muted:#8a9e90;--green:#3ecf8e;--green-dim:rgba(62,207,142,0.12);--green-border:rgba(62,207,142,0.25)}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center}
+nav{position:fixed;top:0;left:0;right:0;background:rgba(10,15,13,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-badge{font-size:9px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.card{background:var(--surface);border:1px solid var(--green-border);border-radius:20px;padding:3rem 2.5rem;max-width:480px;width:100%;margin-top:58px}
+.icon{font-size:56px;margin-bottom:1.2rem}
+.title{font-family:'Lora',serif;font-size:clamp(24px,4vw,32px);font-weight:700;margin-bottom:.6rem;color:var(--green)}
+.sub{font-size:15px;color:var(--muted);max-width:340px;margin:0 auto 2rem;line-height:1.6}
+.steps{display:flex;flex-direction:column;gap:.8rem;margin-bottom:2rem;text-align:left}
+.step-item{display:flex;align-items:flex-start;gap:.8rem;background:rgba(62,207,142,0.06);border:1px solid var(--green-border);border-radius:10px;padding:.9rem 1rem}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--green);color:#0a0f0d;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-text{font-size:13px;color:var(--muted);line-height:1.4}
+.step-text strong{color:var(--text);display:block;margin-bottom:.1rem}
+.btn{display:inline-block;width:100%;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;border:none;border-radius:10px;padding:1rem;cursor:pointer;transition:all .2s;text-decoration:none;text-align:center}
+.btn:hover{background:#4ddb9e}
+.btn-ghost{display:inline-block;width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;border-radius:10px;padding:.8rem;cursor:pointer;transition:all .2s;text-decoration:none;text-align:center;margin-top:.6rem}
+.btn-ghost:hover{border-color:var(--green-border);color:var(--green)}
+.countdown{font-size:13px;color:var(--muted);margin-top:1.2rem}
+.countdown span{color:var(--green);font-weight:700}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="/logo.svg" alt="VagaAI" height="28" style="display:block;">
+    <span class="nav-badge">Beta</span>
+  </a>
+</nav>
+
+<div class="card">
+  <div class="icon">🎉</div>
+  <div class="title">Compra confirmada!</div>
+  <p class="sub">Seus créditos já foram adicionados à sua conta. Agora é só usar!</p>
+
+  <div class="steps">
+    <div class="step-item">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <strong>Acesse seu painel</strong>
+        Veja seu saldo de créditos e histórico de análises
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <strong>Faça sua análise</strong>
+        Cole a vaga e seu currículo — resultado em 15 segundos
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <strong>Aplique mais forte</strong>
+        Use as sugestões para otimizar seu CV e se destacar no ATS
+      </div>
+    </div>
+  </div>
+
+  <a href="/dashboard" class="btn">→ Ir para meu painel</a>
+  <a href="/app" class="btn-ghost">⚡ Analisar uma vaga agora</a>
+
+  <div class="countdown" id="countdown"></div>
+</div>
+
+<script>
+try { window.va && window.va('event', { name: 'purchase_success' }); } catch(e) {}
+
+// Redireciona para o dashboard em 10 segundos
+var seconds = 10;
+var el = document.getElementById('countdown');
+el.innerHTML = 'Redirecionando para o painel em <span id="sec">' + seconds + '</span>s...';
+
+var timer = setInterval(function() {
+  seconds--;
+  var secEl = document.getElementById('sec');
+  if (secEl) secEl.textContent = seconds;
+  if (seconds <= 0) {
+    clearInterval(timer);
+    window.location.href = '/dashboard';
+  }
+}, 1000);
+</script>
+</body>
+</html>
