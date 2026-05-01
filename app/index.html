@@ -179,7 +179,12 @@ textarea::placeholder{color:var(--muted)}
 .limit-sub{font-size:14px;color:var(--muted);max-width:440px;margin:0 auto 2rem}
 .limit-plans{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;max-width:680px;margin:0 auto}
 @media(max-width:580px){.limit-plans{grid-template-columns:1fr}}
+[data-theme="light"]{--bg:#f2f6f3;--surface:#ffffff;--surface2:#eaf0ec;--border:rgba(0,0,0,0.09);--text:#0d1a11;--muted:#4d6e57;--green:#1a8f5c;--green-dim:rgba(26,143,92,0.1);--green-border:rgba(26,143,92,0.25);--red:#c0392b;--red-dim:rgba(192,57,43,0.08);--yellow:#b07d1a;--yellow-dim:rgba(176,125,26,0.08)}
+[data-theme="light"] nav{background:rgba(242,246,243,0.95)!important}
+.theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;padding:0;line-height:1;flex-shrink:0}
+.theme-btn:hover{border-color:var(--green-border);color:var(--green)}
 </style>
+<script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
 </head>
 <body>
 
@@ -192,6 +197,7 @@ textarea::placeholder{color:var(--muted)}
     <a href="/dashboard" class="nav-credits" id="navCredits">
       <span id="navCreditsNum">0</span> créditos
     </a>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">☀️</button>
     <a href="/" class="nav-back">← Início</a>
   </div>
 </nav>
@@ -653,6 +659,8 @@ function animateNumber(id, from, to, duration) {
 
 // Inicia verificação de auth
 initAuth();
+function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')==='light';if(l){document.documentElement.removeAttribute('data-theme');localStorage.setItem('vagaai_theme','dark')}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('vagaai_theme','light')}var b=document.getElementById('themeBtn');if(b)b.textContent=l?'☀️':'🌙'}
+;(function(){var b=document.getElementById('themeBtn');if(b)b.textContent=document.documentElement.getAttribute('data-theme')==='light'?'🌙':'☀️'})();
 </script>
 
 </body>
