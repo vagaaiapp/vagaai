@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VagaAI — Analisar Vaga</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0f0d;
+  --surface:#111814;
+  --surface2:#161d19;
+  --border:rgba(255,255,255,0.07);
+  --text:#e8ede9;
+  --muted:#8a9e90;
+  --green:#3ecf8e;
+  --green-dim:rgba(62,207,142,0.12);
+  --green-border:rgba(62,207,142,0.25);
+  --red:#ff6b6b;
+  --red-dim:rgba(255,107,107,0.12);
+  --yellow:#ffd166;
+  --yellow-dim:rgba(255,209,102,0.12);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-logo img{display:block}
+.nav-badge{font-size:9px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.nav-back{font-size:13px;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color .2s}
+.nav-back:hover{color:var(--text)}
+
+/* LAYOUT */
+.container{max-width:860px;margin:0 auto;padding:2.5rem 1.5rem 4rem}
+.page-title{font-family:'Lora',serif;font-size:clamp(24px,4vw,36px);font-weight:700;line-height:1.15;margin-bottom:.4rem}
+.page-sub{color:var(--muted);font-size:14px;margin-bottom:2rem}
+
+/* STEPS INDICATOR */
+.steps-bar{display:flex;gap:0;margin-bottom:2.5rem}
+.step{flex:1;padding:.6rem 1rem;font-size:12px;font-weight:600;letter-spacing:.04em;text-align:center;border-bottom:2px solid var(--border);color:var(--muted);transition:all .3s}
+.step.active{color:var(--green);border-color:var(--green)}
+.step.done{color:var(--muted);border-color:rgba(62,207,142,0.3)}
+
+/* FORM */
+.form-section{display:flex;flex-direction:column;gap:1.2rem}
+.field{display:flex;flex-direction:column;gap:.4rem}
+label{font-size:13px;font-weight:600;color:var(--text);letter-spacing:.01em}
+label span{color:var(--muted);font-weight:400}
+textarea{background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.6;padding:1rem;resize:vertical;transition:border-color .2s;width:100%}
+textarea:focus{outline:none;border-color:var(--green-border)}
+textarea::placeholder{color:var(--muted)}
+.char-count{font-size:11px;color:var(--muted);text-align:right;margin-top:.2rem}
+
+.btn-analyze{width:100%;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;border:none;border-radius:10px;padding:1rem;cursor:pointer;transition:all .2s;margin-top:.5rem;display:flex;align-items:center;justify-content:center;gap:.5rem}
+.btn-analyze:hover{background:#4ddb9e;transform:translateY(-1px)}
+.btn-analyze:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+/* LOADING */
+.loading{display:none;flex-direction:column;align-items:center;gap:1.2rem;padding:3rem 0;text-align:center}
+.loading.show{display:flex}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:var(--muted);font-size:14px}
+.loading-text strong{color:var(--text);display:block;font-size:16px;margin-bottom:.3rem}
+
+/* RESULTADO */
+.result{display:none}
+.result.show{display:block}
+
+.result-header{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.8rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:1.8rem;flex-wrap:wrap}
+.score-ring-wrap{position:relative;flex-shrink:0}
+.score-ring{width:100px;height:100px}
+.score-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.score-n{font-size:28px;font-weight:700;font-family:'Lora',serif}
+.score-label{font-size:10px;color:var(--muted);margin-top:2px}
+.score-info{flex:1;min-width:180px}
+.score-nivel{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.3rem}
+.score-resumo{font-size:14px;color:var(--muted);line-height:1.5}
+
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem}
+@media(max-width:580px){.result-grid{grid-template-columns:1fr}}
+
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem}
+.result-card-title{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem}
+.result-card-title.red{color:var(--red)}
+.result-card-title.green{color:var(--green)}
+.result-card-title.yellow{color:var(--yellow)}
+.result-card-title.muted{color:var(--muted)}
+
+.result-list{list-style:none;display:flex;flex-direction:column;gap:.55rem}
+.result-list li{font-size:13px;color:var(--muted);line-height:1.5;padding-left:1.1rem;position:relative}
+.result-list li::before{content:'';position:absolute;left:0;top:7px;width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.result-list.red li{color:#ff8f8f}
+.result-list.red li::before{background:var(--red)}
+.result-list.green li{color:#6edba8}
+.result-list.green li::before{background:var(--green)}
+
+.keywords-wrap{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.3rem}
+.kw{font-size:12px;padding:.25rem .6rem;border-radius:6px;font-weight:500}
+.kw.found{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.kw.missing{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,107,107,0.25)}
+
+.factors-list{display:flex;flex-direction:column;gap:.7rem}
+.factor-row{display:flex;align-items:center;gap:.7rem}
+.factor-label{font-size:12px;color:var(--muted);width:110px;flex-shrink:0}
+.factor-bar{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+.factor-fill{height:100%;border-radius:3px;background:var(--green);transition:width .8s ease}
+.factor-val{font-size:12px;font-weight:600;width:32px;text-align:right;color:var(--text)}
+
+.result-actions{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1.2rem}
+.btn-outline{flex:1;min-width:140px;background:transparent;border:1px solid var(--border);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;border-radius:10px;padding:.75rem 1rem;cursor:pointer;transition:all .2s;text-align:center}
+.btn-outline:hover{border-color:var(--green-border);color:var(--green)}
+.btn-pro{flex:1;min-width:140px;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;border:none;border-radius:10px;padding:.75rem 1rem;cursor:pointer;transition:all .2s;text-align:center}
+.btn-pro:hover{background:#4ddb9e}
+
+.error-box{background:var(--red-dim);border:1px solid rgba(255,107,107,0.25);border-radius:10px;padding:1rem 1.2rem;color:#ff8f8f;font-size:14px;display:none;margin-top:1rem}
+.error-box.show{display:block}
+
+/* free notice */
+.free-notice{background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px;padding:.75rem 1rem;font-size:13px;color:var(--green);display:flex;align-items:center;gap:.6rem;margin-bottom:1.5rem}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="/logo.svg" alt="VagaAI" height="28" style="display:block;">
+    <span class="nav-badge">Beta</span>
+  </a>
+  <a href="/" class="nav-back">← Voltar ao início</a>
+</nav>
+
+<div class="container">
+  <div class="steps-bar">
+    <div class="step active" id="step1">1. Inserir dados</div>
+    <div class="step" id="step2">2. Analisando</div>
+    <div class="step" id="step3">3. Resultado</div>
+  </div>
+
+  <h1 class="page-title">Analisar minha vaga</h1>
+  <p class="page-sub">Cole a descrição da vaga e seu currículo. A análise leva cerca de 15 segundos.</p>
+
+  <div class="free-notice">
+    ✓ Diagnóstico gratuito · Sem cadastro · Sem cartão
+  </div>
+
+  <!-- FORM -->
+  <div class="form-section" id="formSection">
+    <div class="field">
+      <label for="jobInput">Descrição da vaga <span>— Cole o texto completo da vaga</span></label>
+      <textarea id="jobInput" rows="8" placeholder="Cole aqui o texto da vaga (título, requisitos, responsabilidades...)"></textarea>
+      <div class="char-count" id="jobCount">0 caracteres</div>
+    </div>
+
+    <div class="field">
+      <label for="cvInput">Seu currículo <span>— Cole o texto do seu CV</span></label>
+      <textarea id="cvInput" rows="10" placeholder="Cole aqui o conteúdo do seu currículo (experiências, formação, habilidades...)"></textarea>
+      <div class="char-count" id="cvCount">0 caracteres</div>
+    </div>
+
+    <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">
+      <span>⚡</span> Analisar agora — grátis
+    </button>
+
+    <div class="error-box" id="errorBox"></div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" id="loadingSection">
+    <div class="spinner"></div>
+    <div class="loading-text">
+      <strong>Analisando seu currículo...</strong>
+      Comparando com a vaga e identificando oportunidades de melhoria
+    </div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div class="result" id="resultSection">
+
+    <div class="result-header">
+      <div class="score-ring-wrap">
+        <svg class="score-ring" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="7"/>
+          <circle id="scoreArc" cx="50" cy="50" r="40" fill="none" stroke="#3ecf8e" stroke-width="7"
+            stroke-dasharray="251" stroke-dashoffset="251" stroke-linecap="round"
+            transform="rotate(-90 50 50)" style="transition:stroke-dashoffset 1s ease"/>
+        </svg>
+        <div class="score-inner">
+          <div class="score-n" id="scoreNum">0</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+      <div class="score-info">
+        <div class="score-nivel" id="scoreNivel" style="color:var(--green)"></div>
+        <div class="score-resumo" id="scoreResumo"></div>
+      </div>
+    </div>
+
+    <div class="result-grid">
+      <div class="result-card">
+        <div class="result-card-title red">⚠ Principais falhas</div>
+        <ul class="result-list red" id="falhasList"></ul>
+      </div>
+      <div class="result-card">
+        <div class="result-card-title green">✦ Sugestões</div>
+        <ul class="result-list green" id="sugestoesList"></ul>
+      </div>
+    </div>
+
+    <div class="result-grid">
+      <div class="result-card">
+        <div class="result-card-title muted">Keywords ATS</div>
+        <div style="margin-bottom:.6rem;font-size:12px;color:var(--muted)">Encontradas no currículo</div>
+        <div class="keywords-wrap" id="kwFound"></div>
+        <div style="margin:1rem 0 .6rem;font-size:12px;color:var(--muted)">Faltando no currículo</div>
+        <div class="keywords-wrap" id="kwMissing"></div>
+      </div>
+      <div class="result-card">
+        <div class="result-card-title muted">Fatores de análise</div>
+        <div class="factors-list" id="factorsList"></div>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn-outline" onclick="resetForm()">← Nova análise</button>
+      <button class="btn-pro" onclick="window.location.href='/#planos'">Otimizar currículo →</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var jobEl = document.getElementById('jobInput');
+var cvEl = document.getElementById('cvInput');
+
+jobEl.addEventListener('input', function() {
+  document.getElementById('jobCount').textContent = this.value.length + ' caracteres';
+});
+cvEl.addEventListener('input', function() {
+  document.getElementById('cvCount').textContent = this.value.length + ' caracteres';
+});
+
+function setStep(n) {
+  [1,2,3].forEach(function(i) {
+    var el = document.getElementById('step' + i);
+    el.classList.remove('active','done');
+    if (i < n) el.classList.add('done');
+    if (i === n) el.classList.add('active');
+  });
+}
+
+function showError(msg) {
+  var box = document.getElementById('errorBox');
+  box.textContent = msg;
+  box.classList.add('show');
+}
+
+function hideError() {
+  document.getElementById('errorBox').classList.remove('show');
+}
+
+async function analyze() {
+  var job = jobEl.value.trim();
+  var cv = cvEl.value.trim();
+
+  hideError();
+
+  if (!job || job.length < 50) {
+    showError('Cole a descrição completa da vaga (mínimo 50 caracteres).');
+    return;
+  }
+  if (!cv || cv.length < 100) {
+    showError('Cole o conteúdo completo do seu currículo (mínimo 100 caracteres).');
+    return;
+  }
+
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('formSection').style.display = 'none';
+  document.getElementById('loadingSection').classList.add('show');
+  setStep(2);
+
+  try {
+    var res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ job: job, cv: cv })
+    });
+
+    var data = await res.json();
+
+    if (!res.ok || data.error) {
+      throw new Error(data.error || 'Erro ao processar análise.');
+    }
+
+    document.getElementById('loadingSection').classList.remove('show');
+    showResult(data);
+    setStep(3);
+
+  } catch (err) {
+    document.getElementById('loadingSection').classList.remove('show');
+    document.getElementById('formSection').style.display = 'flex';
+    document.getElementById('analyzeBtn').disabled = false;
+    showError(err.message || 'Erro inesperado. Tente novamente.');
+    setStep(1);
+  }
+}
+
+function showResult(d) {
+  var section = document.getElementById('resultSection');
+  section.classList.add('show');
+
+  // Score ring animation
+  var score = Math.max(0, Math.min(100, d.score || 0));
+  var circumference = 251;
+  var offset = circumference - (score / 100) * circumference;
+  setTimeout(function() {
+    document.getElementById('scoreArc').style.strokeDashoffset = offset;
+    animateNumber('scoreNum', 0, score, 1000);
+  }, 100);
+
+  // Score color
+  var color = score >= 75 ? 'var(--green)' : score >= 50 ? 'var(--yellow)' : 'var(--red)';
+  document.getElementById('scoreArc').style.stroke = score >= 75 ? '#3ecf8e' : score >= 50 ? '#ffd166' : '#ff6b6b';
+  document.getElementById('scoreNivel').style.color = color;
+  document.getElementById('scoreNivel').textContent = d.nivel || '';
+  document.getElementById('scoreResumo').textContent = d.resumo || '';
+
+  // Falhas
+  renderList('falhasList', d.falhas || []);
+  // Sugestões
+  renderList('sugestoesList', d.sugestoes || []);
+
+  // Keywords
+  renderKeywords('kwFound', d.keywords_encontradas || [], 'found');
+  renderKeywords('kwMissing', d.keywords_faltando || [], 'missing');
+
+  // Fatores
+  var fatores = d.fatores || {};
+  var labels = {
+    compatibilidade: 'Compatibilidade',
+    keywords_ats: 'Keywords ATS',
+    legibilidade: 'Legibilidade',
+    forca_bullets: 'Força dos bullets'
+  };
+  var fl = document.getElementById('factorsList');
+  fl.innerHTML = '';
+  Object.keys(labels).forEach(function(k) {
+    var val = fatores[k] || 0;
+    fl.innerHTML += '<div class="factor-row">'
+      + '<span class="factor-label">' + labels[k] + '</span>'
+      + '<div class="factor-bar"><div class="factor-fill" style="width:0%" data-val="' + val + '%"></div></div>'
+      + '<span class="factor-val">' + val + '</span>'
+      + '</div>';
+  });
+  setTimeout(function() {
+    document.querySelectorAll('.factor-fill').forEach(function(el) {
+      el.style.width = el.dataset.val;
+    });
+  }, 200);
+
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderList(id, items) {
+  var el = document.getElementById(id);
+  el.innerHTML = items.map(function(i) { return '<li>' + escHtml(i) + '</li>'; }).join('');
+}
+
+function renderKeywords(id, items, cls) {
+  var el = document.getElementById(id);
+  el.innerHTML = items.slice(0, 12).map(function(k) {
+    return '<span class="kw ' + cls + '">' + escHtml(k) + '</span>';
+  }).join('');
+  if (!items.length) el.innerHTML = '<span style="color:var(--muted);font-size:12px">Nenhuma identificada</span>';
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function animateNumber(id, from, to, duration) {
+  var el = document.getElementById(id);
+  var start = null;
+  function step(ts) {
+    if (!start) start = ts;
+    var progress = Math.min((ts - start) / duration, 1);
+    el.textContent = Math.round(from + (to - from) * progress);
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function resetForm() {
+  document.getElementById('resultSection').classList.remove('show');
+  document.getElementById('formSection').style.display = 'flex';
+  document.getElementById('analyzeBtn').disabled = false;
+  document.getElementById('scoreArc').style.strokeDashoffset = '251';
+  hideError();
+  setStep(1);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>
