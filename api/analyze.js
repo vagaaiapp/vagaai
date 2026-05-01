@@ -1,3 +1,40 @@
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
+
+async function checkRateLimit(ip) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return { allowed: true };
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/ip_rate_limits?ip=eq.${encodeURIComponent(ip)}&select=count`,
+      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+    );
+    const rows = await res.json();
+    if (rows.length > 0) return { allowed: false };
+    return { allowed: true };
+  } catch (err) {
+    console.error('Rate limit check error:', err);
+    return { allowed: true }; // fail open para não bloquear em caso de erro do Supabase
+  }
+}
+
+async function recordUsage(ip) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/ip_rate_limits`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates',
+      },
+      body: JSON.stringify({ ip, count: 1, last_seen: new Date().toISOString() }),
+    });
+  } catch (err) {
+    console.error('Record usage error:', err);
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -11,6 +48,16 @@ export default async function handler(req, res) {
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return res.status(500).json({ error: 'Chave de API não configurada.' });
+  }
+
+  // Rate limit por IP
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+    || req.headers['x-real-ip']
+    || 'unknown';
+
+  const { allowed } = await checkRateLimit(ip);
+  if (!allowed) {
+    return res.status(429).json({ error: 'limite_atingido' });
   }
 
   const prompt = `Você é um especialista em recrutamento e sistemas ATS (Applicant Tracking System). Analise a compatibilidade entre o currículo e a vaga abaixo.
@@ -85,6 +132,10 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
     }
 
     const result = JSON.parse(jsonMatch[0]);
+
+    // Registra o uso apenas após análise bem-sucedida
+    await recordUsage(ip);
+
     return res.status(200).json(result);
   } catch (err) {
     console.error('Handler error:', err);

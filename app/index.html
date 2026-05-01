@@ -420,6 +420,12 @@ async function analyze() {
     });
 
     var data = await res.json();
+    if (res.status === 429 || data.error === 'limite_atingido') {
+      document.getElementById('loadingSection').classList.remove('show');
+      localStorage.setItem('vagaai_analyzed', '1');
+      showLimitReached();
+      return;
+    }
     if (!res.ok || data.error) throw new Error(data.error || 'Erro ao processar análise.');
 
     // Marca como usada
