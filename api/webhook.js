@@ -188,8 +188,37 @@ export default async function handler(req, res) {
     return res.status(200).json({ received: true, note: 'unknown_amount' });
   }
 
+  // Idempotência: verifica se este session já foi processado
+  try {
+    const checkRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/webhook_events?stripe_session_id=eq.${encodeURIComponent(session.id)}&select=id`,
+      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+    );
+    const existing = await checkRes.json();
+    if (existing.length > 0) {
+      console.log(`Webhook: session ${session.id} already processed — skipping`);
+      return res.status(200).json({ received: true, note: 'already_processed' });
+    }
+  } catch (e) {
+    // Tabela pode não existir ainda — continua sem bloquear
+    console.warn('Webhook: idempotency check failed (table may not exist)', e.message);
+  }
+
   try {
     await upsertCredits(userId, creditsToAdd);
+    // Registra evento processado
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/webhook_events`, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'resolution=ignore-duplicates',
+        },
+        body: JSON.stringify({ stripe_session_id: session.id, user_id: userId, amount: amountTotal, processed_at: new Date().toISOString() }),
+      });
+    } catch (e) { /* não bloqueia se falhar */ }
     console.log(`Webhook: added ${creditsToAdd} credits to user ${userId}`);
     return res.status(200).json({ received: true, credits_added: creditsToAdd });
   } catch (err) {
