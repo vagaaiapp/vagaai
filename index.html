@@ -25,6 +25,8 @@
 <meta name="twitter:image" content="https://www.vagaai.app.br/og.svg">
 <!-- Vercel Analytics -->
 <script defer src="/_vercel/insights/script.js"></script>
+<!-- Supabase (para auth check nos planos) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <title>VagaAI — Passe pelo filtro. Chegue mais forte na entrevista.</title>
 <meta name="description" content="Cole a vaga e seu currículo. O VagaAI mostra onde você está perdendo pontos, otimiza seu CV para ATS e prepara você para a entrevista com um briefing claro da empresa.">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -453,7 +455,20 @@ html, body { overflow-x: hidden; max-width: 100%; }
 <script>
 function track(name,props){try{window.va&&window.va('event',Object.assign({name:name},props||{}))}catch(e){}}
 function irParaProduto(source){track('cta_click',{source:source||'unknown'});window.location.href='/app'}
-function openPlan(url,plan){track('plan_click',{plan:plan});window.open(url,'_blank')}
+var _sb = window.supabase ? window.supabase.createClient('https://kbcjchjepgejdezeuwwh.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA') : null;
+async function openPlan(url,plan){
+  track('plan_click',{plan:plan});
+  try {
+    if(_sb){
+      var r=await _sb.auth.getSession();
+      var s=r.data.session;
+      if(s&&s.user){
+        url+=(url.includes('?')?'&':'?')+'client_reference_id='+s.user.id+'&prefilled_email='+encodeURIComponent(s.user.email);
+      }
+    }
+  } catch(e){}
+  window.open(url,'_blank');
+}
 function toggleFaq(e){e.parentElement.classList.toggle('open')}
 function toggleMobileNav(){var h=document.getElementById('navHamburger'),m=document.getElementById('mobileNav');h.classList.toggle('open');m.classList.toggle('open')}
 function closeMobileNav(){document.getElementById('navHamburger').classList.remove('open');document.getElementById('mobileNav').classList.remove('open')}
