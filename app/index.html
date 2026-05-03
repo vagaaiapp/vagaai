@@ -143,6 +143,8 @@ textarea::placeholder{color:var(--muted)}
 .btn-outline:disabled{opacity:.4;cursor:not-allowed}
 .btn-pro{flex:1;min-width:140px;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;border:none;border-radius:10px;padding:.75rem 1rem;cursor:pointer;transition:all .2s;text-align:center}
 .btn-pro:hover{background:#4ddb9e}
+.btn-cv{flex:1;min-width:140px;background:transparent;border:1.5px solid var(--green-border);color:var(--green);font-family:'Inter',sans-serif;font-size:14px;font-weight:700;border-radius:10px;padding:.75rem 1rem;cursor:pointer;transition:all .2s;text-align:center}
+.btn-cv:hover{background:var(--green-dim,rgba(62,207,142,.08))}
 
 .error-box{background:var(--red-dim);border:1px solid rgba(255,107,107,0.25);border-radius:10px;padding:1rem 1.2rem;color:#ff8f8f;font-size:14px;display:none;margin-top:1rem}
 .error-box.show{display:block}
@@ -306,7 +308,8 @@ textarea::placeholder{color:var(--muted)}
 
     <div class="result-actions">
       <button class="btn-outline" id="newAnalysisBtn" onclick="tryNewAnalysis()">← Nova análise</button>
-      <button class="btn-pro" onclick="document.getElementById('upsellSection').scrollIntoView({behavior:'smooth'})">Ver planos para otimizar →</button>
+      <button class="btn-cv" id="cvBtn" style="display:none" onclick="openCV()">📄 Baixar CV Otimizado</button>
+      <button class="btn-pro" id="upsellBtn" onclick="document.getElementById('upsellSection').scrollIntoView({behavior:'smooth'})">Ver planos para otimizar →</button>
     </div>
 
     <!-- UPSELL -->
@@ -590,6 +593,18 @@ function showResult(d) {
   // Mostra upsell
   document.getElementById('upsellSection').classList.add('show');
 
+  // Botão CV Otimizado — só aparece se a IA retornou cv_otimizado
+  var cvBtn = document.getElementById('cvBtn');
+  var upsellBtn = document.getElementById('upsellBtn');
+  if (d.cv_otimizado && d.cv_otimizado.nome) {
+    try { localStorage.setItem('vagaai_cv', JSON.stringify(d.cv_otimizado)); } catch(e) {}
+    cvBtn.style.display = 'block';
+    if (upsellBtn) upsellBtn.style.display = 'none';
+  } else {
+    cvBtn.style.display = 'none';
+    if (upsellBtn) upsellBtn.style.display = 'block';
+  }
+
   // Botão de nova análise
   var newBtn = document.getElementById('newAnalysisBtn');
   if (authSession) {
@@ -628,6 +643,11 @@ function tryNewAnalysis() {
   hideError();
   setStep(1);
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function openCV() {
+  track('cv_download_click');
+  window.open('/cv', '_blank');
 }
 
 function renderList(id, items) {

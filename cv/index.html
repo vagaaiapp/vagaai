@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Currículo Otimizado</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Reset ─────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px}
+
+/* ── Toolbar (não imprime) ──────────────────────── */
+.toolbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:#1a1a1a;padding:.75rem 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;
+  font-family:'Inter',sans-serif;
+}
+.toolbar-left{display:flex;align-items:center;gap:.75rem}
+.toolbar-logo{font-size:13px;font-weight:700;color:#fff;opacity:.7}
+.toolbar-tip{font-size:12px;color:rgba(255,255,255,.4)}
+.toolbar-actions{display:flex;gap:.6rem}
+.btn-print{
+  background:#3ecf8e;color:#0a0f0d;border:none;
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:700;
+  padding:.55rem 1.2rem;border-radius:8px;cursor:pointer;
+  display:flex;align-items:center;gap:.4rem;transition:opacity .15s;
+}
+.btn-print:hover{opacity:.85}
+.btn-back{
+  background:transparent;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.15);
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:500;
+  padding:.5rem 1rem;border-radius:8px;cursor:pointer;
+  text-decoration:none;transition:all .15s;
+}
+.btn-back:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+
+/* ── Página A4 ──────────────────────────────────── */
+body{
+  background:#e8e8e8;
+  font-family:'Inter',sans-serif;
+  padding-top:60px;padding-bottom:3rem;
+}
+.page{
+  width:210mm;min-height:297mm;
+  background:#fff;
+  margin:2rem auto;
+  padding:14mm 16mm 14mm;
+  box-shadow:0 4px 32px rgba(0,0,0,.18);
+  color:#1a1a1a;
+  line-height:1.55;
+}
+
+/* ── Cabeçalho ──────────────────────────────────── */
+.cv-header{margin-bottom:1.4rem}
+.cv-name{
+  font-size:26px;font-weight:700;
+  letter-spacing:-.02em;color:#0d0d0d;
+  margin-bottom:.2rem;line-height:1.2;
+}
+.cv-title{
+  font-size:13.5px;font-weight:500;color:#444;
+  margin-bottom:.6rem;letter-spacing:.01em;
+}
+.cv-contacts{
+  display:flex;flex-wrap:wrap;gap:.3rem .9rem;
+  font-size:12px;color:#555;
+}
+.cv-contacts span{display:flex;align-items:center;gap:.25rem}
+.cv-contacts a{color:#555;text-decoration:none}
+
+/* ── Seções ─────────────────────────────────────── */
+.cv-section{margin-bottom:1.25rem}
+.cv-section-title{
+  font-size:10.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.1em;color:#1a1a1a;
+  border-bottom:1.5px solid #1a1a1a;
+  padding-bottom:.2rem;margin-bottom:.65rem;
+}
+
+/* ── Resumo ─────────────────────────────────────── */
+.cv-resumo{font-size:13px;color:#333;line-height:1.65}
+
+/* ── Experiência ────────────────────────────────── */
+.exp-item{margin-bottom:1rem}
+.exp-item:last-child{margin-bottom:0}
+.exp-header{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;margin-bottom:.15rem}
+.exp-cargo{font-size:13.5px;font-weight:600;color:#0d0d0d}
+.exp-periodo{font-size:11.5px;color:#777;white-space:nowrap;flex-shrink:0}
+.exp-empresa{font-size:12.5px;color:#444;margin-bottom:.3rem}
+.exp-bullets{list-style:none;padding:0}
+.exp-bullets li{
+  font-size:12.5px;color:#333;padding-left:1rem;position:relative;
+  margin-bottom:.18rem;line-height:1.55;
+}
+.exp-bullets li::before{
+  content:'·';position:absolute;left:0;color:#888;font-size:14px;line-height:1.4;
+}
+
+/* ── Formação ───────────────────────────────────── */
+.edu-item{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;margin-bottom:.45rem}
+.edu-item:last-child{margin-bottom:0}
+.edu-left{}
+.edu-curso{font-size:13px;font-weight:600;color:#0d0d0d}
+.edu-inst{font-size:12px;color:#555}
+.edu-periodo{font-size:11.5px;color:#777;flex-shrink:0}
+
+/* ── Habilidades ────────────────────────────────── */
+.skills-list{
+  display:flex;flex-wrap:wrap;gap:.35rem;
+}
+.skill-tag{
+  font-size:11.5px;color:#1a1a1a;
+  background:#f2f2f2;border:1px solid #e0e0e0;
+  border-radius:4px;padding:.2rem .55rem;
+}
+
+/* ── Sem dados ──────────────────────────────────── */
+.no-data{
+  text-align:center;padding:4rem 2rem;font-family:'Inter',sans-serif;
+  color:#555;
+}
+.no-data h2{font-size:20px;margin-bottom:.5rem;color:#111}
+.no-data p{font-size:14px;margin-bottom:1.5rem}
+.no-data a{
+  display:inline-block;background:#3ecf8e;color:#0a0f0d;
+  font-weight:700;font-size:14px;padding:.7rem 1.5rem;border-radius:8px;
+  text-decoration:none;
+}
+
+/* ── Print ──────────────────────────────────────── */
+@media print {
+  body{background:#fff;padding:0}
+  .toolbar{display:none!important}
+  .page{
+    margin:0;padding:14mm 16mm;
+    box-shadow:none;
+    width:100%;min-height:auto;
+  }
+  .skill-tag{border:1px solid #ccc}
+  @page{size:A4;margin:0}
+}
+</style>
+</head>
+<body>
+
+<!-- Toolbar (some na tela, not printed) -->
+<div class="toolbar" id="toolbar">
+  <div class="toolbar-left">
+    <span class="toolbar-logo">Currículo Otimizado</span>
+    <span class="toolbar-tip">Clique em imprimir para salvar como PDF</span>
+  </div>
+  <div class="toolbar-actions">
+    <a href="/app" class="btn-back">← Voltar</a>
+    <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+  </div>
+</div>
+
+<!-- Página do currículo -->
+<div class="page" id="cvPage">
+  <div class="no-data" id="noData" style="display:none">
+    <h2>Nenhum currículo encontrado</h2>
+    <p>Faça uma análise primeiro para gerar seu currículo otimizado.</p>
+    <a href="/app">Analisar minha vaga →</a>
+  </div>
+  <div id="cvContent" style="display:none">
+
+    <!-- Cabeçalho -->
+    <div class="cv-header">
+      <div class="cv-name" id="cvNome"></div>
+      <div class="cv-title" id="cvTitulo"></div>
+      <div class="cv-contacts" id="cvContatos"></div>
+    </div>
+
+    <!-- Resumo profissional -->
+    <div class="cv-section" id="secResumo">
+      <div class="cv-section-title">Resumo Profissional</div>
+      <div class="cv-resumo" id="cvResumo"></div>
+    </div>
+
+    <!-- Experiência -->
+    <div class="cv-section" id="secExp" style="display:none">
+      <div class="cv-section-title">Experiência Profissional</div>
+      <div id="cvExperiencias"></div>
+    </div>
+
+    <!-- Formação -->
+    <div class="cv-section" id="secEdu" style="display:none">
+      <div class="cv-section-title">Formação Acadêmica</div>
+      <div id="cvFormacao"></div>
+    </div>
+
+    <!-- Habilidades -->
+    <div class="cv-section" id="secSkills" style="display:none">
+      <div class="cv-section-title">Habilidades</div>
+      <div class="skills-list" id="cvHabilidades"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function() {
+  var raw = null;
+  try { raw = localStorage.getItem('vagaai_cv'); } catch(e) {}
+
+  if (!raw) {
+    document.getElementById('noData').style.display = 'block';
+    return;
+  }
+
+  var cv;
+  try { cv = JSON.parse(raw); } catch(e) {
+    document.getElementById('noData').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('cvContent').style.display = 'block';
+
+  // Título da aba
+  if (cv.nome) document.title = cv.nome + ' — Currículo';
+
+  // Nome e título
+  document.getElementById('cvNome').textContent = cv.nome || '';
+  document.getElementById('cvTitulo').textContent = cv.titulo_profissional || '';
+
+  // Contatos
+  var c = cv.contato || {};
+  var contactsEl = document.getElementById('cvContatos');
+  var contacts = [];
+  if (c.email) contacts.push('<span>✉ <a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></span>');
+  if (c.telefone) contacts.push('<span>📞 ' + esc(c.telefone) + '</span>');
+  if (c.linkedin) {
+    var liText = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i, 'linkedin.com/');
+    contacts.push('<span>🔗 <a href="' + esc(c.linkedin) + '" target="_blank">' + esc(liText) + '</a></span>');
+  }
+  if (c.cidade) contacts.push('<span>📍 ' + esc(c.cidade) + '</span>');
+  contactsEl.innerHTML = contacts.join('');
+
+  // Resumo
+  if (cv.resumo_profissional) {
+    document.getElementById('cvResumo').textContent = cv.resumo_profissional;
+  } else {
+    document.getElementById('secResumo').style.display = 'none';
+  }
+
+  // Experiências
+  var exps = cv.experiencias;
+  if (exps && exps.length) {
+    document.getElementById('secExp').style.display = 'block';
+    var expEl = document.getElementById('cvExperiencias');
+    expEl.innerHTML = exps.map(function(e) {
+      var bullets = (e.bullets || []).map(function(b) {
+        return '<li>' + esc(b) + '</li>';
+      }).join('');
+      return '<div class="exp-item">' +
+        '<div class="exp-header">' +
+          '<span class="exp-cargo">' + esc(e.cargo || '') + '</span>' +
+          '<span class="exp-periodo">' + esc(e.periodo || '') + '</span>' +
+        '</div>' +
+        '<div class="exp-empresa">' + esc(e.empresa || '') + '</div>' +
+        (bullets ? '<ul class="exp-bullets">' + bullets + '</ul>' : '') +
+      '</div>';
+    }).join('');
+  }
+
+  // Formação
+  var edus = cv.formacao;
+  if (edus && edus.length) {
+    document.getElementById('secEdu').style.display = 'block';
+    var eduEl = document.getElementById('cvFormacao');
+    eduEl.innerHTML = edus.map(function(e) {
+      return '<div class="edu-item">' +
+        '<div class="edu-left">' +
+          '<div class="edu-curso">' + esc(e.curso || '') + '</div>' +
+          '<div class="edu-inst">' + esc(e.instituicao || '') + '</div>' +
+        '</div>' +
+        '<div class="edu-periodo">' + esc(e.periodo || '') + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // Habilidades
+  var skills = cv.habilidades;
+  if (skills && skills.length) {
+    document.getElementById('secSkills').style.display = 'block';
+    var skEl = document.getElementById('cvHabilidades');
+    skEl.innerHTML = skills.map(function(s) {
+      return '<span class="skill-tag">' + esc(s) + '</span>';
+    }).join('');
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+})();
+</script>
+</body>
+</html>

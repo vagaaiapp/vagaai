@@ -157,7 +157,7 @@ export default async function handler(req, res) {
     }
   }
 
-  const prompt = `Você é um especialista em recrutamento e sistemas ATS (Applicant Tracking System). Analise a compatibilidade entre o currículo e a vaga abaixo.
+  const prompt = `Você é um especialista em recrutamento e sistemas ATS (Applicant Tracking System). Analise a compatibilidade entre o currículo e a vaga abaixo e gere uma versão otimizada do currículo.
 
 VAGA:
 ${job}
@@ -187,6 +187,37 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
     "keywords_ats": <0-100>,
     "legibilidade": <0-100>,
     "forca_bullets": <0-100>
+  },
+  "cv_otimizado": {
+    "nome": "<nome completo extraído do currículo>",
+    "titulo_profissional": "<cargo atual ou objetivo profissional, otimizado para a vaga>",
+    "contato": {
+      "email": "<email se disponível, senão string vazia>",
+      "telefone": "<telefone se disponível, senão string vazia>",
+      "linkedin": "<URL do LinkedIn se disponível, senão string vazia>",
+      "cidade": "<cidade e estado se disponível, senão string vazia>"
+    },
+    "resumo_profissional": "<3 a 5 linhas de resumo profissional otimizado para ATS, incorporando naturalmente as principais keywords da vaga sem forçar>",
+    "experiencias": [
+      {
+        "cargo": "<cargo>",
+        "empresa": "<empresa>",
+        "periodo": "<período ex: Jan 2020 – Dez 2022>",
+        "bullets": [
+          "<bullet otimizado: verbo de ação + resultado mensurável + keyword relevante da vaga>",
+          "<bullet 2>",
+          "<bullet 3>"
+        ]
+      }
+    ],
+    "formacao": [
+      {
+        "curso": "<nome do curso>",
+        "instituicao": "<nome da instituição>",
+        "periodo": "<ano de conclusão ou período>"
+      }
+    ],
+    "habilidades": ["<skill técnica 1>", "<skill 2>", "<keyword da vaga incorporada naturalmente>"]
   }
 }`;
 
@@ -200,7 +231,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
       },
       body: JSON.stringify({
         model: 'claude-3-5-haiku-20241022',
-        max_tokens: 1024,
+        max_tokens: 3000,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
