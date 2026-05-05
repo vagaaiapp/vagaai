@@ -8,367 +8,441 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:wght@600;700&display=swap" rel="stylesheet">
 <style>
-/* ── Reset ─────────────────────────────────────────────── */
+/* ─── Reset ───────────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:14px}
 
-/* ── Themes ─────────────────────────────────────────────── */
+/* ─── Color themes (7) ────────────────────────────────────── */
 :root{
-  --sb-bg:#2d3436;
-  --sb-text:#f0f0f0;
-  --sb-muted:rgba(240,240,240,.55);
-  --sb-border:rgba(255,255,255,.1);
-  --accent:#7f8c8d;
-  --accent-solid:#636e72;
-  --page-bg:#e8e8e8;
+  --sb:#2d3436; --sb-t:#f0f0f0; --sb-m:rgba(240,240,240,.52); --sb-b:rgba(255,255,255,.1);
+  --ac:#636e72; --ac2:#7f8c8d; --page-bg:#e5e5e5;
 }
-[data-theme="green"]{
-  --sb-bg:#1b3a2d;
-  --sb-text:#e6f4ed;
-  --sb-muted:rgba(230,244,237,.55);
-  --sb-border:rgba(62,207,142,.18);
-  --accent:#3ecf8e;
-  --accent-solid:#2eaf74;
-}
-[data-theme="navy"]{
-  --sb-bg:#1a2a48;
-  --sb-text:#e6edf8;
-  --sb-muted:rgba(230,237,248,.55);
-  --sb-border:rgba(100,160,230,.18);
-  --accent:#5b9bd5;
-  --accent-solid:#4a8ac4;
-}
+[data-theme="green"]   {--sb:#1b3a2d;--sb-t:#e6f4ed;--sb-m:rgba(230,244,237,.52);--sb-b:rgba(62,207,142,.18);--ac:#3ecf8e;--ac2:#2eaf74}
+[data-theme="navy"]    {--sb:#1a2a48;--sb-t:#e6edf8;--sb-m:rgba(230,237,248,.52);--sb-b:rgba(100,160,230,.18);--ac:#5b9bd5;--ac2:#4a8ac4}
+[data-theme="wine"]    {--sb:#3d1520;--sb-t:#f8e6e9;--sb-m:rgba(248,230,233,.52);--sb-b:rgba(192,57,43,.22);--ac:#e74c3c;--ac2:#c0392b}
+[data-theme="purple"]  {--sb:#2a1a40;--sb-t:#ede6f8;--sb-m:rgba(237,230,248,.52);--sb-b:rgba(155,89,182,.22);--ac:#9b59b6;--ac2:#8e44ad}
+[data-theme="teal"]    {--sb:#0d2b35;--sb-t:#e6f4f2;--sb-m:rgba(230,244,242,.52);--sb-b:rgba(26,188,156,.22);--ac:#1abc9c;--ac2:#16a085}
+[data-theme="copper"]  {--sb:#2d1a08;--sb-t:#f8ede6;--sb-m:rgba(248,237,230,.52);--sb-b:rgba(211,84,0,.22);--ac:#d35400;--ac2:#ba4a00}
 
-/* ── Toolbar (hidden on print) ──────────────────────────── */
-.toolbar{
-  position:fixed;top:0;left:0;right:0;z-index:200;
-  background:#111;padding:.6rem 1.5rem;
-  display:flex;align-items:center;justify-content:space-between;gap:.8rem;
+/* ─── Modal overlay ───────────────────────────────────────── */
+.modal-overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;
   font-family:'Inter',sans-serif;
 }
-.toolbar-left{display:flex;align-items:center;gap:1rem}
-.toolbar-logo{font-size:12px;font-weight:700;color:#fff;opacity:.55}
-.toolbar-tip{font-size:11px;color:rgba(255,255,255,.3)}
-.toolbar-right{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap}
+.modal-overlay.hidden{display:none}
+.modal-box{
+  background:#fff;border-radius:16px;padding:2.2rem 2rem;
+  max-width:380px;width:90%;text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);
+}
+.modal-icon{font-size:42px;margin-bottom:1rem}
+.modal-title{font-size:18px;font-weight:700;color:#111;margin-bottom:.5rem}
+.modal-sub{font-size:13px;color:#666;line-height:1.55;margin-bottom:1.6rem}
+.modal-btns{display:flex;flex-direction:column;gap:.6rem}
+.modal-btn-yes{
+  background:#2d3436;color:#fff;border:none;
+  font-family:'Inter',sans-serif;font-size:14px;font-weight:600;
+  padding:.75rem;border-radius:9px;cursor:pointer;transition:opacity .15s;
+}
+.modal-btn-yes:hover{opacity:.85}
+.modal-btn-no{
+  background:transparent;color:#666;border:1px solid #ddd;
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:500;
+  padding:.65rem;border-radius:9px;cursor:pointer;transition:all .15s;
+}
+.modal-btn-no:hover{border-color:#999;color:#333}
 
-/* Buttons */
-.btn-print{background:#3ecf8e;color:#0a0f0d;border:none;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;padding:.42rem .95rem;border-radius:7px;cursor:pointer;display:flex;align-items:center;gap:.35rem;transition:opacity .15s}
-.btn-print:hover{opacity:.85}
-.btn-secondary{background:transparent;color:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.15);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;padding:.38rem .8rem;border-radius:7px;cursor:pointer;text-decoration:none;transition:all .15s;display:flex;align-items:center;gap:.3rem}
-.btn-secondary:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+/* ─── Toolbar ─────────────────────────────────────────────── */
+.toolbar{
+  position:fixed;top:0;left:0;right:0;z-index:300;
+  background:#111;padding:.55rem 1.4rem;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:.6rem;font-family:'Inter',sans-serif;flex-wrap:wrap;
+}
+.toolbar-left{display:flex;align-items:center;gap:.9rem}
+.toolbar-logo{font-size:12px;font-weight:700;color:#fff;opacity:.5}
+.toolbar-right{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap}
 
-/* Theme picker */
-.theme-wrap{display:flex;align-items:center;gap:.5rem}
-.theme-label{font-size:11px;color:rgba(255,255,255,.38)}
-.theme-dots{display:flex;gap:.35rem}
-.tdot{width:17px;height:17px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
+/* Template toggle */
+.tpl-toggle{display:flex;background:rgba(255,255,255,.08);border-radius:7px;overflow:hidden}
+.tpl-btn{
+  font-family:'Inter',sans-serif;font-size:11px;font-weight:600;
+  padding:.36rem .7rem;background:transparent;border:none;color:rgba(255,255,255,.45);
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.tpl-btn.active{background:rgba(255,255,255,.15);color:#fff}
+
+/* Theme dots */
+.theme-row{display:flex;align-items:center;gap:.38rem}
+.theme-label{font-size:10px;color:rgba(255,255,255,.35)}
+.tdot{width:15px;height:15px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
 .tdot:hover{transform:scale(1.2)}
 .tdot.active{border-color:#fff!important}
-.tdot-graphite{background:#2d3436}
-.tdot-green{background:#3ecf8e}
-.tdot-navy{background:#5b9bd5}
+.td-graphite{background:#2d3436} .td-green{background:#3ecf8e}
+.td-navy{background:#5b9bd5}     .td-wine{background:#e74c3c}
+.td-purple{background:#9b59b6}   .td-teal{background:#1abc9c}
+.td-copper{background:#d35400}
 
+/* Toolbar buttons */
+.tb-btn{
+  background:transparent;color:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.14);
+  font-family:'Inter',sans-serif;font-size:11px;font-weight:500;
+  padding:.35rem .75rem;border-radius:6px;cursor:pointer;text-decoration:none;
+  transition:all .15s;white-space:nowrap;
+}
+.tb-btn:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+.tb-print{background:#3ecf8e;color:#0a0f0d;border:none;font-weight:700;font-size:11px;padding:.35rem .8rem;border-radius:6px;cursor:pointer;transition:opacity .15s;white-space:nowrap}
+.tb-print:hover{opacity:.85}
 #photoFileInput{display:none}
 
-/* ── Page body ───────────────────────────────────────────── */
-body{background:var(--page-bg);font-family:'Inter',sans-serif;padding-top:50px;padding-bottom:3rem}
+/* ─── Body ────────────────────────────────────────────────── */
+body{background:var(--page-bg);font-family:'Inter',sans-serif;padding-top:48px;padding-bottom:3rem}
 
-/* ── A4 ─────────────────────────────────────────────────── */
+/* ─── A4 Page ─────────────────────────────────────────────── */
 .page{
-  width:210mm;min-height:297mm;
-  background:#fff;
-  margin:1.6rem auto;
+  width:210mm;min-height:297mm;background:#fff;
+  margin:1.4rem auto;
   box-shadow:0 6px 40px rgba(0,0,0,.22);
-  display:flex;
-  overflow:hidden;
-  position:relative;
+  display:none;overflow:hidden;
 }
+.page.active{display:flex}
 
-/* ── Sidebar ─────────────────────────────────────────────── */
-.sidebar{
-  width:68mm;flex-shrink:0;
-  background:var(--sb-bg);
-  color:var(--sb-text);
-  padding:14mm 10mm 12mm;
-  display:flex;flex-direction:column;gap:1.3rem;
-  -webkit-print-color-adjust:exact;
-  print-color-adjust:exact;
+/* ─── TEMPLATE 1: PROFISSIONAL (sidebar + content) ──────── */
+.page-classic .sidebar{
+  width:68mm;flex-shrink:0;background:var(--sb);color:var(--sb-t);
+  padding:13mm 10mm 12mm;display:flex;flex-direction:column;gap:1.2rem;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
+.page-classic .content{flex:1;min-width:0;padding:13mm 11mm 12mm 10mm;display:flex;flex-direction:column;gap:1rem}
 
-/* Photo */
-.sb-photo-wrap{display:flex;justify-content:center;margin-bottom:.2rem}
+/* Sidebar photo */
+.sb-photo-wrap{display:flex;justify-content:center}
 .sb-photo{
-  width:82px;height:82px;border-radius:50%;
-  background:rgba(255,255,255,.08);
-  border:2.5px solid var(--accent);
-  overflow:hidden;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  position:relative;flex-shrink:0;
+  width:80px;height:80px;border-radius:50%;
+  background:rgba(255,255,255,.08);border:2.5px solid var(--ac);
+  overflow:hidden;display:flex;align-items:center;justify-content:center;
+  position:relative;flex-shrink:0;cursor:pointer;
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
-.sb-photo:hover .sb-photo-hover{opacity:1}
+.sb-photo:hover .sb-ph-hover{opacity:1}
 .sb-photo img{width:100%;height:100%;object-fit:cover;display:none}
-.sb-photo-icon{font-size:30px;line-height:1;color:rgba(255,255,255,.35);pointer-events:none}
-.sb-photo-hover{position:absolute;inset:0;background:rgba(0,0,0,.55);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;font-size:11px;color:#fff;font-weight:600;text-align:center;padding:.4rem;pointer-events:none}
+.sb-photo-icon{font-size:28px;color:rgba(255,255,255,.3);pointer-events:none}
+.sb-ph-hover{position:absolute;inset:0;background:rgba(0,0,0,.55);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;font-size:10px;color:#fff;font-weight:600;text-align:center;pointer-events:none}
 
-/* Sidebar name/title */
-.sb-name{font-size:15px;font-weight:700;color:var(--sb-text);text-align:center;line-height:1.25;letter-spacing:-.01em;margin-top:.55rem}
-.sb-role{font-size:8.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);text-align:center;margin-top:.3rem;line-height:1.4}
+/* Sidebar name/role */
+.sb-name{font-size:14.5px;font-weight:700;color:var(--sb-t);text-align:center;line-height:1.25;letter-spacing:-.01em;margin-top:.5rem}
+.sb-role-txt{font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ac);text-align:center;margin-top:.28rem;line-height:1.4}
 
-/* Section in sidebar */
-.sb-sec{border-top:1px solid var(--sb-border);padding-top:1rem}
-.sb-sec-title{font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);margin-bottom:.6rem}
+/* Sidebar sections */
+.sb-sec{border-top:1px solid var(--sb-b);padding-top:.9rem}
+.sb-sec-h{font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:var(--ac);margin-bottom:.55rem}
+.sb-contact{list-style:none;display:flex;flex-direction:column;gap:.4rem}
+.sb-contact li{font-size:8.5px;color:var(--sb-m);display:flex;align-items:flex-start;gap:.38rem;line-height:1.45}
+.sb-contact li a{color:var(--sb-m);text-decoration:none;word-break:break-all}
+.sb-ic{flex-shrink:0;width:10px;text-align:center;font-size:9px;margin-top:.05rem}
+.sb-tags{display:flex;flex-wrap:wrap;gap:.26rem}
+.sb-tag{font-size:7.5px;color:var(--sb-t);background:rgba(255,255,255,.1);border-radius:3px;padding:.15rem .4rem;-webkit-print-color-adjust:exact;print-color-adjust:exact;line-height:1.4}
+.sb-edu-list{display:flex;flex-direction:column;gap:.65rem}
+.sb-edu-curso{font-size:9px;font-weight:600;color:var(--sb-t);line-height:1.3}
+.sb-edu-inst{font-size:8px;color:var(--sb-m);line-height:1.3}
+.sb-edu-per{font-size:7.5px;color:var(--ac);margin-top:.1rem}
 
-/* Contact */
-.sb-contact{list-style:none;display:flex;flex-direction:column;gap:.42rem}
-.sb-contact li{font-size:9px;color:var(--sb-muted);display:flex;align-items:flex-start;gap:.4rem;line-height:1.45}
-.sb-contact li a{color:var(--sb-muted);text-decoration:none;word-break:break-all}
-.sb-icon{flex-shrink:0;font-size:9px;margin-top:.1rem;width:11px;text-align:center}
+/* Content sections (classic) */
+.cv-header-classic{border-bottom:2.5px solid var(--sb);padding-bottom:.75rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.cv-name-classic{font-family:'Lora',serif;font-size:20px;font-weight:700;color:#111;letter-spacing:-.02em;line-height:1.2}
+.cv-role-classic{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ac2);margin-top:.28rem}
+.cv-sec-h{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--sb);border-bottom:1.5px solid var(--sb);padding-bottom:.2rem;margin-bottom:.6rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.cv-resumo-txt{font-size:9.5px;color:#444;line-height:1.7}
+.exp-item{margin-bottom:.85rem;page-break-inside:avoid}
+.exp-item:last-child{margin-bottom:0}
+.exp-row{display:flex;justify-content:space-between;align-items:baseline;gap:.4rem}
+.exp-cargo{font-size:10.5px;font-weight:700;color:#111}
+.exp-per{font-size:8.5px;color:#999;white-space:nowrap;flex-shrink:0;font-weight:500}
+.exp-emp{font-size:9px;font-weight:600;color:var(--ac2);margin:.08rem 0 .28rem}
+.exp-ul{list-style:none;display:flex;flex-direction:column;gap:.2rem}
+.exp-ul li{font-size:9.5px;color:#444;line-height:1.55;padding-left:.85rem;position:relative}
+.exp-ul li::before{content:'▸';position:absolute;left:0;color:var(--ac2);font-size:8px;top:.28rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 
-/* Skills tags */
-.sb-tags{display:flex;flex-wrap:wrap;gap:.28rem}
-.sb-tag{font-size:8px;color:var(--sb-text);background:rgba(255,255,255,.1);border-radius:3px;padding:.17rem .42rem;-webkit-print-color-adjust:exact;print-color-adjust:exact;line-height:1.4}
-
-/* Education in sidebar */
-.sb-edu-list{display:flex;flex-direction:column;gap:.7rem}
-.sb-edu-curso{font-size:9.5px;font-weight:600;color:var(--sb-text);line-height:1.3}
-.sb-edu-inst{font-size:8.5px;color:var(--sb-muted);line-height:1.3}
-.sb-edu-periodo{font-size:8px;color:var(--accent);margin-top:.12rem}
-
-/* ── Main content ───────────────────────────────────────── */
-.content{
-  flex:1;min-width:0;
-  padding:13mm 12mm 12mm 11mm;
-  display:flex;flex-direction:column;gap:1rem;
+/* ─── TEMPLATE 2: MODERNO (full-width, header bar) ──────── */
+.page-modern{flex-direction:column}
+.mod-top-bar{height:7px;background:var(--sb);-webkit-print-color-adjust:exact;print-color-adjust:exact;flex-shrink:0}
+.mod-header{
+  padding:9mm 14mm 7mm;display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  border-bottom:1px solid #e8e8e8;flex-shrink:0;
 }
-
-/* Content header (name only — sidebar has photo) */
-.cv-header{border-bottom:2.5px solid var(--sb-bg);padding-bottom:.8rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.cv-name{font-family:'Lora',serif;font-size:21px;font-weight:700;color:#111;letter-spacing:-.02em;line-height:1.2}
-.cv-role{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--accent-solid);margin-top:.3rem}
-
-/* Content sections */
-.cv-sec{page-break-inside:avoid}
-.cv-sec-title{
-  font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
-  color:var(--sb-bg);border-bottom:1.5px solid var(--sb-bg);
-  padding-bottom:.22rem;margin-bottom:.65rem;
+.mod-header-left{}
+.mod-name{font-family:'Lora',serif;font-size:24px;font-weight:700;color:#111;letter-spacing:-.02em;line-height:1.2}
+.mod-role{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ac2);margin-top:.35rem}
+.mod-contact-row{display:flex;flex-wrap:wrap;gap:.3rem .8rem;margin-top:.6rem}
+.mod-contact-item{font-size:9px;color:#666;display:flex;align-items:center;gap:.3rem}
+.mod-contact-item a{color:#666;text-decoration:none}
+.mod-photo-modern{
+  width:74px;height:74px;border-radius:50%;flex-shrink:0;
+  background:#f0f0f0;border:2.5px solid var(--ac);
+  overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  position:relative;
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
-.cv-resumo{font-size:10px;color:#444;line-height:1.7}
+.mod-photo-modern:hover .sb-ph-hover{opacity:1}
+.mod-photo-modern img{width:100%;height:100%;object-fit:cover;display:none}
+.mod-photo-icon{font-size:26px;color:#ccc;pointer-events:none}
+.mod-body{flex:1;padding:8mm 14mm 10mm;display:flex;flex-direction:column;gap:.9rem}
+.mod-sec-h{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--sb);border-bottom:1.5px solid var(--sb);padding-bottom:.2rem;margin-bottom:.6rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.mod-resumo{font-size:10px;color:#444;line-height:1.7}
+.mod-bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;page-break-inside:avoid}
+.mod-edu-item{margin-bottom:.55rem}
+.mod-edu-curso{font-size:10px;font-weight:700;color:#111;line-height:1.3}
+.mod-edu-inst{font-size:9px;color:#666;line-height:1.3}
+.mod-edu-per{font-size:8.5px;color:var(--ac2);margin-top:.1rem}
+.mod-tags{display:flex;flex-wrap:wrap;gap:.3rem}
+.mod-tag{font-size:8.5px;color:#333;background:#f2f2f2;border:1px solid #e0e0e0;border-radius:3px;padding:.18rem .48rem;line-height:1.4}
 
-/* Experience */
-.exp-item{margin-bottom:.9rem;page-break-inside:avoid}
-.exp-item:last-child{margin-bottom:0}
-.exp-header{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
-.exp-cargo{font-size:11px;font-weight:700;color:#111}
-.exp-periodo{font-size:9px;color:#999;white-space:nowrap;flex-shrink:0;font-weight:500}
-.exp-empresa{font-size:9.5px;font-weight:600;color:var(--accent-solid);margin:.1rem 0 .3rem}
-.exp-bullets{list-style:none;display:flex;flex-direction:column;gap:.22rem}
-.exp-bullets li{font-size:10px;color:#444;line-height:1.55;padding-left:.9rem;position:relative}
-.exp-bullets li::before{content:'▸';position:absolute;left:0;color:var(--accent-solid);font-size:8px;top:.28rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-
-/* ── No data ─────────────────────────────────────────────── */
-.no-data{text-align:center;padding:5rem 2rem;font-family:'Inter',sans-serif;color:#555;width:100%}
+/* ─── No data ─────────────────────────────────────────────── */
+.no-data-page{width:210mm;min-height:297mm;background:#fff;margin:1.4rem auto;box-shadow:0 6px 40px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center}
+.no-data{text-align:center;padding:4rem 2rem;font-family:'Inter',sans-serif;color:#555}
 .no-data h2{font-size:20px;margin-bottom:.5rem;color:#111}
 .no-data p{font-size:13px;margin-bottom:1.5rem}
 .no-data a{display:inline-block;background:#3ecf8e;color:#0a0f0d;font-weight:700;font-size:13px;padding:.65rem 1.3rem;border-radius:8px;text-decoration:none}
 
-/* ── Print ───────────────────────────────────────────────── */
+/* ─── Print ───────────────────────────────────────────────── */
 @media print{
   body{background:#fff!important;padding:0}
-  .toolbar{display:none!important}
-  .page{margin:0;box-shadow:none;width:100%;min-height:auto}
-  .sb-photo-hover{display:none!important}
+  .toolbar,.modal-overlay{display:none!important}
+  .page.active{display:flex;margin:0;box-shadow:none;width:100%;min-height:auto}
+  .no-data-page{display:none}
+  .sb-ph-hover{display:none!important}
   @page{size:A4;margin:0}
 }
 </style>
 </head>
 <body>
 
-<!-- Toolbar -->
-<div class="toolbar" id="toolbar">
-  <div class="toolbar-left">
-    <span class="toolbar-logo">VagaAI</span>
-    <span class="toolbar-tip">Adicione sua foto · escolha um tema · imprima como PDF</span>
-  </div>
-  <div class="toolbar-right">
-    <div class="theme-wrap">
-      <span class="theme-label">Tema:</span>
-      <div class="theme-dots">
-        <div class="tdot tdot-graphite active" id="dot-graphite" onclick="setTheme('graphite')" title="Grafite"></div>
-        <div class="tdot tdot-green"    id="dot-green"    onclick="setTheme('green')"    title="Verde"></div>
-        <div class="tdot tdot-navy"     id="dot-navy"     onclick="setTheme('navy')"     title="Azul marinho"></div>
-      </div>
+<!-- ─── Photo Modal ──────────────────────────────────────── -->
+<div class="modal-overlay hidden" id="photoModal">
+  <div class="modal-box">
+    <div class="modal-icon">📷</div>
+    <h2 class="modal-title">Adicionar foto ao currículo?</h2>
+    <p class="modal-sub">Uma foto profissional aumenta o impacto visual. Você pode adicionar agora ou pular e adicionar depois.</p>
+    <div class="modal-btns">
+      <button class="modal-btn-yes" id="modalBtnYes">📷 Sim, adicionar foto</button>
+      <button class="modal-btn-no" onclick="closeModal()">Continuar sem foto</button>
     </div>
-    <button class="btn-secondary" onclick="document.getElementById('photoFileInput').click()">📷 Foto</button>
-    <input type="file" id="photoFileInput" accept="image/*">
-    <a href="/app" class="btn-secondary">← Voltar</a>
-    <button class="btn-print" onclick="window.print()">🖨️ Imprimir / PDF</button>
   </div>
 </div>
 
-<!-- A4 Page -->
-<div class="page" id="cvPage">
+<!-- ─── Toolbar ──────────────────────────────────────────── -->
+<div class="toolbar" id="toolbar">
+  <div class="toolbar-left">
+    <span class="toolbar-logo">VagaAI</span>
+    <div class="tpl-toggle">
+      <button class="tpl-btn active" id="tplBtnClassic" onclick="setTemplate('classic')">📋 Profissional</button>
+      <button class="tpl-btn"        id="tplBtnModern"  onclick="setTemplate('modern')">✨ Moderno</button>
+    </div>
+  </div>
+  <div class="toolbar-right">
+    <div class="theme-row">
+      <span class="theme-label">Cor:</span>
+      <div class="tdot td-graphite active" id="dot-graphite" onclick="setTheme('graphite')" title="Grafite"></div>
+      <div class="tdot td-green"    id="dot-green"    onclick="setTheme('green')"    title="Verde"></div>
+      <div class="tdot td-navy"     id="dot-navy"     onclick="setTheme('navy')"     title="Marinho"></div>
+      <div class="tdot td-wine"     id="dot-wine"     onclick="setTheme('wine')"     title="Vinho"></div>
+      <div class="tdot td-purple"   id="dot-purple"   onclick="setTheme('purple')"   title="Roxo"></div>
+      <div class="tdot td-teal"     id="dot-teal"     onclick="setTheme('teal')"     title="Petróleo"></div>
+      <div class="tdot td-copper"   id="dot-copper"   onclick="setTheme('copper')"   title="Cobre"></div>
+    </div>
+    <button class="tb-btn" onclick="document.getElementById('photoFileInput').click()">📷 Foto</button>
+    <input type="file" id="photoFileInput" accept="image/*">
+    <a href="/app" class="tb-btn">← Voltar</a>
+    <button class="tb-print" onclick="window.print()">🖨️ Imprimir / PDF</button>
+  </div>
+</div>
 
-  <!-- No data -->
-  <div class="no-data" id="noData" style="display:none">
+<!-- ─── Template: Profissional ───────────────────────────── -->
+<div class="page page-classic active" id="pageClassic">
+  <!-- Sidebar -->
+  <div class="sidebar" id="clSidebar">
+    <div class="sb-photo-wrap">
+      <div class="sb-photo" id="clPhoto" onclick="document.getElementById('photoFileInput').click()" title="Clique para adicionar foto">
+        <div class="sb-photo-icon" id="clPhotoIcon">👤</div>
+        <img id="clPhotoImg" alt="">
+        <div class="sb-ph-hover">📷 Trocar</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:-.2rem">
+      <div class="sb-name" id="clNome"></div>
+      <div class="sb-role-txt" id="clRole"></div>
+    </div>
+    <div class="sb-sec" id="clSecContato">
+      <div class="sb-sec-h">Contato</div>
+      <ul class="sb-contact" id="clContatos"></ul>
+    </div>
+    <div class="sb-sec" id="clSecSkills" style="display:none">
+      <div class="sb-sec-h">Habilidades</div>
+      <div class="sb-tags" id="clSkills"></div>
+    </div>
+    <div class="sb-sec" id="clSecEdu" style="display:none">
+      <div class="sb-sec-h">Formação</div>
+      <div class="sb-edu-list" id="clEdu"></div>
+    </div>
+  </div>
+  <!-- Content -->
+  <div class="content" id="clContent">
+    <div class="cv-header-classic">
+      <div class="cv-name-classic" id="clCvNome"></div>
+      <div class="cv-role-classic" id="clCvRole"></div>
+    </div>
+    <div id="clSecResumo" style="display:none">
+      <div class="cv-sec-h">Resumo Profissional</div>
+      <div class="cv-resumo-txt" id="clResumo"></div>
+    </div>
+    <div id="clSecExp" style="display:none">
+      <div class="cv-sec-h">Experiência Profissional</div>
+      <div id="clExps"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Template: Moderno ─────────────────────────────────── -->
+<div class="page page-modern" id="pageModern">
+  <div class="mod-top-bar"></div>
+  <div class="mod-header">
+    <div class="mod-header-left">
+      <div class="mod-name" id="modNome"></div>
+      <div class="mod-role" id="modRole"></div>
+      <div class="mod-contact-row" id="modContatos"></div>
+    </div>
+    <div class="mod-photo-modern" id="modPhoto" onclick="document.getElementById('photoFileInput').click()" title="Clique para adicionar foto">
+      <div class="mod-photo-icon" id="modPhotoIcon">👤</div>
+      <img id="modPhotoImg" alt="">
+      <div class="sb-ph-hover">📷</div>
+    </div>
+  </div>
+  <div class="mod-body">
+    <div id="modSecResumo" style="display:none">
+      <div class="mod-sec-h">Resumo Profissional</div>
+      <div class="mod-resumo" id="modResumo"></div>
+    </div>
+    <div id="modSecExp" style="display:none">
+      <div class="mod-sec-h">Experiência Profissional</div>
+      <div id="modExps"></div>
+    </div>
+    <div class="mod-bottom-row" id="modBottom" style="display:none">
+      <div id="modSecEdu" style="display:none">
+        <div class="mod-sec-h">Formação</div>
+        <div id="modEdu"></div>
+      </div>
+      <div id="modSecSkills" style="display:none">
+        <div class="mod-sec-h">Habilidades</div>
+        <div class="mod-tags" id="modSkills"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- No data fallback -->
+<div class="no-data-page" id="noDataPage" style="display:none">
+  <div class="no-data">
     <h2>Nenhum currículo encontrado</h2>
     <p>Faça uma análise primeiro para gerar seu currículo otimizado.</p>
     <a href="/app">Analisar minha vaga →</a>
   </div>
-
-  <!-- ── Sidebar ── -->
-  <div class="sidebar" id="cvSidebar" style="display:none">
-
-    <!-- Photo -->
-    <div class="sb-photo-wrap">
-      <div class="sb-photo" id="sbPhoto" onclick="document.getElementById('photoFileInput').click()" title="Clique para adicionar foto">
-        <div class="sb-photo-icon" id="sbPhotoIcon">👤</div>
-        <img id="sbPhotoImg" alt="Foto">
-        <div class="sb-photo-hover">📷 Trocar foto</div>
-      </div>
-    </div>
-
-    <!-- Name + role -->
-    <div style="text-align:center;margin-top:-.3rem">
-      <div class="sb-name" id="sbNome"></div>
-      <div class="sb-role" id="sbRole"></div>
-    </div>
-
-    <!-- Contact -->
-    <div class="sb-sec" id="sbSecContato">
-      <div class="sb-sec-title">Contato</div>
-      <ul class="sb-contact" id="sbContatos"></ul>
-    </div>
-
-    <!-- Skills -->
-    <div class="sb-sec" id="sbSecSkills" style="display:none">
-      <div class="sb-sec-title">Habilidades</div>
-      <div class="sb-tags" id="sbSkills"></div>
-    </div>
-
-    <!-- Education -->
-    <div class="sb-sec" id="sbSecEdu" style="display:none">
-      <div class="sb-sec-title">Formação</div>
-      <div class="sb-edu-list" id="sbEdu"></div>
-    </div>
-
-  </div>
-
-  <!-- ── Main content ── -->
-  <div class="content" id="cvContent" style="display:none">
-
-    <!-- Header: name only (photo is in sidebar) -->
-    <div class="cv-header">
-      <div class="cv-name" id="cvNome"></div>
-      <div class="cv-role" id="cvRole"></div>
-    </div>
-
-    <!-- Summary -->
-    <div class="cv-sec" id="secResumo" style="display:none">
-      <div class="cv-sec-title">Resumo Profissional</div>
-      <div class="cv-resumo" id="cvResumo"></div>
-    </div>
-
-    <!-- Experience -->
-    <div class="cv-sec" id="secExp" style="display:none">
-      <div class="cv-sec-title">Experiência Profissional</div>
-      <div id="cvExperiencias"></div>
-    </div>
-
-  </div>
-</div><!-- /page -->
+</div>
 
 <script>
-(function() {
-
-  /* ── Load CV data ─────────────────────────────────────── */
+(function () {
+  /* ── Load data ──────────────────────────────────────────── */
   var raw = null;
   try { raw = localStorage.getItem('vagaai_cv'); } catch(e) {}
-  if (!raw) { show('noData'); return; }
+  if (!raw) { document.getElementById('noDataPage').style.display = 'flex'; document.getElementById('pageClassic').classList.remove('active'); return; }
   var cv;
-  try { cv = JSON.parse(raw); } catch(e) { show('noData'); return; }
+  try { cv = JSON.parse(raw); } catch(e) { document.getElementById('noDataPage').style.display = 'flex'; document.getElementById('pageClassic').classList.remove('active'); return; }
 
-  show('cvSidebar'); show('cvContent');
   if (cv.nome) document.title = cv.nome + ' — Currículo';
 
-  /* ── Sidebar: name + role ─────────────────────────────── */
-  setText('sbNome', cv.nome);
-  setText('sbRole', cv.titulo_profissional);
-
-  /* ── Content: name + role ─────────────────────────────── */
-  setText('cvNome', cv.nome);
-  setText('cvRole', cv.titulo_profissional);
-
-  /* ── Contacts ─────────────────────────────────────────── */
-  var c = cv.contato || {};
-  var items = [];
-  if (c.email)    items.push('<li><span class="sb-icon">✉</span><a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></li>');
-  if (c.telefone) items.push('<li><span class="sb-icon">📞</span>' + esc(c.telefone) + '</li>');
-  if (c.linkedin) {
-    var liTxt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/');
-    items.push('<li><span class="sb-icon">🔗</span><a href="' + esc(c.linkedin) + '" target="_blank">' + esc(liTxt) + '</a></li>');
+  /* ── Populate helpers ───────────────────────────────────── */
+  function txt(id, val) { var el = document.getElementById(id); if (el) el.textContent = val || ''; }
+  function show(id, mode) { var el = document.getElementById(id); if (el) el.style.display = mode || 'block'; }
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
-  if (c.cidade)   items.push('<li><span class="sb-icon">📍</span>' + esc(c.cidade) + '</li>');
-  document.getElementById('sbContatos').innerHTML = items.join('');
-
-  /* ── Skills ───────────────────────────────────────────── */
-  var skills = cv.habilidades;
-  if (skills && skills.length) {
-    show('sbSecSkills');
-    document.getElementById('sbSkills').innerHTML = skills.slice(0,16).map(function(s) {
-      return '<span class="sb-tag">' + esc(s) + '</span>';
-    }).join('');
-  }
-
-  /* ── Education (sidebar) ──────────────────────────────── */
-  var edus = cv.formacao;
-  if (edus && edus.length) {
-    show('sbSecEdu');
-    document.getElementById('sbEdu').innerHTML = edus.map(function(e) {
-      return '<div>'
-        + '<div class="sb-edu-curso">' + esc(e.curso || '') + '</div>'
-        + '<div class="sb-edu-inst">' + esc(e.instituicao || '') + '</div>'
-        + (e.periodo ? '<div class="sb-edu-periodo">' + esc(e.periodo) + '</div>' : '')
-        + '</div>';
-    }).join('');
-  }
-
-  /* ── Summary ──────────────────────────────────────────── */
-  if (cv.resumo_profissional) {
-    show('secResumo');
-    setText('cvResumo', cv.resumo_profissional);
-  }
-
-  /* ── Experience ───────────────────────────────────────── */
-  var exps = cv.experiencias;
-  if (exps && exps.length) {
-    show('secExp');
-    document.getElementById('cvExperiencias').innerHTML = exps.map(function(e) {
-      var buls = (e.bullets || []).map(function(b) {
-        return '<li>' + esc(b) + '</li>';
-      }).join('');
+  function expHtml(exps) {
+    return (exps || []).map(function(e) {
+      var buls = (e.bullets || []).map(function(b) { return '<li>' + esc(b) + '</li>'; }).join('');
       return '<div class="exp-item">'
-        + '<div class="exp-header">'
-          + '<span class="exp-cargo">' + esc(e.cargo || '') + '</span>'
-          + '<span class="exp-periodo">' + esc(e.periodo || '') + '</span>'
-        + '</div>'
-        + '<div class="exp-empresa">' + esc(e.empresa || '') + '</div>'
-        + (buls ? '<ul class="exp-bullets">' + buls + '</ul>' : '')
+        + '<div class="exp-row"><span class="exp-cargo">' + esc(e.cargo||'') + '</span><span class="exp-per">' + esc(e.periodo||'') + '</span></div>'
+        + '<div class="exp-emp">' + esc(e.empresa||'') + '</div>'
+        + (buls ? '<ul class="exp-ul">' + buls + '</ul>' : '')
         + '</div>';
     }).join('');
   }
 
-  /* ── Theme ────────────────────────────────────────────── */
-  var t = 'graphite';
-  try { t = localStorage.getItem('vagaai_cv_theme') || 'graphite'; } catch(e) {}
-  applyTheme(t, false);
+  /* ── CLASSIC template ───────────────────────────────────── */
+  txt('clNome', cv.nome); txt('clRole', cv.titulo_profissional);
+  txt('clCvNome', cv.nome); txt('clCvRole', cv.titulo_profissional);
 
-  /* ── Photo ────────────────────────────────────────────── */
+  var c = cv.contato || {};
+  var cItems = [];
+  if (c.email)    cItems.push('<li><span class="sb-ic">✉</span><a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></li>');
+  if (c.telefone) cItems.push('<li><span class="sb-ic">📞</span>' + esc(c.telefone) + '</li>');
+  if (c.linkedin) { var lt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); cItems.push('<li><span class="sb-ic">🔗</span><a href="' + esc(c.linkedin) + '" target="_blank">' + esc(lt) + '</a></li>'); }
+  if (c.cidade)   cItems.push('<li><span class="sb-ic">📍</span>' + esc(c.cidade) + '</li>');
+  document.getElementById('clContatos').innerHTML = cItems.join('');
+
+  if (cv.habilidades && cv.habilidades.length) {
+    show('clSecSkills');
+    document.getElementById('clSkills').innerHTML = cv.habilidades.slice(0,18).map(function(s){ return '<span class="sb-tag">' + esc(s) + '</span>'; }).join('');
+  }
+  if (cv.formacao && cv.formacao.length) {
+    show('clSecEdu');
+    document.getElementById('clEdu').innerHTML = cv.formacao.map(function(e){
+      return '<div><div class="sb-edu-curso">' + esc(e.curso||'') + '</div><div class="sb-edu-inst">' + esc(e.instituicao||'') + '</div>' + (e.periodo ? '<div class="sb-edu-per">' + esc(e.periodo) + '</div>' : '') + '</div>';
+    }).join('');
+  }
+  if (cv.resumo_profissional) { show('clSecResumo'); txt('clResumo', cv.resumo_profissional); }
+  if (cv.experiencias && cv.experiencias.length) { show('clSecExp'); document.getElementById('clExps').innerHTML = expHtml(cv.experiencias); }
+
+  /* ── MODERN template ────────────────────────────────────── */
+  txt('modNome', cv.nome); txt('modRole', cv.titulo_profissional);
+
+  var mContacts = [];
+  if (c.email)    mContacts.push('<div class="mod-contact-item">✉ <a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></div>');
+  if (c.telefone) mContacts.push('<div class="mod-contact-item">📞 ' + esc(c.telefone) + '</div>');
+  if (c.linkedin) { var mlt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); mContacts.push('<div class="mod-contact-item">🔗 <a href="' + esc(c.linkedin) + '" target="_blank">' + esc(mlt) + '</a></div>'); }
+  if (c.cidade)   mContacts.push('<div class="mod-contact-item">📍 ' + esc(c.cidade) + '</div>');
+  document.getElementById('modContatos').innerHTML = mContacts.join('');
+
+  if (cv.resumo_profissional) { show('modSecResumo'); txt('modResumo', cv.resumo_profissional); }
+  if (cv.experiencias && cv.experiencias.length) { show('modSecExp'); document.getElementById('modExps').innerHTML = expHtml(cv.experiencias); }
+
+  var hasBottom = false;
+  if (cv.formacao && cv.formacao.length) {
+    show('modSecEdu'); hasBottom = true;
+    document.getElementById('modEdu').innerHTML = cv.formacao.map(function(e){
+      return '<div class="mod-edu-item"><div class="mod-edu-curso">' + esc(e.curso||'') + '</div><div class="mod-edu-inst">' + esc(e.instituicao||'') + '</div>' + (e.periodo ? '<div class="mod-edu-per">' + esc(e.periodo) + '</div>' : '') + '</div>';
+    }).join('');
+  }
+  if (cv.habilidades && cv.habilidades.length) {
+    show('modSecSkills'); hasBottom = true;
+    document.getElementById('modSkills').innerHTML = cv.habilidades.slice(0,20).map(function(s){ return '<span class="mod-tag">' + esc(s) + '</span>'; }).join('');
+  }
+  if (hasBottom) show('modBottom', 'grid');
+
+  /* ── Photo ──────────────────────────────────────────────── */
   var savedPhoto = null;
   try { savedPhoto = localStorage.getItem('vagaai_cv_photo'); } catch(e) {}
-  if (savedPhoto) renderPhoto(savedPhoto);
+
+  if (savedPhoto) {
+    renderPhoto(savedPhoto);
+  } else {
+    // Show modal asking about photo
+    document.getElementById('photoModal').classList.remove('hidden');
+    document.getElementById('modalBtnYes').onclick = function() {
+      document.getElementById('photoModal').classList.add('hidden');
+      document.getElementById('photoFileInput').click();
+    };
+  }
 
   document.getElementById('photoFileInput').addEventListener('change', function(e) {
     var file = e.target.files[0];
@@ -376,47 +450,69 @@ body{background:var(--page-bg);font-family:'Inter',sans-serif;padding-top:50px;p
     var reader = new FileReader();
     reader.onload = function(ev) {
       renderPhoto(ev.target.result);
-      try { localStorage.setItem('vagaai_cv_photo', ev.target.result); } catch(e) {}
+      try { localStorage.setItem('vagaai_cv_photo', ev.target.result); } catch(ex) {}
     };
     reader.readAsDataURL(file);
     this.value = '';
   });
 
   function renderPhoto(src) {
-    var img = document.getElementById('sbPhotoImg');
-    img.src = src;
-    img.style.display = 'block';
-    document.getElementById('sbPhotoIcon').style.display = 'none';
+    // Classic
+    var img1 = document.getElementById('clPhotoImg');
+    img1.src = src; img1.style.display = 'block';
+    document.getElementById('clPhotoIcon').style.display = 'none';
+    // Modern
+    var img2 = document.getElementById('modPhotoImg');
+    img2.src = src; img2.style.display = 'block';
+    document.getElementById('modPhotoIcon').style.display = 'none';
   }
 
-  /* ── Helpers ──────────────────────────────────────────── */
-  function show(id) {
-    var el = document.getElementById(id);
-    if (el) el.style.display = id === 'cvSidebar' ? 'flex' : id === 'cvContent' ? 'flex' : 'block';
-  }
-  function setText(id, val) {
-    var el = document.getElementById(id);
-    if (el) el.textContent = val || '';
-  }
-  function esc(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+  /* ── Theme ──────────────────────────────────────────────── */
+  var savedTheme = 'graphite';
+  try { savedTheme = localStorage.getItem('vagaai_cv_theme') || 'graphite'; } catch(e) {}
+  applyTheme(savedTheme, false);
+
+  /* ── Template ───────────────────────────────────────────── */
+  var savedTpl = 'classic';
+  try { savedTpl = localStorage.getItem('vagaai_cv_tpl') || 'classic'; } catch(e) {}
+  applyTemplate(savedTpl, false);
 
 })();
 
-/* ── Theme switcher (global) ──────────────────────────────── */
+/* ── Global: theme ──────────────────────────────────────── */
 function applyTheme(theme, save) {
   if (theme === 'graphite') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme', theme);
-  ['graphite','green','navy'].forEach(function(t) {
-    var d = document.getElementById('dot-' + t);
-    if (d) d.classList.toggle('active', t === theme);
-  });
-  if (save !== false) {
-    try { localStorage.setItem('vagaai_cv_theme', theme); } catch(e) {}
-  }
+  document.querySelectorAll('.tdot').forEach(function(d) { d.classList.remove('active'); });
+  var dot = document.getElementById('dot-' + theme);
+  if (dot) dot.classList.add('active');
+  if (save !== false) try { localStorage.setItem('vagaai_cv_theme', theme); } catch(e) {}
 }
-function setTheme(theme) { applyTheme(theme, true); }
+function setTheme(t) { applyTheme(t, true); }
+
+/* ── Global: template ───────────────────────────────────── */
+function applyTemplate(tpl, save) {
+  var classic = document.getElementById('pageClassic');
+  var modern  = document.getElementById('pageModern');
+  if (tpl === 'modern') {
+    classic.classList.remove('active');
+    modern.classList.add('active');
+    document.getElementById('tplBtnClassic').classList.remove('active');
+    document.getElementById('tplBtnModern').classList.add('active');
+  } else {
+    classic.classList.add('active');
+    modern.classList.remove('active');
+    document.getElementById('tplBtnClassic').classList.add('active');
+    document.getElementById('tplBtnModern').classList.remove('active');
+  }
+  if (save !== false) try { localStorage.setItem('vagaai_cv_tpl', tpl); } catch(e) {}
+}
+function setTemplate(t) { applyTemplate(t, true); }
+
+/* ── Global: close modal ────────────────────────────────── */
+function closeModal() {
+  document.getElementById('photoModal').classList.add('hidden');
+}
 </script>
 </body>
 </html>
