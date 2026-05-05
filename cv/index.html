@@ -206,6 +206,14 @@ body{background:var(--page-bg);font-family:'Inter',sans-serif;padding-top:48px;p
 .no-data p{font-size:13px;margin-bottom:1.5rem}
 .no-data a{display:inline-block;background:#3ecf8e;color:#0a0f0d;font-weight:700;font-size:13px;padding:.65rem 1.3rem;border-radius:8px;text-decoration:none}
 
+/* ─── No-photo mode ───────────────────────────────────────── */
+/* Classic: hide circle, center name with more breathing room */
+html.no-photo .sb-photo-wrap{display:none}
+html.no-photo .page-classic .sidebar > div:nth-child(2){margin-top:.2rem}
+/* Modern: hide photo, header-left takes full width */
+html.no-photo .mod-photo-modern{display:none}
+html.no-photo .mod-header{display:block}
+
 /* ─── Print ───────────────────────────────────────────────── */
 @media print{
   body{background:#fff!important;padding:0}
@@ -433,10 +441,14 @@ body{background:var(--page-bg);font-family:'Inter',sans-serif;padding-top:48px;p
   var savedPhoto = null;
   try { savedPhoto = localStorage.getItem('vagaai_cv_photo'); } catch(e) {}
 
-  if (savedPhoto) {
+  if (savedPhoto === 'none') {
+    // Usuário escolheu sem foto anteriormente
+    document.documentElement.classList.add('no-photo');
+  } else if (savedPhoto) {
+    // Tem foto salva — renderiza direto, sem modal
     renderPhoto(savedPhoto);
   } else {
-    // Show modal asking about photo
+    // Primeira vez — mostra modal
     document.getElementById('photoModal').classList.remove('hidden');
     document.getElementById('modalBtnYes').onclick = function() {
       document.getElementById('photoModal').classList.add('hidden');
@@ -457,6 +469,8 @@ body{background:var(--page-bg);font-family:'Inter',sans-serif;padding-top:48px;p
   });
 
   function renderPhoto(src) {
+    // Remove no-photo se o usuário adicionar foto depois
+    document.documentElement.classList.remove('no-photo');
     // Classic
     var img1 = document.getElementById('clPhotoImg');
     img1.src = src; img1.style.display = 'block';
@@ -509,9 +523,11 @@ function applyTemplate(tpl, save) {
 }
 function setTemplate(t) { applyTemplate(t, true); }
 
-/* ── Global: close modal ────────────────────────────────── */
+/* ── Global: close modal (sem foto) ─────────────────────── */
 function closeModal() {
   document.getElementById('photoModal').classList.add('hidden');
+  document.documentElement.classList.add('no-photo');
+  try { localStorage.setItem('vagaai_cv_photo', 'none'); } catch(e) {}
 }
 </script>
 </body>
