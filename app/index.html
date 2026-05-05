@@ -188,6 +188,28 @@ textarea::placeholder{color:var(--muted)}
 [data-theme="light"] .logo-light{display:block!important}
 .theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;padding:0;line-height:1;flex-shrink:0}
 .theme-btn:hover{border-color:var(--green-border);color:var(--green)}
+
+/* LOCK OVERLAY (usuários anônimos) */
+.li-locked{filter:blur(5px);user-select:none;pointer-events:none;opacity:.65}
+.lock-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to bottom,transparent,var(--surface) 52%);padding:3.5rem 1.2rem 1.1rem;text-align:center;pointer-events:none}
+.lock-cta-text{font-size:12px;color:var(--muted);margin-bottom:.55rem}
+.lock-btn{pointer-events:auto;font-size:12px;font-weight:700;color:var(--green);background:var(--green-dim);border:1px solid var(--green-border);border-radius:6px;padding:.35rem .9rem;cursor:pointer;transition:all .15s}
+.lock-btn:hover{background:rgba(62,207,142,.2)}
+
+/* BRIEFING DA EMPRESA */
+.briefing-section{background:var(--surface);border:1px solid var(--green-border);border-radius:12px;padding:1.4rem;margin-bottom:1.2rem;display:none}
+.briefing-section.show{display:block}
+.briefing-badge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--green);background:var(--green-dim);border:1px solid var(--green-border);padding:2px 9px;border-radius:20px;display:inline-block;margin-bottom:.7rem}
+.briefing-header{font-size:14px;font-weight:700;color:var(--text);margin-bottom:1rem}
+.briefing-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:580px){.briefing-grid{grid-template-columns:1fr}}
+.briefing-block-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.45rem}
+.briefing-block-list{list-style:none;display:flex;flex-direction:column;gap:.4rem;margin:0;padding:0}
+.briefing-block-list li{font-size:13px;color:var(--text);line-height:1.45;padding-left:1rem;position:relative}
+.briefing-block-list li::before{content:'→';position:absolute;left:0;color:var(--green);font-size:11px;line-height:1.6}
+.briefing-atencao{grid-column:1/-1;margin-top:.2rem}
+.briefing-atencao .briefing-block-list li{color:#ff8f8f}
+.briefing-atencao .briefing-block-list li::before{color:var(--red)}
 </style>
 <script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
 </head>
@@ -306,17 +328,24 @@ textarea::placeholder{color:var(--muted)}
       </div>
     </div>
 
+    <!-- BRIEFING DA EMPRESA (apenas usuários com créditos) -->
+    <div class="briefing-section" id="briefingSection">
+      <div class="briefing-badge">✦ Incluso no seu plano</div>
+      <div class="briefing-header">🏢 Briefing da empresa</div>
+      <div class="briefing-grid" id="briefingGrid"></div>
+    </div>
+
     <div class="result-actions">
       <button class="btn-outline" id="newAnalysisBtn" onclick="tryNewAnalysis()">← Nova análise</button>
       <button class="btn-cv" id="cvBtn" style="display:none" onclick="openCV()">📄 Baixar CV Otimizado</button>
-      <button class="btn-pro" id="upsellBtn" onclick="document.getElementById('upsellSection').scrollIntoView({behavior:'smooth'})">Ver planos para otimizar →</button>
+      <button class="btn-pro" id="upsellBtn" onclick="document.getElementById('upsellSection').scrollIntoView({behavior:'smooth'})">🔒 Desbloquear resultado completo →</button>
     </div>
 
     <!-- UPSELL -->
     <div class="upsell" id="upsellSection">
-      <div class="upsell-label">Próximo passo</div>
-      <div class="upsell-title">Quer um currículo otimizado para essa vaga?</div>
-      <p class="upsell-sub">O diagnóstico mostrou onde você perde pontos. Agora deixa o VagaAI reescrever seu currículo para passar pelo ATS e chegar mais forte na entrevista.</p>
+      <div class="upsell-label">Desbloqueie o resultado completo</div>
+      <div class="upsell-title">CV otimizado + Briefing da empresa</div>
+      <p class="upsell-sub">Você viu o diagnóstico. Agora receba o currículo reescrito para passar pelo ATS + um briefing com o que a empresa valoriza e o que falar na entrevista.</p>
       <div class="upsell-plans" id="upsellPlans"></div>
     </div>
 
@@ -571,8 +600,12 @@ function showResult(d) {
   document.getElementById('scoreNivel').textContent = d.nivel || '';
   document.getElementById('scoreResumo').textContent = d.resumo || '';
 
-  renderList('falhasList', d.falhas || []);
-  renderList('sugestoesList', d.sugestoes || []);
+  var isAnonymous = !authSession;
+
+  // Falhas e sugestões: limitadas para anônimos (2 visíveis, resto bloqueado)
+  renderListWithLock('falhasList', d.falhas || [], isAnonymous, 2, 'falhas');
+  renderListWithLock('sugestoesList', d.sugestoes || [], isAnonymous, 2, 'sugestões');
+
   renderKeywords('kwFound', d.keywords_encontradas || [], 'found');
   renderKeywords('kwMissing', d.keywords_faltando || [], 'missing');
 
@@ -590,30 +623,40 @@ function showResult(d) {
     document.querySelectorAll('.factor-fill').forEach(function(el) { el.style.width = el.dataset.val; });
   }, 200);
 
-  // Mostra upsell
+  // Briefing da empresa — só para usuários autenticados
+  var briefingSection = document.getElementById('briefingSection');
+  if (!isAnonymous && d.briefing_empresa) {
+    renderBriefing(d.briefing_empresa);
+    briefingSection.classList.add('show');
+  } else {
+    briefingSection.classList.remove('show');
+  }
+
+  // Upsell: sempre visível para anônimos; escondido para pagos com CV
   document.getElementById('upsellSection').classList.add('show');
 
-  // Botão CV Otimizado — só aparece se a IA retornou cv_otimizado
+  // Botões de ação
   var cvBtn = document.getElementById('cvBtn');
   var upsellBtn = document.getElementById('upsellBtn');
-  if (d.cv_otimizado && d.cv_otimizado.nome) {
+  if (!isAnonymous && d.cv_otimizado && d.cv_otimizado.nome) {
+    // Usuário pago com CV gerado
     try { localStorage.setItem('vagaai_cv', JSON.stringify(d.cv_otimizado)); } catch(e) {}
     cvBtn.style.display = 'block';
-    if (upsellBtn) upsellBtn.style.display = 'none';
+    upsellBtn.style.display = 'none';
+    document.getElementById('upsellSection').classList.remove('show');
   } else {
     cvBtn.style.display = 'none';
-    if (upsellBtn) upsellBtn.style.display = 'block';
+    upsellBtn.style.display = 'block';
   }
 
   // Botão de nova análise
   var newBtn = document.getElementById('newAnalysisBtn');
   if (authSession) {
-    // Usuário logado: permite nova análise se tiver créditos
     newBtn.disabled = userCredits <= 0;
     newBtn.textContent = userCredits > 0 ? '← Nova análise' : '← Sem créditos';
   } else {
     newBtn.disabled = true;
-    newBtn.textContent = '✓ Análise gratuita usada';
+    newBtn.textContent = '✓ Diagnóstico usado';
   }
 
   section.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -653,6 +696,53 @@ function openCV() {
 function renderList(id, items) {
   var el = document.getElementById(id);
   el.innerHTML = items.map(function(i) { return '<li>' + escHtml(i) + '</li>'; }).join('');
+}
+
+function renderListWithLock(id, items, locked, showCount, lockLabel) {
+  var el = document.getElementById(id);
+  var visible = locked ? items.slice(0, showCount) : items;
+  var hidden = locked ? items.slice(showCount) : [];
+  el.innerHTML = visible.map(function(i) { return '<li>' + escHtml(i) + '</li>'; }).join('')
+    + hidden.map(function(i) { return '<li class="li-locked">' + escHtml(i) + '</li>'; }).join('');
+  if (locked && hidden.length > 0) {
+    var card = el.closest('.result-card');
+    if (card) {
+      card.style.position = 'relative';
+      card.style.overflow = 'hidden';
+      var ov = document.createElement('div');
+      ov.className = 'lock-overlay';
+      ov.innerHTML = '<div class="lock-cta-text">🔒 +' + hidden.length + ' ' + lockLabel + ' ocultas</div>'
+        + '<button class="lock-btn" onclick="document.getElementById(\'upsellSection\').scrollIntoView({behavior:\'smooth\'})">Ver tudo com créditos →</button>';
+      card.appendChild(ov);
+    }
+  }
+}
+
+function renderBriefing(b) {
+  var blocks = [
+    { title: '🎯 O que valorizam', key: 'o_que_valorizam' },
+    { title: '👤 O que buscam', key: 'buscam_em_candidatos' },
+    { title: '💬 O que mencionar na entrevista', key: 'pontos_para_entrevista' },
+    { title: '❓ Perguntas para fazer', key: 'perguntas_para_fazer' }
+  ];
+  var html = '';
+  blocks.forEach(function(block) {
+    var items = b[block.key] || [];
+    if (!items.length) return;
+    html += '<div class="briefing-block">'
+      + '<div class="briefing-block-title">' + block.title + '</div>'
+      + '<ul class="briefing-block-list">'
+      + items.map(function(i) { return '<li>' + escHtml(i) + '</li>'; }).join('')
+      + '</ul></div>';
+  });
+  if (b.pontos_de_atencao && b.pontos_de_atencao.length) {
+    html += '<div class="briefing-block briefing-atencao">'
+      + '<div class="briefing-block-title">⚠️ Pontos de atenção na vaga</div>'
+      + '<ul class="briefing-block-list">'
+      + b.pontos_de_atencao.map(function(i) { return '<li>' + escHtml(i) + '</li>'; }).join('')
+      + '</ul></div>';
+  }
+  document.getElementById('briefingGrid').innerHTML = html;
 }
 
 function renderKeywords(id, items, cls) {

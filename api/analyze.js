@@ -218,6 +218,28 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
       }
     ],
     "habilidades": ["<skill técnica 1>", "<skill 2>", "<keyword da vaga incorporada naturalmente>"]
+  },
+  "briefing_empresa": {
+    "o_que_valorizam": [
+      "<valor ou característica cultural inferida da vaga>",
+      "<outro valor percebido>"
+    ],
+    "buscam_em_candidatos": [
+      "<qualidade implícita que a empresa busca, além dos requisitos técnicos>",
+      "<outra qualidade percebida>"
+    ],
+    "pontos_para_entrevista": [
+      "<ponto concreto para mencionar na entrevista alinhado com a vaga>",
+      "<outro ponto de destaque>",
+      "<terceiro ponto>"
+    ],
+    "perguntas_para_fazer": [
+      "<pergunta inteligente que demonstra interesse genuíno>",
+      "<outra pergunta estratégica>"
+    ],
+    "pontos_de_atencao": [
+      "<sinal de atenção ou ambiguidade percebida na descrição da vaga>"
+    ]
   }
 }`;
 
@@ -231,7 +253,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5',
-        max_tokens: 3000,
+        max_tokens: 4000,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
