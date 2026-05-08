@@ -17,6 +17,7 @@ html{font-size:14px}
   --sb:#2d3436; --sb-t:#f0f0f0; --sb-m:rgba(240,240,240,.52); --sb-b:rgba(255,255,255,.1);
   --ac:#636e72; --ac2:#7f8c8d; --page-bg:#e8e8e8;
 }
+.ic{display:inline-flex;align-items:center;vertical-align:middle;flex-shrink:0}
 [data-theme="green"]   {--sb:#1b3a2d;--sb-t:#e6f4ed;--sb-m:rgba(230,244,237,.52);--sb-b:rgba(62,207,142,.18);--ac:#3ecf8e;--ac2:#2eaf74}
 [data-theme="navy"]    {--sb:#1a2a48;--sb-t:#e6edf8;--sb-m:rgba(230,237,248,.52);--sb-b:rgba(100,160,230,.18);--ac:#5b9bd5;--ac2:#4a8ac4}
 [data-theme="wine"]    {--sb:#3d1520;--sb-t:#f8e6e9;--sb-m:rgba(248,230,233,.52);--sb-b:rgba(192,57,43,.22);--ac:#e74c3c;--ac2:#c0392b}
@@ -339,11 +340,11 @@ html.no-photo .mod-header{display:block}
 <!-- ─── Photo Modal ──────────────────────────────────────── -->
 <div class="modal-overlay hidden" id="photoModal">
   <div class="modal-box">
-    <div class="modal-icon">📷</div>
+    <div class="modal-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
     <h2 class="modal-title">Adicionar foto ao currículo?</h2>
     <p class="modal-sub">Uma foto profissional aumenta o impacto visual. Você pode adicionar agora ou pular e adicionar depois.</p>
     <div class="modal-btns">
-      <button class="modal-btn-yes" id="modalBtnYes">📷 Sim, adicionar foto</button>
+      <button class="modal-btn-yes" id="modalBtnYes"><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span> Sim, adicionar foto</button>
       <button class="modal-btn-no" onclick="closeModal()">Continuar sem foto</button>
     </div>
   </div>
@@ -355,7 +356,7 @@ html.no-photo .mod-header{display:block}
   <!-- Logo + Voltar -->
   <div class="sp-top">
     <span class="sp-logo">VagaAI</span>
-    <a href="/app" class="sp-back">← Voltar</a>
+    <a href="/app" class="sp-back"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span> Voltar</a>
   </div>
 
   <!-- Modelo -->
@@ -363,10 +364,10 @@ html.no-photo .mod-header{display:block}
     <div class="sp-label">Modelo</div>
     <div class="tpl-toggle">
       <button class="tpl-btn active" id="tplBtnClassic" onclick="setTemplate('classic')">
-        📋 Profissional <span class="tpl-check">✓</span>
+        <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></span> Profissional <span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
       </button>
       <button class="tpl-btn" id="tplBtnModern" onclick="setTemplate('modern')">
-        ✨ Moderno <span class="tpl-check">✓</span>
+        <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></span> Moderno <span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
       </button>
     </div>
   </div>
@@ -397,7 +398,7 @@ html.no-photo .mod-header{display:block}
     <div class="sp-photo-preview">
       <div class="sp-photo-circle" id="spPhotoCircle">
         <img id="spPhotoThumb" alt="">
-        <span id="spPhotoIcon">👤</span>
+        <span id="spPhotoIcon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
       </div>
       <div class="sp-photo-status">
         <strong id="spPhotoStatusTitle">Sem foto</strong>
@@ -406,10 +407,10 @@ html.no-photo .mod-header{display:block}
     </div>
     <div class="sp-photo-btns">
       <button class="sp-ph-btn" onclick="document.getElementById('photoFileInput').click()">
-        📷 <span id="spPhotoBtnLabel">Adicionar foto</span>
+        <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span> <span id="spPhotoBtnLabel">Adicionar foto</span>
       </button>
       <button class="sp-ph-btn danger" id="spRemoveBtn" style="display:none" onclick="removePhoto()">
-        🗑 Remover foto
+        <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span> Remover foto
       </button>
     </div>
     <input type="file" id="photoFileInput" accept="image/*">
@@ -418,7 +419,7 @@ html.no-photo .mod-header{display:block}
   <!-- Imprimir -->
   <div class="sp-bottom">
     <button class="sp-print" onclick="window.print()">
-      🖨️ Imprimir / PDF
+      <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span> Imprimir / PDF
     </button>
     <div style="font-size:9.5px;color:rgba(255,255,255,.28);margin-top:.6rem;line-height:1.5;text-align:center">
       No diálogo: defina<br><strong style="color:rgba(255,255,255,.45)">Margens → Nenhuma</strong>
@@ -433,9 +434,9 @@ html.no-photo .mod-header{display:block}
   <div class="sidebar" id="clSidebar">
     <div class="sb-photo-wrap">
       <div class="sb-photo" id="clPhoto" onclick="document.getElementById('photoFileInput').click()" title="Clique para trocar a foto">
-        <div class="sb-photo-icon" id="clPhotoIcon">👤</div>
+        <div class="sb-photo-icon" id="clPhotoIcon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
         <img id="clPhotoImg" alt="">
-        <div class="sb-ph-hover">📷 Trocar</div>
+        <div class="sb-ph-hover"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Trocar</div>
       </div>
     </div>
     <div style="text-align:center;margin-top:-.2rem">
@@ -482,9 +483,9 @@ html.no-photo .mod-header{display:block}
       <div class="mod-contact-row" id="modContatos"></div>
     </div>
     <div class="mod-photo-modern" id="modPhoto" onclick="document.getElementById('photoFileInput').click()" title="Clique para trocar a foto">
-      <div class="mod-photo-icon" id="modPhotoIcon">👤</div>
+      <div class="mod-photo-icon" id="modPhotoIcon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
       <img id="modPhotoImg" alt="">
-      <div class="sb-ph-hover">📷</div>
+      <div class="sb-ph-hover"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
     </div>
   </div>
   <div class="mod-body">
@@ -552,10 +553,10 @@ html.no-photo .mod-header{display:block}
 
   var c = cv.contato || {};
   var cItems = [];
-  if (c.email)    cItems.push('<li><span class="sb-ic">✉</span><a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></li>');
-  if (c.telefone) cItems.push('<li><span class="sb-ic">📞</span>' + esc(c.telefone) + '</li>');
-  if (c.linkedin) { var lt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); cItems.push('<li><span class="sb-ic">🔗</span><a href="' + esc(c.linkedin) + '" target="_blank">' + esc(lt) + '</a></li>'); }
-  if (c.cidade)   cItems.push('<li><span class="sb-ic">📍</span>' + esc(c.cidade) + '</li>');
+  if (c.email)    cItems.push('<li><span class="sb-ic"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span><a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></li>');
+  if (c.telefone) cItems.push('<li><span class="sb-ic"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.4 2 2 0 0 1 3.6 2.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>' + esc(c.telefone) + '</li>');
+  if (c.linkedin) { var lt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); cItems.push('<li><span class="sb-ic"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span><a href="' + esc(c.linkedin) + '" target="_blank">' + esc(lt) + '</a></li>'); }
+  if (c.cidade)   cItems.push('<li><span class="sb-ic"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>' + esc(c.cidade) + '</li>');
   document.getElementById('clContatos').innerHTML = cItems.join('');
 
   if (cv.habilidades && cv.habilidades.length) {
@@ -575,10 +576,10 @@ html.no-photo .mod-header{display:block}
   txt('modNome', cv.nome); txt('modRole', cv.titulo_profissional);
 
   var mContacts = [];
-  if (c.email)    mContacts.push('<div class="mod-contact-item">✉ <a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></div>');
-  if (c.telefone) mContacts.push('<div class="mod-contact-item">📞 ' + esc(c.telefone) + '</div>');
-  if (c.linkedin) { var mlt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); mContacts.push('<div class="mod-contact-item">🔗 <a href="' + esc(c.linkedin) + '" target="_blank">' + esc(mlt) + '</a></div>'); }
-  if (c.cidade)   mContacts.push('<div class="mod-contact-item">📍 ' + esc(c.cidade) + '</div>');
+  if (c.email)    mContacts.push('<div class="mod-contact-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> <a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></div>');
+  if (c.telefone) mContacts.push('<div class="mod-contact-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.4 2 2 0 0 1 3.6 2.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> ' + esc(c.telefone) + '</div>');
+  if (c.linkedin) { var mlt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); mContacts.push('<div class="mod-contact-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> <a href="' + esc(c.linkedin) + '" target="_blank">' + esc(mlt) + '</a></div>'); }
+  if (c.cidade)   mContacts.push('<div class="mod-contact-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ' + esc(c.cidade) + '</div>');
   document.getElementById('modContatos').innerHTML = mContacts.join('');
 
   if (cv.resumo_profissional) { show('modSecResumo'); txt('modResumo', cv.resumo_profissional); }

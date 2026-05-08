@@ -47,6 +47,7 @@
   --yellow:#ffd166;
   --yellow-dim:rgba(255,209,102,0.12);
 }
+.ic{display:inline-flex;align-items:center;vertical-align:middle;flex-shrink:0}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
 
@@ -243,7 +244,7 @@ textarea::placeholder{color:var(--muted)}
     <a href="/dashboard" class="nav-credits" id="navCredits">
       <span id="navCreditsNum">0</span> créditos
     </a>
-    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">☀️</button>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
     <a href="/" class="nav-back" id="navBackBtn">← Início</a>
   </div>
 </nav>
@@ -260,7 +261,7 @@ textarea::placeholder{color:var(--muted)}
 
   <!-- LIMITE ATINGIDO -->
   <div class="limit-section" id="limitSection">
-    <div class="limit-icon" id="limitIcon">🔒</div>
+    <div class="limit-icon" id="limitIcon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
     <div class="limit-title" id="limitTitle">Você já usou sua análise gratuita</div>
     <p class="limit-sub" id="limitSub">O diagnóstico grátis é limitado a 1 análise. Para continuar aplicando com currículo otimizado, escolha um plano:</p>
     <div class="limit-plans" id="limitPlans"></div>
@@ -293,20 +294,20 @@ textarea::placeholder{color:var(--muted)}
       <span class="upload-status" id="uploadStatus"><span id="uploadStatusText"></span></span>
       <div class="cv-received" id="cvReceived">
         <div class="cv-received-info">
-          <div class="cv-received-icon">📄</div>
+          <div class="cv-received-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
           <div>
             <div class="cv-received-name" id="cvReceivedName"></div>
             <div class="cv-received-chars" id="cvReceivedChars"></div>
           </div>
         </div>
-        <button class="cv-received-remove" title="Remover arquivo" onclick="removeCvFile()">✕</button>
+        <button class="cv-received-remove" title="Remover arquivo" onclick="removeCvFile()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
       <textarea id="cvInput" rows="10" placeholder="Cole aqui o conteúdo do seu currículo (experiências, formação, habilidades...)"></textarea>
       <div class="char-count" id="cvCount">0 caracteres</div>
     </div>
 
     <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">
-      <span>⚡</span> Analisar agora — grátis
+      <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Analisar agora — grátis
     </button>
 
     <div class="error-box" id="errorBox"></div>
@@ -345,11 +346,11 @@ textarea::placeholder{color:var(--muted)}
 
     <div class="result-grid">
       <div class="result-card">
-        <div class="result-card-title red">⚠ Principais falhas</div>
+        <div class="result-card-title red"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span> Principais falhas</div>
         <ul class="result-list red" id="falhasList"></ul>
       </div>
       <div class="result-card">
-        <div class="result-card-title green">✦ Sugestões</div>
+        <div class="result-card-title green"><span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></span> Sugestões</div>
         <ul class="result-list green" id="sugestoesList"></ul>
       </div>
     </div>
@@ -370,15 +371,15 @@ textarea::placeholder{color:var(--muted)}
 
     <!-- BRIEFING DA EMPRESA (apenas usuários com créditos) -->
     <div class="briefing-section" id="briefingSection">
-      <div class="briefing-badge">✦ Incluso no seu plano</div>
-      <div class="briefing-header">🏢 Briefing da empresa</div>
+      <div class="briefing-badge"><span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></span> Incluso no seu plano</div>
+      <div class="briefing-header"><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></span> Briefing da empresa</div>
       <div class="briefing-grid" id="briefingGrid"></div>
     </div>
 
     <div class="result-actions">
-      <button class="btn-outline" id="newAnalysisBtn" onclick="tryNewAnalysis()">← Nova análise</button>
-      <button class="btn-cv" id="cvBtn" style="display:none" onclick="openCV()">📄 Baixar CV Otimizado</button>
-      <button class="btn-pro" id="upsellBtn" onclick="document.getElementById('upsellSection').scrollIntoView({behavior:'smooth'})">🔒 Desbloquear resultado completo →</button>
+      <button class="btn-outline" id="newAnalysisBtn" onclick="tryNewAnalysis()"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span> Nova análise</button>
+      <button class="btn-cv" id="cvBtn" style="display:none" onclick="openCV()"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Baixar CV Otimizado</button>
+      <button class="btn-pro" id="upsellBtn" onclick="document.getElementById('upsellSection').scrollIntoView({behavior:'smooth'})"><span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span> Desbloquear resultado completo</button>
     </div>
 
     <!-- UPSELL -->
@@ -447,7 +448,7 @@ function updateCreditsUI() {
   // Atualiza texto do botão de análise
   var btn = document.getElementById('analyzeBtn');
   if (btn) {
-    btn.innerHTML = '<span>⚡</span> Analisar agora — 1 crédito';
+    btn.innerHTML = '<span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Analisar agora — 1 crédito';
   }
   // Remove aviso "grátis sem cadastro"
   document.getElementById('freeNotice').style.display = 'none';
@@ -514,7 +515,7 @@ function showLimitReached() {
 
   if (authSession) {
     // Usuário logado sem créditos
-    document.getElementById('limitIcon').textContent = '💳';
+    document.getElementById('limitIcon').innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>';
     document.getElementById('limitTitle').textContent = 'Seus créditos acabaram';
     document.getElementById('limitSub').textContent = 'Você não tem créditos disponíveis. Compre mais para continuar analisando suas candidaturas.';
     document.getElementById('limitPlans').style.display = 'none';
@@ -543,7 +544,7 @@ function setUploadProgress(pct) {
 
 function showCvReceived(fileName, charCount) {
   document.getElementById('cvReceived').classList.add('show');
-  document.getElementById('cvReceivedName').textContent = '📄 ' + fileName;
+  document.getElementById('cvReceivedName').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> ' + fileName;
   document.getElementById('cvReceivedChars').textContent = charCount.toLocaleString('pt-BR') + ' caracteres extraídos';
   document.getElementById('cvInput').style.display = 'none';
   document.getElementById('cvCount').style.display = 'none';
@@ -908,7 +909,7 @@ function renderListWithLock(id, items, locked, showCount, lockLabel) {
       card.style.overflow = 'hidden';
       var ov = document.createElement('div');
       ov.className = 'lock-overlay';
-      ov.innerHTML = '<div class="lock-cta-text">🔒 +' + hidden.length + ' ' + lockLabel + ' ocultas</div>'
+      ov.innerHTML = '<div class="lock-cta-text"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> +' + hidden.length + ' ' + lockLabel + ' ocultas</div>'
         + '<button class="lock-btn" onclick="document.getElementById(\'upsellSection\').scrollIntoView({behavior:\'smooth\'})">Ver tudo com créditos →</button>';
       card.appendChild(ov);
     }
@@ -917,10 +918,10 @@ function renderListWithLock(id, items, locked, showCount, lockLabel) {
 
 function renderBriefing(b) {
   var blocks = [
-    { title: '🎯 O que valorizam', key: 'o_que_valorizam' },
-    { title: '👤 O que buscam', key: 'buscam_em_candidatos' },
-    { title: '💬 O que mencionar na entrevista', key: 'pontos_para_entrevista' },
-    { title: '❓ Perguntas para fazer', key: 'perguntas_para_fazer' }
+    { title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> O que valorizam', key: 'o_que_valorizam' },
+    { title: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> O que buscam', key: 'buscam_em_candidatos' },
+    { title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> O que mencionar na entrevista', key: 'pontos_para_entrevista' },
+    { title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Perguntas para fazer', key: 'perguntas_para_fazer' }
   ];
   var html = '';
   blocks.forEach(function(block) {
@@ -934,7 +935,7 @@ function renderBriefing(b) {
   });
   if (b.pontos_de_atencao && b.pontos_de_atencao.length) {
     html += '<div class="briefing-block briefing-atencao">'
-      + '<div class="briefing-block-title">⚠️ Pontos de atenção na vaga</div>'
+      + '<div class="briefing-block-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Pontos de atenção na vaga</div>'
       + '<ul class="briefing-block-list">'
       + b.pontos_de_atencao.map(function(i) { return '<li>' + escHtml(i) + '</li>'; }).join('')
       + '</ul></div>';
@@ -981,8 +982,10 @@ initAuth().then(function() {
     } catch(e) {}
   }
 });
-function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')==='light';if(l){document.documentElement.removeAttribute('data-theme');localStorage.setItem('vagaai_theme','dark')}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('vagaai_theme','light')}var b=document.getElementById('themeBtn');if(b)b.textContent=l?'☀️':'🌙'}
-;(function(){var b=document.getElementById('themeBtn');if(b)b.textContent=document.documentElement.getAttribute('data-theme')==='light'?'🌙':'☀️'})();
+var ICON_SUN_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
+var ICON_MOON_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')==='light';if(l){document.documentElement.removeAttribute('data-theme');localStorage.setItem('vagaai_theme','dark')}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('vagaai_theme','light')}var b=document.getElementById('themeBtn');if(b)b.innerHTML=l?ICON_SUN_SVG:ICON_MOON_SVG}
+;(function(){var b=document.getElementById('themeBtn');if(b)b.innerHTML=document.documentElement.getAttribute('data-theme')==='light'?ICON_MOON_SVG:ICON_SUN_SVG})();
 </script>
 
 </body>
