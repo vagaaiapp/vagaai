@@ -244,7 +244,7 @@ textarea::placeholder{color:var(--muted)}
       <span id="navCreditsNum">0</span> créditos
     </a>
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">☀️</button>
-    <a href="/" class="nav-back">← Início</a>
+    <a href="/" class="nav-back" id="navBackBtn">← Início</a>
   </div>
 </nav>
 
@@ -410,6 +410,9 @@ async function initAuth() {
     if (session) {
       authSession = session;
       await loadUserCredits(session);
+      // Redireciona "Início" para o painel quando logado
+      var backBtn = document.getElementById('navBackBtn');
+      if (backBtn) { backBtn.href = '/dashboard'; backBtn.textContent = '← Painel'; }
     }
   } catch(e) {}
   // Verifica limite grátis (anônimos)
