@@ -255,8 +255,8 @@ textarea::placeholder{color:var(--muted)}
     <div class="step" id="step3">3. Resultado</div>
   </div>
 
-  <h1 class="page-title">Analisar minha vaga</h1>
-  <p class="page-sub">Cole a descrição da vaga e seu currículo. A análise leva cerca de 15 segundos.</p>
+  <h1 class="page-title" id="pageTitle">Analisar minha vaga</h1>
+  <p class="page-sub" id="pageSub">Cole a descrição da vaga e seu currículo. A análise leva cerca de 15 segundos.</p>
 
   <!-- LIMITE ATINGIDO -->
   <div class="limit-section" id="limitSection">
@@ -761,6 +761,11 @@ async function analyze() {
 function showResult(d) {
   var section = document.getElementById('resultSection');
   section.classList.add('show');
+
+  // Atualiza título e subtítulo para o contexto de resultado
+  var nome = (d.cv_otimizado && d.cv_otimizado.nome) ? d.cv_otimizado.nome : null;
+  document.getElementById('pageTitle').textContent = nome ? 'Resultado de ' + nome : 'Resultado da análise';
+  document.getElementById('pageSub').textContent = 'Veja abaixo o diagnóstico completo do seu currículo para esta vaga.';
 
   var score = Math.max(0, Math.min(100, d.score || 0));
   var circumference = 251;
