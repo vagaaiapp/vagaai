@@ -81,6 +81,19 @@ textarea:focus{outline:none;border-color:var(--green-border)}
 textarea::placeholder{color:var(--muted)}
 .char-count{font-size:11px;color:var(--muted);text-align:right;margin-top:.2rem}
 
+/* FILE UPLOAD */
+.upload-row{display:flex;align-items:center;gap:.6rem;margin-top:.5rem;flex-wrap:wrap}
+.upload-btn{display:inline-flex;align-items:center;gap:.4rem;background:var(--surface2);border:1px dashed var(--border);color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;padding:.4rem .85rem;border-radius:8px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.upload-btn:hover{border-color:var(--green-border);color:var(--green);background:var(--green-dim)}
+.upload-btn svg{flex-shrink:0}
+.upload-hint{font-size:11px;color:var(--muted)}
+.upload-status{font-size:12px;font-weight:600;color:var(--green);display:none;align-items:center;gap:.35rem}
+.upload-status.show{display:inline-flex}
+.upload-status-err{color:var(--red)}
+.upload-progress{display:none;width:100%;height:3px;background:var(--border);border-radius:99px;margin-top:.4rem;overflow:hidden}
+.upload-progress.show{display:block}
+.upload-progress-bar{height:100%;background:var(--green);width:0%;transition:width .3s}
+
 .btn-analyze{width:100%;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;border:none;border-radius:10px;padding:1rem;cursor:pointer;transition:all .2s;margin-top:.5rem;display:flex;align-items:center;justify-content:center;gap:.5rem}
 .btn-analyze:hover{background:#4ddb9e;transform:translateY(-1px)}
 .btn-analyze:disabled{opacity:.6;cursor:not-allowed;transform:none}
@@ -260,7 +273,20 @@ textarea::placeholder{color:var(--muted)}
     </div>
 
     <div class="field">
-      <label for="cvInput">Seu currículo <span>— Cole o texto do seu CV</span></label>
+      <label for="cvInput">Seu currículo <span>— Cole o texto ou envie um arquivo</span></label>
+      <div class="upload-row">
+        <label class="upload-btn" for="cvFileInput">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Enviar arquivo
+        </label>
+        <input type="file" id="cvFileInput" accept=".txt,.pdf,.doc,.docx" style="display:none" onchange="handleCvFile(this)">
+        <span class="upload-hint">PDF, Word ou TXT</span>
+        <span class="upload-status" id="uploadStatus">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="uploadStatusText"></span>
+        </span>
+      </div>
+      <div class="upload-progress" id="uploadProgress"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
       <textarea id="cvInput" rows="10" placeholder="Cole aqui o conteúdo do seu currículo (experiências, formação, habilidades...)"></textarea>
       <div class="char-count" id="cvCount">0 caracteres</div>
     </div>
@@ -477,6 +503,123 @@ function showLimitReached() {
     document.getElementById('limitPlans').style.display = 'none';
     document.getElementById('limitDashLink').style.display = 'block';
   }
+}
+
+// ─── File Upload ─────────────────────────────────────────────────────────────
+function setUploadStatus(msg, isErr) {
+  var el = document.getElementById('uploadStatus');
+  var txt = document.getElementById('uploadStatusText');
+  txt.textContent = msg;
+  el.classList.add('show');
+  if (isErr) el.classList.add('upload-status-err');
+  else el.classList.remove('upload-status-err');
+}
+
+function setUploadProgress(pct) {
+  var wrap = document.getElementById('uploadProgress');
+  var bar = document.getElementById('uploadProgressBar');
+  wrap.classList.toggle('show', pct > 0 && pct < 100);
+  bar.style.width = pct + '%';
+}
+
+async function handleCvFile(input) {
+  var file = input.files[0];
+  if (!file) return;
+
+  var ext = file.name.split('.').pop().toLowerCase();
+  var statusEl = document.getElementById('uploadStatus');
+  statusEl.classList.remove('show', 'upload-status-err');
+  setUploadProgress(10);
+
+  try {
+    var text = '';
+
+    if (ext === 'txt') {
+      text = await readAsText(file);
+      setUploadProgress(100);
+    } else if (ext === 'pdf') {
+      text = await extractPdfText(file);
+    } else if (ext === 'doc' || ext === 'docx') {
+      // Try mammoth if available, otherwise prompt user to paste
+      if (window.mammoth) {
+        var result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+        text = result.value;
+        setUploadProgress(100);
+      } else {
+        // Fallback: read as text (won't be great but beats nothing for .doc)
+        text = await readAsText(file);
+        setUploadProgress(100);
+      }
+    } else {
+      setUploadProgress(0);
+      setUploadStatus('Formato não suportado. Use PDF, Word ou TXT.', true);
+      input.value = '';
+      return;
+    }
+
+    text = text.trim();
+    if (!text || text.length < 30) {
+      setUploadProgress(0);
+      setUploadStatus('Não foi possível ler o arquivo. Cole o texto manualmente.', true);
+      input.value = '';
+      return;
+    }
+
+    document.getElementById('cvInput').value = text;
+    document.getElementById('cvCount').textContent = text.length + ' caracteres';
+    setUploadProgress(0);
+    setUploadStatus(file.name + ' carregado ✓');
+    // Scroll to textarea
+    document.getElementById('cvInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  } catch (err) {
+    console.error('File read error:', err);
+    setUploadProgress(0);
+    setUploadStatus('Erro ao ler arquivo. Cole o texto manualmente.', true);
+    input.value = '';
+  }
+}
+
+function readAsText(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function(e) { resolve(e.target.result); };
+    reader.onerror = reject;
+    reader.readAsText(file, 'UTF-8');
+  });
+}
+
+async function extractPdfText(file) {
+  // Load PDF.js on demand
+  if (!window.pdfjsLib) {
+    await loadScript('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js');
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+  }
+  setUploadProgress(20);
+  var ab = await file.arrayBuffer();
+  var pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+  var totalPages = pdf.numPages;
+  var lines = [];
+  for (var i = 1; i <= totalPages; i++) {
+    var page = await pdf.getPage(i);
+    var content = await page.getTextContent();
+    var pageText = content.items.map(function(item) { return item.str; }).join(' ');
+    lines.push(pageText);
+    setUploadProgress(20 + Math.round((i / totalPages) * 75));
+  }
+  setUploadProgress(100);
+  return lines.join('\n');
+}
+
+function loadScript(src) {
+  return new Promise(function(resolve, reject) {
+    var s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
 }
 
 // Inputs
