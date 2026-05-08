@@ -210,21 +210,29 @@ var _SB = window.supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA'
 );
 
-// Detecta fluxo de recuperação de senha ANTES de redirecionar
-// O Supabase coloca #access_token=...&type=recovery no hash da URL
-var _hashParams = {};
-(window.location.hash || '').replace(/^#/, '').split('&').forEach(function(p) {
-  var kv = p.split('='); if (kv[0]) _hashParams[kv[0]] = decodeURIComponent(kv[1] || '');
+// ── Detecção de recovery via onAuthStateChange ───────────────────────────────
+// NÃO limpar o hash manualmente — o Supabase SDK precisa processar o token
+// O evento PASSWORD_RECOVERY é disparado pelo SDK após processar o hash
+var _isRecovery = false;
+
+_SB.auth.onAuthStateChange(function(event, session) {
+  if (event === 'PASSWORD_RECOVERY') {
+    _isRecovery = true;
+    showView('viewReset');
+    // Só limpa o hash depois que o SDK processou
+    history.replaceState(null, '', window.location.pathname);
+  } else if (event === 'SIGNED_IN' && !_isRecovery) {
+    window.location.href = '/dashboard';
+  }
 });
 
-if (_hashParams['type'] === 'recovery') {
-  // Limpa o hash da URL sem reload
-  history.replaceState(null, '', window.location.pathname);
-  // Supabase já processou o token e criou sessão — mostra form de nova senha
-  showView('viewReset');
-} else {
-  // Fluxo normal: se já está logado vai ao painel
-  _SB.auth.getSession().then(function(r){ if(r.data.session) window.location.href='/dashboard'; });
+// Verifica hash para saber se deve aguardar o evento de recovery
+// (evita o redirect imediato de getSession antes do onAuthStateChange disparar)
+var _hashHasRecovery = (window.location.hash || '').indexOf('type=recovery') !== -1;
+if (!_hashHasRecovery) {
+  _SB.auth.getSession().then(function(r){
+    if (r.data.session && !_isRecovery) window.location.href = '/dashboard';
+  });
 }
 
 var _mode = 'login'; // 'login' | 'signup'
