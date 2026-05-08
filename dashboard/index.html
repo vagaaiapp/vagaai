@@ -94,8 +94,13 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .nivel-regular{background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(255,209,102,0.3)}
 .nivel-fraco{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,107,107,0.3)}
 
+.analysis-card{cursor:pointer}
+.analysis-card:hover{border-color:rgba(255,255,255,0.15);background:var(--surface2)}
+.analysis-actions{display:flex;align-items:center;gap:.45rem;flex-shrink:0}
 .btn-cv-hist{background:transparent;border:1px solid var(--green-border);color:var(--green);font-family:'Inter',sans-serif;font-size:12px;font-weight:700;border-radius:7px;padding:.3rem .7rem;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
 .btn-cv-hist:hover{background:var(--green-dim)}
+.btn-result-hist{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;border-radius:7px;padding:.3rem .7rem;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
+.btn-result-hist:hover{border-color:rgba(255,255,255,.25);color:var(--text)}
 .empty-state{text-align:center;padding:3rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:14px}
 .empty-icon{font-size:36px;margin-bottom:.8rem}
 .empty-title{font-size:16px;font-weight:600;margin-bottom:.4rem}
@@ -289,18 +294,22 @@ async function loadAnalyses() {
       var nivelClass = nivelCSSClass(a.nivel);
       var date = new Date(a.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
       var excerpt = a.job_excerpt ? escHtml(a.job_excerpt.substring(0, 80)) + (a.job_excerpt.length > 80 ? '…' : '') : 'Vaga analisada';
+      var hasResult = !!(a.result && a.result.score != null);
       var cvOtimizado = a.result && a.result.cv_otimizado && a.result.cv_otimizado.nome ? a.result.cv_otimizado : null;
-      var cvBtn = cvOtimizado
-        ? '<button class="btn-cv-hist" onclick="openCVFromHistory(\'' + a.id + '\')">📄 CV</button>'
-        : '';
-      return '<div class="analysis-card" data-cv=\'' + (cvOtimizado ? escAttr(JSON.stringify(cvOtimizado)) : '') + '\'>'
+      var resultAttr = hasResult ? ' data-result=\'' + escAttr(JSON.stringify(a.result)) + '\'' : '';
+      var cvAttr = cvOtimizado ? ' data-cv=\'' + escAttr(JSON.stringify(cvOtimizado)) + '\'' : '';
+      var actions = '<div class="analysis-actions" onclick="event.stopPropagation()">';
+      if (hasResult) actions += '<button class="btn-result-hist" onclick="openResultFromHistory(this)">📊 Ver análise</button>';
+      if (cvOtimizado) actions += '<button class="btn-cv-hist" onclick="openCVFromHistory(this)">📄 CV</button>';
+      actions += '</div>';
+      return '<div class="analysis-card"' + resultAttr + cvAttr + (hasResult ? ' onclick="openResultFromHistory(this)"' : '') + '>'
         + '<div class="analysis-score ' + colorClass + '">' + score + '</div>'
         + '<div class="analysis-info">'
         + '<div class="analysis-job">' + excerpt + '</div>'
         + '<div class="analysis-meta">' + date + '</div>'
         + '</div>'
         + '<span class="analysis-nivel ' + nivelClass + '">' + escHtml(a.nivel || '') + '</span>'
-        + cvBtn
+        + actions
         + '</div>';
     }).join('');
   } catch(e) {
@@ -308,24 +317,29 @@ async function loadAnalyses() {
   }
 }
 
-function openCVFromHistory(analysisId) {
-  var card = document.querySelector('[data-cv]');
-  // Busca o card pelo id do botão clicado (mais robusto via event delegation)
-  var cards = document.querySelectorAll('.analysis-card');
-  for (var i = 0; i < cards.length; i++) {
-    var btn = cards[i].querySelector('.btn-cv-hist');
-    if (btn && btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(analysisId)) {
-      var cvJson = cards[i].getAttribute('data-cv');
-      if (cvJson) {
-        try {
-          var cv = JSON.parse(cvJson);
-          localStorage.setItem('vagaai_cv', JSON.stringify(cv));
-          window.open('/cv', '_blank');
-        } catch(e) {}
-      }
-      return;
-    }
-  }
+function openResultFromHistory(el) {
+  // el pode ser o botão ou o próprio card
+  var card = el.closest ? el.closest('.analysis-card') : el;
+  if (!card) return;
+  var resultJson = card.getAttribute('data-result');
+  if (!resultJson) return;
+  try {
+    var result = JSON.parse(resultJson);
+    localStorage.setItem('vagaai_pending_result', JSON.stringify(result));
+    window.location.href = '/app';
+  } catch(e) {}
+}
+
+function openCVFromHistory(el) {
+  var card = el.closest ? el.closest('.analysis-card') : el;
+  if (!card) return;
+  var cvJson = card.getAttribute('data-cv');
+  if (!cvJson) return;
+  try {
+    var cv = JSON.parse(cvJson);
+    localStorage.setItem('vagaai_cv', JSON.stringify(cv));
+    window.open('/cv', '_blank');
+  } catch(e) {}
 }
 
 function escAttr(str) {
