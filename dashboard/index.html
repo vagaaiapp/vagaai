@@ -101,6 +101,21 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .btn-cv-hist:hover{background:var(--green-dim)}
 .btn-result-hist{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;border-radius:7px;padding:.3rem .7rem;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
 .btn-result-hist:hover{border-color:rgba(255,255,255,.25);color:var(--text)}
+.btn-delete-hist{background:transparent;border:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:18px;line-height:1;padding:.2rem .4rem;cursor:pointer;border-radius:6px;transition:all .15s;flex-shrink:0;opacity:.5}
+.btn-delete-hist:hover{color:var(--red);opacity:1;background:var(--red-dim)}
+.analysis-card.deleting{opacity:.4;pointer-events:none;transition:opacity .3s}
+/* Confirm dialog */
+.del-confirm{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
+.del-confirm.hidden{display:none}
+.del-confirm-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.6rem 1.8rem;max-width:340px;width:90%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.del-confirm-icon{font-size:32px;margin-bottom:.7rem}
+.del-confirm-title{font-size:15px;font-weight:700;margin-bottom:.4rem}
+.del-confirm-sub{font-size:13px;color:var(--muted);margin-bottom:1.3rem;line-height:1.5}
+.del-confirm-btns{display:flex;gap:.6rem;justify-content:center}
+.del-btn-cancel{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.55rem 1.1rem;border-radius:8px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s}
+.del-btn-cancel:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
+.del-btn-confirm{font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:.55rem 1.1rem;border-radius:8px;background:var(--red-dim);border:1px solid rgba(255,107,107,.3);color:var(--red);cursor:pointer;transition:all .15s}
+.del-btn-confirm:hover{background:rgba(255,107,107,.25)}
 .empty-state{text-align:center;padding:3rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:14px}
 .empty-icon{font-size:36px;margin-bottom:.8rem}
 .empty-title{font-size:16px;font-weight:600;margin-bottom:.4rem}
@@ -125,6 +140,19 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 <script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
 </head>
 <body>
+
+<!-- DELETE CONFIRM DIALOG -->
+<div class="del-confirm hidden" id="delConfirm">
+  <div class="del-confirm-box">
+    <div class="del-confirm-icon">🗑️</div>
+    <div class="del-confirm-title">Excluir análise?</div>
+    <div class="del-confirm-sub">Esta ação não pode ser desfeita. O resultado e o currículo otimizado serão removidos permanentemente.</div>
+    <div class="del-confirm-btns">
+      <button class="del-btn-cancel" onclick="closeDeleteConfirm()">Cancelar</button>
+      <button class="del-btn-confirm" id="delBtnConfirm">Excluir</button>
+    </div>
+  </div>
+</div>
 
 <!-- LOADING INICIAL -->
 <div class="page-loading" id="pageLoading">
@@ -301,6 +329,7 @@ async function loadAnalyses() {
       var actions = '<div class="analysis-actions" onclick="event.stopPropagation()">';
       if (hasResult) actions += '<button class="btn-result-hist" onclick="openResultFromHistory(this)">📊 Ver análise</button>';
       if (cvOtimizado) actions += '<button class="btn-cv-hist" onclick="openCVFromHistory(this)">📄 CV</button>';
+      actions += '<button class="btn-delete-hist" onclick="confirmDelete(\'' + escAttr(a.id) + '\',this)" title="Excluir análise">✕</button>';
       actions += '</div>';
       return '<div class="analysis-card"' + resultAttr + cvAttr + (hasResult ? ' onclick="openResultFromHistory(this)"' : '') + '>'
         + '<div class="analysis-score ' + colorClass + '">' + score + '</div>'
@@ -341,6 +370,71 @@ function openCVFromHistory(el) {
     window.open('/cv', '_blank');
   } catch(e) {}
 }
+
+// ─── Delete analysis ────────────────────────────────────────
+var _pendingDeleteId = null;
+var _pendingDeleteCard = null;
+
+function confirmDelete(analysisId, btn) {
+  _pendingDeleteId = analysisId;
+  _pendingDeleteCard = btn.closest('.analysis-card');
+  document.getElementById('delConfirm').classList.remove('hidden');
+  document.getElementById('delBtnConfirm').onclick = executeDelete;
+}
+
+function closeDeleteConfirm() {
+  document.getElementById('delConfirm').classList.add('hidden');
+  _pendingDeleteId = null;
+  _pendingDeleteCard = null;
+}
+
+async function executeDelete() {
+  if (!_pendingDeleteId) return;
+  var id = _pendingDeleteId;
+  var card = _pendingDeleteCard;
+  closeDeleteConfirm();
+  if (card) card.classList.add('deleting');
+  try {
+    var { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    var res = await fetch(
+      SUPABASE_URL + '/rest/v1/analyses?id=eq.' + encodeURIComponent(id) + '&user_id=eq.' + encodeURIComponent(session.user.id),
+      {
+        method: 'DELETE',
+        headers: {
+          apikey: SUPABASE_ANON,
+          Authorization: 'Bearer ' + session.access_token,
+          Prefer: 'return=minimal'
+        }
+      }
+    );
+    if (res.ok) {
+      if (card) {
+        card.style.transition = 'all .3s';
+        card.style.opacity = '0';
+        card.style.maxHeight = card.offsetHeight + 'px';
+        setTimeout(function() {
+          card.style.maxHeight = '0';
+          card.style.padding = '0';
+          card.style.margin = '0';
+          card.style.border = 'none';
+          setTimeout(function() { card.remove(); }, 300);
+        }, 150);
+      }
+    } else {
+      if (card) card.classList.remove('deleting');
+      alert('Erro ao excluir. Tente novamente.');
+    }
+  } catch(e) {
+    if (card) card.classList.remove('deleting');
+    alert('Erro ao excluir. Tente novamente.');
+  }
+}
+
+// Fechar clicando fora do box
+document.getElementById('delConfirm').addEventListener('click', function(e) {
+  if (e.target === this) closeDeleteConfirm();
+});
 
 function escAttr(str) {
   return String(str)
