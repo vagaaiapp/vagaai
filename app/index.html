@@ -672,6 +672,17 @@ function setStep(n) {
     if (i < n) el.classList.add('done');
     if (i === n) el.classList.add('active');
   });
+  // Atualiza header conforme passo
+  if (n === 1) {
+    document.getElementById('pageTitle').textContent = 'Analisar minha vaga';
+    document.getElementById('pageSub').textContent = 'Cole a descrição da vaga e seu currículo. A análise leva cerca de 15 segundos.';
+  } else if (n === 3) {
+    // Só sobrescreve se showResult ainda não o fez (fallback)
+    if (document.getElementById('pageTitle').textContent === 'Analisar minha vaga') {
+      document.getElementById('pageTitle').textContent = 'Sua análise está pronta';
+      document.getElementById('pageSub').textContent = 'Confira a compatibilidade com a vaga, os pontos de melhoria e o currículo otimizado.';
+    }
+  }
 }
 
 function showError(msg) {
@@ -764,8 +775,8 @@ function showResult(d) {
 
   // Atualiza título e subtítulo para o contexto de resultado
   var nome = (d.cv_otimizado && d.cv_otimizado.nome) ? d.cv_otimizado.nome : null;
-  document.getElementById('pageTitle').textContent = nome ? 'Resultado de ' + nome : 'Resultado da análise';
-  document.getElementById('pageSub').textContent = 'Veja abaixo o diagnóstico completo do seu currículo para esta vaga.';
+  document.getElementById('pageTitle').textContent = nome ? 'Análise de ' + nome : 'Sua análise está pronta';
+  document.getElementById('pageSub').textContent = 'Confira a compatibilidade com a vaga, os pontos de melhoria e o currículo otimizado.';
 
   var score = Math.max(0, Math.min(100, d.score || 0));
   var circumference = 251;
