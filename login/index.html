@@ -176,6 +176,31 @@ input:focus{outline:none;border-color:var(--green-border)}
     </div>
   </div>
 
+  <!-- ── VIEW: Nova senha (reset via link do e-mail) ── -->
+  <div class="view" id="viewReset">
+    <div class="card-title">Criar nova senha</div>
+    <p class="card-sub">Digite e confirme sua nova senha para continuar.</p>
+
+    <div class="field">
+      <label for="resetPassword">Nova senha</label>
+      <div class="input-wrap">
+        <input type="password" id="resetPassword" placeholder="••••••••" autocomplete="new-password" minlength="6">
+        <button class="toggle-pw" type="button" onclick="togglePw('resetPassword',this)" tabindex="-1">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="resetConfirm">Confirmar nova senha</label>
+      <div class="input-wrap">
+        <input type="password" id="resetConfirm" placeholder="••••••••" autocomplete="new-password" minlength="6">
+      </div>
+    </div>
+    <button class="btn" id="resetBtn" onclick="doReset()">Salvar nova senha</button>
+    <div class="alert alert-error" id="resetError"></div>
+    <div class="alert alert-success" id="resetSuccess"></div>
+  </div>
+
   <div class="back"><a href="/">← Voltar ao início</a></div>
 </div>
 
@@ -185,8 +210,22 @@ var _SB = window.supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA'
 );
 
-// Se já está logado, redireciona
-_SB.auth.getSession().then(function(r){ if(r.data.session) window.location.href='/dashboard'; });
+// Detecta fluxo de recuperação de senha ANTES de redirecionar
+// O Supabase coloca #access_token=...&type=recovery no hash da URL
+var _hashParams = {};
+(window.location.hash || '').replace(/^#/, '').split('&').forEach(function(p) {
+  var kv = p.split('='); if (kv[0]) _hashParams[kv[0]] = decodeURIComponent(kv[1] || '');
+});
+
+if (_hashParams['type'] === 'recovery') {
+  // Limpa o hash da URL sem reload
+  history.replaceState(null, '', window.location.pathname);
+  // Supabase já processou o token e criou sessão — mostra form de nova senha
+  showView('viewReset');
+} else {
+  // Fluxo normal: se já está logado vai ao painel
+  _SB.auth.getSession().then(function(r){ if(r.data.session) window.location.href='/dashboard'; });
+}
 
 var _mode = 'login'; // 'login' | 'signup'
 
@@ -316,6 +355,32 @@ async function sendMagic() {
   }
 }
 
+// ── Nova senha (reset) ───────────────────────────────────────────────────────
+async function doReset() {
+  var pw  = document.getElementById('resetPassword').value;
+  var pw2 = document.getElementById('resetConfirm').value;
+  var errEl = document.getElementById('resetError');
+  var sucEl = document.getElementById('resetSuccess');
+  errEl.classList.remove('show'); sucEl.classList.remove('show');
+
+  if (pw.length < 6) { errEl.textContent = 'A senha precisa ter pelo menos 6 caracteres.'; errEl.classList.add('show'); return; }
+  if (pw !== pw2)    { errEl.textContent = 'As senhas não coincidem.'; errEl.classList.add('show'); return; }
+
+  var btn = document.getElementById('resetBtn');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+
+  var { error } = await _SB.auth.updateUser({ password: pw });
+  if (error) {
+    errEl.textContent = 'Erro ao salvar. Tente solicitar um novo link de recuperação.';
+    errEl.classList.add('show');
+    btn.disabled = false; btn.textContent = 'Salvar nova senha';
+  } else {
+    sucEl.textContent = '✓ Senha alterada! Redirecionando...';
+    sucEl.classList.add('show');
+    setTimeout(function(){ window.location.href = '/dashboard'; }, 1500);
+  }
+}
+
 // ── Enter key ────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', function(e) {
   if (e.key !== 'Enter') return;
@@ -324,6 +389,7 @@ document.addEventListener('keydown', function(e) {
   if (active.id === 'viewAuth')    handleAuth();
   if (active.id === 'viewForgot')  sendForgot();
   if (active.id === 'viewMagic')   sendMagic();
+  if (active.id === 'viewReset')   doReset();
 });
 
 // ── Tema ─────────────────────────────────────────────────────────────────────
