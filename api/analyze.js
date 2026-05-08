@@ -1,6 +1,49 @@
+import { createHash } from 'crypto';
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+
+// ─── Hash de conteúdo (cv + job) ─────────────────────────────────────────────
+
+function contentHash(cv, job) {
+  return createHash('sha256').update(cv.trim() + '\n||||\n' + job.trim()).digest('hex').slice(0, 40);
+}
+
+// ─── Cache de análise ─────────────────────────────────────────────────────────
+
+async function getCachedResult(hash) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return null;
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/analysis_cache?hash=eq.${hash}&select=result`,
+      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+    );
+    const rows = await res.json();
+    return rows[0]?.result || null;
+  } catch (err) {
+    console.error('getCachedResult error:', err);
+    return null;
+  }
+}
+
+async function setCachedResult(hash, result) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/analysis_cache`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates',
+      },
+      body: JSON.stringify({ hash, result, created_at: new Date().toISOString() }),
+    });
+  } catch (err) {
+    console.error('setCachedResult error:', err);
+  }
+}
 
 // ─── Rate limit por IP (usuários anônimos) ────────────────────────────────────
 
@@ -136,7 +179,31 @@ export default async function handler(req, res) {
     if (user && user.id) authenticatedUserId = user.id;
   }
 
-  // Verifica limite / créditos
+  // ─── Verifica cache ANTES de debitar créditos ─────────────────────────────
+  const hash = contentHash(cv, job);
+  const cached = await getCachedResult(hash);
+
+  if (cached) {
+    console.log('Cache hit:', hash);
+    // Retorna resultado cacheado sem consumir crédito/IP
+    const cachedResult = { ...cached, _from_cache: true };
+
+    if (authenticatedUserId) {
+      // Salva no histórico mesmo sendo cache (o usuário quer ver no dashboard)
+      saveAnalysis(authenticatedUserId, cached.score, cached.nivel, job, cached);
+      try {
+        const credRows = await fetch(
+          `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(authenticatedUserId)}&select=credits`,
+          { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+        ).then(r => r.json());
+        cachedResult._credits_remaining = credRows[0]?.credits ?? null;
+      } catch (_) {}
+    }
+
+    return res.status(200).json(cachedResult);
+  }
+
+  // ─── Cache miss: verifica limite / créditos ───────────────────────────────
   let _ip = null;
   if (authenticatedUserId) {
     const deduct = await checkAndDeductCredit(authenticatedUserId);
@@ -260,6 +327,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
       body: JSON.stringify({
         model: 'claude-haiku-4-5',
         max_tokens: 4000,
+        temperature: 0,   // determinístico — mesmo input, mesmo output
         messages: [{ role: 'user', content: prompt }],
       }),
     });
@@ -287,6 +355,9 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
     }
 
     const result = JSON.parse(jsonMatch[0]);
+
+    // Armazena no cache (fire-and-forget, não bloqueia resposta)
+    setCachedResult(hash, result);
 
     // Pós-análise
     if (authenticatedUserId) {
