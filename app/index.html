@@ -126,7 +126,9 @@ textarea::placeholder{color:var(--muted)}
 .score-label{font-size:10px;color:var(--muted);margin-top:2px}
 .score-info{flex:1;min-width:180px}
 .score-nivel{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.3rem}
-.score-resumo{font-size:14px;color:var(--muted);line-height:1.5}
+.score-resumo{font-size:14px;color:var(--muted);line-height:1.5;margin-bottom:.9rem}
+.btn-cv-inline{display:none;align-items:center;gap:.5rem;padding:.55rem 1.1rem;background:var(--green);color:#050e09;border:none;border-radius:9px;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;letter-spacing:.01em;transition:opacity .15s,transform .15s}
+.btn-cv-inline:hover{opacity:.88;transform:translateY(-1px)}
 
 .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem}
 @media(max-width:580px){.result-grid{grid-template-columns:1fr}}
@@ -341,6 +343,10 @@ textarea::placeholder{color:var(--muted)}
       <div class="score-info">
         <div class="score-nivel" id="scoreNivel" style="color:var(--green)"></div>
         <div class="score-resumo" id="scoreResumo"></div>
+        <button class="btn-cv-inline" id="cvBtnInline" onclick="openCV()">
+          <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+          Baixar CV Otimizado
+        </button>
       </div>
     </div>
 
@@ -835,15 +841,18 @@ function showResult(d) {
 
   // Botões de ação
   var cvBtn = document.getElementById('cvBtn');
+  var cvBtnInline = document.getElementById('cvBtnInline');
   var upsellBtn = document.getElementById('upsellBtn');
   if (!isAnonymous && d.cv_otimizado && d.cv_otimizado.nome) {
     // Usuário pago com CV gerado
     try { localStorage.setItem('vagaai_cv', JSON.stringify(d.cv_otimizado)); } catch(e) {}
     cvBtn.style.display = 'block';
+    cvBtnInline.style.display = 'inline-flex';
     upsellBtn.style.display = 'none';
     document.getElementById('upsellSection').classList.remove('show');
   } else {
     cvBtn.style.display = 'none';
+    cvBtnInline.style.display = 'none';
     upsellBtn.style.display = 'block';
   }
 
