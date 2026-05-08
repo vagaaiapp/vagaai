@@ -17,63 +17,162 @@
   --red:#ff6b6b;--red-dim:rgba(255,107,107,0.12);
 }
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem}
-nav{position:fixed;top:0;left:0;right:0;background:rgba(10,15,13,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center}
+nav{position:fixed;top:0;left:0;right:0;background:rgba(10,15,13,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between}
 .nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
-.nav-badge{font-size:9px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;padding:0}
+.theme-btn:hover{border-color:var(--green-border);color:var(--green)}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2.5rem;width:100%;max-width:400px;margin-top:58px}
 .card-title{font-family:'Lora',serif;font-size:26px;font-weight:700;margin-bottom:.4rem}
-.card-sub{font-size:14px;color:var(--muted);margin-bottom:2rem;line-height:1.5}
+.card-sub{font-size:14px;color:var(--muted);margin-bottom:1.8rem;line-height:1.5}
+
+/* Tabs */
+.tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1.8rem}
+.tab{flex:1;padding:.65rem;font-size:13px;font-weight:600;background:transparent;border:none;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
+.tab.active{background:var(--green);color:#0a0f0d}
+.tab:not(.active):hover{color:var(--text)}
+
+/* Fields */
 .field{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem}
+.field-row{display:flex;justify-content:space-between;align-items:center}
 label{font-size:13px;font-weight:600}
-input{background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:.85rem 1rem;width:100%;transition:border-color .2s}
+.forgot-link{font-size:12px;color:var(--green);text-decoration:none;transition:opacity .2s}
+.forgot-link:hover{opacity:.75}
+.input-wrap{position:relative}
+input[type="email"],input[type="password"],input[type="text"]{background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:.85rem 1rem;width:100%;transition:border-color .2s}
 input:focus{outline:none;border-color:var(--green-border)}
+.toggle-pw{position:absolute;right:.9rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;padding:2px;display:flex;align-items:center;transition:color .2s}
+.toggle-pw:hover{color:var(--text)}
+
+/* Buttons */
 .btn{width:100%;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;border:none;border-radius:10px;padding:1rem;cursor:pointer;transition:all .2s;margin-top:.5rem}
 .btn:hover{background:#4ddb9e}
 .btn:disabled{opacity:.6;cursor:not-allowed}
-.success{background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px;padding:1.2rem;color:var(--green);font-size:14px;display:none;line-height:1.6}
-.success.show{display:block}
-.error{background:var(--red-dim);border:1px solid rgba(255,107,107,0.25);border-radius:10px;padding:1rem;color:#ff8f8f;font-size:14px;display:none;margin-top:1rem}
-.error.show{display:block}
-.divider{text-align:center;color:var(--muted);font-size:13px;margin:1.5rem 0;position:relative}
+.btn-outline{width:100%;background:transparent;color:var(--muted);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;border:1px solid var(--border);border-radius:10px;padding:.85rem;cursor:pointer;transition:all .2s;margin-top:.6rem}
+.btn-outline:hover{border-color:var(--border);color:var(--text)}
+
+/* Alerts */
+.alert{border-radius:10px;padding:1rem 1.2rem;font-size:14px;line-height:1.6;display:none;margin-top:1rem}
+.alert.show{display:block}
+.alert-success{background:var(--green-dim);border:1px solid var(--green-border);color:var(--green)}
+.alert-error{background:var(--red-dim);border:1px solid rgba(255,107,107,0.25);color:#ff8f8f}
+
+/* Divider */
+.divider{text-align:center;color:var(--muted);font-size:12px;margin:1.4rem 0;position:relative}
 .divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border)}
 .divider span{background:var(--surface);padding:0 .8rem;position:relative}
-.back{text-align:center;margin-top:1.5rem;font-size:13px;color:var(--muted)}
-.back a{color:var(--green);text-decoration:none}
-[data-theme="light"]{--bg:#f2f6f3;--surface:#ffffff;--surface2:#eaf0ec;--border:rgba(0,0,0,0.09);--text:#0d1a11;--muted:#4d6e57;--green:#1a8f5c;--green-dim:rgba(26,143,92,0.1);--green-border:rgba(26,143,92,0.25);--red:#c0392b;--red-dim:rgba(192,57,43,0.08);--yellow:#b07d1a;--yellow-dim:rgba(176,125,26,0.08)}
+
+/* Footer links */
+.foot{text-align:center;margin-top:1.4rem;font-size:13px;color:var(--muted)}
+.foot a,.foot button.link-btn{color:var(--green);text-decoration:none;background:none;border:none;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;padding:0}
+.foot a:hover,.foot button.link-btn:hover{text-decoration:underline}
+.back{text-align:center;margin-top:1rem;font-size:13px;color:var(--muted)}
+.back a{color:var(--muted);text-decoration:none}
+.back a:hover{color:var(--text)}
+
+/* Views */
+.view{display:none}
+.view.active{display:block}
+
+[data-theme="light"]{--bg:#f2f6f3;--surface:#ffffff;--border:rgba(0,0,0,0.09);--text:#0d1a11;--muted:#4d6e57;--green:#1a8f5c;--green-dim:rgba(26,143,92,0.1);--green-border:rgba(26,143,92,0.25);--red:#c0392b;--red-dim:rgba(192,57,43,0.08)}
 [data-theme="light"] nav{background:rgba(242,246,243,0.95)!important}
 .logo-light{display:none}
 [data-theme="light"] .logo-dark{display:none!important}
 [data-theme="light"] .logo-light{display:block!important}
-.theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;padding:0;line-height:1}
-.theme-btn:hover{border-color:var(--green-border);color:var(--green)}
 </style>
 <script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
 </head>
 <body>
 <nav>
   <a href="/" class="nav-logo">
-    <img src="/logo.svg" alt="VagaAI" height="38" class="logo-dark" style="display:block;"><img src="/logo-icon.svg" alt="VagaAI" height="38" class="logo-light" style="display:none;">
+    <img src="/logo.svg" alt="VagaAI" height="38" class="logo-dark" style="display:block;">
+    <img src="/logo-icon.svg" alt="VagaAI" height="38" class="logo-light" style="display:none;">
   </a>
-  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">☀️</button>
+  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema"></button>
 </nav>
 
 <div class="card">
-  <div id="loginView">
-    <div class="card-title">Entrar na sua conta</div>
-    <p class="card-sub">Insira seu e-mail e enviaremos um link de acesso. Sem senha para lembrar.</p>
 
-    <div class="success" id="successMsg">
-      ✓ Link enviado! Verifique seu e-mail e clique no link para entrar.<br>
-      <small style="opacity:.8">Não encontrou? Verifique o spam.</small>
+  <!-- ── VIEW: Login / Cadastro (tabs) ── -->
+  <div class="view active" id="viewAuth">
+    <div class="card-title" id="authTitle">Entrar na sua conta</div>
+    <p class="card-sub" id="authSub">Acesse com e-mail e senha.</p>
+
+    <div class="tabs">
+      <button class="tab active" id="tabLogin" onclick="switchTab('login')">Entrar</button>
+      <button class="tab" id="tabSignup" onclick="switchTab('signup')">Criar conta</button>
     </div>
 
-    <div id="formView">
-      <div class="field">
-        <label for="emailInput">E-mail</label>
-        <input type="email" id="emailInput" placeholder="seu@email.com" autocomplete="email">
+    <div class="field">
+      <label for="authEmail">E-mail</label>
+      <input type="email" id="authEmail" placeholder="seu@email.com" autocomplete="email">
+    </div>
+
+    <div class="field">
+      <div class="field-row">
+        <label for="authPassword">Senha</label>
+        <a href="#" class="forgot-link" id="forgotLink" onclick="showView('viewForgot');return false">Esqueceu a senha?</a>
       </div>
-      <button class="btn" id="loginBtn" onclick="sendMagicLink()">Enviar link de acesso</button>
-      <div class="error" id="errorMsg"></div>
+      <div class="input-wrap">
+        <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password" minlength="6">
+        <button class="toggle-pw" type="button" onclick="togglePw('authPassword',this)" tabindex="-1">
+          <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Campo de confirmação (só no signup) -->
+    <div class="field" id="confirmField" style="display:none">
+      <label for="authConfirm">Confirmar senha</label>
+      <div class="input-wrap">
+        <input type="password" id="authConfirm" placeholder="••••••••" autocomplete="new-password" minlength="6">
+      </div>
+    </div>
+
+    <button class="btn" id="authBtn" onclick="handleAuth()">Entrar</button>
+    <div class="alert alert-error" id="authError"></div>
+    <div class="alert alert-success" id="authSuccess"></div>
+
+    <div class="divider"><span>ou</span></div>
+    <button class="btn-outline" onclick="showView('viewMagic')">Entrar com link por e-mail</button>
+
+    <div class="foot" id="authFoot">
+      Ainda não tem conta? <button class="link-btn" onclick="switchTab('signup')">Criar conta grátis</button>
+    </div>
+  </div>
+
+  <!-- ── VIEW: Recuperar senha ── -->
+  <div class="view" id="viewForgot">
+    <div class="card-title">Recuperar senha</div>
+    <p class="card-sub">Enviaremos um link para você criar uma nova senha.</p>
+
+    <div class="field">
+      <label for="forgotEmail">E-mail</label>
+      <input type="email" id="forgotEmail" placeholder="seu@email.com" autocomplete="email">
+    </div>
+    <button class="btn" id="forgotBtn" onclick="sendForgot()">Enviar link de recuperação</button>
+    <div class="alert alert-error" id="forgotError"></div>
+    <div class="alert alert-success" id="forgotSuccess"></div>
+
+    <div class="foot" style="margin-top:1.2rem">
+      <button class="link-btn" onclick="showView('viewAuth')">← Voltar para o login</button>
+    </div>
+  </div>
+
+  <!-- ── VIEW: Magic Link ── -->
+  <div class="view" id="viewMagic">
+    <div class="card-title">Link de acesso</div>
+    <p class="card-sub">Enviaremos um link direto para o seu e-mail. Sem senha.</p>
+
+    <div class="field">
+      <label for="magicEmail">E-mail</label>
+      <input type="email" id="magicEmail" placeholder="seu@email.com" autocomplete="email">
+    </div>
+    <button class="btn" id="magicBtn" onclick="sendMagic()">Enviar link de acesso</button>
+    <div class="alert alert-error" id="magicError"></div>
+    <div class="alert alert-success" id="magicSuccess"></div>
+
+    <div class="foot" style="margin-top:1.2rem">
+      <button class="link-btn" onclick="showView('viewAuth')">← Voltar para e-mail e senha</button>
     </div>
   </div>
 
@@ -81,52 +180,157 @@ input:focus{outline:none;border-color:var(--green-border)}
 </div>
 
 <script>
-var supabase = window.supabase.createClient(
+var _SB = window.supabase.createClient(
   'https://kbcjchjepgejdezeuwwh.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA'
 );
 
-// Se já está logado, vai para o dashboard
-supabase.auth.getSession().then(function(r) {
-  if (r.data.session) window.location.href = '/dashboard';
-});
+// Se já está logado, redireciona
+_SB.auth.getSession().then(function(r){ if(r.data.session) window.location.href='/dashboard'; });
 
-async function sendMagicLink() {
-  var email = document.getElementById('emailInput').value.trim();
-  var errEl = document.getElementById('errorMsg');
-  errEl.classList.remove('show');
+var _mode = 'login'; // 'login' | 'signup'
 
-  if (!email || !email.includes('@')) {
-    errEl.textContent = 'Digite um e-mail válido.';
-    errEl.classList.add('show');
-    return;
-  }
+function showView(id) {
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  clearAlerts();
+}
 
-  var btn = document.getElementById('loginBtn');
+function switchTab(mode) {
+  _mode = mode;
+  var isSignup = mode === 'signup';
+  document.getElementById('tabLogin').classList.toggle('active', !isSignup);
+  document.getElementById('tabSignup').classList.toggle('active', isSignup);
+  document.getElementById('authBtn').textContent = isSignup ? 'Criar conta' : 'Entrar';
+  document.getElementById('confirmField').style.display = isSignup ? 'flex' : 'none';
+  document.getElementById('forgotLink').style.display = isSignup ? 'none' : 'inline';
+  document.getElementById('authFoot').innerHTML = isSignup
+    ? 'Já tem conta? <button class="link-btn" onclick="switchTab(\'login\')">Entrar</button>'
+    : 'Ainda não tem conta? <button class="link-btn" onclick="switchTab(\'signup\')">Criar conta grátis</button>';
+  document.getElementById('authPassword').setAttribute('autocomplete', isSignup ? 'new-password' : 'current-password');
+  clearAlerts();
+}
+
+function clearAlerts() {
+  document.querySelectorAll('.alert').forEach(function(a){ a.classList.remove('show'); a.textContent=''; });
+}
+
+function togglePw(inputId, btn) {
+  var inp = document.getElementById(inputId);
+  var show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  btn.innerHTML = show
+    ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+}
+
+// ── Auth (login / signup) ────────────────────────────────────────────────────
+async function handleAuth() {
+  var email    = document.getElementById('authEmail').value.trim();
+  var password = document.getElementById('authPassword').value;
+  var confirm  = document.getElementById('authConfirm').value;
+  var errEl    = document.getElementById('authError');
+  var sucEl    = document.getElementById('authSuccess');
+  errEl.classList.remove('show'); sucEl.classList.remove('show');
+
+  if (!email || !email.includes('@')) { errEl.textContent = 'Digite um e-mail válido.'; errEl.classList.add('show'); return; }
+  if (password.length < 6) { errEl.textContent = 'A senha precisa ter pelo menos 6 caracteres.'; errEl.classList.add('show'); return; }
+  if (_mode === 'signup' && password !== confirm) { errEl.textContent = 'As senhas não coincidem.'; errEl.classList.add('show'); return; }
+
+  var btn = document.getElementById('authBtn');
   btn.disabled = true;
-  btn.textContent = 'Enviando...';
+  btn.textContent = _mode === 'signup' ? 'Criando conta...' : 'Entrando...';
 
-  var { error } = await supabase.auth.signInWithOtp({
-    email: email,
-    options: { emailRedirectTo: 'https://www.vagaai.app.br/dashboard' }
-  });
-
-  if (error) {
-    errEl.textContent = 'Erro ao enviar o link. Tente novamente.';
-    errEl.classList.add('show');
-    btn.disabled = false;
-    btn.textContent = 'Enviar link de acesso';
+  if (_mode === 'signup') {
+    var { data, error } = await _SB.auth.signUp({ email: email, password: password, options: { emailRedirectTo: 'https://www.vagaai.app.br/dashboard' } });
+    if (error) {
+      var msg = 'Erro ao criar conta. Tente novamente.';
+      if (error.message && error.message.toLowerCase().includes('already registered')) msg = 'Este e-mail já tem uma conta. Tente entrar.';
+      errEl.textContent = msg; errEl.classList.add('show');
+      btn.disabled = false; btn.textContent = 'Criar conta';
+    } else if (data.session) {
+      // Email confirmation disabled — logged in directly
+      window.location.href = '/dashboard';
+    } else {
+      sucEl.innerHTML = '✓ Conta criada! Verifique seu e-mail para confirmar o cadastro.<br><small style="opacity:.8">Não encontrou? Verifique o spam.</small>';
+      sucEl.classList.add('show');
+      btn.disabled = false; btn.textContent = 'Criar conta';
+    }
   } else {
-    document.getElementById('formView').style.display = 'none';
-    document.getElementById('successMsg').classList.add('show');
+    var { data, error } = await _SB.auth.signInWithPassword({ email: email, password: password });
+    if (error) {
+      var msg = 'E-mail ou senha incorretos.';
+      if (error.message && error.message.toLowerCase().includes('email not confirmed')) msg = 'Confirme seu e-mail antes de entrar. Verifique a caixa de entrada.';
+      errEl.textContent = msg; errEl.classList.add('show');
+      btn.disabled = false; btn.textContent = 'Entrar';
+    } else {
+      window.location.href = '/dashboard';
+    }
   }
 }
 
-document.getElementById('emailInput').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') sendMagicLink();
+// ── Recuperar senha ──────────────────────────────────────────────────────────
+async function sendForgot() {
+  var email = document.getElementById('forgotEmail').value.trim();
+  var errEl = document.getElementById('forgotError');
+  var sucEl = document.getElementById('forgotSuccess');
+  errEl.classList.remove('show'); sucEl.classList.remove('show');
+
+  if (!email || !email.includes('@')) { errEl.textContent = 'Digite um e-mail válido.'; errEl.classList.add('show'); return; }
+
+  var btn = document.getElementById('forgotBtn');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+
+  var { error } = await _SB.auth.resetPasswordForEmail(email, { redirectTo: 'https://www.vagaai.app.br/login?mode=reset' });
+
+  if (error) {
+    errEl.textContent = 'Erro ao enviar. Tente novamente.'; errEl.classList.add('show');
+  } else {
+    sucEl.innerHTML = '✓ Link enviado! Verifique seu e-mail para redefinir a senha.<br><small style="opacity:.8">Não encontrou? Verifique o spam.</small>';
+    sucEl.classList.add('show');
+  }
+  btn.disabled = false; btn.textContent = 'Enviar link de recuperação';
+}
+
+// ── Magic Link ───────────────────────────────────────────────────────────────
+async function sendMagic() {
+  var email = document.getElementById('magicEmail').value.trim();
+  var errEl = document.getElementById('magicError');
+  var sucEl = document.getElementById('magicSuccess');
+  errEl.classList.remove('show'); sucEl.classList.remove('show');
+
+  if (!email || !email.includes('@')) { errEl.textContent = 'Digite um e-mail válido.'; errEl.classList.add('show'); return; }
+
+  var btn = document.getElementById('magicBtn');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+
+  var { error } = await _SB.auth.signInWithOtp({ email: email, options: { emailRedirectTo: 'https://www.vagaai.app.br/dashboard' } });
+
+  if (error) {
+    errEl.textContent = 'Erro ao enviar o link. Tente novamente.'; errEl.classList.add('show');
+    btn.disabled = false; btn.textContent = 'Enviar link de acesso';
+  } else {
+    sucEl.innerHTML = '✓ Link enviado! Verifique seu e-mail e clique no link para entrar.<br><small style="opacity:.8">Não encontrou? Verifique o spam.</small>';
+    sucEl.classList.add('show');
+    btn.disabled = false; btn.textContent = 'Enviar link de acesso';
+  }
+}
+
+// ── Enter key ────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  var active = document.querySelector('.view.active');
+  if (!active) return;
+  if (active.id === 'viewAuth')    handleAuth();
+  if (active.id === 'viewForgot')  sendForgot();
+  if (active.id === 'viewMagic')   sendMagic();
 });
-function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')==='light';if(l){document.documentElement.removeAttribute('data-theme');localStorage.setItem('vagaai_theme','dark')}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('vagaai_theme','light')}var b=document.getElementById('themeBtn');if(b)b.textContent=l?'☀️':'🌙'}
-;(function(){var b=document.getElementById('themeBtn');if(b)b.textContent=document.documentElement.getAttribute('data-theme')==='light'?'🌙':'☀️'})();
+
+// ── Tema ─────────────────────────────────────────────────────────────────────
+var _SVG_SUN='<svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/></svg>';
+var _SVG_MOON='<svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>';
+function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')==='light';if(l){document.documentElement.removeAttribute('data-theme');localStorage.setItem('vagaai_theme','dark')}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('vagaai_theme','light')}var b=document.getElementById('themeBtn');if(b)b.innerHTML=l?_SVG_SUN:_SVG_MOON}
+;(function(){var b=document.getElementById('themeBtn');if(b)b.innerHTML=document.documentElement.getAttribute('data-theme')==='light'?_SVG_MOON:_SVG_SUN})();
 </script>
 </body>
 </html>
