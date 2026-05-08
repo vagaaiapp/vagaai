@@ -167,6 +167,12 @@ ${cv}
 
 Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
 {
+  "job_info": {
+    "empresa": "<nome da empresa contratante. Se não identificada ou anônima, use 'Empresa anônima'>",
+    "cargo": "<título exato do cargo/vaga>",
+    "salario": "<faixa salarial se mencionada, senão 'Não informado'>",
+    "beneficios": ["<benefício 1>", "<benefício 2>", "<benefício 3>"]
+  },
   "score": <número de 0 a 100>,
   "nivel": "<Fraco|Regular|Bom|Excelente>",
   "resumo": "<uma frase resumindo a análise>",

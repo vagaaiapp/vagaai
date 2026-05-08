@@ -86,8 +86,12 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .analysis-score.yellow{color:var(--yellow);border-color:rgba(255,209,102,0.3);background:var(--yellow-dim)}
 .analysis-score.red{color:var(--red);border-color:rgba(255,107,107,0.3);background:var(--red-dim)}
 .analysis-info{flex:1;min-width:180px}
-.analysis-job{font-size:14px;font-weight:500;color:var(--text);margin-bottom:.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:360px}
-.analysis-meta{font-size:12px;color:var(--muted)}
+.analysis-job{font-size:14px;font-weight:600;color:var(--text);margin-bottom:.1rem}
+.analysis-cargo{font-size:13px;color:var(--muted);margin-bottom:.25rem}
+.analysis-salary{font-size:12px;color:var(--muted);margin-bottom:.25rem}
+.analysis-benefits{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.25rem}
+.analysis-benefit{font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:.1rem .45rem;line-height:1.5}
+.analysis-meta{font-size:11px;color:var(--muted);opacity:.7}
 .analysis-nivel{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:.2rem .6rem;border-radius:5px}
 .nivel-excelente{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
 .nivel-bom{background:rgba(100,200,255,0.1);color:#64c8ff;border:1px solid rgba(100,200,255,0.25)}
@@ -321,9 +325,30 @@ async function loadAnalyses() {
       var colorClass = score >= 75 ? 'green' : score >= 50 ? 'yellow' : 'red';
       var nivelClass = nivelCSSClass(a.nivel);
       var date = new Date(a.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
-      var excerpt = a.job_excerpt ? escHtml(a.job_excerpt.substring(0, 80)) + (a.job_excerpt.length > 80 ? '…' : '') : 'Vaga analisada';
       var hasResult = !!(a.result && a.result.score != null);
       var cvOtimizado = a.result && a.result.cv_otimizado && a.result.cv_otimizado.nome ? a.result.cv_otimizado : null;
+      var jobInfo = a.result && a.result.job_info ? a.result.job_info : null;
+
+      // Build info block
+      var infoHtml = '';
+      if (jobInfo) {
+        infoHtml += '<div class="analysis-job">' + escHtml(jobInfo.empresa || 'Empresa anônima') + '</div>';
+        if (jobInfo.cargo) infoHtml += '<div class="analysis-cargo">' + escHtml(jobInfo.cargo) + '</div>';
+        if (jobInfo.salario && jobInfo.salario !== 'Não informado') {
+          infoHtml += '<div class="analysis-salary">💰 ' + escHtml(jobInfo.salario) + '</div>';
+        }
+        if (jobInfo.beneficios && jobInfo.beneficios.length) {
+          infoHtml += '<div class="analysis-benefits">'
+            + jobInfo.beneficios.slice(0,4).map(function(b){ return '<span class="analysis-benefit">' + escHtml(b) + '</span>'; }).join('')
+            + '</div>';
+        }
+      } else {
+        // fallback para análises antigas sem job_info
+        var excerpt = a.job_excerpt ? escHtml(a.job_excerpt.substring(0, 80)) + (a.job_excerpt.length > 80 ? '…' : '') : 'Vaga analisada';
+        infoHtml += '<div class="analysis-job">' + excerpt + '</div>';
+      }
+      infoHtml += '<div class="analysis-meta">' + date + '</div>';
+
       var resultAttr = hasResult ? ' data-result=\'' + escAttr(JSON.stringify(a.result)) + '\'' : '';
       var cvAttr = cvOtimizado ? ' data-cv=\'' + escAttr(JSON.stringify(cvOtimizado)) + '\'' : '';
       var actions = '<div class="analysis-actions" onclick="event.stopPropagation()">';
@@ -333,10 +358,7 @@ async function loadAnalyses() {
       actions += '</div>';
       return '<div class="analysis-card"' + resultAttr + cvAttr + (hasResult ? ' onclick="openResultFromHistory(this)"' : '') + '>'
         + '<div class="analysis-score ' + colorClass + '">' + score + '</div>'
-        + '<div class="analysis-info">'
-        + '<div class="analysis-job">' + excerpt + '</div>'
-        + '<div class="analysis-meta">' + date + '</div>'
-        + '</div>'
+        + '<div class="analysis-info">' + infoHtml + '</div>'
         + '<span class="analysis-nivel ' + nivelClass + '">' + escHtml(a.nivel || '') + '</span>'
         + actions
         + '</div>';
