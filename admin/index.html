@@ -300,7 +300,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 <script>
 var SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
 var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
-var ADMIN_EMAIL = 'contato@vagaai.app.br';
+var ADMIN_EMAILS = ['contato@vagaai.app.br', 'jvhr96@gmail.com'];
 
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 var _data = null;
@@ -348,7 +348,7 @@ function initials(email) {
 async function init() {
   var { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = '/login'; return; }
-  if (session.user.email !== ADMIN_EMAIL) { window.location.href = '/dashboard'; return; }
+  if (!ADMIN_EMAILS.includes(session.user.email)) { window.location.href = '/dashboard'; return; }
 
   document.getElementById('pageLoading').classList.add('hidden');
   document.getElementById('mainContent').style.display = 'block';

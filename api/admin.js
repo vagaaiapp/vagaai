@@ -2,7 +2,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 
-const ADMIN_EMAIL = 'contato@vagaai.app.br';
+const ADMIN_EMAILS = ['contato@vagaai.app.br', 'jvhr96@gmail.com'];
 
 // ─── Auth helpers ─────────────────────────────────────────────────────────────
 
@@ -110,7 +110,7 @@ export default async function handler(req, res) {
   }
 
   const user = await getUserFromToken(token);
-  if (!user || user.email !== ADMIN_EMAIL) {
+  if (!user || !ADMIN_EMAILS.includes(user.email)) {
     return res.status(403).json({ error: 'Acesso negado. Apenas administradores.' });
   }
 
