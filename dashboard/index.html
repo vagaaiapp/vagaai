@@ -200,7 +200,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 /* MILESTONE TOAST */
 .milestone-toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface);border:1px solid var(--green-border);border-radius:16px;padding:1.2rem 1.6rem;box-shadow:0 20px 50px rgba(0,0,0,.4);z-index:500;display:flex;align-items:center;gap:1rem;min-width:300px;max-width:440px;transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .5s;opacity:0}
 .milestone-toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-.milestone-toast-icon{font-size:32px;flex-shrink:0}
+.milestone-toast-icon{width:40px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px;color:var(--green)}.milestone-toast-icon svg{width:22px;height:22px}
 .milestone-toast-body{}
 .milestone-toast-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:.15rem}
 .milestone-toast-sub{font-size:13px;color:var(--muted)}
@@ -560,11 +560,22 @@ async function loadAnalyses() {
   }
 }
 
+// SVG icons sólidos (cor herdada via currentColor)
+var _IC = {
+  leaf:    '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 19.34C3.26 20.21 4.32 21.19 5.13 20.56C8.34 18.14 11.5 16 17 16C20.31 16 23 13.31 23 10V2C23 2 17 5 17 8Z"/></svg>',
+  bolt:    '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+  target:  '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+  trophy:  '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h12v6a6 6 0 0 1-12 0V2zm6 10a6 6 0 0 0 6-6H6a6 6 0 0 0 6 6zM8 20h8m-4-4v4"/><rect x="8" y="20" width="8" height="2" rx="1"/></svg>',
+  gift:    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>',
+  chart:   '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="10" width="4" height="12" rx="1"/><rect x="10" y="4" width="4" height="18" rx="1"/><rect x="18" y="7" width="4" height="15" rx="1"/></svg>',
+  flame:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 8 7 8 12C8 14.21 9.79 16 12 16C14.21 16 16 14.21 16 12C16 10 15 8 14 7C14 9 13 10 12 10C11 10 10 9 10 8C10 5 12 2 12 2Z"/><path d="M12 16C9.79 16 8 17.79 8 20C8 21.1 8.9 22 10 22H14C15.1 22 16 21.1 16 20C16 17.79 14.21 16 12 16Z"/></svg>',
+};
+
 var LEVEL_CONFIG = [
-  { min: 0,  max: 4,  name: 'Iniciante',       cls: 'level-iniciante', icon: '🌱', next: 5,  nextName: 'Ativo',     bonus: 1 },
-  { min: 5,  max: 19, name: 'Ativo',            cls: 'level-ativo',     icon: '⚡', next: 20, nextName: 'Avançado',  bonus: 2 },
-  { min: 20, max: 49, name: 'Avançado',         cls: 'level-avancado',  icon: '🎯', next: 50, nextName: 'Expert',    bonus: 5 },
-  { min: 50, max: Infinity, name: 'Expert',     cls: 'level-expert',    icon: '🏆', next: null, nextName: null,      bonus: 0 },
+  { min: 0,  max: 4,  name: 'Iniciante',  cls: 'level-iniciante', icon: _IC.leaf,   next: 5,  nextName: 'Ativo',    bonus: 1 },
+  { min: 5,  max: 19, name: 'Ativo',      cls: 'level-ativo',     icon: _IC.bolt,   next: 20, nextName: 'Avançado', bonus: 2 },
+  { min: 20, max: 49, name: 'Avançado',   cls: 'level-avancado',  icon: _IC.target, next: 50, nextName: 'Expert',   bonus: 5 },
+  { min: 50, max: Infinity, name: 'Expert', cls: 'level-expert',  icon: _IC.trophy, next: null, nextName: null,     bonus: 0 },
 ];
 
 function renderUserLevel(count) {
@@ -581,8 +592,8 @@ function renderUserLevel(count) {
     document.getElementById('levelProgressLabel').textContent =
       remaining + ' análise' + (remaining !== 1 ? 's' : '') + ' para nível ' + lv.nextName;
     document.getElementById('levelProgressFill').style.width = Math.min(pct, 100) + '%';
-    document.getElementById('levelProgressBonus').textContent =
-      '🎁 Ao atingir: +' + lv.bonus + ' crédito' + (lv.bonus !== 1 ? 's' : '') + ' bônus';
+    document.getElementById('levelProgressBonus').innerHTML =
+      '<span style="display:inline-flex;align-items:center;gap:.3rem;vertical-align:middle">' + _IC.gift + ' Ao atingir: +' + lv.bonus + ' crédito' + (lv.bonus !== 1 ? 's' : '') + ' bônus</span>';
     progressWrap.style.display = 'block';
   } else {
     progressWrap.style.display = 'none';
@@ -596,11 +607,11 @@ function renderUserLevel(count) {
     '📊 CVs otimizados passam por 70% mais filtros ATS automaticamente.',
   ];
   var msg = count === 0
-    ? '📊 Candidatos que analisam o CV antes de enviar recebem 3× mais retornos.'
+    ? 'Candidatos que analisam o CV antes de enviar recebem 3&times; mais retornos.'
     : count < 5
-    ? '📊 Candidatos com 3+ análises têm 2× mais chances de entrevista.'
-    : '📊 CVs otimizados passam por 70% mais filtros ATS automaticamente.';
-  statEl.textContent = msg;
+    ? 'Candidatos com 3+ an&aacute;lises t&ecirc;m 2&times; mais chances de entrevista.'
+    : 'CVs otimizados passam por 70% mais filtros ATS automaticamente.';
+  statEl.innerHTML = '<span style="display:inline-flex;align-items:flex-start;gap:.4rem">' + _IC.chart + '<span>' + msg + '</span></span>';
   statEl.style.display = 'block';
 }
 
@@ -621,7 +632,8 @@ function renderStreak(analyses) {
     return;
   }
   wrap.style.display = 'flex';
-  flame.textContent = weekCount >= 5 ? '🔥🔥' : weekCount >= 3 ? '🔥' : '🔥';
+  flame.innerHTML = _IC.flame + (weekCount >= 5 ? _IC.flame : '');
+  flame.style.color = 'var(--red)';
   text.textContent = weekCount === 1
     ? '1 análise essa semana — continue!'
     : weekCount + ' análises essa semana — ótimo ritmo!';
@@ -646,11 +658,11 @@ function showMilestoneToast(milestone, credits) {
   setTimeout(function(){ wrap.remove(); }, 4000);
 
   // Toast
-  var icons = { 5: '⚡', 10: '🎁', 20: '🎯', 30: '🎁', 50: '🏆' };
+  var icons = { 5: _IC.bolt, 10: _IC.gift, 20: _IC.target, 30: _IC.gift, 50: _IC.trophy };
   var titles = { 5: 'Nível Ativo desbloqueado!', 10: 'Marco de fidelidade!', 20: 'Nível Avançado desbloqueado!', 30: 'Marco de fidelidade!', 50: 'Você é Expert!' };
   var toast = document.createElement('div');
   toast.className = 'milestone-toast';
-  toast.innerHTML = '<div class="milestone-toast-icon">' + (icons[milestone] || '🎉') + '</div>'
+  toast.innerHTML = '<div class="milestone-toast-icon" style="color:var(--green);display:flex;align-items:center">' + (icons[milestone] || _IC.trophy) + '</div>'
     + '<div class="milestone-toast-body">'
     + '<div class="milestone-toast-title">' + (titles[milestone] || 'Marco atingido!') + '</div>'
     + '<div class="milestone-toast-sub">Parabéns! Você completou ' + milestone + ' análises 🎉</div>'
