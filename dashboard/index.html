@@ -228,6 +228,16 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
     <button class="modal-close" onclick="closePerfil()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     <div class="modal-title">Meu Perfil</div>
     <div class="modal-sub">Informações da sua conta VagaAI.</div>
+    <!-- Nome editável -->
+    <div class="modal-field" style="margin-bottom:.5rem">
+      <label class="modal-label" for="perfilNome">Nome</label>
+      <div style="display:flex;gap:.5rem">
+        <input class="modal-input" type="text" id="perfilNome" placeholder="Seu nome" autocomplete="name" style="flex:1">
+        <button id="btnSalvarNome" onclick="doSalvarNome()" style="background:var(--green);color:#0a0f0d;border:none;border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:.6rem .9rem;cursor:pointer;white-space:nowrap;transition:background .2s">Salvar</button>
+      </div>
+      <div class="modal-msg" id="nomeMsg" style="text-align:left;margin-top:.4rem"></div>
+    </div>
+    <!-- Demais infos -->
     <div id="perfilRows"></div>
     <button class="modal-btn" style="margin-top:1.2rem;background:transparent;border:1px solid var(--border);color:var(--text);font-weight:600" onclick="closePerfil();openSenha()">
       <span class="ic" style="margin-right:.4rem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
@@ -375,23 +385,24 @@ async function init() {
   currentSession = session;
   currentUserId = session.user.id;
   var email = session.user.email || '';
-  var firstName = email.split('@')[0];
-  var initials = firstName.slice(0,2).toUpperCase();
+  var savedName = (session.user.user_metadata && session.user.user_metadata.full_name) || '';
+  var displayName = savedName || email.split('@')[0];
+  var initials = displayName.slice(0,2).toUpperCase();
   var memberSince = session.user.created_at
     ? new Date(session.user.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
     : '—';
 
   // Nav avatar
   document.getElementById('avatarInitials').textContent = initials;
-  document.getElementById('dropName').textContent = firstName;
+  document.getElementById('dropName').textContent = displayName;
   document.getElementById('dropEmail').textContent = email;
 
   // Greeting
-  document.getElementById('greetingTitle').textContent = 'Olá, ' + firstName + '!';
+  document.getElementById('greetingTitle').textContent = 'Olá, ' + displayName + '!';
   document.getElementById('greetingSub').textContent = 'Bem-vindo ao seu painel VagaAI.';
 
   // Guarda para o modal de perfil
-  window._perfilData = { email: email, memberSince: memberSince, firstName: firstName };
+  window._perfilData = { email: email, memberSince: memberSince, displayName: displayName, savedName: savedName };
 
   renderPlans();
   await Promise.all([loadCredits(), loadAnalyses()]);
@@ -548,16 +559,50 @@ document.addEventListener('click', function(e) {
 // ─── MODAL PERFIL ─────────────────────────────────────────────────────────────
 function openPerfil() {
   var d = window._perfilData || {};
+  document.getElementById('perfilNome').value = d.savedName || '';
+  document.getElementById('nomeMsg').textContent = '';
+  document.getElementById('nomeMsg').className = 'modal-msg';
+  document.getElementById('btnSalvarNome').disabled = false;
+  document.getElementById('btnSalvarNome').textContent = 'Salvar';
   document.getElementById('perfilRows').innerHTML =
-    '<div class="perfil-row"><span class="perfil-key">Nome</span><span class="perfil-val">' + escHtml(d.firstName || '—') + '</span></div>'
-    + '<div class="perfil-row"><span class="perfil-key">E-mail</span><span class="perfil-val">' + escHtml(d.email || '—') + '</span></div>'
+    '<div class="perfil-row"><span class="perfil-key">E-mail</span><span class="perfil-val">' + escHtml(d.email || '—') + '</span></div>'
     + '<div class="perfil-row"><span class="perfil-key">Membro desde</span><span class="perfil-val">' + escHtml(d.memberSince || '—') + '</span></div>'
     + '<div class="perfil-row"><span class="perfil-key">Análises realizadas</span><span class="perfil-val">' + _totalAnalyses + '</span></div>'
     + '<div class="perfil-row"><span class="perfil-key">Créditos restantes</span><span class="perfil-val">' + _currentCredits + '</span></div>';
   document.getElementById('modalPerfil').classList.remove('hidden');
+  setTimeout(function(){ document.getElementById('perfilNome').focus(); }, 100);
 }
 function closePerfil() { document.getElementById('modalPerfil').classList.add('hidden'); }
 document.getElementById('modalPerfil').addEventListener('click', function(e){ if(e.target===this) closePerfil(); });
+
+async function doSalvarNome() {
+  var nome = document.getElementById('perfilNome').value.trim();
+  var msg = document.getElementById('nomeMsg');
+  var btn = document.getElementById('btnSalvarNome');
+  msg.className = 'modal-msg';
+  msg.textContent = '';
+  if (!nome) { msg.className = 'modal-msg err'; msg.textContent = 'Digite um nome válido.'; return; }
+  btn.disabled = true;
+  btn.textContent = '...';
+  var { error } = await sb.auth.updateUser({ data: { full_name: nome } });
+  btn.textContent = 'Salvar';
+  if (error) {
+    btn.disabled = false;
+    msg.className = 'modal-msg err';
+    msg.textContent = 'Erro ao salvar. Tente novamente.';
+  } else {
+    btn.disabled = false;
+    msg.className = 'modal-msg ok';
+    msg.textContent = '✓ Nome atualizado!';
+    // Atualiza UI
+    window._perfilData.savedName = nome;
+    window._perfilData.displayName = nome;
+    document.getElementById('dropName').textContent = nome;
+    document.getElementById('greetingTitle').textContent = 'Olá, ' + nome + '!';
+    document.getElementById('avatarInitials').textContent = nome.slice(0,2).toUpperCase();
+    setTimeout(function(){ msg.textContent = ''; }, 3000);
+  }
+}
 
 // ─── MODAL SENHA ──────────────────────────────────────────────────────────────
 function openSenha() {
