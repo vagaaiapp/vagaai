@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VagaAI — Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0f0d;--surface:#111814;--surface2:#161d19;--border:rgba(255,255,255,0.07);
+  --text:#e8ede9;--muted:#8a9e90;--green:#3ecf8e;
+  --green-dim:rgba(62,207,142,0.12);--green-border:rgba(62,207,142,0.25);
+  --red:#ff6b6b;--red-dim:rgba(255,107,107,0.12);--red-border:rgba(255,107,107,0.25);
+  --yellow:#ffd166;--yellow-dim:rgba(255,209,102,0.12);--yellow-border:rgba(255,209,102,0.3);
+  --blue:#64c8ff;--blue-dim:rgba(100,200,255,0.1);--blue-border:rgba(100,200,255,0.25);
+}
+.ic{display:inline-flex;align-items:center;vertical-align:middle;flex-shrink:0}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-right{display:flex;align-items:center;gap:1rem}
+.nav-badge{font-size:9px;background:var(--red-dim);border:1px solid var(--red-border);color:var(--red);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.btn-nav{font-size:13px;font-weight:600;padding:.4rem .9rem;border-radius:8px;cursor:pointer;transition:all .2s;text-decoration:none;border:none;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:6px}
+.btn-nav.ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-nav.ghost:hover{border-color:rgba(255,255,255,0.15);color:var(--text)}
+.btn-nav.primary{background:var(--green);color:#0a0f0d}
+.btn-nav.primary:hover{background:#4ddb9e}
+
+/* SKELETON */
+.skeleton{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* LOADING OVERLAY */
+.page-loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:1rem}
+.page-loading .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.page-loading.hidden{display:none}
+
+/* LAYOUT */
+.container{max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem 5rem}
+
+/* PAGE HEADER */
+.page-header{display:flex;align-items:center;gap:.8rem;margin-bottom:2rem;flex-wrap:wrap}
+.page-title{font-family:'Lora',serif;font-size:clamp(22px,4vw,30px);font-weight:700}
+.badge-restrito{font-size:9px;background:var(--red-dim);border:1px solid var(--red-border);color:var(--red);padding:2px 8px;border-radius:20px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;align-self:center}
+.page-header-right{margin-left:auto;display:flex;align-items:center;gap:.7rem}
+
+/* METRIC CARDS */
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+@media(max-width:900px){.metrics-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.metrics-grid{grid-template-columns:1fr}}
+.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem 1.5rem}
+.metric-card.green-accent{border-color:var(--green-border);background:linear-gradient(135deg,rgba(62,207,142,0.06),var(--surface))}
+.metric-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.metric-value{font-family:'Lora',serif;font-size:32px;font-weight:700;line-height:1;color:var(--text);margin-bottom:.3rem}
+.metric-value.accent{color:var(--green)}
+.metric-sub{font-size:12px;color:var(--muted)}
+.metric-skel{height:32px;width:80px}
+.metric-sub-skel{height:14px;width:120px;margin-top:.3rem}
+
+/* SECTION */
+.section{margin-bottom:2.5rem}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:.5rem;flex-wrap:wrap}
+.section-title{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.section-count{font-size:12px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:1px 8px}
+
+/* CHART */
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.4rem 1.5rem}
+.chart-title{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:1rem}
+.chart-area{overflow-x:auto}
+.chart-svg{display:block;min-width:300px}
+.chart-bar-label{font-size:10px;fill:var(--muted);text-anchor:middle;font-family:'Inter',sans-serif}
+.chart-bar-value{font-size:10px;fill:var(--text);text-anchor:middle;font-family:'Inter',sans-serif}
+.chart-empty{font-size:13px;color:var(--muted);padding:2rem 0;text-align:center}
+
+/* SEARCH INPUT */
+.search-wrap{position:relative;flex:1;max-width:260px}
+.search-wrap svg{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search-input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:.5rem .75rem .5rem 2.2rem;width:100%;transition:border-color .2s}
+.search-input:focus{outline:none;border-color:var(--green-border)}
+.search-input::placeholder{color:var(--muted)}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;min-width:600px}
+thead{background:var(--surface2)}
+th{padding:.75rem 1rem;text-align:left;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);white-space:nowrap;cursor:pointer;user-select:none;transition:color .15s}
+th:hover{color:var(--text)}
+th.sorted{color:var(--green)}
+th .sort-arrow{display:inline-block;margin-left:4px;opacity:.5;font-size:10px}
+th.sorted .sort-arrow{opacity:1;color:var(--green)}
+td{padding:.75rem 1rem;font-size:13px;border-top:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,0.02)}
+
+/* AVATAR */
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;text-transform:uppercase}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:5px}
+.badge.green{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.badge.yellow{background:var(--yellow-dim);color:var(--yellow);border:1px solid var(--yellow-border)}
+.badge.red{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border)}
+.badge.blue{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue-border)}
+.badge.muted{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+
+/* SCORE CIRCLE */
+.score-circle{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:13px;font-weight:700;flex-shrink:0;border:2px solid}
+.score-circle.green{color:var(--green);border-color:var(--green-border);background:var(--green-dim)}
+.score-circle.yellow{color:var(--yellow);border-color:var(--yellow-border);background:var(--yellow-dim)}
+.score-circle.red{color:var(--red);border-color:var(--red-border);background:var(--red-dim)}
+
+/* STRIPE MISSING */
+.stripe-missing{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:2rem;text-align:center}
+.stripe-missing-icon{color:var(--muted);margin-bottom:.7rem;display:flex;justify-content:center}
+.stripe-missing-title{font-size:14px;font-weight:600;margin-bottom:.3rem}
+.stripe-missing-sub{font-size:13px;color:var(--muted)}
+
+/* ERROR STATE */
+.error-state{background:var(--red-dim);border:1px solid var(--red-border);border-radius:12px;padding:1.2rem 1.5rem;font-size:14px;color:var(--red);display:flex;align-items:center;gap:.7rem}
+
+/* EMPTY */
+.empty-row td{text-align:center;color:var(--muted);font-size:13px;padding:2rem}
+
+/* REFRESH BTN */
+.btn-refresh{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:.45rem .75rem;cursor:pointer;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:6px;transition:all .2s}
+.btn-refresh:hover{border-color:var(--green-border);color:var(--green)}
+.btn-refresh.spinning svg{animation:spin .6s linear infinite}
+
+/* MONO TEXT */
+.mono{font-family:'Courier New',monospace;font-size:12px;color:var(--muted)}
+
+/* PAGINATION */
+.tbl-footer{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;background:var(--surface2);border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
+</style>
+<script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
+</head>
+<body>
+
+<!-- LOADING OVERLAY -->
+<div class="page-loading" id="pageLoading">
+  <div class="spinner"></div>
+  <div style="font-size:14px;color:var(--muted)">Carregando...</div>
+</div>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="/logo.svg" alt="VagaAI" height="38">
+  </a>
+  <div class="nav-right">
+    <span class="nav-badge">Restrito</span>
+    <a href="/dashboard" class="btn-nav ghost">
+      <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></span>
+      Voltar ao painel
+    </a>
+    <button class="btn-nav ghost" onclick="logout()">Sair</button>
+  </div>
+</nav>
+
+<div class="container" id="mainContent" style="display:none">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-title">Admin</div>
+    <span class="badge-restrito">Restrito</span>
+    <div class="page-header-right">
+      <button class="btn-refresh" id="refreshBtn" onclick="loadData()">
+        <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>
+        Atualizar
+      </button>
+    </div>
+  </div>
+
+  <!-- ERROR STATE -->
+  <div id="errorState" style="display:none" class="error-state" role="alert">
+    <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
+    <span id="errorMsg"></span>
+  </div>
+
+  <!-- METRIC CARDS -->
+  <div class="metrics-grid" id="metricsGrid">
+    <!-- Skeletons while loading -->
+    <div class="metric-card">
+      <div class="metric-label">Total Usuários</div>
+      <div class="skeleton metric-skel"></div>
+      <div class="skeleton metric-sub-skel" style="margin-top:.5rem"></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Análises Realizadas</div>
+      <div class="skeleton metric-skel"></div>
+      <div class="skeleton metric-sub-skel" style="margin-top:.5rem"></div>
+    </div>
+    <div class="metric-card green-accent">
+      <div class="metric-label">Receita Total</div>
+      <div class="skeleton metric-skel"></div>
+      <div class="skeleton metric-sub-skel" style="margin-top:.5rem"></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Créditos Ativos</div>
+      <div class="skeleton metric-skel"></div>
+      <div class="skeleton metric-sub-skel" style="margin-top:.5rem"></div>
+    </div>
+  </div>
+
+  <!-- REVENUE CHART -->
+  <div class="section" id="chartSection" style="display:none">
+    <div class="section-header">
+      <div class="section-title">Receita — últimos 7 dias</div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-area" id="chartArea"></div>
+    </div>
+  </div>
+
+  <!-- USERS TABLE -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Usuários <span class="section-count" id="usersCount"></span></div>
+      <div class="search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="search-input" id="userSearch" placeholder="Buscar por e-mail..." oninput="filterUsers()">
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="usersTable">
+        <thead>
+          <tr>
+            <th style="width:42px"></th>
+            <th onclick="sortUsers('email')">E-mail <span class="sort-arrow">↕</span></th>
+            <th onclick="sortUsers('created_at')">Cadastro <span class="sort-arrow">↕</span></th>
+            <th onclick="sortUsers('last_sign_in_at')">Último acesso <span class="sort-arrow">↕</span></th>
+            <th onclick="sortUsers('credits')">Créditos <span class="sort-arrow">↕</span></th>
+            <th onclick="sortUsers('analyses')">Análises <span class="sort-arrow">↕</span></th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="usersBody">
+          <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem;font-size:13px">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RECENT ANALYSES TABLE -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Análises recentes</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Usuário</th>
+            <th>Empresa</th>
+            <th>Cargo</th>
+            <th>Score</th>
+            <th>Nível</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody id="analysesBody">
+          <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;font-size:13px">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PAYMENTS -->
+  <div class="section" id="paymentsSection">
+    <div class="section-header">
+      <div class="section-title">Pagamentos recentes</div>
+    </div>
+    <div id="paymentsContent">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>ID Stripe</th>
+            </tr>
+          </thead>
+          <tbody id="paymentsBody">
+            <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:2rem;font-size:13px">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+var SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
+var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
+var ADMIN_EMAIL = 'contato@vagaai.app.br';
+
+var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+var _data = null;
+var _usersSortKey = 'created_at';
+var _usersSortDir = -1; // -1 = desc, 1 = asc
+var _usersFiltered = [];
+
+// ─── Formatters ───────────────────────────────────────────────────────────────
+
+function fmtBRL(cents) {
+  if (cents == null || isNaN(cents)) return '—';
+  var val = cents / 100;
+  return 'R$ ' + val.toFixed(2)
+    .replace('.', ',')
+    .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+  } catch(e) { return iso; }
+}
+
+function fmtDateShort(iso) {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleDateString('pt-BR', { day:'2-digit', month:'short' });
+  } catch(e) { return iso; }
+}
+
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function initials(email) {
+  if (!email) return '?';
+  var parts = email.split('@')[0].split(/[._-]/);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return (email[0] || '?').toUpperCase();
+}
+
+// ─── Auth + init ──────────────────────────────────────────────────────────────
+
+async function init() {
+  var { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = '/login'; return; }
+  if (session.user.email !== ADMIN_EMAIL) { window.location.href = '/dashboard'; return; }
+
+  document.getElementById('pageLoading').classList.add('hidden');
+  document.getElementById('mainContent').style.display = 'block';
+
+  await loadData(session.access_token);
+}
+
+async function loadData(tokenOverride) {
+  var btn = document.getElementById('refreshBtn');
+  if (btn) btn.classList.add('spinning');
+
+  var { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = '/login'; return; }
+  var token = tokenOverride || session.access_token;
+
+  hideError();
+
+  try {
+    var res = await fetch('/api/admin', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    if (!res.ok) {
+      var err = await res.json().catch(function(){ return {}; });
+      showError(err.error || 'Erro ao carregar dados. Status: ' + res.status);
+      return;
+    }
+    _data = await res.json();
+    render(_data);
+  } catch(e) {
+    showError('Falha na requisição: ' + e.message);
+  } finally {
+    if (btn) btn.classList.remove('spinning');
+  }
+}
+
+function showError(msg) {
+  var el = document.getElementById('errorState');
+  document.getElementById('errorMsg').textContent = msg;
+  el.style.display = 'flex';
+}
+function hideError() {
+  document.getElementById('errorState').style.display = 'none';
+}
+
+// ─── Main render ──────────────────────────────────────────────────────────────
+
+function render(data) {
+  var sb_ = data.supabase || {};
+  var stripe_ = data.stripe;
+
+  var users = sb_.users || [];
+  var totalUsers = sb_.totalUsers || users.length;
+  var credits = sb_.credits || [];
+  var analyses = Array.isArray(sb_.analyses) ? sb_.analyses : [];
+
+  // Build credit map
+  var creditMap = {};
+  credits.forEach(function(c) { creditMap[c.user_id] = c.credits || 0; });
+
+  // Build analysis count map
+  var analysisCountMap = {};
+  analyses.forEach(function(a) {
+    analysisCountMap[a.user_id] = (analysisCountMap[a.user_id] || 0) + 1;
+  });
+
+  // Stripe totals
+  var charges = (stripe_ && stripe_.charges && stripe_.charges.data) ? stripe_.charges.data : null;
+  var totalRevenueCents = charges
+    ? charges.filter(function(c){ return c.status === 'succeeded'; })
+        .reduce(function(s, c){ return s + (c.amount_captured || c.amount || 0); }, 0)
+    : null;
+
+  var totalCredits = credits.reduce(function(s, c){ return s + (c.credits || 0); }, 0);
+
+  renderMetrics(totalUsers, analyses.length, totalRevenueCents, totalCredits);
+  renderChart(charges);
+  renderUsers(users, creditMap, analysisCountMap);
+  renderAnalyses(analyses, users);
+  renderPayments(charges, stripe_);
+}
+
+// ─── Metric cards ─────────────────────────────────────────────────────────────
+
+function renderMetrics(totalUsers, totalAnalyses, totalRevCents, totalCredits) {
+  var html =
+    '<div class="metric-card">'
+    + '<div class="metric-label">Total Usuários</div>'
+    + '<div class="metric-value">' + totalUsers + '</div>'
+    + '<div class="metric-sub">contas cadastradas</div>'
+    + '</div>'
+    + '<div class="metric-card">'
+    + '<div class="metric-label">Análises Realizadas</div>'
+    + '<div class="metric-value">' + totalAnalyses + '</div>'
+    + '<div class="metric-sub">no total</div>'
+    + '</div>'
+    + '<div class="metric-card green-accent">'
+    + '<div class="metric-label">Receita Total</div>'
+    + '<div class="metric-value accent" style="font-size:22px">'
+      + (totalRevCents != null ? fmtBRL(totalRevCents) : '<span style="color:var(--muted);font-size:14px">Stripe não configurado</span>')
+    + '</div>'
+    + '<div class="metric-sub">pagamentos aprovados</div>'
+    + '</div>'
+    + '<div class="metric-card">'
+    + '<div class="metric-label">Créditos Ativos</div>'
+    + '<div class="metric-value">' + totalCredits + '</div>'
+    + '<div class="metric-sub">saldo total dos usuários</div>'
+    + '</div>';
+  document.getElementById('metricsGrid').innerHTML = html;
+}
+
+// ─── Revenue chart (inline SVG, last 7 days) ──────────────────────────────────
+
+function renderChart(charges) {
+  var section = document.getElementById('chartSection');
+  var area = document.getElementById('chartArea');
+
+  if (!charges) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+
+  // Build last 7 days bucket (date string YYYY-MM-DD → cents)
+  var days = [];
+  for (var i = 6; i >= 0; i--) {
+    var d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push(d.toISOString().slice(0, 10));
+  }
+
+  var buckets = {};
+  days.forEach(function(d){ buckets[d] = 0; });
+
+  charges.forEach(function(c) {
+    if (c.status !== 'succeeded') return;
+    var d = new Date(c.created * 1000).toISOString().slice(0, 10);
+    if (buckets.hasOwnProperty(d)) {
+      buckets[d] += (c.amount_captured || c.amount || 0);
+    }
+  });
+
+  var values = days.map(function(d){ return buckets[d]; });
+  var maxVal = Math.max.apply(null, values) || 1;
+
+  var W = 560, H = 120, barW = 52, gap = 28;
+  var totalW = days.length * (barW + gap) - gap + 40;
+  var chartH = H - 30;
+
+  var bars = days.map(function(d, i) {
+    var v = buckets[d];
+    var bh = Math.max(v > 0 ? 4 : 2, (v / maxVal) * chartH);
+    var x = 20 + i * (barW + gap);
+    var y = H - 20 - bh;
+    var label = fmtDateShort(d + 'T12:00:00');
+    var valueLabel = v > 0 ? fmtBRL(v) : '';
+    var color = v > 0 ? 'var(--green)' : 'var(--surface2)';
+    return '<rect x="' + x + '" y="' + y + '" width="' + barW + '" height="' + bh + '" rx="4" fill="' + color + '" opacity="' + (v > 0 ? '1' : '0.5') + '"/>'
+      + '<text class="chart-bar-label" x="' + (x + barW/2) + '" y="' + (H - 5) + '">' + escHtml(label) + '</text>'
+      + (valueLabel ? '<text class="chart-bar-value" x="' + (x + barW/2) + '" y="' + (y - 5) + '">' + escHtml(valueLabel) + '</text>' : '');
+  }).join('');
+
+  area.innerHTML = '<svg class="chart-svg" viewBox="0 0 ' + totalW + ' ' + H + '" height="' + H + '">' + bars + '</svg>';
+}
+
+// ─── Users table ──────────────────────────────────────────────────────────────
+
+var _allUsersData = [];
+
+function renderUsers(users, creditMap, analysisCountMap) {
+  // Build enriched rows
+  _allUsersData = users.map(function(u) {
+    return {
+      id: u.id,
+      email: u.email || '',
+      created_at: u.created_at || '',
+      last_sign_in_at: u.last_sign_in_at || '',
+      credits: creditMap[u.id] || 0,
+      analyses: analysisCountMap[u.id] || 0,
+    };
+  });
+
+  document.getElementById('usersCount').textContent = users.length;
+  _usersFiltered = _allUsersData.slice();
+  sortAndRenderUsers();
+}
+
+function filterUsers() {
+  var q = document.getElementById('userSearch').value.toLowerCase();
+  _usersFiltered = q
+    ? _allUsersData.filter(function(u){ return u.email.toLowerCase().indexOf(q) !== -1; })
+    : _allUsersData.slice();
+  sortAndRenderUsers();
+}
+
+function sortUsers(key) {
+  if (_usersSortKey === key) {
+    _usersSortDir *= -1;
+  } else {
+    _usersSortKey = key;
+    _usersSortDir = key === 'email' ? 1 : -1;
+  }
+  // Update header arrows
+  var ths = document.querySelectorAll('#usersTable th');
+  ths.forEach(function(th){
+    th.classList.remove('sorted');
+    var arr = th.querySelector('.sort-arrow');
+    if (arr) arr.textContent = '↕';
+  });
+  var keyToIndex = { email:1, created_at:2, last_sign_in_at:3, credits:4, analyses:5 };
+  var idx = keyToIndex[key];
+  if (idx != null) {
+    var th = ths[idx];
+    if (th) {
+      th.classList.add('sorted');
+      var arr = th.querySelector('.sort-arrow');
+      if (arr) arr.textContent = _usersSortDir === 1 ? '↑' : '↓';
+    }
+  }
+  sortAndRenderUsers();
+}
+
+function sortAndRenderUsers() {
+  var key = _usersSortKey;
+  var dir = _usersSortDir;
+  var sorted = _usersFiltered.slice().sort(function(a, b) {
+    var av = a[key], bv = b[key];
+    if (av == null) av = '';
+    if (bv == null) bv = '';
+    if (typeof av === 'number' && typeof bv === 'number') return dir * (av - bv);
+    return dir * String(av).localeCompare(String(bv));
+  });
+
+  var body = document.getElementById('usersBody');
+  if (!sorted.length) {
+    body.innerHTML = '<tr class="empty-row"><td colspan="7">Nenhum usuário encontrado.</td></tr>';
+    return;
+  }
+
+  var now = Date.now();
+  body.innerHTML = sorted.map(function(u) {
+    var active = u.last_sign_in_at && (now - new Date(u.last_sign_in_at).getTime()) < 7 * 24 * 60 * 60 * 1000;
+    var statusBadge = active
+      ? '<span class="badge green">Ativo</span>'
+      : '<span class="badge muted">Inativo</span>';
+    return '<tr>'
+      + '<td><div class="avatar">' + escHtml(initials(u.email)) + '</div></td>'
+      + '<td>' + escHtml(u.email) + '</td>'
+      + '<td>' + fmtDate(u.created_at) + '</td>'
+      + '<td>' + (u.last_sign_in_at ? fmtDate(u.last_sign_in_at) : '<span style="color:var(--muted)">Nunca</span>') + '</td>'
+      + '<td><span style="font-weight:600;color:' + (u.credits > 0 ? 'var(--green)' : 'var(--muted)') + '">' + u.credits + '</span></td>'
+      + '<td>' + u.analyses + '</td>'
+      + '<td>' + statusBadge + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+// ─── Recent analyses ──────────────────────────────────────────────────────────
+
+function renderAnalyses(analyses, users) {
+  var emailMap = {};
+  (users || []).forEach(function(u){ emailMap[u.id] = u.email || u.id; });
+
+  var recent = analyses.slice(0, 20);
+  var body = document.getElementById('analysesBody');
+
+  if (!recent.length) {
+    body.innerHTML = '<tr class="empty-row"><td colspan="6">Nenhuma análise encontrada.</td></tr>';
+    return;
+  }
+
+  body.innerHTML = recent.map(function(a) {
+    var score = a.score || 0;
+    var colorClass = score >= 75 ? 'green' : score >= 50 ? 'yellow' : 'red';
+    var jobInfo = a.result && a.result.job_info ? a.result.job_info : null;
+    var empresa = jobInfo ? (jobInfo.empresa || 'Empresa anônima') : 'Empresa anônima';
+    var cargo = jobInfo ? (jobInfo.cargo || '—') : (a.job_excerpt ? a.job_excerpt.substring(0,40) : '—');
+    var nivel = a.nivel || '—';
+    var nivelBadge = nivelBadgeHtml(nivel);
+    return '<tr>'
+      + '<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(emailMap[a.user_id] || a.user_id) + '</td>'
+      + '<td>' + escHtml(empresa) + '</td>'
+      + '<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(cargo) + '</td>'
+      + '<td><div class="score-circle ' + colorClass + '">' + score + '</div></td>'
+      + '<td>' + nivelBadge + '</td>'
+      + '<td>' + fmtDate(a.created_at) + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+function nivelBadgeHtml(nivel) {
+  if (!nivel) return '<span class="badge muted">—</span>';
+  var n = nivel.toLowerCase();
+  var cls = n === 'excelente' ? 'green' : n === 'bom' ? 'blue' : n === 'regular' ? 'yellow' : 'red';
+  return '<span class="badge ' + cls + '">' + escHtml(nivel) + '</span>';
+}
+
+// ─── Payments ─────────────────────────────────────────────────────────────────
+
+function renderPayments(charges, stripe_) {
+  var body = document.getElementById('paymentsBody');
+
+  if (!stripe_) {
+    document.getElementById('paymentsContent').innerHTML =
+      '<div class="stripe-missing">'
+      + '<div class="stripe-missing-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></div>'
+      + '<div class="stripe-missing-title">Stripe não configurado</div>'
+      + '<div class="stripe-missing-sub">Defina a variável de ambiente <code>STRIPE_SECRET_KEY</code> para ver pagamentos.</div>'
+      + '</div>';
+    return;
+  }
+
+  if (!charges || !charges.length) {
+    body.innerHTML = '<tr class="empty-row"><td colspan="4">Nenhum pagamento encontrado.</td></tr>';
+    return;
+  }
+
+  var recent = charges.slice(0, 20);
+  body.innerHTML = recent.map(function(c) {
+    var statusCls = c.status === 'succeeded' ? 'green' : c.status === 'pending' ? 'yellow' : 'red';
+    var statusLabel = c.status === 'succeeded' ? 'Aprovado' : c.status === 'pending' ? 'Pendente' : c.status || '—';
+    var amount = c.amount_captured || c.amount || 0;
+    return '<tr>'
+      + '<td>' + fmtDate(new Date(c.created * 1000).toISOString()) + '</td>'
+      + '<td style="font-weight:600">' + fmtBRL(amount) + '</td>'
+      + '<td><span class="badge ' + statusCls + '">' + escHtml(statusLabel) + '</span></td>'
+      + '<td><span class="mono">' + escHtml(c.id) + '</span></td>'
+      + '</tr>';
+  }).join('');
+}
+
+// ─── Logout ───────────────────────────────────────────────────────────────────
+
+async function logout() {
+  await sb.auth.signOut();
+  window.location.href = '/';
+}
+
+// ─── Start ────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
