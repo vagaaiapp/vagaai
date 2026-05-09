@@ -152,6 +152,82 @@ async function saveAnalysis(userId, score, nivel, jobExcerpt, result) {
   }
 }
 
+// ─── Marcos de gamificação ────────────────────────────────────────────────────
+
+const MILESTONES = [
+  { count: 5,  credits: 1, label: 'Nível Ativo' },
+  { count: 10, credits: 1, label: 'Marco de fidelidade' },
+  { count: 20, credits: 2, label: 'Nível Avançado' },
+  { count: 30, credits: 1, label: 'Marco de fidelidade' },
+  { count: 50, credits: 5, label: 'Nível Expert' },
+];
+
+async function checkAndAwardMilestones(userId) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return null;
+  try {
+    // Conta total de análises do usuário
+    const countRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/analyses?user_id=eq.${encodeURIComponent(userId)}&select=id`,
+      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, Prefer: 'count=exact' } }
+    );
+    const totalAnalyses = parseInt(countRes.headers.get('content-range')?.split('/')[1] || '0', 10);
+
+    // Busca marcos já concedidos
+    const milestonesRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/user_milestones?user_id=eq.${encodeURIComponent(userId)}&select=milestone`,
+      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+    );
+    const awarded = await milestonesRes.json();
+    const awardedSet = new Set((awarded || []).map(m => m.milestone));
+
+    // Verifica marcos atingidos mas não concedidos
+    let newMilestone = null;
+    for (const m of MILESTONES) {
+      if (totalAnalyses >= m.count && !awardedSet.has(m.count)) {
+        // Registra marco
+        await fetch(`${SUPABASE_URL}/rest/v1/user_milestones`, {
+          method: 'POST',
+          headers: {
+            apikey: SUPABASE_SERVICE_KEY,
+            Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({ user_id: userId, milestone: m.count, credits_awarded: m.credits }),
+        });
+
+        // Adiciona créditos bônus
+        const credRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&select=credits`,
+          { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+        );
+        const credRows = await credRes.json();
+        const current = credRows[0]?.credits || 0;
+        await fetch(
+          `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}`,
+          {
+            method: 'PATCH',
+            headers: {
+              apikey: SUPABASE_SERVICE_KEY,
+              Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+              'Content-Type': 'application/json',
+              Prefer: 'return=minimal',
+            },
+            body: JSON.stringify({ credits: current + m.credits, updated_at: new Date().toISOString() }),
+          }
+        );
+
+        newMilestone = { milestone: m.count, credits: m.credits, label: m.label, totalAnalyses };
+        break; // Um marco por vez
+      }
+    }
+    return newMilestone;
+  } catch (err) {
+    console.error('checkAndAwardMilestones error:', err);
+    return null;
+  }
+}
+
 // ─── Handler principal ────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
@@ -361,7 +437,10 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
 
     // Pós-análise
     if (authenticatedUserId) {
-      saveAnalysis(authenticatedUserId, result.score, result.nivel, job, result);
+      await saveAnalysis(authenticatedUserId, result.score, result.nivel, job, result);
+      // Verifica marcos de gamificação (fire-and-forget com resultado)
+      const milestone = await checkAndAwardMilestones(authenticatedUserId);
+      if (milestone) result._milestone = milestone;
       // Devolve créditos restantes ao cliente para atualizar o contador
       try {
         const credRows = await fetch(

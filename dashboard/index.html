@@ -197,6 +197,20 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 @keyframes spin{to{transform:rotate(360deg)}}
 .page-loading.hidden{display:none}
 
+/* MILESTONE TOAST */
+.milestone-toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface);border:1px solid var(--green-border);border-radius:16px;padding:1.2rem 1.6rem;box-shadow:0 20px 50px rgba(0,0,0,.4);z-index:500;display:flex;align-items:center;gap:1rem;min-width:300px;max-width:440px;transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .5s;opacity:0}
+.milestone-toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.milestone-toast-icon{font-size:32px;flex-shrink:0}
+.milestone-toast-body{}
+.milestone-toast-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:.15rem}
+.milestone-toast-sub{font-size:13px;color:var(--muted)}
+.milestone-toast-credits{display:inline-block;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);font-size:12px;font-weight:700;border-radius:20px;padding:.15rem .6rem;margin-top:.3rem}
+
+/* CONFETTI */
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:499;overflow:hidden}
+.confetti-piece{position:absolute;width:8px;height:8px;border-radius:2px;animation:confettiFall linear forwards}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
 /* LIGHT THEME */
 [data-theme="light"]{--bg:#f2f6f3;--surface:#ffffff;--surface2:#eaf0ec;--border:rgba(0,0,0,0.09);--text:#0d1a11;--muted:#4d6e57;--green:#1a8f5c;--green-dim:rgba(26,143,92,0.1);--green-border:rgba(26,143,92,0.25);--red:#c0392b;--red-dim:rgba(192,57,43,0.08);--yellow:#b07d1a;--yellow-dim:rgba(176,125,26,0.08)}
 [data-theme="light"] nav{background:rgba(242,246,243,0.95)!important}
@@ -326,7 +340,6 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
       <div class="stat-label">Créditos disponíveis</div>
       <div class="stat-value" id="creditsValue">—</div>
       <div class="stat-desc" id="creditsDesc">análises disponíveis</div>
-      <!-- barra de progresso -->
       <div class="credit-bar-wrap" id="creditBarWrap" style="display:none">
         <div class="credit-bar-track"><div class="credit-bar-fill" id="creditBarFill" style="width:0%"></div></div>
         <div class="credit-bar-label" id="creditBarLabel"></div>
@@ -336,11 +349,24 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
         Nova análise
       </a>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" style="display:flex;flex-direction:column;gap:.5rem">
       <div class="stat-label">Análises realizadas</div>
       <div class="stat-value-plain" id="totalValue">—</div>
-      <div class="stat-desc">no total</div>
-      <div id="userLevelBadge" style="margin-top:.7rem"></div>
+      <!-- Streak semanal -->
+      <div id="streakWrap" style="display:none;align-items:center;gap:.4rem;font-size:13px;color:var(--muted)">
+        <span id="streakFlame" style="font-size:18px">🔥</span>
+        <span id="streakText"></span>
+      </div>
+      <!-- Badge de nível -->
+      <div id="userLevelBadge"></div>
+      <!-- Progresso para próximo nível -->
+      <div id="levelProgressWrap" style="display:none;margin-top:.3rem">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:.3rem" id="levelProgressLabel"></div>
+        <div class="credit-bar-track"><div class="credit-bar-fill" id="levelProgressFill" style="width:0%"></div></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:.25rem" id="levelProgressBonus"></div>
+      </div>
+      <!-- Estatística motivadora -->
+      <div id="motivationalStat" style="display:none;margin-top:.5rem;background:var(--green-dim);border:1px solid var(--green-border);border-radius:8px;padding:.6rem .8rem;font-size:12px;color:var(--green);line-height:1.4"></div>
     </div>
   </div>
 
@@ -478,6 +504,7 @@ async function loadAnalyses() {
 
     document.getElementById('totalValue').textContent = rows.length;
     renderUserLevel(rows.length);
+    renderStreak(rows);
 
     if (!rows.length) {
       listEl.innerHTML = '<div class="empty-state">'
@@ -533,14 +560,105 @@ async function loadAnalyses() {
   }
 }
 
+var LEVEL_CONFIG = [
+  { min: 0,  max: 4,  name: 'Iniciante',       cls: 'level-iniciante', icon: '🌱', next: 5,  nextName: 'Ativo',     bonus: 1 },
+  { min: 5,  max: 19, name: 'Ativo',            cls: 'level-ativo',     icon: '⚡', next: 20, nextName: 'Avançado',  bonus: 2 },
+  { min: 20, max: 49, name: 'Avançado',         cls: 'level-avancado',  icon: '🎯', next: 50, nextName: 'Expert',    bonus: 5 },
+  { min: 50, max: Infinity, name: 'Expert',     cls: 'level-expert',    icon: '🏆', next: null, nextName: null,      bonus: 0 },
+];
+
 function renderUserLevel(count) {
-  var level, cls, icon;
-  if (count === 0)      { level = 'Iniciante';      cls = 'level-iniciante'; icon = '🌱'; }
-  else if (count < 5)   { level = 'Candidato Ativo'; cls = 'level-ativo';     icon = '⚡'; }
-  else if (count < 20)  { level = 'Avançado';        cls = 'level-avancado';  icon = '🎯'; }
-  else                  { level = 'Expert';           cls = 'level-expert';    icon = '🏆'; }
+  var lv = LEVEL_CONFIG.find(function(l){ return count >= l.min && count <= l.max; }) || LEVEL_CONFIG[0];
   document.getElementById('userLevelBadge').innerHTML =
-    '<span class="user-level ' + cls + '">' + icon + ' ' + level + '</span>';
+    '<span class="user-level ' + lv.cls + '">' + lv.icon + ' ' + lv.name + '</span>';
+
+  // Progresso para próximo nível
+  var progressWrap = document.getElementById('levelProgressWrap');
+  if (lv.next) {
+    var fromMin = lv.min;
+    var pct = Math.round(((count - fromMin) / (lv.next - fromMin)) * 100);
+    var remaining = lv.next - count;
+    document.getElementById('levelProgressLabel').textContent =
+      remaining + ' análise' + (remaining !== 1 ? 's' : '') + ' para nível ' + lv.nextName;
+    document.getElementById('levelProgressFill').style.width = Math.min(pct, 100) + '%';
+    document.getElementById('levelProgressBonus').textContent =
+      '🎁 Ao atingir: +' + lv.bonus + ' crédito' + (lv.bonus !== 1 ? 's' : '') + ' bônus';
+    progressWrap.style.display = 'block';
+  } else {
+    progressWrap.style.display = 'none';
+  }
+
+  // Estatística motivadora contextual
+  var statEl = document.getElementById('motivationalStat');
+  var stats = [
+    '📊 Candidatos com 3+ análises têm 2× mais chances de entrevista.',
+    '📊 Quem analisa o CV antes de enviar recebe 3× mais retornos.',
+    '📊 CVs otimizados passam por 70% mais filtros ATS automaticamente.',
+  ];
+  var msg = count === 0
+    ? '📊 Candidatos que analisam o CV antes de enviar recebem 3× mais retornos.'
+    : count < 5
+    ? '📊 Candidatos com 3+ análises têm 2× mais chances de entrevista.'
+    : '📊 CVs otimizados passam por 70% mais filtros ATS automaticamente.';
+  statEl.textContent = msg;
+  statEl.style.display = 'block';
+}
+
+function renderStreak(analyses) {
+  // Conta análises feitas nos últimos 7 dias
+  var now = new Date();
+  var weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  var weekCount = analyses.filter(function(a){
+    return new Date(a.created_at) >= weekAgo;
+  }).length;
+
+  var wrap = document.getElementById('streakWrap');
+  var flame = document.getElementById('streakFlame');
+  var text = document.getElementById('streakText');
+
+  if (weekCount === 0) {
+    wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = 'flex';
+  flame.textContent = weekCount >= 5 ? '🔥🔥' : weekCount >= 3 ? '🔥' : '🔥';
+  text.textContent = weekCount === 1
+    ? '1 análise essa semana — continue!'
+    : weekCount + ' análises essa semana — ótimo ritmo!';
+}
+
+function showMilestoneToast(milestone, credits) {
+  // Confetti
+  var wrap = document.createElement('div');
+  wrap.className = 'confetti-wrap';
+  document.body.appendChild(wrap);
+  var colors = ['#3ecf8e','#ffd166','#ff6b6b','#64c8ff','#a78bfa'];
+  for (var i = 0; i < 60; i++) {
+    var piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + 'vw';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+    piece.style.animationDelay = Math.random() * 0.5 + 's';
+    piece.style.width = piece.style.height = (Math.random() * 8 + 5) + 'px';
+    wrap.appendChild(piece);
+  }
+  setTimeout(function(){ wrap.remove(); }, 4000);
+
+  // Toast
+  var icons = { 5: '⚡', 10: '🎁', 20: '🎯', 30: '🎁', 50: '🏆' };
+  var titles = { 5: 'Nível Ativo desbloqueado!', 10: 'Marco de fidelidade!', 20: 'Nível Avançado desbloqueado!', 30: 'Marco de fidelidade!', 50: 'Você é Expert!' };
+  var toast = document.createElement('div');
+  toast.className = 'milestone-toast';
+  toast.innerHTML = '<div class="milestone-toast-icon">' + (icons[milestone] || '🎉') + '</div>'
+    + '<div class="milestone-toast-body">'
+    + '<div class="milestone-toast-title">' + (titles[milestone] || 'Marco atingido!') + '</div>'
+    + '<div class="milestone-toast-sub">Parabéns! Você completou ' + milestone + ' análises 🎉</div>'
+    + '<div class="milestone-toast-credits">+' + credits + ' crédito' + (credits !== 1 ? 's' : '') + ' bônus adicionado' + (credits !== 1 ? 's' : '') + '!</div>'
+    + '</div>';
+  document.body.appendChild(toast);
+  setTimeout(function(){ toast.classList.add('show'); }, 100);
+  setTimeout(function(){ toast.classList.remove('show'); setTimeout(function(){ toast.remove(); }, 600); }, 6000);
 }
 
 // ─── DROPDOWN ─────────────────────────────────────────────────────────────────
@@ -694,7 +812,7 @@ async function executeDelete() {
           card.style.padding = '0';
           card.style.margin = '0';
           card.style.border = 'none';
-          setTimeout(function() { card.remove(); _totalAnalyses = Math.max(0,_totalAnalyses-1); renderUserLevel(_totalAnalyses); document.getElementById('totalValue').textContent = _totalAnalyses; }, 300);
+          setTimeout(function() { card.remove(); _totalAnalyses = Math.max(0,_totalAnalyses-1); renderUserLevel(_totalAnalyses); document.getElementById('totalValue').textContent = _totalAnalyses; renderStreak([]); }, 300);
         }, 150);
       }
     } else {
