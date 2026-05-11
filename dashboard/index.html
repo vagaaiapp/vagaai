@@ -35,6 +35,13 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;padding:0;line-height:1;flex-shrink:0}
 .theme-btn:hover{border-color:var(--green-border);color:var(--green)}
 
+/* MOBILE NAV */
+@media(max-width:560px){
+  .btn-nav-label{display:none}
+  .btn-nav.primary{padding:.4rem .65rem}
+  .user-dropdown{min-width:0;width:calc(100vw - 2rem);max-width:260px}
+}
+
 /* AVATAR DROPDOWN */
 .avatar-wrap{position:relative}
 .user-avatar{width:34px;height:34px;border-radius:50%;background:var(--green-dim);border:1.5px solid var(--green-border);color:var(--green);font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;letter-spacing:.02em}
@@ -94,7 +101,15 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .buy-title{font-size:14px;font-weight:700;margin-bottom:.3rem}
 .buy-sub{font-size:13px;color:var(--muted);margin-bottom:1rem}
 .plans-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
-@media(max-width:600px){.plans-row{grid-template-columns:1fr}}
+@media(max-width:600px){
+  .plans-row{grid-template-columns:1fr}
+  .plan-btn{min-height:44px;font-size:14px}
+  .btn-cv-hist,.btn-result-hist{min-height:36px;padding:.45rem .75rem}
+  .btn-delete-hist{min-height:36px;min-width:36px;display:flex;align-items:center;justify-content:center}
+  .analysis-card{padding:.9rem 1rem;gap:.75rem}
+  .analysis-actions{width:100%;justify-content:flex-end}
+  .milestone-toast{bottom:1rem;border-radius:12px;padding:1rem 1.2rem}
+}
 .plan-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;display:flex;flex-direction:column;gap:.4rem;transition:border-color .2s}
 .plan-item:hover{border-color:var(--green-border)}
 .plan-item.featured{border-color:var(--green-border)}
@@ -198,7 +213,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .page-loading.hidden{display:none}
 
 /* MILESTONE TOAST */
-.milestone-toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface);border:1px solid var(--green-border);border-radius:16px;padding:1.2rem 1.6rem;box-shadow:0 20px 50px rgba(0,0,0,.4);z-index:500;display:flex;align-items:center;gap:1rem;min-width:300px;max-width:440px;transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .5s;opacity:0}
+.milestone-toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface);border:1px solid var(--green-border);border-radius:16px;padding:1.2rem 1.6rem;box-shadow:0 20px 50px rgba(0,0,0,.4);z-index:500;display:flex;align-items:center;gap:1rem;width:calc(100vw - 2rem);max-width:440px;transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .5s;opacity:0}
 .milestone-toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 .milestone-toast-icon{width:40px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px;color:var(--green)}.milestone-toast-icon svg{width:22px;height:22px}
 .milestone-toast-body{}
@@ -294,7 +309,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
   <div class="nav-right">
     <a href="/app" class="btn-nav primary">
       <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
-      Nova análise
+      <span class="btn-nav-label">Nova análise</span>
     </a>
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema"></button>
     <!-- Avatar + dropdown -->
