@@ -275,6 +275,36 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
   </div>
 </div>
 
+<!-- ─── MODAL SUPORTE ─────────────────────────────── -->
+<div class="modal-backdrop hidden" id="modalSuporte">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeSuporte()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="modal-title">Falar com o suporte</div>
+    <div class="modal-sub">Preencha o formulário e responderemos em até 24h.</div>
+    <div class="modal-field">
+      <label class="modal-label" for="suporteEmail">Seu e-mail</label>
+      <input class="modal-input" type="email" id="suporteEmail" readonly style="opacity:.7;cursor:default">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label" for="suporteMotivo">Motivo do contato</label>
+      <select class="modal-input" id="suporteMotivo" style="cursor:pointer">
+        <option value="">Selecione...</option>
+        <option value="duvida">Dúvida</option>
+        <option value="problema">Problema técnico</option>
+        <option value="cobranca">Cobrança / Pagamento</option>
+        <option value="sugestao">Sugestão</option>
+        <option value="outro">Outro</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label" for="suporteMensagem">Mensagem</label>
+      <textarea class="modal-input" id="suporteMensagem" rows="4" placeholder="Descreva sua dúvida ou problema..." style="resize:vertical;min-height:100px"></textarea>
+    </div>
+    <button class="modal-btn" id="btnEnviarSuporte" onclick="doEnviarSuporte()">Enviar mensagem</button>
+    <div class="modal-msg" id="suporteMsg"></div>
+  </div>
+</div>
+
 <!-- ─── MODAL ALTERAR SENHA ───────────────────────── -->
 <div class="modal-backdrop hidden" id="modalSenha">
   <div class="modal-box">
@@ -330,6 +360,10 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
         <button class="dropdown-item" onclick="closeDropdown();openSenha()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           Alterar senha
+        </button>
+        <button class="dropdown-item" onclick="closeDropdown();openSuporte()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Suporte
         </button>
         <div class="dropdown-divider"></div>
         <button class="dropdown-item danger" onclick="logout()">
@@ -867,6 +901,70 @@ function openCVFromHistory(el) {
   var cvJson = card.getAttribute('data-cv');
   if (!cvJson) return;
   try { localStorage.setItem('vagaai_cv', cvJson); window.open('/cv', '_blank'); } catch(e){}
+}
+
+// ─── SUPORTE ──────────────────────────────────────────────────────────────────
+function openSuporte() {
+  var d = window._perfilData || {};
+  document.getElementById('suporteEmail').value = d.email || '';
+  document.getElementById('suporteMotivo').value = '';
+  document.getElementById('suporteMensagem').value = '';
+  document.getElementById('suporteMsg').textContent = '';
+  document.getElementById('suporteMsg').className = 'modal-msg';
+  document.getElementById('btnEnviarSuporte').disabled = false;
+  document.getElementById('btnEnviarSuporte').textContent = 'Enviar mensagem';
+  document.getElementById('modalSuporte').classList.remove('hidden');
+}
+function closeSuporte() { document.getElementById('modalSuporte').classList.add('hidden'); }
+document.getElementById('modalSuporte').addEventListener('click', function(e){ if(e.target===this) closeSuporte(); });
+
+async function doEnviarSuporte() {
+  var email = document.getElementById('suporteEmail').value.trim();
+  var motivo = document.getElementById('suporteMotivo').value;
+  var mensagem = document.getElementById('suporteMensagem').value.trim();
+  var msg = document.getElementById('suporteMsg');
+  var btn = document.getElementById('btnEnviarSuporte');
+
+  msg.className = 'modal-msg';
+  msg.textContent = '';
+
+  if (!motivo) { msg.className = 'modal-msg err'; msg.textContent = 'Selecione o motivo do contato.'; return; }
+  if (!mensagem || mensagem.length < 10) { msg.className = 'modal-msg err'; msg.textContent = 'Escreva uma mensagem com pelo menos 10 caracteres.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  try {
+    var { data: { session } } = await sb.auth.getSession();
+    var headers = { 'Content-Type': 'application/json' };
+    if (session) headers['Authorization'] = 'Bearer ' + session.access_token;
+
+    var res = await fetch('/api/support', {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({ email, motivo, mensagem }),
+    });
+    var data = await res.json();
+
+    if (!res.ok || data.error) {
+      btn.disabled = false;
+      btn.textContent = 'Enviar mensagem';
+      msg.className = 'modal-msg err';
+      msg.textContent = data.error || 'Erro ao enviar. Tente novamente.';
+    } else {
+      msg.className = 'modal-msg ok';
+      msg.textContent = '✓ Mensagem enviada! Responderemos em até 24h.';
+      document.getElementById('suporteMensagem').value = '';
+      document.getElementById('suporteMotivo').value = '';
+      btn.textContent = 'Enviar mensagem';
+      setTimeout(closeSuporte, 3000);
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Enviar mensagem';
+    msg.className = 'modal-msg err';
+    msg.textContent = 'Erro de conexão. Tente novamente.';
+  }
 }
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
