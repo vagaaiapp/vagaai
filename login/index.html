@@ -328,10 +328,12 @@ async function sendForgot() {
   var btn = document.getElementById('forgotBtn');
   btn.disabled = true; btn.textContent = 'Enviando...';
 
-  var { error } = await _SB.auth.resetPasswordForEmail(email, { redirectTo: 'https://www.vagaai.app.br/login?mode=reset' });
+  var { error } = await _SB.auth.resetPasswordForEmail(email, { redirectTo: 'https://www.vagaai.app.br/login' });
 
   if (error) {
-    errEl.textContent = 'Erro ao enviar. Tente novamente.'; errEl.classList.add('show');
+    var errMsg = 'Erro ao enviar. Tente novamente.';
+    if (error.message && error.message.toLowerCase().includes('rate limit')) errMsg = 'Muitas tentativas. Aguarde alguns minutos e tente novamente.';
+    errEl.textContent = errMsg; errEl.classList.add('show');
   } else {
     sucEl.innerHTML = '✓ Link enviado! Verifique seu e-mail para redefinir a senha.<br><small style="opacity:.8">Não encontrou? Verifique o spam.</small>';
     sucEl.classList.add('show');
