@@ -1039,15 +1039,15 @@ setTheme = function(t) {
 };
 
 /* ── Global: template ───────────────────────────────────── */
-var ALL_TPLS = [
-  {id:'pageClassic',  btn:'tplBtnClassic',  key:'classic'},
-  {id:'pageModern',   btn:'tplBtnModern',   key:'modern'},
-  {id:'pageExec',     btn:'tplBtnExec',     key:'exec'},
-  {id:'pageCompact',  btn:'tplBtnCompact',  key:'compact'},
-  {id:'pageMinimal',  btn:'tplBtnMinimal',  key:'minimal'},
-];
 function applyTemplate(tpl, save) {
-  ALL_TPLS.forEach(function(t) {
+  var tpls = [
+    {id:'pageClassic',  btn:'tplBtnClassic',  key:'classic'},
+    {id:'pageModern',   btn:'tplBtnModern',   key:'modern'},
+    {id:'pageExec',     btn:'tplBtnExec',     key:'exec'},
+    {id:'pageCompact',  btn:'tplBtnCompact',  key:'compact'},
+    {id:'pageMinimal',  btn:'tplBtnMinimal',  key:'minimal'},
+  ];
+  tpls.forEach(function(t) {
     var page = document.getElementById(t.id);
     var btn  = document.getElementById(t.btn);
     if (!page) return;
