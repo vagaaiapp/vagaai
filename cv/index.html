@@ -375,6 +375,52 @@ html.no-photo .exec-photo{display:none}
 html.no-photo .exec-header{display:block}
 html.no-photo .compact-photo{display:none}
 
+/* ─── Mobile top bar ──────────────────────────────────────── */
+.mob-bar{
+  display:none;position:fixed;top:0;left:0;right:0;height:48px;z-index:500;
+  background:#141414;border-bottom:1px solid rgba(255,255,255,.07);
+  padding:0 .85rem;align-items:center;justify-content:space-between;gap:.5rem;
+  font-family:'Inter',sans-serif;
+}
+.mob-btn{
+  background:none;border:none;color:rgba(255,255,255,.55);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:8px;padding:0;transition:all .15s;
+}
+.mob-btn:hover{background:rgba(255,255,255,.08);color:#fff}
+.mob-logo{font-size:13px;font-weight:700;color:#fff;opacity:.65;letter-spacing:-.01em}
+.mob-print{
+  background:#3ecf8e;color:#0a0f0d;border:none;font-family:'Inter',sans-serif;
+  font-size:12px;font-weight:700;padding:.38rem .75rem;border-radius:8px;cursor:pointer;
+  display:flex;align-items:center;gap:.35rem;transition:opacity .15s;
+}
+.mob-print:hover{opacity:.85}
+
+/* Panel overlay (mobile) */
+.panel-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:350;-webkit-tap-highlight-color:transparent;
+}
+.panel-overlay.vis{display:block}
+
+/* ─── Responsive ──────────────────────────────────────────── */
+@media(max-width:768px){
+  .mob-bar{display:flex}
+  body{padding-left:0;padding-top:48px;padding-bottom:1.5rem}
+  .side-panel{
+    transform:translateX(-100%);transition:transform .25s ease;
+    z-index:400;box-shadow:none;
+  }
+  .side-panel.panel-open{
+    transform:translateX(0);
+    box-shadow:4px 0 24px rgba(0,0,0,.55);
+  }
+  /* CV pages: scale to viewport via JS, origin top-center */
+  .page{transform-origin:top center;margin:0 auto}
+  /* wrapper holds the scaled height */
+  .page-wrap{width:100%;overflow:hidden;display:flex;flex-direction:column;align-items:center}
+}
+
 /* ─── No data ─────────────────────────────────────────────── */
 .no-data-page{width:210mm;min-height:297mm;background:#fff;margin:1rem auto;box-shadow:0 6px 40px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center}
 .no-data{text-align:center;padding:4rem 2rem;font-family:'Inter',sans-serif;color:#555}
@@ -394,7 +440,8 @@ html.no-photo .mod-header{display:block}
   @page{size:A4 portrait;margin:1.8cm 2cm}
 
   html,body{background:#fff!important;padding:0!important;margin:0!important}
-  .side-panel,.modal-overlay{display:none!important}
+  .side-panel,.modal-overlay,.mob-bar,.panel-overlay{display:none!important}
+  .page-wrap{display:contents!important}
 
   .page.active{
     display:flex!important;
@@ -429,6 +476,19 @@ html.no-photo .mod-header{display:block}
 </style>
 </head>
 <body>
+
+<!-- ─── Mobile top bar ───────────────────────────────────── -->
+<div class="mob-bar" id="mobBar">
+  <button class="mob-btn" onclick="togglePanel()" aria-label="Menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <span class="mob-logo">VagaAI</span>
+  <button class="mob-print" onclick="window.print()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    PDF
+  </button>
+</div>
+<div class="panel-overlay" id="panelOverlay" onclick="togglePanel()"></div>
 
 <!-- ─── Photo Modal ──────────────────────────────────────── -->
 <div class="modal-overlay hidden" id="photoModal">
@@ -530,6 +590,7 @@ html.no-photo .mod-header{display:block}
 
 </div>
 
+<div class="page-wrap" id="pageWrap">
 <!-- ─── Template: Profissional ───────────────────────────── -->
 <div class="page page-classic active" id="pageClassic">
   <!-- Sidebar -->
@@ -721,6 +782,7 @@ html.no-photo .mod-header{display:block}
 </div>
 
 <!-- No data fallback -->
+</div><!-- /page-wrap -->
 <div class="no-data-page" id="noDataPage" style="display:none">
   <div class="no-data">
     <h2>Nenhum currículo encontrado</h2>
@@ -914,6 +976,8 @@ html.no-photo .mod-header{display:block}
   var savedTpl = 'classic';
   try { savedTpl = localStorage.getItem('vagaai_cv_tpl') || 'classic'; } catch(e) {}
   applyTemplate(savedTpl, false);
+  // Scale after fonts & layout settle
+  setTimeout(scaleCvPages, 120);
 
 })();
 
@@ -1055,8 +1119,72 @@ function applyTemplate(tpl, save) {
     else { page.classList.remove('active'); if(btn) btn.classList.remove('active'); }
   });
   if (save !== false) try { localStorage.setItem('vagaai_cv_tpl', tpl); } catch(e) {}
+  // Re-scale after switching template (mobile)
+  setTimeout(scaleCvPages, 50);
+  // Close mobile panel after selecting template
+  if (save !== false && window.innerWidth <= 768) {
+    var panel = document.getElementById('sidePanel');
+    var overlay = document.getElementById('panelOverlay');
+    if (panel) panel.classList.remove('panel-open');
+    if (overlay) overlay.classList.remove('vis');
+    document.body.style.overflow = '';
+  }
 }
 function setTemplate(t) { applyTemplate(t, true); }
+
+/* ── Mobile: panel toggle ───────────────────────────────── */
+function togglePanel() {
+  var panel   = document.getElementById('sidePanel');
+  var overlay = document.getElementById('panelOverlay');
+  var isOpen  = panel.classList.toggle('panel-open');
+  overlay.classList.toggle('vis', isOpen);
+  document.body.style.overflow = isOpen ? 'hidden' : '';
+}
+
+/* ── Mobile: scale CV to fit viewport ───────────────────── */
+function scaleCvPages() {
+  var isMobile = window.innerWidth <= 768;
+  var wrap = document.getElementById('pageWrap');
+  if (!wrap) return;
+  if (!isMobile) {
+    // Reset all pages
+    wrap.querySelectorAll('.page').forEach(function(p) {
+      p.style.transform = '';
+      p.style.marginBottom = '';
+    });
+    wrap.style.height = '';
+    return;
+  }
+  var vw      = window.innerWidth;
+  var pageW   = 794; // 210mm at 96dpi
+  var padding = 8;
+  var scale   = (vw - padding * 2) / pageW;
+  var activePage = wrap.querySelector('.page.active');
+  if (!activePage) return;
+  // Reset all first
+  wrap.querySelectorAll('.page').forEach(function(p) {
+    p.style.transform = '';
+    p.style.marginBottom = '';
+  });
+  activePage.style.transform = 'scale(' + scale + ')';
+  activePage.style.transformOrigin = 'top center';
+  // Collapse the whitespace left by the scaled element
+  var naturalH = activePage.offsetHeight;
+  var scaledH  = naturalH * scale;
+  activePage.style.marginBottom = '-' + (naturalH - scaledH) + 'px';
+  wrap.style.height = scaledH + 'px';
+}
+window.addEventListener('resize', scaleCvPages);
+
+/* ── Mobile: close panel helper ─────────────────────────── */
+function _closePanelMob() {
+  if (window.innerWidth > 768) return;
+  var panel = document.getElementById('sidePanel');
+  var overlay = document.getElementById('panelOverlay');
+  if (panel) panel.classList.remove('panel-open');
+  if (overlay) overlay.classList.remove('vis');
+  document.body.style.overflow = '';
+}
 
 /* ── Global: close modal (sem foto) ─────────────────────── */
 function closeModal() {
