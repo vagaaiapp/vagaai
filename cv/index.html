@@ -375,6 +375,75 @@ html.no-photo .exec-photo{display:none}
 html.no-photo .exec-header{display:block}
 html.no-photo .compact-photo{display:none}
 
+/* ─── Inline editable fields ─────────────────────────────── */
+.editable{outline:none;border-radius:3px;transition:background .15s,box-shadow .15s;cursor:text;position:relative}
+.editable:hover{background:rgba(62,207,142,.1)}
+.editable:focus{background:rgba(62,207,142,.13);box-shadow:0 0 0 2px rgba(62,207,142,.28)}
+/* Dark bg (sidebar, exec header) — flip colors */
+.sidebar .editable:hover,.exec-header .editable:hover,.compact-sidebar .editable:hover{background:rgba(255,255,255,.12)}
+.sidebar .editable:focus,.exec-header .editable:focus,.compact-sidebar .editable:focus{background:rgba(255,255,255,.16);box-shadow:0 0 0 2px rgba(255,255,255,.28)}
+/* Resumo: allows wrapping */
+.editable-block{outline:none;border-radius:4px;transition:background .15s,box-shadow .15s;cursor:text;display:block;white-space:pre-wrap;word-break:break-word}
+.editable-block:hover{background:rgba(62,207,142,.07)}
+.editable-block:focus{background:rgba(62,207,142,.1);box-shadow:0 0 0 2px rgba(62,207,142,.22)}
+/* Pencil badge on hover */
+.editable::after,.editable-block::after{
+  content:'✎';position:absolute;top:-14px;right:0;font-size:9px;
+  color:rgba(62,207,142,.7);background:rgba(0,0,0,.7);padding:1px 4px;border-radius:3px;
+  opacity:0;transition:opacity .15s;pointer-events:none;line-height:1.5;
+}
+.editable:hover::after,.editable-block:hover::after{opacity:1}
+
+/* ─── Edit modal ──────────────────────────────────────────── */
+.edit-modal{position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center;font-family:'Inter',sans-serif}
+.edit-modal.hidden{display:none}
+@media(min-width:500px){.edit-modal{align-items:center}}
+.edit-box{background:#1a1f1c;border:1px solid rgba(255,255,255,.1);border-radius:16px 16px 0 0;width:100%;max-width:560px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+@media(min-width:500px){.edit-box{border-radius:16px}}
+.eb-head{padding:.9rem 1.1rem .75rem;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.eb-title{font-size:15px;font-weight:700;color:#fff}
+.eb-close{background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .15s;font-size:16px}
+.eb-close:hover{background:rgba(255,255,255,.08);color:#fff}
+.eb-body{flex:1;overflow-y:auto;padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.7rem}
+.eb-foot{padding:.75rem 1.1rem;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;display:flex;gap:.5rem}
+.eb-save{flex:1;background:#3ecf8e;color:#0a0f0d;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;border:none;border-radius:9px;padding:.75rem;cursor:pointer;transition:opacity .15s}
+.eb-save:hover{opacity:.85}
+.eb-cancel{background:rgba(255,255,255,.07);color:rgba(255,255,255,.45);font-family:'Inter',sans-serif;font-size:13px;font-weight:500;border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:.75rem 1rem;cursor:pointer;transition:all .15s}
+.eb-cancel:hover{color:#fff;border-color:rgba(255,255,255,.25)}
+/* Form elements inside modal */
+.ef-group{display:flex;flex-direction:column;gap:.28rem}
+.ef-label{font-size:10.5px;font-weight:700;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.07em}
+.ef-input,.ef-textarea{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e8ede9;font-family:'Inter',sans-serif;font-size:13px;padding:.6rem .85rem;transition:border-color .15s;resize:vertical}
+.ef-input:focus,.ef-textarea:focus{outline:none;border-color:rgba(62,207,142,.4)}
+.ef-textarea{min-height:70px;line-height:1.55}
+.ef-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.ef-hint{font-size:10px;color:rgba(255,255,255,.25);line-height:1.5;margin-top:-.15rem}
+/* Tag editor */
+.ef-tags{display:flex;flex-wrap:wrap;gap:.32rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:.5rem;min-height:44px}
+.ef-tag{font-size:12px;color:#e8ede9;background:rgba(255,255,255,.1);border-radius:4px;padding:.22rem .5rem .22rem .6rem;display:flex;align-items:center;gap:.28rem}
+.ef-tag-rm{background:none;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:15px;line-height:1;padding:0;transition:color .15s}
+.ef-tag-rm:hover{color:#ff6b6b}
+.ef-tag-row{display:flex;gap:.4rem;margin-top:.4rem}
+.ef-tag-inp{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:#e8ede9;font-family:'Inter',sans-serif;font-size:13px;padding:.5rem .75rem}
+.ef-tag-inp:focus{outline:none;border-color:rgba(62,207,142,.4)}
+.ef-tag-add-btn{background:rgba(62,207,142,.15);border:1px solid rgba(62,207,142,.3);color:#3ecf8e;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;padding:.5rem .85rem;border-radius:7px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.ef-tag-add-btn:hover{background:rgba(62,207,142,.28)}
+/* Experience / Education cards */
+.ef-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;overflow:hidden}
+.ef-card-head{padding:.6rem .9rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:.5rem}
+.ef-card-name{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.65);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ef-card-arr{font-size:11px;color:rgba(255,255,255,.28);transition:transform .2s;flex-shrink:0}
+.ef-card-arr.open{transform:rotate(180deg)}
+.ef-card-body{padding:.65rem .9rem 1rem;border-top:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:.5rem}
+.ef-card-body.collapsed{display:none}
+.ef-card-add{width:100%;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.14);color:rgba(255,255,255,.38);font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;padding:.55rem;border-radius:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.4rem}
+.ef-card-add:hover{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.3)}
+.ef-card-rm{background:none;border:none;color:rgba(255,80,80,.4);font-family:'Inter',sans-serif;font-size:11px;cursor:pointer;padding:.3rem .5rem;border-radius:5px;transition:all .15s;margin-top:.2rem;align-self:flex-start}
+.ef-card-rm:hover{background:rgba(255,80,80,.1);color:#ff6b6b}
+/* Edit buttons in side panel */
+.sp-edit-btn{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:500;padding:.48rem .8rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.42);border-radius:7px;cursor:pointer;transition:all .15s;text-align:left;display:flex;align-items:center;gap:.4rem;width:100%}
+.sp-edit-btn:hover{background:rgba(255,255,255,.09);color:rgba(255,255,255,.8)}
+
 /* ─── Mobile top bar ──────────────────────────────────────── */
 .mob-bar{
   display:none;position:fixed;top:0;left:0;right:0;height:48px;z-index:500;
@@ -576,6 +645,17 @@ html.no-photo .mod-header{display:block}
       </button>
     </div>
     <input type="file" id="photoFileInput" accept="image/*">
+  </div>
+
+  <!-- Editar conteúdo -->
+  <div class="sp-section">
+    <div class="sp-label">Editar conteúdo</div>
+    <div style="display:flex;flex-direction:column;gap:.35rem">
+      <button class="sp-edit-btn" onclick="openEdit('contact')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Dados pessoais</button>
+      <button class="sp-edit-btn" onclick="openEdit('skills')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Habilidades</button>
+      <button class="sp-edit-btn" onclick="openEdit('exp')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> Experiências</button>
+      <button class="sp-edit-btn" onclick="openEdit('edu')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> Formação</button>
+    </div>
   </div>
 
   <!-- Imprimir -->
@@ -791,7 +871,36 @@ html.no-photo .mod-header{display:block}
   </div>
 </div>
 
+<!-- ─── Edit modal ────────────────────────────────────────── -->
+<div class="edit-modal hidden" id="editModal">
+  <div class="edit-box">
+    <div class="eb-head">
+      <span class="eb-title" id="editTitle">Editar</span>
+      <button class="eb-close" onclick="closeEdit()">✕</button>
+    </div>
+    <div class="eb-body" id="editBody"></div>
+    <div class="eb-foot">
+      <button class="eb-cancel" onclick="closeEdit()">Cancelar</button>
+      <button class="eb-save" id="editSaveBtn" onclick="saveEdit()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <script>
+/* ── Global utilities ───────────────────────────────────────── */
+var _cvData = null;
+var _editSection = null;
+
+function _esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function _expHtml(exps) {
+  return (exps||[]).map(function(e){
+    var buls=(e.bullets||[]).map(function(b){return '<li>'+_esc(b)+'</li>';}).join('');
+    return '<div class="exp-item"><div class="exp-row"><span class="exp-cargo">'+_esc(e.cargo||'')+'</span><span class="exp-per">'+_esc(e.periodo||'')+'</span></div><div class="exp-emp">'+_esc(e.empresa||'')+'</div>'+(buls?'<ul class="exp-ul">'+buls+'</ul>':'')+' </div>';
+  }).join('');
+}
+
 (function () {
   /* ── Load data ──────────────────────────────────────────── */
   var raw = null;
@@ -801,23 +910,13 @@ html.no-photo .mod-header{display:block}
   try { cv = JSON.parse(raw); } catch(e) { document.getElementById('noDataPage').style.display = 'flex'; document.getElementById('pageClassic').classList.remove('active'); return; }
 
   if (cv.nome) document.title = cv.nome + ' — Currículo';
+  _cvData = cv;
 
   /* ── Populate helpers ───────────────────────────────────── */
   function txt(id, val) { var el = document.getElementById(id); if (el) el.textContent = val || ''; }
   function show(id, mode) { var el = document.getElementById(id); if (el) el.style.display = mode || 'block'; }
-  function esc(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-  function expHtml(exps) {
-    return (exps || []).map(function(e) {
-      var buls = (e.bullets || []).map(function(b) { return '<li>' + esc(b) + '</li>'; }).join('');
-      return '<div class="exp-item">'
-        + '<div class="exp-row"><span class="exp-cargo">' + esc(e.cargo||'') + '</span><span class="exp-per">' + esc(e.periodo||'') + '</span></div>'
-        + '<div class="exp-emp">' + esc(e.empresa||'') + '</div>'
-        + (buls ? '<ul class="exp-ul">' + buls + '</ul>' : '')
-        + '</div>';
-    }).join('');
-  }
+  var esc = _esc;
+  var expHtml = _expHtml;
 
   /* ── CLASSIC template ───────────────────────────────────── */
   txt('clNome', cv.nome); txt('clRole', cv.titulo_profissional);
@@ -978,6 +1077,8 @@ html.no-photo .mod-header{display:block}
   applyTemplate(savedTpl, false);
   // Scale after fonts & layout settle
   setTimeout(scaleCvPages, 120);
+  // Setup inline editing
+  setTimeout(setupInlineEditing, 150);
 
 })();
 
@@ -1175,6 +1276,324 @@ function scaleCvPages() {
   wrap.style.height = scaledH + 'px';
 }
 window.addEventListener('resize', scaleCvPages);
+
+/* ── Save cv to localStorage ────────────────────────────── */
+function saveCvData() {
+  if (!_cvData) return;
+  try { localStorage.setItem('vagaai_cv', JSON.stringify(_cvData)); } catch(e) {}
+}
+
+/* ── Re-render helpers ──────────────────────────────────── */
+function _rr(ids, val) { ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=val||''; }); }
+function reRenderNome(v)  { _rr(['clNome','clCvNome','modNome','exNome','cpNome','mnNome'], v); }
+function reRenderRole(v)  { _rr(['clRole','clCvRole','modRole','exRole','cpRole','mnRole'], v); }
+function reRenderResumo(v){ _rr(['clResumo','modResumo','exResumo','cpResumo','mnResumo'], v); }
+
+function reRenderContact(c) {
+  var SVG_E='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>';
+  var SVG_P='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.4 2 2 0 0 1 3.6 2.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+  var SVG_L='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+  var SVG_M='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+  var lt = c.linkedin ? c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/') : '';
+  // Classic sidebar contacts
+  var cl=[];
+  if(c.email) cl.push('<li><span class="sb-ic">'+SVG_E+'</span><a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></li>');
+  if(c.telefone) cl.push('<li><span class="sb-ic">'+SVG_P+'</span>'+_esc(c.telefone)+'</li>');
+  if(c.linkedin) cl.push('<li><span class="sb-ic">'+SVG_L+'</span><a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></li>');
+  if(c.cidade) cl.push('<li><span class="sb-ic">'+SVG_M+'</span>'+_esc(c.cidade)+'</li>');
+  var clC=document.getElementById('clContatos'); if(clC) clC.innerHTML=cl.join('');
+  // Modern / Exec contacts
+  var mci=[];
+  if(c.email) mci.push('<div class="mod-contact-item">'+SVG_E+' <a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></div>');
+  if(c.telefone) mci.push('<div class="mod-contact-item">'+SVG_P+' '+_esc(c.telefone)+'</div>');
+  if(c.linkedin) mci.push('<div class="mod-contact-item">'+SVG_L+' <a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></div>');
+  if(c.cidade) mci.push('<div class="mod-contact-item">'+SVG_M+' '+_esc(c.cidade)+'</div>');
+  var modC=document.getElementById('modContatos'); if(modC) modC.innerHTML=mci.join('');
+  var exCI=[];
+  if(c.email) exCI.push('<div class="exec-ci">'+SVG_E+' <a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></div>');
+  if(c.telefone) exCI.push('<div class="exec-ci">'+SVG_P+' '+_esc(c.telefone)+'</div>');
+  if(c.linkedin) exCI.push('<div class="exec-ci">'+SVG_L+' <a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></div>');
+  if(c.cidade) exCI.push('<div class="exec-ci">'+SVG_M+' '+_esc(c.cidade)+'</div>');
+  var exC=document.getElementById('exContatos'); if(exC) exC.innerHTML=exCI.join('');
+  // Compact sidebar
+  var cpCI=[];
+  if(c.email) cpCI.push('<li>'+SVG_E+'<a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></li>');
+  if(c.telefone) cpCI.push('<li>'+SVG_P+_esc(c.telefone)+'</li>');
+  if(c.linkedin) cpCI.push('<li>'+SVG_L+'<a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></li>');
+  if(c.cidade) cpCI.push('<li>'+SVG_M+_esc(c.cidade)+'</li>');
+  var cpC=document.getElementById('cpContatos'); if(cpC) cpC.innerHTML=cpCI.join('');
+  // Minimal
+  var mnCI=[];
+  if(c.email) mnCI.push('<div class="minimal-ci">'+SVG_E+' <a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></div>');
+  if(c.telefone) mnCI.push('<div class="minimal-ci">'+SVG_P+' '+_esc(c.telefone)+'</div>');
+  if(c.linkedin) mnCI.push('<div class="minimal-ci">'+SVG_L+' <a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></div>');
+  if(c.cidade) mnCI.push('<div class="minimal-ci">'+SVG_M+' '+_esc(c.cidade)+'</div>');
+  var mnC=document.getElementById('mnContatos'); if(mnC) mnC.innerHTML=mnCI.join('');
+}
+
+function reRenderSkills(skills) {
+  var cl=document.getElementById('clSkills'); if(cl) cl.innerHTML=skills.slice(0,18).map(function(s){return '<span class="sb-tag">'+_esc(s)+'</span>';}).join('');
+  var ms=document.getElementById('modSkills'); if(ms) ms.innerHTML=skills.slice(0,20).map(function(s){return '<span class="mod-tag">'+_esc(s)+'</span>';}).join('');
+  var es=document.getElementById('exSkills'); if(es) es.innerHTML=skills.slice(0,20).map(function(s){return '<span class="exec-tag">'+_esc(s)+'</span>';}).join('');
+  var cs=document.getElementById('cpSkills'); if(cs) cs.innerHTML=skills.slice(0,18).map(function(s){return '<span class="compact-tag">'+_esc(s)+'</span>';}).join('');
+  var ns=document.getElementById('mnSkills'); if(ns) ns.innerHTML=skills.slice(0,20).map(function(s){return '<span class="minimal-tag">'+_esc(s)+'</span>';}).join('');
+  // Show/hide sections
+  ['clSecSkills','modSecSkills','exSecSkills','cpSecSkills','mnSecSkills'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.style.display=skills.length?'block':'none';
+  });
+  var mb=document.getElementById('modBottom'); if(mb&&skills.length) mb.style.display='grid';
+  var ex=document.getElementById('exBottom'); if(ex&&skills.length) ex.style.display='grid';
+  var mn=document.getElementById('mnBottom'); if(mn&&skills.length) mn.style.display='grid';
+}
+
+function reRenderExp(exps) {
+  var ids=['clExps','modExps','exExps','cpExps'];
+  ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.innerHTML=_expHtml(exps); });
+  // Minimal timeline
+  var mnE=document.getElementById('mnExps');
+  if(mnE) {
+    mnE.innerHTML=(exps||[]).map(function(e,i,arr){
+      var buls=(e.bullets||[]).map(function(b){return '<li>'+_esc(b)+'</li>';}).join('');
+      return '<div class="minimal-exp-item"><div class="minimal-exp-spine"><div class="minimal-exp-dot"></div>'+(i<arr.length-1?'<div class="minimal-exp-line"></div>':'')+'</div><div class="minimal-exp-body"><div class="minimal-exp-row"><span class="minimal-exp-cargo">'+_esc(e.cargo||'')+'</span><span class="minimal-exp-per">'+_esc(e.periodo||'')+'</span></div><div class="minimal-exp-emp">'+_esc(e.empresa||'')+'</div>'+(buls?'<ul class="minimal-exp-ul">'+buls+'</ul>':'')+'</div></div>';
+    }).join('');
+  }
+  ['clSecExp','modSecExp','exSecExp','cpSecExp','mnSecExp'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.style.display=exps.length?'block':'none';
+  });
+}
+
+function reRenderEdu(edu) {
+  var clE=document.getElementById('clEdu'); if(clE) clE.innerHTML=edu.map(function(e){return '<div><div class="sb-edu-curso">'+_esc(e.curso||'')+'</div><div class="sb-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="sb-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
+  var modE=document.getElementById('modEdu'); if(modE) modE.innerHTML=edu.map(function(e){return '<div class="mod-edu-item"><div class="mod-edu-curso">'+_esc(e.curso||'')+'</div><div class="mod-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="mod-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
+  var exE=document.getElementById('exEdu'); if(exE) exE.innerHTML=edu.map(function(e){return '<div class="exec-edu-item"><div class="exec-edu-curso">'+_esc(e.curso||'')+'</div><div class="exec-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="exec-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
+  var cpE=document.getElementById('cpEdu'); if(cpE) cpE.innerHTML=edu.map(function(e){return '<div style="margin-bottom:.55rem"><div class="compact-edu-curso">'+_esc(e.curso||'')+'</div><div class="compact-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="compact-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
+  var mnE=document.getElementById('mnEdu'); if(mnE) mnE.innerHTML=edu.map(function(e){return '<div class="minimal-edu-item"><div class="minimal-edu-curso">'+_esc(e.curso||'')+'</div><div class="minimal-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="minimal-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
+  ['clSecEdu','modSecEdu','exSecEdu','cpSecEdu','mnSecEdu'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.style.display=edu.length?'block':'none';
+  });
+  var mb=document.getElementById('modBottom'); if(mb&&edu.length) mb.style.display='grid';
+  var ex=document.getElementById('exBottom'); if(ex&&edu.length) ex.style.display='grid';
+  var mn=document.getElementById('mnBottom'); if(mn&&edu.length) mn.style.display='grid';
+}
+
+/* ── Inline editing setup ───────────────────────────────── */
+function setupInlineEditing() {
+  if (!_cvData) return;
+  // Fields: [cvKey, [elementIds], isBlock]
+  var fields = [
+    ['nome', ['clNome','clCvNome','modNome','exNome','cpNome','mnNome'], false],
+    ['titulo_profissional', ['clRole','clCvRole','modRole','exRole','cpRole','mnRole'], false],
+    ['resumo_profissional', ['clResumo','modResumo','exResumo','cpResumo','mnResumo'], true],
+  ];
+  fields.forEach(function(f) {
+    var key=f[0], ids=f[1], isBlock=f[2];
+    ids.forEach(function(id) {
+      var el=document.getElementById(id);
+      if(!el) return;
+      el.contentEditable='true';
+      el.classList.add(isBlock?'editable-block':'editable');
+      el.addEventListener('blur', function(){
+        var val=(isBlock?el.innerText:el.innerText.replace(/\n/g,' ')).trim();
+        _cvData[key]=val;
+        saveCvData();
+        // Sync to other elements
+        ids.forEach(function(otherId){
+          if(otherId===id) return;
+          var other=document.getElementById(otherId);
+          if(other&&other.contentEditable!=='true') other.textContent=val;
+          else if(other&&other!==el) other.textContent=val;
+        });
+      });
+      el.addEventListener('keydown', function(e){
+        if(e.key==='Enter'&&!isBlock){e.preventDefault();el.blur();}
+        // Prevent paste from bringing HTML
+      });
+      el.addEventListener('paste', function(e){
+        e.preventDefault();
+        var text=(e.clipboardData||window.clipboardData).getData('text/plain');
+        document.execCommand('insertText',false,text);
+      });
+    });
+  });
+}
+
+/* ── Edit modal ─────────────────────────────────────────── */
+function openEdit(section) {
+  if(!_cvData) return;
+  _editSection=section;
+  var modal=document.getElementById('editModal');
+  var title=document.getElementById('editTitle');
+  var body=document.getElementById('editBody');
+  modal.classList.remove('hidden');
+  document.body.style.overflow='hidden';
+  if(section==='contact') {
+    title.textContent='Dados pessoais e contato';
+    var c=_cvData.contato||{};
+    body.innerHTML='<div class="ef-group"><div class="ef-label">Nome completo</div><input class="ef-input" id="ef_nome" value="'+_esc(_cvData.nome||'')+'"></div>'
+      +'<div class="ef-group"><div class="ef-label">Cargo / Título profissional</div><input class="ef-input" id="ef_titulo" value="'+_esc(_cvData.titulo_profissional||'')+'"></div>'
+      +'<div class="ef-group"><div class="ef-label">Resumo profissional</div><textarea class="ef-textarea" id="ef_resumo" rows="4">'+_esc(_cvData.resumo_profissional||'')+'</textarea></div>'
+      +'<div class="ef-group"><div class="ef-label">E-mail</div><input class="ef-input" id="ef_email" type="email" value="'+_esc(c.email||'')+'"></div>'
+      +'<div class="ef-row"><div class="ef-group"><div class="ef-label">Telefone</div><input class="ef-input" id="ef_tel" value="'+_esc(c.telefone||'')+'"></div>'
+      +'<div class="ef-group"><div class="ef-label">Cidade</div><input class="ef-input" id="ef_cidade" value="'+_esc(c.cidade||'')+'"></div></div>'
+      +'<div class="ef-group"><div class="ef-label">LinkedIn (URL)</div><input class="ef-input" id="ef_li" value="'+_esc(c.linkedin||'')+'"></div>';
+  } else if(section==='skills') {
+    title.textContent='Habilidades';
+    var skills=(_cvData.habilidades||[]).slice();
+    body.innerHTML='<div class="ef-hint">Clique no × para remover. Digite e pressione Enter ou clique + para adicionar.</div>'
+      +'<div class="ef-tags" id="ef_tagWrap">'+skills.map(function(s,i){return '<span class="ef-tag">'+_esc(s)+'<button class="ef-tag-rm" onclick="efRemoveTag('+i+')" type="button">×</button></span>';}).join('')+'</div>'
+      +'<div class="ef-tag-row"><input class="ef-tag-inp" id="ef_tagInp" placeholder="Nova habilidade..."><button class="ef-tag-add-btn" onclick="efAddTag()" type="button">+ Adicionar</button></div>';
+    document.getElementById('ef_tagInp').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();efAddTag();}});
+  } else if(section==='exp') {
+    title.textContent='Experiências profissionais';
+    renderExpEditor();
+  } else if(section==='edu') {
+    title.textContent='Formação acadêmica';
+    renderEduEditor();
+  }
+}
+
+function closeEdit() {
+  document.getElementById('editModal').classList.add('hidden');
+  document.body.style.overflow='';
+  _editSection=null;
+}
+
+function saveEdit() {
+  if(!_cvData) return;
+  if(_editSection==='contact') {
+    _cvData.nome=(document.getElementById('ef_nome').value||'').trim();
+    _cvData.titulo_profissional=(document.getElementById('ef_titulo').value||'').trim();
+    _cvData.resumo_profissional=(document.getElementById('ef_resumo').value||'').trim();
+    _cvData.contato=_cvData.contato||{};
+    _cvData.contato.email=(document.getElementById('ef_email').value||'').trim();
+    _cvData.contato.telefone=(document.getElementById('ef_tel').value||'').trim();
+    _cvData.contato.cidade=(document.getElementById('ef_cidade').value||'').trim();
+    _cvData.contato.linkedin=(document.getElementById('ef_li').value||'').trim();
+    reRenderNome(_cvData.nome);
+    reRenderRole(_cvData.titulo_profissional);
+    reRenderResumo(_cvData.resumo_profissional);
+    reRenderContact(_cvData.contato);
+  } else if(_editSection==='skills') {
+    // skills already updated live via efRemoveTag/efAddTag — no extra save needed
+    reRenderSkills(_cvData.habilidades||[]);
+  } else if(_editSection==='exp') {
+    saveExpEditor();
+    reRenderExp(_cvData.experiencias||[]);
+  } else if(_editSection==='edu') {
+    saveEduEditor();
+    reRenderEdu(_cvData.formacao||[]);
+  }
+  saveCvData();
+  closeEdit();
+}
+
+/* ── Tag editor helpers ─────────────────────────────────── */
+function efRemoveTag(idx) {
+  if(!_cvData.habilidades) return;
+  _cvData.habilidades.splice(idx,1);
+  var wrap=document.getElementById('ef_tagWrap');
+  if(wrap) wrap.innerHTML=_cvData.habilidades.map(function(s,i){return '<span class="ef-tag">'+_esc(s)+'<button class="ef-tag-rm" onclick="efRemoveTag('+i+')" type="button">×</button></span>';}).join('');
+}
+function efAddTag() {
+  var inp=document.getElementById('ef_tagInp');
+  var val=(inp.value||'').trim();
+  if(!val) return;
+  if(!_cvData.habilidades) _cvData.habilidades=[];
+  _cvData.habilidades.push(val);
+  inp.value='';
+  var wrap=document.getElementById('ef_tagWrap');
+  if(wrap) wrap.innerHTML=_cvData.habilidades.map(function(s,i){return '<span class="ef-tag">'+_esc(s)+'<button class="ef-tag-rm" onclick="efRemoveTag('+i+')" type="button">×</button></span>';}).join('');
+}
+
+/* ── Experience editor ──────────────────────────────────── */
+function renderExpEditor() {
+  var exps=(_cvData.experiencias||[]);
+  var html=exps.map(function(e,i){
+    return '<div class="ef-card" id="efec_'+i+'">'
+      +'<div class="ef-card-head" onclick="efToggle(\'efec_'+i+'\')">'
+      +'<span class="ef-card-name">'+(e.cargo||'Sem título')+' — '+(e.empresa||'')+'</span>'
+      +'<span class="ef-card-arr" id="efec_arr_'+i+'">▼</span></div>'
+      +'<div class="ef-card-body collapsed" id="efec_body_'+i+'">'
+      +'<div class="ef-group"><div class="ef-label">Cargo</div><input class="ef-input" id="efec_cargo_'+i+'" value="'+_esc(e.cargo||'')+'"></div>'
+      +'<div class="ef-row"><div class="ef-group"><div class="ef-label">Empresa</div><input class="ef-input" id="efec_emp_'+i+'" value="'+_esc(e.empresa||'')+'"></div>'
+      +'<div class="ef-group"><div class="ef-label">Período</div><input class="ef-input" id="efec_per_'+i+'" value="'+_esc(e.periodo||'')+'"></div></div>'
+      +'<div class="ef-group"><div class="ef-label">Atividades (uma por linha)</div>'
+      +'<textarea class="ef-textarea" id="efec_bul_'+i+'" rows="4">'+_esc((e.bullets||[]).join('\n'))+'</textarea></div>'
+      +'<button class="ef-card-rm" onclick="efRemoveExp('+i+')">🗑 Remover experiência</button>'
+      +'</div></div>';
+  }).join('');
+  html+='<button class="ef-card-add" onclick="efAddExp()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Adicionar experiência</button>';
+  document.getElementById('editBody').innerHTML=html;
+}
+function efToggle(cardId) {
+  var body=document.getElementById(cardId+'_body');
+  var arr=document.getElementById(cardId+'_arr');
+  if(body) body.classList.toggle('collapsed');
+  if(arr) arr.classList.toggle('open');
+}
+function efRemoveExp(idx) {
+  if(!_cvData.experiencias) return;
+  _cvData.experiencias.splice(idx,1);
+  renderExpEditor();
+}
+function efAddExp() {
+  if(!_cvData.experiencias) _cvData.experiencias=[];
+  _cvData.experiencias.push({cargo:'',empresa:'',periodo:'',bullets:[]});
+  renderExpEditor();
+  // open last card
+  var last=_cvData.experiencias.length-1;
+  efToggle('efec_'+last);
+}
+function saveExpEditor() {
+  var exps=_cvData.experiencias||[];
+  exps.forEach(function(e,i){
+    e.cargo=(document.getElementById('efec_cargo_'+i)||{}).value||e.cargo;
+    e.empresa=(document.getElementById('efec_emp_'+i)||{}).value||e.empresa;
+    e.periodo=(document.getElementById('efec_per_'+i)||{}).value||e.periodo;
+    var bulEl=document.getElementById('efec_bul_'+i);
+    if(bulEl) e.bullets=bulEl.value.split('\n').map(function(b){return b.trim();}).filter(Boolean);
+  });
+  _cvData.experiencias=exps.filter(function(e){return e.cargo||e.empresa;});
+}
+
+/* ── Education editor ───────────────────────────────────── */
+function renderEduEditor() {
+  var edu=(_cvData.formacao||[]);
+  var html=edu.map(function(e,i){
+    return '<div class="ef-card" id="efed_'+i+'">'
+      +'<div class="ef-card-head" onclick="efToggle(\'efed_'+i+'\')">'
+      +'<span class="ef-card-name">'+(e.curso||'Sem título')+(e.instituicao?' — '+e.instituicao:'')+'</span>'
+      +'<span class="ef-card-arr" id="efed_arr_'+i+'">▼</span></div>'
+      +'<div class="ef-card-body collapsed" id="efed_body_'+i+'">'
+      +'<div class="ef-group"><div class="ef-label">Curso</div><input class="ef-input" id="efed_curso_'+i+'" value="'+_esc(e.curso||'')+'"></div>'
+      +'<div class="ef-row"><div class="ef-group"><div class="ef-label">Instituição</div><input class="ef-input" id="efed_inst_'+i+'" value="'+_esc(e.instituicao||'')+'"></div>'
+      +'<div class="ef-group"><div class="ef-label">Período</div><input class="ef-input" id="efed_per_'+i+'" value="'+_esc(e.periodo||'')+'"></div></div>'
+      +'<button class="ef-card-rm" onclick="efRemoveEdu('+i+')">🗑 Remover</button>'
+      +'</div></div>';
+  }).join('');
+  html+='<button class="ef-card-add" onclick="efAddEdu()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Adicionar formação</button>';
+  document.getElementById('editBody').innerHTML=html;
+}
+function efRemoveEdu(idx) {
+  if(!_cvData.formacao) return;
+  _cvData.formacao.splice(idx,1);
+  renderEduEditor();
+}
+function efAddEdu() {
+  if(!_cvData.formacao) _cvData.formacao=[];
+  _cvData.formacao.push({curso:'',instituicao:'',periodo:''});
+  renderEduEditor();
+  efToggle('efed_'+(_cvData.formacao.length-1));
+}
+function saveEduEditor() {
+  var edu=_cvData.formacao||[];
+  edu.forEach(function(e,i){
+    e.curso=(document.getElementById('efed_curso_'+i)||{}).value||e.curso;
+    e.instituicao=(document.getElementById('efed_inst_'+i)||{}).value||e.instituicao;
+    e.periodo=(document.getElementById('efed_per_'+i)||{}).value||e.periodo;
+  });
+  _cvData.formacao=edu.filter(function(e){return e.curso||e.instituicao;});
+}
 
 /* ── Mobile: close panel helper ─────────────────────────── */
 function _closePanelMob() {
