@@ -475,8 +475,8 @@ html.no-photo .mod-header{display:block}
 
 /* ─── Print ───────────────────────────────────────────────── */
 @media print{
-  /* @page define margens em TODAS as páginas (incluindo 2ª, 3ª…) */
-  @page{size:A4 portrait;margin:1.8cm 2cm}
+  /* margin:0 suprime cabeçalho/rodapé do browser (URL, título, data) */
+  @page{size:A4 portrait;margin:0}
 
   html,body{background:#fff!important;padding:0!important;margin:0!important;overflow:visible!important}
   .side-panel,.modal-overlay,.mob-bar,.panel-overlay,.edit-modal,.mob-print-toast{display:none!important}
@@ -491,19 +491,6 @@ html.no-photo .mod-header{display:block}
     zoom:1!important;
     transform:none!important;
   }
-
-  /* Reduz padding interno do design no topo/lados — @page já cuida das margens externas */
-  .page-classic .sidebar{padding-top:0!important;padding-bottom:0!important;padding-left:0!important;padding-right:8mm!important}
-  .page-classic .content{padding-top:0!important;padding-bottom:0!important;padding-left:8mm!important;padding-right:0!important}
-  .mod-header{padding-top:0!important;padding-bottom:6mm!important;padding-left:0!important;padding-right:0!important}
-  .mod-body{padding-top:6mm!important;padding-bottom:0!important;padding-left:0!important;padding-right:0!important}
-  .exec-header{padding-top:0!important;padding-bottom:6mm!important;padding-left:0!important;padding-right:0!important}
-  .exec-body{padding-top:6mm!important;padding-bottom:0!important;padding-left:0!important;padding-right:0!important}
-  .compact-sidebar{padding-top:0!important;padding-bottom:0!important}
-  .compact-content{padding-top:0!important;padding-bottom:0!important;padding-left:8mm!important;padding-right:0!important}
-  .minimal-header{padding-top:0!important;padding-bottom:5mm!important;padding-left:0!important;padding-right:0!important}
-  .minimal-accent-bar{margin-left:0!important;margin-right:0!important}
-  .minimal-body{padding-top:6mm!important;padding-bottom:0!important;padding-left:0!important;padding-right:0!important}
 
   /* Quebras de página limpas */
   .exp-item{page-break-inside:avoid}
@@ -621,7 +608,7 @@ html.no-photo .mod-header{display:block}
       <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span> Imprimir / PDF
     </button>
     <div style="font-size:9.5px;color:rgba(255,255,255,.28);margin-top:.6rem;line-height:1.5;text-align:center">
-      No diálogo: defina<br><strong style="color:rgba(255,255,255,.45)">Margens → Nenhuma</strong>
+      No diálogo: desmarque<br><strong style="color:rgba(255,255,255,.45)">Cabeçalhos e rodapés</strong>
     </div>
   </div>
 
