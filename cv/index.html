@@ -1490,7 +1490,14 @@ function saveEdit() {
     reRenderResumo(_cvData.resumo_profissional);
     reRenderContact(_cvData.contato);
   } else if(_editSection==='skills') {
-    // skills already updated live via efRemoveTag/efAddTag — no extra save needed
+    // Rebuild skills from current UI tag list (source of truth)
+    var tagWrap=document.getElementById('ef_tagWrap');
+    if(tagWrap) {
+      _cvData.habilidades=Array.prototype.map.call(
+        tagWrap.querySelectorAll('.ef-tag'),
+        function(el){ return el.firstChild?el.firstChild.nodeValue.trim():''; }
+      ).filter(Boolean);
+    }
     reRenderSkills(_cvData.habilidades||[]);
   } else if(_editSection==='exp') {
     saveExpEditor();
@@ -1504,21 +1511,31 @@ function saveEdit() {
 }
 
 /* ── Tag editor helpers ─────────────────────────────────── */
-function efRemoveTag(idx) {
-  if(!_cvData.habilidades) return;
-  _cvData.habilidades.splice(idx,1);
+function _rebuildTagWrap() {
   var wrap=document.getElementById('ef_tagWrap');
-  if(wrap) wrap.innerHTML=_cvData.habilidades.map(function(s,i){return '<span class="ef-tag">'+_esc(s)+'<button class="ef-tag-rm" onclick="efRemoveTag('+i+')" type="button">×</button></span>';}).join('');
+  if(!wrap) return;
+  if(!Array.isArray(_cvData.habilidades)) _cvData.habilidades=[];
+  wrap.innerHTML=_cvData.habilidades.map(function(s,i){
+    return '<span class="ef-tag">'+_esc(s)+'<button class="ef-tag-rm" onclick="efRemoveTag('+i+')" type="button">×</button></span>';
+  }).join('');
+}
+function efRemoveTag(idx) {
+  if(!Array.isArray(_cvData.habilidades)) return;
+  _cvData.habilidades.splice(idx,1);
+  _rebuildTagWrap();
+  reRenderSkills(_cvData.habilidades);
+  saveCvData();
 }
 function efAddTag() {
   var inp=document.getElementById('ef_tagInp');
   var val=(inp.value||'').trim();
   if(!val) return;
-  if(!_cvData.habilidades) _cvData.habilidades=[];
-  _cvData.habilidades.push(val);
+  if(!Array.isArray(_cvData.habilidades)) _cvData.habilidades=[];
+  if(_cvData.habilidades.indexOf(val)===-1) _cvData.habilidades.push(val);
   inp.value='';
-  var wrap=document.getElementById('ef_tagWrap');
-  if(wrap) wrap.innerHTML=_cvData.habilidades.map(function(s,i){return '<span class="ef-tag">'+_esc(s)+'<button class="ef-tag-rm" onclick="efRemoveTag('+i+')" type="button">×</button></span>';}).join('');
+  _rebuildTagWrap();
+  reRenderSkills(_cvData.habilidades);
+  saveCvData();
 }
 
 /* ── Experience editor ──────────────────────────────────── */
@@ -1563,9 +1580,12 @@ function efAddExp() {
 function saveExpEditor() {
   var exps=_cvData.experiencias||[];
   exps.forEach(function(e,i){
-    e.cargo=(document.getElementById('efec_cargo_'+i)||{}).value||e.cargo;
-    e.empresa=(document.getElementById('efec_emp_'+i)||{}).value||e.empresa;
-    e.periodo=(document.getElementById('efec_per_'+i)||{}).value||e.periodo;
+    var cargoEl=document.getElementById('efec_cargo_'+i);
+    var empEl=document.getElementById('efec_emp_'+i);
+    var perEl=document.getElementById('efec_per_'+i);
+    if(cargoEl) e.cargo=cargoEl.value.trim();
+    if(empEl)   e.empresa=empEl.value.trim();
+    if(perEl)   e.periodo=perEl.value.trim();
     var bulEl=document.getElementById('efec_bul_'+i);
     if(bulEl) e.bullets=bulEl.value.split('\n').map(function(b){return b.trim();}).filter(Boolean);
   });
@@ -1604,9 +1624,12 @@ function efAddEdu() {
 function saveEduEditor() {
   var edu=_cvData.formacao||[];
   edu.forEach(function(e,i){
-    e.curso=(document.getElementById('efed_curso_'+i)||{}).value||e.curso;
-    e.instituicao=(document.getElementById('efed_inst_'+i)||{}).value||e.instituicao;
-    e.periodo=(document.getElementById('efed_per_'+i)||{}).value||e.periodo;
+    var cursoEl=document.getElementById('efed_curso_'+i);
+    var instEl=document.getElementById('efed_inst_'+i);
+    var perEl=document.getElementById('efed_per_'+i);
+    if(cursoEl) e.curso=cursoEl.value.trim();
+    if(instEl)  e.instituicao=instEl.value.trim();
+    if(perEl)   e.periodo=perEl.value.trim();
   });
   _cvData.formacao=edu.filter(function(e){return e.curso||e.instituicao;});
 }
