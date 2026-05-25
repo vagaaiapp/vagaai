@@ -912,10 +912,18 @@ var _editSection = null;
 function _esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+function _periodo(p) {
+  // Blank out placeholder texts the AI sometimes inserts
+  if (!p) return '';
+  if (/n[ãa]o\s*especif/i.test(p)) return '';
+  if (/not\s*specif/i.test(p)) return '';
+  return p;
+}
 function _expHtml(exps) {
   return (exps||[]).map(function(e){
     var buls=(e.bullets||[]).map(function(b){return '<li>'+_esc(b)+'</li>';}).join('');
-    return '<div class="exp-item"><div class="exp-row"><span class="exp-cargo">'+_esc(e.cargo||'')+'</span><span class="exp-per">'+_esc(e.periodo||'')+'</span></div><div class="exp-emp">'+_esc(e.empresa||'')+'</div>'+(buls?'<ul class="exp-ul">'+buls+'</ul>':'')+' </div>';
+    var per=_periodo(e.periodo);
+    return '<div class="exp-item"><div class="exp-row"><span class="exp-cargo">'+_esc(e.cargo||'')+'</span>'+(per?'<span class="exp-per">'+_esc(per)+'</span>':'')+'</div><div class="exp-emp">'+_esc(e.empresa||'')+'</div>'+(buls?'<ul class="exp-ul">'+buls+'</ul>':'')+' </div>';
   }).join('');
 }
 
@@ -1034,7 +1042,8 @@ function _expHtml(exps) {
     show('mnSecExp');
     var mnExpHtml = (cv.experiencias || []).map(function(e, i, arr) {
       var buls = (e.bullets || []).map(function(b){ return '<li>' + esc(b) + '</li>'; }).join('');
-      return '<div class="minimal-exp-item"><div class="minimal-exp-spine"><div class="minimal-exp-dot"></div>' + (i < arr.length-1 ? '<div class="minimal-exp-line"></div>' : '') + '</div><div class="minimal-exp-body"><div class="minimal-exp-row"><span class="minimal-exp-cargo">' + esc(e.cargo||'') + '</span><span class="minimal-exp-per">' + esc(e.periodo||'') + '</span></div><div class="minimal-exp-emp">' + esc(e.empresa||'') + '</div>' + (buls ? '<ul class="minimal-exp-ul">' + buls + '</ul>' : '') + '</div></div>';
+      var mnP=_periodo(e.periodo);
+      return '<div class="minimal-exp-item"><div class="minimal-exp-spine"><div class="minimal-exp-dot"></div>' + (i < arr.length-1 ? '<div class="minimal-exp-line"></div>' : '') + '</div><div class="minimal-exp-body"><div class="minimal-exp-row"><span class="minimal-exp-cargo">' + esc(e.cargo||'') + '</span>' + (mnP?'<span class="minimal-exp-per">'+esc(mnP)+'</span>':'') + '</div><div class="minimal-exp-emp">' + esc(e.empresa||'') + '</div>' + (buls ? '<ul class="minimal-exp-ul">' + buls + '</ul>' : '') + '</div></div>';
     }).join('');
     document.getElementById('mnExps').innerHTML = mnExpHtml;
   }
@@ -1370,7 +1379,8 @@ function reRenderExp(exps) {
   if(mnE) {
     mnE.innerHTML=(exps||[]).map(function(e,i,arr){
       var buls=(e.bullets||[]).map(function(b){return '<li>'+_esc(b)+'</li>';}).join('');
-      return '<div class="minimal-exp-item"><div class="minimal-exp-spine"><div class="minimal-exp-dot"></div>'+(i<arr.length-1?'<div class="minimal-exp-line"></div>':'')+'</div><div class="minimal-exp-body"><div class="minimal-exp-row"><span class="minimal-exp-cargo">'+_esc(e.cargo||'')+'</span><span class="minimal-exp-per">'+_esc(e.periodo||'')+'</span></div><div class="minimal-exp-emp">'+_esc(e.empresa||'')+'</div>'+(buls?'<ul class="minimal-exp-ul">'+buls+'</ul>':'')+'</div></div>';
+      var mnPer=_periodo(e.periodo);
+      return '<div class="minimal-exp-item"><div class="minimal-exp-spine"><div class="minimal-exp-dot"></div>'+(i<arr.length-1?'<div class="minimal-exp-line"></div>':'')+'</div><div class="minimal-exp-body"><div class="minimal-exp-row"><span class="minimal-exp-cargo">'+_esc(e.cargo||'')+'</span>'+(mnPer?'<span class="minimal-exp-per">'+_esc(mnPer)+'</span>':'')+'</div><div class="minimal-exp-emp">'+_esc(e.empresa||'')+'</div>'+(buls?'<ul class="minimal-exp-ul">'+buls+'</ul>':'')+'</div></div>';
     }).join('');
   }
   ['clSecExp','modSecExp','exSecExp','cpSecExp','mnSecExp'].forEach(function(id){
