@@ -496,9 +496,9 @@ html.no-photo .compact-photo{display:none}
     transform:translateX(0);
     box-shadow:4px 0 24px rgba(0,0,0,.55);
   }
-  /* CV pages: zoom handled by JS */
+  /* CV pages: scaled by JS (zoom or transform fallback) */
   .page{margin:0 auto}
-  .page-wrap{width:100%;overflow:hidden;display:block}
+  .page-wrap{width:100%;overflow:visible;display:block}
 }
 
 /* ─── No data ─────────────────────────────────────────────── */
@@ -1102,8 +1102,9 @@ function _expHtml(exps) {
   var savedTpl = 'classic';
   try { savedTpl = localStorage.getItem('vagaai_cv_tpl') || 'classic'; } catch(e) {}
   applyTemplate(savedTpl, false);
-  // Scale after fonts & layout settle
+  // Scale after fonts & layout settle (multiple calls for reliability)
   setTimeout(scaleCvPages, 120);
+  setTimeout(scaleCvPages, 400);
   // Setup inline editing
   setTimeout(setupInlineEditing, 150);
 
@@ -1258,7 +1259,13 @@ function applyTemplate(tpl, save) {
     document.body.style.overflow = '';
   }
 }
-function setTemplate(t) { applyTemplate(t, true); }
+function setTemplate(t) {
+  applyTemplate(t, true);
+  // Explicit save (belt-and-suspenders for mobile browsers)
+  try { localStorage.setItem('vagaai_cv_tpl', t); } catch(e) {}
+  // Re-scale after template switch (slight delay for layout to settle)
+  setTimeout(scaleCvPages, 80);
+}
 
 /* ── Mobile: panel toggle ───────────────────────────────── */
 function togglePanel() {
@@ -1269,23 +1276,40 @@ function togglePanel() {
   document.body.style.overflow = isOpen ? 'hidden' : '';
 }
 
-/* ── Mobile: scale CV to fit viewport (via zoom) ─────────── */
+/* ── Mobile: scale CV to fit viewport ───────────────────── */
 function scaleCvPages() {
   var wrap = document.getElementById('pageWrap');
   if (!wrap) return;
-  var isMobile = window.innerWidth <= 900;
+  var vw = window.innerWidth;
+  var isMobile = vw <= 900;
+
   wrap.querySelectorAll('.page').forEach(function(p) {
-    if (!isMobile) {
+    // Always reset
+    p.style.zoom = '';
+    p.style.transform = '';
+    p.style.transformOrigin = '';
+    p.style.marginBottom = '';
+    if (!isMobile) return;
+
+    var scale = Math.min(1, Math.max(0.25, vw / 794));
+
+    // Attempt 1: zoom (layout-aware — Chrome/Safari)
+    p.style.zoom = scale.toFixed(4);
+
+    // Detect if zoom worked: after zoom, active page offsetWidth ≈ vw
+    // If still ≈ 794px, zoom is unsupported → fall back to transform
+    if (p.classList.contains('active') && p.offsetWidth > vw * 1.1) {
       p.style.zoom = '';
-      return;
+      var pH = p.scrollHeight || 1123;
+      p.style.transform = 'scale(' + scale.toFixed(4) + ')';
+      p.style.transformOrigin = 'top left';
+      // Compensate height so layout doesn't leave a gap
+      p.style.marginBottom = '-' + Math.round(pH * (1 - scale)) + 'px';
     }
-    // 210mm = 794px at 96dpi; fit to viewport width
-    var scale = window.innerWidth / 794;
-    scale = Math.min(1, Math.max(0.25, scale));
-    p.style.zoom = scale;
   });
 }
 window.addEventListener('resize', scaleCvPages);
+window.addEventListener('load', scaleCvPages);
 
 /* ── Mobile: print with warning ─────────────────────────── */
 function mobPrint() {
