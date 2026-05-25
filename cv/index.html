@@ -1100,11 +1100,16 @@ function _expHtml(exps) {
 
   /* ── Template ───────────────────────────────────────────── */
   var savedTpl = 'classic';
-  try { savedTpl = localStorage.getItem('vagaai_cv_tpl') || 'classic'; } catch(e) {}
+  try {
+    // Primary: embedded in CV JSON (most reliable on mobile)
+    // Fallback: separate localStorage key
+    savedTpl = cv.template || localStorage.getItem('vagaai_cv_tpl') || 'classic';
+  } catch(e) {}
   applyTemplate(savedTpl, false);
   // Scale after fonts & layout settle (multiple calls for reliability)
   setTimeout(scaleCvPages, 120);
   setTimeout(scaleCvPages, 400);
+  setTimeout(scaleCvPages, 800);
   // Setup inline editing
   setTimeout(setupInlineEditing, 150);
 
@@ -1261,7 +1266,9 @@ function applyTemplate(tpl, save) {
 }
 function setTemplate(t) {
   applyTemplate(t, true);
-  // Explicit save (belt-and-suspenders for mobile browsers)
+  // Save inside _cvData (most reliable — bundled with CV JSON)
+  if (_cvData) { _cvData.template = t; saveCvData(); }
+  // Also save separately as belt-and-suspenders fallback
   try { localStorage.setItem('vagaai_cv_tpl', t); } catch(e) {}
   // Re-scale after template switch (slight delay for layout to settle)
   setTimeout(scaleCvPages, 80);
@@ -1283,30 +1290,51 @@ function scaleCvPages() {
   var vw = window.innerWidth;
   var isMobile = vw <= 900;
 
+  // Reset all pages first
   wrap.querySelectorAll('.page').forEach(function(p) {
-    // Always reset
     p.style.zoom = '';
     p.style.transform = '';
     p.style.transformOrigin = '';
     p.style.marginBottom = '';
-    if (!isMobile) return;
+    p.style.width = '';
+  });
 
-    var scale = Math.min(1, Math.max(0.25, vw / 794));
+  if (!isMobile) {
+    wrap.style.overflowX = '';
+    return;
+  }
 
-    // Attempt 1: zoom (layout-aware — Chrome/Safari)
-    p.style.zoom = scale.toFixed(4);
+  var scale = Math.min(1, Math.max(0.25, vw / 794));
+  var useTransform = false;
 
-    // Detect if zoom worked: after zoom, active page offsetWidth ≈ vw
-    // If still ≈ 794px, zoom is unsupported → fall back to transform
-    if (p.classList.contains('active') && p.offsetWidth > vw * 1.1) {
-      p.style.zoom = '';
+  // Probe zoom support on the active page
+  var activePage = wrap.querySelector('.page.active');
+  if (activePage) {
+    activePage.style.zoom = scale.toFixed(4);
+    // Force layout read — if offsetWidth is still >= 780px, zoom had no effect
+    if (activePage.offsetWidth >= 780) {
+      useTransform = true;
+    }
+    activePage.style.zoom = '';
+  }
+
+  wrap.querySelectorAll('.page').forEach(function(p) {
+    if (useTransform) {
+      // transform: scale() — not layout-aware; compensate height & expand width
       var pH = p.scrollHeight || 1123;
-      p.style.transform = 'scale(' + scale.toFixed(4) + ')';
       p.style.transformOrigin = 'top left';
-      // Compensate height so layout doesn't leave a gap
+      p.style.transform = 'scale(' + scale.toFixed(4) + ')';
       p.style.marginBottom = '-' + Math.round(pH * (1 - scale)) + 'px';
+      // Expand logical width so scaled content fills viewport cleanly
+      p.style.width = Math.round(vw / scale) + 'px';
+    } else {
+      // zoom — layout-aware, preferred
+      p.style.zoom = scale.toFixed(4);
     }
   });
+
+  // Clip to prevent horizontal scroll regardless of method
+  wrap.style.overflowX = 'hidden';
 }
 window.addEventListener('resize', scaleCvPages);
 window.addEventListener('load', scaleCvPages);
