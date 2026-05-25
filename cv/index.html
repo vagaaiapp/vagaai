@@ -148,9 +148,26 @@ body{background:var(--page-bg);font-family:'Inter',sans-serif;padding-left:220px
   width:210mm;min-height:297mm;background:#fff;
   margin:1rem auto;
   box-shadow:0 6px 40px rgba(0,0,0,.22);
-  display:none;overflow:hidden;
+  display:none;overflow:visible;
+  position:relative;
 }
 .page.active{display:flex}
+
+/* ─── Page-break indicator (screen only) ─────────────────── */
+.pg-break{
+  position:absolute;top:297mm;left:-12px;right:-12px;
+  display:flex;align-items:center;gap:7px;
+  pointer-events:none;z-index:20;
+}
+.pg-break::before,.pg-break::after{
+  content:'';flex:1;border-top:1.5px dashed rgba(62,207,142,.45);
+}
+.pg-break span{
+  font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(62,207,142,.7);background:var(--page-bg);
+  padding:2px 8px;border-radius:4px;white-space:nowrap;
+  font-family:'Inter',sans-serif;
+}
 
 /* ─── TEMPLATE 1: CLÁSSICO (sidebar clara + conteúdo) ───── */
 .page-classic .sidebar{
@@ -481,6 +498,7 @@ html.no-photo .mod-header{display:block}
   html,body{background:#fff!important;padding:0!important;margin:0!important;overflow:visible!important}
   .side-panel,.modal-overlay,.mob-bar,.panel-overlay,.edit-modal,.mob-print-toast{display:none!important}
   .page-wrap{display:contents!important}
+  .pg-break{display:none!important}
 
   .page.active{
     display:flex!important;
@@ -488,17 +506,44 @@ html.no-photo .mod-header{display:block}
     box-shadow:none!important;
     width:210mm!important;
     min-height:0!important;
+    overflow:visible!important;
     zoom:1!important;
     transform:none!important;
   }
 
-  /* Quebras de página limpas */
-  .exp-item{page-break-inside:avoid}
-  .mod-sec-h,.cv-sec-h{page-break-after:avoid}
-  .mod-bottom-row{page-break-inside:auto}
-  .mod-edu-item{page-break-inside:avoid}
+  /* ── Quebras de página ── */
+  /* Experiências: nunca quebrar no meio de um item */
+  .exp-item,.minimal-exp-item{break-inside:avoid;page-break-inside:avoid}
+  /* Títulos de seção: nunca orphanizar */
+  .cv-sec-h,.mod-sec-h,.exec-sec-h,.compact-cv-sec-h,.minimal-sec-h,
+  .sb-sec-h,.compact-sec-h{
+    break-after:avoid;page-break-after:avoid;
+    break-inside:avoid;page-break-inside:avoid;
+  }
+  /* Educação */
+  .mod-edu-item,.exec-edu-item,.minimal-edu-item{break-inside:avoid;page-break-inside:avoid}
+  /* Bottom grid: pode quebrar entre educação e habilidades se necessário */
+  .mod-bottom-row,.exec-bottom,.minimal-bottom{break-inside:auto;page-break-inside:auto}
+
+  /* Sidebars (Profissional / Compacto):
+     Limita a altura na 1ª página para evitar coluna vazia na 2ª.
+     Conteúdo excedente fica oculto — prefira templates de coluna única para CVs longos. */
+  .page-classic .sidebar{
+    overflow:hidden!important;
+    max-height:296mm!important;
+    align-self:flex-start!important;
+    min-height:296mm!important;
+  }
+  .compact-sidebar{
+    overflow:hidden!important;
+    max-height:296mm!important;
+    align-self:flex-start!important;
+    min-height:296mm!important;
+  }
+
   .sb-ph-hover{display:none!important}
   .no-data-page{display:none!important}
+  .editable::after,.editable-block::after{display:none!important}
 }
 </style>
 </head>
@@ -609,6 +654,10 @@ html.no-photo .mod-header{display:block}
     </button>
     <div style="font-size:9.5px;color:rgba(255,255,255,.28);margin-top:.6rem;line-height:1.5;text-align:center">
       No diálogo: desmarque<br><strong style="color:rgba(255,255,255,.45)">Cabeçalhos e rodapés</strong>
+    </div>
+    <div style="font-size:9px;color:rgba(255,255,255,.2);margin-top:.7rem;line-height:1.5;text-align:center;border-top:1px solid rgba(255,255,255,.05);padding-top:.6rem">
+      Para CV de <strong style="color:rgba(255,255,255,.32)">2 páginas</strong>, prefira<br>
+      <strong style="color:rgba(255,255,255,.32)">Moderno, Executivo ou Minimalista</strong>
     </div>
   </div>
 
@@ -1022,6 +1071,9 @@ function _expHtml(exps) {
   setTimeout(scaleCvPages, 120);
   setTimeout(scaleCvPages, 400);
   setTimeout(scaleCvPages, 800);
+  // Page-break indicator
+  setTimeout(addPageBreakIndicator, 500);
+  setTimeout(addPageBreakIndicator, 900);
   // Setup inline editing
   setTimeout(setupInlineEditing, 150);
 
@@ -1115,6 +1167,7 @@ function setTemplate(t) {
   try { localStorage.setItem('vagaai_cv_tpl', t); } catch(e) {}
   // Re-scale after template switch (slight delay for layout to settle)
   setTimeout(scaleCvPages, 80);
+  setTimeout(addPageBreakIndicator, 300);
 }
 
 /* ── Mobile: panel toggle ───────────────────────────────── */
@@ -1181,6 +1234,30 @@ function scaleCvPages() {
 }
 window.addEventListener('resize', scaleCvPages);
 window.addEventListener('load', scaleCvPages);
+
+/* ── Page-break indicator (screen only) ─────────────────── */
+function addPageBreakIndicator() {
+  // 297mm in px at 96dpi ≈ 1122px; add a small buffer
+  var PX_PER_MM = 96 / 25.4;
+  var breakPx = Math.round(297 * PX_PER_MM); // ~1122px
+
+  var activePage = document.querySelector('.page.active');
+  if (!activePage) return;
+
+  // Remove any existing indicator first
+  var old = activePage.querySelector('.pg-break');
+  if (old) old.parentNode.removeChild(old);
+
+  // Only show if content actually overflows past page 1
+  var h = activePage.scrollHeight;
+  if (h > breakPx + 40) {
+    var line = document.createElement('div');
+    line.className = 'pg-break';
+    line.innerHTML = '<span>Página 2</span>';
+    activePage.appendChild(line);
+  }
+}
+window.addEventListener('resize', function() { setTimeout(addPageBreakIndicator, 100); });
 
 /* ── Mobile: print with warning ─────────────────────────── */
 function mobPrint() {
@@ -1413,6 +1490,8 @@ function saveEdit() {
   }
   saveCvData();
   closeEdit();
+  // Update page-break indicator after content changes
+  setTimeout(addPageBreakIndicator, 200);
 }
 
 /* ── Tag editor helpers ─────────────────────────────────── */

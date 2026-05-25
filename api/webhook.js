@@ -14,6 +14,15 @@ const CREDIT_MAP = {
   9700: 50,
 };
 
+// Fallback por faixas de valor (cobre cupons e descontos)
+// Se o valor exato não estiver no CREDIT_MAP, infere pelo plano mais próximo abaixo
+function inferCreditsFromAmount(amount) {
+  if (amount >= 9700) return 50;
+  if (amount >= 3990) return 10;
+  if (amount >= 500) return 1;   // qualquer valor ≥ R$5 no plano entrada
+  return null;
+}
+
 function getRawBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -181,11 +190,13 @@ export default async function handler(req, res) {
     return res.status(200).json({ received: true, note: 'no_user_id' });
   }
 
-  const creditsToAdd = CREDIT_MAP[amountTotal];
+  const creditsToAdd = CREDIT_MAP[amountTotal] ?? inferCreditsFromAmount(amountTotal);
   if (!creditsToAdd) {
-    console.warn(`Webhook: unknown amount ${amountTotal} for session ${session.id}`);
-    // Fallback: tenta inferir pelo modo (produção vs teste com valores diferentes)
+    console.warn(`Webhook: unknown amount ${amountTotal} for session ${session.id} — could not infer credits`);
     return res.status(200).json({ received: true, note: 'unknown_amount' });
+  }
+  if (!CREDIT_MAP[amountTotal]) {
+    console.warn(`Webhook: amount ${amountTotal} not in CREDIT_MAP — inferred ${creditsToAdd} credits for session ${session.id}`);
   }
 
   // Idempotência: verifica se este session já foi processado

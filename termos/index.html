@@ -144,12 +144,7 @@ footer{text-align:center;padding:2rem;font-size:13px;color:var(--muted);border-t
     </ul>
 
     <h2>3. Compartilhamento de Dados</h2>
-    <p>Seus dados <strong>não são vendidos</strong> a terceiros. Compartilhamos apenas com:</p>
-    <ul>
-      <li><strong>Anthropic</strong> — para processar a análise via IA (sujeito à <a href="https://www.anthropic.com/privacy" target="_blank">política deles</a>)</li>
-      <li><strong>Supabase</strong> — armazenamento de dados (sujeito à <a href="https://supabase.com/privacy" target="_blank">política deles</a>)</li>
-      <li><strong>Stripe</strong> — processamento de pagamentos (sujeito à <a href="https://stripe.com/privacy" target="_blank">política deles</a>)</li>
-    </ul>
+    <p>Seus dados <strong>não são vendidos</strong> a terceiros. Quando necessário para o funcionamento do serviço, utilizamos parceiros de infraestrutura para processamento de análise, armazenamento de dados e processamento de pagamentos — todos sujeitos às suas respectivas políticas de privacidade.</p>
 
     <h2>4. Retenção de Dados</h2>
     <p>O conteúdo do currículo e da vaga é enviado para processamento e não é armazenado após a geração da análise. O histórico (score, nível, trecho da vaga) é mantido enquanto sua conta estiver ativa.</p>
@@ -182,12 +177,22 @@ footer{text-align:center;padding:2rem;font-size:13px;color:var(--muted);border-t
 <script>
 function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')==='light';if(l){document.documentElement.removeAttribute('data-theme');localStorage.setItem('vagaai_theme','dark')}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('vagaai_theme','light')}var b=document.getElementById('themeBtn');if(b)b.textContent=l?'☀️':'🌙'}
 ;(function(){var b=document.getElementById('themeBtn');if(b)b.textContent=document.documentElement.getAttribute('data-theme')==='light'?'🌙':'☀️'})();
-function showTab(id) {
+function showTab(id, fromHash) {
   document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
   document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
   document.getElementById(id).classList.add('active');
-  event.target.classList.add('active');
+  // Ativa a aba correta pelo índice (0 = termos, 1 = privacidade)
+  var tabs = document.querySelectorAll('.tab');
+  var idx = id === 'privacidade' ? 1 : 0;
+  if (tabs[idx]) tabs[idx].classList.add('active');
+  if (!fromHash && event && event.target) event.target.classList.add('active');
 }
+// Suporte a deep link: /termos#privacidade abre aba de privacidade
+(function() {
+  if (window.location.hash === '#privacidade') {
+    showTab('privacidade', true);
+  }
+})();
 </script>
 </body>
 </html>

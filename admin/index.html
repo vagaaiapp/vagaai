@@ -9,6 +9,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// Redirect early: show nothing until auth is confirmed
+document.documentElement.style.visibility = 'hidden';
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -350,6 +354,8 @@ async function init() {
   if (!session) { window.location.href = '/login'; return; }
   if (!ADMIN_EMAILS.includes(session.user.email)) { window.location.href = '/dashboard'; return; }
 
+  // Auth ok — exibe a página
+  document.documentElement.style.visibility = '';
   document.getElementById('pageLoading').classList.add('hidden');
   document.getElementById('mainContent').style.display = 'block';
 
