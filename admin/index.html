@@ -142,6 +142,36 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
 /* PAGINATION */
 .tbl-footer{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;background:var(--surface2);border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
+
+/* GA4 TRAFFIC */
+.ga4-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.25rem}
+@media(max-width:900px){.ga4-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.ga4-grid{grid-template-columns:1fr}}
+.ga4-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem}
+.ga4-card-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.ga4-card-value{font-family:'Lora',serif;font-size:26px;font-weight:700;line-height:1;color:var(--text)}
+.ga4-card-delta{font-size:11px;margin-top:.3rem}
+.ga4-card-delta.up{color:var(--green)}
+.ga4-card-delta.down{color:var(--red)}
+.ga4-card-delta.neutral{color:var(--muted)}
+.ga4-funnel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.5rem}
+.ga4-funnel-row{display:flex;align-items:center;gap:.75rem;margin-bottom:.6rem}
+.ga4-funnel-row:last-child{margin-bottom:0}
+.ga4-funnel-label{font-size:12px;color:var(--muted);width:160px;flex-shrink:0}
+.ga4-funnel-bar-wrap{flex:1;background:var(--surface2);border-radius:4px;height:20px;overflow:hidden}
+.ga4-funnel-bar{height:100%;background:var(--green);border-radius:4px;transition:width .6s ease;min-width:2px}
+.ga4-funnel-count{font-size:12px;font-weight:600;color:var(--text);width:50px;text-align:right;flex-shrink:0}
+.ga4-funnel-pct{font-size:11px;color:var(--muted);width:36px;text-align:right;flex-shrink:0}
+.ga4-two-col{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+@media(max-width:700px){.ga4-two-col{grid-template-columns:1fr}}
+.ga4-pages{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.5rem}
+.ga4-page-row{display:flex;align-items:center;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:13px}
+.ga4-page-row:last-child{border-bottom:none}
+.ga4-page-path{color:var(--text);font-family:monospace;font-size:12px}
+.ga4-page-views{color:var(--muted);font-size:12px}
+.ga4-loading{text-align:center;padding:2rem;color:var(--muted);font-size:13px}
+.ga4-error{text-align:center;padding:1.5rem;color:var(--muted);font-size:13px}
+.ga4-not-configured{background:var(--surface);border:1px dashed var(--border);border-radius:12px;padding:2rem;text-align:center;color:var(--muted);font-size:13px}
 </style>
 <script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
 </head>
@@ -219,6 +249,16 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
     <div class="chart-box">
       <div class="chart-area" id="chartArea"></div>
+    </div>
+  </div>
+
+  <!-- GA4 TRAFFIC SECTION -->
+  <div class="section" id="ga4Section">
+    <div class="section-header">
+      <div class="section-title">Tráfego — últimos 30 dias <span style="font-size:10px;color:var(--green);background:var(--green-dim);border:1px solid var(--green-border);border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:middle">GA4</span></div>
+    </div>
+    <div id="ga4Content">
+      <div class="ga4-loading">Carregando dados de tráfego…</div>
     </div>
   </div>
 
@@ -373,9 +413,12 @@ async function loadData(tokenOverride) {
   hideError();
 
   try {
-    var res = await fetch('/api/admin', {
-      headers: { Authorization: 'Bearer ' + token }
-    });
+    // Carrega admin e GA4 em paralelo
+    var [res, ga4Res] = await Promise.all([
+      fetch('/api/admin', { headers: { Authorization: 'Bearer ' + token } }),
+      fetch('/api/ga4',   { headers: { Authorization: 'Bearer ' + token } }),
+    ]);
+
     if (!res.ok) {
       var err = await res.json().catch(function(){ return {}; });
       showError(err.error || 'Erro ao carregar dados. Status: ' + res.status);
@@ -383,11 +426,84 @@ async function loadData(tokenOverride) {
     }
     _data = await res.json();
     render(_data);
+
+    // GA4 — não bloqueia o admin se falhar
+    if (ga4Res.ok) {
+      var ga4Data = await ga4Res.json();
+      renderGA4(ga4Data);
+    } else {
+      var ga4Err = await ga4Res.json().catch(function(){ return {}; });
+      renderGA4Error(ga4Err.error || 'GA4 indisponível');
+    }
   } catch(e) {
     showError('Falha na requisição: ' + e.message);
   } finally {
     if (btn) btn.classList.remove('spinning');
   }
+}
+
+// ─── GA4 render ───────────────────────────────────────────────────────────────
+
+function fmtDuration(seconds) {
+  var m = Math.floor(seconds / 60);
+  var s = Math.round(seconds % 60);
+  return m + 'm ' + s + 's';
+}
+
+function ga4Delta(cur, prev) {
+  if (!prev) return '<span class="ga4-card-delta neutral">sem dado anterior</span>';
+  var diff = cur - prev;
+  var pct = prev > 0 ? Math.round((diff / prev) * 100) : 0;
+  var cls = diff >= 0 ? 'up' : 'down';
+  var arrow = diff >= 0 ? '↑' : '↓';
+  return '<span class="ga4-card-delta ' + cls + '">' + arrow + ' ' + Math.abs(pct) + '% vs mês anterior</span>';
+}
+
+function renderGA4(d) {
+  var o = d.overview || {};
+  var f = d.funnel || {};
+  var pages = d.pages || [];
+
+  var maxFunnel = Math.max(f.analyze_start || 1, 1);
+  function funnelBar(label, val, base) {
+    var pct = base > 0 ? Math.round((val / base) * 100) : 0;
+    var barW = Math.round((val / maxFunnel) * 100);
+    return '<div class="ga4-funnel-row">'
+      + '<div class="ga4-funnel-label">' + label + '</div>'
+      + '<div class="ga4-funnel-bar-wrap"><div class="ga4-funnel-bar" style="width:' + barW + '%"></div></div>'
+      + '<div class="ga4-funnel-count">' + val.toLocaleString('pt-BR') + '</div>'
+      + '<div class="ga4-funnel-pct">' + (base !== val ? pct + '%' : '—') + '</div>'
+      + '</div>';
+  }
+
+  var html = '<div class="ga4-grid">'
+    + '<div class="ga4-card"><div class="ga4-card-label">Usuários ativos</div><div class="ga4-card-value">' + (o.users||0).toLocaleString('pt-BR') + '</div>' + ga4Delta(o.users, o.users_prev) + '</div>'
+    + '<div class="ga4-card"><div class="ga4-card-label">Sessões</div><div class="ga4-card-value">' + (o.sessions||0).toLocaleString('pt-BR') + '</div>' + ga4Delta(o.sessions, o.sessions_prev) + '</div>'
+    + '<div class="ga4-card"><div class="ga4-card-label">Taxa de rejeição</div><div class="ga4-card-value">' + Math.round((o.bounce_rate||0)*100) + '%</div><span class="ga4-card-delta neutral">últimos 30 dias</span></div>'
+    + '<div class="ga4-card"><div class="ga4-card-label">Duração média</div><div class="ga4-card-value" style="font-size:22px">' + fmtDuration(o.avg_session||0) + '</div><span class="ga4-card-delta neutral">por sessão</span></div>'
+    + '</div>'
+    + '<div class="ga4-two-col">'
+    + '<div><div class="metric-label" style="margin-bottom:.75rem">Funil de conversão</div><div class="ga4-funnel">'
+    + funnelBar('Análise iniciada', f.analyze_start||0, f.analyze_start||0)
+    + funnelBar('Análise concluída', f.analyze_complete||0, f.analyze_start||1)
+    + funnelBar('Checkout iniciado', f.begin_checkout||0, f.analyze_start||1)
+    + funnelBar('CV baixado', f.cv_download||0, f.analyze_complete||1)
+    + '</div></div>'
+    + '<div><div class="metric-label" style="margin-bottom:.75rem">Top páginas</div><div class="ga4-pages">'
+    + (pages.length ? pages.map(function(p) {
+        return '<div class="ga4-page-row"><span class="ga4-page-path">' + p.path + '</span><span class="ga4-page-views">' + p.views.toLocaleString('pt-BR') + ' views</span></div>';
+      }).join('') : '<div style="color:var(--muted);font-size:13px;text-align:center;padding:1rem">Sem dados</div>')
+    + '</div></div>'
+    + '</div>';
+
+  document.getElementById('ga4Content').innerHTML = html;
+}
+
+function renderGA4Error(msg) {
+  var notConfigured = msg && msg.includes('env vars');
+  document.getElementById('ga4Content').innerHTML = notConfigured
+    ? '<div class="ga4-not-configured">⚙️ GA4 não configurado — adicione as variáveis de ambiente no Vercel para ativar.</div>'
+    : '<div class="ga4-error">Não foi possível carregar dados do GA4: ' + msg + '</div>';
 }
 
 function showError(msg) {
