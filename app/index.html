@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<!-- Google Analytics 4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XCT8K58VWF"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-XCT8K58VWF');</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VagaAI — Analisar minha vaga grátis</title>
@@ -418,7 +421,10 @@ textarea::placeholder{color:var(--muted)}
 </div>
 
 <script>
-function track(name,props){try{window.va&&window.va('event',Object.assign({name:name},props||{}))}catch(e){}}
+function track(name,props){
+  try{window.va&&window.va('event',Object.assign({name:name},props||{}))}catch(e){}
+  try{if(typeof gtag==='function'){gtag('event',name,props||{})}}catch(e){}
+}
 
 // ── Supabase auth ──────────────────────────────────────────────────────────
 var sb = window.supabase.createClient(
@@ -490,6 +496,7 @@ var PLANS = [
     badge: null,
     price: 'R$9',
     cents: ',90',
+    brl: 9.90,
     desc: 'Ideal para testar antes de aplicar de verdade.',
     url: 'https://buy.stripe.com/7sY5kD9tk5DzgdNf0P9k404',
     featured: false
@@ -499,6 +506,7 @@ var PLANS = [
     badge: 'Mais escolhido',
     price: 'R$39',
     cents: ',90',
+    brl: 39.90,
     desc: 'Para quem está em busca ativa e quer consistência.',
     url: 'https://buy.stripe.com/cNi4gz20Sc1XgdNf0P9k403',
     featured: true
@@ -508,6 +516,7 @@ var PLANS = [
     badge: null,
     price: 'R$97',
     cents: ',00',
+    brl: 97.00,
     desc: 'Melhor custo por candidatura. Créditos sem expiração.',
     url: 'https://buy.stripe.com/eVqbJ120S0jf3r16uj9k405',
     featured: false
@@ -520,7 +529,7 @@ function planCardHTML(p, btnClass) {
     + '<div class="upsell-plan-name">' + p.name + '</div>'
     + '<div class="upsell-plan-price">' + p.price + '<small>' + p.cents + '</small></div>'
     + '<div class="upsell-plan-desc">' + p.desc + '</div>'
-    + '<button class="upsell-plan-btn ' + (p.featured ? '' : 'ghost') + '" onclick="track(\'upsell_click\',{plan:\'' + p.name + '\'});window.open(\'' + p.url + '\',\'_blank\')">'
+    + '<button class="upsell-plan-btn ' + (p.featured ? '' : 'ghost') + '" onclick="track(\'begin_checkout\',{plan:\'' + p.name + '\',value:' + p.brl + ',currency:\'BRL\'});window.open(\'' + p.url + '\',\'_blank\')">'
     + (p.featured ? 'Começar agora' : 'Escolher') + '</button>'
     + '</div>';
 }
