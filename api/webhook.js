@@ -170,16 +170,32 @@ export default async function handler(req, res) {
   }
 
   // ── Mapeamento price_id → plano ──────────────────────────────────────────────
-  const PRICE_PLAN_MAP = {
-    // TEST mode — substituir por IDs live quando ativar live mode
-    'price_1Tf1HfHB7lmotVJh5IgNzspi': { plan: 'starter', billing: 'mensal' },
-    'price_1Tf1HhHB7lmotVJhGEYqS3ST': { plan: 'starter', billing: 'anual' },
-    'price_1Tf1HsHB7lmotVJhuEA9Fxc3': { plan: 'pro', billing: 'mensal' },
-    'price_1Tf1HuHB7lmotVJhoEmWpotx': { plan: 'pro', billing: 'anual' },
-  };
+  // Configure STRIPE_PRICE_* env vars com os IDs live para evitar mudança de código
+  const PRICE_PLAN_MAP = Object.fromEntries(
+    [
+      [process.env.STRIPE_PRICE_STARTER_MONTHLY || 'price_1Tf1HfHB7lmotVJh5IgNzspi', { plan: 'starter', billing: 'mensal' }],
+      [process.env.STRIPE_PRICE_STARTER_ANNUAL  || 'price_1Tf1HhHB7lmotVJhGEYqS3ST', { plan: 'starter', billing: 'anual' }],
+      [process.env.STRIPE_PRICE_PRO_MONTHLY     || 'price_1Tf1HsHB7lmotVJhuEA9Fxc3', { plan: 'pro', billing: 'mensal' }],
+      [process.env.STRIPE_PRICE_PRO_ANNUAL      || 'price_1Tf1HuHB7lmotVJhoEmWpotx', { plan: 'pro', billing: 'anual' }],
+    ].filter(([k]) => k)
+  );
 
   // ── Upsert subscription no Supabase ──────────────────────────────────────────
-  async function upsertSubscription(userId, stripeSubId, stripeCustomerId, plan, status, periodEnd) {
+  async function upsertSubscription(userId, stripeSubId, stripeCustomerId, plan, status, periodEnd, isNew = false) {
+    const now = new Date();
+    const body = {
+      user_id: userId,
+      stripe_subscription_id: stripeSubId,
+      stripe_customer_id: stripeCustomerId,
+      plan,
+      status,
+      current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+      updated_at: now.toISOString(),
+    };
+    if (isNew) {
+      body.analyses_used_this_month = 0;
+      body.analyses_reset_at = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
+    }
     await fetch(`${SUPABASE_URL}/rest/v1/subscriptions`, {
       method: 'POST',
       headers: {
@@ -188,15 +204,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
         Prefer: 'resolution=merge-duplicates,return=minimal',
       },
-      body: JSON.stringify({
-        user_id: userId,
-        stripe_subscription_id: stripeSubId,
-        stripe_customer_id: stripeCustomerId,
-        plan,
-        status,
-        current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
-        updated_at: new Date().toISOString(),
-      }),
+      body: JSON.stringify(body),
     });
   }
 
@@ -243,33 +251,13 @@ export default async function handler(req, res) {
       console.warn(`Webhook: no user found for customer ${customerId}`);
       return res.status(200).json({ received: true, note: 'no_user' });
     }
-    await upsertSubscription(userId, sub.id, customerId, planInfo.plan, sub.status, sub.current_period_end);
-    // Email de boas-vindas
-    if (eventType === 'customer.subscription.created' && RESEND_API_KEY && email) {
-      const planLabel = planInfo.plan === 'pro' ? 'Pro' : 'Starter';
-      fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          from: 'VagaAI <noreply@vagaai.app.br>',
-          to: [email],
-          subject: `✓ Plano ${planLabel} ativado — VagaAI`,
-          html: `<div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto;padding:2rem;background:#0a0f0d;color:#e8ede9;border-radius:12px">
-  <h1 style="color:#3ecf8e;font-size:22px;margin-bottom:.5rem">Plano ${planLabel} ativado! 🎉</h1>
-  <p style="color:#8a9e90;margin-bottom:1.5rem">Seu plano já está ativo. Aproveite todos os recursos disponíveis.</p>
-  <a href="https://www.vagaai.app.br/dashboard" style="display:inline-block;background:#3ecf8e;color:#0a0f0d;font-weight:700;padding:.8rem 1.5rem;border-radius:8px;text-decoration:none">→ Acessar meu painel</a>
-  <p style="color:#4d6e57;font-size:12px;margin-top:2rem">VagaAI · vagaai.app.br</p>
-</div>`,
-        }),
-      }).catch(e => console.error('Subscription welcome email error:', e.message));
-    }
-    // Email de boas-vindas ao plano
-    if (eventType === 'customer.subscription.created' && customerEmail) {
-      const planLabel = planInfo.plan === 'pro' ? 'Pro' : 'Starter';
-      fetch(`${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'https://www.vagaai.app.br'}/api/onboarding-emails`, {
+    await upsertSubscription(userId, sub.id, customerId, planInfo.plan, sub.status, sub.current_period_end, eventType === 'customer.subscription.created');
+    // Email de boas-vindas (apenas na criação)
+    if (eventType === 'customer.subscription.created' && email) {
+      fetch(`https://www.vagaai.app.br/api/onboarding-emails`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${process.env.CRON_SECRET || 'vagaai-cron-secret-2026'}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: customerEmail, name: '', type: 'welcome' }),
+        body: JSON.stringify({ email, name: '', type: 'welcome' }),
       }).catch(() => {});
     }
     console.log(`Webhook: subscription ${sub.id} → plan=${planInfo.plan} user=${userId}`);

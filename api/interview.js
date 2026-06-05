@@ -23,7 +23,9 @@ async function getUserPlan(userId) {
       headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
     });
     const rows = await res.json();
-    return rows?.[0]?.plan || 'free';
+    const sub = rows?.[0];
+    if (!sub || sub.status !== 'active') return 'free';
+    return sub.plan || 'free';
   } catch { return 'free'; }
 }
 

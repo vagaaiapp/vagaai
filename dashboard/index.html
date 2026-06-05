@@ -533,9 +533,11 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
       </a>
       <a href="/entrevista" class="btn-nova-analise" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);margin-top:.5rem">
         🎯 Simulador de entrevista
+        <span style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:rgba(255,209,102,0.12);color:#ffd166;border:1px solid rgba(255,209,102,0.3);padding:1px 6px;border-radius:20px;margin-left:auto;flex-shrink:0">Pro</span>
       </a>
       <a href="/carta" class="btn-nova-analise" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);margin-top:.5rem">
         ✉️ Carta de apresentação
+        <span style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);padding:1px 6px;border-radius:20px;margin-left:auto;flex-shrink:0">Starter+</span>
       </a>
     </div>
     <div class="stat-card" style="display:flex;flex-direction:column;gap:.5rem">
@@ -871,7 +873,10 @@ function renderCurrentPlanCard() {
     + (legacyCredits > 0 ? '<br>' + legacyCredits + ' crédito' + (legacyCredits > 1 ? 's' : '') + ' avulso' + (legacyCredits > 1 ? 's' : '') + ' disponíve' + (legacyCredits > 1 ? 'is' : 'l') : '')
     + '</div>'
     + '</div>'
+    + '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:flex-end">'
     + (plan !== 'pro' ? '<button onclick="document.getElementById(\'plansRow\').scrollIntoView({behavior:\'smooth\'})" style="background:var(--green);color:#0a0f0d;border:none;border-radius:8px;font-family:Inter,sans-serif;font-size:13px;font-weight:700;padding:.5rem 1rem;cursor:pointer;white-space:nowrap">⚡ Fazer upgrade</button>' : '<span style="font-size:12px;color:var(--green);font-weight:600">✓ Plano máximo</span>')
+    + (plan !== 'free' ? '<button onclick="openStripePortal()" style="background:transparent;border:1px solid var(--border);border-radius:8px;font-family:Inter,sans-serif;font-size:12px;font-weight:600;color:var(--muted);padding:.4rem .8rem;cursor:pointer;white-space:nowrap;transition:all .15s" onmouseover="this.style.borderColor=\'rgba(255,255,255,.2)\';this.style.color=\'var(--text)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.color=\'var(--muted)\'">Gerenciar assinatura ↗</button>' : '')
+    + '</div>'
     + '</div>';
 
   var el = document.getElementById('currentPlanCard');
@@ -1865,6 +1870,23 @@ function nivelCSSClass(nivel) {
   if (n==='bom') return 'nivel-bom';
   if (n==='regular') return 'nivel-regular';
   return 'nivel-fraco';
+}
+async function openStripePortal() {
+  var btn = event && event.target;
+  if (btn) { btn.disabled = true; btn.textContent = 'Abrindo…'; }
+  try {
+    var res = await fetch('/api/stripe-portal', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + currentSession.access_token }
+    });
+    var data = await res.json();
+    if (data.url) { window.location.href = data.url; }
+    else { alert('Não foi possível abrir o portal. ' + (data.message || data.error || '')); }
+  } catch(e) {
+    alert('Erro ao conectar com o portal de assinatura. Tente novamente.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Gerenciar assinatura ↗'; }
+  }
 }
 async function logout() { await sb.auth.signOut(); window.location.href = '/'; }
 
