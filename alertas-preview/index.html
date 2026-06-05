@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VagaAI — Preview: Alertas de Vaga Compatível</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2f6f3;--surface:#fff;--surface2:#eaf0ec;--border:rgba(0,0,0,0.09);
+  --text:#0d1a11;--muted:#4d6e57;
+  --green:#1a8f5c;--green-dim:rgba(26,143,92,0.1);--green-border:rgba(26,143,92,0.25);
+  --red:#c0392b;--red-dim:rgba(192,57,43,0.08);--red-border:rgba(192,57,43,0.25);
+  --yellow:#b07d1a;--yellow-dim:rgba(176,125,26,0.08);--yellow-border:rgba(176,125,26,0.25);
+  --blue:#1a6fa8;--blue-dim:rgba(26,111,168,0.08);--blue-border:rgba(26,111,168,0.25);
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+
+/* NAV */
+nav{background:rgba(242,246,243,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-logo{font-family:'Lora',serif;font-weight:700;font-size:17px;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:.5rem}
+.nav-badge{font-size:9px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.preview-tag{font-size:11px;font-weight:600;background:var(--yellow-dim);border:1px solid var(--yellow-border);color:var(--yellow);padding:3px 10px;border-radius:20px}
+
+/* HERO */
+.hero{text-align:center;padding:3rem 1.5rem 2rem;max-width:700px;margin:0 auto}
+.hero h1{font-family:'Lora',serif;font-size:clamp(24px,4vw,36px);font-weight:700;margin-bottom:.5rem}
+.hero p{font-size:15px;color:var(--muted);margin-bottom:2rem}
+.hero-flow{display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap;font-size:12px;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:.6rem 1.2rem}
+.hero-flow span{color:var(--text)}
+.hero-flow .arrow{color:var(--green)}
+
+/* SECTION */
+.section{max-width:960px;margin:0 auto;padding:2rem 1.5rem}
+.section-badge{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);display:inline-flex;align-items:center;gap:.4rem;margin-bottom:.5rem}
+.section-badge::before{content:'';display:inline-block;width:3px;height:14px;background:var(--green);border-radius:2px}
+.section-title{font-family:'Lora',serif;font-size:clamp(18px,3vw,24px);font-weight:700;margin-bottom:.4rem}
+.section-sub{font-size:13px;color:var(--muted);margin-bottom:1.5rem}
+.divider{height:1px;background:var(--border);max-width:960px;margin:0 auto}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.card-header{background:var(--surface2);border-bottom:1px solid var(--border);padding:.75rem 1.2rem;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;justify-content:space-between}
+.card-body{padding:1.4rem}
+.browser-bar{background:#e8e8e8;padding:.5rem 1rem;display:flex;align-items:center;gap:.6rem;border-bottom:1px solid #d0d0d0}
+.browser-dots{display:flex;gap:.35rem}
+.browser-dot{width:10px;height:10px;border-radius:50%}
+.browser-url{flex:1;background:#fff;border-radius:4px;padding:.2rem .75rem;font-size:11px;color:#666;font-family:monospace}
+
+/* ── TELA 1: CONFIGURAR PERFIL ── */
+.profile-form{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:600px){.profile-form{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:.35rem}
+.field label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.field input,.field select,.field textarea{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:.6rem .85rem;width:100%}
+.field input:focus,.field select:focus{outline:none;border-color:var(--green-border)}
+.field-full{grid-column:1/-1}
+.keywords-input-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.5rem .75rem;display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;min-height:42px;cursor:text}
+.kw-tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);display:inline-flex;align-items:center;gap:.3rem}
+.kw-tag-x{cursor:pointer;opacity:.6;font-size:13px}
+.kw-tag-x:hover{opacity:1}
+.kw-input{background:transparent;border:none;outline:none;font-family:'Inter',sans-serif;font-size:12px;color:var(--text);min-width:80px;flex:1}
+.alert-toggle{display:flex;align-items:center;gap:.8rem;padding:.9rem;background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px;margin-top:.5rem}
+.toggle-sw{width:38px;height:20px;background:var(--green);border-radius:10px;position:relative;cursor:pointer;flex-shrink:0}
+.toggle-sw::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:2px;left:18px;transition:transform .2s}
+.toggle-label{font-size:13px;font-weight:600;color:var(--green);flex:1}
+.toggle-sub{font-size:11px;color:var(--muted)}
+.freq-options{display:flex;gap:.5rem;margin-top:.5rem}
+.freq-btn{flex:1;padding:.45rem;border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;text-align:center;transition:all .15s;background:transparent;color:var(--muted)}
+.freq-btn.active{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.btn-save{background:var(--green);color:#fff;border:none;border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:.7rem 1.4rem;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.4rem;margin-top:1rem}
+.btn-save:hover{opacity:.88}
+.preview-count{font-size:13px;color:var(--muted);margin-top:1rem;padding:.75rem 1rem;background:var(--blue-dim);border:1px solid var(--blue-border);border-radius:8px;display:flex;align-items:center;gap:.6rem}
+
+/* ── TELA 2: EMAIL ── */
+.email-wrap{border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;font-family:Arial,sans-serif;max-width:600px;margin:0 auto}
+.email-header-bar{background:#f5f5f5;padding:.75rem 1.2rem;border-bottom:1px solid #e0e0e0;font-size:12px;color:#666}
+.email-header-bar strong{color:#333}
+.email-body{padding:0}
+.email-top{background:#0a1a10;padding:2rem;text-align:center}
+.email-logo{font-family:'Lora',serif;font-size:22px;font-weight:700;color:#3ecf8e;margin-bottom:.3rem}
+.email-tagline{font-size:12px;color:rgba(62,207,142,.6)}
+.email-content{padding:1.5rem}
+.email-greeting{font-size:15px;font-weight:700;color:#111;margin-bottom:.3rem}
+.email-intro{font-size:13px;color:#555;margin-bottom:1.2rem;line-height:1.6}
+.email-vaga{border:1px solid #e8f5ee;border-radius:10px;padding:1rem;margin-bottom:.75rem;background:#fff;display:flex;gap:.85rem}
+.email-vaga-logo{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px}
+.email-vaga-info{flex:1}
+.email-vaga-company{font-size:12px;font-weight:700;color:#111;margin-bottom:.1rem}
+.email-vaga-role{font-size:13px;font-weight:700;color:#1a8f5c;margin-bottom:.25rem}
+.email-vaga-meta{font-size:11px;color:#888;margin-bottom:.5rem}
+.email-stars{color:#f0a500;font-size:12px;margin-bottom:.4rem}
+.email-vaga-btn{display:inline-block;background:#1a8f5c;color:#fff;font-size:12px;font-weight:700;padding:.4rem .9rem;border-radius:6px;text-decoration:none}
+.email-divider{height:1px;background:#eee;margin:.75rem 0}
+.email-footer{background:#f9f9f9;padding:1rem 1.5rem;text-align:center;font-size:11px;color:#aaa;border-top:1px solid #eee}
+.email-footer a{color:#1a8f5c;text-decoration:none}
+
+/* ── TELA 3: APP PRÉ-PREENCHIDO ── */
+.app-preview{padding:1.5rem}
+.app-notice{background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px;padding:.75rem 1rem;font-size:13px;color:var(--green);display:flex;align-items:center;gap:.6rem;margin-bottom:1.2rem;font-weight:600}
+.app-field{background:var(--surface2);border:1px solid var(--green-border);border-radius:10px;padding:1rem;margin-bottom:.75rem;font-size:13px;color:var(--text);line-height:1.6;min-height:90px;position:relative}
+.app-field-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--green);margin-bottom:.4rem}
+.app-field-text{color:var(--muted);font-size:12px;line-height:1.5}
+.app-field-badge{position:absolute;top:.75rem;right:.75rem;font-size:10px;font-weight:700;background:var(--green);color:#fff;padding:1px 7px;border-radius:20px}
+.btn-analyze-preview{width:100%;background:var(--green);color:#fff;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;padding:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem}
+
+/* ── TELA 4: GERENCIAR ALERTAS ── */
+.alert-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.alert-card-info{flex:1}
+.alert-card-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:.2rem}
+.alert-card-meta{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.alert-card-actions{display:flex;align-items:center;gap:.6rem;flex-shrink:0}
+.badge{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1px solid}
+.badge.green{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.badge.yellow{background:var(--yellow-dim);color:var(--yellow);border-color:var(--yellow-border)}
+.alert-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1rem}
+.alert-stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem;text-align:center}
+.alert-stat-val{font-family:'Lora',serif;font-size:22px;font-weight:700;color:var(--green)}
+.alert-stat-label{font-size:11px;color:var(--muted)}
+.hist-item{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-bottom:1px solid var(--border)}
+.hist-item:last-child{border-bottom:none}
+.hist-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.hist-info{flex:1;font-size:12px}
+.hist-date{font-size:11px;color:var(--muted)}
+.btn-sm{font-size:12px;font-weight:600;padding:.35rem .75rem;border-radius:7px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Inter',sans-serif;transition:all .15s}
+.btn-sm:hover{border-color:var(--green-border);color:var(--green)}
+.btn-sm.danger:hover{border-color:var(--red-border);color:var(--red)}
+
+/* ── TELA 5: MOBILE EMAIL ── */
+.mobile-wrap{max-width:375px;margin:0 auto;background:#fff;border-radius:20px;overflow:hidden;border:8px solid #111;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.mobile-status{background:#111;color:#fff;font-size:11px;font-weight:600;padding:.4rem 1rem;display:flex;justify-content:space-between}
+.mobile-notif{background:#fff;padding:1rem;display:flex;align-items:flex-start;gap:.75rem;border-bottom:1px solid #f0f0f0}
+.mobile-notif-icon{width:40px;height:40px;border-radius:10px;background:#0a1a10;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.mobile-notif-content{flex:1}
+.mobile-notif-app{font-size:11px;color:#888;font-weight:600;margin-bottom:.1rem}
+.mobile-notif-title{font-size:13px;font-weight:700;color:#111;margin-bottom:.2rem}
+.mobile-notif-body{font-size:12px;color:#555;line-height:1.4}
+.mobile-notif-time{font-size:11px;color:#aaa;margin-top:.3rem}
+
+/* TABS */
+.preview-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:1.5rem;overflow-x:auto}
+.preview-tab{padding:.6rem 1.1rem;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .2s}
+.preview-tab.active{color:var(--green);border-bottom-color:var(--green)}
+
+.screen{display:none}
+.screen.active{display:block}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">VagaAI <span class="nav-badge">Preview</span></a>
+  <span class="preview-tag">⚡ Protótipo completo — Alertas de Vaga</span>
+</nav>
+
+<div class="hero">
+  <div class="section-badge">Nova funcionalidade</div>
+  <h1>Alertas de Vaga Compatível</h1>
+  <p>Veja como ficaria cada parte da experiência — do perfil ao email, do clique à análise.</p>
+  <div class="hero-flow">
+    <span>1. Configurar perfil</span>
+    <span class="arrow">→</span>
+    <span>2. Receber email</span>
+    <span class="arrow">→</span>
+    <span>3. Analisar vaga</span>
+    <span class="arrow">→</span>
+    <span>4. Rastrear candidatura</span>
+  </div>
+</div>
+
+<!-- TABS DE NAVEGAÇÃO -->
+<div class="section" style="padding-bottom:0">
+  <div class="preview-tabs">
+    <div class="preview-tab active" onclick="showScreen(1,this)">① Configurar perfil</div>
+    <div class="preview-tab" onclick="showScreen(2,this)">② Email recebido</div>
+    <div class="preview-tab" onclick="showScreen(3,this)">③ Notificação mobile</div>
+    <div class="preview-tab" onclick="showScreen(4,this)">④ App pré-preenchido</div>
+    <div class="preview-tab" onclick="showScreen(5,this)">⑤ Gerenciar alertas</div>
+  </div>
+</div>
+
+<!-- ══ SCREEN 1: CONFIGURAR PERFIL ══════════════════════════════════════════ -->
+<div class="screen active" id="screen-1">
+<div class="section">
+  <div class="section-badge">No dashboard → Aba "Alertas"</div>
+  <div class="section-title">Configurar meu alerta de vagas</div>
+  <div class="section-sub">O usuário preenche uma vez. A partir daí o sistema trabalha por ele.</div>
+
+  <div class="card">
+    <div class="card-header">
+      <span>⚡ Meu perfil de alerta</span>
+      <span class="badge green">Ativo</span>
+    </div>
+    <div class="card-body">
+      <div class="profile-form">
+        <div class="field">
+          <label>Cargo desejado</label>
+          <input type="text" value="Desenvolvedor Front-end" placeholder="Ex: Designer UX, Analista de Dados...">
+        </div>
+        <div class="field">
+          <label>Nível</label>
+          <select>
+            <option>Qualquer nível</option>
+            <option>Júnior</option>
+            <option selected>Pleno</option>
+            <option>Sênior</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Localização</label>
+          <input type="text" value="São Paulo, SP" placeholder="Ex: Remoto, Rio de Janeiro...">
+        </div>
+        <div class="field">
+          <label>Salário mínimo (R$)</label>
+          <input type="number" value="8000" placeholder="Ex: 5000">
+        </div>
+        <div class="field field-full">
+          <label>Keywords do seu perfil</label>
+          <div class="keywords-input-wrap">
+            <span class="kw-tag">React <span class="kw-tag-x">×</span></span>
+            <span class="kw-tag">TypeScript <span class="kw-tag-x">×</span></span>
+            <span class="kw-tag">Node.js <span class="kw-tag-x">×</span></span>
+            <span class="kw-tag">AWS <span class="kw-tag-x">×</span></span>
+            <input class="kw-input" placeholder="Adicionar skill... (Enter)">
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:.3rem">Adicione as tecnologias e habilidades do seu CV para melhorar a compatibilidade</div>
+        </div>
+        <div class="field field-full">
+          <label>Frequência dos alertas</label>
+          <div class="freq-options">
+            <button class="freq-btn">Diário</button>
+            <button class="freq-btn active">Semanal (sexta-feira)</button>
+            <button class="freq-btn">Quinzenal</button>
+          </div>
+        </div>
+        <div class="field field-full">
+          <div class="alert-toggle">
+            <div class="toggle-sw"></div>
+            <div>
+              <div class="toggle-label">Alertas ativos</div>
+              <div class="toggle-sub">Você receberá vagas toda sexta às 8h no seu e-mail</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="preview-count">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Com esse perfil, estimamos <strong style="color:var(--blue)">&nbsp;12–18 vagas compatíveis/semana&nbsp;</strong> disponíveis na sua região.
+      </div>
+      <button class="btn-save">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Salvar perfil de alerta
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ SCREEN 2: EMAIL ═══════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-2">
+<div class="section">
+  <div class="section-badge">Email recebido toda sexta às 8h</div>
+  <div class="section-title">Prévia do email de alertas</div>
+  <div class="section-sub">Exatamente como o usuário veria na caixa de entrada.</div>
+
+  <div class="card">
+    <div class="browser-bar">
+      <div class="browser-dots">
+        <div class="browser-dot" style="background:#ff5f57"></div>
+        <div class="browser-dot" style="background:#febc2e"></div>
+        <div class="browser-dot" style="background:#28c840"></div>
+      </div>
+      <div class="browser-url">📧 Gmail — 🎯 5 vagas novas compatíveis com seu perfil</div>
+    </div>
+    <div class="email-wrap" style="border:none;border-radius:0">
+      <div class="email-header-bar">
+        <div><strong>De:</strong> VagaAI &lt;alertas@vagaai.app.br&gt;</div>
+        <div><strong>Para:</strong> vitu@email.com</div>
+        <div><strong>Assunto:</strong> 🎯 5 vagas novas compatíveis com seu perfil</div>
+        <div><strong>Data:</strong> Sexta-feira, 6 de jun · 08:03</div>
+      </div>
+      <div class="email-body">
+        <div class="email-top">
+          <div class="email-logo">VagaAI</div>
+          <div class="email-tagline">Seu copiloto para conseguir o emprego</div>
+        </div>
+        <div class="email-content">
+          <div class="email-greeting">Olá, Vitu! 👋</div>
+          <div class="email-intro">Encontramos <strong>5 vagas novas</strong> compatíveis com o seu perfil de <strong>Desenvolvedor Front-end Pleno</strong> em São Paulo. Clique em "Analisar" para ver o score ATS completo antes de candidatar.</div>
+
+          <!-- Vaga 1 -->
+          <div class="email-vaga">
+            <div class="email-vaga-logo" style="background:#820AD1">N</div>
+            <div class="email-vaga-info">
+              <div class="email-vaga-company">Nubank</div>
+              <div class="email-vaga-role">Frontend Engineer — Pleno</div>
+              <div class="email-vaga-meta">📍 São Paulo (Híbrido) · 💰 R$9.000–14.000</div>
+              <div class="email-stars">★★★★☆ <span style="color:#888;font-size:11px">Alta compatibilidade estimada</span></div>
+              <a href="#" class="email-vaga-btn">⚡ Analisar essa vaga →</a>
+            </div>
+          </div>
+
+          <!-- Vaga 2 -->
+          <div class="email-vaga">
+            <div class="email-vaga-logo" style="background:#EA1D2C">i</div>
+            <div class="email-vaga-info">
+              <div class="email-vaga-company">iFood</div>
+              <div class="email-vaga-role">Desenvolvedor React Pleno</div>
+              <div class="email-vaga-meta">📍 Remoto · 💰 R$8.000–12.000</div>
+              <div class="email-stars">★★★★☆ <span style="color:#888;font-size:11px">Alta compatibilidade estimada</span></div>
+              <a href="#" class="email-vaga-btn">⚡ Analisar essa vaga →</a>
+            </div>
+          </div>
+
+          <!-- Vaga 3 -->
+          <div class="email-vaga">
+            <div class="email-vaga-logo" style="background:#FFE600;color:#333">ML</div>
+            <div class="email-vaga-info">
+              <div class="email-vaga-company">Mercado Livre</div>
+              <div class="email-vaga-role">Frontend Developer — React/TypeScript</div>
+              <div class="email-vaga-meta">📍 São Paulo · 💰 R$10.000–16.000</div>
+              <div class="email-stars">★★★☆☆ <span style="color:#888;font-size:11px">Média compatibilidade estimada</span></div>
+              <a href="#" class="email-vaga-btn">⚡ Analisar essa vaga →</a>
+            </div>
+          </div>
+
+          <!-- Vaga 4 -->
+          <div class="email-vaga">
+            <div class="email-vaga-logo" style="background:#21C25E">PP</div>
+            <div class="email-vaga-info">
+              <div class="email-vaga-company">PicPay</div>
+              <div class="email-vaga-role">Engenheiro Frontend Pleno</div>
+              <div class="email-vaga-meta">📍 Remoto · 💰 R$9.000–13.000</div>
+              <div class="email-stars">★★★☆☆ <span style="color:#888;font-size:11px">Média compatibilidade estimada</span></div>
+              <a href="#" class="email-vaga-btn">⚡ Analisar essa vaga →</a>
+            </div>
+          </div>
+
+          <!-- Vaga 5 -->
+          <div class="email-vaga">
+            <div class="email-vaga-logo" style="background:#0061FF">C</div>
+            <div class="email-vaga-info">
+              <div class="email-vaga-company">Creditas</div>
+              <div class="email-vaga-role">React Developer — Pleno/Sênior</div>
+              <div class="email-vaga-meta">📍 São Paulo (Presencial) · 💰 R$8.500–12.000</div>
+              <div class="email-stars">★★★☆☆ <span style="color:#888;font-size:11px">Média compatibilidade estimada</span></div>
+              <a href="#" class="email-vaga-btn">⚡ Analisar essa vaga →</a>
+            </div>
+          </div>
+
+          <div class="email-divider"></div>
+          <div style="text-align:center;font-size:12px;color:#888;line-height:1.6">
+            Estas são compatibilidades <em>estimadas</em>. Clique em "Analisar" para ver o score ATS real do seu currículo.<br><br>
+            <a href="#" style="color:#1a8f5c;font-weight:600">Gerenciar alertas</a> &nbsp;·&nbsp; <a href="#" style="color:#aaa">Cancelar inscrição</a>
+          </div>
+        </div>
+        <div class="email-footer">
+          © 2026 VagaAI · <a href="#">vagaai.app.br</a> · São Paulo, Brasil
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ SCREEN 3: MOBILE ══════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-3">
+<div class="section">
+  <div class="section-badge">Notificação push / mobile</div>
+  <div class="section-title">Como aparece no celular</div>
+  <div class="section-sub">Notificação no iOS/Android quando o email chega.</div>
+
+  <div style="display:flex;gap:2rem;flex-wrap:wrap;align-items:flex-start;justify-content:center">
+
+    <!-- Notificação na tela bloqueada -->
+    <div>
+      <div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:.75rem;font-weight:600">📱 Tela bloqueada</div>
+      <div class="mobile-wrap">
+        <div class="mobile-status">
+          <span>9:41</span>
+          <span>🔋 ▶</span>
+        </div>
+        <div style="background:#1a1a2e;padding:2rem 1.5rem;text-align:center;min-height:140px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.4rem">
+          <div style="font-size:32px;font-weight:200;color:#fff">09:41</div>
+          <div style="font-size:14px;color:rgba(255,255,255,.6)">Sexta-feira, 6 de junho</div>
+        </div>
+        <div class="mobile-notif">
+          <div class="mobile-notif-icon">🎯</div>
+          <div class="mobile-notif-content">
+            <div class="mobile-notif-app">VagaAI</div>
+            <div class="mobile-notif-title">5 vagas novas para você!</div>
+            <div class="mobile-notif-body">Nubank, iFood e mais 3 empresas têm vagas compatíveis com seu perfil. Analise agora.</div>
+            <div class="mobile-notif-time">agora</div>
+          </div>
+        </div>
+        <div style="background:#f5f5f5;padding:1rem;text-align:center;font-size:11px;color:#aaa">deslize para cima para desbloquear</div>
+      </div>
+    </div>
+
+    <!-- Email aberto no mobile -->
+    <div>
+      <div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:.75rem;font-weight:600">📧 Email aberto</div>
+      <div class="mobile-wrap">
+        <div class="mobile-status">
+          <span>9:43</span>
+          <span>🔋 ▶</span>
+        </div>
+        <div style="background:#f5f5f5;padding:.6rem 1rem;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid #e0e0e0">
+          <span style="font-size:18px">←</span>
+          <span style="font-size:12px;font-weight:600;color:#333;flex:1">Gmail</span>
+          <span style="font-size:12px;color:#666">⋯</span>
+        </div>
+        <div style="padding:.75rem;background:#fff;overflow:hidden">
+          <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:.3rem">🎯 5 vagas novas compatíveis</div>
+          <div style="font-size:11px;color:#888;margin-bottom:.75rem">VagaAI · hoje 08:03</div>
+          <div style="background:#0a1a10;padding:.75rem;border-radius:8px;text-align:center;margin-bottom:.75rem">
+            <div style="font-family:'Lora',serif;font-size:16px;font-weight:700;color:#3ecf8e">VagaAI</div>
+          </div>
+          <div style="font-size:12px;color:#333;margin-bottom:.75rem;line-height:1.5"><strong>Olá, Vitu!</strong> Encontramos 5 vagas compatíveis com Dev Front-end Pleno em SP.</div>
+          <div style="border:1px solid #e8f5ee;border-radius:8px;padding:.75rem;margin-bottom:.5rem">
+            <div style="font-size:11px;font-weight:700;color:#820AD1">Nubank</div>
+            <div style="font-size:12px;font-weight:700;color:#1a8f5c;margin:.1rem 0">Frontend Engineer — Pleno</div>
+            <div style="font-size:11px;color:#888;margin-bottom:.4rem">São Paulo · R$9k–14k · ★★★★☆</div>
+            <a href="#" style="display:inline-block;background:#1a8f5c;color:#fff;font-size:11px;font-weight:700;padding:.35rem .75rem;border-radius:5px;text-decoration:none">⚡ Analisar →</a>
+          </div>
+          <div style="font-size:11px;color:#aaa;text-align:center">+ 4 mais vagas no email completo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ SCREEN 4: APP PRÉ-PREENCHIDO ═════════════════════════════════════════ -->
+<div class="screen" id="screen-4">
+<div class="section">
+  <div class="section-badge">Ao clicar "Analisar essa vaga →" no email</div>
+  <div class="section-title">App com vaga pré-carregada</div>
+  <div class="section-sub">O usuário clica no email e chega no /app com a vaga já preenchida. Só precisa clicar em "Analisar".</div>
+
+  <div class="card">
+    <div class="browser-bar">
+      <div class="browser-dots">
+        <div class="browser-dot" style="background:#ff5f57"></div>
+        <div class="browser-dot" style="background:#febc2e"></div>
+        <div class="browser-dot" style="background:#28c840"></div>
+      </div>
+      <div class="browser-url">vagaai.app.br/app?vaga=nubank-frontend-pleno-sp</div>
+    </div>
+    <div class="app-preview">
+      <div class="app-notice">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Vaga do alerta carregada automaticamente — Nubank · Frontend Engineer Pleno
+      </div>
+
+      <div class="app-field">
+        <div class="app-field-label">Descrição da vaga</div>
+        <div class="app-field-badge">Auto-preenchido ✓</div>
+        <div class="app-field-text">
+          <strong>Nubank — Frontend Engineer Pleno</strong><br>
+          São Paulo, SP · Híbrido · R$9.000–14.000<br><br>
+          Estamos buscando um(a) engenheiro(a) frontend com experiência em React, TypeScript e testes automatizados. Você vai trabalhar em nossos produtos financeiros usados por milhões de pessoas no Brasil e México...<br>
+          <span style="color:var(--green);font-weight:600">✓ Texto completo extraído da vaga (1.847 caracteres)</span>
+        </div>
+      </div>
+
+      <div class="app-field" style="border-color:var(--border)">
+        <div class="app-field-label">Seu currículo</div>
+        <div class="app-field-text" style="color:var(--muted)">Cole aqui o conteúdo do seu currículo ou envie um arquivo...</div>
+      </div>
+
+      <button class="btn-analyze-preview">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Analisar compatibilidade — 1 crédito
+      </button>
+
+      <div style="margin-top:1rem;padding:.75rem;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted);line-height:1.5">
+        💡 <strong>Como funciona:</strong> O texto da vaga foi extraído automaticamente a partir do link no email. Basta colar seu currículo e analisar.
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ SCREEN 5: GERENCIAR ALERTAS ══════════════════════════════════════════ -->
+<div class="screen" id="screen-5">
+<div class="section">
+  <div class="section-badge">Dashboard → Aba "Alertas"</div>
+  <div class="section-title">Gerenciar meus alertas</div>
+  <div class="section-sub">Histórico de emails enviados, vagas encontradas e configurações.</div>
+
+  <!-- Stats -->
+  <div class="alert-stat-row">
+    <div class="alert-stat">
+      <div class="alert-stat-val">23</div>
+      <div class="alert-stat-label">Vagas recebidas</div>
+    </div>
+    <div class="alert-stat">
+      <div class="alert-stat-val" style="color:var(--blue)">8</div>
+      <div class="alert-stat-label">Analisadas</div>
+    </div>
+    <div class="alert-stat">
+      <div class="alert-stat-val" style="color:var(--yellow)">3</div>
+      <div class="alert-stat-label">No rastreador</div>
+    </div>
+  </div>
+
+  <!-- Alerta ativo -->
+  <div style="margin-bottom:1rem">
+    <div class="section-title" style="font-size:15px;margin-bottom:.75rem">Meu alerta ativo</div>
+    <div class="alert-card">
+      <div class="alert-card-info">
+        <div class="alert-card-title">Desenvolvedor Front-end Pleno · São Paulo</div>
+        <div class="alert-card-meta">
+          <span>React, TypeScript, Node.js, AWS</span>
+          <span>·</span>
+          <span>Semanal (sextas)</span>
+          <span>·</span>
+          <span>R$8.000+ min.</span>
+        </div>
+      </div>
+      <div class="alert-card-actions">
+        <span class="badge green">● Ativo</span>
+        <button class="btn-sm">Editar</button>
+        <button class="btn-sm danger">Pausar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Histórico de envios -->
+  <div style="margin-bottom:1rem">
+    <div class="section-title" style="font-size:15px;margin-bottom:.75rem">Histórico de envios</div>
+    <div class="card">
+      <div class="hist-item">
+        <div class="hist-dot" style="background:var(--green)"></div>
+        <div class="hist-info">
+          <strong>6 de junho, 2026</strong> · 5 vagas enviadas · 3 analisadas
+        </div>
+        <div class="hist-date">Sexta-feira</div>
+      </div>
+      <div class="hist-item">
+        <div class="hist-dot" style="background:var(--green)"></div>
+        <div class="hist-info">
+          <strong>30 de maio, 2026</strong> · 7 vagas enviadas · 2 analisadas
+        </div>
+        <div class="hist-date">Sexta-feira</div>
+      </div>
+      <div class="hist-item">
+        <div class="hist-dot" style="background:var(--green)"></div>
+        <div class="hist-info">
+          <strong>23 de maio, 2026</strong> · 6 vagas enviadas · 1 analisada
+        </div>
+        <div class="hist-date">Sexta-feira</div>
+      </div>
+      <div class="hist-item">
+        <div class="hist-dot" style="background:var(--muted)"></div>
+        <div class="hist-info">
+          <strong>16 de maio, 2026</strong> · 5 vagas enviadas · 2 analisadas
+        </div>
+        <div class="hist-date">Sexta-feira</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Próximo envio -->
+  <div style="background:var(--green-dim);border:1px solid var(--green-border);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
+    <div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--green);margin-bottom:.2rem">Próximo envio</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text)">Sexta-feira, 13 de junho · 08:00</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:.1rem">Em 7 dias · estimativa de 5–10 novas vagas</div>
+    </div>
+    <button class="btn-save" style="margin-top:0">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Enviar agora (teste)
+    </button>
+  </div>
+</div>
+</div>
+
+<!-- RODAPÉ DE NAVEGAÇÃO -->
+<div style="text-align:center;padding:2rem;border-top:1px solid var(--border);margin-top:2rem">
+  <div style="font-size:13px;color:var(--muted);margin-bottom:1rem">Navegue pelas telas acima ou volte para outros previews</div>
+  <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap">
+    <a href="/kanban-preview" style="font-size:13px;font-weight:600;color:var(--green);text-decoration:none;border:1px solid var(--green-border);padding:.4rem .9rem;border-radius:20px">← Preview Kanban</a>
+    <a href="/rastreador-preview" style="font-size:13px;font-weight:600;color:var(--green);text-decoration:none;border:1px solid var(--green-border);padding:.4rem .9rem;border-radius:20px">← Preview Rastreador</a>
+    <a href="/dashboard" style="font-size:13px;font-weight:600;color:var(--green);text-decoration:none;border:1px solid var(--green-border);padding:.4rem .9rem;border-radius:20px">Ir para o dashboard →</a>
+  </div>
+</div>
+
+<script>
+function showScreen(n, tab) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.preview-tab').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById('screen-' + n).classList.add('active');
+  tab.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
