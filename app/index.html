@@ -391,6 +391,7 @@ textarea::placeholder{color:var(--muted)}
       <div class="score-info">
         <div class="score-nivel" id="scoreNivel" style="color:var(--green)"></div>
         <div class="score-resumo" id="scoreResumo"></div>
+        <div id="scoreBenchmark" style="display:none;background:var(--surface2);border-radius:8px;padding:.4rem .75rem;font-size:12px;margin-bottom:.6rem;display:none;align-items:center;gap:.5rem;flex-wrap:wrap"></div>
         <button class="btn-cv-inline" id="cvBtnInline" onclick="openCV()">
           <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
           Baixar CV Otimizado
@@ -924,6 +925,17 @@ function showResult(d) {
   document.getElementById('scoreNivel').style.color = color;
   document.getElementById('scoreNivel').textContent = d.nivel || '';
   document.getElementById('scoreResumo').textContent = d.resumo || '';
+
+  // Score comparativo
+  var bm = d._benchmark;
+  var benchEl = document.getElementById('scoreBenchmark');
+  if (bm && benchEl) {
+    var bmColor = score >= bm.threshold_entrevista ? 'var(--green)' : 'var(--yellow)';
+    var bmIcon = score >= bm.threshold_entrevista ? '✓' : '↑';
+    benchEl.style.display = 'flex';
+    benchEl.innerHTML = '<span style="font-size:11px;font-weight:700;color:' + bmColor + '">' + bmIcon + ' ' + bm.mensagem + '</span>'
+      + '<span style="font-size:10px;color:var(--muted);margin-left:auto;white-space:nowrap">Top ' + (100 - bm.percentil) + '%</span>';
+  }
 
   var isAnonymous = !authSession;
 

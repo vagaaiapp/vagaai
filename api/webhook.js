@@ -263,6 +263,15 @@ export default async function handler(req, res) {
         }),
       }).catch(e => console.error('Subscription welcome email error:', e.message));
     }
+    // Email de boas-vindas ao plano
+    if (eventType === 'customer.subscription.created' && customerEmail) {
+      const planLabel = planInfo.plan === 'pro' ? 'Pro' : 'Starter';
+      fetch(`${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'https://www.vagaai.app.br'}/api/onboarding-emails`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${process.env.CRON_SECRET || 'vagaai-cron-secret-2026'}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: customerEmail, name: '', type: 'welcome' }),
+      }).catch(() => {});
+    }
     console.log(`Webhook: subscription ${sub.id} → plan=${planInfo.plan} user=${userId}`);
     return res.status(200).json({ received: true, plan: planInfo.plan });
   }

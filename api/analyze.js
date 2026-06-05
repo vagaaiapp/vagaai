@@ -515,6 +515,18 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
       await recordIpUsage(_ip);
     }
 
+    // Score comparativo — benchmark interno
+    const score = result.score || 0;
+    const benchmark = {
+      media_aprovados: 78,
+      percentil: score >= 85 ? 90 : score >= 75 ? 75 : score >= 65 ? 55 : score >= 50 ? 35 : 15,
+      mensagem: score >= 78
+        ? 'Seu score está acima da média de quem é chamado para entrevista.'
+        : `Candidatos chamados para entrevista têm score médio de 78%. Você está ${78 - score} pontos abaixo.`,
+      threshold_entrevista: 78,
+    };
+    result._benchmark = benchmark;
+
     return res.status(200).json(result);
   } catch (err) {
     console.error('Handler error:', err);

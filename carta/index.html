@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VagaAI — Carta de Apresentação</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="/_vercel/insights/script.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0f0d;--surface:#111814;--surface2:#161d19;--border:rgba(255,255,255,0.07);--text:#e8ede9;--muted:#8a9e90;--green:#3ecf8e;--green-dim:rgba(62,207,142,0.12);--green-border:rgba(62,207,142,0.25);--red:#ff6b6b;--red-dim:rgba(255,107,107,0.12);--red-border:rgba(255,107,107,0.25);--yellow:#ffd166;--yellow-dim:rgba(255,209,102,0.12);--yellow-border:rgba(255,209,102,0.3)}
+[data-theme="light"]{--bg:#f2f6f3;--surface:#fff;--surface2:#eaf0ec;--border:rgba(0,0,0,.09);--text:#0d1a11;--muted:#4d6e57;--green:#1a8f5c;--green-dim:rgba(26,143,92,.1);--green-border:rgba(26,143,92,.25);--red:#c0392b;--red-dim:rgba(192,57,43,.08);--red-border:rgba(192,57,43,.25);--yellow:#b07d1a;--yellow-dim:rgba(176,125,26,.08);--yellow-border:rgba(176,125,26,.25)}
+[data-theme="light"] nav{background:rgba(242,246,243,0.95)!important}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-badge{font-size:9px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.nav-right{display:flex;align-items:center;gap:.75rem}
+.theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .2s}
+.theme-btn:hover{border-color:var(--green-border);color:var(--green)}
+.container{max-width:860px;margin:0 auto;padding:2rem 1.5rem 4rem}
+.page-title{font-family:'Lora',serif;font-size:clamp(22px,4vw,30px);font-weight:700;margin-bottom:.4rem}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:2rem}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.4rem}
+.card-title{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem}
+.field{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.9rem}
+.field label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+textarea,input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:.65rem .9rem;width:100%;transition:border-color .2s;line-height:1.6}
+textarea{resize:vertical}
+textarea:focus,input:focus{outline:none;border-color:var(--green-border)}
+textarea::placeholder,input::placeholder{color:var(--muted)}
+.tom-row{display:flex;gap:.5rem}
+.tom-btn{flex:1;padding:.5rem;border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;text-align:center;transition:all .15s;background:transparent;color:var(--muted)}
+.tom-btn.active{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.btn-generate{width:100%;background:var(--green);color:#0a0f0d;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;padding:.85rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:.5rem}
+.btn-generate:hover{background:#4ddb9e}
+.btn-generate:disabled{opacity:.5;cursor:not-allowed}
+.spinner{width:16px;height:16px;border:2px solid rgba(10,15,13,.3);border-top-color:#0a0f0d;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.result-card{display:none}
+.result-card.show{display:block}
+.letter-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:.5rem}
+.letter-title{font-size:13px;font-weight:700;color:var(--text)}
+.letter-actions{display:flex;gap:.5rem}
+.btn-copy,.btn-download{font-size:12px;font-weight:600;padding:.35rem .75rem;border-radius:7px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Inter',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:.35rem}
+.btn-copy:hover,.btn-download:hover{border-color:var(--green-border);color:var(--green)}
+.subject-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.65rem .9rem;font-size:12px;color:var(--muted);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.subject-box strong{color:var(--text)}
+.letter-text{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1.2rem;font-size:14px;line-height:1.8;color:var(--text);white-space:pre-line;min-height:200px}
+.highlights-wrap{margin-top:.9rem}
+.highlights-title{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.highlight-tag{display:inline-flex;align-items:center;gap:.3rem;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);margin:.2rem .2rem 0 0}
+.word-count{font-size:11px;color:var(--muted);margin-top:.5rem;text-align:right}
+.error-box{background:var(--red-dim);border:1px solid var(--red-border);border-radius:8px;padding:.75rem 1rem;color:#ff8f8f;font-size:13px;margin-top:.75rem;display:none}
+.error-box.show{display:block}
+.pro-gate{background:var(--surface);border:1px solid var(--yellow-border,rgba(255,209,102,0.3));border-radius:14px;padding:2.5rem 2rem;text-align:center}
+.pro-gate-icon{font-size:48px;margin-bottom:1rem}
+.pro-gate-title{font-family:'Lora',serif;font-size:22px;font-weight:700;margin-bottom:.5rem}
+.pro-gate-sub{font-size:14px;color:var(--muted);margin-bottom:1.5rem}
+.pro-gate-btn{display:inline-block;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;padding:.85rem 1.8rem;border-radius:10px;text-decoration:none}
+.copied-toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--green);color:#0a0f0d;font-size:13px;font-weight:700;padding:.65rem 1.3rem;border-radius:8px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none}
+.copied-toast.show{opacity:1}
+</style>
+<script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="/logo.svg" alt="VagaAI" height="38" onerror="this.style.display='none'">
+    <span class="nav-badge">Carta</span>
+  </a>
+  <div class="nav-right">
+    <a href="/dashboard" style="font-size:13px;color:var(--muted);text-decoration:none;font-weight:600">← Painel</a>
+    <button class="theme-btn" onclick="toggleTheme()">☀️</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- PRO GATE -->
+  <div id="gateSection" style="display:none">
+    <div class="pro-gate">
+      <div class="pro-gate-icon">✉️</div>
+      <div class="pro-gate-title">Carta de Apresentação com IA</div>
+      <p class="pro-gate-sub">Gere uma carta personalizada para cada vaga em segundos. Disponível a partir do plano Starter.</p>
+      <a href="/dashboard" class="pro-gate-btn">⚡ Ver planos — a partir de R$19,90/mês</a>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="mainSection" style="display:none">
+    <h1 class="page-title">Carta de Apresentação</h1>
+    <p class="page-sub">Cole a vaga e seu currículo. A IA gera uma carta personalizada pronta para enviar.</p>
+
+    <div class="two-col">
+      <!-- Inputs -->
+      <div>
+        <div class="card">
+          <div class="card-title">Dados</div>
+          <div class="field">
+            <label>Descrição da vaga</label>
+            <textarea id="jobInput" rows="7" placeholder="Cole o texto completo da vaga..."></textarea>
+          </div>
+          <div class="field">
+            <label>Seu currículo</label>
+            <textarea id="cvInput" rows="7" placeholder="Cole o conteúdo do seu currículo..."></textarea>
+          </div>
+          <div class="field">
+            <label>Tom da carta</label>
+            <div class="tom-row">
+              <button class="tom-btn active" id="tom-direto" onclick="setTom('direto')">Direto</button>
+              <button class="tom-btn" id="tom-formal" onclick="setTom('formal')">Formal</button>
+              <button class="tom-btn" id="tom-criativo" onclick="setTom('criativo')">Criativo</button>
+            </div>
+          </div>
+          <div class="error-box" id="errorBox"></div>
+          <button class="btn-generate" id="btnGenerate" onclick="generate()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Gerar carta de apresentação
+          </button>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div>
+        <div class="card result-card" id="resultCard">
+          <div class="card-title">Carta gerada</div>
+          <div class="letter-header">
+            <div class="letter-title" id="resultAssunto"></div>
+            <div class="letter-actions">
+              <button class="btn-copy" onclick="copyCarta()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copiar
+              </button>
+              <button class="btn-download" onclick="downloadCarta()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                .txt
+              </button>
+            </div>
+          </div>
+          <div class="subject-box" id="subjectBox"></div>
+          <div class="letter-text" id="letterText"></div>
+          <div class="word-count" id="wordCount"></div>
+          <div class="highlights-wrap" id="highlightsWrap"></div>
+        </div>
+
+        <!-- Placeholder quando ainda não gerou -->
+        <div id="placeholderCard" class="card" style="text-align:center;padding:2.5rem 1rem;color:var(--muted)">
+          <div style="font-size:40px;margin-bottom:.75rem">✉️</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:.3rem">Carta aparecerá aqui</div>
+          <div style="font-size:12px">Preencha os campos e clique em "Gerar"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="copied-toast" id="copiedToast">✓ Copiado para a área de transferência!</div>
+
+<script>
+var sb = window.supabase.createClient(
+  'https://kbcjchjepgejdezeuwwh.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA'
+);
+var _session = null;
+var _tom = 'direto';
+var _cartaTexto = '';
+var _cartaAssunto = '';
+
+(async function() {
+  var r = await sb.auth.getSession();
+  _session = r.data.session;
+  if (!_session) { window.location.href = '/login'; return; }
+
+  try {
+    var res = await fetch('/api/subscription', { headers: { Authorization: 'Bearer ' + _session.access_token } });
+    var sub = await res.json();
+    if (sub.plan === 'free') {
+      document.getElementById('gateSection').style.display = 'block';
+    } else {
+      document.getElementById('mainSection').style.display = 'block';
+      // Pré-carrega se vier do /app
+      try {
+        var j = localStorage.getItem('vagaai_last_job') || '';
+        var c = localStorage.getItem('vagaai_last_cv') || '';
+        if (j) document.getElementById('jobInput').value = j;
+        if (c) document.getElementById('cvInput').value = c;
+      } catch(e) {}
+    }
+  } catch(e) {
+    document.getElementById('mainSection').style.display = 'block';
+  }
+})();
+
+function setTom(t) {
+  _tom = t;
+  ['direto','formal','criativo'].forEach(function(x) {
+    document.getElementById('tom-' + x).classList.toggle('active', x === t);
+  });
+}
+
+async function generate() {
+  var job = document.getElementById('jobInput').value.trim();
+  var cv = document.getElementById('cvInput').value.trim();
+  var errEl = document.getElementById('errorBox');
+  errEl.classList.remove('show');
+
+  if (!job || job.length < 50) { errEl.textContent = 'Cole a descrição completa da vaga.'; errEl.classList.add('show'); return; }
+  if (!cv || cv.length < 50) { errEl.textContent = 'Cole o conteúdo do seu currículo.'; errEl.classList.add('show'); return; }
+
+  var btn = document.getElementById('btnGenerate');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Gerando carta…';
+
+  try {
+    var res = await fetch('/api/cover-letter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _session.access_token },
+      body: JSON.stringify({ job, cv, tom: _tom })
+    });
+    var data = await res.json();
+
+    if (res.status === 403) {
+      document.getElementById('mainSection').style.display = 'none';
+      document.getElementById('gateSection').style.display = 'block';
+      return;
+    }
+    if (!res.ok || data.error) throw new Error(data.message || data.error || 'Erro ao gerar');
+
+    _cartaTexto = data.carta || '';
+    _cartaAssunto = data.assunto || '';
+
+    document.getElementById('resultAssunto').textContent = '📧 ' + (data.assunto || 'Carta gerada');
+    document.getElementById('subjectBox').innerHTML = '<strong>Assunto sugerido:</strong> ' + esc(data.assunto || '');
+    document.getElementById('letterText').textContent = data.carta || '';
+    document.getElementById('wordCount').textContent = (data.palavras || 0) + ' palavras';
+
+    var hw = document.getElementById('highlightsWrap');
+    if (data.destaques && data.destaques.length) {
+      hw.innerHTML = '<div class="highlights-title">Destaques da carta</div>'
+        + data.destaques.map(function(d){ return '<span class="highlight-tag">✓ ' + esc(d) + '</span>'; }).join('');
+    }
+
+    document.getElementById('resultCard').classList.add('show');
+    document.getElementById('placeholderCard').style.display = 'none';
+
+  } catch(e) {
+    errEl.textContent = e.message || 'Erro inesperado. Tente novamente.';
+    errEl.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Gerar carta de apresentação';
+  }
+}
+
+function copyCarta() {
+  if (!_cartaTexto) return;
+  var full = 'Assunto: ' + _cartaAssunto + '\n\n' + _cartaTexto;
+  navigator.clipboard.writeText(full).then(function() {
+    var t = document.getElementById('copiedToast');
+    t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  });
+}
+
+function downloadCarta() {
+  if (!_cartaTexto) return;
+  var content = 'Assunto: ' + _cartaAssunto + '\n\n' + _cartaTexto;
+  var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'carta-apresentacao.txt';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toggleTheme() {
+  var l = document.documentElement.getAttribute('data-theme') === 'light';
+  if (l) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('vagaai_theme','dark'); }
+  else { document.documentElement.setAttribute('data-theme','light'); localStorage.setItem('vagaai_theme','light'); }
+  document.querySelector('.theme-btn').textContent = l ? '☀️' : '🌙';
+}
+(function(){ document.querySelector('.theme-btn').textContent = document.documentElement.getAttribute('data-theme')==='light' ? '🌙' : '☀️'; })();
+</script>
+</body>
+</html>
