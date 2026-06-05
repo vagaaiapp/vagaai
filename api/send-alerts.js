@@ -64,34 +64,57 @@ function compatLabel(score) {
   return 'Compatibilidade básica';
 }
 
+// Normaliza texto removendo acentos e mapeando PT → EN
+function normalizeForJooble(text) {
+  const ptToEn = {
+    'desenvolvedor': 'developer', 'desenvolvedor front-end': 'frontend developer',
+    'desenvolvedor backend': 'backend developer', 'desenvolvedor fullstack': 'fullstack developer',
+    'engenheiro de software': 'software engineer', 'analista de dados': 'data analyst',
+    'cientista de dados': 'data scientist', 'designer': 'designer', 'ux designer': 'ux designer',
+    'product manager': 'product manager', 'gerente de produto': 'product manager',
+    'analista de marketing': 'marketing analyst', 'marketing': 'marketing',
+    'recursos humanos': 'human resources', 'financeiro': 'finance', 'contabilidade': 'accounting',
+    'suporte': 'support', 'vendas': 'sales', 'comercial': 'sales',
+  };
+  const lower = text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  return ptToEn[lower] || lower;
+}
+
+function normalizeLocation(cidade) {
+  if (!cidade || cidade.toLowerCase().includes('remoto') || cidade.toLowerCase().includes('remote')) return 'Brazil';
+  return cidade.normalize('NFD').replace(/[̀-ͯ]/g, '').replace('Sao Paulo', 'Sao Paulo').trim() + ', Brazil';
+}
+
 // Busca vagas na Jooble API
 async function fetchJoobleJobs(profile) {
   if (!JOOBLE_API_KEY) {
-    // Modo demo: retorna vagas fictícias para testar o fluxo
     return [
       { title: profile.cargo_desejado + ' Pleno', company: 'Empresa Demo', location: profile.cidade || 'Brasil', snippet: 'Vaga de demonstração. Configure a JOOBLE_API_KEY para ver vagas reais.', link: 'https://vagaai.app.br', salary: '' },
       { title: profile.cargo_desejado + ' Sênior', company: 'Startup Demo', location: profile.cidade || 'Remoto', snippet: 'Configure a JOOBLE_API_KEY no Vercel para ativar a busca real de vagas.', link: 'https://vagaai.app.br', salary: '' },
     ];
   }
 
-  const keywords = [profile.cargo_desejado, ...(profile.keywords || []).slice(0,3)].filter(Boolean).join(' ');
-  const body = JSON.stringify({
-    keywords,
-    location: profile.cidade || '',
-    page: 1,
-    resultsOnPage: 20,
-  });
+  const cargoEn = normalizeForJooble(profile.cargo_desejado || '');
+  const kwEn = (profile.keywords || []).slice(0, 3).map(k => normalizeForJooble(k)).join(' ');
+  const keywords = [cargoEn, kwEn].filter(Boolean).join(' ').trim();
+  const location = normalizeLocation(profile.cidade);
 
-  const res = await fetch(`https://jooble.org/api/${JOOBLE_API_KEY}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body,
-    signal: AbortSignal.timeout(10000),
-  });
+  // Tenta busca principal, depois busca ampla se sem resultado
+  async function doFetch(kw, loc) {
+    const body = JSON.stringify({ keywords: kw, location: loc, page: 1, resultsOnPage: 20 });
+    const res = await fetch(`https://jooble.org/api/${JOOBLE_API_KEY}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) throw new Error(`Jooble ${res.status}`);
+    const data = await res.json();
+    return data.jobs || [];
+  }
 
-  if (!res.ok) throw new Error(`Jooble API error: ${res.status}`);
-  const data = await res.json();
-  return data.jobs || [];
+  let jobs = await doFetch(keywords, location);
+  if (!jobs.length && location !== 'Brazil') jobs = await doFetch(keywords, 'Brazil');
+  if (!jobs.length) jobs = await doFetch(cargoEn, 'Brazil');
+  return jobs;
 }
 
 // Remove vagas já enviadas para este usuário
