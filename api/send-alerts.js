@@ -117,6 +117,19 @@ async function fetchJoobleJobs(profile) {
   return jobs;
 }
 
+// Normaliza campos do objeto de vaga (Jooble pode variar)
+function normalizeJob(j) {
+  return {
+    title: j.title || j.position || 'Vaga',
+    company: j.company || j.employer || j.companyName || 'Empresa',
+    location: j.location || j.city || 'Brasil',
+    snippet: j.snippet || j.description || '',
+    salary: j.salary || '',
+    link: j.link || j.url || 'https://vagaai.app.br',
+    _score: j._score || 0,
+  };
+}
+
 // Remove vagas já enviadas para este usuário
 async function filterSentJobs(userId, jobs) {
   if (!jobs.length) return [];
@@ -153,15 +166,16 @@ function buildEmailHTML(profile, jobs, userName) {
   const name = userName || 'você';
   const jobsHTML = jobs.map(j => {
     const analyzeUrl = `https://www.vagaai.app.br/app?vaga=${encodeURIComponent(j.link)}`;
-    const companyInitial = (j.company || '?')[0].toUpperCase();
+    const company = j.company || j.employer || 'Empresa';
+    const companyInitial = company[0].toUpperCase();
     const colors = ['#820AD1','#EA1D2C','#21C25E','#F04E23','#003D7B','#FF6B00','#0061FF'];
-    const color = colors[Math.abs(j.company.charCodeAt(0)) % colors.length];
+    const color = colors[Math.abs(company.charCodeAt(0)) % colors.length];
     return `
     <div style="border:1px solid #e8f5ee;border-radius:10px;padding:14px;margin-bottom:10px;background:#fff;font-family:Arial,sans-serif">
       <div style="display:flex;gap:10px;align-items:flex-start">
         <div style="width:36px;height:36px;border-radius:8px;background:${color};display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0">${companyInitial}</div>
         <div style="flex:1">
-          <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:2px">${escEmail(j.company)}</div>
+          <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:2px">${escEmail(company)}</div>
           <div style="font-size:14px;font-weight:700;color:#1a8f5c;margin-bottom:4px">${escEmail(j.title)}</div>
           <div style="font-size:11px;color:#888;margin-bottom:6px">📍 ${escEmail(j.location || 'Brasil')}${j.salary ? ' · 💰 ' + escEmail(j.salary) : ''}</div>
           <div style="font-size:11px;color:#f0a500;margin-bottom:6px">${starsFromScore(j._score)} <span style="color:#888">${compatLabel(j._score)}</span></div>
@@ -220,9 +234,9 @@ async function processUserAlert(profile, isTest = false) {
 
   if (!jobs.length) return { skipped: 'no new jobs' };
 
-  // Calcula scores e ordena
+  // Normaliza e calcula scores
   jobs = jobs
-    .map(j => ({ ...j, _score: calcScore(j, profile) }))
+    .map(j => normalizeJob({ ...j, _score: calcScore(j, profile) }))
     .sort((a, b) => b._score - a._score)
     .slice(0, 8);
 
