@@ -79,6 +79,12 @@ async function recordIpUsage(ip) {
   } catch (err) {
     console.error('Record IP usage error:', err);
   }
+  // Cleanup fire-and-forget: remove registros com mais de 30 dias
+  const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  fetch(`${SUPABASE_URL}/rest/v1/ip_rate_limits?last_seen=lt.${encodeURIComponent(cutoff)}`, {
+    method: 'DELETE',
+    headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
+  }).catch(() => {});
 }
 
 // ─── Créditos (usuários autenticados) ────────────────────────────────────────

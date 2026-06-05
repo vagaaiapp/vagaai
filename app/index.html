@@ -240,6 +240,33 @@ textarea::placeholder{color:var(--muted)}
 .lock-btn{pointer-events:auto;font-size:12px;font-weight:700;color:var(--green);background:var(--green-dim);border:1px solid var(--green-border);border-radius:6px;padding:.35rem .9rem;cursor:pointer;transition:all .15s}
 .lock-btn:hover{background:rgba(62,207,142,.2)}
 
+/* MODAL OVERLAY (email capture + pre-upsell) */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.hidden{display:none}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:2.2rem 2rem;max-width:420px;width:100%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.5)}
+.modal-icon{font-size:44px;margin-bottom:1rem}
+.modal-title{font-family:'Lora',serif;font-size:clamp(20px,3.5vw,26px);font-weight:700;margin-bottom:.5rem}
+.modal-sub{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:1.5rem;max-width:340px;margin-left:auto;margin-right:auto}
+.modal-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:.85rem 1rem;margin-bottom:.8rem;transition:border-color .2s}
+.modal-input:focus{outline:none;border-color:var(--green-border)}
+.modal-input::placeholder{color:var(--muted)}
+.modal-btn-primary{width:100%;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;border:none;border-radius:10px;padding:.9rem;cursor:pointer;transition:all .2s;margin-bottom:.5rem}
+.modal-btn-primary:hover{background:#4ddb9e}
+.modal-btn-skip{width:100%;background:transparent;border:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;padding:.4rem;transition:color .2s}
+.modal-btn-skip:hover{color:var(--text)}
+/* Upsell pré-análise */
+.pre-upsell-plans{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:.8rem}
+@media(max-width:440px){.pre-upsell-plans{grid-template-columns:1fr}}
+.pre-upsell-plan{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.9rem .7rem;cursor:pointer;transition:all .2s;text-align:center}
+.pre-upsell-plan:hover,.pre-upsell-plan.featured{border-color:var(--green-border);background:var(--green-dim)}
+.pre-upsell-plan-name{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:.3rem}
+.pre-upsell-plan-price{font-family:'Lora',serif;font-size:18px;font-weight:700;color:var(--text)}
+.pre-upsell-plan-price small{font-size:11px;font-family:'Inter',sans-serif;font-weight:400;color:var(--muted)}
+/* Briefing teaser anônimo */
+.briefing-teaser-lock{background:linear-gradient(to bottom,transparent,var(--surface) 60%);position:absolute;bottom:0;left:0;right:0;padding:2.5rem 1rem 1rem;text-align:center;pointer-events:none}
+.briefing-teaser-lock-btn{pointer-events:auto;font-size:12px;font-weight:700;color:var(--green);background:var(--green-dim);border:1px solid var(--green-border);border-radius:6px;padding:.35rem .9rem;cursor:pointer;transition:all .15s}
+.briefing-teaser-lock-btn:hover{background:rgba(62,207,142,.2)}
+
 /* BRIEFING DA EMPRESA */
 .briefing-section{background:var(--surface);border:1px solid var(--green-border);border-radius:12px;padding:1.4rem;margin-bottom:1.2rem;display:none}
 .briefing-section.show{display:block}
@@ -746,6 +773,24 @@ async function analyze() {
     return;
   }
 
+  // Salva valores para restaurar em caso de erro
+  var savedJob = job;
+  var savedCv = cv;
+
+  // Upsell pré-análise: exibe uma vez por sessão para anônimos
+  if (!authSession) {
+    var preUpsellShown = false;
+    try { preUpsellShown = !!sessionStorage.getItem('vagaai_pre_upsell_shown'); } catch(e) {}
+    if (!preUpsellShown) {
+      showPreUpsellModal(function() { doAnalyze(savedJob, savedCv); });
+      return;
+    }
+  }
+
+  doAnalyze(savedJob, savedCv);
+}
+
+async function doAnalyze(job, cv) {
   track('analyze_start');
   document.getElementById('analyzeBtn').disabled = true;
   document.getElementById('formSection').style.display = 'none';
@@ -754,6 +799,32 @@ async function analyze() {
   document.getElementById('pageTitle').textContent = 'Processando sua análise…';
   document.getElementById('pageSub').textContent = 'Estamos avaliando a compatibilidade do seu perfil com a vaga. Aguarde alguns instantes.';
   setStep(2);
+
+  // Timeout de 60s com aviso aos 30s
+  var controller = new AbortController();
+  var slowTimer = setTimeout(function() {
+    var loadingText = document.querySelector('.loading-text');
+    if (loadingText) {
+      loadingText.innerHTML = '<strong>Ainda processando…</strong>Está demorando mais que o normal. Aguarde mais alguns instantes ou tente novamente.';
+    }
+  }, 30000);
+  var hardTimer = setTimeout(function() { controller.abort(); }, 60000);
+
+  function restoreForm(errMsg) {
+    clearTimeout(slowTimer);
+    clearTimeout(hardTimer);
+    document.getElementById('loadingSection').classList.remove('show');
+    document.getElementById('formSection').style.display = 'flex';
+    if (!authSession) document.getElementById('freeNotice').style.display = 'flex';
+    document.getElementById('analyzeBtn').disabled = false;
+    // Restaura valores dos campos
+    jobEl.value = savedJob;
+    cvEl.value = savedCv;
+    document.getElementById('jobCount').textContent = savedJob.length + ' caracteres';
+    document.getElementById('cvCount').textContent = savedCv.length + ' caracteres';
+    showError(errMsg);
+    setStep(1);
+  }
 
   try {
     var headers = { 'Content-Type': 'application/json' };
@@ -764,8 +835,12 @@ async function analyze() {
     var res = await fetch('/api/analyze', {
       method: 'POST',
       headers: headers,
-      body: JSON.stringify({ job: job, cv: cv })
+      body: JSON.stringify({ job: job, cv: cv }),
+      signal: controller.signal
     });
+
+    clearTimeout(slowTimer);
+    clearTimeout(hardTimer);
 
     var data = await res.json();
 
@@ -794,17 +869,22 @@ async function analyze() {
 
     track('analyze_complete', { score: data.score, nivel: data.nivel });
 
-    document.getElementById('loadingSection').classList.remove('show');
-    showResult(data);
-    setStep(3);
+    // Para anônimos sem e-mail capturado, mostra modal de captura antes do resultado
+    var emailAlreadyCaptured = false;
+    try { emailAlreadyCaptured = !!localStorage.getItem('vagaai_email_captured'); } catch(e) {}
+    if (!authSession && !emailAlreadyCaptured) {
+      showEmailModal(data);
+    } else {
+      document.getElementById('loadingSection').classList.remove('show');
+      showResult(data);
+      setStep(3);
+    }
 
   } catch (err) {
-    document.getElementById('loadingSection').classList.remove('show');
-    document.getElementById('formSection').style.display = 'flex';
-    document.getElementById('freeNotice').style.display = 'flex';
-    document.getElementById('analyzeBtn').disabled = false;
-    showError(err.message || 'Erro inesperado. Tente novamente.');
-    setStep(1);
+    var msg = err.name === 'AbortError'
+      ? 'A análise demorou mais de 60 segundos. Verifique sua conexão e tente novamente.'
+      : (err.message || 'Erro inesperado. Tente novamente.');
+    restoreForm(msg);
   }
 }
 
@@ -854,10 +934,24 @@ function showResult(d) {
     document.querySelectorAll('.factor-fill').forEach(function(el) { el.style.width = el.dataset.val; });
   }, 200);
 
-  // Briefing da empresa — só para usuários autenticados
+  // Briefing da empresa — completo para pagos, teaser para anônimos
   var briefingSection = document.getElementById('briefingSection');
   if (!isAnonymous && d.briefing_empresa) {
     renderBriefing(d.briefing_empresa);
+    briefingSection.classList.add('show');
+  } else if (isAnonymous && d.briefing_empresa && d.briefing_empresa.o_que_valorizam && d.briefing_empresa.o_que_valorizam.length) {
+    // Mostra 1 item grátis com lock no restante
+    var teaserItem = d.briefing_empresa.o_que_valorizam[0];
+    document.getElementById('briefingGrid').innerHTML =
+      '<div class="briefing-block" style="position:relative;overflow:hidden">'
+      + '<div class="briefing-block-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> O que a empresa valoriza</div>'
+      + '<ul class="briefing-block-list"><li>' + escHtml(teaserItem) + '</li>'
+      + '<li style="filter:blur(5px);user-select:none;pointer-events:none;opacity:.5">Mais itens disponíveis no plano</li>'
+      + '<li style="filter:blur(5px);user-select:none;pointer-events:none;opacity:.3">Desbloqueie para ver tudo</li>'
+      + '</ul>'
+      + '<div class="briefing-teaser-lock"><button class="briefing-teaser-lock-btn" onclick="document.getElementById(\'upsellSection\').scrollIntoView({behavior:\'smooth\'})">Ver briefing completo →</button></div>'
+      + '</div>';
+    briefingSection.querySelector('.briefing-badge').textContent = '🔒 Prévia gratuita';
     briefingSection.classList.add('show');
   } else {
     briefingSection.classList.remove('show');
@@ -1022,7 +1116,101 @@ var ICON_SUN_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" st
 var ICON_MOON_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
 function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')==='light';if(l){document.documentElement.removeAttribute('data-theme');localStorage.setItem('vagaai_theme','dark')}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('vagaai_theme','light')}var b=document.getElementById('themeBtn');if(b)b.innerHTML=l?ICON_SUN_SVG:ICON_MOON_SVG}
 ;(function(){var b=document.getElementById('themeBtn');if(b)b.innerHTML=document.documentElement.getAttribute('data-theme')==='light'?ICON_MOON_SVG:ICON_SUN_SVG})();
+
+// ── MODAL: Captura de e-mail (item 1) ─────────────────────────────────────────
+var _pendingResultData = null;
+
+function showEmailModal(data) {
+  _pendingResultData = data;
+  document.getElementById('emailModal').classList.remove('hidden');
+}
+
+function submitEmailCapture() {
+  var email = document.getElementById('emailCaptureInput').value.trim();
+  if (email && email.includes('@')) {
+    // Salva email no Supabase (fire-and-forget)
+    fetch('https://kbcjchjepgejdezeuwwh.supabase.co/rest/v1/email_leads', {
+      method: 'POST',
+      headers: {
+        apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA',
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=ignore-duplicates'
+      },
+      body: JSON.stringify({ email: email, source: 'app_result', created_at: new Date().toISOString() })
+    }).catch(function(){});
+    try { localStorage.setItem('vagaai_email_captured', email); } catch(e) {}
+    track('email_captured');
+  }
+  closeEmailModal();
+}
+
+function closeEmailModal() {
+  document.getElementById('emailModal').classList.add('hidden');
+  if (_pendingResultData) {
+    document.getElementById('loadingSection').classList.remove('show');
+    showResult(_pendingResultData);
+    setStep(3);
+    _pendingResultData = null;
+  }
+}
+
+// ── MODAL: Upsell pré-análise (item 3) ───────────────────────────────────────
+var _preUpsellCallback = null;
+
+function showPreUpsellModal(onContinue) {
+  _preUpsellCallback = onContinue;
+  document.getElementById('preUpsellModal').classList.remove('hidden');
+  try { sessionStorage.setItem('vagaai_pre_upsell_shown', '1'); } catch(e) {}
+}
+
+function skipPreUpsell() {
+  document.getElementById('preUpsellModal').classList.add('hidden');
+  track('pre_upsell_skipped');
+  if (_preUpsellCallback) { _preUpsellCallback(); _preUpsellCallback = null; }
+}
+
+function clickPreUpsellPlan(url, planName) {
+  document.getElementById('preUpsellModal').classList.add('hidden');
+  track('pre_upsell_clicked', { plan: planName });
+  window.open(url, '_blank');
+}
 </script>
+
+<!-- MODAL: Captura de e-mail ─────────────────────────────── -->
+<div class="modal-overlay hidden" id="emailModal">
+  <div class="modal-box">
+    <div class="modal-icon">✉️</div>
+    <div class="modal-title">Sua análise está pronta!</div>
+    <p class="modal-sub">Deixe seu e-mail para salvar o resultado e receber dicas personalizadas para sua candidatura.</p>
+    <input type="email" class="modal-input" id="emailCaptureInput" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')submitEmailCapture()">
+    <button class="modal-btn-primary" onclick="submitEmailCapture()">Salvar e ver resultado →</button>
+    <button class="modal-btn-skip" onclick="closeEmailModal()">Pular por agora</button>
+  </div>
+</div>
+
+<!-- MODAL: Upsell pré-análise ────────────────────────────── -->
+<div class="modal-overlay hidden" id="preUpsellModal">
+  <div class="modal-box">
+    <div class="modal-icon">⚡</div>
+    <div class="modal-title">Desbloqueie o resultado completo</div>
+    <p class="modal-sub">Além do diagnóstico grátis, você pode receber o CV reescrito pela IA e o briefing da empresa — tudo para essa vaga.</p>
+    <div class="pre-upsell-plans">
+      <div class="pre-upsell-plan" onclick="clickPreUpsellPlan('https://buy.stripe.com/7sY5kD9tk5DzgdNf0P9k404','1 candidatura')">
+        <div class="pre-upsell-plan-name">1 candidatura</div>
+        <div class="pre-upsell-plan-price">R$9<small>,90</small></div>
+      </div>
+      <div class="pre-upsell-plan featured" onclick="clickPreUpsellPlan('https://buy.stripe.com/cNi4gz20Sc1XgdNf0P9k403','10 candidaturas')">
+        <div class="pre-upsell-plan-name">⭐ 10 candidaturas</div>
+        <div class="pre-upsell-plan-price">R$39<small>,90</small></div>
+      </div>
+      <div class="pre-upsell-plan" onclick="clickPreUpsellPlan('https://buy.stripe.com/eVqbJ120S0jf3r16uj9k405','50 candidaturas')">
+        <div class="pre-upsell-plan-name">50 candidaturas</div>
+        <div class="pre-upsell-plan-price">R$97<small>,00</small></div>
+      </div>
+    </div>
+    <button class="modal-btn-skip" onclick="skipPreUpsell()">Continuar com diagnóstico grátis →</button>
+  </div>
+</div>
 
 </body>
 </html>

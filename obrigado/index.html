@@ -58,7 +58,8 @@ nav{position:fixed;top:0;left:0;right:0;background:rgba(10,15,13,0.92);backdrop-
 <div class="card">
   <div class="icon">🎉</div>
   <div class="title">Compra confirmada!</div>
-  <p class="sub">Seus créditos já foram adicionados à sua conta. Agora é só usar!</p>
+  <p class="sub" id="purchaseSub">Seus créditos já foram adicionados à sua conta. Agora é só usar!</p>
+  <div id="purchaseDetail" style="display:none;background:rgba(62,207,142,0.08);border:1px solid var(--green-border);border-radius:10px;padding:.75rem 1rem;margin-bottom:1.2rem;font-size:14px;color:var(--green);font-weight:600;text-align:left"></div>
 
   <div class="steps">
     <div class="step-item">
@@ -92,11 +93,27 @@ nav{position:fixed;top:0;left:0;right:0;background:rgba(10,15,13,0.92);backdrop-
 
 <script>
 try { window.va && window.va('event', { name: 'purchase_success' }); } catch(e) {}
+
+// Mostra detalhes da compra via URL params (?credits=10&price=39%2C90)
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var credits = params.get('credits');
+  var price = params.get('price');
+  var detail = document.getElementById('purchaseDetail');
+  var sub = document.getElementById('purchaseSub');
+  if (credits && detail) {
+    var label = credits === '1' ? '1 crédito' : credits + ' créditos';
+    detail.textContent = '✓ ' + label + (price ? ' · R$' + price : '') + ' adicionados à sua conta';
+    detail.style.display = 'block';
+    if (sub) sub.textContent = 'Tudo certo! Já pode começar a usar.';
+  }
+})();
+
 function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')==='light';if(l){document.documentElement.removeAttribute('data-theme');localStorage.setItem('vagaai_theme','dark')}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('vagaai_theme','light')}var b=document.getElementById('themeBtn');if(b)b.textContent=l?'☀️':'🌙'}
 ;(function(){var b=document.getElementById('themeBtn');if(b)b.textContent=document.documentElement.getAttribute('data-theme')==='light'?'🌙':'☀️'})();
 
-// Redireciona para o dashboard em 10 segundos
-var seconds = 10;
+// Redireciona para o dashboard em 20 segundos
+var seconds = 20;
 var el = document.getElementById('countdown');
 el.innerHTML = 'Redirecionando para o painel em <span id="sec">' + seconds + '</span>s...';
 

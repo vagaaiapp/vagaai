@@ -3,6 +3,7 @@ import crypto from 'crypto';
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
 // Mapeamento: amount_total (em centavos) → créditos
 // R$9,90 = 990 → 1 crédito
@@ -230,6 +231,33 @@ export default async function handler(req, res) {
         body: JSON.stringify({ stripe_session_id: session.id, user_id: userId, amount: amountTotal, processed_at: new Date().toISOString() }),
       });
     } catch (e) { /* não bloqueia se falhar */ }
+
+    // Envia e-mail de confirmação via Resend
+    if (RESEND_API_KEY && customerEmail) {
+      const AMOUNT_LABEL = { 990: 'R$9,90', 3990: 'R$39,90', 9700: 'R$97,00' };
+      const credLabel = creditsToAdd === 1 ? '1 crédito' : `${creditsToAdd} créditos`;
+      const priceLabel = AMOUNT_LABEL[amountTotal] || '';
+      fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: 'VagaAI <noreply@vagaai.app.br>',
+          to: [customerEmail],
+          subject: `✓ Compra confirmada — ${credLabel} VagaAI`,
+          html: `<div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto;padding:2rem;background:#0a0f0d;color:#e8ede9;border-radius:12px">
+  <h1 style="color:#3ecf8e;font-size:22px;margin-bottom:.5rem">Compra confirmada!</h1>
+  <p style="color:#8a9e90;margin-bottom:1.5rem">Seus créditos já estão disponíveis na sua conta.</p>
+  <div style="background:rgba(62,207,142,0.1);border:1px solid rgba(62,207,142,0.25);border-radius:8px;padding:1rem;margin-bottom:1.5rem">
+    <strong style="color:#3ecf8e">${credLabel}</strong>${priceLabel ? ` · ${priceLabel}` : ''}
+  </div>
+  <p style="color:#8a9e90;font-size:14px;margin-bottom:1rem">Acesse seu painel para usar seus créditos:</p>
+  <a href="https://www.vagaai.app.br/dashboard" style="display:inline-block;background:#3ecf8e;color:#0a0f0d;font-weight:700;padding:.8rem 1.5rem;border-radius:8px;text-decoration:none">→ Ir para o painel</a>
+  <p style="color:#4d6e57;font-size:12px;margin-top:2rem">VagaAI · vagaai.app.br</p>
+</div>`,
+        }),
+      }).catch((e) => console.error('Webhook: email send failed', e.message));
+    }
+
     console.log(`Webhook: added ${creditsToAdd} credits to user ${userId}`);
     return res.status(200).json({ received: true, credits_added: creditsToAdd });
   } catch (err) {

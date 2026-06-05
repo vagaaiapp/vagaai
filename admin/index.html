@@ -356,6 +356,31 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
   </div>
 
+  <!-- EMAIL LEADS -->
+  <div class="section" id="leadsSection">
+    <div class="section-header">
+      <div class="section-title">E-mails capturados <span class="section-count" id="leadsCount"></span></div>
+      <button class="btn-nav ghost" onclick="exportLeadsCSV()" style="font-size:12px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Exportar CSV
+      </button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>E-mail</th>
+            <th>Origem</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody id="leadsBody">
+          <tr><td colspan="3" style="text-align:center;color:var(--muted);padding:2rem;font-size:13px">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div><!-- /container -->
 
 <script>
@@ -395,6 +420,54 @@ function fmtDateShort(iso) {
 
 function escHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─── Email Leads ──────────────────────────────────────────────────────────────
+
+var _leadsData = [];
+
+async function loadLeads() {
+  var tbody = document.getElementById('leadsBody');
+  try {
+    var session = (await sb.auth.getSession()).data.session;
+    if (!session) return;
+    var res = await fetch(
+      SUPABASE_URL + '/rest/v1/email_leads?select=email,source,created_at&order=created_at.desc&limit=200',
+      { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + session.access_token } }
+    );
+    var rows = await res.json();
+    if (!Array.isArray(rows)) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:1rem;font-size:13px">Sem permissão para ver leads.</td></tr>'; return; }
+    _leadsData = rows;
+    var countEl = document.getElementById('leadsCount');
+    if (countEl) countEl.textContent = rows.length ? '(' + rows.length + ')' : '';
+    var metricEl = document.getElementById('leadsMetricValue');
+    if (metricEl) metricEl.textContent = rows.length;
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:2rem;font-size:13px">Nenhum e-mail capturado ainda.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(function(r) {
+      return '<tr>'
+        + '<td>' + escHtml(r.email) + '</td>'
+        + '<td><span style="font-size:11px;background:var(--blue-dim);border:1px solid var(--blue-border);color:var(--blue);padding:2px 8px;border-radius:20px">' + escHtml(r.source || 'app_result') + '</span></td>'
+        + '<td>' + fmtDate(r.created_at) + '</td>'
+        + '</tr>';
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:1rem;font-size:13px">Erro ao carregar leads.</td></tr>';
+  }
+}
+
+function exportLeadsCSV() {
+  if (!_leadsData.length) { alert('Nenhum lead para exportar.'); return; }
+  var csv = 'email,source,created_at\n' + _leadsData.map(function(r) {
+    return '"' + (r.email||'') + '","' + (r.source||'') + '","' + (r.created_at||'') + '"';
+  }).join('\n');
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'vagaai_leads_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click(); URL.revokeObjectURL(url);
 }
 
 function initials(email) {
@@ -567,6 +640,7 @@ function render(data) {
   renderUsers(users, creditMap, analysisCountMap);
   renderAnalyses(analyses, users);
   renderPayments(charges, stripe_);
+  loadLeads();
 }
 
 // ─── Metric cards ─────────────────────────────────────────────────────────────
@@ -594,6 +668,11 @@ function renderMetrics(totalUsers, totalAnalyses, totalRevCents, totalCredits) {
     + '<div class="metric-label">Créditos Ativos</div>'
     + '<div class="metric-value">' + totalCredits + '</div>'
     + '<div class="metric-sub">saldo total dos usuários</div>'
+    + '</div>'
+    + '<div class="metric-card" id="leadsMetricCard">'
+    + '<div class="metric-label">E-mails Capturados</div>'
+    + '<div class="metric-value" id="leadsMetricValue">—</div>'
+    + '<div class="metric-sub">leads para nutrição</div>'
     + '</div>';
   document.getElementById('metricsGrid').innerHTML = html;
 }

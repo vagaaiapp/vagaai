@@ -448,6 +448,9 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
     <div class="section-title">Histórico de análises</div>
   </div>
   <div class="analyses-list" id="analysesList"></div>
+  <div id="loadMoreWrap" style="display:none;text-align:center;margin-top:1rem">
+    <button id="loadMoreBtn" onclick="loadMoreAnalyses()" style="background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.6rem 1.4rem;border-radius:8px;cursor:pointer;transition:all .2s">Carregar mais</button>
+  </div>
 
 </div>
 
@@ -558,18 +561,29 @@ async function loadCredits() {
 }
 
 // ─── ANALYSES ─────────────────────────────────────────────────────────────────
+var _analysesOffset = 0;
+var _analysesPageSize = 20;
+var _analysesFull = [];
+
 async function loadAnalyses() {
+  _analysesOffset = 0;
+  _analysesFull = [];
   var listEl = document.getElementById('analysesList');
   try {
     var res = await fetch(
-      SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=id,score,nivel,job_excerpt,created_at,result&order=created_at.desc&limit=20',
-      { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token } }
+      SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=id,score,nivel,job_excerpt,created_at,result&order=created_at.desc&limit=' + _analysesPageSize + '&offset=0',
+      { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, Prefer: 'count=exact' } }
     );
     var rows = await res.json();
-    _totalAnalyses = rows.length;
+    var contentRange = res.headers.get('content-range') || '';
+    var totalCount = parseInt((contentRange.split('/')[1] || '0'), 10) || rows.length;
+    _analysesFull = rows;
+    _analysesOffset = rows.length;
+    _totalAnalyses = totalCount;
+    document.getElementById('loadMoreWrap').style.display = (_analysesOffset < totalCount) ? 'block' : 'none';
 
-    document.getElementById('totalValue').textContent = rows.length;
-    renderUserLevel(rows.length);
+    document.getElementById('totalValue').textContent = totalCount;
+    renderUserLevel(totalCount);
     renderStreak(rows);
 
     if (!rows.length) {
@@ -582,48 +596,67 @@ async function loadAnalyses() {
       return;
     }
 
-    listEl.innerHTML = rows.map(function(a) {
-      var score = a.score || 0;
-      var colorClass = score >= 75 ? 'green' : score >= 50 ? 'yellow' : 'red';
-      var nivelClass = nivelCSSClass(a.nivel);
-      var date = new Date(a.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
-      var hasResult = !!(a.result && a.result.score != null);
-      var cvOtimizado = a.result && a.result.cv_otimizado && a.result.cv_otimizado.nome ? a.result.cv_otimizado : null;
-      var jobInfo = a.result && a.result.job_info ? a.result.job_info : null;
-
-      var infoHtml = '';
-      if (jobInfo) {
-        infoHtml += '<div class="analysis-job">' + escHtml(jobInfo.empresa || 'Empresa anônima') + '</div>';
-        if (jobInfo.cargo) infoHtml += '<div class="analysis-cargo">' + escHtml(jobInfo.cargo) + '</div>';
-        if (jobInfo.salario && jobInfo.salario !== 'Não informado') {
-          infoHtml += '<div class="analysis-salary"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg> ' + escHtml(jobInfo.salario) + '</div>';
-        }
-        if (jobInfo.beneficios && jobInfo.beneficios.length) {
-          infoHtml += '<div class="analysis-benefits">' + jobInfo.beneficios.slice(0,4).map(function(b){ return '<span class="analysis-benefit">' + escHtml(b) + '</span>'; }).join('') + '</div>';
-        }
-      } else {
-        var excerpt = a.job_excerpt ? escHtml(a.job_excerpt.substring(0,80)) + (a.job_excerpt.length > 80 ? '…' : '') : 'Vaga analisada';
-        infoHtml += '<div class="analysis-job">' + excerpt + '</div>';
-      }
-      infoHtml += '<div class="analysis-meta">' + date + '</div>';
-
-      var resultAttr = hasResult ? ' data-result=\'' + escAttr(JSON.stringify(a.result)) + '\'' : '';
-      var cvAttr = cvOtimizado ? ' data-cv=\'' + escAttr(JSON.stringify(cvOtimizado)) + '\'' : '';
-      var actions = '<div class="analysis-actions" onclick="event.stopPropagation()">';
-      if (hasResult) actions += '<button class="btn-result-hist" onclick="openResultFromHistory(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Ver análise</button>';
-      if (cvOtimizado) actions += '<button class="btn-cv-hist" onclick="openCVFromHistory(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> CV</button>';
-      actions += '<button class="btn-delete-hist" onclick="confirmDelete(\'' + escAttr(a.id) + '\',this)" title="Excluir análise"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
-      actions += '</div>';
-
-      return '<div class="analysis-card"' + resultAttr + cvAttr + (hasResult ? ' onclick="openResultFromHistory(this)"' : '') + '>'
-        + '<div class="analysis-score ' + colorClass + '">' + score + '</div>'
-        + '<div class="analysis-info">' + infoHtml + '</div>'
-        + '<span class="analysis-nivel ' + nivelClass + '">' + escHtml(a.nivel || '') + '</span>'
-        + actions + '</div>';
-    }).join('');
+    listEl.innerHTML = rows.map(renderAnalysisCard).join('');
   } catch(e) {
     listEl.innerHTML = '<div style="color:var(--muted);font-size:14px;padding:1rem">Erro ao carregar histórico.</div>';
   }
+}
+
+async function loadMoreAnalyses() {
+  var btn = document.getElementById('loadMoreBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Carregando…'; }
+  try {
+    var res = await fetch(
+      SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=id,score,nivel,job_excerpt,created_at,result&order=created_at.desc&limit=' + _analysesPageSize + '&offset=' + _analysesOffset,
+      { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, Prefer: 'count=exact' } }
+    );
+    var rows = await res.json();
+    var contentRange = res.headers.get('content-range') || '';
+    var totalCount = parseInt((contentRange.split('/')[1] || '0'), 10) || (_analysesOffset + rows.length);
+    _analysesFull = _analysesFull.concat(rows);
+    _analysesOffset += rows.length;
+    var listEl = document.getElementById('analysesList');
+    listEl.insertAdjacentHTML('beforeend', rows.map(renderAnalysisCard).join(''));
+    document.getElementById('loadMoreWrap').style.display = (_analysesOffset < totalCount) ? 'block' : 'none';
+  } catch(e) {}
+  if (btn) { btn.disabled = false; btn.textContent = 'Carregar mais'; }
+}
+
+function renderAnalysisCard(a) {
+  var score = a.score || 0;
+  var colorClass = score >= 75 ? 'green' : score >= 50 ? 'yellow' : 'red';
+  var nivelClass = nivelCSSClass(a.nivel);
+  var date = new Date(a.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+  var hasResult = !!(a.result && a.result.score != null);
+  var cvOtimizado = a.result && a.result.cv_otimizado && a.result.cv_otimizado.nome ? a.result.cv_otimizado : null;
+  var jobInfo = a.result && a.result.job_info ? a.result.job_info : null;
+  var infoHtml = '';
+  if (jobInfo) {
+    infoHtml += '<div class="analysis-job">' + escHtml(jobInfo.empresa || 'Empresa anônima') + '</div>';
+    if (jobInfo.cargo) infoHtml += '<div class="analysis-cargo">' + escHtml(jobInfo.cargo) + '</div>';
+    if (jobInfo.salario && jobInfo.salario !== 'Não informado') {
+      infoHtml += '<div class="analysis-salary"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg> ' + escHtml(jobInfo.salario) + '</div>';
+    }
+    if (jobInfo.beneficios && jobInfo.beneficios.length) {
+      infoHtml += '<div class="analysis-benefits">' + jobInfo.beneficios.slice(0,4).map(function(b){ return '<span class="analysis-benefit">' + escHtml(b) + '</span>'; }).join('') + '</div>';
+    }
+  } else {
+    var excerpt = a.job_excerpt ? escHtml(a.job_excerpt.substring(0,80)) + (a.job_excerpt.length > 80 ? '…' : '') : 'Vaga analisada';
+    infoHtml += '<div class="analysis-job">' + excerpt + '</div>';
+  }
+  infoHtml += '<div class="analysis-meta">' + date + '</div>';
+  var resultAttr = hasResult ? ' data-result=\'' + escAttr(JSON.stringify(a.result)) + '\'' : '';
+  var cvAttr = cvOtimizado ? ' data-cv=\'' + escAttr(JSON.stringify(cvOtimizado)) + '\'' : '';
+  var actions = '<div class="analysis-actions" onclick="event.stopPropagation()">';
+  if (hasResult) actions += '<button class="btn-result-hist" onclick="openResultFromHistory(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Ver análise</button>';
+  if (cvOtimizado) actions += '<button class="btn-cv-hist" onclick="openCVFromHistory(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> CV</button>';
+  actions += '<button class="btn-delete-hist" onclick="confirmDelete(\'' + escAttr(a.id) + '\',this)" title="Excluir análise"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+  actions += '</div>';
+  return '<div class="analysis-card"' + resultAttr + cvAttr + (hasResult ? ' onclick="openResultFromHistory(this)"' : '') + '>'
+    + '<div class="analysis-score ' + colorClass + '">' + score + '</div>'
+    + '<div class="analysis-info">' + infoHtml + '</div>'
+    + '<span class="analysis-nivel ' + nivelClass + '">' + escHtml(a.nivel || '') + '</span>'
+    + actions + '</div>';
 }
 
 // SVG icons sólidos (cor herdada via currentColor)
