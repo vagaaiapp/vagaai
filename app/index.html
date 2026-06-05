@@ -430,6 +430,19 @@ textarea::placeholder{color:var(--muted)}
       <div class="briefing-grid" id="briefingGrid"></div>
     </div>
 
+    <!-- CTA RASTREADOR (só para usuários logados) -->
+    <div id="trackerCTA" style="display:none;background:var(--green-dim);border:1.5px solid var(--green-border);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.2rem;display:none;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--green);margin-bottom:.2rem">📋 Rastreador de candidaturas</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:.15rem" id="trackerCTATitle">Quer acompanhar essa candidatura?</div>
+        <div style="font-size:12px;color:var(--muted)" id="trackerCTASub">Adicione ao seu rastreador e monitore o status</div>
+      </div>
+      <button id="trackerCTABtn" onclick="addResultToTracker()" style="background:var(--green);color:#0a0f0d;border:none;border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:.6rem 1.1rem;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:.4rem;transition:all .2s">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>
+        Adicionar ao rastreador
+      </button>
+    </div>
+
     <div class="result-actions">
       <button class="btn-outline" id="newAnalysisBtn" onclick="tryNewAnalysis()"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span> Nova análise</button>
       <button class="btn-cv" id="cvBtn" style="display:none" onclick="openCV()"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Baixar CV Otimizado</button>
@@ -987,6 +1000,18 @@ function showResult(d) {
     newBtn.textContent = '✓ Diagnóstico usado';
   }
 
+  // CTA rastreador — só para logados
+  _lastResultData = d;
+  var cta = document.getElementById('trackerCTA');
+  if (cta && !isAnonymous) {
+    var empresa = (d.job_info && d.job_info.empresa) ? d.job_info.empresa : '';
+    var cargo = (d.job_info && d.job_info.cargo) ? d.job_info.cargo : '';
+    document.getElementById('trackerCTASub').textContent = (empresa || cargo) ? (empresa + (cargo ? ' · ' + cargo : '')) + ' · Score ' + (d.score || 0) + '%' : 'Score ' + (d.score || 0) + '% — adicione ao seu rastreador';
+    cta.style.display = 'flex';
+  } else if (cta) {
+    cta.style.display = 'none';
+  }
+
   section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -1119,6 +1144,19 @@ function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')
 
 // ── MODAL: Captura de e-mail (item 1) ─────────────────────────────────────────
 var _pendingResultData = null;
+var _lastResultData = null;
+
+function addResultToTracker() {
+  if (!_lastResultData) return;
+  var d = _lastResultData;
+  var empresa = (d.job_info && d.job_info.empresa) ? d.job_info.empresa : '';
+  var cargo = (d.job_info && d.job_info.cargo) ? d.job_info.cargo : '';
+  var score = d.score || 0;
+  try {
+    localStorage.setItem('vagaai_tracker_pending', JSON.stringify({ empresa: empresa, cargo: cargo, score: score, status: 'aplicado' }));
+  } catch(e) {}
+  window.location.href = '/dashboard';
+}
 
 function showEmailModal(data) {
   _pendingResultData = data;

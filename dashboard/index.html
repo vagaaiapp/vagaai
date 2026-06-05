@@ -139,6 +139,75 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .plan-btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
 .plan-btn.ghost:hover{border-color:var(--green-border);color:var(--green);background:transparent}
 
+/* DASH TABS */
+.dash-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:1.5rem;gap:0;overflow-x:auto}
+.dash-tab{padding:.65rem 1.2rem;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:'Inter',sans-serif}
+.dash-tab.active{color:var(--green);border-bottom-color:var(--green)}
+.dash-tab:hover:not(.active){color:var(--text)}
+.tab-count{font-size:10px;font-weight:700;background:var(--green);color:#0a0f0d;padding:1px 6px;border-radius:20px;margin-left:.35rem;vertical-align:middle}
+
+/* KANBAN */
+.kanban-board{display:grid;grid-template-columns:repeat(5,1fr);gap:.85rem;align-items:start;overflow-x:auto;padding-bottom:.5rem}
+@media(max-width:1100px){.kanban-board{grid-template-columns:repeat(3,minmax(200px,1fr))}}
+@media(max-width:680px){.kanban-board{grid-template-columns:repeat(2,minmax(170px,1fr))}}
+.k-col{background:var(--surface2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.k-col-header{padding:.65rem .9rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--surface)}
+.k-col-title{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.k-col-count{font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;border:1px solid}
+.k-col-body{padding:.5rem;display:flex;flex-direction:column;gap:.4rem;min-height:80px}
+.k-col-add{width:100%;background:transparent;border:1px dashed var(--border);border-radius:8px;color:var(--muted);font-size:11px;font-weight:600;font-family:'Inter',sans-serif;padding:.45rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.3rem;margin-top:.2rem}
+.k-col-add:hover{border-color:var(--green-border);color:var(--green);background:var(--green-dim)}
+.k-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:.75rem .85rem;cursor:grab;transition:all .2s;user-select:none}
+.k-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-1px);box-shadow:0 3px 12px rgba(0,0,0,.25)}
+[data-theme="light"] .k-card:hover{border-color:rgba(0,0,0,.18);box-shadow:0 3px 8px rgba(0,0,0,.1)}
+.k-card.dragging{opacity:.45;transform:rotate(1.5deg)}
+.k-card-company{font-size:12px;font-weight:700;color:var(--text);margin-bottom:.1rem;display:flex;align-items:center;gap:.35rem}
+.k-card-logo{width:16px;height:16px;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0}
+.k-card-role{font-size:11px;color:var(--muted);margin-bottom:.45rem;line-height:1.3}
+.k-card-footer{display:flex;align-items:center;justify-content:space-between;gap:.3rem}
+.k-card-score{font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;border:1px solid}
+.k-card-score.high{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.k-card-score.mid{background:var(--yellow-dim);color:var(--yellow);border-color:var(--yellow-border)}
+.k-card-score.low{background:var(--red-dim);color:var(--red);border-color:var(--red-border)}
+.k-card-score.none{background:var(--surface2);color:var(--muted);border-color:var(--border)}
+.k-card-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:.1rem .3rem;line-height:1;transition:color .15s;flex-shrink:0}
+.k-card-del:hover{color:var(--red)}
+.k-card-note{font-size:10px;color:var(--muted);margin-top:.4rem;line-height:1.4;font-style:italic}
+.k-col.col-quero .k-col-header{border-top:3px solid #64c8ff}
+.k-col.col-quero .k-col-title{color:#64c8ff}
+.k-col.col-quero .k-col-count{background:rgba(100,200,255,.1);color:#64c8ff;border-color:rgba(100,200,255,.25)}
+[data-theme="light"] .k-col.col-quero .k-col-title{color:#1a6fa8}
+[data-theme="light"] .k-col.col-quero .k-col-count{background:rgba(26,111,168,.08);color:#1a6fa8;border-color:rgba(26,111,168,.25)}
+.k-col.col-aplicado .k-col-header{border-top:3px solid var(--green)}
+.k-col.col-aplicado .k-col-title{color:var(--green)}
+.k-col.col-aplicado .k-col-count{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.k-col.col-entrevista .k-col-header{border-top:3px solid var(--yellow)}
+.k-col.col-entrevista .k-col-title{color:var(--yellow)}
+.k-col.col-entrevista .k-col-count{background:var(--yellow-dim);color:var(--yellow);border-color:var(--yellow-border)}
+.k-col.col-oferta .k-col-header{border-top:3px solid var(--purple,#c084fc)}
+.k-col.col-oferta .k-col-title{color:var(--purple,#c084fc)}
+.k-col.col-oferta .k-col-count{background:rgba(192,132,252,.1);color:var(--purple,#c084fc);border-color:rgba(192,132,252,.25)}
+.k-col.col-recusado .k-col-header{border-top:3px solid var(--muted)}
+.k-col.col-recusado .k-col-title{color:var(--muted)}
+.k-col.col-recusado .k-col-count{background:rgba(138,158,144,.1);color:var(--muted);border-color:rgba(138,158,144,.25)}
+.k-empty{text-align:center;padding:1.5rem .5rem;font-size:11px;color:var(--muted)}
+.tracker-stats{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.2rem}
+.tracker-stat{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:.3rem .85rem;font-size:12px;font-weight:600;color:var(--muted)}
+.tracker-stat strong{font-weight:700}
+
+/* KANBAN MODAL */
+.k-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem}
+.k-modal-overlay.hidden{display:none}
+.k-modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.8rem;max-width:440px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.5)}
+.k-modal-title{font-family:'Lora',serif;font-size:18px;font-weight:700;margin-bottom:1.1rem}
+.k-field{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.8rem}
+.k-field label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.k-field input,.k-field textarea,.k-field select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:.6rem .85rem;transition:border-color .2s;width:100%}
+.k-field input:focus,.k-field textarea:focus,.k-field select:focus{outline:none;border-color:var(--green-border)}
+.k-field input::placeholder,.k-field textarea::placeholder{color:var(--muted)}
+.k-field select option{background:var(--surface)}
+.k-modal-actions{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.1rem}
+
 /* HISTORY */
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
 .section-title{font-size:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
@@ -400,6 +469,16 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
     <p class="greeting-sub" id="greetingSub">Bem-vindo à sua área de membros.</p>
   </div>
 
+  <!-- TABS -->
+  <div class="dash-tabs">
+    <button class="dash-tab active" onclick="switchDashTab('painel')">Painel</button>
+    <button class="dash-tab" onclick="switchDashTab('candidaturas')">Candidaturas<span class="tab-count" id="trackerTabCount" style="display:none">0</span></button>
+    <button class="dash-tab" onclick="switchDashTab('historico')">Histórico</button>
+  </div>
+
+  <!-- TAB: PAINEL -->
+  <div id="tab-painel">
+
   <!-- STATS -->
   <div class="top-grid">
     <div class="stat-card credits">
@@ -443,7 +522,43 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
     <div class="plans-row" id="plansRow"></div>
   </div>
 
-  <!-- HISTÓRICO -->
+  </div><!-- /tab-painel -->
+
+  <!-- TAB: CANDIDATURAS (KANBAN) -->
+  <div id="tab-candidaturas" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:.75rem">
+      <div class="tracker-stats" id="trackerStats"></div>
+      <button onclick="openKModal()" style="background:var(--green);color:#0a0f0d;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:.45rem .9rem;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;transition:all .2s">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nova candidatura
+      </button>
+    </div>
+    <div class="kanban-board">
+      <div class="k-col col-quero" ondrop="kDrop(event,'quero')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
+        <div class="k-col-header"><span class="k-col-title">Quero aplicar</span><span class="k-col-count" id="kc-quero">0</span></div>
+        <div class="k-col-body" id="kb-quero"></div>
+      </div>
+      <div class="k-col col-aplicado" ondrop="kDrop(event,'aplicado')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
+        <div class="k-col-header"><span class="k-col-title">Aplicado</span><span class="k-col-count" id="kc-aplicado">0</span></div>
+        <div class="k-col-body" id="kb-aplicado"></div>
+      </div>
+      <div class="k-col col-entrevista" ondrop="kDrop(event,'entrevista')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
+        <div class="k-col-header"><span class="k-col-title">Entrevista</span><span class="k-col-count" id="kc-entrevista">0</span></div>
+        <div class="k-col-body" id="kb-entrevista"></div>
+      </div>
+      <div class="k-col col-oferta" ondrop="kDrop(event,'oferta')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
+        <div class="k-col-header"><span class="k-col-title">Oferta</span><span class="k-col-count" id="kc-oferta">0</span></div>
+        <div class="k-col-body" id="kb-oferta"></div>
+      </div>
+      <div class="k-col col-recusado" ondrop="kDrop(event,'recusado')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
+        <div class="k-col-header"><span class="k-col-title">Recusado</span><span class="k-col-count" id="kc-recusado">0</span></div>
+        <div class="k-col-body" id="kb-recusado"></div>
+      </div>
+    </div>
+  </div><!-- /tab-candidaturas -->
+
+  <!-- TAB: HISTÓRICO -->
+  <div id="tab-historico" style="display:none">
   <div class="section-header">
     <div class="section-title">Histórico de análises</div>
   </div>
@@ -451,7 +566,33 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
   <div id="loadMoreWrap" style="display:none;text-align:center;margin-top:1rem">
     <button id="loadMoreBtn" onclick="loadMoreAnalyses()" style="background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.6rem 1.4rem;border-radius:8px;cursor:pointer;transition:all .2s">Carregar mais</button>
   </div>
+  </div><!-- /tab-historico -->
 
+</div>
+
+<!-- KANBAN MODAL -->
+<div class="k-modal-overlay hidden" id="kModal">
+  <div class="k-modal">
+    <div class="k-modal-title" id="kModalTitle">Nova candidatura</div>
+    <div class="k-field"><label>Empresa</label><input id="km-empresa" placeholder="Ex: Nubank, iFood..."></div>
+    <div class="k-field"><label>Cargo</label><input id="km-cargo" placeholder="Ex: Desenvolvedor Pleno..."></div>
+    <div class="k-field"><label>Score ATS (opcional)</label><input type="number" id="km-score" placeholder="Ex: 84" min="0" max="100"></div>
+    <div class="k-field"><label>Status</label>
+      <select id="km-status">
+        <option value="quero">Quero aplicar</option>
+        <option value="aplicado">Aplicado</option>
+        <option value="entrevista">Entrevista agendada</option>
+        <option value="oferta">Oferta recebida</option>
+        <option value="recusado">Recusado</option>
+      </select>
+    </div>
+    <div class="k-field"><label>Nota (opcional)</label><input id="km-nota" placeholder="Ex: Entrevista dia 10/06 às 14h..."></div>
+    <div class="k-modal-actions">
+      <button onclick="closeKModal()" style="background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.5rem .9rem;border-radius:8px;cursor:pointer">Cancelar</button>
+      <button id="kModalDeleteBtn" onclick="deleteKCard()" style="display:none;background:var(--red-dim);border:1px solid var(--red-border);color:var(--red);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.5rem .9rem;border-radius:8px;cursor:pointer">Excluir</button>
+      <button onclick="saveKCard()" style="background:var(--green);color:#0a0f0d;border:none;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:.5rem 1rem;border-radius:8px;cursor:pointer">Salvar</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -501,6 +642,7 @@ async function init() {
 
   renderPlans();
   await Promise.all([loadCredits(), loadAnalyses()]);
+  checkPendingTracker();
 
   document.getElementById('pageLoading').classList.add('hidden');
   document.getElementById('mainContent').style.display = 'block';
@@ -650,6 +792,9 @@ function renderAnalysisCard(a) {
   var actions = '<div class="analysis-actions" onclick="event.stopPropagation()">';
   if (hasResult) actions += '<button class="btn-result-hist" onclick="openResultFromHistory(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Ver análise</button>';
   if (cvOtimizado) actions += '<button class="btn-cv-hist" onclick="openCVFromHistory(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> CV</button>';
+  var _emp = jobInfo ? escAttr(jobInfo.empresa || '') : '';
+  var _carg = jobInfo ? escAttr(jobInfo.cargo || '') : '';
+  actions += '<button class="btn-result-hist" onclick="addToTracker(\'' + _emp + '\',\'' + _carg + '\',' + (a.score||0) + ')" title="Adicionar ao rastreador" style="color:var(--green);border-color:var(--green-border)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg> Rastrear</button>';
   actions += '<button class="btn-delete-hist" onclick="confirmDelete(\'' + escAttr(a.id) + '\',this)" title="Excluir análise"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
   actions += '</div>';
   return '<div class="analysis-card"' + resultAttr + cvAttr + (hasResult ? ' onclick="openResultFromHistory(this)"' : '') + '>'
@@ -1020,6 +1165,224 @@ async function doEnviarSuporte() {
 // ─── UTILS ────────────────────────────────────────────────────────────────────
 function escAttr(str) { return String(str).replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;'); }
 function escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── ADD TO TRACKER FROM HISTORY ───────────────────────────────────────────────
+function addToTracker(empresa, cargo, score) {
+  switchDashTab('candidaturas');
+  setTimeout(function() {
+    document.getElementById('km-empresa').value = empresa || '';
+    document.getElementById('km-cargo').value = cargo || '';
+    document.getElementById('km-score').value = score || '';
+    document.getElementById('km-status').value = 'aplicado';
+    document.getElementById('km-nota').value = '';
+    document.getElementById('kModalTitle').textContent = 'Adicionar ao rastreador';
+    document.getElementById('kModalDeleteBtn').style.display = 'none';
+    document.getElementById('kModal').classList.remove('hidden');
+  }, 300);
+}
+
+// ── DASH TABS ─────────────────────────────────────────────────────────────────
+function switchDashTab(tab) {
+  ['painel','candidaturas','historico'].forEach(function(t) {
+    document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.dash-tab').forEach(function(el, i) {
+    el.classList.toggle('active', ['painel','candidaturas','historico'][i] === tab);
+  });
+  if (tab === 'historico' && !_analysesFull.length) loadAnalyses();
+  if (tab === 'candidaturas') loadKanban();
+}
+
+// ── KANBAN ────────────────────────────────────────────────────────────────────
+var _kCards = [];
+var _kDragId = null;
+var _kEditId = null;
+var _kColors = ['#3ecf8e','#64c8ff','#ffd166','#ff6b6b','#c084fc','#f97316'];
+var _kColorIdx = 0;
+
+async function loadKanban() {
+  if (!currentSession) return;
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker?user_id=eq.' + currentUserId + '&select=*&order=created_at.desc', {
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
+    });
+    _kCards = await res.json();
+    if (!Array.isArray(_kCards)) _kCards = [];
+    renderKanban();
+  } catch(e) { console.error('loadKanban', e); }
+}
+
+function renderKanban() {
+  var cols = ['quero','aplicado','entrevista','oferta','recusado'];
+  cols.forEach(function(col) {
+    var body = document.getElementById('kb-' + col);
+    var colCards = _kCards.filter(function(c){ return c.status === col; });
+    document.getElementById('kc-' + col).textContent = colCards.length;
+    body.innerHTML = colCards.length
+      ? colCards.map(kCardHTML).join('')
+      : '<div class="k-empty">Sem candidaturas</div>';
+    body.insertAdjacentHTML('beforeend',
+      '<button class="k-col-add" onclick="openKModal(\'' + col + '\')">'
+      + '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+      + 'Adicionar</button>');
+    body.querySelectorAll('.k-card').forEach(function(el) {
+      el.addEventListener('dragstart', function(e) { _kDragId = el.dataset.id; el.classList.add('dragging'); });
+      el.addEventListener('dragend', function() { el.classList.remove('dragging'); });
+    });
+  });
+  // Stats
+  var total = _kCards.length;
+  var entrevistas = _kCards.filter(function(c){ return c.status === 'entrevista'; }).length;
+  var ofertas = _kCards.filter(function(c){ return c.status === 'oferta'; }).length;
+  document.getElementById('trackerStats').innerHTML =
+    '<div class="tracker-stat">Total: <strong>' + total + '</strong></div>'
+    + (entrevistas ? '<div class="tracker-stat">Entrevistas: <strong style="color:var(--yellow)">' + entrevistas + '</strong></div>' : '')
+    + (ofertas ? '<div class="tracker-stat">Ofertas: <strong style="color:var(--green)">' + ofertas + '</strong></div>' : '');
+  // Tab count badge
+  var badge = document.getElementById('trackerTabCount');
+  if (badge) { badge.textContent = total; badge.style.display = total ? 'inline' : 'none'; }
+}
+
+function kCardHTML(c) {
+  var sc = c.score;
+  var scClass = sc >= 75 ? 'high' : sc >= 55 ? 'mid' : sc ? 'low' : 'none';
+  var scLabel = sc ? sc + '% ATS' : 'Sem score';
+  var initial = (c.empresa || '?')[0].toUpperCase();
+  var color = c.color || '#3ecf8e';
+  return '<div class="k-card" draggable="true" data-id="' + c.id + '" onclick="openKEdit(\'' + escAttr(c.id) + '\')">'
+    + '<div class="k-card-company"><div class="k-card-logo" style="background:' + color + '">' + initial + '</div>' + escHtml(c.empresa) + '</div>'
+    + '<div class="k-card-role">' + escHtml(c.cargo) + '</div>'
+    + '<div class="k-card-footer">'
+    + '<span class="k-card-score ' + scClass + '">' + scLabel + '</span>'
+    + '<button class="k-card-del" onclick="event.stopPropagation();confirmDelKCard(\'' + escAttr(c.id) + '\')" title="Remover">×</button>'
+    + '</div>'
+    + (c.nota ? '<div class="k-card-note">📝 ' + escHtml(c.nota) + '</div>' : '')
+    + '</div>';
+}
+
+// Drag & Drop
+function kAllowDrop(e) { e.preventDefault(); var b = e.currentTarget.querySelector('.k-col-body'); if(b) b.style.background='rgba(62,207,142,0.05)'; }
+function kLeaveDrop(e) { var b = e.currentTarget.querySelector('.k-col-body'); if(b) b.style.background=''; }
+async function kDrop(e, newStatus) {
+  e.preventDefault();
+  var b = e.currentTarget.querySelector('.k-col-body'); if(b) b.style.background='';
+  if (!_kDragId) return;
+  var card = _kCards.find(function(c){ return c.id === _kDragId; });
+  if (!card || card.status === newStatus) { _kDragId = null; return; }
+  card.status = newStatus;
+  renderKanban();
+  await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + _kDragId, {
+    method: 'PATCH',
+    headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    body: JSON.stringify({ status: newStatus, updated_at: new Date().toISOString() })
+  });
+  _kDragId = null;
+}
+
+// Modal
+function openKModal(status) {
+  _kEditId = null;
+  document.getElementById('kModalTitle').textContent = 'Nova candidatura';
+  document.getElementById('km-empresa').value = '';
+  document.getElementById('km-cargo').value = '';
+  document.getElementById('km-score').value = '';
+  document.getElementById('km-nota').value = '';
+  document.getElementById('km-status').value = status || 'quero';
+  document.getElementById('kModalDeleteBtn').style.display = 'none';
+  document.getElementById('kModal').classList.remove('hidden');
+  document.getElementById('km-empresa').focus();
+}
+function openKEdit(id) {
+  var c = _kCards.find(function(x){ return x.id === id; });
+  if (!c) return;
+  _kEditId = id;
+  document.getElementById('kModalTitle').textContent = 'Editar candidatura';
+  document.getElementById('km-empresa').value = c.empresa || '';
+  document.getElementById('km-cargo').value = c.cargo || '';
+  document.getElementById('km-score').value = c.score || '';
+  document.getElementById('km-nota').value = c.nota || '';
+  document.getElementById('km-status').value = c.status || 'quero';
+  document.getElementById('kModalDeleteBtn').style.display = 'inline-block';
+  document.getElementById('kModal').classList.remove('hidden');
+}
+function closeKModal() { document.getElementById('kModal').classList.add('hidden'); _kEditId = null; }
+
+async function saveKCard() {
+  var empresa = document.getElementById('km-empresa').value.trim();
+  var cargo = document.getElementById('km-cargo').value.trim();
+  if (!empresa || !cargo) { alert('Preencha empresa e cargo.'); return; }
+  var body = {
+    empresa, cargo,
+    score: parseInt(document.getElementById('km-score').value) || null,
+    nota: document.getElementById('km-nota').value.trim(),
+    status: document.getElementById('km-status').value,
+    updated_at: new Date().toISOString()
+  };
+  if (_kEditId) {
+    await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + _kEditId, {
+      method: 'PATCH',
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify(body)
+    });
+    var idx = _kCards.findIndex(function(c){ return c.id === _kEditId; });
+    if (idx >= 0) Object.assign(_kCards[idx], body);
+  } else {
+    body.user_id = currentUserId;
+    body.color = _kColors[_kColorIdx++ % _kColors.length];
+    body.created_at = new Date().toISOString();
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker', {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify(body)
+    });
+    var rows = await res.json();
+    if (rows && rows[0]) _kCards.unshift(rows[0]);
+  }
+  closeKModal(); renderKanban();
+}
+
+async function confirmDelKCard() {
+  if (!_kEditId) return;
+  var c = _kCards.find(function(x){ return x.id === _kEditId; });
+  if (!confirm('Remover "' + (c ? c.empresa : '') + '"?')) return;
+  await deleteKCardById(_kEditId);
+  closeKModal();
+}
+async function confirmDelKCard(id) {
+  var c = _kCards.find(function(x){ return x.id === id; });
+  if (!confirm('Remover "' + (c ? c.empresa : 'essa candidatura') + '"?')) return;
+  await deleteKCardById(id);
+}
+async function deleteKCardById(id) {
+  _kCards = _kCards.filter(function(c){ return c.id !== id; });
+  renderKanban();
+  await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + id, {
+    method: 'DELETE',
+    headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
+  });
+}
+
+// Chamado do app/index.html via localStorage
+function checkPendingTracker() {
+  try {
+    var pending = localStorage.getItem('vagaai_tracker_pending');
+    if (!pending) return;
+    localStorage.removeItem('vagaai_tracker_pending');
+    var data = JSON.parse(pending);
+    // Abre aba candidaturas e modal pré-preenchido
+    switchDashTab('candidaturas');
+    setTimeout(function() {
+      document.getElementById('km-empresa').value = data.empresa || '';
+      document.getElementById('km-cargo').value = data.cargo || '';
+      document.getElementById('km-score').value = data.score || '';
+      document.getElementById('km-status').value = data.status || 'aplicado';
+      document.getElementById('km-nota').value = '';
+      document.getElementById('kModalTitle').textContent = 'Adicionar ao rastreador';
+      document.getElementById('kModalDeleteBtn').style.display = 'none';
+      document.getElementById('kModal').classList.remove('hidden');
+    }, 600);
+  } catch(e) {}
+}
 function nivelCSSClass(nivel) {
   if (!nivel) return '';
   var n = nivel.toLowerCase();
