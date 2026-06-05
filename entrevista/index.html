@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VagaAI — Simulador de Entrevista</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="/_vercel/insights/script.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0f0d;--surface:#111814;--surface2:#161d19;--border:rgba(255,255,255,0.07);
+  --text:#e8ede9;--muted:#8a9e90;--green:#3ecf8e;
+  --green-dim:rgba(62,207,142,0.12);--green-border:rgba(62,207,142,0.25);
+  --red:#ff6b6b;--red-dim:rgba(255,107,107,0.12);--red-border:rgba(255,107,107,0.25);
+  --yellow:#ffd166;--yellow-dim:rgba(255,209,102,0.12);--yellow-border:rgba(255,209,102,0.3);
+  --blue:#64c8ff;--blue-dim:rgba(100,200,255,0.1);--blue-border:rgba(100,200,255,0.25);
+}
+[data-theme="light"]{--bg:#f2f6f3;--surface:#fff;--surface2:#eaf0ec;--border:rgba(0,0,0,.09);--text:#0d1a11;--muted:#4d6e57;--green:#1a8f5c;--green-dim:rgba(26,143,92,.1);--green-border:rgba(26,143,92,.25);--red:#c0392b;--red-dim:rgba(192,57,43,.08);--red-border:rgba(192,57,43,.25);--yellow:#b07d1a;--yellow-dim:rgba(176,125,26,.08);--yellow-border:rgba(176,125,26,.25);--blue:#1a6fa8;--blue-dim:rgba(26,111,168,.08);--blue-border:rgba(26,111,168,.25)}
+[data-theme="light"] nav{background:rgba(242,246,243,0.95)!important}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-badge{font-size:9px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.nav-right{display:flex;align-items:center;gap:.75rem}
+.theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .2s}
+.theme-btn:hover{border-color:var(--green-border);color:var(--green)}
+
+.container{max-width:800px;margin:0 auto;padding:2rem 1.5rem 4rem}
+
+/* SCREENS */
+.screen{display:none}
+.screen.active{display:block}
+
+/* STEP 1 — Setup */
+.page-title{font-family:'Lora',serif;font-size:clamp(22px,4vw,30px);font-weight:700;margin-bottom:.4rem}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:2rem}
+.field{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem}
+.field label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+textarea{background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;line-height:1.6;padding:.9rem 1rem;resize:vertical;transition:border-color .2s;width:100%}
+textarea:focus{outline:none;border-color:var(--green-border)}
+textarea::placeholder{color:var(--muted)}
+.btn-primary{background:var(--green);color:#0a0f0d;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;padding:.85rem 1.5rem;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.5rem;width:100%;justify-content:center}
+.btn-primary:hover{background:#4ddb9e}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.65rem 1.2rem;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.4rem}
+.btn-ghost:hover{border-color:var(--green-border);color:var(--green)}
+
+/* LOADING */
+.loading-wrap{text-align:center;padding:3rem 1rem}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:var(--muted);font-size:14px}
+.loading-text strong{color:var(--text);display:block;font-size:15px;margin-bottom:.3rem}
+
+/* STEP 2 — Perguntas */
+.interview-header{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+.interview-info{flex:1}
+.interview-empresa{font-size:14px;font-weight:700;color:var(--text)}
+.interview-cargo{font-size:12px;color:var(--muted)}
+.progress-wrap{display:flex;align-items:center;gap:.75rem}
+.progress-bar{width:120px;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width .4s ease}
+.progress-text{font-size:12px;color:var(--muted);white-space:nowrap}
+
+.question-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.6rem;margin-bottom:1.2rem}
+.question-meta{display:flex;align-items:center;gap:.5rem;margin-bottom:1rem}
+.q-num{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.q-cat{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid}
+.q-cat.Comportamental{background:var(--blue-dim);color:var(--blue);border-color:var(--blue-border)}
+.q-cat.Técnica{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.q-cat.Situacional{background:var(--yellow-dim);color:var(--yellow);border-color:var(--yellow-border)}
+.q-cat.Motivacional{background:var(--red-dim);color:var(--red);border-color:var(--red-border)}
+.q-nivel{font-size:10px;color:var(--muted);font-weight:600}
+.question-text{font-family:'Lora',serif;font-size:18px;font-weight:700;line-height:1.4;margin-bottom:.6rem;color:var(--text)}
+.question-dica{font-size:12px;color:var(--muted);background:var(--surface2);border-radius:8px;padding:.5rem .75rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:.4rem}
+.answer-wrap{position:relative}
+.answer-textarea{min-height:120px;background:var(--surface2)!important}
+.char-hint{font-size:11px;color:var(--muted);margin-top:.3rem;text-align:right}
+.question-actions{display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap}
+.btn-eval{flex:1;background:var(--green);color:#0a0f0d;border:none;border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:.7rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.4rem}
+.btn-eval:hover{background:#4ddb9e}
+.btn-eval:disabled{opacity:.5;cursor:not-allowed}
+.btn-skip{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:9px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;padding:.7rem 1rem;cursor:pointer;transition:all .2s}
+.btn-skip:hover{border-color:var(--green-border);color:var(--green)}
+
+/* FEEDBACK */
+.feedback-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.2rem;margin-top:1rem;display:none}
+.feedback-card.show{display:block}
+.stars{font-size:20px;margin-bottom:.5rem}
+.feedback-resumo{font-size:14px;font-weight:600;color:var(--text);margin-bottom:.9rem}
+.feedback-section{margin-bottom:.7rem}
+.feedback-section-title{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:.35rem}
+.feedback-list{list-style:none;display:flex;flex-direction:column;gap:.3rem}
+.feedback-list li{font-size:12px;color:var(--muted);padding-left:.9rem;position:relative;line-height:1.45}
+.feedback-list li::before{position:absolute;left:0;top:.1rem}
+.feedback-list.good li::before{content:'✓';color:var(--green);font-size:10px}
+.feedback-list.bad li::before{content:'→';color:var(--yellow);font-size:10px}
+.feedback-modelo{background:var(--surface);border:1px solid var(--green-border);border-radius:8px;padding:.75rem;font-size:12px;color:var(--text);line-height:1.5;margin-top:.6rem}
+.feedback-dica{font-size:12px;color:var(--green);font-style:italic;margin-top:.5rem;padding-left:.5rem;border-left:2px solid var(--green-border)}
+.btn-next{width:100%;background:var(--green);color:#0a0f0d;border:none;border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:.75rem;cursor:pointer;transition:all .2s;margin-top:.75rem;display:none}
+.btn-next.show{display:block}
+.btn-next:hover{background:#4ddb9e}
+
+/* STEP 3 — Resultado */
+.result-header-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:2rem;text-align:center;margin-bottom:1.5rem}
+.result-score-wrap{position:relative;width:110px;height:110px;margin:0 auto 1rem}
+.result-score-svg{width:110px;height:110px}
+.result-score-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.result-score-n{font-family:'Lora',serif;font-size:32px;font-weight:700}
+.result-score-label{font-size:11px;color:var(--muted)}
+.result-title{font-family:'Lora',serif;font-size:20px;font-weight:700;margin-bottom:.3rem}
+.result-sub{font-size:13px;color:var(--muted)}
+.answers-grid{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.5rem}
+.answer-summary{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1rem;display:flex;align-items:center;gap:.75rem}
+.answer-summary-stars{font-size:14px;flex-shrink:0;width:70px}
+.answer-summary-text{flex:1;min-width:0}
+.answer-summary-q{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:.1rem}
+.answer-summary-resumo{font-size:11px;color:var(--muted)}
+.result-actions{display:flex;gap:.75rem;flex-wrap:wrap}
+.btn-retry{flex:1;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.75rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.4rem}
+.btn-retry:hover{border-color:var(--green-border);color:var(--green)}
+
+/* PRO GATE */
+.pro-gate{background:var(--surface);border:1px solid var(--yellow-border,rgba(255,209,102,0.3));border-radius:14px;padding:2.5rem 2rem;text-align:center;margin-top:1rem}
+.pro-gate-icon{font-size:48px;margin-bottom:1rem}
+.pro-gate-title{font-family:'Lora',serif;font-size:22px;font-weight:700;margin-bottom:.5rem}
+.pro-gate-sub{font-size:14px;color:var(--muted);margin-bottom:1.5rem;max-width:380px;margin-left:auto;margin-right:auto}
+.pro-gate-btn{display:inline-block;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;padding:.85rem 1.8rem;border-radius:10px;text-decoration:none;transition:all .2s}
+.pro-gate-btn:hover{background:#4ddb9e}
+
+.error-box{background:var(--red-dim);border:1px solid var(--red-border);border-radius:10px;padding:.9rem 1.1rem;color:#ff8f8f;font-size:13px;margin-top:.75rem;display:none}
+.error-box.show{display:block}
+</style>
+<script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="/logo.svg" alt="VagaAI" height="38" onerror="this.style.display='none'">
+    <span class="nav-badge">Entrevista</span>
+  </a>
+  <div class="nav-right">
+    <a href="/dashboard" style="font-size:13px;color:var(--muted);text-decoration:none;font-weight:600">← Painel</a>
+    <button class="theme-btn" onclick="toggleTheme()">☀️</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- SCREEN 0: PRO GATE -->
+  <div class="screen active" id="screenGate">
+    <div class="pro-gate">
+      <div class="pro-gate-icon">🎯</div>
+      <div class="pro-gate-title">Simulador de Entrevista com IA</div>
+      <p class="pro-gate-sub">Treine com perguntas personalizadas para cada vaga e receba feedback detalhado da IA antes da entrevista real.</p>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.2rem;font-size:12px;color:var(--muted)">
+        <span>✓ 8 perguntas por vaga</span>
+        <span>·</span>
+        <span>✓ Avaliação com nota</span>
+        <span>·</span>
+        <span>✓ Resposta modelo</span>
+        <span>·</span>
+        <span>✓ Dicas personalizadas</span>
+      </div>
+      <a href="/dashboard" class="pro-gate-btn">⚡ Assinar Pro — R$39,90/mês</a>
+      <p style="font-size:11px;color:var(--muted);margin-top:.75rem">Cancele quando quiser</p>
+    </div>
+  </div>
+
+  <!-- SCREEN 1: SETUP -->
+  <div class="screen" id="screenSetup">
+    <h1 class="page-title">Simulador de Entrevista</h1>
+    <p class="page-sub">Cole a vaga e seu currículo. A IA vai gerar 8 perguntas personalizadas para você treinar.</p>
+
+    <div class="field">
+      <label>Descrição da vaga</label>
+      <textarea id="jobInput" rows="7" placeholder="Cole aqui o texto completo da vaga..."></textarea>
+    </div>
+    <div class="field">
+      <label>Seu currículo</label>
+      <textarea id="cvInput" rows="7" placeholder="Cole aqui o conteúdo do seu currículo..."></textarea>
+    </div>
+    <div class="error-box" id="setupError"></div>
+    <button class="btn-primary" id="btnGenerate" onclick="generateInterview()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Gerar perguntas de entrevista
+    </button>
+  </div>
+
+  <!-- SCREEN 2: LOADING -->
+  <div class="screen" id="screenLoading">
+    <div class="loading-wrap">
+      <div class="spinner"></div>
+      <div class="loading-text">
+        <strong>Preparando sua entrevista…</strong>
+        Analisando a vaga e gerando perguntas personalizadas
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: INTERVIEW -->
+  <div class="screen" id="screenInterview">
+    <div class="interview-header">
+      <div class="interview-info">
+        <div class="interview-empresa" id="iEmpresa"></div>
+        <div class="interview-cargo" id="iCargo"></div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        <span class="progress-text" id="progressText">0 / 8</span>
+      </div>
+    </div>
+
+    <div id="questionArea"></div>
+    <div class="error-box" id="interviewError"></div>
+  </div>
+
+  <!-- SCREEN 4: RESULT -->
+  <div class="screen" id="screenResult">
+    <div class="result-header-card">
+      <div class="result-score-wrap">
+        <svg class="result-score-svg" viewBox="0 0 110 110">
+          <circle cx="55" cy="55" r="45" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+          <circle id="resultArc" cx="55" cy="55" r="45" fill="none" stroke="#3ecf8e" stroke-width="8"
+            stroke-dasharray="283" stroke-dashoffset="283" stroke-linecap="round"
+            transform="rotate(-90 55 55)" style="transition:stroke-dashoffset 1.2s ease"/>
+        </svg>
+        <div class="result-score-inner">
+          <div class="result-score-n" id="resultScoreNum">0</div>
+          <div class="result-score-label">/ 5.0</div>
+        </div>
+      </div>
+      <div class="result-title" id="resultTitle">Entrevista concluída!</div>
+      <div class="result-sub" id="resultSub"></div>
+    </div>
+
+    <div class="answers-grid" id="answersGrid"></div>
+
+    <div class="result-actions">
+      <button class="btn-retry" onclick="restartInterview()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+        Treinar novamente
+      </button>
+      <button class="btn-primary" style="flex:1" onclick="window.location.href='/app'">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Analisar outra vaga
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var sb = window.supabase.createClient(
+  'https://kbcjchjepgejdezeuwwh.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA'
+);
+
+var _session = null;
+var _questions = [];
+var _currentQ = 0;
+var _answers = [];
+var _jobText = '';
+var _cvText = '';
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+(async function() {
+  var r = await sb.auth.getSession();
+  _session = r.data.session;
+  if (!_session) { window.location.href = '/login'; return; }
+
+  // Verifica plano
+  try {
+    var res = await fetch('/api/subscription', { headers: { Authorization: 'Bearer ' + _session.access_token } });
+    var sub = await res.json();
+    if (sub.plan === 'pro') {
+      // Carrega vaga/cv do localStorage se vier do /app
+      var savedJob = '';
+      var savedCv = '';
+      try { savedJob = localStorage.getItem('vagaai_last_job') || ''; } catch(e){}
+      try { savedCv = localStorage.getItem('vagaai_last_cv') || ''; } catch(e){}
+      if (savedJob) document.getElementById('jobInput').value = savedJob;
+      if (savedCv) document.getElementById('cvInput').value = savedCv;
+      showScreen('screenSetup');
+    } else {
+      showScreen('screenGate');
+    }
+  } catch(e) {
+    showScreen('screenGate');
+  }
+})();
+
+// ── Gerar perguntas ───────────────────────────────────────────────────────────
+async function generateInterview() {
+  var job = document.getElementById('jobInput').value.trim();
+  var cv = document.getElementById('cvInput').value.trim();
+  var errEl = document.getElementById('setupError');
+  errEl.classList.remove('show');
+
+  if (!job || job.length < 50) { showError('setupError', 'Cole a descrição completa da vaga.'); return; }
+  if (!cv || cv.length < 50) { showError('setupError', 'Cole o conteúdo do seu currículo.'); return; }
+
+  _jobText = job; _cvText = cv;
+  showScreen('screenLoading');
+
+  try {
+    var res = await fetch('/api/interview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _session.access_token },
+      body: JSON.stringify({ action: 'generate', job, cv })
+    });
+    var data = await res.json();
+
+    if (res.status === 403) { showScreen('screenGate'); return; }
+    if (!res.ok || data.error) throw new Error(data.message || data.error || 'Erro ao gerar perguntas');
+
+    _questions = data.perguntas || [];
+    _currentQ = 0;
+    _answers = new Array(_questions.length).fill(null);
+
+    document.getElementById('iEmpresa').textContent = data.empresa || 'Empresa';
+    document.getElementById('iCargo').textContent = data.cargo || '';
+
+    showScreen('screenInterview');
+    renderQuestion();
+  } catch(e) {
+    showScreen('screenSetup');
+    showError('setupError', e.message || 'Erro inesperado. Tente novamente.');
+  }
+}
+
+// ── Renderizar pergunta ───────────────────────────────────────────────────────
+function renderQuestion() {
+  if (_currentQ >= _questions.length) { showResult(); return; }
+  var q = _questions[_currentQ];
+  var pct = Math.round((_currentQ / _questions.length) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = _currentQ + ' / ' + _questions.length;
+
+  var nivelStars = { fácil: '●○○', médio: '●●○', difícil: '●●●' }[q.nivel] || '●○○';
+
+  document.getElementById('questionArea').innerHTML =
+    '<div class="question-card">'
+    + '<div class="question-meta">'
+    + '<span class="q-num">Pergunta ' + (q.id || (_currentQ + 1)) + '</span>'
+    + '<span class="q-cat ' + q.categoria + '">' + q.categoria + '</span>'
+    + '<span class="q-nivel">' + nivelStars + '</span>'
+    + '</div>'
+    + '<div class="question-text">' + escHtml(q.pergunta) + '</div>'
+    + '<div class="question-dica"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' + escHtml(q.dica) + '</div>'
+    + '<div class="answer-wrap">'
+    + '<textarea class="answer-textarea" id="answerInput" rows="5" placeholder="Digite sua resposta aqui... Seja específico e use exemplos reais." oninput="updateCharHint()"></textarea>'
+    + '<div class="char-hint" id="charHint">0 palavras</div>'
+    + '</div>'
+    + '<div class="question-actions">'
+    + '<button class="btn-eval" id="btnEval" onclick="evaluateAnswer()">'
+    + '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
+    + 'Avaliar minha resposta</button>'
+    + '<button class="btn-skip" onclick="skipQuestion()">Pular</button>'
+    + '</div>'
+    + '<div class="feedback-card" id="feedbackCard"></div>'
+    + '<button class="btn-next" id="btnNext" onclick="nextQuestion()">'
+    + (_currentQ + 1 < _questions.length ? 'Próxima pergunta →' : 'Ver resultado final →')
+    + '</button>'
+    + '</div>';
+}
+
+function updateCharHint() {
+  var val = document.getElementById('answerInput').value;
+  var words = val.trim().split(/\s+/).filter(function(w){ return w; }).length;
+  var hint = document.getElementById('charHint');
+  if (hint) hint.textContent = words + ' palavra' + (words !== 1 ? 's' : '');
+}
+
+// ── Avaliar resposta ──────────────────────────────────────────────────────────
+async function evaluateAnswer() {
+  var answer = document.getElementById('answerInput').value.trim();
+  var errEl = document.getElementById('interviewError');
+  errEl.classList.remove('show');
+
+  if (!answer || answer.length < 10) {
+    showError('interviewError', 'Escreva uma resposta antes de avaliar.');
+    return;
+  }
+
+  var btn = document.getElementById('btnEval');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;margin:0"></div> Avaliando…';
+
+  var q = _questions[_currentQ];
+
+  try {
+    var res = await fetch('/api/interview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _session.access_token },
+      body: JSON.stringify({ action: 'evaluate', question: q.pergunta, answer, job: _jobText, cv: _cvText })
+    });
+    var feedback = await res.json();
+    if (!res.ok || feedback.error) throw new Error(feedback.error || 'Erro ao avaliar');
+
+    _answers[_currentQ] = { question: q.pergunta, answer, feedback, categoria: q.categoria };
+
+    renderFeedback(feedback);
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Avaliar minha resposta';
+    showError('interviewError', e.message || 'Erro ao avaliar. Tente novamente.');
+  }
+}
+
+function renderFeedback(f) {
+  var stars = '★'.repeat(f.nota) + '☆'.repeat(5 - f.nota);
+  var card = document.getElementById('feedbackCard');
+  card.innerHTML =
+    '<div class="stars" style="color:' + (f.nota >= 4 ? 'var(--green)' : f.nota >= 3 ? 'var(--yellow)' : 'var(--red)') + '">' + stars + ' <span style="font-size:13px;color:var(--muted);font-weight:600">' + f.nota + '/5</span></div>'
+    + '<div class="feedback-resumo">' + escHtml(f.resumo) + '</div>'
+    + (f.pontos_fortes?.length ? '<div class="feedback-section"><div class="feedback-section-title">Pontos fortes</div><ul class="feedback-list good">' + f.pontos_fortes.map(function(p){ return '<li>' + escHtml(p) + '</li>'; }).join('') + '</ul></div>' : '')
+    + (f.melhorar?.length ? '<div class="feedback-section"><div class="feedback-section-title">Como melhorar</div><ul class="feedback-list bad">' + f.melhorar.map(function(p){ return '<li>' + escHtml(p) + '</li>'; }).join('') + '</ul></div>' : '')
+    + '<div class="feedback-section"><div class="feedback-section-title">Resposta modelo</div><div class="feedback-modelo">' + escHtml(f.resposta_modelo) + '</div></div>'
+    + '<div class="feedback-dica">💡 ' + escHtml(f.dica_final) + '</div>';
+  card.classList.add('show');
+
+  var btnNext = document.getElementById('btnNext');
+  if (btnNext) btnNext.classList.add('show');
+
+  var btn = document.getElementById('btnEval');
+  if (btn) { btn.disabled = true; btn.style.opacity = '.4'; }
+}
+
+function skipQuestion() {
+  _answers[_currentQ] = { question: _questions[_currentQ].pergunta, answer: '(pulada)', feedback: null, categoria: _questions[_currentQ].categoria };
+  nextQuestion();
+}
+
+function nextQuestion() {
+  _currentQ++;
+  if (_currentQ >= _questions.length) { showResult(); return; }
+  document.getElementById('progressFill').style.width = Math.round((_currentQ / _questions.length) * 100) + '%';
+  document.getElementById('progressText').textContent = _currentQ + ' / ' + _questions.length;
+  renderQuestion();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Resultado ─────────────────────────────────────────────────────────────────
+function showResult() {
+  var answered = _answers.filter(function(a){ return a && a.feedback; });
+  var avgScore = answered.length
+    ? answered.reduce(function(s, a){ return s + (a.feedback.nota || 0); }, 0) / answered.length
+    : 0;
+  avgScore = Math.round(avgScore * 10) / 10;
+
+  var pct = (avgScore / 5) * 100;
+  var circumference = 283;
+  var offset = circumference - (pct / 100) * circumference;
+
+  setTimeout(function() {
+    document.getElementById('resultArc').style.strokeDashoffset = offset;
+    var color = avgScore >= 4 ? '#3ecf8e' : avgScore >= 3 ? '#ffd166' : '#ff6b6b';
+    document.getElementById('resultArc').style.stroke = color;
+    document.getElementById('resultScoreNum').style.color = color;
+    animateNum('resultScoreNum', 0, avgScore, 1200);
+  }, 200);
+
+  var titulo = avgScore >= 4.5 ? 'Entrevista excelente! 🎉' : avgScore >= 3.5 ? 'Boa performance! 💪' : avgScore >= 2.5 ? 'Treino necessário 📚' : 'Continue praticando! 🎯';
+  var sub = answered.length + ' de ' + _questions.length + ' perguntas respondidas · Média ' + avgScore + '/5';
+  document.getElementById('resultTitle').textContent = titulo;
+  document.getElementById('resultSub').textContent = sub;
+
+  document.getElementById('answersGrid').innerHTML = _answers.map(function(a, i) {
+    if (!a) return '';
+    var nota = a.feedback ? a.feedback.nota : 0;
+    var stars = a.feedback ? '★'.repeat(nota) + '☆'.repeat(5 - nota) : '—';
+    var starColor = nota >= 4 ? 'var(--green)' : nota >= 3 ? 'var(--yellow)' : nota ? 'var(--red)' : 'var(--muted)';
+    return '<div class="answer-summary">'
+      + '<div class="answer-summary-stars" style="color:' + starColor + '">' + stars + '</div>'
+      + '<div class="answer-summary-text">'
+      + '<div class="answer-summary-q">' + escHtml(a.question.slice(0, 80)) + (a.question.length > 80 ? '…' : '') + '</div>'
+      + '<div class="answer-summary-resumo">' + (a.feedback ? escHtml(a.feedback.resumo.slice(0, 80)) : 'Pulada') + '</div>'
+      + '</div></div>';
+  }).join('');
+
+  showScreen('screenResult');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function restartInterview() {
+  _currentQ = 0;
+  _answers = new Array(_questions.length).fill(null);
+  showScreen('screenInterview');
+  renderQuestion();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+function showError(id, msg) {
+  var el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function animateNum(id, from, to, dur) {
+  var el = document.getElementById(id);
+  var start = null;
+  function step(ts) {
+    if (!start) start = ts;
+    var p = Math.min((ts - start) / dur, 1);
+    var val = from + (to - from) * p;
+    el.textContent = to % 1 === 0 ? Math.round(val) : val.toFixed(1);
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function toggleTheme() {
+  var l = document.documentElement.getAttribute('data-theme') === 'light';
+  if (l) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('vagaai_theme','dark'); }
+  else { document.documentElement.setAttribute('data-theme','light'); localStorage.setItem('vagaai_theme','light'); }
+  document.querySelector('.theme-btn').textContent = l ? '☀️' : '🌙';
+}
+(function(){ document.querySelector('.theme-btn').textContent = document.documentElement.getAttribute('data-theme')==='light' ? '🌙' : '☀️'; })();
+</script>
+</body>
+</html>
