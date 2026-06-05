@@ -83,6 +83,17 @@ textarea{background:var(--surface);border:1px solid var(--border);border-radius:
 textarea:focus{outline:none;border-color:var(--green-border)}
 textarea::placeholder{color:var(--muted)}
 .char-count{font-size:11px;color:var(--muted);text-align:right;margin-top:.2rem}
+/* URL FETCH */
+.url-row{display:flex;gap:.5rem}
+.url-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:.6rem .9rem;transition:border-color .2s;min-width:0}
+.url-input:focus{outline:none;border-color:var(--green-border)}
+.url-input::placeholder{color:var(--muted)}
+.btn-fetch{background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.6rem 1rem;border-radius:8px;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.btn-fetch:hover{border-color:var(--green-border);color:var(--green)}
+.btn-fetch:disabled{opacity:.6;cursor:not-allowed}
+.fetch-status{font-size:12px;margin-top:.3rem;min-height:1rem}
+.or-divider{display:flex;align-items:center;gap:.6rem;margin:.6rem 0 .2rem;color:var(--muted);font-size:12px}
+.or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--border)}
 
 /* FILE UPLOAD */
 .upload-row{display:flex;align-items:center;gap:.6rem;margin-top:.5rem;flex-wrap:wrap}
@@ -325,8 +336,14 @@ textarea::placeholder{color:var(--muted)}
 
   <div class="form-section" id="formSection">
     <div class="field">
-      <label for="jobInput">Descrição da vaga <span>— Cole o texto completo da vaga</span></label>
-      <textarea id="jobInput" rows="8" placeholder="Cole aqui o texto da vaga (título, requisitos, responsabilidades...)"></textarea>
+      <label>Descrição da vaga <span>— Link ou texto completo</span></label>
+      <div class="url-row">
+        <input type="url" class="url-input" id="jobUrl" placeholder="Cole o link da vaga (LinkedIn, Gupy, Indeed…)" autocomplete="off">
+        <button class="btn-fetch" id="fetchBtn" onclick="fetchJobUrl()">Carregar</button>
+      </div>
+      <div class="fetch-status" id="fetchStatus"></div>
+      <div class="or-divider"><span>ou cole o texto abaixo</span></div>
+      <textarea id="jobInput" rows="6" placeholder="Cole aqui o texto da vaga (título, requisitos, responsabilidades...)"></textarea>
       <div class="char-count" id="jobCount">0 caracteres</div>
     </div>
 
@@ -773,6 +790,38 @@ function showError(msg) {
 
 function hideError() {
   document.getElementById('errorBox').classList.remove('show');
+}
+
+async function fetchJobUrl() {
+  var url = document.getElementById('jobUrl').value.trim();
+  var st = document.getElementById('fetchStatus');
+  if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) {
+    st.textContent = 'Insira um link válido (começando com https://)';
+    st.style.color = 'var(--red)';
+    return;
+  }
+  var btn = document.getElementById('fetchBtn');
+  btn.disabled = true;
+  btn.textContent = 'Carregando…';
+  st.textContent = '';
+  try {
+    var res = await fetch('/api/fetch-job?url=' + encodeURIComponent(url));
+    var data = await res.json();
+    if (data.text && data.text.length > 50) {
+      document.getElementById('jobInput').value = data.text;
+      document.getElementById('jobCount').textContent = data.text.length + ' caracteres';
+      st.textContent = '✓ Vaga carregada com sucesso!';
+      st.style.color = 'var(--green)';
+    } else {
+      st.textContent = 'Não foi possível extrair o texto. Cole a descrição manualmente abaixo.';
+      st.style.color = 'var(--yellow)';
+    }
+  } catch(e) {
+    st.textContent = 'Erro ao carregar o link. Cole o texto manualmente.';
+    st.style.color = 'var(--red)';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Carregar';
 }
 
 async function analyze() {
