@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VagaAI — Preview: Rastreador de Candidaturas</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2f6f3;--surface:#fff;--surface2:#eaf0ec;--border:rgba(0,0,0,0.09);
+  --text:#0d1a11;--muted:#4d6e57;
+  --green:#1a8f5c;--green-dim:rgba(26,143,92,0.1);--green-border:rgba(26,143,92,0.25);
+  --red:#c0392b;--red-dim:rgba(192,57,43,0.08);--red-border:rgba(192,57,43,0.25);
+  --yellow:#b07d1a;--yellow-dim:rgba(176,125,26,0.08);--yellow-border:rgba(176,125,26,0.25);
+  --blue:#1a6fa8;--blue-dim:rgba(26,111,168,0.08);--blue-border:rgba(26,111,168,0.25);
+  --purple:#7c3aed;--purple-dim:rgba(124,58,237,0.08);--purple-border:rgba(124,58,237,0.25);
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+
+/* NAV */
+nav{background:rgba(242,246,243,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;font-family:'Lora',serif;font-weight:700;font-size:16px;color:var(--text)}
+.nav-badge{font-size:9px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.preview-tag{font-size:11px;font-weight:600;background:var(--yellow-dim);border:1px solid var(--yellow-border);color:var(--yellow);padding:3px 10px;border-radius:20px}
+
+/* STEPS NAV */
+.steps-nav{display:flex;align-items:center;justify-content:center;gap:0;background:var(--surface);border-bottom:1px solid var(--border);padding:.75rem 1.5rem;flex-wrap:wrap;gap:.5rem}
+.step-btn{font-size:12px;font-weight:600;padding:.4rem .9rem;border-radius:20px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Inter',sans-serif;transition:all .2s;display:flex;align-items:center;gap:.4rem}
+.step-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+.step-btn.done{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.step-arrow{color:var(--muted);font-size:14px;padding:0 .25rem}
+
+/* SCREEN */
+.screen{display:none;max-width:860px;margin:0 auto;padding:2rem 1.5rem 4rem}
+.screen.active{display:block}
+
+/* ── SCREEN 1: Resultado da Análise ── */
+.result-header{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.8rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:1.8rem;flex-wrap:wrap}
+.score-ring-wrap{position:relative;flex-shrink:0}
+.score-ring{width:90px;height:90px}
+.score-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.score-n{font-size:26px;font-weight:700;font-family:'Lora',serif;color:var(--green)}
+.score-label{font-size:10px;color:var(--muted);margin-top:2px}
+.score-info{flex:1}
+.score-nivel{font-size:13px;font-weight:700;color:var(--green);letter-spacing:.05em;text-transform:uppercase;margin-bottom:.3rem}
+.score-resumo{font-size:13px;color:var(--muted);line-height:1.5}
+
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem}
+@media(max-width:560px){.result-grid{grid-template-columns:1fr}}
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem}
+.result-card-title{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:.8rem;color:var(--green)}
+.result-card-title.red{color:var(--red)}
+.result-list{list-style:none;display:flex;flex-direction:column;gap:.45rem}
+.result-list li{font-size:12px;color:var(--muted);padding-left:.9rem;position:relative;line-height:1.4}
+.result-list li::before{content:'→';position:absolute;left:0;color:var(--green);font-size:10px;top:.1rem}
+.result-list.red li::before{color:var(--red)}
+.result-list.red li{color:var(--red)}
+
+/* 🎯 CTA RASTREADOR — a parte nova */
+.tracker-cta{background:var(--surface);border:2px solid var(--green-border);border-radius:14px;padding:1.4rem 1.6rem;margin-bottom:1.2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;position:relative;overflow:hidden}
+.tracker-cta::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--green-dim),transparent);pointer-events:none}
+.tracker-cta-info{position:relative}
+.tracker-cta-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:.3rem}
+.tracker-cta-title{font-family:'Lora',serif;font-size:17px;font-weight:700;color:var(--text);margin-bottom:.25rem}
+.tracker-cta-sub{font-size:12px;color:var(--muted)}
+.tracker-cta-actions{display:flex;gap:.6rem;align-items:center;position:relative;flex-wrap:wrap}
+.btn-track{background:var(--green);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;padding:.65rem 1.2rem;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap}
+.btn-track:hover{opacity:.88;transform:translateY(-1px)}
+.btn-skip{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:9px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;padding:.6rem 1rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-skip:hover{border-color:var(--green-border);color:var(--green)}
+
+.result-actions{display:flex;gap:.8rem;flex-wrap:wrap}
+.btn-outline{flex:1;min-width:120px;background:transparent;border:1px solid var(--border);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;border-radius:10px;padding:.7rem 1rem;cursor:pointer;transition:all .2s;text-align:center}
+.btn-outline:hover{border-color:var(--green-border);color:var(--green)}
+
+/* ── SCREEN 2: Modal escolha de coluna ── */
+.modal-wrap{min-height:60vh;display:flex;align-items:center;justify-content:center}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:2rem;max-width:460px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.12)}
+.modal-icon{font-size:40px;margin-bottom:.8rem}
+.modal-title{font-family:'Lora',serif;font-size:20px;font-weight:700;margin-bottom:.4rem}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:1.4rem}
+.col-options{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.2rem}
+.col-option{display:flex;align-items:center;gap:.9rem;padding:.85rem 1rem;border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s;background:transparent}
+.col-option:hover,.col-option.selected{border-color:var(--green-border);background:var(--green-dim)}
+.col-option-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.col-option-info{flex:1}
+.col-option-name{font-size:13px;font-weight:700;color:var(--text)}
+.col-option-desc{font-size:11px;color:var(--muted)}
+.col-option-check{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;font-size:10px;color:transparent}
+.col-option.selected .col-option-check{background:var(--green);border-color:var(--green);color:#fff}
+.btn-confirm{width:100%;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;font-family:'Inter',sans-serif;padding:.85rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.5rem}
+.btn-confirm:hover{opacity:.88}
+.btn-cancel{width:100%;background:transparent;border:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;padding:.5rem;margin-top:.4rem;transition:color .2s}
+.btn-cancel:hover{color:var(--text)}
+.card-preview{background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px;padding:.9rem 1rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:.8rem}
+.card-preview-logo{width:32px;height:32px;border-radius:6px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.card-preview-info{flex:1}
+.card-preview-company{font-size:13px;font-weight:700;color:var(--text)}
+.card-preview-role{font-size:12px;color:var(--muted)}
+.card-preview-score{font-size:11px;font-weight:700;background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);padding:2px 8px;border-radius:20px}
+
+/* ── SCREEN 3: Dashboard com Kanban ── */
+.dash-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:1.5rem;gap:0}
+.dash-tab{padding:.65rem 1.2rem;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.dash-tab.active{color:var(--green);border-color:var(--green)}
+.dash-tab:hover:not(.active){color:var(--text)}
+.kanban-mini{display:grid;grid-template-columns:repeat(5,1fr);gap:.75rem;align-items:start}
+@media(max-width:900px){.kanban-mini{grid-template-columns:repeat(3,minmax(160px,1fr));overflow-x:auto}}
+@media(max-width:600px){.kanban-mini{grid-template-columns:repeat(2,minmax(150px,1fr))}}
+.k-col{background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.k-col-header{padding:.6rem .85rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
+.k-col-title{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.k-col-count{font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;border:1px solid}
+.k-col-body{padding:.5rem;display:flex;flex-direction:column;gap:.4rem;min-height:80px}
+.k-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.7rem .85rem;transition:all .2s}
+.k-card.new-card{border-color:var(--green-border);background:var(--green-dim);animation:pulse 1.5s ease-in-out 3}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(26,143,92,0)}50%{box-shadow:0 0 0 4px rgba(26,143,92,0.2)}}
+.k-card-company{font-size:12px;font-weight:700;color:var(--text);margin-bottom:.1rem}
+.k-card-role{font-size:11px;color:var(--muted);margin-bottom:.4rem;line-height:1.3}
+.k-card-score{font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px}
+.k-card-score.high{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.k-card-score.mid{background:var(--yellow-dim);color:var(--yellow);border:1px solid var(--yellow-border)}
+.k-card-score.low{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border)}
+.new-badge{display:inline-flex;align-items:center;gap:.3rem;font-size:10px;font-weight:700;background:var(--green);color:#fff;padding:2px 7px;border-radius:20px;margin-left:.4rem}
+
+/* COL THEMES */
+.k-col.quero .k-col-header{border-top:3px solid #1a6fa8}
+.k-col.quero .k-col-title{color:#1a6fa8}
+.k-col.quero .k-col-count{background:var(--blue-dim);color:var(--blue);border-color:var(--blue-border)}
+.k-col.aplicado .k-col-header{border-top:3px solid var(--green)}
+.k-col.aplicado .k-col-title{color:var(--green)}
+.k-col.aplicado .k-col-count{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.k-col.entrevista .k-col-header{border-top:3px solid var(--yellow)}
+.k-col.entrevista .k-col-title{color:var(--yellow)}
+.k-col.entrevista .k-col-count{background:var(--yellow-dim);color:var(--yellow);border-color:var(--yellow-border)}
+.k-col.oferta .k-col-header{border-top:3px solid var(--purple)}
+.k-col.oferta .k-col-title{color:var(--purple)}
+.k-col.oferta .k-col-count{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.k-col.recusado .k-col-header{border-top:3px solid var(--muted)}
+.k-col.recusado .k-col-title{color:var(--muted)}
+.k-col.recusado .k-col-count{background:rgba(77,110,87,.1);color:var(--muted);border-color:rgba(77,110,87,.25)}
+
+/* SUCCESS TOAST */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--green);color:#fff;font-size:13px;font-weight:700;padding:.75rem 1.4rem;border-radius:10px;z-index:9999;transition:transform .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;box-shadow:0 4px 20px rgba(26,143,92,.35);display:flex;align-items:center;gap:.5rem}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* SECTION LABEL */
+.section-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo">VagaAI <span class="nav-badge">Preview</span></a>
+  <span class="preview-tag">⚡ Protótipo interativo — clique nos botões para navegar</span>
+</nav>
+
+<!-- STEP NAV -->
+<div class="steps-nav">
+  <button class="step-btn active" id="step-btn-1" onclick="goTo(1)">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    1. Resultado da análise
+  </button>
+  <span class="step-arrow">→</span>
+  <button class="step-btn" id="step-btn-2" onclick="goTo(2)">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>
+    2. Escolher coluna
+  </button>
+  <span class="step-arrow">→</span>
+  <button class="step-btn" id="step-btn-3" onclick="goTo(3)">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    3. Dashboard com Kanban
+  </button>
+</div>
+
+<!-- ── SCREEN 1: Resultado ──────────────────────────────────────────── -->
+<div class="screen active" id="screen-1">
+  <div style="margin-bottom:.75rem;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:.4rem">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Nova análise
+  </div>
+
+  <!-- Score header -->
+  <div class="result-header">
+    <div class="score-ring-wrap">
+      <svg class="score-ring" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="7"/>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="#1a8f5c" stroke-width="7"
+          stroke-dasharray="251" stroke-dashoffset="53" stroke-linecap="round"
+          transform="rotate(-90 50 50)"/>
+      </svg>
+      <div class="score-inner">
+        <div class="score-n">79</div>
+        <div class="score-label">/ 100</div>
+      </div>
+    </div>
+    <div class="score-info">
+      <div class="score-nivel">⚡ Compatível</div>
+      <div class="score-resumo">Seu perfil tem boa aderência com a vaga. Alguns ajustes nas keywords ATS podem elevar sua chance de ser chamado para entrevista.</div>
+    </div>
+  </div>
+
+  <!-- Results grid -->
+  <div class="result-grid">
+    <div class="result-card">
+      <div class="result-card-title red">⚠ Principais falhas</div>
+      <ul class="result-list red">
+        <li>Falta menção a "gestão de stakeholders"</li>
+        <li>Experiência com SQL não está evidenciada</li>
+        <li>Ausência de métricas quantitativas</li>
+      </ul>
+    </div>
+    <div class="result-card">
+      <div class="result-card-title">✦ Sugestões</div>
+      <ul class="result-list">
+        <li>Adicione KPIs mensuráveis às experiências</li>
+        <li>Inclua "SQL" e "Power BI" nas habilidades</li>
+        <li>Reescreva o resumo com foco em resultados</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 🎯 CTA DO RASTREADOR (PARTE NOVA) -->
+  <div class="tracker-cta">
+    <div class="tracker-cta-info">
+      <div class="tracker-cta-label">📋 Rastreador de candidaturas</div>
+      <div class="tracker-cta-title">Quer acompanhar essa candidatura?</div>
+      <div class="tracker-cta-sub">Nubank · Analista de Dados Pleno · Score 79%</div>
+    </div>
+    <div class="tracker-cta-actions">
+      <button class="btn-track" onclick="goTo(2)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>
+        Adicionar ao rastreador
+      </button>
+      <button class="btn-skip" onclick="goTo(3)">Pular</button>
+    </div>
+  </div>
+
+  <div class="result-actions">
+    <button class="btn-outline" onclick="goTo(1)">← Nova análise</button>
+    <button class="btn-outline" style="border-color:var(--green-border);color:var(--green)" onclick="goTo(2)">📋 Adicionar ao rastreador →</button>
+  </div>
+</div>
+
+<!-- ── SCREEN 2: Escolher coluna ────────────────────────────────────── -->
+<div class="screen" id="screen-2">
+  <div class="modal-wrap">
+    <div class="modal">
+      <div class="modal-icon">📋</div>
+      <div class="modal-title">Adicionar ao rastreador</div>
+      <div class="modal-sub">Em que etapa está essa candidatura?</div>
+
+      <!-- Preview do card -->
+      <div class="card-preview">
+        <div class="card-preview-logo">N</div>
+        <div class="card-preview-info">
+          <div class="card-preview-company">Nubank</div>
+          <div class="card-preview-role">Analista de Dados Pleno</div>
+        </div>
+        <span class="card-preview-score">79% ATS</span>
+      </div>
+
+      <!-- Opções de coluna -->
+      <div class="col-options">
+        <div class="col-option selected" id="opt-quero" onclick="selectCol('quero')">
+          <div class="col-option-dot" style="background:#1a6fa8"></div>
+          <div class="col-option-info">
+            <div class="col-option-name">Quero aplicar</div>
+            <div class="col-option-desc">Ainda não me candidatei</div>
+          </div>
+          <div class="col-option-check">✓</div>
+        </div>
+        <div class="col-option" id="opt-aplicado" onclick="selectCol('aplicado')">
+          <div class="col-option-dot" style="background:#1a8f5c"></div>
+          <div class="col-option-info">
+            <div class="col-option-name">Aplicado</div>
+            <div class="col-option-desc">Já enviei minha candidatura</div>
+          </div>
+          <div class="col-option-check">✓</div>
+        </div>
+        <div class="col-option" id="opt-entrevista" onclick="selectCol('entrevista')">
+          <div class="col-option-dot" style="background:#b07d1a"></div>
+          <div class="col-option-info">
+            <div class="col-option-name">Entrevista agendada</div>
+            <div class="col-option-desc">Fui chamado para entrevista</div>
+          </div>
+          <div class="col-option-check">✓</div>
+        </div>
+      </div>
+
+      <button class="btn-confirm" onclick="confirmAdd()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Confirmar e ir para o rastreador
+      </button>
+      <button class="btn-cancel" onclick="goTo(1)">← Voltar para a análise</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCREEN 3: Dashboard com Kanban ───────────────────────────────── -->
+<div class="screen" id="screen-3">
+
+  <!-- Dashboard header simulado -->
+  <div style="margin-bottom:1.2rem">
+    <div style="font-family:'Lora',serif;font-size:22px;font-weight:700;margin-bottom:.2rem">Olá, Vitu Fritu!</div>
+    <div style="font-size:13px;color:var(--muted)">Bem-vindo ao seu painel VagaAI.</div>
+  </div>
+
+  <!-- Abas -->
+  <div class="dash-tabs">
+    <div class="dash-tab" onclick="switchTab('painel')">Painel</div>
+    <div class="dash-tab active" onclick="switchTab('candidaturas')">
+      Candidaturas
+      <span style="font-size:10px;font-weight:700;background:var(--green);color:#fff;padding:1px 6px;border-radius:20px;margin-left:.4rem">4</span>
+    </div>
+    <div class="dash-tab" onclick="switchTab('historico')">Histórico</div>
+  </div>
+
+  <!-- Stats -->
+  <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.2rem">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:.3rem .85rem;font-size:12px;font-weight:600;color:var(--muted)">Total: <strong>4</strong> candidaturas</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:.3rem .85rem;font-size:12px;font-weight:600;color:var(--muted)">Entrevistas: <strong style="color:var(--yellow)">1</strong></div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:.3rem .85rem;font-size:12px;font-weight:600;color:var(--muted)">Score médio: <strong style="color:var(--blue)">74%</strong></div>
+  </div>
+
+  <!-- KANBAN -->
+  <div class="kanban-mini">
+
+    <div class="k-col quero">
+      <div class="k-col-header">
+        <span class="k-col-title">Quero aplicar</span>
+        <span class="k-col-count">1</span>
+      </div>
+      <div class="k-col-body">
+        <div class="k-card new-card" id="newCard">
+          <div class="k-card-company">
+            Nubank
+            <span class="new-badge">✓ Novo</span>
+          </div>
+          <div class="k-card-role">Analista de Dados Pleno</div>
+          <span class="k-card-score high">79% ATS</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="k-col aplicado">
+      <div class="k-col-header">
+        <span class="k-col-title">Aplicado</span>
+        <span class="k-col-count">2</span>
+      </div>
+      <div class="k-col-body">
+        <div class="k-card">
+          <div class="k-card-company">Mercado Livre</div>
+          <div class="k-card-role">Eng. de Software Sr.</div>
+          <span class="k-card-score high">91% ATS</span>
+        </div>
+        <div class="k-card">
+          <div class="k-card-company">PicPay</div>
+          <div class="k-card-role">Dev Front-end Pleno</div>
+          <span class="k-card-score mid">67% ATS</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="k-col entrevista">
+      <div class="k-col-header">
+        <span class="k-col-title">Entrevista</span>
+        <span class="k-col-count">1</span>
+      </div>
+      <div class="k-col-body">
+        <div class="k-card">
+          <div class="k-card-company">Itaú</div>
+          <div class="k-card-role">Analista de Dados</div>
+          <span class="k-card-score mid">78% ATS</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="k-col oferta">
+      <div class="k-col-header">
+        <span class="k-col-title">Oferta</span>
+        <span class="k-col-count">0</span>
+      </div>
+      <div class="k-col-body" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);text-align:center;padding:1rem">
+        Nenhuma oferta ainda
+      </div>
+    </div>
+
+    <div class="k-col recusado">
+      <div class="k-col-header">
+        <span class="k-col-title">Recusado</span>
+        <span class="k-col-count">0</span>
+      </div>
+      <div class="k-col-body" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);text-align:center;padding:1rem">
+        Nenhuma recusa
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:1.5rem;padding:1rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:.6rem">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    No dashboard real você poderia arrastar os cards entre as colunas para atualizar o status.
+    <a href="/kanban-preview" target="_blank" style="color:var(--green);font-weight:600;white-space:nowrap">Ver demo interativa →</a>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  Candidatura adicionada ao rastreador!
+</div>
+
+<script>
+var selectedCol = 'quero';
+
+function goTo(n) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.step-btn').forEach(function(b,i){ b.classList.remove('active','done'); if(i+1 < n) b.classList.add('done'); });
+  document.getElementById('screen-' + n).classList.add('active');
+  document.getElementById('step-btn-' + n).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if (n === 3) showToast();
+}
+
+function selectCol(col) {
+  selectedCol = col;
+  document.querySelectorAll('.col-option').forEach(function(el){ el.classList.remove('selected'); });
+  document.getElementById('opt-' + col).classList.add('selected');
+}
+
+function confirmAdd() {
+  // Update the new card position based on selected column
+  var card = document.getElementById('newCard');
+  if (card && selectedCol !== 'quero') {
+    var targetBody = document.querySelector('.k-col.' + selectedCol + ' .k-col-body');
+    if (targetBody) { targetBody.insertAdjacentElement('afterbegin', card); }
+    // Update counts
+    document.querySelector('.k-col.quero .k-col-count').textContent = '0';
+    var targetCount = document.querySelector('.k-col.' + selectedCol + ' .k-col-count');
+    if (targetCount) targetCount.textContent = parseInt(targetCount.textContent) + 1;
+  }
+  goTo(3);
+}
+
+function showToast() {
+  var t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.dash-tab').forEach(function(el){ el.classList.remove('active'); });
+  event.target.classList.add('active');
+  if (tab === 'painel') alert('Aqui apareceria o painel atual (créditos, análises, comprar créditos)');
+  if (tab === 'historico') alert('Aqui apareceria o histórico de análises com botão "+ Rastrear" em cada card');
+}
+</script>
+</body>
+</html>
