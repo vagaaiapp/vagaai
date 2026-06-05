@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VagaAI — Rastreador de Candidaturas (Preview)</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0f0d;--surface:#111814;--surface2:#161d19;--border:rgba(255,255,255,0.07);
+  --text:#e8ede9;--muted:#8a9e90;
+  --green:#3ecf8e;--green-dim:rgba(62,207,142,0.12);--green-border:rgba(62,207,142,0.25);
+  --red:#ff6b6b;--red-dim:rgba(255,107,107,0.12);--red-border:rgba(255,107,107,0.25);
+  --yellow:#ffd166;--yellow-dim:rgba(255,209,102,0.12);--yellow-border:rgba(255,209,102,0.3);
+  --blue:#64c8ff;--blue-dim:rgba(100,200,255,0.1);--blue-border:rgba(100,200,255,0.25);
+  --purple:#c084fc;--purple-dim:rgba(192,132,252,0.1);--purple-border:rgba(192,132,252,0.25);
+}
+[data-theme="light"]{
+  --bg:#f2f6f3;--surface:#fff;--surface2:#eaf0ec;--border:rgba(0,0,0,0.09);
+  --text:#0d1a11;--muted:#4d6e57;
+  --green:#1a8f5c;--green-dim:rgba(26,143,92,0.1);--green-border:rgba(26,143,92,0.25);
+  --red:#c0392b;--red-dim:rgba(192,57,43,0.08);--red-border:rgba(192,57,43,0.25);
+  --yellow:#b07d1a;--yellow-dim:rgba(176,125,26,0.08);--yellow-border:rgba(176,125,26,0.25);
+  --blue:#1a6fa8;--blue-dim:rgba(26,111,168,0.08);--blue-border:rgba(26,111,168,0.25);
+  --purple:#7c3aed;--purple-dim:rgba(124,58,237,0.08);--purple-border:rgba(124,58,237,0.25);
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between}
+[data-theme="light"] nav{background:rgba(242,246,243,0.95)!important}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-badge{font-size:9px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.nav-right{display:flex;align-items:center;gap:.75rem}
+.theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .2s}
+.theme-btn:hover{border-color:var(--green-border);color:var(--green)}
+.preview-badge{font-size:11px;font-weight:600;background:var(--yellow-dim);border:1px solid var(--yellow-border);color:var(--yellow);padding:3px 10px;border-radius:20px}
+
+/* CONTAINER */
+.container{max-width:1400px;margin:0 auto;padding:2rem 1.5rem 4rem}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
+.page-title{font-family:'Lora',serif;font-size:clamp(20px,3vw,26px);font-weight:700}
+.page-sub{font-size:13px;color:var(--muted);margin-top:.2rem}
+.header-actions{display:flex;align-items:center;gap:.75rem}
+.btn{font-size:13px;font-weight:600;padding:.45rem .9rem;border-radius:8px;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;border:none;display:inline-flex;align-items:center;gap:5px}
+.btn.primary{background:var(--green);color:#0a0f0d}
+.btn.primary:hover{background:#4ddb9e}
+.btn.ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn.ghost:hover{border-color:var(--green-border);color:var(--green)}
+
+/* STATS BAR */
+.stats-bar{display:flex;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.stat-pill{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:.35rem .9rem;font-size:12px;font-weight:600;display:flex;align-items:center;gap:.4rem;color:var(--muted)}
+.stat-pill span{font-weight:700}
+.stat-pill.green span{color:var(--green)}
+.stat-pill.yellow span{color:var(--yellow)}
+.stat-pill.blue span{color:var(--blue)}
+.stat-pill.red span{color:var(--red)}
+
+/* KANBAN BOARD */
+.kanban-board{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;align-items:start;overflow-x:auto;padding-bottom:.5rem}
+@media(max-width:1100px){.kanban-board{grid-template-columns:repeat(3,minmax(220px,1fr))}}
+@media(max-width:700px){.kanban-board{grid-template-columns:repeat(2,minmax(200px,1fr))}}
+
+/* COLUMN */
+.col{background:var(--surface2);border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:200px}
+.col-header{padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.col-title{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;display:flex;align-items:center;gap:.5rem}
+.col-count{font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px;border:1px solid}
+.col-body{padding:.6rem;display:flex;flex-direction:column;gap:.5rem;min-height:120px}
+.col-add{width:100%;background:transparent;border:1px dashed var(--border);border-radius:8px;color:var(--muted);font-size:12px;font-weight:600;font-family:'Inter',sans-serif;padding:.5rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.4rem;margin-top:.2rem}
+.col-add:hover{border-color:var(--green-border);color:var(--green);background:var(--green-dim)}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem;cursor:grab;transition:all .2s;position:relative;user-select:none}
+.card:hover{border-color:rgba(255,255,255,.15);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.3)}
+[data-theme="light"] .card:hover{border-color:rgba(0,0,0,.18);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.card.dragging{opacity:.5;transform:rotate(2deg)}
+.card.drag-over{border-color:var(--green-border);background:var(--green-dim)}
+.card-company{font-size:13px;font-weight:700;color:var(--text);margin-bottom:.15rem;display:flex;align-items:center;gap:.4rem}
+.card-logo{width:20px;height:20px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.card-role{font-size:12px;color:var(--muted);margin-bottom:.6rem;line-height:1.3}
+.card-meta{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.3rem}
+.card-score{font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px;display:inline-flex;align-items:center;gap:.3rem}
+.card-score.high{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.card-score.mid{background:var(--yellow-dim);color:var(--yellow);border:1px solid var(--yellow-border)}
+.card-score.low{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border)}
+.card-date{font-size:11px;color:var(--muted)}
+.card-actions{display:flex;gap:.3rem;margin-top:.55rem;padding-top:.55rem;border-top:1px solid var(--border)}
+.card-btn{font-size:11px;font-weight:600;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:.25rem .6rem;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.card-btn:hover{border-color:var(--green-border);color:var(--green)}
+.card-btn.danger:hover{border-color:var(--red-border);color:var(--red)}
+.card-note{font-size:11px;color:var(--muted);background:var(--surface2);border-radius:6px;padding:.4rem .6rem;margin-top:.5rem;line-height:1.4;font-style:italic}
+
+/* COLUMN THEMES */
+.col-quero .col-header{border-top:3px solid var(--blue)}
+.col-quero .col-title{color:var(--blue)}
+.col-quero .col-count{background:var(--blue-dim);color:var(--blue);border-color:var(--blue-border)}
+.col-aplicado .col-header{border-top:3px solid var(--green)}
+.col-aplicado .col-title{color:var(--green)}
+.col-aplicado .col-count{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.col-entrevista .col-header{border-top:3px solid var(--yellow)}
+.col-entrevista .col-title{color:var(--yellow)}
+.col-entrevista .col-count{background:var(--yellow-dim);color:var(--yellow);border-color:var(--yellow-border)}
+.col-oferta .col-header{border-top:3px solid var(--purple)}
+.col-oferta .col-title{color:var(--purple)}
+.col-oferta .col-count{background:var(--purple-dim);color:var(--purple);border-color:var(--purple-border)}
+.col-recusado .col-header{border-top:3px solid var(--muted)}
+.col-recusado .col-title{color:var(--muted)}
+.col-recusado .col-count{background:rgba(138,158,144,0.1);color:var(--muted);border-color:rgba(138,158,144,0.25)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.8rem;max-width:480px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.5)}
+.modal-title{font-family:'Lora',serif;font-size:18px;font-weight:700;margin-bottom:1.2rem}
+.field{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.9rem}
+.field label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.field input,.field textarea,.field select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:.65rem .9rem;transition:border-color .2s;width:100%}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--green-border)}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted)}
+.field select option{background:var(--surface)}
+.modal-actions{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.2rem}
+.score-preview{font-size:12px;color:var(--muted);margin-top:.3rem}
+
+/* DROP ZONES */
+.col-body.drag-active{background:rgba(62,207,142,0.05);border:1px dashed var(--green-border);border-radius:8px}
+</style>
+<script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="/logo.svg" alt="VagaAI" height="38" onerror="this.style.display='none'">
+    <span style="font-family:'Lora',serif;font-weight:700;font-size:16px;color:var(--text)">VagaAI</span>
+    <span class="nav-badge">Preview</span>
+  </a>
+  <div class="nav-right">
+    <span class="preview-badge">⚡ Protótipo interativo</span>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Rastreador de Candidaturas</div>
+      <div class="page-sub">Arraste os cards entre as colunas para atualizar o status</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn ghost" onclick="alert('Exportaria CSV com todas as candidaturas')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Exportar
+      </button>
+      <button class="btn primary" onclick="openModal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        + Nova candidatura
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar" id="statsBar"></div>
+
+  <!-- Kanban Board -->
+  <div class="kanban-board" id="board">
+
+    <div class="col col-quero" id="col-quero" ondrop="drop(event,'quero')" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+      <div class="col-header">
+        <div class="col-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          Quero aplicar
+        </div>
+        <span class="col-count" id="count-quero">0</span>
+      </div>
+      <div class="col-body" id="body-quero"></div>
+    </div>
+
+    <div class="col col-aplicado" id="col-aplicado" ondrop="drop(event,'aplicado')" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+      <div class="col-header">
+        <div class="col-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
+          Aplicado
+        </div>
+        <span class="col-count" id="count-aplicado">0</span>
+      </div>
+      <div class="col-body" id="body-aplicado"></div>
+    </div>
+
+    <div class="col col-entrevista" id="col-entrevista" ondrop="drop(event,'entrevista')" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+      <div class="col-header">
+        <div class="col-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Entrevista
+        </div>
+        <span class="col-count" id="count-entrevista">0</span>
+      </div>
+      <div class="col-body" id="body-entrevista"></div>
+    </div>
+
+    <div class="col col-oferta" id="col-oferta" ondrop="drop(event,'oferta')" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+      <div class="col-header">
+        <div class="col-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Oferta recebida
+        </div>
+        <span class="col-count" id="count-oferta">0</span>
+      </div>
+      <div class="col-body" id="body-oferta"></div>
+    </div>
+
+    <div class="col col-recusado" id="col-recusado" ondrop="drop(event,'recusado')" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+      <div class="col-header">
+        <div class="col-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          Recusado
+        </div>
+        <span class="col-count" id="count-recusado">0</span>
+      </div>
+      <div class="col-body" id="body-recusado"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: Nova candidatura -->
+<div class="modal-overlay hidden" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Nova candidatura</div>
+    <div class="field">
+      <label>Empresa</label>
+      <input type="text" id="mEmpresa" placeholder="Ex: Nubank, iFood, Mercado Livre...">
+    </div>
+    <div class="field">
+      <label>Cargo</label>
+      <input type="text" id="mCargo" placeholder="Ex: Desenvolvedor Pleno, UX Designer...">
+    </div>
+    <div class="field">
+      <label>Score de compatibilidade (%)</label>
+      <input type="number" id="mScore" placeholder="Ex: 84" min="0" max="100">
+      <div class="score-preview" id="scoreHint">Deixe vazio se não analisou ainda</div>
+    </div>
+    <div class="field">
+      <label>Status</label>
+      <select id="mStatus">
+        <option value="quero">Quero aplicar</option>
+        <option value="aplicado">Aplicado</option>
+        <option value="entrevista">Entrevista</option>
+        <option value="oferta">Oferta recebida</option>
+        <option value="recusado">Recusado</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Nota rápida (opcional)</label>
+      <input type="text" id="mNota" placeholder="Ex: Entrevista dia 10/06 às 14h...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn primary" onclick="saveCard()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────────
+var cards = [
+  { id:'1', empresa:'Nubank', cargo:'Desenvolvedor Pleno', score:84, status:'quero', nota:'', color:'#820AD1', dias:2 },
+  { id:'2', empresa:'iFood', cargo:'Product Designer', score:71, status:'quero', nota:'Prazo: 15/06', color:'#EA1D2C', dias:1 },
+  { id:'3', empresa:'Mercado Livre', cargo:'Eng. de Software Sr.', score:91, status:'aplicado', nota:'', color:'#FFE600', dias:5 },
+  { id:'4', empresa:'PicPay', cargo:'Dev Front-end Pleno', score:67, status:'aplicado', nota:'Aguardando retorno', color:'#21C25E', dias:8 },
+  { id:'5', empresa:'Itaú', cargo:'Analista de Dados', score:78, status:'entrevista', nota:'Entrevista técnica 10/06 14h', color:'#003D7B', dias:12 },
+  { id:'6', empresa:'Hotmart', cargo:'UX Writer', score:55, status:'recusado', nota:'Falta inglês avançado', color:'#F04E23', dias:20 },
+];
+var editing = null;
+var dragId = null;
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  var cols = ['quero','aplicado','entrevista','oferta','recusado'];
+  cols.forEach(function(col) {
+    var body = document.getElementById('body-' + col);
+    var colCards = cards.filter(function(c){ return c.status === col; });
+    document.getElementById('count-' + col).textContent = colCards.length;
+    body.innerHTML = colCards.map(cardHTML).join('');
+    // Add button
+    body.insertAdjacentHTML('beforeend',
+      '<button class="col-add" onclick="openModal(\'' + col + '\')">'
+      + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+      + 'Adicionar</button>');
+    // Drag events
+    body.querySelectorAll('.card').forEach(function(el) {
+      el.addEventListener('dragstart', function(e) { dragId = el.dataset.id; el.classList.add('dragging'); });
+      el.addEventListener('dragend', function() { el.classList.remove('dragging'); });
+    });
+  });
+  renderStats();
+}
+
+function cardHTML(c) {
+  var scoreClass = c.score >= 75 ? 'high' : c.score >= 55 ? 'mid' : 'low';
+  var diasText = c.dias === 1 ? 'há 1 dia' : 'há ' + c.dias + ' dias';
+  var initial = (c.empresa || '?')[0].toUpperCase();
+  var logoStyle = 'background:' + (c.color || '#3ecf8e');
+  return '<div class="card" draggable="true" data-id="' + c.id + '">'
+    + '<div class="card-company"><div class="card-logo" style="' + logoStyle + '">' + initial + '</div>' + esc(c.empresa) + '</div>'
+    + '<div class="card-role">' + esc(c.cargo) + '</div>'
+    + '<div class="card-meta">'
+    + (c.score ? '<span class="card-score ' + scoreClass + '"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>' + c.score + '% ATS</span>' : '<span class="card-score" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted)">Sem análise</span>')
+    + '<span class="card-date">' + diasText + '</span>'
+    + '</div>'
+    + (c.nota ? '<div class="card-note">📝 ' + esc(c.nota) + '</div>' : '')
+    + '<div class="card-actions">'
+    + '<button class="card-btn" onclick="openEdit(\'' + c.id + '\')">Editar</button>'
+    + '<button class="card-btn" onclick="analyzeCard(\'' + c.id + '\')">Ver análise</button>'
+    + '<button class="card-btn danger" onclick="deleteCard(\'' + c.id + '\')">✕</button>'
+    + '</div>'
+    + '</div>';
+}
+
+function renderStats() {
+  var total = cards.length;
+  var entrevistas = cards.filter(function(c){ return c.status === 'entrevista'; }).length;
+  var ofertas = cards.filter(function(c){ return c.status === 'oferta'; }).length;
+  var recusados = cards.filter(function(c){ return c.status === 'recusado'; }).length;
+  var avgScore = cards.filter(function(c){ return c.score; }).reduce(function(s,c){ return s + c.score; }, 0);
+  var scored = cards.filter(function(c){ return c.score; }).length;
+  avgScore = scored ? Math.round(avgScore / scored) : 0;
+  document.getElementById('statsBar').innerHTML =
+    '<div class="stat-pill">Total: <span>' + total + '</span> candidaturas</div>'
+    + '<div class="stat-pill yellow">Entrevistas: <span class="' + (entrevistas ? 'yellow' : '') + '">' + entrevistas + '</span></div>'
+    + '<div class="stat-pill green">Ofertas: <span>' + ofertas + '</span></div>'
+    + '<div class="stat-pill red">Recusados: <span>' + recusados + '</span></div>'
+    + (avgScore ? '<div class="stat-pill blue">Score médio: <span>' + avgScore + '%</span></div>' : '');
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openModal(status) {
+  editing = null;
+  document.getElementById('modalTitle').textContent = 'Nova candidatura';
+  document.getElementById('mEmpresa').value = '';
+  document.getElementById('mCargo').value = '';
+  document.getElementById('mScore').value = '';
+  document.getElementById('mNota').value = '';
+  document.getElementById('mStatus').value = status || 'quero';
+  document.getElementById('modal').classList.remove('hidden');
+  document.getElementById('mEmpresa').focus();
+}
+
+function openEdit(id) {
+  var c = cards.find(function(x){ return x.id === id; });
+  if (!c) return;
+  editing = id;
+  document.getElementById('modalTitle').textContent = 'Editar candidatura';
+  document.getElementById('mEmpresa').value = c.empresa;
+  document.getElementById('mCargo').value = c.cargo;
+  document.getElementById('mScore').value = c.score || '';
+  document.getElementById('mNota').value = c.nota || '';
+  document.getElementById('mStatus').value = c.status;
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+
+function saveCard() {
+  var empresa = document.getElementById('mEmpresa').value.trim();
+  var cargo = document.getElementById('mCargo').value.trim();
+  var score = parseInt(document.getElementById('mScore').value) || 0;
+  var nota = document.getElementById('mNota').value.trim();
+  var status = document.getElementById('mStatus').value;
+  if (!empresa || !cargo) { alert('Preencha empresa e cargo.'); return; }
+  if (editing) {
+    var c = cards.find(function(x){ return x.id === editing; });
+    if (c) { c.empresa = empresa; c.cargo = cargo; c.score = score; c.nota = nota; c.status = status; }
+  } else {
+    cards.push({ id: Date.now().toString(), empresa, cargo, score, status, nota, color: randomColor(), dias: 0 });
+  }
+  closeModal(); render();
+}
+
+function deleteCard(id) {
+  if (!confirm('Remover essa candidatura?')) return;
+  cards = cards.filter(function(c){ return c.id !== id; });
+  render();
+}
+
+function analyzeCard(id) {
+  var c = cards.find(function(x){ return x.id === id; });
+  alert('Abriria a análise da vaga: ' + (c ? c.empresa + ' — ' + c.cargo : ''));
+}
+
+// ── Drag & Drop ───────────────────────────────────────────────────────────────
+function allowDrop(e) {
+  e.preventDefault();
+  var body = e.currentTarget.querySelector('.col-body');
+  if (body) body.classList.add('drag-active');
+}
+function leaveDrop(e) {
+  var body = e.currentTarget.querySelector('.col-body');
+  if (body) body.classList.remove('drag-active');
+}
+function drop(e, newStatus) {
+  e.preventDefault();
+  var body = e.currentTarget.querySelector('.col-body');
+  if (body) body.classList.remove('drag-active');
+  if (!dragId) return;
+  var c = cards.find(function(x){ return x.id === dragId; });
+  if (c && c.status !== newStatus) { c.status = newStatus; render(); }
+  dragId = null;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+var COLORS = ['#820AD1','#EA1D2C','#21C25E','#F04E23','#003D7B','#FF6B00','#0061FF','#E91E8C'];
+var colorIdx = 0;
+function randomColor() { return COLORS[colorIdx++ % COLORS.length]; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Theme ─────────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  var light = document.documentElement.getAttribute('data-theme') === 'light';
+  if (light) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('vagaai_theme','dark'); }
+  else { document.documentElement.setAttribute('data-theme','light'); localStorage.setItem('vagaai_theme','light'); }
+  document.getElementById('themeBtn').textContent = light ? '☀️' : '🌙';
+}
+(function(){ document.getElementById('themeBtn').textContent = document.documentElement.getAttribute('data-theme')==='light' ? '🌙' : '☀️'; })();
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
