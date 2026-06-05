@@ -173,10 +173,10 @@ export default async function handler(req, res) {
   // Configure STRIPE_PRICE_* env vars com os IDs live para evitar mudança de código
   const PRICE_PLAN_MAP = Object.fromEntries(
     [
-      [process.env.STRIPE_PRICE_STARTER_MONTHLY || 'price_1Tf1HfHB7lmotVJh5IgNzspi', { plan: 'starter', billing: 'mensal' }],
-      [process.env.STRIPE_PRICE_STARTER_ANNUAL  || 'price_1Tf1HhHB7lmotVJhGEYqS3ST', { plan: 'starter', billing: 'anual' }],
-      [process.env.STRIPE_PRICE_PRO_MONTHLY     || 'price_1Tf1HsHB7lmotVJhuEA9Fxc3', { plan: 'pro', billing: 'mensal' }],
-      [process.env.STRIPE_PRICE_PRO_ANNUAL      || 'price_1Tf1HuHB7lmotVJhoEmWpotx', { plan: 'pro', billing: 'anual' }],
+      [process.env.STRIPE_PRICE_STARTER_MONTHLY || 'price_1Tf3H9HSfV7EaBVqkMxyK2Pq', { plan: 'starter', billing: 'mensal' }],
+      [process.env.STRIPE_PRICE_STARTER_ANNUAL  || 'price_1Tf3IlHSfV7EaBVqI70JVVrR', { plan: 'starter', billing: 'anual' }],
+      [process.env.STRIPE_PRICE_PRO_MONTHLY     || 'price_1Tf3JmHSfV7EaBVqbgfQ1vv3', { plan: 'pro', billing: 'mensal' }],
+      [process.env.STRIPE_PRICE_PRO_ANNUAL      || 'price_1Tf3KaHSfV7EaBVqFYYhyqhu', { plan: 'pro', billing: 'anual' }],
     ].filter(([k]) => k)
   );
 
