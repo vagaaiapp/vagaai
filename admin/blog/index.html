@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="light">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +8,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -30,6 +31,8 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .btn-nav.primary:hover{background:#4ddb9e}
 .btn-nav.danger{background:var(--red-dim);border:1px solid var(--red-border);color:var(--red)}
 .btn-nav.danger:hover{background:rgba(255,107,107,.2)}
+.theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;padding:0;line-height:1;flex-shrink:0}
+.theme-btn:hover{border-color:var(--green-border);color:var(--green)}
 
 .container{max-width:1100px;margin:0 auto;padding:2rem 1.5rem 5rem}
 
@@ -124,6 +127,7 @@ textarea.field-input{resize:vertical;min-height:80px;line-height:1.5}
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
       Ver blog
     </a>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">☀️</button>
     <a href="/admin" class="btn-nav ghost">← Admin</a>
   </div>
 </nav>
@@ -450,6 +454,15 @@ function toast(msg, err) {
 }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toggleTheme() {
+  var light = document.documentElement.getAttribute('data-theme') === 'light';
+  if (light) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('vagaai_theme','dark'); }
+  else { document.documentElement.setAttribute('data-theme','light'); localStorage.setItem('vagaai_theme','light'); }
+  var b = document.getElementById('themeBtn');
+  if (b) b.textContent = light ? '☀️' : '🌙';
+}
+(function(){ var b = document.getElementById('themeBtn'); if (b) b.textContent = document.documentElement.getAttribute('data-theme')==='light' ? '🌙' : '☀️'; })();
 </script>
 </body>
 </html>
