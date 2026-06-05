@@ -252,7 +252,8 @@ export default async function handler(req, res) {
 
   if (!isTest) {
     // Chamada do cron: verifica CRON_SECRET
-    if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
+    const secret = CRON_SECRET || 'vagaai-cron-secret-2026';
+    if (authHeader !== `Bearer ${secret}`) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
   }
