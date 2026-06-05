@@ -17,215 +17,388 @@
   --green-dim:rgba(62,207,142,0.12);--green-border:rgba(62,207,142,0.25);
   --red:#ff6b6b;--red-dim:rgba(255,107,107,0.12);--red-border:rgba(255,107,107,0.25);
   --yellow:#ffd166;--yellow-dim:rgba(255,209,102,0.12);--yellow-border:rgba(255,209,102,0.3);
+  --radius:10px;
 }
-.ic{display:inline-flex;align-items:center;vertical-align:middle;flex-shrink:0}
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
-nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between}
-.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
-.nav-badge{font-size:9px;background:var(--red-dim);border:1px solid var(--red-border);color:var(--red);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
-.nav-right{display:flex;align-items:center;gap:.75rem}
-.btn-nav{font-size:13px;font-weight:600;padding:.4rem .9rem;border-radius:8px;cursor:pointer;transition:all .2s;text-decoration:none;border:none;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:6px}
-.btn-nav.ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
-.btn-nav.ghost:hover{border-color:rgba(255,255,255,.15);color:var(--text)}
-.btn-nav.primary{background:var(--green);color:#0a0f0d}
-.btn-nav.primary:hover{background:#4ddb9e}
-.btn-nav.danger{background:var(--red-dim);border:1px solid var(--red-border);color:var(--red)}
-.btn-nav.danger:hover{background:rgba(255,107,107,.2)}
-.theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;padding:0;line-height:1;flex-shrink:0}
-.theme-btn:hover{border-color:var(--green-border);color:var(--green)}
-
-.container{max-width:1100px;margin:0 auto;padding:2rem 1.5rem 5rem}
-
-/* VIEWS */
-#listView{display:block}
-#editorView{display:none}
-
-/* LIST */
-.list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem}
-.list-title{font-family:'Lora',serif;font-size:clamp(20px,3vw,26px);font-weight:700}
-.posts-grid{display:flex;flex-direction:column;gap:.75rem}
-.post-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.3rem;display:flex;align-items:center;gap:1rem;transition:border-color .2s;cursor:pointer}
-.post-card:hover{border-color:rgba(255,255,255,.15)}
-.post-card-info{flex:1;min-width:0}
-.post-card-title{font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:.2rem}
-.post-card-meta{font-size:12px;color:var(--muted)}
-.post-card-actions{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
-.badge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:20px}
-.badge.green{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
-.badge.yellow{background:var(--yellow-dim);color:var(--yellow);border:1px solid var(--yellow-border)}
-.btn-sm{font-size:12px;font-weight:600;padding:.35rem .75rem;border-radius:7px;cursor:pointer;transition:all .2s;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:4px}
-.btn-sm:hover{border-color:var(--green-border);color:var(--green)}
-.btn-sm.danger:hover{border-color:var(--red-border);color:var(--red)}
-.empty-state{text-align:center;padding:4rem 2rem;color:var(--muted)}
-.empty-state h3{font-size:16px;font-weight:600;color:var(--text);margin-bottom:.4rem}
-.empty-state p{font-size:14px;margin-bottom:1.5rem}
-
-/* EDITOR */
-.editor-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem}
-.editor-title-input{background:transparent;border:none;color:var(--text);font-family:'Lora',serif;font-size:clamp(22px,4vw,32px);font-weight:700;width:100%;outline:none;margin-bottom:1rem}
-.editor-title-input::placeholder{color:var(--muted)}
-.editor-meta{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
-@media(max-width:600px){.editor-meta{grid-template-columns:1fr}}
-.field-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
-.field-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:.65rem .9rem;transition:border-color .2s}
-.field-input:focus{outline:none;border-color:var(--green-border)}
-.field-input::placeholder{color:var(--muted)}
-textarea.field-input{resize:vertical;min-height:80px;line-height:1.5}
-
-/* RICH TEXT EDITOR */
-.editor-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1rem}
-.editor-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:2px;padding:.6rem .8rem;border-bottom:1px solid var(--border);background:var(--surface2)}
-.tb-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:.3rem .45rem;border-radius:6px;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;line-height:1}
-.tb-btn:hover{background:rgba(255,255,255,.08);color:var(--text)}
-.tb-btn.active{background:var(--green-dim);color:var(--green)}
-.tb-sep{width:1px;height:18px;background:var(--border);margin:0 3px}
-.editor-content{min-height:320px;padding:1.2rem 1.4rem;color:var(--text);font-size:14px;line-height:1.8;outline:none;caret-color:var(--green)}
-.editor-content:empty::before{content:attr(data-placeholder);color:var(--muted);pointer-events:none}
-.editor-content h2{font-family:'Lora',serif;font-size:20px;font-weight:700;margin:1.2rem 0 .5rem;color:var(--text)}
-.editor-content h3{font-size:16px;font-weight:700;margin:1rem 0 .4rem;color:var(--text)}
-.editor-content p{margin-bottom:.8rem}
-.editor-content ul,.editor-content ol{padding-left:1.4rem;margin-bottom:.8rem}
-.editor-content li{margin-bottom:.25rem}
-.editor-content a{color:var(--green);text-decoration:underline}
-.editor-content blockquote{border-left:3px solid var(--green-border);padding-left:1rem;color:var(--muted);margin:.8rem 0;font-style:italic}
-.editor-content strong{color:var(--text);font-weight:700}
-.editor-content img{max-width:100%;border-radius:8px;margin:.5rem 0}
-.editor-content hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
-
-.editor-footer{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-.publish-toggle{display:flex;align-items:center;gap:.6rem;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
-.toggle-switch{width:36px;height:20px;background:var(--border);border-radius:10px;position:relative;transition:background .2s;flex-shrink:0}
-.toggle-switch.on{background:var(--green)}
-.toggle-switch::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .2s}
-.toggle-switch.on::after{transform:translateX(16px)}
-.editor-actions{display:flex;align-items:center;gap:.6rem}
-.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--green);color:#0a0f0d;font-size:13px;font-weight:700;padding:.65rem 1.3rem;border-radius:8px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
-.toast.show{opacity:1}
-.char-hint{font-size:11px;color:var(--muted);margin-top:.3rem}
 [data-theme="light"]{
-  --bg:#f2f6f3;--surface:#ffffff;--surface2:#eaf0ec;
-  --border:rgba(0,0,0,0.09);--text:#0d1a11;--muted:#4d6e57;
-  --green:#1a8f5c;--green-dim:rgba(26,143,92,0.1);--green-border:rgba(26,143,92,0.25);
+  --bg:#f0f0f1;--surface:#fff;--surface2:#f6f6f7;
+  --border:rgba(0,0,0,0.12);--text:#1e1e1e;--muted:#757575;
+  --green:#1a8f5c;--green-dim:rgba(26,143,92,0.1);--green-border:rgba(26,143,92,0.3);
   --red:#c0392b;--red-dim:rgba(192,57,43,0.08);--red-border:rgba(192,57,43,0.25);
   --yellow:#b07d1a;--yellow-dim:rgba(176,125,26,0.08);--yellow-border:rgba(176,125,26,0.25);
 }
-[data-theme="light"] nav{background:rgba(242,246,243,0.95)!important}
-[data-theme="light"] .editor-content{color:var(--text)}
-[data-theme="light"] .editor-content h2,[data-theme="light"] .editor-content h3{color:var(--text)}
-[data-theme="light"] .tb-btn:hover{background:rgba(0,0,0,.06)}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:200;background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;font-weight:700;font-size:15px;color:var(--text)}
+.nav-badge{font-size:9px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.nav-right{display:flex;align-items:center;gap:.6rem}
+.btn{font-size:13px;font-weight:600;padding:.4rem .85rem;border-radius:6px;cursor:pointer;transition:all .15s;text-decoration:none;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:5px;border:1px solid transparent;white-space:nowrap}
+.btn.ghost{background:transparent;border-color:var(--border);color:var(--muted)}
+.btn.ghost:hover{border-color:var(--green-border);color:var(--green)}
+.btn.primary{background:var(--green);color:#fff;border-color:var(--green)}
+[data-theme="light"] .btn.primary{color:#0a0f0d}
+.btn.primary:hover{opacity:.88}
+.btn.danger{background:transparent;border-color:var(--red-border);color:var(--red)}
+.btn.danger:hover{background:var(--red-dim)}
+.theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;width:30px;height:30px;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;padding:0}
+.theme-btn:hover{border-color:var(--green-border);color:var(--green)}
+
+/* LAYOUT */
+.wp-wrap{max-width:1200px;margin:0 auto;padding:1.5rem 1.5rem 4rem}
+.wp-title-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;gap:1rem;flex-wrap:wrap}
+.wp-title-bar h1{font-size:18px;font-weight:700;font-family:'Lora',serif}
+.wp-title-bar-actions{display:flex;align-items:center;gap:.5rem}
+.wp-columns{display:grid;grid-template-columns:1fr 280px;gap:1.4rem;align-items:start}
+@media(max-width:900px){.wp-columns{grid-template-columns:1fr}}
+
+/* MAIN COLUMN */
+.wp-main{display:flex;flex-direction:column;gap:1.1rem}
+
+/* TITLE INPUT */
+.title-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.2rem}
+.title-input{width:100%;background:transparent;border:none;color:var(--text);font-family:'Lora',serif;font-size:22px;font-weight:700;outline:none;line-height:1.3}
+.title-input::placeholder{color:var(--muted)}
+
+/* EDITOR CARD */
+.editor-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.editor-topbar{display:flex;align-items:center;justify-content:space-between;padding:.5rem .8rem;border-bottom:1px solid var(--border);background:var(--surface2);flex-wrap:wrap;gap:.4rem}
+.editor-topbar-left{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.tb-select{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Inter',sans-serif;font-size:12px;padding:.25rem .5rem;border-radius:5px;cursor:pointer;outline:none}
+.tb-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:.3rem .4rem;border-radius:5px;font-size:12px;font-weight:700;font-family:'Inter',sans-serif;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;line-height:1;min-width:26px;height:26px}
+.tb-btn:hover{background:rgba(255,255,255,.08);color:var(--text)}
+[data-theme="light"] .tb-btn:hover{background:rgba(0,0,0,.07)}
+.tb-sep{width:1px;height:16px;background:var(--border);margin:0 2px;flex-shrink:0}
+.editor-tabs{display:flex;gap:0}
+.editor-tab{font-size:12px;font-weight:600;padding:.3rem .75rem;cursor:pointer;color:var(--muted);border:1px solid var(--border);background:transparent;font-family:'Inter',sans-serif;transition:all .15s;border-radius:0}
+.editor-tab:first-child{border-radius:5px 0 0 5px}
+.editor-tab:last-child{border-radius:0 5px 5px 0;margin-left:-1px}
+.editor-tab.active{background:var(--green);color:#fff;border-color:var(--green)}
+[data-theme="light"] .editor-tab.active{color:#0a0f0d}
+.editor-content{min-height:380px;padding:1.3rem 1.5rem;color:var(--text);font-size:14px;line-height:1.8;outline:none;caret-color:var(--green)}
+.editor-content:empty::before{content:attr(data-placeholder);color:var(--muted);pointer-events:none}
+.editor-content h2{font-family:'Lora',serif;font-size:20px;font-weight:700;margin:1.2rem 0 .5rem}
+.editor-content h3{font-size:16px;font-weight:700;margin:1rem 0 .4rem}
+.editor-content p{margin-bottom:.75rem}
+.editor-content ul,.editor-content ol{padding-left:1.5rem;margin-bottom:.75rem}
+.editor-content li{margin-bottom:.25rem}
+.editor-content a{color:var(--green);text-decoration:underline}
+.editor-content blockquote{border-left:3px solid var(--green-border);padding:.8rem 1rem;color:var(--muted);margin:.8rem 0;background:var(--green-dim);border-radius:0 6px 6px 0;font-style:italic}
+.editor-content strong{font-weight:700}
+.editor-content img{max-width:100%;border-radius:6px;margin:.5rem 0}
+.editor-content hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
+.code-editor{width:100%;min-height:380px;background:transparent;border:none;color:var(--text);font-family:'Courier New',monospace;font-size:13px;line-height:1.7;padding:1.3rem 1.5rem;outline:none;resize:none;display:none}
+.editor-footer{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;border-top:1px solid var(--border);background:var(--surface2)}
+.word-count{font-size:12px;color:var(--muted)}
+
+/* SIDEBAR */
+.wp-sidebar{display:flex;flex-direction:column;gap:1rem}
+.sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.sidebar-card-header{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);background:var(--surface2)}
+.sidebar-card-body{padding:1rem}
+/* Publish card */
+.publish-status-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;font-size:13px}
+.status-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;border:1px solid}
+.status-badge.draft{background:var(--yellow-dim);color:var(--yellow);border-color:var(--yellow-border)}
+.status-badge.published{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.publish-actions{display:flex;flex-direction:column;gap:.5rem}
+.publish-toggle-row{display:flex;align-items:center;gap:.6rem;font-size:13px;color:var(--muted);cursor:pointer;padding:.5rem 0;border-top:1px solid var(--border);margin-top:.5rem}
+.toggle-sw{width:34px;height:18px;background:var(--border);border-radius:9px;position:relative;transition:background .2s;flex-shrink:0}
+.toggle-sw.on{background:var(--green)}
+.toggle-sw::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .2s}
+.toggle-sw.on::after{transform:translateX(16px)}
+/* Featured image */
+.featured-img-preview{width:100%;aspect-ratio:16/9;border-radius:6px;object-fit:cover;display:block;margin-bottom:.6rem}
+.featured-img-placeholder{width:100%;aspect-ratio:16/9;background:var(--surface2);border:2px dashed var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .2s;margin-bottom:.6rem;font-size:13px;color:var(--muted);flex-direction:column;gap:.4rem}
+.featured-img-placeholder:hover{border-color:var(--green-border);color:var(--green)}
+.img-url-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;padding:.5rem .75rem;transition:border-color .2s;margin-bottom:.5rem}
+.img-url-input:focus{outline:none;border-color:var(--green-border)}
+.img-url-input::placeholder{color:var(--muted)}
+/* Categories */
+.cat-tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.7rem;min-height:24px}
+.cat-tag{font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);display:inline-flex;align-items:center;gap:4px}
+.cat-tag-remove{cursor:pointer;opacity:.6;font-size:13px;line-height:1}
+.cat-tag-remove:hover{opacity:1}
+.cat-input-row{display:flex;gap:.4rem}
+.cat-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;padding:.45rem .7rem;transition:border-color .2s}
+.cat-input:focus{outline:none;border-color:var(--green-border)}
+.cat-add-btn{background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);border-radius:6px;font-size:12px;font-weight:700;padding:.45rem .75rem;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.cat-add-btn:hover{background:rgba(62,207,142,.2)}
+
+/* SEO CARD */
+.seo-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seo-header{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);background:var(--surface2)}
+.seo-body{padding:1rem}
+/* Google preview */
+.google-preview-wrap{background:#fff;border:1px solid #dfe1e5;border-radius:8px;padding:1rem 1.1rem;margin-bottom:1.1rem;font-family:Arial,sans-serif}
+[data-theme="light"] .google-preview-wrap{background:#f8f9fa}
+.gp-device-row{display:flex;align-items:center;justify-content:flex-end;gap:.5rem;margin-bottom:.75rem}
+.gp-device-btn{font-size:11px;font-weight:600;padding:.2rem .6rem;border-radius:4px;cursor:pointer;border:1px solid #dfe1e5;background:#fff;color:#555;font-family:Arial,sans-serif;transition:all .15s}
+.gp-device-btn.active{background:#1a73e8;color:#fff;border-color:#1a73e8}
+.gp-site{display:flex;align-items:center;gap:.4rem;margin-bottom:.1rem}
+.gp-site-icon{width:18px;height:18px;border-radius:50%;background:#3ecf8e;display:inline-flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700;flex-shrink:0}
+.gp-site-name{font-size:13px;color:#202124}
+.gp-site-url{font-size:12px;color:#4d5156;margin-top:.1rem}
+.gp-title{font-size:18px;color:#1a0dab;cursor:pointer;line-height:1.3;margin:.25rem 0;word-break:break-word}
+.gp-desc{font-size:13px;color:#4d5156;line-height:1.5;word-break:break-word}
+.gp-mobile .gp-title{font-size:16px}
+.seo-field{margin-bottom:.9rem}
+.seo-label{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.seo-counter{font-weight:400;text-transform:none;letter-spacing:0}
+.seo-counter.ok{color:var(--green)}
+.seo-counter.warn{color:var(--yellow)}
+.seo-counter.over{color:var(--red)}
+.seo-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:.6rem .8rem;transition:border-color .2s;resize:none}
+.seo-input:focus{outline:none;border-color:var(--green-border)}
+.seo-input::placeholder{color:var(--muted)}
+.seo-bar{height:4px;border-radius:2px;margin-top:.35rem;background:var(--border);overflow:hidden}
+.seo-bar-fill{height:100%;border-radius:2px;transition:width .3s,background .3s}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--green);color:#0a0f0d;font-size:13px;font-weight:700;padding:.65rem 1.3rem;border-radius:8px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.toast.show{opacity:1}
+
+/* LIST VIEW */
+.list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:.75rem}
+.list-header h1{font-family:'Lora',serif;font-size:clamp(18px,3vw,24px);font-weight:700}
+.posts-grid{display:flex;flex-direction:column;gap:.7rem}
+.post-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.2rem;display:flex;align-items:center;gap:1rem;transition:border-color .2s;cursor:pointer}
+.post-card:hover{border-color:rgba(255,255,255,.18)}
+[data-theme="light"] .post-card:hover{border-color:rgba(0,0,0,.2)}
+.post-card-info{flex:1;min-width:0}
+.post-card-title{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:.15rem}
+.post-card-meta{font-size:11px;color:var(--muted)}
+.badge{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1px solid;white-space:nowrap}
+.badge.green{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.badge.yellow{background:var(--yellow-dim);color:var(--yellow);border-color:var(--yellow-border)}
+.btn-sm{font-size:12px;font-weight:600;padding:.3rem .7rem;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Inter',sans-serif;transition:all .15s}
+.btn-sm:hover{border-color:var(--green-border);color:var(--green)}
+.empty-state{text-align:center;padding:4rem 2rem;color:var(--muted)}
+.empty-state h3{font-size:16px;font-weight:600;color:var(--text);margin-bottom:.4rem}
 </style>
 </head>
 <body>
 
 <nav>
-  <a href="/" class="nav-logo">
-    <img src="/logo.svg" alt="VagaAI" height="38" style="display:block;">
-    <span class="nav-badge">Blog</span>
+  <a href="/admin" class="nav-logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    Blog Admin
+    <span class="nav-badge">VagaAI</span>
   </a>
   <div class="nav-right">
-    <a href="/blog" target="_blank" class="btn-nav ghost">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    <a href="/blog" target="_blank" class="btn ghost" style="font-size:12px">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
       Ver blog
     </a>
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">☀️</button>
-    <a href="/admin" class="btn-nav ghost">← Admin</a>
+    <a href="/admin" class="btn ghost" style="font-size:12px">← Admin</a>
   </div>
 </nav>
 
-<div class="container">
-
-  <!-- LISTA DE POSTS -->
-  <div id="listView">
-    <div class="list-header">
-      <div class="list-title">Posts do Blog</div>
-      <button class="btn-nav primary" onclick="newPost()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Novo post
-      </button>
-    </div>
-    <div class="posts-grid" id="postsGrid">
-      <div style="text-align:center;padding:2rem;color:var(--muted);font-size:13px">Carregando...</div>
-    </div>
+<!-- ── LIST VIEW ───────────────────────────────────────────── -->
+<div id="listView" style="max-width:1200px;margin:0 auto;padding:1.5rem 1.5rem 4rem">
+  <div class="list-header">
+    <h1>Posts do Blog</h1>
+    <button class="btn primary" onclick="newPost()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Novo post
+    </button>
   </div>
-
-  <!-- EDITOR -->
-  <div id="editorView">
-    <div class="editor-header">
-      <button class="btn-nav ghost" onclick="backToList()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-        Voltar
-      </button>
-      <div class="editor-actions">
-        <button class="btn-nav danger" id="deleteBtn" onclick="deletePost()" style="display:none">Excluir</button>
-        <button class="btn-nav ghost" onclick="savePost(false)">Salvar rascunho</button>
-        <button class="btn-nav primary" onclick="savePost(true)" id="publishBtn">Publicar</button>
-      </div>
-    </div>
-
-    <input type="text" class="editor-title-input" id="postTitle" placeholder="Título do post...">
-
-    <div class="editor-meta">
-      <div>
-        <div class="field-label">Slug (URL)</div>
-        <input type="text" class="field-input" id="postSlug" placeholder="como-otimizar-curriculo-ats">
-        <div class="char-hint">vagaai.app.br/blog/post?s=<span id="slugPreview">...</span></div>
-      </div>
-      <div>
-        <div class="field-label">Imagem de capa (URL)</div>
-        <input type="text" class="field-input" id="postCover" placeholder="https://...">
-      </div>
-    </div>
-
-    <div style="margin-bottom:1rem">
-      <div class="field-label">Resumo / Excerpt</div>
-      <textarea class="field-input" id="postExcerpt" rows="2" placeholder="Descrição curta que aparece na listagem e no SEO..."></textarea>
-    </div>
-
-    <!-- RICH TEXT EDITOR -->
-    <div class="editor-wrap">
-      <div class="editor-toolbar">
-        <button class="tb-btn" onclick="fmt('bold')" title="Negrito"><strong>B</strong></button>
-        <button class="tb-btn" onclick="fmt('italic')" title="Itálico"><em>I</em></button>
-        <button class="tb-btn" onclick="fmt('underline')" title="Sublinhado"><u>U</u></button>
-        <div class="tb-sep"></div>
-        <button class="tb-btn" onclick="fmtBlock('h2')" title="Título H2">H2</button>
-        <button class="tb-btn" onclick="fmtBlock('h3')" title="Título H3">H3</button>
-        <button class="tb-btn" onclick="fmtBlock('p')" title="Parágrafo">¶</button>
-        <div class="tb-sep"></div>
-        <button class="tb-btn" onclick="fmt('insertUnorderedList')" title="Lista">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        </button>
-        <button class="tb-btn" onclick="fmt('insertOrderedList')" title="Lista numerada">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
-        </button>
-        <div class="tb-sep"></div>
-        <button class="tb-btn" onclick="insertLink()" title="Link">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-        </button>
-        <button class="tb-btn" onclick="insertImage()" title="Imagem">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        </button>
-        <button class="tb-btn" onclick="insertHR()" title="Divisor">—</button>
-        <div class="tb-sep"></div>
-        <button class="tb-btn" onclick="fmt('undo')" title="Desfazer">↩</button>
-        <button class="tb-btn" onclick="fmt('redo')" title="Refazer">↪</button>
-      </div>
-      <div class="editor-content" id="editorContent" contenteditable="true" data-placeholder="Escreva o conteúdo do post aqui..."></div>
-    </div>
-
-    <div class="editor-footer">
-      <label class="publish-toggle" onclick="togglePublish()">
-        <div class="toggle-switch" id="publishToggle"></div>
-        <span id="publishLabel">Rascunho</span>
-      </label>
-      <div class="editor-actions">
-        <button class="btn-nav danger" id="deleteBtn2" onclick="deletePost()" style="display:none">Excluir post</button>
-        <button class="btn-nav ghost" onclick="savePost(false)">Salvar rascunho</button>
-        <button class="btn-nav primary" onclick="savePost(true)" id="publishBtn2">Publicar</button>
-      </div>
-    </div>
+  <div class="posts-grid" id="postsGrid">
+    <div style="text-align:center;padding:2rem;color:var(--muted);font-size:13px">Carregando...</div>
   </div>
 </div>
+
+<!-- ── EDITOR VIEW ─────────────────────────────────────────── -->
+<div id="editorView" style="display:none">
+  <div class="wp-wrap">
+
+    <!-- Top bar -->
+    <div class="wp-title-bar">
+      <button class="btn ghost" onclick="backToList()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Todos os posts
+      </button>
+      <div class="wp-title-bar-actions">
+        <button class="btn danger" id="deleteBtn" onclick="deletePost()" style="display:none">Excluir</button>
+        <button class="btn ghost" onclick="savePost(false)">Salvar rascunho</button>
+        <button class="btn primary" id="publishBtn" onclick="savePost(true)">Publicar</button>
+      </div>
+    </div>
+
+    <div class="wp-columns">
+
+      <!-- LEFT: MAIN CONTENT -->
+      <div class="wp-main">
+
+        <!-- Title -->
+        <div class="title-wrap">
+          <input type="text" class="title-input" id="postTitle" placeholder="Adicionar título">
+        </div>
+
+        <!-- Editor -->
+        <div class="editor-card">
+          <div class="editor-topbar">
+            <div class="editor-topbar-left">
+              <select class="tb-select" onchange="fmtBlock(this.value);this.value='p'">
+                <option value="p">Parágrafo</option>
+                <option value="h2">Título H2</option>
+                <option value="h3">Título H3</option>
+                <option value="h4">Título H4</option>
+                <option value="blockquote">Citação</option>
+                <option value="pre">Código</option>
+              </select>
+              <div class="tb-sep"></div>
+              <button class="tb-btn" onclick="fmt('bold')" title="Negrito"><strong>B</strong></button>
+              <button class="tb-btn" onclick="fmt('italic')" title="Itálico"><em style="font-style:italic">I</em></button>
+              <button class="tb-btn" onclick="fmt('underline')" title="Sublinhado"><u>U</u></button>
+              <button class="tb-btn" onclick="fmt('strikeThrough')" title="Tachado"><s>S</s></button>
+              <div class="tb-sep"></div>
+              <button class="tb-btn" onclick="fmt('insertUnorderedList')" title="Lista">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>
+              </button>
+              <button class="tb-btn" onclick="fmt('insertOrderedList')" title="Lista numerada">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+              </button>
+              <button class="tb-btn" onclick="fmtBlock('blockquote')" title="Citação">❝</button>
+              <div class="tb-sep"></div>
+              <button class="tb-btn" onclick="insertLink()" title="Link">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              </button>
+              <button class="tb-btn" onclick="insertImage()" title="Imagem">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </button>
+              <button class="tb-btn" onclick="insertHR()" title="Linha divisória">—</button>
+              <div class="tb-sep"></div>
+              <button class="tb-btn" onclick="fmt('undo')" title="Desfazer">↩</button>
+              <button class="tb-btn" onclick="fmt('redo')" title="Refazer">↪</button>
+            </div>
+            <div class="editor-tabs">
+              <button class="editor-tab active" id="tabVisual" onclick="switchTab('visual')">Visual</button>
+              <button class="editor-tab" id="tabCode" onclick="switchTab('code')">Código</button>
+            </div>
+          </div>
+          <div class="editor-content" id="editorContent" contenteditable="true" data-placeholder="Comece a escrever ou cole seu conteúdo aqui..."></div>
+          <textarea class="code-editor" id="codeEditor" placeholder="Cole ou edite o HTML aqui..."></textarea>
+          <div class="editor-footer">
+            <span class="word-count">Palavras: <span id="wordCount">0</span></span>
+          </div>
+        </div>
+
+        <!-- SEO -->
+        <div class="seo-card">
+          <div class="seo-header">
+            <span>🔍 SEO — Pré-visualização e otimização</span>
+          </div>
+          <div class="seo-body">
+            <!-- Google preview -->
+            <div style="margin-bottom:.75rem">
+              <div class="gp-device-row">
+                <button class="gp-device-btn active" id="gpBtnDesktop" onclick="setGpDevice('desktop')">🖥 Desktop</button>
+                <button class="gp-device-btn" id="gpBtnMobile" onclick="setGpDevice('mobile')">📱 Móvel</button>
+              </div>
+              <div class="google-preview-wrap" id="gpWrap">
+                <div class="gp-site">
+                  <div class="gp-site-icon">V</div>
+                  <div>
+                    <div class="gp-site-name">vagaai.app.br</div>
+                    <div class="gp-site-url">https://vagaai.app.br › blog › post › <span id="gpSlug">slug</span></div>
+                  </div>
+                </div>
+                <div class="gp-title" id="gpTitle">Título do post aparecerá aqui</div>
+                <div class="gp-desc" id="gpDesc"><span style="color:#aaa">Adicione uma meta descrição abaixo para ver a prévia...</span></div>
+              </div>
+            </div>
+
+            <!-- SEO Title -->
+            <div class="seo-field">
+              <div class="seo-label">
+                Título SEO
+                <span class="seo-counter" id="seoTitleCount">0/60</span>
+              </div>
+              <input type="text" class="seo-input" id="seoTitle" placeholder="Deixe vazio para usar o título do post">
+              <div class="seo-bar"><div class="seo-bar-fill" id="seoTitleBar" style="width:0%"></div></div>
+            </div>
+
+            <!-- Slug -->
+            <div class="seo-field">
+              <div class="seo-label">Slug (URL)</div>
+              <input type="text" class="seo-input" id="postSlug" placeholder="como-otimizar-curriculo-ats">
+              <div style="font-size:11px;color:var(--muted);margin-top:.3rem">vagaai.app.br/blog/post?s=<span id="slugPreview" style="font-weight:600">...</span></div>
+            </div>
+
+            <!-- Meta description -->
+            <div class="seo-field" style="margin-bottom:0">
+              <div class="seo-label">
+                Meta descrição
+                <span class="seo-counter" id="seoDescCount">0/160</span>
+              </div>
+              <textarea class="seo-input" id="postExcerpt" rows="3" placeholder="Descrição que aparece no Google e na listagem do blog..."></textarea>
+              <div class="seo-bar"><div class="seo-bar-fill" id="seoDescBar" style="width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /wp-main -->
+
+      <!-- RIGHT: SIDEBAR -->
+      <div class="wp-sidebar">
+
+        <!-- Publish -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-header">Publicação</div>
+          <div class="sidebar-card-body">
+            <div class="publish-status-row">
+              <span style="color:var(--muted)">Status</span>
+              <span class="status-badge draft" id="statusBadge">Rascunho</span>
+            </div>
+            <div class="publish-actions">
+              <button class="btn ghost" style="width:100%;justify-content:center" onclick="savePost(false)">💾 Salvar rascunho</button>
+              <button class="btn primary" style="width:100%;justify-content:center" id="publishBtn2" onclick="savePost(true)">🚀 Publicar</button>
+            </div>
+            <label class="publish-toggle-row" onclick="togglePublish()">
+              <div class="toggle-sw" id="publishToggle"></div>
+              <span id="publishLabel">Rascunho — não visível ao público</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Featured image -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-header">Imagem destacada</div>
+          <div class="sidebar-card-body">
+            <div class="featured-img-placeholder" id="imgPlaceholder" onclick="document.getElementById('postCover').focus()">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              Definir imagem destacada
+            </div>
+            <img class="featured-img-preview" id="imgPreview" style="display:none" alt="Capa">
+            <input type="text" class="img-url-input" id="postCover" placeholder="URL da imagem (https://...)">
+            <button class="btn ghost" style="width:100%;justify-content:center;font-size:12px" onclick="removeCover()">Remover imagem</button>
+          </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-header">Categorias</div>
+          <div class="sidebar-card-body">
+            <div class="cat-tags" id="catTags"></div>
+            <div class="cat-input-row">
+              <input type="text" class="cat-input" id="catInput" placeholder="Nova categoria..." onkeydown="if(event.key==='Enter'){addCat();event.preventDefault()}">
+              <button class="cat-add-btn" onclick="addCat()">+ Add</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delete (only for existing posts) -->
+        <div id="deleteWrap" style="display:none">
+          <button class="btn danger" style="width:100%;justify-content:center" onclick="deletePost()">🗑 Excluir post</button>
+        </div>
+
+      </div><!-- /sidebar -->
+
+    </div><!-- /wp-columns -->
+  </div><!-- /wp-wrap -->
+</div><!-- /editorView -->
 
 <div class="toast" id="toast"></div>
 
@@ -234,18 +407,17 @@ var SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
 var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
 var ADMIN_EMAILS = ['contato@vagaai.app.br', 'jvhr96@gmail.com'];
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-
 var _session = null;
 var _currentPost = null;
 var _isPublished = false;
+var _categories = [];
+var _gpDevice = 'desktop';
 
-// ── Auth ──────────────────────────────────────────────────────────────────────
+// ── Auth ─────────────────────────────────────────────────────────────────────
 (async function() {
-  var { data: { session } } = await sb.auth.getSession();
-  if (!session || !ADMIN_EMAILS.includes(session.user.email)) {
-    window.location.href = '/dashboard';
-    return;
-  }
+  var r = await sb.auth.getSession();
+  var session = r.data.session;
+  if (!session || !ADMIN_EMAILS.includes(session.user.email)) { window.location.href = '/dashboard'; return; }
   _session = session;
   loadPosts();
 })();
@@ -258,41 +430,41 @@ async function loadPosts() {
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + _session.access_token }
     });
     var posts = await res.json();
-    if (!posts.length) {
+    if (!Array.isArray(posts) || !posts.length) {
       grid.innerHTML = '<div class="empty-state"><h3>Nenhum post ainda</h3><p>Clique em "Novo post" para começar.</p></div>';
       return;
     }
     grid.innerHTML = posts.map(function(p) {
       var date = new Date(p.updated_at || p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
-      return '<div class="post-card" onclick="editPost(\'' + p.id + '\')">'
-        + '<div class="post-card-info">'
+      return '<div class="post-card">'
+        + '<div class="post-card-info" onclick="editPost(\'' + p.id + '\')">'
         + '<div class="post-card-title">' + esc(p.title || '(sem título)') + '</div>'
-        + '<div class="post-card-meta">' + esc(p.slug || '') + ' · ' + date + '</div>'
+        + '<div class="post-card-meta">' + esc(p.slug || '—') + ' · Atualizado ' + date + '</div>'
         + '</div>'
         + '<span class="badge ' + (p.published ? 'green' : 'yellow') + '">' + (p.published ? 'Publicado' : 'Rascunho') + '</span>'
-        + '<button class="btn-sm" onclick="event.stopPropagation();editPost(\'' + p.id + '\')">Editar</button>'
+        + '<button class="btn-sm" onclick="editPost(\'' + p.id + '\')">Editar</button>'
         + '</div>';
     }).join('');
-  } catch(e) {
-    grid.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:1rem">Erro ao carregar posts.</div>';
-  }
+  } catch(e) { grid.innerHTML = '<div style="padding:1rem;color:var(--muted);font-size:13px">Erro ao carregar.</div>'; }
 }
 
 // ── New post ──────────────────────────────────────────────────────────────────
 function newPost() {
-  _currentPost = null;
-  _isPublished = false;
+  _currentPost = null; _isPublished = false; _categories = [];
   document.getElementById('postTitle').value = '';
   document.getElementById('postSlug').value = '';
   document.getElementById('postExcerpt').value = '';
   document.getElementById('postCover').value = '';
+  document.getElementById('seoTitle').value = '';
   document.getElementById('editorContent').innerHTML = '';
+  document.getElementById('codeEditor').value = '';
   document.getElementById('slugPreview').textContent = '...';
-  setPublishUI(false);
   document.getElementById('deleteBtn').style.display = 'none';
-  document.getElementById('deleteBtn2').style.display = 'none';
-  document.getElementById('publishBtn').textContent = 'Publicar';
-  document.getElementById('publishBtn2').textContent = 'Publicar';
+  document.getElementById('deleteWrap').style.display = 'none';
+  setPublishUI(false);
+  renderCatTags();
+  updatePreview();
+  updateWordCount();
   showEditor();
 }
 
@@ -305,19 +477,22 @@ async function editPost(id) {
     var rows = await res.json();
     if (!rows.length) return;
     var p = rows[0];
-    _currentPost = p;
-    _isPublished = p.published;
+    _currentPost = p; _isPublished = p.published;
+    _categories = p.categories ? (Array.isArray(p.categories) ? p.categories : JSON.parse(p.categories)) : [];
     document.getElementById('postTitle').value = p.title || '';
     document.getElementById('postSlug').value = p.slug || '';
     document.getElementById('postExcerpt').value = p.excerpt || '';
     document.getElementById('postCover').value = p.cover_url || '';
+    document.getElementById('seoTitle').value = p.seo_title || '';
     document.getElementById('editorContent').innerHTML = p.content || '';
-    document.getElementById('slugPreview').textContent = p.slug || '...';
+    document.getElementById('codeEditor').value = p.content || '';
     setPublishUI(p.published);
+    renderCatTags();
+    updateCoverPreview(p.cover_url);
+    updatePreview();
+    updateWordCount();
     document.getElementById('deleteBtn').style.display = 'inline-flex';
-    document.getElementById('deleteBtn2').style.display = 'inline-flex';
-    document.getElementById('publishBtn').textContent = p.published ? 'Atualizar' : 'Publicar';
-    document.getElementById('publishBtn2').textContent = p.published ? 'Atualizar' : 'Publicar';
+    document.getElementById('deleteWrap').style.display = 'block';
     showEditor();
   } catch(e) { toast('Erro ao carregar post', true); }
 }
@@ -328,120 +503,186 @@ async function savePost(publish) {
   var slug = document.getElementById('postSlug').value.trim() || slugify(title);
   var excerpt = document.getElementById('postExcerpt').value.trim();
   var cover_url = document.getElementById('postCover').value.trim();
+  var seo_title = document.getElementById('seoTitle').value.trim();
   var content = document.getElementById('editorContent').innerHTML;
   var published = publish ? true : _isPublished;
-
   if (!title) { toast('Adicione um título', true); return; }
   if (!slug) { toast('Adicione um slug', true); return; }
-
   document.getElementById('postSlug').value = slug;
   document.getElementById('slugPreview').textContent = slug;
-
-  var body = JSON.stringify({ title, slug, excerpt, cover_url, content, published, updated_at: new Date().toISOString() });
+  var body = { title, slug, excerpt, cover_url, seo_title, content, published,
+    categories: JSON.stringify(_categories), updated_at: new Date().toISOString() };
   try {
     var method = _currentPost ? 'PATCH' : 'POST';
     var url = _currentPost
       ? SUPABASE_URL + '/rest/v1/blog_posts?id=eq.' + _currentPost.id
       : SUPABASE_URL + '/rest/v1/blog_posts';
     var res = await fetch(url, {
-      method,
-      headers: {
-        apikey: SUPABASE_ANON,
-        Authorization: 'Bearer ' + _session.access_token,
-        'Content-Type': 'application/json',
-        Prefer: _currentPost ? 'return=representation' : 'return=representation,resolution=merge-duplicates'
-      },
-      body
+      method, headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + _session.access_token,
+        'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify(body)
     });
-    if (!res.ok) { var err = await res.text(); throw new Error(err); }
+    if (!res.ok) throw new Error(await res.text());
     var rows = await res.json();
     if (rows && rows[0]) _currentPost = rows[0];
-    _isPublished = published;
-    setPublishUI(published);
+    _isPublished = published; setPublishUI(published);
     document.getElementById('deleteBtn').style.display = 'inline-flex';
-    document.getElementById('deleteBtn2').style.display = 'inline-flex';
-    document.getElementById('publishBtn').textContent = published ? 'Atualizar' : 'Publicar';
-    document.getElementById('publishBtn2').textContent = published ? 'Atualizar' : 'Publicar';
+    document.getElementById('deleteWrap').style.display = 'block';
+    document.getElementById('publishBtn').textContent = published ? '✓ Atualizar' : '🚀 Publicar';
+    document.getElementById('publishBtn2').textContent = published ? '✓ Atualizar' : '🚀 Publicar';
     toast(published ? '✓ Post publicado!' : '✓ Rascunho salvo');
-  } catch(e) { toast('Erro ao salvar: ' + e.message, true); }
+  } catch(e) { toast('Erro: ' + e.message, true); }
 }
 
-// ── Delete post ───────────────────────────────────────────────────────────────
+// ── Delete ────────────────────────────────────────────────────────────────────
 async function deletePost() {
   if (!_currentPost) return;
-  if (!confirm('Excluir "' + _currentPost.title + '"? Esta ação não pode ser desfeita.')) return;
+  if (!confirm('Excluir "' + (_currentPost.title || 'este post') + '"? Não é possível desfazer.')) return;
   try {
     await fetch(SUPABASE_URL + '/rest/v1/blog_posts?id=eq.' + _currentPost.id, {
-      method: 'DELETE',
-      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + _session.access_token }
+      method: 'DELETE', headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + _session.access_token }
     });
-    toast('Post excluído');
-    backToList();
+    toast('Post excluído'); backToList();
   } catch(e) { toast('Erro ao excluir', true); }
 }
 
-// ── UI helpers ────────────────────────────────────────────────────────────────
+// ── UI ────────────────────────────────────────────────────────────────────────
 function showEditor() {
   document.getElementById('listView').style.display = 'none';
   document.getElementById('editorView').style.display = 'block';
   document.getElementById('editorContent').focus();
 }
-
 function backToList() {
   document.getElementById('listView').style.display = 'block';
   document.getElementById('editorView').style.display = 'none';
-  _currentPost = null;
-  loadPosts();
+  _currentPost = null; loadPosts();
 }
-
-function togglePublish() {
-  _isPublished = !_isPublished;
-  setPublishUI(_isPublished);
-}
-
+function togglePublish() { _isPublished = !_isPublished; setPublishUI(_isPublished); }
 function setPublishUI(pub) {
   _isPublished = pub;
-  var tog = document.getElementById('publishToggle');
-  var lbl = document.getElementById('publishLabel');
-  tog.classList.toggle('on', pub);
-  lbl.textContent = pub ? 'Publicado' : 'Rascunho';
+  document.getElementById('publishToggle').classList.toggle('on', pub);
+  document.getElementById('publishLabel').textContent = pub ? 'Publicado — visível ao público' : 'Rascunho — não visível ao público';
+  var badge = document.getElementById('statusBadge');
+  badge.textContent = pub ? 'Publicado' : 'Rascunho';
+  badge.className = 'status-badge ' + (pub ? 'published' : 'draft');
+  document.getElementById('publishBtn').textContent = pub ? '✓ Atualizar' : '🚀 Publicar';
+  document.getElementById('publishBtn2').textContent = pub ? '✓ Atualizar' : '🚀 Publicar';
 }
 
 // ── Rich text ─────────────────────────────────────────────────────────────────
-function fmt(cmd) { document.execCommand(cmd, false, null); document.getElementById('editorContent').focus(); }
+function fmt(cmd) { document.execCommand(cmd, false, null); document.getElementById('editorContent').focus(); updateWordCount(); }
+function fmtBlock(tag) { document.getElementById('editorContent').focus(); document.execCommand('formatBlock', false, tag); }
+function insertLink() { var url = prompt('URL do link:'); if (url) document.execCommand('createLink', false, url); }
+function insertImage() { var url = prompt('URL da imagem:'); if (url) document.execCommand('insertHTML', false, '<img src="' + url + '" alt="">'); }
+function insertHR() { document.execCommand('insertHTML', false, '<hr>'); }
 
-function fmtBlock(tag) {
-  document.getElementById('editorContent').focus();
-  document.execCommand('formatBlock', false, tag);
+// ── Tab Visual / Código ───────────────────────────────────────────────────────
+function switchTab(tab) {
+  var visual = document.getElementById('editorContent');
+  var code = document.getElementById('codeEditor');
+  var tV = document.getElementById('tabVisual');
+  var tC = document.getElementById('tabCode');
+  if (tab === 'visual') {
+    visual.innerHTML = code.value;
+    visual.style.display = ''; code.style.display = 'none';
+    tV.classList.add('active'); tC.classList.remove('active');
+  } else {
+    code.value = visual.innerHTML;
+    code.style.display = ''; visual.style.display = 'none';
+    tC.classList.add('active'); tV.classList.remove('active');
+  }
 }
 
-function insertLink() {
-  var url = prompt('URL do link:');
-  if (url) { document.execCommand('createLink', false, url); }
+// ── Word count ────────────────────────────────────────────────────────────────
+function updateWordCount() {
+  var text = document.getElementById('editorContent').innerText || '';
+  var words = text.trim().split(/\s+/).filter(function(w){ return w.length > 0; }).length;
+  document.getElementById('wordCount').textContent = words;
 }
 
-function insertImage() {
-  var url = prompt('URL da imagem:');
-  if (url) { document.execCommand('insertHTML', false, '<img src="' + esc(url) + '" alt="">'); }
+// ── Cover image ───────────────────────────────────────────────────────────────
+function updateCoverPreview(url) {
+  var ph = document.getElementById('imgPlaceholder');
+  var prev = document.getElementById('imgPreview');
+  if (url) { prev.src = url; prev.style.display = 'block'; ph.style.display = 'none'; }
+  else { prev.style.display = 'none'; ph.style.display = 'flex'; }
+}
+function removeCover() { document.getElementById('postCover').value = ''; updateCoverPreview(''); }
+
+// ── Categories ────────────────────────────────────────────────────────────────
+function renderCatTags() {
+  var wrap = document.getElementById('catTags');
+  wrap.innerHTML = _categories.map(function(c, i) {
+    return '<span class="cat-tag">' + esc(c) + '<span class="cat-tag-remove" onclick="removeCat(' + i + ')">×</span></span>';
+  }).join('');
+}
+function addCat() {
+  var input = document.getElementById('catInput');
+  var val = input.value.trim();
+  if (val && !_categories.includes(val)) { _categories.push(val); renderCatTags(); }
+  input.value = '';
+}
+function removeCat(i) { _categories.splice(i, 1); renderCatTags(); }
+
+// ── SEO preview ───────────────────────────────────────────────────────────────
+function updatePreview() {
+  var title = document.getElementById('seoTitle').value.trim() || document.getElementById('postTitle').value.trim() || 'Título do post';
+  var desc = document.getElementById('postExcerpt').value.trim();
+  var slug = document.getElementById('postSlug').value.trim() || slugify(document.getElementById('postTitle').value.trim()) || 'slug';
+  document.getElementById('gpTitle').textContent = title + ' — VagaAI';
+  document.getElementById('gpDesc').innerHTML = desc || '<span style="color:#aaa">Adicione uma meta descrição abaixo...</span>';
+  document.getElementById('gpSlug').textContent = slug;
+  document.getElementById('slugPreview').textContent = slug || '...';
+  // SEO counters
+  updateSeoCounter('seoTitle', document.getElementById('seoTitle').value.length, 60, 'seoTitleCount', 'seoTitleBar');
+  updateSeoCounter('seoDesc', desc.length, 160, 'seoDescCount', 'seoDescBar');
+}
+function updateSeoCounter(key, len, max, countId, barId) {
+  var pct = Math.min((len / max) * 100, 100);
+  var color = len === 0 ? 'var(--border)' : len <= max * 0.7 ? 'var(--yellow)' : len <= max ? 'var(--green)' : 'var(--red)';
+  var cls = len === 0 ? '' : len <= max ? (len > max * 0.7 ? 'ok' : 'warn') : 'over';
+  document.getElementById(countId).textContent = len + '/' + max;
+  document.getElementById(countId).className = 'seo-counter ' + cls;
+  document.getElementById(barId).style.width = pct + '%';
+  document.getElementById(barId).style.background = color;
+}
+function setGpDevice(d) {
+  _gpDevice = d;
+  var wrap = document.getElementById('gpWrap');
+  wrap.className = 'google-preview-wrap' + (d === 'mobile' ? ' gp-mobile' : '');
+  document.getElementById('gpBtnDesktop').className = 'gp-device-btn' + (d === 'desktop' ? ' active' : '');
+  document.getElementById('gpBtnMobile').className = 'gp-device-btn' + (d === 'mobile' ? ' active' : '');
 }
 
-function insertHR() {
-  document.execCommand('insertHTML', false, '<hr>');
+// ── Slug ──────────────────────────────────────────────────────────────────────
+function slugify(str) {
+  return (str || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-').replace(/-+/g,'-').substring(0,80);
 }
 
-// ── Slug auto-gen ─────────────────────────────────────────────────────────────
+// ── Events ────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
   var titleEl = document.getElementById('postTitle');
   var slugEl = document.getElementById('postSlug');
   titleEl.addEventListener('input', function() {
-    if (!_currentPost) { var s = slugify(this.value); slugEl.value = s; document.getElementById('slugPreview').textContent = s || '...'; }
+    if (!_currentPost) { var s = slugify(this.value); slugEl.value = s; }
+    updatePreview();
   });
-  slugEl.addEventListener('input', function() { document.getElementById('slugPreview').textContent = this.value || '...'; });
+  slugEl.addEventListener('input', updatePreview);
+  document.getElementById('seoTitle').addEventListener('input', updatePreview);
+  document.getElementById('postExcerpt').addEventListener('input', updatePreview);
+  document.getElementById('editorContent').addEventListener('input', function() { updateWordCount(); });
+  document.getElementById('postCover').addEventListener('input', function() { updateCoverPreview(this.value.trim()); });
 });
 
-function slugify(str) {
-  return str.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-').replace(/-+/g,'-').substring(0,80);
+// ── Theme ─────────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  var light = document.documentElement.getAttribute('data-theme') === 'light';
+  if (light) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('vagaai_theme','dark'); }
+  else { document.documentElement.setAttribute('data-theme','light'); localStorage.setItem('vagaai_theme','light'); }
+  var b = document.getElementById('themeBtn');
+  if (b) b.textContent = light ? '☀️' : '🌙';
 }
+(function(){ var b = document.getElementById('themeBtn'); if (b) b.textContent = document.documentElement.getAttribute('data-theme')==='light' ? '🌙' : '☀️'; })();
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 function toast(msg, err) {
@@ -452,17 +693,7 @@ function toast(msg, err) {
   el.classList.add('show');
   setTimeout(function() { el.classList.remove('show'); }, 2500);
 }
-
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-function toggleTheme() {
-  var light = document.documentElement.getAttribute('data-theme') === 'light';
-  if (light) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('vagaai_theme','dark'); }
-  else { document.documentElement.setAttribute('data-theme','light'); localStorage.setItem('vagaai_theme','light'); }
-  var b = document.getElementById('themeBtn');
-  if (b) b.textContent = light ? '☀️' : '🌙';
-}
-(function(){ var b = document.getElementById('themeBtn'); if (b) b.textContent = document.documentElement.getAttribute('data-theme')==='light' ? '🌙' : '☀️'; })();
 </script>
 </body>
 </html>
