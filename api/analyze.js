@@ -102,8 +102,69 @@ async function getUserFromToken(token) {
   }
 }
 
+// ─── Planos de assinatura ─────────────────────────────────────────────────────
+
+const PLAN_LIMITS = {
+  free:    { analyses_per_month: 1, unlimited: false },
+  starter: { analyses_per_month: 10, unlimited: false },
+  pro:     { analyses_per_month: Infinity, unlimited: true },
+};
+
+async function getUserSubscription(userId) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return null;
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${encodeURIComponent(userId)}&select=plan,status,analyses_used_this_month,analyses_reset_at,current_period_end`,
+      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+    );
+    const rows = await res.json();
+    return rows?.[0] || null;
+  } catch { return null; }
+}
+
 async function checkAndDeductCredit(userId) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return { ok: false, reason: 'config' };
+
+  // 1. Verifica plano de assinatura
+  const sub = await getUserSubscription(userId);
+  if (sub && sub.status === 'active') {
+    const plan = sub.plan || 'free';
+    const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+
+    // Pro: ilimitado
+    if (limits.unlimited) return { ok: true, remaining: 999, plan, via: 'subscription' };
+
+    // Starter/Free: verifica limite mensal
+    const now = new Date();
+    const resetAt = sub.analyses_reset_at ? new Date(sub.analyses_reset_at) : null;
+    let used = sub.analyses_used_this_month || 0;
+
+    // Reset mensal
+    if (resetAt && now > resetAt) {
+      used = 0;
+      await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${encodeURIComponent(userId)}`, {
+        method: 'PATCH',
+        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({ analyses_used_this_month: 0, analyses_reset_at: new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString() }),
+      }).catch(() => {});
+    }
+
+    if (used >= limits.analyses_per_month) {
+      return { ok: false, reason: 'plan_limit', plan, used, limit: limits.analyses_per_month };
+    }
+
+    // Incrementa contador
+    await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${encodeURIComponent(userId)}`, {
+      method: 'PATCH',
+      headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ analyses_used_this_month: used + 1, updated_at: new Date().toISOString() }),
+    }).catch(() => {});
+
+    const remaining = limits.analyses_per_month - (used + 1);
+    return { ok: true, remaining, plan, via: 'subscription' };
+  }
+
+  // 2. Fallback: sistema de créditos avulsos (modelo antigo)
   try {
     const getRes = await fetch(
       `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&select=credits`,
@@ -116,17 +177,12 @@ async function checkAndDeductCredit(userId) {
       `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}`,
       {
         method: 'PATCH',
-        headers: {
-          apikey: SUPABASE_SERVICE_KEY,
-          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-          'Content-Type': 'application/json',
-          Prefer: 'return=minimal',
-        },
+        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
         body: JSON.stringify({ credits: current - 1, updated_at: new Date().toISOString() }),
       }
     );
     if (!patchRes.ok) return { ok: false, reason: 'patch_failed' };
-    return { ok: true, remaining: current - 1 };
+    return { ok: true, remaining: current - 1, plan: 'credits', via: 'credits' };
   } catch (err) {
     console.error('checkAndDeductCredit error:', err);
     return { ok: false, reason: 'error' };

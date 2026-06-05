@@ -553,10 +553,14 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
     </div>
   </div>
 
-  <!-- COMPRAR CRÉDITOS -->
-  <div class="buy-section">
-    <div class="buy-title">Comprar mais créditos</div>
-    <p class="buy-sub">Cada crédito equivale a 1 análise completa de currículo × vaga.</p>
+  <!-- PLANO ATUAL -->
+  <div class="buy-section" id="currentPlanSection">
+    <div class="buy-title">Meu plano</div>
+    <div id="currentPlanCard" style="margin-bottom:1.2rem">
+      <!-- preenchido via JS -->
+    </div>
+    <div class="buy-title" style="margin-top:1.5rem">Fazer upgrade</div>
+    <p class="buy-sub">Desbloqueie mais análises e funcionalidades exclusivas.</p>
     <div class="plans-row" id="plansRow"></div>
   </div>
 
@@ -741,10 +745,36 @@ var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
+// ─── PLANOS DE ASSINATURA ─────────────────────────────────────────────────────
+// ⚠️ URLs abaixo são TEST mode — substituir por URLs live após ativar live mode no Stripe
+var SUBSCRIPTION_PLANS = [
+  {
+    id: 'free', name: 'Grátis', price: 'R$0', sub: '/mês',
+    badge: null, featured: false,
+    features: ['1 análise/mês', 'Score ATS', 'Rastreador de candidaturas', 'Alertas semanais'],
+    url: null, urlAnual: null
+  },
+  {
+    id: 'starter', name: 'Starter', price: 'R$19', sub: ',90/mês',
+    badge: null, featured: false,
+    features: ['10 análises/mês', 'CV otimizado', 'Briefing da empresa', 'Carta de apresentação', 'Alertas semanais'],
+    url: 'https://buy.stripe.com/test_STARTER_MENSAL', // substituir após criar no Stripe dashboard
+    urlAnual: 'https://buy.stripe.com/test_STARTER_ANUAL'
+  },
+  {
+    id: 'pro', name: 'Pro', price: 'R$39', sub: ',90/mês',
+    badge: 'Recomendado', featured: true,
+    features: ['Análises ilimitadas', 'CV otimizado', 'Briefing da empresa', 'Simulador de entrevista', 'Carta de apresentação', 'LinkedIn Optimizer', 'Alertas diários', 'Suporte prioritário'],
+    url: 'https://buy.stripe.com/test_PRO_MENSAL', // substituir após criar no Stripe dashboard
+    urlAnual: 'https://buy.stripe.com/test_PRO_ANUAL'
+  }
+];
+
+// Créditos avulsos (legado — mantido para compatibilidade)
 var PLANS = [
-  { name: '1 candidatura', badge: null, price: 'R$9', cents: ',90', credits: 1, url: 'https://buy.stripe.com/7sY5kD9tk5DzgdNf0P9k404', featured: false },
-  { name: '10 candidaturas', badge: 'Mais popular', price: 'R$39', cents: ',90', credits: 10, url: 'https://buy.stripe.com/cNi4gz20Sc1XgdNf0P9k403', featured: true },
-  { name: '50 candidaturas', badge: null, price: 'R$97', cents: ',00', credits: 50, url: 'https://buy.stripe.com/eVqbJ120S0jf3r16uj9k405', featured: false }
+  { name: '1 análise', badge: null, price: 'R$9', cents: ',90', credits: 1, url: 'https://buy.stripe.com/7sY5kD9tk5DzgdNf0P9k404', featured: false },
+  { name: '10 análises', badge: 'Mais popular', price: 'R$39', cents: ',90', credits: 10, url: 'https://buy.stripe.com/cNi4gz20Sc1XgdNf0P9k403', featured: true },
+  { name: '50 análises', badge: null, price: 'R$97', cents: ',00', credits: 50, url: 'https://buy.stripe.com/eVqbJ120S0jf3r16uj9k405', featured: false }
 ];
 
 var currentUserId = null;
@@ -780,8 +810,7 @@ async function init() {
   // Guarda para o modal de perfil
   window._perfilData = { email: email, memberSince: memberSince, displayName: displayName, savedName: savedName };
 
-  renderPlans();
-  await Promise.all([loadCredits(), loadAnalyses()]);
+  await Promise.all([loadCredits(), loadAnalyses(), loadSubscription()]);
   checkPendingTracker();
 
   document.getElementById('pageLoading').classList.add('hidden');
@@ -789,19 +818,103 @@ async function init() {
 }
 
 // ─── PLANS ────────────────────────────────────────────────────────────────────
+// ─── SUBSCRIPTION ─────────────────────────────────────────────────────────────
+var _userPlan = 'free';
+var _userSub = null;
+
+async function loadSubscription() {
+  try {
+    var res = await fetch('/api/subscription', {
+      headers: { Authorization: 'Bearer ' + currentSession.access_token }
+    });
+    if (!res.ok) return;
+    _userSub = await res.json();
+    _userPlan = _userSub.plan || 'free';
+    renderCurrentPlanCard();
+    renderPlans();
+  } catch(e) { renderPlans(); }
+}
+
+function renderCurrentPlanCard() {
+  var sub = _userSub;
+  var plan = sub ? sub.plan : 'free';
+  var planLabels = { free: 'Grátis', starter: 'Starter', pro: 'Pro' };
+  var planColors = { free: 'var(--muted)', starter: 'var(--green)', pro: 'var(--yellow)' };
+  var label = planLabels[plan] || plan;
+  var color = planColors[plan] || 'var(--muted)';
+
+  var usedThis = sub ? (sub.analyses_used_this_month || 0) : 0;
+  var limits = { free: 1, starter: 10, pro: '∞' };
+  var limit = limits[plan] || 1;
+
+  var periodEnd = sub && sub.current_period_end
+    ? new Date(sub.current_period_end).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' })
+    : null;
+
+  // Créditos avulsos legados
+  var legacyCredits = sub ? (sub.credits_legacy || 0) : 0;
+
+  var html = '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">'
+    + '<div>'
+    + '<div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem">Plano atual</div>'
+    + '<div style="font-size:20px;font-weight:700;color:' + color + ';font-family:Lora,serif">' + label + '</div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-top:.2rem">'
+    + (plan === 'pro' ? 'Análises ilimitadas este mês'
+      : (usedThis + ' de ' + limit + ' análise' + (limit !== 1 ? 's' : '') + ' usada' + (usedThis !== 1 ? 's' : '') + ' este mês'))
+    + (periodEnd ? '<br>Renova em ' + periodEnd : '')
+    + (legacyCredits > 0 ? '<br>' + legacyCredits + ' crédito' + (legacyCredits > 1 ? 's' : '') + ' avulso' + (legacyCredits > 1 ? 's' : '') + ' disponíve' + (legacyCredits > 1 ? 'is' : 'l') : '')
+    + '</div>'
+    + '</div>'
+    + (plan !== 'pro' ? '<button onclick="document.getElementById(\'plansRow\').scrollIntoView({behavior:\'smooth\'})" style="background:var(--green);color:#0a0f0d;border:none;border-radius:8px;font-family:Inter,sans-serif;font-size:13px;font-weight:700;padding:.5rem 1rem;cursor:pointer;white-space:nowrap">⚡ Fazer upgrade</button>' : '<span style="font-size:12px;color:var(--green);font-weight:600">✓ Plano máximo</span>')
+    + '</div>';
+
+  var el = document.getElementById('currentPlanCard');
+  if (el) el.innerHTML = html;
+}
+
 function renderPlans() {
-  var html = PLANS.map(function(p) {
-    var url = p.url + '?client_reference_id=' + encodeURIComponent(currentUserId)
-      + '&prefilled_email=' + encodeURIComponent(currentSession.user.email || '');
-    return '<div class="plan-item' + (p.featured ? ' featured' : '') + '">'
+  var plan = _userPlan;
+  var email = (currentSession && currentSession.user.email) || '';
+  var uid = currentUserId || '';
+
+  // Planos de assinatura
+  var subHtml = SUBSCRIPTION_PLANS.filter(function(p){ return p.id !== 'free'; }).map(function(p) {
+    var isCurrent = plan === p.id;
+    var url = p.url ? (p.url + '?client_reference_id=' + encodeURIComponent(uid) + '&prefilled_email=' + encodeURIComponent(email)) : null;
+    return '<div class="plan-item' + (p.featured ? ' featured' : '') + '" style="' + (isCurrent ? 'border-color:var(--green)' : '') + '">'
       + (p.badge ? '<div class="plan-badge">' + p.badge + '</div>' : '')
+      + (isCurrent ? '<div class="plan-badge" style="background:var(--green-dim);color:var(--green);border-color:var(--green-border)">Plano atual</div>' : '')
       + '<div class="plan-name">' + p.name + '</div>'
-      + '<div class="plan-price">' + p.price + '<small>' + p.cents + '</small></div>'
-      + '<button class="plan-btn ' + (p.featured ? '' : 'ghost') + '" onclick="buyPlan(\'' + url + '\',\'' + p.name + '\')">'
-      + (p.featured ? 'Comprar agora' : 'Escolher') + '</button>'
+      + '<div class="plan-price">' + p.price + '<small>' + p.sub + '</small></div>'
+      + '<ul style="list-style:none;font-size:12px;color:var(--muted);margin:.6rem 0 .9rem;display:flex;flex-direction:column;gap:.3rem">'
+      + p.features.slice(0,4).map(function(f){ return '<li style="display:flex;align-items:center;gap:.4rem"><span style="color:var(--green);font-size:11px">✓</span>' + f + '</li>'; }).join('')
+      + '</ul>'
+      + (isCurrent
+          ? '<button class="plan-btn ghost" disabled style="opacity:.5;cursor:default">Plano ativo</button>'
+          : (url ? '<button class="plan-btn ' + (p.featured ? '' : 'ghost') + '" onclick="subscribePlan(\'' + url + '\',\'' + p.name + '\')">' + (p.featured ? 'Assinar Pro' : 'Assinar Starter') + '</button>'
+                  : '<button class="plan-btn ghost" onclick="alert(\'Link de assinatura em breve!\')">Em breve</button>'))
       + '</div>';
   }).join('');
-  document.getElementById('plansRow').innerHTML = html;
+
+  // Créditos avulsos (legado)
+  var credHtml = '<div style="margin-top:1.2rem"><p class="buy-sub" style="margin-bottom:.75rem">Ou compre análises avulsas (sem assinatura):</p>'
+    + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem">'
+    + PLANS.map(function(p) {
+        var url = p.url + '?client_reference_id=' + encodeURIComponent(uid) + '&prefilled_email=' + encodeURIComponent(email);
+        return '<div class="plan-item" style="padding:.8rem">'
+          + '<div class="plan-name" style="font-size:12px">' + p.name + '</div>'
+          + '<div class="plan-price" style="font-size:18px">' + p.price + '<small>' + p.cents + '</small></div>'
+          + '<button class="plan-btn ghost" style="font-size:11px;padding:.4rem" onclick="buyPlan(\'' + url + '\',\'' + p.name + '\')">Comprar</button>'
+          + '</div>';
+      }).join('')
+    + '</div></div>';
+
+  document.getElementById('plansRow').innerHTML = subHtml + credHtml;
+}
+
+function subscribePlan(url, name) {
+  try { window.va && window.va('event', { name: 'subscribe_click', plan: name }); } catch(e){}
+  window.open(url, '_blank');
 }
 
 function buyPlan(url, name) {

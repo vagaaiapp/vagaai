@@ -169,7 +169,117 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid JSON' });
   }
 
-  // Só processa checkout.session.completed
+  // ── Mapeamento price_id → plano ──────────────────────────────────────────────
+  const PRICE_PLAN_MAP = {
+    // TEST mode — substituir por IDs live quando ativar live mode
+    'price_1Tf1HfHB7lmotVJh5IgNzspi': { plan: 'starter', billing: 'mensal' },
+    'price_1Tf1HhHB7lmotVJhGEYqS3ST': { plan: 'starter', billing: 'anual' },
+    'price_1Tf1HsHB7lmotVJhuEA9Fxc3': { plan: 'pro', billing: 'mensal' },
+    'price_1Tf1HuHB7lmotVJhoEmWpotx': { plan: 'pro', billing: 'anual' },
+  };
+
+  // ── Upsert subscription no Supabase ──────────────────────────────────────────
+  async function upsertSubscription(userId, stripeSubId, stripeCustomerId, plan, status, periodEnd) {
+    await fetch(`${SUPABASE_URL}/rest/v1/subscriptions`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=minimal',
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        stripe_subscription_id: stripeSubId,
+        stripe_customer_id: stripeCustomerId,
+        plan,
+        status,
+        current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+  }
+
+  // ── Busca user_id pelo customer_id ou email ───────────────────────────────────
+  async function getUserIdByCustomerOrEmail(customerId, email) {
+    // 1. Tenta pelo stripe_customer_id
+    if (customerId) {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?stripe_customer_id=eq.${customerId}&select=user_id`, {
+        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` }
+      });
+      const rows = await r.json();
+      if (rows?.length) return rows[0].user_id;
+    }
+    // 2. Fallback: busca pelo email na tabela auth.users via service role
+    if (email) {
+      const r = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`, {
+        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` }
+      });
+      const data = await r.json();
+      if (data?.users?.length) return data.users[0].id;
+    }
+    return null;
+  }
+
+  const eventType = event.type;
+  const obj = event.data?.object;
+  if (!obj) return res.status(400).json({ error: 'Missing event object' });
+
+  console.log(`Webhook: ${eventType}`);
+
+  // ── Assinatura criada ou atualizada ──────────────────────────────────────────
+  if (eventType === 'customer.subscription.created' || eventType === 'customer.subscription.updated') {
+    const sub = obj;
+    const priceId = sub.items?.data?.[0]?.price?.id;
+    const planInfo = PRICE_PLAN_MAP[priceId];
+    if (!planInfo) {
+      console.warn(`Webhook: unknown price ${priceId} for subscription ${sub.id}`);
+      return res.status(200).json({ received: true, note: 'unknown_price' });
+    }
+    const customerId = sub.customer;
+    const email = sub.customer_email || sub.metadata?.email;
+    const userId = await getUserIdByCustomerOrEmail(customerId, email);
+    if (!userId) {
+      console.warn(`Webhook: no user found for customer ${customerId}`);
+      return res.status(200).json({ received: true, note: 'no_user' });
+    }
+    await upsertSubscription(userId, sub.id, customerId, planInfo.plan, sub.status, sub.current_period_end);
+    // Email de boas-vindas
+    if (eventType === 'customer.subscription.created' && RESEND_API_KEY && email) {
+      const planLabel = planInfo.plan === 'pro' ? 'Pro' : 'Starter';
+      fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: 'VagaAI <noreply@vagaai.app.br>',
+          to: [email],
+          subject: `✓ Plano ${planLabel} ativado — VagaAI`,
+          html: `<div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto;padding:2rem;background:#0a0f0d;color:#e8ede9;border-radius:12px">
+  <h1 style="color:#3ecf8e;font-size:22px;margin-bottom:.5rem">Plano ${planLabel} ativado! 🎉</h1>
+  <p style="color:#8a9e90;margin-bottom:1.5rem">Seu plano já está ativo. Aproveite todos os recursos disponíveis.</p>
+  <a href="https://www.vagaai.app.br/dashboard" style="display:inline-block;background:#3ecf8e;color:#0a0f0d;font-weight:700;padding:.8rem 1.5rem;border-radius:8px;text-decoration:none">→ Acessar meu painel</a>
+  <p style="color:#4d6e57;font-size:12px;margin-top:2rem">VagaAI · vagaai.app.br</p>
+</div>`,
+        }),
+      }).catch(e => console.error('Subscription welcome email error:', e.message));
+    }
+    console.log(`Webhook: subscription ${sub.id} → plan=${planInfo.plan} user=${userId}`);
+    return res.status(200).json({ received: true, plan: planInfo.plan });
+  }
+
+  // ── Assinatura cancelada ─────────────────────────────────────────────────────
+  if (eventType === 'customer.subscription.deleted') {
+    const sub = obj;
+    const customerId = sub.customer;
+    const userId = await getUserIdByCustomerOrEmail(customerId, null);
+    if (userId) {
+      await upsertSubscription(userId, sub.id, customerId, 'free', 'canceled', null);
+      console.log(`Webhook: subscription canceled → user=${userId} downgraded to free`);
+    }
+    return res.status(200).json({ received: true, note: 'subscription_canceled' });
+  }
+
+  // ── Checkout session: compra de créditos avulsos OU início de assinatura ──────
   if (event.type !== 'checkout.session.completed') {
     return res.status(200).json({ received: true, skipped: true });
   }
@@ -179,6 +289,21 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing session object' });
   }
 
+  // Se for assinatura, o evento customer.subscription.created já cuida
+  if (session.mode === 'subscription') {
+    // Apenas salva o customer_id vinculado ao user_id para lookups futuros
+    const userId2 = session.client_reference_id;
+    const customerId2 = session.customer;
+    if (userId2 && customerId2) {
+      await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${userId2}`, {
+        method: 'PATCH',
+        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({ stripe_customer_id: customerId2 }),
+      }).catch(() => {});
+    }
+    return res.status(200).json({ received: true, note: 'subscription_checkout_handled' });
+  }
+
   const userId = session.client_reference_id;
   const amountTotal = session.amount_total; // em centavos
   const customerEmail = session.customer_details?.email || session.customer_email;
@@ -186,7 +311,6 @@ export default async function handler(req, res) {
   console.log(`Webhook: checkout.session.completed | user=${userId} | amount=${amountTotal} | email=${customerEmail}`);
 
   if (!userId) {
-    // Compra sem usuário logado — registra log mas não adiciona créditos automaticamente
     console.warn(`Webhook: no client_reference_id for session ${session.id} (email: ${customerEmail})`);
     return res.status(200).json({ received: true, note: 'no_user_id' });
   }
@@ -196,11 +320,8 @@ export default async function handler(req, res) {
     console.warn(`Webhook: unknown amount ${amountTotal} for session ${session.id} — could not infer credits`);
     return res.status(200).json({ received: true, note: 'unknown_amount' });
   }
-  if (!CREDIT_MAP[amountTotal]) {
-    console.warn(`Webhook: amount ${amountTotal} not in CREDIT_MAP — inferred ${creditsToAdd} credits for session ${session.id}`);
-  }
 
-  // Idempotência: verifica se este session já foi processado
+  // Idempotência
   try {
     const checkRes = await fetch(
       `${SUPABASE_URL}/rest/v1/webhook_events?stripe_session_id=eq.${encodeURIComponent(session.id)}&select=id`,
@@ -212,8 +333,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ received: true, note: 'already_processed' });
     }
   } catch (e) {
-    // Tabela pode não existir ainda — continua sem bloquear
-    console.warn('Webhook: idempotency check failed (table may not exist)', e.message);
+    console.warn('Webhook: idempotency check failed', e.message);
   }
 
   try {
