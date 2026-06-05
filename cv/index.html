@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<!-- Google Analytics 4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XCT8K58VWF"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-XCT8K58VWF');</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Currículo Otimizado</title>
@@ -12,18 +15,15 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:14px}
 
-/* ─── Color themes (7 presets) ───────────────────────────── */
+/* ─── Design tokens (single graphite palette) ─────────────── */
 :root{
-  --sb:#2d3436; --sb-t:#f0f0f0; --sb-m:rgba(240,240,240,.52); --sb-b:rgba(255,255,255,.1);
-  --ac:#636e72; --ac2:#7f8c8d; --page-bg:#e8e8e8;
+  --ac:#2d3748;   /* graphite — borders, separators, accents */
+  --ac2:#4a5568;  /* medium graphite — secondary text, periods */
+  --ac3:#718096;  /* light graphite — tertiary details */
+  --sb-bg:#f7f8fa; /* sidebar/panel background */
+  --page-bg:#e8e8e8;
 }
 .ic{display:inline-flex;align-items:center;vertical-align:middle;flex-shrink:0}
-[data-theme="green"]   {--sb:#1b3a2d;--sb-t:#e6f4ed;--sb-m:rgba(230,244,237,.52);--sb-b:rgba(62,207,142,.18);--ac:#3ecf8e;--ac2:#2eaf74}
-[data-theme="navy"]    {--sb:#1a2a48;--sb-t:#e6edf8;--sb-m:rgba(230,237,248,.52);--sb-b:rgba(100,160,230,.18);--ac:#5b9bd5;--ac2:#4a8ac4}
-[data-theme="wine"]    {--sb:#3d1520;--sb-t:#f8e6e9;--sb-m:rgba(248,230,233,.52);--sb-b:rgba(192,57,43,.22);--ac:#e74c3c;--ac2:#c0392b}
-[data-theme="purple"]  {--sb:#2a1a40;--sb-t:#ede6f8;--sb-m:rgba(237,230,248,.52);--sb-b:rgba(155,89,182,.22);--ac:#9b59b6;--ac2:#8e44ad}
-[data-theme="teal"]    {--sb:#0d2b35;--sb-t:#e6f4f2;--sb-m:rgba(230,244,242,.52);--sb-b:rgba(26,188,156,.22);--ac:#1abc9c;--ac2:#16a085}
-[data-theme="copper"]  {--sb:#2d1a08;--sb-t:#f8ede6;--sb-m:rgba(248,237,230,.52);--sb-b:rgba(211,84,0,.22);--ac:#d35400;--ac2:#ba4a00}
 
 /* ─── Modal overlay ───────────────────────────────────────── */
 .modal-overlay{
@@ -107,45 +107,6 @@ html{font-size:14px}
 .tpl-btn .tpl-check{margin-left:auto;opacity:0;font-size:11px}
 .tpl-btn.active .tpl-check{opacity:1}
 
-/* Theme dots grid */
-.theme-grid{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center}
-.tdot{
-  width:22px;height:22px;border-radius:50%;cursor:pointer;
-  border:2.5px solid transparent;transition:all .15s;flex-shrink:0;
-  position:relative;
-}
-.tdot:hover{transform:scale(1.15)}
-.tdot.active::after{
-  content:'';position:absolute;inset:-4px;border-radius:50%;
-  border:2px solid rgba(255,255,255,.6);
-}
-.td-graphite{background:#636e72}
-.td-green{background:#3ecf8e}
-.td-navy{background:#5b9bd5}
-.td-wine{background:#e74c3c}
-.td-purple{background:#9b59b6}
-.td-teal{background:#1abc9c}
-.td-copper{background:#d35400}
-
-/* Custom color picker dot */
-.tdot-custom{
-  width:22px;height:22px;border-radius:50%;cursor:pointer;
-  border:2px dashed rgba(255,255,255,.25);transition:all .15s;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;position:relative;
-  background:rgba(255,255,255,.06);
-  overflow:hidden;
-}
-.tdot-custom:hover{border-color:rgba(255,255,255,.55);transform:scale(1.1)}
-.tdot-custom.active::after{
-  content:'';position:absolute;inset:-4px;border-radius:50%;
-  border:2px solid rgba(255,255,255,.6);
-}
-.tdot-custom span{font-size:11px;color:rgba(255,255,255,.45);line-height:1;pointer-events:none}
-#customColorInput{
-  position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;border:none;padding:0;
-}
-.theme-names{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.5rem}
-.tname{font-size:9px;color:rgba(255,255,255,.22)}
 
 /* Photo section */
 .sp-photo-preview{
@@ -190,15 +151,32 @@ body{background:var(--page-bg);font-family:'Inter',sans-serif;padding-left:220px
   width:210mm;min-height:297mm;background:#fff;
   margin:1rem auto;
   box-shadow:0 6px 40px rgba(0,0,0,.22);
-  display:none;overflow:hidden;
+  display:none;overflow:visible;
+  position:relative;
 }
 .page.active{display:flex}
 
-/* ─── TEMPLATE 1: PROFISSIONAL (sidebar + content) ──────── */
-/* Fontes: sidebar usa 9-11pt, conteúdo usa 10-12pt conforme padrão profissional */
+/* ─── Page-break indicator (screen only) ─────────────────── */
+.pg-break{
+  position:absolute;top:297mm;left:-12px;right:-12px;
+  display:flex;align-items:center;gap:7px;
+  pointer-events:none;z-index:20;
+}
+.pg-break::before,.pg-break::after{
+  content:'';flex:1;border-top:1.5px dashed rgba(62,207,142,.45);
+}
+.pg-break span{
+  font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(62,207,142,.7);background:var(--page-bg);
+  padding:2px 8px;border-radius:4px;white-space:nowrap;
+  font-family:'Inter',sans-serif;
+}
+
+/* ─── TEMPLATE 1: CLÁSSICO (sidebar clara + conteúdo) ───── */
 .page-classic .sidebar{
-  width:66mm;flex-shrink:0;background:var(--sb);color:var(--sb-t);
+  width:66mm;flex-shrink:0;background:var(--sb-bg);color:#1a202c;
   padding:12mm 9mm 12mm;display:flex;flex-direction:column;gap:1rem;
+  border-right:1.5px solid #e2e8f0;
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
 .page-classic .content{flex:1;min-width:0;padding:12mm 11mm 12mm 10mm;display:flex;flex-direction:column;gap:.9rem}
@@ -207,39 +185,39 @@ body{background:var(--page-bg);font-family:'Inter',sans-serif;padding-left:220px
 .sb-photo-wrap{display:flex;justify-content:center}
 .sb-photo{
   width:84px;height:84px;border-radius:50%;
-  background:rgba(255,255,255,.08);border:2.5px solid var(--ac);
+  background:#e2e8f0;border:2.5px solid var(--ac);
   overflow:hidden;display:flex;align-items:center;justify-content:center;
   position:relative;flex-shrink:0;cursor:pointer;
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
 .sb-photo:hover .sb-ph-hover{opacity:1}
 .sb-photo img{width:100%;height:100%;object-fit:cover;display:none}
-.sb-photo-icon{font-size:30px;color:rgba(255,255,255,.3);pointer-events:none}
-.sb-ph-hover{position:absolute;inset:0;background:rgba(0,0,0,.55);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;font-size:10px;color:#fff;font-weight:600;text-align:center;pointer-events:none}
+.sb-photo-icon{font-size:30px;color:#a0aec0;pointer-events:none}
+.sb-ph-hover{position:absolute;inset:0;background:rgba(0,0,0,.5);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;font-size:10px;color:#fff;font-weight:600;text-align:center;pointer-events:none}
 
-/* Sidebar name/role — ~12pt nome, 8pt cargo */
-.sb-name{font-size:16px;font-weight:700;color:var(--sb-t);text-align:center;line-height:1.25;letter-spacing:-.01em;margin-top:.4rem}
+/* Sidebar name/role */
+.sb-name{font-size:16px;font-weight:700;color:#1a202c;text-align:center;line-height:1.25;letter-spacing:-.01em;margin-top:.4rem}
 .sb-role-txt{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ac);text-align:center;margin-top:.3rem;line-height:1.45}
 
-/* Sidebar sections — 9pt corpo */
-.sb-sec{border-top:1px solid var(--sb-b);padding-top:.8rem}
+/* Sidebar sections */
+.sb-sec{border-top:1px solid #e2e8f0;padding-top:.8rem}
 .sb-sec-h{font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--ac);margin-bottom:.5rem}
 .sb-contact{list-style:none;display:flex;flex-direction:column;gap:.4rem}
-.sb-contact li{font-size:9pt;color:var(--sb-m);display:flex;align-items:flex-start;gap:.38rem;line-height:1.5}
-.sb-contact li a{color:var(--sb-m);text-decoration:none;word-break:break-all}
+.sb-contact li{font-size:9pt;color:#4a5568;display:flex;align-items:flex-start;gap:.38rem;line-height:1.5}
+.sb-contact li a{color:#4a5568;text-decoration:none;word-break:break-all}
 .sb-ic{flex-shrink:0;width:11px;text-align:center;font-size:9pt;margin-top:.05rem}
 .sb-tags{display:flex;flex-wrap:wrap;gap:.3rem}
-.sb-tag{font-size:8.5pt;color:var(--sb-t);background:rgba(255,255,255,.1);border-radius:3px;padding:.18rem .45rem;-webkit-print-color-adjust:exact;print-color-adjust:exact;line-height:1.45}
+.sb-tag{font-size:8.5pt;color:var(--ac);background:rgba(45,55,72,.08);border:1px solid #cbd5e0;border-radius:3px;padding:.18rem .45rem;-webkit-print-color-adjust:exact;print-color-adjust:exact;line-height:1.45}
 .sb-edu-list{display:flex;flex-direction:column;gap:.65rem}
-.sb-edu-curso{font-size:9pt;font-weight:600;color:var(--sb-t);line-height:1.35}
-.sb-edu-inst{font-size:8.5pt;color:var(--sb-m);line-height:1.35}
-.sb-edu-per{font-size:8pt;color:var(--ac);margin-top:.1rem}
+.sb-edu-curso{font-size:9pt;font-weight:600;color:#1a202c;line-height:1.35}
+.sb-edu-inst{font-size:8.5pt;color:#4a5568;line-height:1.35}
+.sb-edu-per{font-size:8pt;color:var(--ac2);margin-top:.1rem}
 
-/* Content sections (classic) — 10-12pt corpo, 14-16pt títulos */
-.cv-header-classic{border-bottom:2.5px solid var(--sb);padding-bottom:.75rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+/* Content sections (classic) */
+.cv-header-classic{border-bottom:2.5px solid var(--ac);padding-bottom:.75rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .cv-name-classic{font-family:'Lora',serif;font-size:22pt;font-weight:700;color:#111;letter-spacing:-.02em;line-height:1.2}
 .cv-role-classic{font-size:9pt;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ac2);margin-top:.3rem}
-.cv-sec-h{font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--sb);border-bottom:1.5px solid var(--sb);padding-bottom:.22rem;margin-bottom:.65rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.cv-sec-h{font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ac);border-bottom:1.5px solid var(--ac);padding-bottom:.22rem;margin-bottom:.65rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .cv-resumo-txt{font-size:10pt;color:#333;line-height:1.6}
 .exp-item{margin-bottom:1rem;page-break-inside:avoid}
 .exp-item:last-child{margin-bottom:0}
@@ -251,12 +229,12 @@ body{background:var(--page-bg);font-family:'Inter',sans-serif;padding-left:220px
 .exp-ul li{font-size:10pt;color:#333;line-height:1.55;padding-left:.9rem;position:relative}
 .exp-ul li::before{content:'▸';position:absolute;left:0;color:var(--ac2);font-size:8pt;top:.28rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 
-/* ─── TEMPLATE 2: MODERNO (full-width, header bar) ──────── */
+/* ─── TEMPLATE 2: MODERNO (full-width, linha superior fina) ── */
 .page-modern{flex-direction:column}
-.mod-top-bar{height:8px;background:var(--sb);-webkit-print-color-adjust:exact;print-color-adjust:exact;flex-shrink:0}
+.mod-top-bar{height:4px;background:var(--ac);-webkit-print-color-adjust:exact;print-color-adjust:exact;flex-shrink:0}
 .mod-header{
   padding:8mm 14mm 7mm;display:flex;align-items:center;justify-content:space-between;gap:1rem;
-  border-bottom:1.5px solid #e0e0e0;flex-shrink:0;
+  border-bottom:1.5px solid #e2e8f0;flex-shrink:0;
 }
 .mod-header-left{flex:1;min-width:0}
 /* Nome: 20-22pt, cargo: 9pt uppercase */
@@ -267,18 +245,18 @@ body{background:var(--page-bg);font-family:'Inter',sans-serif;padding-left:220px
 .mod-contact-item a{color:#555;text-decoration:none}
 .mod-photo-modern{
   width:80px;height:80px;border-radius:50%;flex-shrink:0;
-  background:#f0f0f0;border:2.5px solid var(--ac);
+  background:#e2e8f0;border:2.5px solid var(--ac);
   overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;
   position:relative;
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
 .mod-photo-modern:hover .sb-ph-hover{opacity:1}
 .mod-photo-modern img{width:100%;height:100%;object-fit:cover;display:none}
-.mod-photo-icon{font-size:28px;color:#ccc;pointer-events:none}
+.mod-photo-icon{font-size:28px;color:#a0aec0;pointer-events:none}
 /* Corpo: 10pt, espaçamento de página 2: padding-top compensa ausência do header */
 .mod-body{flex:1;padding:7mm 14mm 10mm;display:flex;flex-direction:column;gap:.8rem}
 /* Títulos de seção: 9pt uppercase */
-.mod-sec-h{font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--sb);border-bottom:1.5px solid var(--sb);padding-bottom:.22rem;margin-bottom:.65rem;-webkit-print-color-adjust:exact;print-color-adjust:exact;page-break-after:avoid}
+.mod-sec-h{font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ac);border-bottom:1.5px solid var(--ac);padding-bottom:.22rem;margin-bottom:.65rem;-webkit-print-color-adjust:exact;print-color-adjust:exact;page-break-after:avoid}
 .mod-resumo{font-size:10pt;color:#333;line-height:1.6}
 /* Sem page-break-inside:avoid no grid — permite quebra natural entre formação/habilidades */
 .mod-bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
@@ -288,6 +266,219 @@ body{background:var(--page-bg);font-family:'Inter',sans-serif;padding-left:220px
 .mod-edu-per{font-size:9pt;color:var(--ac2);margin-top:.12rem}
 .mod-tags{display:flex;flex-wrap:wrap;gap:.35rem}
 .mod-tag{font-size:9pt;color:#333;background:#f2f2f2;border:1px solid #e0e0e0;border-radius:3px;padding:.2rem .52rem;line-height:1.4}
+
+/* ─── TEMPLATE 3: EXECUTIVO ──────────────────────────────── */
+.page-exec{flex-direction:column}
+.exec-header{background:#fff;padding:10mm 14mm 8mm;border-bottom:2.5px solid var(--ac);flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:flex;align-items:center;gap:1rem}
+.exec-header-left{flex:1}
+.exec-name{font-family:'Lora',serif;font-size:24pt;font-weight:700;color:#1a202c;letter-spacing:-.02em;line-height:1.2}
+.exec-role{font-size:9pt;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ac);margin-top:.35rem}
+.exec-contact-row{display:flex;flex-wrap:wrap;gap:.25rem .75rem;margin-top:.55rem}
+.exec-ci{font-size:8.5pt;color:#555;display:flex;align-items:center;gap:.28rem}
+.exec-ci a{color:#555;text-decoration:none}
+.exec-photo{width:76px;height:76px;border-radius:50%;flex-shrink:0;border:2.5px solid var(--ac);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;background:#e2e8f0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.exec-photo:hover .sb-ph-hover{opacity:1}
+.exec-photo img{width:100%;height:100%;object-fit:cover;display:none}
+.exec-photo-icon{font-size:26px;color:#a0aec0;pointer-events:none}
+.exec-body{flex:1;padding:8mm 14mm 10mm;display:flex;flex-direction:column;gap:.85rem}
+.exec-sec-h{font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ac);border-bottom:1.5px solid var(--ac);padding-bottom:.2rem;margin-bottom:.6rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.exec-resumo{font-size:10pt;color:#333;line-height:1.6}
+.exec-bottom{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
+.exec-edu-item{margin-bottom:.6rem;page-break-inside:avoid}
+.exec-edu-curso{font-size:10.5pt;font-weight:700;color:#111}
+.exec-edu-inst{font-size:9.5pt;color:#555}
+.exec-edu-per{font-size:9pt;color:var(--ac2);margin-top:.1rem}
+.exec-tags{display:flex;flex-wrap:wrap;gap:.35rem}
+.exec-tag{font-size:9pt;color:var(--ac);background:rgba(45,55,72,.06);border:1px solid #cbd5e0;border-radius:3px;padding:.2rem .52rem;line-height:1.4;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+/* ─── TEMPLATE 4: COMPACTO (sidebar clara) ───────────────── */
+.page-compact{flex-direction:row}
+.compact-sidebar{width:62mm;flex-shrink:0;background:var(--sb-bg);padding:10mm 8mm;display:flex;flex-direction:column;gap:.85rem;border-right:1.5px solid #e2e8f0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.compact-sb-name{font-family:'Lora',serif;font-size:15pt;font-weight:700;color:#1a202c;line-height:1.25;letter-spacing:-.01em}
+.compact-sb-role{font-size:8pt;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ac2);margin-top:.25rem;line-height:1.4}
+.compact-photo{width:80px;height:80px;border-radius:8px;border:2px solid var(--ac);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;background:#e2e8f0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.compact-photo:hover .sb-ph-hover{opacity:1}
+.compact-photo img{width:100%;height:100%;object-fit:cover;display:none}
+.compact-photo-icon{font-size:26px;color:#a0aec0;pointer-events:none}
+.compact-sec-h{font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--ac);margin-bottom:.45rem}
+.compact-contact{list-style:none;display:flex;flex-direction:column;gap:.38rem}
+.compact-contact li{font-size:8.5pt;color:#4a5568;display:flex;align-items:flex-start;gap:.35rem;line-height:1.5}
+.compact-contact li a{color:#4a5568;text-decoration:none;word-break:break-all}
+.compact-div{height:1px;background:#e2e8f0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.compact-tags{display:flex;flex-wrap:wrap;gap:.28rem}
+.compact-tag{font-size:8pt;color:var(--ac);background:rgba(45,55,72,.07);border:1px solid #cbd5e0;border-radius:3px;padding:.15rem .4rem;line-height:1.4;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.compact-edu-curso{font-size:9pt;font-weight:700;color:#1a202c;line-height:1.35}
+.compact-edu-inst{font-size:8.5pt;color:#555}
+.compact-edu-per{font-size:8pt;color:var(--ac2);margin-top:.08rem}
+.compact-content{flex:1;min-width:0;padding:10mm 11mm 10mm 9mm;display:flex;flex-direction:column;gap:.85rem;border-left:2px solid var(--ac);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.compact-cv-sec-h{font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ac);padding-bottom:.2rem;border-bottom:1px solid #e2e8f0;margin-bottom:.6rem}
+.compact-resumo{font-size:10pt;color:#333;line-height:1.6}
+
+/* ─── TEMPLATE 5: MINIMALISTA (linha do tempo) ───────────── */
+.page-minimal{flex-direction:column}
+.minimal-header{padding:9mm 14mm 5mm;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-shrink:0}
+.minimal-name{font-family:'Lora',serif;font-size:24pt;font-weight:700;color:#1a202c;letter-spacing:-.02em;line-height:1.2}
+.minimal-role{font-size:9pt;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--ac2);margin-top:.3rem}
+.minimal-contact-block{display:flex;flex-direction:column;gap:.3rem;align-items:flex-end;padding-top:.2rem}
+.minimal-ci{font-size:8.5pt;color:#555;display:flex;align-items:center;gap:.3rem}
+.minimal-ci a{color:#555;text-decoration:none}
+.minimal-accent-bar{height:3px;background:var(--ac);margin:0 14mm;flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.minimal-body{flex:1;padding:7mm 14mm 10mm;display:flex;flex-direction:column;gap:.85rem}
+.minimal-sec-h{font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--ac);margin-bottom:.6rem;display:flex;align-items:center;gap:.5rem}
+.minimal-sec-h::after{content:'';flex:1;height:1px;background:#e2e8f0}
+.minimal-resumo{font-size:10pt;color:#333;line-height:1.6}
+.minimal-exp-wrap{display:flex;flex-direction:column;gap:0}
+.minimal-exp-item{display:flex;gap:.75rem;page-break-inside:avoid}
+.minimal-exp-spine{display:flex;flex-direction:column;align-items:center;width:14px;flex-shrink:0;padding-top:.3rem}
+.minimal-exp-dot{width:9px;height:9px;border-radius:50%;background:var(--ac);flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.minimal-exp-line{flex:1;width:1px;background:#e2e8f0;margin-top:.2rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.minimal-exp-body{flex:1;min-width:0;padding-bottom:.75rem}
+.minimal-exp-row{display:flex;justify-content:space-between;align-items:baseline;gap:.4rem}
+.minimal-exp-cargo{font-size:11pt;font-weight:700;color:#111}
+.minimal-exp-per{font-size:9pt;color:#777;white-space:nowrap;flex-shrink:0}
+.minimal-exp-emp{font-size:9.5pt;font-weight:600;color:var(--ac2);margin:.08rem 0 .28rem}
+.minimal-exp-ul{list-style:none;display:flex;flex-direction:column;gap:.22rem}
+.minimal-exp-ul li{font-size:10pt;color:#333;line-height:1.55;padding-left:.85rem;position:relative}
+.minimal-exp-ul li::before{content:'–';position:absolute;left:0;color:var(--ac2)}
+.minimal-bottom{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
+.minimal-edu-item{margin-bottom:.6rem;page-break-inside:avoid}
+.minimal-edu-curso{font-size:10.5pt;font-weight:700;color:#111}
+.minimal-edu-inst{font-size:9.5pt;color:#555}
+.minimal-edu-per{font-size:9pt;color:var(--ac2);margin-top:.1rem}
+.minimal-tags{display:flex;flex-wrap:wrap;gap:.35rem}
+.minimal-tag{font-size:9pt;color:var(--ac);border:1px solid #cbd5e0;border-radius:20px;padding:.18rem .55rem;line-height:1.4}
+
+/* no-photo: novos templates */
+html.no-photo .exec-photo{display:none}
+html.no-photo .exec-header{display:block}
+html.no-photo .compact-photo{display:none}
+
+/* ─── Inline editable fields ─────────────────────────────── */
+.editable{outline:none;border-radius:3px;transition:background .15s,box-shadow .15s;cursor:text;position:relative}
+.editable:hover{background:rgba(62,207,142,.1)}
+.editable:focus{background:rgba(62,207,142,.13);box-shadow:0 0 0 2px rgba(62,207,142,.28)}
+/* Light sidebars — subtle highlight on edit hover */
+.sidebar .editable:hover,.compact-sidebar .editable:hover{background:rgba(45,55,72,.07)}
+.sidebar .editable:focus,.compact-sidebar .editable:focus{background:rgba(45,55,72,.1);box-shadow:0 0 0 2px rgba(45,55,72,.2)}
+/* Resumo: allows wrapping */
+.editable-block{outline:none;border-radius:4px;transition:background .15s,box-shadow .15s;cursor:text;display:block;white-space:pre-wrap;word-break:break-word}
+.editable-block:hover{background:rgba(62,207,142,.07)}
+.editable-block:focus{background:rgba(62,207,142,.1);box-shadow:0 0 0 2px rgba(62,207,142,.22)}
+/* Pencil badge on hover */
+.editable::after,.editable-block::after{
+  content:'✎';position:absolute;top:-14px;right:0;font-size:9px;
+  color:rgba(62,207,142,.7);background:rgba(0,0,0,.7);padding:1px 4px;border-radius:3px;
+  opacity:0;transition:opacity .15s;pointer-events:none;line-height:1.5;
+}
+.editable:hover::after,.editable-block:hover::after{opacity:1}
+
+/* ─── Edit modal ──────────────────────────────────────────── */
+.edit-modal{position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center;font-family:'Inter',sans-serif}
+.edit-modal.hidden{display:none}
+@media(min-width:500px){.edit-modal{align-items:center}}
+.edit-box{background:#1a1f1c;border:1px solid rgba(255,255,255,.1);border-radius:16px 16px 0 0;width:100%;max-width:560px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+@media(min-width:500px){.edit-box{border-radius:16px}}
+.eb-head{padding:.9rem 1.1rem .75rem;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.eb-title{font-size:15px;font-weight:700;color:#fff}
+.eb-close{background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .15s;font-size:16px}
+.eb-close:hover{background:rgba(255,255,255,.08);color:#fff}
+.eb-body{flex:1;overflow-y:auto;padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.7rem}
+.eb-foot{padding:.75rem 1.1rem;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;display:flex;gap:.5rem}
+.eb-save{flex:1;background:#3ecf8e;color:#0a0f0d;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;border:none;border-radius:9px;padding:.75rem;cursor:pointer;transition:opacity .15s}
+.eb-save:hover{opacity:.85}
+.eb-cancel{background:rgba(255,255,255,.07);color:rgba(255,255,255,.45);font-family:'Inter',sans-serif;font-size:13px;font-weight:500;border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:.75rem 1rem;cursor:pointer;transition:all .15s}
+.eb-cancel:hover{color:#fff;border-color:rgba(255,255,255,.25)}
+/* Form elements inside modal */
+.ef-group{display:flex;flex-direction:column;gap:.28rem}
+.ef-label{font-size:10.5px;font-weight:700;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.07em}
+.ef-input,.ef-textarea{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e8ede9;font-family:'Inter',sans-serif;font-size:16px;padding:.6rem .85rem;transition:border-color .15s;resize:vertical}
+.ef-input:focus,.ef-textarea:focus{outline:none;border-color:rgba(62,207,142,.4)}
+.ef-textarea{min-height:70px;line-height:1.55}
+.ef-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+@media(max-width:400px){.ef-row{grid-template-columns:1fr}}
+.ef-hint{font-size:10px;color:rgba(255,255,255,.25);line-height:1.5;margin-top:-.15rem}
+/* Tag editor */
+.ef-tags{display:flex;flex-wrap:wrap;gap:.32rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:.5rem;min-height:44px}
+.ef-tag{font-size:12px;color:#e8ede9;background:rgba(255,255,255,.1);border-radius:4px;padding:.22rem .5rem .22rem .6rem;display:flex;align-items:center;gap:.28rem}
+.ef-tag-rm{background:none;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:15px;line-height:1;padding:0;transition:color .15s}
+.ef-tag-rm:hover{color:#ff6b6b}
+.ef-tag-row{display:flex;gap:.4rem;margin-top:.4rem}
+.ef-tag-inp{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:#e8ede9;font-family:'Inter',sans-serif;font-size:16px;padding:.5rem .75rem}
+.ef-tag-inp:focus{outline:none;border-color:rgba(62,207,142,.4)}
+.ef-tag-add-btn{background:rgba(62,207,142,.15);border:1px solid rgba(62,207,142,.3);color:#3ecf8e;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;padding:.5rem .85rem;border-radius:7px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.ef-tag-add-btn:hover{background:rgba(62,207,142,.28)}
+/* Experience / Education cards */
+.ef-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;overflow:hidden}
+.ef-card-head{padding:.6rem .9rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:.5rem}
+.ef-card-name{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.65);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ef-card-arr{font-size:11px;color:rgba(255,255,255,.28);transition:transform .2s;flex-shrink:0}
+.ef-card-arr.open{transform:rotate(180deg)}
+.ef-card-body{padding:.65rem .9rem 1rem;border-top:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:.5rem}
+.ef-card-body.collapsed{display:none}
+.ef-card-add{width:100%;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.14);color:rgba(255,255,255,.38);font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;padding:.55rem;border-radius:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.4rem}
+.ef-card-add:hover{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.3)}
+.ef-card-rm{background:none;border:none;color:rgba(255,80,80,.4);font-family:'Inter',sans-serif;font-size:11px;cursor:pointer;padding:.3rem .5rem;border-radius:5px;transition:all .15s;margin-top:.2rem;align-self:flex-start}
+.ef-card-rm:hover{background:rgba(255,80,80,.1);color:#ff6b6b}
+/* Edit buttons in side panel */
+.sp-edit-btn{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:500;padding:.48rem .8rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.42);border-radius:7px;cursor:pointer;transition:all .15s;text-align:left;display:flex;align-items:center;gap:.4rem;width:100%}
+.sp-edit-btn:hover{background:rgba(255,255,255,.09);color:rgba(255,255,255,.8)}
+
+/* ─── Mobile top bar ──────────────────────────────────────── */
+.mob-bar{
+  display:none;position:fixed;top:0;left:0;right:0;height:48px;z-index:500;
+  background:#141414;border-bottom:1px solid rgba(255,255,255,.07);
+  padding:0 .85rem;align-items:center;justify-content:space-between;gap:.5rem;
+  font-family:'Inter',sans-serif;
+}
+.mob-btn{
+  background:none;border:none;color:rgba(255,255,255,.55);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:8px;padding:0;transition:all .15s;
+}
+.mob-btn:hover{background:rgba(255,255,255,.08);color:#fff}
+.mob-logo{font-size:13px;font-weight:700;color:#fff;opacity:.65;letter-spacing:-.01em}
+.mob-print{
+  background:#3ecf8e;color:#0a0f0d;border:none;font-family:'Inter',sans-serif;
+  font-size:12px;font-weight:700;padding:.38rem .75rem;border-radius:8px;cursor:pointer;
+  display:flex;align-items:center;gap:.35rem;transition:opacity .15s;
+}
+.mob-print:hover{opacity:.85}
+
+/* Panel overlay (mobile) */
+.panel-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:350;-webkit-tap-highlight-color:transparent;
+}
+.panel-overlay.vis{display:block}
+
+/* ─── Mobile print toast ──────────────────────────────────── */
+.mob-print-toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  background:#1a1f1c;border:1px solid rgba(255,255,255,.12);border-radius:12px;
+  padding:.75rem 1.1rem;font-family:'Inter',sans-serif;font-size:13px;color:#e8ede9;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:800;text-align:center;
+  display:none;width:max-content;max-width:calc(100vw - 2rem);line-height:1.5;
+}
+.mob-print-toast.vis{display:block}
+.mob-print-toast strong{color:#3ecf8e}
+
+/* ─── Responsive ──────────────────────────────────────────── */
+@media(max-width:768px){
+  html,body{overflow-x:hidden}
+  .mob-bar{display:flex}
+  body{padding-left:0;padding-top:48px;padding-bottom:1.5rem}
+  .side-panel{
+    transform:translateX(-100%);transition:transform .25s ease;
+    z-index:400;box-shadow:none;
+  }
+  .side-panel.panel-open{
+    transform:translateX(0);
+    box-shadow:4px 0 24px rgba(0,0,0,.55);
+  }
+  /* CV pages: scaled by JS (zoom or transform fallback) */
+  .page{margin:0 auto}
+  .page-wrap{width:100%;overflow:visible;display:block}
+}
 
 /* ─── No data ─────────────────────────────────────────────── */
 .no-data-page{width:210mm;min-height:297mm;background:#fff;margin:1rem auto;box-shadow:0 6px 40px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center}
@@ -304,38 +495,81 @@ html.no-photo .mod-header{display:block}
 
 /* ─── Print ───────────────────────────────────────────────── */
 @media print{
-  /* @page define margens em TODAS as páginas (incluindo 2ª, 3ª…) */
-  @page{size:A4 portrait;margin:1.8cm 2cm}
+  /* margin:0 suprime cabeçalho/rodapé do browser (URL, título, data) */
+  @page{size:A4 portrait;margin:0}
 
-  html,body{background:#fff!important;padding:0!important;margin:0!important}
-  .side-panel,.modal-overlay{display:none!important}
+  html,body{background:#fff!important;padding:0!important;margin:0!important;overflow:visible!important}
+  .side-panel,.modal-overlay,.mob-bar,.panel-overlay,.edit-modal,.mob-print-toast{display:none!important}
+  .page-wrap{display:contents!important}
+  .pg-break{display:none!important}
 
   .page.active{
     display:flex!important;
     margin:0!important;
     box-shadow:none!important;
-    /* Com @page margin, o browser define a largura — não fixamos mais 210mm */
-    width:100%!important;
+    width:210mm!important;
     min-height:0!important;
+    overflow:visible!important;
+    zoom:1!important;
+    transform:none!important;
   }
 
-  /* Reduz padding interno do design no topo/lados — @page já cuida das margens externas */
-  .page-classic .sidebar{padding-top:0!important;padding-bottom:0!important;padding-left:0!important;padding-right:8mm!important}
-  .page-classic .content{padding-top:0!important;padding-bottom:0!important;padding-left:8mm!important;padding-right:0!important}
-  .mod-header{padding-top:0!important;padding-bottom:6mm!important;padding-left:0!important;padding-right:0!important}
-  .mod-body{padding-top:6mm!important;padding-bottom:0!important;padding-left:0!important;padding-right:0!important}
+  /* ── Quebras de página ── */
+  /* Experiências: nunca quebrar no meio de um item */
+  .exp-item,.minimal-exp-item{break-inside:avoid;page-break-inside:avoid}
+  /* Títulos de seção: nunca orphanizar */
+  .cv-sec-h,.mod-sec-h,.exec-sec-h,.compact-cv-sec-h,.minimal-sec-h,
+  .sb-sec-h,.compact-sec-h{
+    break-after:avoid;page-break-after:avoid;
+    break-inside:avoid;page-break-inside:avoid;
+  }
+  /* Educação */
+  .mod-edu-item,.exec-edu-item,.minimal-edu-item{break-inside:avoid;page-break-inside:avoid}
+  /* Bottom grid: pode quebrar entre educação e habilidades se necessário */
+  .mod-bottom-row,.exec-bottom,.minimal-bottom{break-inside:auto;page-break-inside:auto}
 
-  /* Quebras de página limpas */
-  .exp-item{page-break-inside:avoid}
-  .mod-sec-h,.cv-sec-h{page-break-after:avoid}
-  .mod-bottom-row{page-break-inside:auto}
-  .mod-edu-item{page-break-inside:avoid}
+  /* Sidebars (Profissional / Compacto):
+     Limita a altura na 1ª página para evitar coluna vazia na 2ª.
+     Conteúdo excedente fica oculto — prefira templates de coluna única para CVs longos. */
+  .page-classic .sidebar{
+    overflow:hidden!important;
+    max-height:296mm!important;
+    align-self:flex-start!important;
+    min-height:296mm!important;
+  }
+  .compact-sidebar{
+    overflow:hidden!important;
+    max-height:296mm!important;
+    align-self:flex-start!important;
+    min-height:296mm!important;
+  }
+
   .sb-ph-hover{display:none!important}
   .no-data-page{display:none!important}
+  .editable::after,.editable-block::after{display:none!important}
 }
 </style>
 </head>
 <body>
+
+<!-- ─── Mobile print toast ───────────────────────────────── -->
+<div class="mob-print-toast" id="mobPrintToast">
+  Para <strong>melhor qualidade</strong>, use um computador.<br>
+  <span style="font-size:11px;color:rgba(255,255,255,.45)">O PDF será gerado mesmo assim...</span>
+</div>
+
+<!-- ─── Mobile top bar ───────────────────────────────────── -->
+<div class="mob-bar" id="mobBar">
+  <button class="mob-btn" onclick="togglePanel()" aria-label="Menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <span class="mob-logo">VagaAI</span>
+  <button class="mob-print" onclick="mobPrint()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    PDF
+  </button>
+</div>
+<div class="panel-overlay" id="panelOverlay" onclick="togglePanel()"></div>
 
 <!-- ─── Photo Modal ──────────────────────────────────────── -->
 <div class="modal-overlay hidden" id="photoModal">
@@ -369,27 +603,16 @@ html.no-photo .mod-header{display:block}
       <button class="tpl-btn" id="tplBtnModern" onclick="setTemplate('modern')">
         <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></span> Moderno <span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
       </button>
+      <button class="tpl-btn" id="tplBtnExec" onclick="setTemplate('exec')">
+        <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"/></svg></span> Executivo <span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+      </button>
+      <button class="tpl-btn" id="tplBtnCompact" onclick="setTemplate('compact')">
+        <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg></span> Compacto <span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+      </button>
+      <button class="tpl-btn" id="tplBtnMinimal" onclick="setTemplate('minimal')">
+        <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span> Minimalista <span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+      </button>
     </div>
-  </div>
-
-  <!-- Cor -->
-  <div class="sp-section">
-    <div class="sp-label">Cor do tema</div>
-    <div class="theme-grid">
-      <div class="tdot td-graphite active" id="dot-graphite" onclick="setTheme('graphite')" title="Grafite"></div>
-      <div class="tdot td-green"          id="dot-green"    onclick="setTheme('green')"    title="Verde"></div>
-      <div class="tdot td-navy"           id="dot-navy"     onclick="setTheme('navy')"     title="Marinho"></div>
-      <div class="tdot td-wine"           id="dot-wine"     onclick="setTheme('wine')"     title="Vinho"></div>
-      <div class="tdot td-purple"         id="dot-purple"   onclick="setTheme('purple')"   title="Roxo"></div>
-      <div class="tdot td-teal"           id="dot-teal"     onclick="setTheme('teal')"     title="Petróleo"></div>
-      <div class="tdot td-copper"         id="dot-copper"   onclick="setTheme('copper')"   title="Cobre"></div>
-      <!-- Custom color -->
-      <div class="tdot-custom" id="dot-custom" title="Cor personalizada">
-        <span>+</span>
-        <input type="color" id="customColorInput" value="#2d3436" oninput="setCustomColor(this.value)" onchange="setCustomColor(this.value)">
-      </div>
-    </div>
-    <div style="margin-top:.6rem;font-size:9px;color:rgba(255,255,255,.22);line-height:1.5" id="themeNameLabel">Grafite</div>
   </div>
 
   <!-- Foto -->
@@ -416,20 +639,34 @@ html.no-photo .mod-header{display:block}
     <input type="file" id="photoFileInput" accept="image/*">
   </div>
 
-  <!-- Imprimir / Baixar PDF -->
+  <!-- Editar conteúdo -->
+  <div class="sp-section">
+    <div class="sp-label">Editar conteúdo</div>
+    <div style="display:flex;flex-direction:column;gap:.35rem">
+      <button class="sp-edit-btn" onclick="openEdit('contact')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Dados pessoais</button>
+      <button class="sp-edit-btn" onclick="openEdit('skills')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Habilidades</button>
+      <button class="sp-edit-btn" onclick="openEdit('exp')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> Experiências</button>
+      <button class="sp-edit-btn" onclick="openEdit('edu')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> Formação</button>
+    </div>
+  </div>
+
+  <!-- Imprimir -->
   <div class="sp-bottom">
-    <button class="sp-print" onclick="window.print()">
-      <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Baixar PDF
+    <button class="sp-print" onclick="mobPrint()">
+      <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span> Imprimir / PDF
     </button>
-    <div style="font-size:9px;color:rgba(255,255,255,.25);margin-top:.55rem;line-height:1.55;text-align:center;padding:0 .3rem">
-      No diálogo de impressão:<br>
-      <strong style="color:rgba(255,255,255,.4)">Destino → Salvar como PDF</strong><br>
-      <strong style="color:rgba(255,255,255,.4)">Margens → Nenhuma</strong>
+    <div style="font-size:9.5px;color:rgba(255,255,255,.28);margin-top:.6rem;line-height:1.5;text-align:center">
+      No diálogo: desmarque<br><strong style="color:rgba(255,255,255,.45)">Cabeçalhos e rodapés</strong>
+    </div>
+    <div style="font-size:9px;color:rgba(255,255,255,.2);margin-top:.7rem;line-height:1.5;text-align:center;border-top:1px solid rgba(255,255,255,.05);padding-top:.6rem">
+      Para CV de <strong style="color:rgba(255,255,255,.32)">2 páginas</strong>, prefira<br>
+      <strong style="color:rgba(255,255,255,.32)">Moderno, Executivo ou Minimalista</strong>
     </div>
   </div>
 
 </div>
 
+<div class="page-wrap" id="pageWrap">
 <!-- ─── Template: Profissional ───────────────────────────── -->
 <div class="page page-classic active" id="pageClassic">
   <!-- Sidebar -->
@@ -512,7 +749,116 @@ html.no-photo .mod-header{display:block}
   </div>
 </div>
 
+<!-- ─── Template: Executivo ───────────────────────────────── -->
+<div class="page page-exec" id="pageExec">
+  <div class="exec-header">
+    <div class="exec-header-left">
+      <div class="exec-name" id="exNome"></div>
+      <div class="exec-role" id="exRole"></div>
+      <div class="exec-contact-row" id="exContatos"></div>
+    </div>
+    <div class="exec-photo" id="exPhoto" onclick="document.getElementById('photoFileInput').click()" title="Clique para trocar a foto">
+      <div class="exec-photo-icon" id="exPhotoIcon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <img id="exPhotoImg" alt="">
+      <div class="sb-ph-hover"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+    </div>
+  </div>
+  <div class="exec-body">
+    <div id="exSecResumo" style="display:none">
+      <div class="exec-sec-h">Resumo Profissional</div>
+      <div class="exec-resumo" id="exResumo"></div>
+    </div>
+    <div id="exSecExp" style="display:none">
+      <div class="exec-sec-h">Experiência Profissional</div>
+      <div id="exExps"></div>
+    </div>
+    <div class="exec-bottom" id="exBottom" style="display:none">
+      <div id="exSecEdu" style="display:none">
+        <div class="exec-sec-h">Formação</div>
+        <div id="exEdu"></div>
+      </div>
+      <div id="exSecSkills" style="display:none">
+        <div class="exec-sec-h">Habilidades</div>
+        <div class="exec-tags" id="exSkills"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Template: Compacto ────────────────────────────────── -->
+<div class="page page-compact" id="pageCompact">
+  <div class="compact-sidebar">
+    <div class="compact-photo" id="cpPhoto" onclick="document.getElementById('photoFileInput').click()" title="Clique para trocar a foto">
+      <div class="compact-photo-icon" id="cpPhotoIcon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <img id="cpPhotoImg" alt="">
+      <div class="sb-ph-hover"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+    </div>
+    <div>
+      <div class="compact-sb-name" id="cpNome"></div>
+      <div class="compact-sb-role" id="cpRole"></div>
+    </div>
+    <div class="compact-div"></div>
+    <div id="cpSecContato">
+      <div class="compact-sec-h">Contato</div>
+      <ul class="compact-contact" id="cpContatos"></ul>
+    </div>
+    <div class="compact-div"></div>
+    <div id="cpSecSkills" style="display:none">
+      <div class="compact-sec-h">Habilidades</div>
+      <div class="compact-tags" id="cpSkills"></div>
+    </div>
+    <div id="cpSecEdu" style="display:none">
+      <div class="compact-div" style="margin-bottom:.85rem"></div>
+      <div class="compact-sec-h">Formação</div>
+      <div id="cpEdu"></div>
+    </div>
+  </div>
+  <div class="compact-content">
+    <div id="cpSecResumo" style="display:none">
+      <div class="compact-cv-sec-h">Resumo Profissional</div>
+      <div class="compact-resumo" id="cpResumo"></div>
+    </div>
+    <div id="cpSecExp" style="display:none">
+      <div class="compact-cv-sec-h">Experiência Profissional</div>
+      <div id="cpExps"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Template: Minimalista ─────────────────────────────── -->
+<div class="page page-minimal" id="pageMinimal">
+  <div class="minimal-header">
+    <div>
+      <div class="minimal-name" id="mnNome"></div>
+      <div class="minimal-role" id="mnRole"></div>
+    </div>
+    <div class="minimal-contact-block" id="mnContatos"></div>
+  </div>
+  <div class="minimal-accent-bar"></div>
+  <div class="minimal-body">
+    <div id="mnSecResumo" style="display:none">
+      <div class="minimal-sec-h">Resumo Profissional</div>
+      <div class="minimal-resumo" id="mnResumo"></div>
+    </div>
+    <div id="mnSecExp" style="display:none">
+      <div class="minimal-sec-h">Experiência Profissional</div>
+      <div class="minimal-exp-wrap" id="mnExps"></div>
+    </div>
+    <div class="minimal-bottom" id="mnBottom" style="display:none">
+      <div id="mnSecEdu" style="display:none">
+        <div class="minimal-sec-h">Formação</div>
+        <div id="mnEdu"></div>
+      </div>
+      <div id="mnSecSkills" style="display:none">
+        <div class="minimal-sec-h">Habilidades</div>
+        <div class="minimal-tags" id="mnSkills"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- No data fallback -->
+</div><!-- /page-wrap -->
 <div class="no-data-page" id="noDataPage" style="display:none">
   <div class="no-data">
     <h2>Nenhum currículo encontrado</h2>
@@ -521,7 +867,44 @@ html.no-photo .mod-header{display:block}
   </div>
 </div>
 
+<!-- ─── Edit modal ────────────────────────────────────────── -->
+<div class="edit-modal hidden" id="editModal">
+  <div class="edit-box">
+    <div class="eb-head">
+      <span class="eb-title" id="editTitle">Editar</span>
+      <button class="eb-close" onclick="closeEdit()">✕</button>
+    </div>
+    <div class="eb-body" id="editBody"></div>
+    <div class="eb-foot">
+      <button class="eb-cancel" onclick="closeEdit()">Cancelar</button>
+      <button class="eb-save" id="editSaveBtn" onclick="saveEdit()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <script>
+/* ── Global utilities ───────────────────────────────────────── */
+var _cvData = null;
+var _editSection = null;
+
+function _esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function _periodo(p) {
+  // Blank out placeholder texts the AI sometimes inserts
+  if (!p) return '';
+  if (/n[ãa]o\s*especif/i.test(p)) return '';
+  if (/not\s*specif/i.test(p)) return '';
+  return p;
+}
+function _expHtml(exps) {
+  return (exps||[]).map(function(e){
+    var buls=(e.bullets||[]).map(function(b){return '<li>'+_esc(b)+'</li>';}).join('');
+    var per=_periodo(e.periodo);
+    return '<div class="exp-item"><div class="exp-row"><span class="exp-cargo">'+_esc(e.cargo||'')+'</span>'+(per?'<span class="exp-per">'+_esc(per)+'</span>':'')+'</div><div class="exp-emp">'+_esc(e.empresa||'')+'</div>'+(buls?'<ul class="exp-ul">'+buls+'</ul>':'')+' </div>';
+  }).join('');
+}
+
 (function () {
   /* ── Load data ──────────────────────────────────────────── */
   var raw = null;
@@ -531,23 +914,13 @@ html.no-photo .mod-header{display:block}
   try { cv = JSON.parse(raw); } catch(e) { document.getElementById('noDataPage').style.display = 'flex'; document.getElementById('pageClassic').classList.remove('active'); return; }
 
   if (cv.nome) document.title = cv.nome + ' — Currículo';
+  _cvData = cv;
 
   /* ── Populate helpers ───────────────────────────────────── */
   function txt(id, val) { var el = document.getElementById(id); if (el) el.textContent = val || ''; }
   function show(id, mode) { var el = document.getElementById(id); if (el) el.style.display = mode || 'block'; }
-  function esc(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-  function expHtml(exps) {
-    return (exps || []).map(function(e) {
-      var buls = (e.bullets || []).map(function(b) { return '<li>' + esc(b) + '</li>'; }).join('');
-      return '<div class="exp-item">'
-        + '<div class="exp-row"><span class="exp-cargo">' + esc(e.cargo||'') + '</span><span class="exp-per">' + esc(e.periodo||'') + '</span></div>'
-        + '<div class="exp-emp">' + esc(e.empresa||'') + '</div>'
-        + (buls ? '<ul class="exp-ul">' + buls + '</ul>' : '')
-        + '</div>';
-    }).join('');
-  }
+  var esc = _esc;
+  var expHtml = _expHtml;
 
   /* ── CLASSIC template ───────────────────────────────────── */
   txt('clNome', cv.nome); txt('clRole', cv.titulo_profissional);
@@ -574,6 +947,12 @@ html.no-photo .mod-header{display:block}
   if (cv.resumo_profissional) { show('clSecResumo'); txt('clResumo', cv.resumo_profissional); }
   if (cv.experiencias && cv.experiencias.length) { show('clSecExp'); document.getElementById('clExps').innerHTML = expHtml(cv.experiencias); }
 
+  /* ── Contact snippet builders ──────────────────────────── */
+  var SVG_EMAIL = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>';
+  var SVG_PHONE = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.4 2 2 0 0 1 3.6 2.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+  var SVG_LINK = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+  var SVG_LOC = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+
   /* ── MODERN template ────────────────────────────────────── */
   txt('modNome', cv.nome); txt('modRole', cv.titulo_profissional);
 
@@ -599,6 +978,57 @@ html.no-photo .mod-header{display:block}
     document.getElementById('modSkills').innerHTML = cv.habilidades.slice(0,20).map(function(s){ return '<span class="mod-tag">' + esc(s) + '</span>'; }).join('');
   }
   if (hasBottom) show('modBottom', 'grid');
+
+  /* ── EXECUTIVO template ─────────────────────────────────── */
+  txt('exNome', cv.nome); txt('exRole', cv.titulo_profissional);
+  var exCI = [];
+  if (c.email)    exCI.push('<div class="exec-ci">' + SVG_EMAIL + ' <a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></div>');
+  if (c.telefone) exCI.push('<div class="exec-ci">' + SVG_PHONE + ' ' + esc(c.telefone) + '</div>');
+  if (c.linkedin) { var exlt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); exCI.push('<div class="exec-ci">' + SVG_LINK + ' <a href="' + esc(c.linkedin) + '" target="_blank">' + esc(exlt) + '</a></div>'); }
+  if (c.cidade)   exCI.push('<div class="exec-ci">' + SVG_LOC + ' ' + esc(c.cidade) + '</div>');
+  document.getElementById('exContatos').innerHTML = exCI.join('');
+  if (cv.resumo_profissional) { show('exSecResumo'); txt('exResumo', cv.resumo_profissional); }
+  if (cv.experiencias && cv.experiencias.length) { show('exSecExp'); document.getElementById('exExps').innerHTML = expHtml(cv.experiencias); }
+  var exHasBottom = false;
+  if (cv.formacao && cv.formacao.length) { show('exSecEdu'); exHasBottom = true; document.getElementById('exEdu').innerHTML = cv.formacao.map(function(e){ return '<div class="exec-edu-item"><div class="exec-edu-curso">' + esc(e.curso||'') + '</div><div class="exec-edu-inst">' + esc(e.instituicao||'') + '</div>' + (e.periodo ? '<div class="exec-edu-per">' + esc(e.periodo) + '</div>' : '') + '</div>'; }).join(''); }
+  if (cv.habilidades && cv.habilidades.length) { show('exSecSkills'); exHasBottom = true; document.getElementById('exSkills').innerHTML = cv.habilidades.slice(0,20).map(function(s){ return '<span class="exec-tag">' + esc(s) + '</span>'; }).join(''); }
+  if (exHasBottom) show('exBottom', 'grid');
+
+  /* ── COMPACTO template ──────────────────────────────────── */
+  txt('cpNome', cv.nome); txt('cpRole', cv.titulo_profissional);
+  var cpCI = [];
+  if (c.email)    cpCI.push('<li>' + SVG_EMAIL + '<a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></li>');
+  if (c.telefone) cpCI.push('<li>' + SVG_PHONE + esc(c.telefone) + '</li>');
+  if (c.linkedin) { var cplt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); cpCI.push('<li>' + SVG_LINK + '<a href="' + esc(c.linkedin) + '" target="_blank">' + esc(cplt) + '</a></li>'); }
+  if (c.cidade)   cpCI.push('<li>' + SVG_LOC + esc(c.cidade) + '</li>');
+  document.getElementById('cpContatos').innerHTML = cpCI.join('');
+  if (cv.habilidades && cv.habilidades.length) { show('cpSecSkills'); document.getElementById('cpSkills').innerHTML = cv.habilidades.slice(0,18).map(function(s){ return '<span class="compact-tag">' + esc(s) + '</span>'; }).join(''); }
+  if (cv.formacao && cv.formacao.length) { show('cpSecEdu'); document.getElementById('cpEdu').innerHTML = cv.formacao.map(function(e){ return '<div style="margin-bottom:.55rem"><div class="compact-edu-curso">' + esc(e.curso||'') + '</div><div class="compact-edu-inst">' + esc(e.instituicao||'') + '</div>' + (e.periodo ? '<div class="compact-edu-per">' + esc(e.periodo) + '</div>' : '') + '</div>'; }).join(''); }
+  if (cv.resumo_profissional) { show('cpSecResumo'); txt('cpResumo', cv.resumo_profissional); }
+  if (cv.experiencias && cv.experiencias.length) { show('cpSecExp'); document.getElementById('cpExps').innerHTML = expHtml(cv.experiencias); }
+
+  /* ── MINIMALISTA template ───────────────────────────────── */
+  txt('mnNome', cv.nome); txt('mnRole', cv.titulo_profissional);
+  var mnCI = [];
+  if (c.email)    mnCI.push('<div class="minimal-ci">' + SVG_EMAIL + ' <a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></div>');
+  if (c.telefone) mnCI.push('<div class="minimal-ci">' + SVG_PHONE + ' ' + esc(c.telefone) + '</div>');
+  if (c.linkedin) { var mnlt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); mnCI.push('<div class="minimal-ci">' + SVG_LINK + ' <a href="' + esc(c.linkedin) + '" target="_blank">' + esc(mnlt) + '</a></div>'); }
+  if (c.cidade)   mnCI.push('<div class="minimal-ci">' + SVG_LOC + ' ' + esc(c.cidade) + '</div>');
+  document.getElementById('mnContatos').innerHTML = mnCI.join('');
+  if (cv.resumo_profissional) { show('mnSecResumo'); txt('mnResumo', cv.resumo_profissional); }
+  if (cv.experiencias && cv.experiencias.length) {
+    show('mnSecExp');
+    var mnExpHtml = (cv.experiencias || []).map(function(e, i, arr) {
+      var buls = (e.bullets || []).map(function(b){ return '<li>' + esc(b) + '</li>'; }).join('');
+      var mnP=_periodo(e.periodo);
+      return '<div class="minimal-exp-item"><div class="minimal-exp-spine"><div class="minimal-exp-dot"></div>' + (i < arr.length-1 ? '<div class="minimal-exp-line"></div>' : '') + '</div><div class="minimal-exp-body"><div class="minimal-exp-row"><span class="minimal-exp-cargo">' + esc(e.cargo||'') + '</span>' + (mnP?'<span class="minimal-exp-per">'+esc(mnP)+'</span>':'') + '</div><div class="minimal-exp-emp">' + esc(e.empresa||'') + '</div>' + (buls ? '<ul class="minimal-exp-ul">' + buls + '</ul>' : '') + '</div></div>';
+    }).join('');
+    document.getElementById('mnExps').innerHTML = mnExpHtml;
+  }
+  var mnHasBottom = false;
+  if (cv.formacao && cv.formacao.length) { show('mnSecEdu'); mnHasBottom = true; document.getElementById('mnEdu').innerHTML = cv.formacao.map(function(e){ return '<div class="minimal-edu-item"><div class="minimal-edu-curso">' + esc(e.curso||'') + '</div><div class="minimal-edu-inst">' + esc(e.instituicao||'') + '</div>' + (e.periodo ? '<div class="minimal-edu-per">' + esc(e.periodo) + '</div>' : '') + '</div>'; }).join(''); }
+  if (cv.habilidades && cv.habilidades.length) { show('mnSecSkills'); mnHasBottom = true; document.getElementById('mnSkills').innerHTML = cv.habilidades.slice(0,20).map(function(s){ return '<span class="minimal-tag">' + esc(s) + '</span>'; }).join(''); }
+  if (mnHasBottom) show('mnBottom', 'grid');
 
   /* ── Photo ──────────────────────────────────────────────── */
   var savedPhoto = null;
@@ -632,24 +1062,23 @@ html.no-photo .mod-header{display:block}
     this.value = '';
   });
 
-  /* ── Theme ──────────────────────────────────────────────── */
-  var savedTheme = 'graphite';
-  try { savedTheme = localStorage.getItem('vagaai_cv_theme') || 'graphite'; } catch(e) {}
-  applyTheme(savedTheme, false);
-
-  // If saved theme is custom color, restore it
-  var savedCustomColor = null;
-  try { savedCustomColor = localStorage.getItem('vagaai_cv_custom_color'); } catch(e) {}
-  if (savedTheme === 'custom' && savedCustomColor) {
-    applyCustomColorVars(savedCustomColor);
-    document.getElementById('customColorInput').value = savedCustomColor;
-    document.getElementById('dot-custom').style.background = savedCustomColor;
-  }
-
   /* ── Template ───────────────────────────────────────────── */
   var savedTpl = 'classic';
-  try { savedTpl = localStorage.getItem('vagaai_cv_tpl') || 'classic'; } catch(e) {}
+  try {
+    // Primary: embedded in CV JSON (most reliable on mobile)
+    // Fallback: separate localStorage key
+    savedTpl = cv.template || localStorage.getItem('vagaai_cv_tpl') || 'classic';
+  } catch(e) {}
   applyTemplate(savedTpl, false);
+  // Scale after fonts & layout settle (multiple calls for reliability)
+  setTimeout(scaleCvPages, 120);
+  setTimeout(scaleCvPages, 400);
+  setTimeout(scaleCvPages, 800);
+  // Page-break indicator
+  setTimeout(addPageBreakIndicator, 500);
+  setTimeout(addPageBreakIndicator, 900);
+  // Setup inline editing
+  setTimeout(setupInlineEditing, 150);
 
 })();
 
@@ -673,116 +1102,534 @@ function updatePhotoUI(hasPhoto) {
 
 function renderPhoto(src) {
   document.documentElement.classList.remove('no-photo');
-  var img1 = document.getElementById('clPhotoImg');
-  img1.src = src; img1.style.display = 'block';
-  document.getElementById('clPhotoIcon').style.display = 'none';
-  var img2 = document.getElementById('modPhotoImg');
-  img2.src = src; img2.style.display = 'block';
-  document.getElementById('modPhotoIcon').style.display = 'none';
+  var photos = [
+    {img:'clPhotoImg',  icon:'clPhotoIcon'},
+    {img:'modPhotoImg', icon:'modPhotoIcon'},
+    {img:'exPhotoImg',  icon:'exPhotoIcon'},
+    {img:'cpPhotoImg',  icon:'cpPhotoIcon'},
+  ];
+  photos.forEach(function(p) {
+    var img = document.getElementById(p.img);
+    if (img) { img.src = src; img.style.display = 'block'; }
+    var ic = document.getElementById(p.icon);
+    if (ic) ic.style.display = 'none';
+  });
 }
 
 function removePhoto() {
   document.documentElement.classList.add('no-photo');
-  // Classic
-  var img1 = document.getElementById('clPhotoImg');
-  img1.src = ''; img1.style.display = 'none';
-  document.getElementById('clPhotoIcon').style.display = '';
-  // Modern
-  var img2 = document.getElementById('modPhotoImg');
-  img2.src = ''; img2.style.display = 'none';
-  document.getElementById('modPhotoIcon').style.display = '';
-  // Panel
+  var photos = [
+    {img:'clPhotoImg',  icon:'clPhotoIcon'},
+    {img:'modPhotoImg', icon:'modPhotoIcon'},
+    {img:'exPhotoImg',  icon:'exPhotoIcon'},
+    {img:'cpPhotoImg',  icon:'cpPhotoIcon'},
+  ];
+  photos.forEach(function(p) {
+    var img = document.getElementById(p.img);
+    if (img) { img.src = ''; img.style.display = 'none'; }
+    var ic = document.getElementById(p.icon);
+    if (ic) ic.style.display = '';
+  });
   updatePhotoUI(false);
   try { localStorage.setItem('vagaai_cv_photo', 'none'); } catch(e) {}
 }
 
-/* ── Global: theme ──────────────────────────────────────── */
-var THEME_NAMES = {
-  graphite:'Grafite', green:'Verde', navy:'Marinho',
-  wine:'Vinho', purple:'Roxo', teal:'Petróleo', copper:'Cobre', custom:'Personalizada'
-};
-
-function applyTheme(theme, save) {
-  if (theme === 'graphite' || theme === 'custom') document.documentElement.removeAttribute('data-theme');
-  else document.documentElement.setAttribute('data-theme', theme);
-  // Reset active dots
-  document.querySelectorAll('.tdot').forEach(function(d) { d.classList.remove('active'); });
-  document.getElementById('dot-custom').classList.remove('active');
-  var dot = document.getElementById('dot-' + theme);
-  if (dot) dot.classList.add('active');
-  else document.getElementById('dot-custom').classList.add('active');
-  // Theme name label
-  var nameEl = document.getElementById('themeNameLabel');
-  if (nameEl) nameEl.textContent = THEME_NAMES[theme] || 'Personalizada';
-  if (save !== false) try { localStorage.setItem('vagaai_cv_theme', theme); } catch(e) {}
-}
-function setTheme(t) { applyTheme(t, true); }
-
-/* ── Custom color ───────────────────────────────────────── */
-function hexToRgb(hex) {
-  var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-  return {r:r,g:g,b:b};
-}
-function lighten(hex, amount) {
-  var c = hexToRgb(hex);
-  var r = Math.min(255, c.r + amount), g = Math.min(255, c.g + amount), b = Math.min(255, c.b + amount);
-  return 'rgb('+r+','+g+','+b+')';
-}
-function applyCustomColorVars(hex) {
-  var root = document.documentElement;
-  root.style.setProperty('--sb', hex);
-  root.style.setProperty('--sb-t', '#f0f0f0');
-  root.style.setProperty('--sb-m', 'rgba(240,240,240,.52)');
-  root.style.setProperty('--sb-b', 'rgba(255,255,255,.12)');
-  root.style.setProperty('--ac', lighten(hex, 70));
-  root.style.setProperty('--ac2', lighten(hex, 50));
-  document.getElementById('dot-custom').style.background = hex;
-}
-function clearCustomColorVars() {
-  var root = document.documentElement;
-  ['--sb','--sb-t','--sb-m','--sb-b','--ac','--ac2'].forEach(function(v){ root.style.removeProperty(v); });
-}
-
-function setCustomColor(hex) {
-  // Remove preset data-theme so our inline vars take effect
-  document.documentElement.removeAttribute('data-theme');
-  clearCustomColorVars();
-  applyCustomColorVars(hex);
-  // Mark custom dot active
-  document.querySelectorAll('.tdot').forEach(function(d){ d.classList.remove('active'); });
-  document.getElementById('dot-custom').classList.add('active');
-  document.getElementById('themeNameLabel').textContent = 'Personalizada';
-  try {
-    localStorage.setItem('vagaai_cv_theme', 'custom');
-    localStorage.setItem('vagaai_cv_custom_color', hex);
-  } catch(e) {}
-}
-
-/* Override setTheme to clear custom vars when preset is chosen */
-var _origSetTheme = setTheme;
-setTheme = function(t) {
-  clearCustomColorVars();
-  _origSetTheme(t);
-};
-
 /* ── Global: template ───────────────────────────────────── */
 function applyTemplate(tpl, save) {
-  var classic = document.getElementById('pageClassic');
-  var modern  = document.getElementById('pageModern');
-  if (tpl === 'modern') {
-    classic.classList.remove('active');
-    modern.classList.add('active');
-    document.getElementById('tplBtnClassic').classList.remove('active');
-    document.getElementById('tplBtnModern').classList.add('active');
-  } else {
-    classic.classList.add('active');
-    modern.classList.remove('active');
-    document.getElementById('tplBtnClassic').classList.add('active');
-    document.getElementById('tplBtnModern').classList.remove('active');
-  }
+  var tpls = [
+    {id:'pageClassic',  btn:'tplBtnClassic',  key:'classic'},
+    {id:'pageModern',   btn:'tplBtnModern',   key:'modern'},
+    {id:'pageExec',     btn:'tplBtnExec',     key:'exec'},
+    {id:'pageCompact',  btn:'tplBtnCompact',  key:'compact'},
+    {id:'pageMinimal',  btn:'tplBtnMinimal',  key:'minimal'},
+  ];
+  tpls.forEach(function(t) {
+    var page = document.getElementById(t.id);
+    var btn  = document.getElementById(t.btn);
+    if (!page) return;
+    if (t.key === tpl) { page.classList.add('active'); if(btn) btn.classList.add('active'); }
+    else { page.classList.remove('active'); if(btn) btn.classList.remove('active'); }
+  });
   if (save !== false) try { localStorage.setItem('vagaai_cv_tpl', tpl); } catch(e) {}
+  // Re-scale after switching template (mobile)
+  setTimeout(scaleCvPages, 50);
+  // Close mobile panel after selecting template
+  if (save !== false && window.innerWidth <= 768) {
+    var panel = document.getElementById('sidePanel');
+    var overlay = document.getElementById('panelOverlay');
+    if (panel) panel.classList.remove('panel-open');
+    if (overlay) overlay.classList.remove('vis');
+    document.body.style.overflow = '';
+  }
 }
-function setTemplate(t) { applyTemplate(t, true); }
+function setTemplate(t) {
+  applyTemplate(t, true);
+  // Save inside _cvData (most reliable — bundled with CV JSON)
+  if (_cvData) { _cvData.template = t; saveCvData(); }
+  // Also save separately as belt-and-suspenders fallback
+  try { localStorage.setItem('vagaai_cv_tpl', t); } catch(e) {}
+  // Re-scale after template switch (slight delay for layout to settle)
+  setTimeout(scaleCvPages, 80);
+  setTimeout(addPageBreakIndicator, 300);
+}
+
+/* ── Mobile: panel toggle ───────────────────────────────── */
+function togglePanel() {
+  var panel   = document.getElementById('sidePanel');
+  var overlay = document.getElementById('panelOverlay');
+  var isOpen  = panel.classList.toggle('panel-open');
+  overlay.classList.toggle('vis', isOpen);
+  document.body.style.overflow = isOpen ? 'hidden' : '';
+}
+
+/* ── Mobile: scale CV to fit viewport ───────────────────── */
+function scaleCvPages() {
+  var wrap = document.getElementById('pageWrap');
+  if (!wrap) return;
+  var vw = window.innerWidth;
+  var isMobile = vw <= 900;
+
+  // Reset all pages first
+  wrap.querySelectorAll('.page').forEach(function(p) {
+    p.style.zoom = '';
+    p.style.transform = '';
+    p.style.transformOrigin = '';
+    p.style.marginBottom = '';
+    p.style.width = '';
+  });
+
+  if (!isMobile) {
+    wrap.style.overflowX = '';
+    return;
+  }
+
+  var scale = Math.min(1, Math.max(0.25, vw / 794));
+  var useTransform = false;
+
+  // Probe zoom support on the active page
+  var activePage = wrap.querySelector('.page.active');
+  if (activePage) {
+    activePage.style.zoom = scale.toFixed(4);
+    // Force layout read — if offsetWidth is still >= 780px, zoom had no effect
+    if (activePage.offsetWidth >= 780) {
+      useTransform = true;
+    }
+    activePage.style.zoom = '';
+  }
+
+  wrap.querySelectorAll('.page').forEach(function(p) {
+    if (useTransform) {
+      // transform: scale() — not layout-aware; compensate height & expand width
+      var pH = p.scrollHeight || 1123;
+      p.style.transformOrigin = 'top left';
+      p.style.transform = 'scale(' + scale.toFixed(4) + ')';
+      p.style.marginBottom = '-' + Math.round(pH * (1 - scale)) + 'px';
+      // Expand logical width so scaled content fills viewport cleanly
+      p.style.width = Math.round(vw / scale) + 'px';
+    } else {
+      // zoom — layout-aware, preferred
+      p.style.zoom = scale.toFixed(4);
+    }
+  });
+
+  // Clip to prevent horizontal scroll regardless of method
+  wrap.style.overflowX = 'hidden';
+}
+window.addEventListener('resize', scaleCvPages);
+window.addEventListener('load', scaleCvPages);
+
+/* ── Page-break indicator (screen only) ─────────────────── */
+function addPageBreakIndicator() {
+  // 297mm in px at 96dpi ≈ 1122px; add a small buffer
+  var PX_PER_MM = 96 / 25.4;
+  var breakPx = Math.round(297 * PX_PER_MM); // ~1122px
+
+  var activePage = document.querySelector('.page.active');
+  if (!activePage) return;
+
+  // Remove any existing indicator first
+  var old = activePage.querySelector('.pg-break');
+  if (old) old.parentNode.removeChild(old);
+
+  // Only show if content actually overflows past page 1
+  var h = activePage.scrollHeight;
+  if (h > breakPx + 40) {
+    var line = document.createElement('div');
+    line.className = 'pg-break';
+    line.innerHTML = '<span>Página 2</span>';
+    activePage.appendChild(line);
+  }
+}
+window.addEventListener('resize', function() { setTimeout(addPageBreakIndicator, 100); });
+
+/* ── Mobile: print with warning ─────────────────────────── */
+function mobPrint() {
+  var isMob = window.innerWidth <= 900;
+  if (isMob) {
+    var toast = document.getElementById('mobPrintToast');
+    if (toast) { toast.classList.add('vis'); }
+    setTimeout(function() {
+      if (toast) toast.classList.remove('vis');
+      window.print();
+    }, 2000);
+  } else {
+    window.print();
+  }
+}
+
+/* ── Save cv to localStorage ────────────────────────────── */
+function saveCvData() {
+  if (!_cvData) return;
+  try { localStorage.setItem('vagaai_cv', JSON.stringify(_cvData)); } catch(e) {}
+}
+
+/* ── Re-render helpers ──────────────────────────────────── */
+function _rr(ids, val) { ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=val||''; }); }
+function reRenderNome(v)  { _rr(['clNome','clCvNome','modNome','exNome','cpNome','mnNome'], v); }
+function reRenderRole(v)  { _rr(['clRole','clCvRole','modRole','exRole','cpRole','mnRole'], v); }
+function reRenderResumo(v){ _rr(['clResumo','modResumo','exResumo','cpResumo','mnResumo'], v); }
+
+function reRenderContact(c) {
+  var SVG_E='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>';
+  var SVG_P='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.4 2 2 0 0 1 3.6 2.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+  var SVG_L='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+  var SVG_M='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+  var lt = c.linkedin ? c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/') : '';
+  // Classic sidebar contacts
+  var cl=[];
+  if(c.email) cl.push('<li><span class="sb-ic">'+SVG_E+'</span><a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></li>');
+  if(c.telefone) cl.push('<li><span class="sb-ic">'+SVG_P+'</span>'+_esc(c.telefone)+'</li>');
+  if(c.linkedin) cl.push('<li><span class="sb-ic">'+SVG_L+'</span><a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></li>');
+  if(c.cidade) cl.push('<li><span class="sb-ic">'+SVG_M+'</span>'+_esc(c.cidade)+'</li>');
+  var clC=document.getElementById('clContatos'); if(clC) clC.innerHTML=cl.join('');
+  // Modern / Exec contacts
+  var mci=[];
+  if(c.email) mci.push('<div class="mod-contact-item">'+SVG_E+' <a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></div>');
+  if(c.telefone) mci.push('<div class="mod-contact-item">'+SVG_P+' '+_esc(c.telefone)+'</div>');
+  if(c.linkedin) mci.push('<div class="mod-contact-item">'+SVG_L+' <a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></div>');
+  if(c.cidade) mci.push('<div class="mod-contact-item">'+SVG_M+' '+_esc(c.cidade)+'</div>');
+  var modC=document.getElementById('modContatos'); if(modC) modC.innerHTML=mci.join('');
+  var exCI=[];
+  if(c.email) exCI.push('<div class="exec-ci">'+SVG_E+' <a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></div>');
+  if(c.telefone) exCI.push('<div class="exec-ci">'+SVG_P+' '+_esc(c.telefone)+'</div>');
+  if(c.linkedin) exCI.push('<div class="exec-ci">'+SVG_L+' <a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></div>');
+  if(c.cidade) exCI.push('<div class="exec-ci">'+SVG_M+' '+_esc(c.cidade)+'</div>');
+  var exC=document.getElementById('exContatos'); if(exC) exC.innerHTML=exCI.join('');
+  // Compact sidebar
+  var cpCI=[];
+  if(c.email) cpCI.push('<li>'+SVG_E+'<a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></li>');
+  if(c.telefone) cpCI.push('<li>'+SVG_P+_esc(c.telefone)+'</li>');
+  if(c.linkedin) cpCI.push('<li>'+SVG_L+'<a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></li>');
+  if(c.cidade) cpCI.push('<li>'+SVG_M+_esc(c.cidade)+'</li>');
+  var cpC=document.getElementById('cpContatos'); if(cpC) cpC.innerHTML=cpCI.join('');
+  // Minimal
+  var mnCI=[];
+  if(c.email) mnCI.push('<div class="minimal-ci">'+SVG_E+' <a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></div>');
+  if(c.telefone) mnCI.push('<div class="minimal-ci">'+SVG_P+' '+_esc(c.telefone)+'</div>');
+  if(c.linkedin) mnCI.push('<div class="minimal-ci">'+SVG_L+' <a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></div>');
+  if(c.cidade) mnCI.push('<div class="minimal-ci">'+SVG_M+' '+_esc(c.cidade)+'</div>');
+  var mnC=document.getElementById('mnContatos'); if(mnC) mnC.innerHTML=mnCI.join('');
+}
+
+function reRenderSkills(skills) {
+  var cl=document.getElementById('clSkills'); if(cl) cl.innerHTML=skills.slice(0,18).map(function(s){return '<span class="sb-tag">'+_esc(s)+'</span>';}).join('');
+  var ms=document.getElementById('modSkills'); if(ms) ms.innerHTML=skills.slice(0,20).map(function(s){return '<span class="mod-tag">'+_esc(s)+'</span>';}).join('');
+  var es=document.getElementById('exSkills'); if(es) es.innerHTML=skills.slice(0,20).map(function(s){return '<span class="exec-tag">'+_esc(s)+'</span>';}).join('');
+  var cs=document.getElementById('cpSkills'); if(cs) cs.innerHTML=skills.slice(0,18).map(function(s){return '<span class="compact-tag">'+_esc(s)+'</span>';}).join('');
+  var ns=document.getElementById('mnSkills'); if(ns) ns.innerHTML=skills.slice(0,20).map(function(s){return '<span class="minimal-tag">'+_esc(s)+'</span>';}).join('');
+  // Show/hide sections
+  ['clSecSkills','modSecSkills','exSecSkills','cpSecSkills','mnSecSkills'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.style.display=skills.length?'block':'none';
+  });
+  var mb=document.getElementById('modBottom'); if(mb&&skills.length) mb.style.display='grid';
+  var ex=document.getElementById('exBottom'); if(ex&&skills.length) ex.style.display='grid';
+  var mn=document.getElementById('mnBottom'); if(mn&&skills.length) mn.style.display='grid';
+}
+
+function reRenderExp(exps) {
+  var ids=['clExps','modExps','exExps','cpExps'];
+  ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.innerHTML=_expHtml(exps); });
+  // Minimal timeline
+  var mnE=document.getElementById('mnExps');
+  if(mnE) {
+    mnE.innerHTML=(exps||[]).map(function(e,i,arr){
+      var buls=(e.bullets||[]).map(function(b){return '<li>'+_esc(b)+'</li>';}).join('');
+      var mnPer=_periodo(e.periodo);
+      return '<div class="minimal-exp-item"><div class="minimal-exp-spine"><div class="minimal-exp-dot"></div>'+(i<arr.length-1?'<div class="minimal-exp-line"></div>':'')+'</div><div class="minimal-exp-body"><div class="minimal-exp-row"><span class="minimal-exp-cargo">'+_esc(e.cargo||'')+'</span>'+(mnPer?'<span class="minimal-exp-per">'+_esc(mnPer)+'</span>':'')+'</div><div class="minimal-exp-emp">'+_esc(e.empresa||'')+'</div>'+(buls?'<ul class="minimal-exp-ul">'+buls+'</ul>':'')+'</div></div>';
+    }).join('');
+  }
+  ['clSecExp','modSecExp','exSecExp','cpSecExp','mnSecExp'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.style.display=exps.length?'block':'none';
+  });
+}
+
+function reRenderEdu(edu) {
+  var clE=document.getElementById('clEdu'); if(clE) clE.innerHTML=edu.map(function(e){return '<div><div class="sb-edu-curso">'+_esc(e.curso||'')+'</div><div class="sb-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="sb-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
+  var modE=document.getElementById('modEdu'); if(modE) modE.innerHTML=edu.map(function(e){return '<div class="mod-edu-item"><div class="mod-edu-curso">'+_esc(e.curso||'')+'</div><div class="mod-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="mod-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
+  var exE=document.getElementById('exEdu'); if(exE) exE.innerHTML=edu.map(function(e){return '<div class="exec-edu-item"><div class="exec-edu-curso">'+_esc(e.curso||'')+'</div><div class="exec-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="exec-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
+  var cpE=document.getElementById('cpEdu'); if(cpE) cpE.innerHTML=edu.map(function(e){return '<div style="margin-bottom:.55rem"><div class="compact-edu-curso">'+_esc(e.curso||'')+'</div><div class="compact-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="compact-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
+  var mnE=document.getElementById('mnEdu'); if(mnE) mnE.innerHTML=edu.map(function(e){return '<div class="minimal-edu-item"><div class="minimal-edu-curso">'+_esc(e.curso||'')+'</div><div class="minimal-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="minimal-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
+  ['clSecEdu','modSecEdu','exSecEdu','cpSecEdu','mnSecEdu'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.style.display=edu.length?'block':'none';
+  });
+  var mb=document.getElementById('modBottom'); if(mb&&edu.length) mb.style.display='grid';
+  var ex=document.getElementById('exBottom'); if(ex&&edu.length) ex.style.display='grid';
+  var mn=document.getElementById('mnBottom'); if(mn&&edu.length) mn.style.display='grid';
+}
+
+/* ── Inline editing setup ───────────────────────────────── */
+function setupInlineEditing() {
+  if (!_cvData) return;
+  // Fields: [cvKey, [elementIds], isBlock]
+  var fields = [
+    ['nome', ['clNome','clCvNome','modNome','exNome','cpNome','mnNome'], false],
+    ['titulo_profissional', ['clRole','clCvRole','modRole','exRole','cpRole','mnRole'], false],
+    ['resumo_profissional', ['clResumo','modResumo','exResumo','cpResumo','mnResumo'], true],
+  ];
+  fields.forEach(function(f) {
+    var key=f[0], ids=f[1], isBlock=f[2];
+    ids.forEach(function(id) {
+      var el=document.getElementById(id);
+      if(!el) return;
+      el.contentEditable='true';
+      el.classList.add(isBlock?'editable-block':'editable');
+      el.addEventListener('blur', function(){
+        var val=(isBlock?el.innerText:el.innerText.replace(/\n/g,' ')).trim();
+        _cvData[key]=val;
+        saveCvData();
+        // Sync to other elements
+        ids.forEach(function(otherId){
+          if(otherId===id) return;
+          var other=document.getElementById(otherId);
+          if(other&&other.contentEditable!=='true') other.textContent=val;
+          else if(other&&other!==el) other.textContent=val;
+        });
+      });
+      el.addEventListener('keydown', function(e){
+        if(e.key==='Enter'&&!isBlock){e.preventDefault();el.blur();}
+        // Prevent paste from bringing HTML
+      });
+      el.addEventListener('paste', function(e){
+        e.preventDefault();
+        var text=(e.clipboardData||window.clipboardData).getData('text/plain');
+        document.execCommand('insertText',false,text);
+      });
+    });
+  });
+}
+
+/* ── Edit modal ─────────────────────────────────────────── */
+function openEdit(section) {
+  if(!_cvData) return;
+  _editSection=section;
+  var modal=document.getElementById('editModal');
+  var title=document.getElementById('editTitle');
+  var body=document.getElementById('editBody');
+  modal.classList.remove('hidden');
+  document.body.style.overflow='hidden';
+  if(section==='contact') {
+    title.textContent='Dados pessoais e contato';
+    var c=_cvData.contato||{};
+    body.innerHTML='<div class="ef-group"><div class="ef-label">Nome completo</div><input class="ef-input" id="ef_nome" value="'+_esc(_cvData.nome||'')+'"></div>'
+      +'<div class="ef-group"><div class="ef-label">Cargo / Título profissional</div><input class="ef-input" id="ef_titulo" value="'+_esc(_cvData.titulo_profissional||'')+'"></div>'
+      +'<div class="ef-group"><div class="ef-label">Resumo profissional</div><textarea class="ef-textarea" id="ef_resumo" rows="4">'+_esc(_cvData.resumo_profissional||'')+'</textarea></div>'
+      +'<div class="ef-group"><div class="ef-label">E-mail</div><input class="ef-input" id="ef_email" type="email" value="'+_esc(c.email||'')+'"></div>'
+      +'<div class="ef-row"><div class="ef-group"><div class="ef-label">Telefone</div><input class="ef-input" id="ef_tel" value="'+_esc(c.telefone||'')+'"></div>'
+      +'<div class="ef-group"><div class="ef-label">Cidade</div><input class="ef-input" id="ef_cidade" value="'+_esc(c.cidade||'')+'"></div></div>'
+      +'<div class="ef-group"><div class="ef-label">LinkedIn (URL)</div><input class="ef-input" id="ef_li" value="'+_esc(c.linkedin||'')+'"></div>';
+  } else if(section==='skills') {
+    title.textContent='Habilidades';
+    var skills=(_cvData.habilidades||[]).slice();
+    body.innerHTML='<div class="ef-hint">Clique no × para remover. Digite e pressione Enter ou clique + para adicionar.</div>'
+      +'<div class="ef-tags" id="ef_tagWrap">'+skills.map(function(s,i){return '<span class="ef-tag">'+_esc(s)+'<button class="ef-tag-rm" onclick="efRemoveTag('+i+')" type="button">×</button></span>';}).join('')+'</div>'
+      +'<div class="ef-tag-row"><input class="ef-tag-inp" id="ef_tagInp" placeholder="Nova habilidade..."><button class="ef-tag-add-btn" onclick="efAddTag()" type="button">+ Adicionar</button></div>';
+    document.getElementById('ef_tagInp').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();efAddTag();}});
+  } else if(section==='exp') {
+    title.textContent='Experiências profissionais';
+    renderExpEditor();
+  } else if(section==='edu') {
+    title.textContent='Formação acadêmica';
+    renderEduEditor();
+  }
+}
+
+function closeEdit() {
+  document.getElementById('editModal').classList.add('hidden');
+  document.body.style.overflow='';
+  _editSection=null;
+}
+
+function saveEdit() {
+  if(!_cvData) return;
+  if(_editSection==='contact') {
+    _cvData.nome=(document.getElementById('ef_nome').value||'').trim();
+    _cvData.titulo_profissional=(document.getElementById('ef_titulo').value||'').trim();
+    _cvData.resumo_profissional=(document.getElementById('ef_resumo').value||'').trim();
+    _cvData.contato=_cvData.contato||{};
+    _cvData.contato.email=(document.getElementById('ef_email').value||'').trim();
+    _cvData.contato.telefone=(document.getElementById('ef_tel').value||'').trim();
+    _cvData.contato.cidade=(document.getElementById('ef_cidade').value||'').trim();
+    _cvData.contato.linkedin=(document.getElementById('ef_li').value||'').trim();
+    reRenderNome(_cvData.nome);
+    reRenderRole(_cvData.titulo_profissional);
+    reRenderResumo(_cvData.resumo_profissional);
+    reRenderContact(_cvData.contato);
+  } else if(_editSection==='skills') {
+    // Rebuild skills from current UI tag list (source of truth)
+    var tagWrap=document.getElementById('ef_tagWrap');
+    if(tagWrap) {
+      _cvData.habilidades=Array.prototype.map.call(
+        tagWrap.querySelectorAll('.ef-tag'),
+        function(el){ return el.firstChild?el.firstChild.nodeValue.trim():''; }
+      ).filter(Boolean);
+    }
+    reRenderSkills(_cvData.habilidades||[]);
+  } else if(_editSection==='exp') {
+    saveExpEditor();
+    reRenderExp(_cvData.experiencias||[]);
+  } else if(_editSection==='edu') {
+    saveEduEditor();
+    reRenderEdu(_cvData.formacao||[]);
+  }
+  saveCvData();
+  closeEdit();
+  // Update page-break indicator after content changes
+  setTimeout(addPageBreakIndicator, 200);
+}
+
+/* ── Tag editor helpers ─────────────────────────────────── */
+function _rebuildTagWrap() {
+  var wrap=document.getElementById('ef_tagWrap');
+  if(!wrap) return;
+  if(!Array.isArray(_cvData.habilidades)) _cvData.habilidades=[];
+  wrap.innerHTML=_cvData.habilidades.map(function(s,i){
+    return '<span class="ef-tag">'+_esc(s)+'<button class="ef-tag-rm" onclick="efRemoveTag('+i+')" type="button">×</button></span>';
+  }).join('');
+}
+function efRemoveTag(idx) {
+  if(!Array.isArray(_cvData.habilidades)) return;
+  _cvData.habilidades.splice(idx,1);
+  _rebuildTagWrap();
+  reRenderSkills(_cvData.habilidades);
+  saveCvData();
+}
+function efAddTag() {
+  var inp=document.getElementById('ef_tagInp');
+  var val=(inp.value||'').trim();
+  if(!val) return;
+  if(!Array.isArray(_cvData.habilidades)) _cvData.habilidades=[];
+  if(_cvData.habilidades.indexOf(val)===-1) _cvData.habilidades.push(val);
+  inp.value='';
+  _rebuildTagWrap();
+  reRenderSkills(_cvData.habilidades);
+  saveCvData();
+}
+
+/* ── Experience editor ──────────────────────────────────── */
+function renderExpEditor() {
+  var exps=(_cvData.experiencias||[]);
+  var html=exps.map(function(e,i){
+    return '<div class="ef-card" id="efec_'+i+'">'
+      +'<div class="ef-card-head" onclick="efToggle(\'efec_'+i+'\')">'
+      +'<span class="ef-card-name">'+(e.cargo||'Sem título')+' — '+(e.empresa||'')+'</span>'
+      +'<span class="ef-card-arr" id="efec_'+i+'_arr">▼</span></div>'
+      +'<div class="ef-card-body collapsed" id="efec_'+i+'_body">'
+      +'<div class="ef-group"><div class="ef-label">Cargo</div><input class="ef-input" id="efec_cargo_'+i+'" value="'+_esc(e.cargo||'')+'"></div>'
+      +'<div class="ef-row"><div class="ef-group"><div class="ef-label">Empresa</div><input class="ef-input" id="efec_emp_'+i+'" value="'+_esc(e.empresa||'')+'"></div>'
+      +'<div class="ef-group"><div class="ef-label">Período</div><input class="ef-input" id="efec_per_'+i+'" value="'+_esc(e.periodo||'')+'"></div></div>'
+      +'<div class="ef-group"><div class="ef-label">Atividades (uma por linha)</div>'
+      +'<textarea class="ef-textarea" id="efec_bul_'+i+'" rows="4">'+_esc((e.bullets||[]).join('\n'))+'</textarea></div>'
+      +'<button class="ef-card-rm" onclick="efRemoveExp('+i+')">🗑 Remover experiência</button>'
+      +'</div></div>';
+  }).join('');
+  html+='<button class="ef-card-add" onclick="efAddExp()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Adicionar experiência</button>';
+  document.getElementById('editBody').innerHTML=html;
+}
+function efToggle(cardId) {
+  var body=document.getElementById(cardId+'_body');
+  var arr=document.getElementById(cardId+'_arr');
+  if(body) body.classList.toggle('collapsed');
+  if(arr) arr.classList.toggle('open');
+}
+function efRemoveExp(idx) {
+  if(!_cvData.experiencias) return;
+  _cvData.experiencias.splice(idx,1);
+  renderExpEditor();
+}
+function efAddExp() {
+  if(!_cvData.experiencias) _cvData.experiencias=[];
+  _cvData.experiencias.push({cargo:'',empresa:'',periodo:'',bullets:[]});
+  renderExpEditor();
+  // open last card
+  var last=_cvData.experiencias.length-1;
+  efToggle('efec_'+last);
+}
+function saveExpEditor() {
+  var exps=_cvData.experiencias||[];
+  exps.forEach(function(e,i){
+    var cargoEl=document.getElementById('efec_cargo_'+i);
+    var empEl=document.getElementById('efec_emp_'+i);
+    var perEl=document.getElementById('efec_per_'+i);
+    if(cargoEl) e.cargo=cargoEl.value.trim();
+    if(empEl)   e.empresa=empEl.value.trim();
+    if(perEl)   e.periodo=perEl.value.trim();
+    var bulEl=document.getElementById('efec_bul_'+i);
+    if(bulEl) e.bullets=bulEl.value.split('\n').map(function(b){return b.trim();}).filter(Boolean);
+  });
+  _cvData.experiencias=exps.filter(function(e){return e.cargo||e.empresa;});
+}
+
+/* ── Education editor ───────────────────────────────────── */
+function renderEduEditor() {
+  var edu=(_cvData.formacao||[]);
+  var html=edu.map(function(e,i){
+    return '<div class="ef-card" id="efed_'+i+'">'
+      +'<div class="ef-card-head" onclick="efToggle(\'efed_'+i+'\')">'
+      +'<span class="ef-card-name">'+(e.curso||'Sem título')+(e.instituicao?' — '+e.instituicao:'')+'</span>'
+      +'<span class="ef-card-arr" id="efed_'+i+'_arr">▼</span></div>'
+      +'<div class="ef-card-body collapsed" id="efed_'+i+'_body">'
+      +'<div class="ef-group"><div class="ef-label">Curso</div><input class="ef-input" id="efed_curso_'+i+'" value="'+_esc(e.curso||'')+'"></div>'
+      +'<div class="ef-row"><div class="ef-group"><div class="ef-label">Instituição</div><input class="ef-input" id="efed_inst_'+i+'" value="'+_esc(e.instituicao||'')+'"></div>'
+      +'<div class="ef-group"><div class="ef-label">Período</div><input class="ef-input" id="efed_per_'+i+'" value="'+_esc(e.periodo||'')+'"></div></div>'
+      +'<button class="ef-card-rm" onclick="efRemoveEdu('+i+')">🗑 Remover</button>'
+      +'</div></div>';
+  }).join('');
+  html+='<button class="ef-card-add" onclick="efAddEdu()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Adicionar formação</button>';
+  document.getElementById('editBody').innerHTML=html;
+}
+function efRemoveEdu(idx) {
+  if(!_cvData.formacao) return;
+  _cvData.formacao.splice(idx,1);
+  renderEduEditor();
+}
+function efAddEdu() {
+  if(!_cvData.formacao) _cvData.formacao=[];
+  _cvData.formacao.push({curso:'',instituicao:'',periodo:''});
+  renderEduEditor();
+  efToggle('efed_'+(_cvData.formacao.length-1));
+}
+function saveEduEditor() {
+  var edu=_cvData.formacao||[];
+  edu.forEach(function(e,i){
+    var cursoEl=document.getElementById('efed_curso_'+i);
+    var instEl=document.getElementById('efed_inst_'+i);
+    var perEl=document.getElementById('efed_per_'+i);
+    if(cursoEl) e.curso=cursoEl.value.trim();
+    if(instEl)  e.instituicao=instEl.value.trim();
+    if(perEl)   e.periodo=perEl.value.trim();
+  });
+  _cvData.formacao=edu.filter(function(e){return e.curso||e.instituicao;});
+}
+
+/* ── Mobile: close panel helper ─────────────────────────── */
+function _closePanelMob() {
+  if (window.innerWidth > 768) return;
+  var panel = document.getElementById('sidePanel');
+  var overlay = document.getElementById('panelOverlay');
+  if (panel) panel.classList.remove('panel-open');
+  if (overlay) overlay.classList.remove('vis');
+  document.body.style.overflow = '';
+}
 
 /* ── Global: close modal (sem foto) ─────────────────────── */
 function closeModal() {
