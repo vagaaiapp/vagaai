@@ -1122,8 +1122,36 @@ function animateNumber(id, from, to, duration) {
   requestAnimationFrame(step);
 }
 
+// ── PRÉ-PREENCHIMENTO VIA URL (?vaga=URL) ────────────────────────────────────
+async function checkVagaParam() {
+  var vagaUrl = new URLSearchParams(window.location.search).get('vaga');
+  if (!vagaUrl) return;
+  // Mostra banner de alerta
+  var notice = document.createElement('div');
+  notice.id = 'alertVagaNotice';
+  notice.style.cssText = 'background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px;padding:.75rem 1rem;font-size:13px;color:var(--green);display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;font-weight:600';
+  notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Vaga do seu alerta carregando…';
+  var formSection = document.getElementById('formSection');
+  formSection.insertBefore(notice, formSection.firstChild);
+  try {
+    var res = await fetch('/api/fetch-job?url=' + encodeURIComponent(vagaUrl));
+    var data = await res.json();
+    if (data.text) {
+      document.getElementById('jobInput').value = data.text;
+      document.getElementById('jobCount').textContent = data.text.length + ' caracteres';
+      notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Vaga do alerta carregada! Cole seu currículo abaixo e analise.';
+    } else {
+      notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Não foi possível carregar a vaga automaticamente. Cole o texto manualmente.';
+      notice.style.background = 'var(--yellow-dim)'; notice.style.borderColor = 'var(--yellow-border)'; notice.style.color = 'var(--yellow)';
+    }
+  } catch(e) {
+    notice.style.display = 'none';
+  }
+}
+
 // Inicia verificação de auth e verifica resultado pendente do histórico
 initAuth().then(function() {
+  checkVagaParam();
   var pending = null;
   try { pending = localStorage.getItem('vagaai_pending_result'); } catch(e) {}
   if (pending) {

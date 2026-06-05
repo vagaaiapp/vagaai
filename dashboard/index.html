@@ -190,6 +190,40 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .k-col.col-recusado .k-col-header{border-top:3px solid var(--muted)}
 .k-col.col-recusado .k-col-title{color:var(--muted)}
 .k-col.col-recusado .k-col-count{background:rgba(138,158,144,.1);color:var(--muted);border-color:rgba(138,158,144,.25)}
+/* ALERTS TAB */
+.alerts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:640px){.alerts-grid{grid-template-columns:1fr}}
+.alerts-field{display:flex;flex-direction:column;gap:.35rem}
+.alerts-field label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.alerts-field input,.alerts-field select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:.6rem .85rem;width:100%;transition:border-color .2s}
+.alerts-field input:focus,.alerts-field select:focus{outline:none;border-color:var(--green-border)}
+.alerts-field input::placeholder{color:var(--muted)}
+.alerts-field-full{grid-column:1/-1}
+.kw-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.45rem .7rem;display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;min-height:40px;cursor:text;transition:border-color .2s}
+.kw-wrap:focus-within{border-color:var(--green-border)}
+.kw-tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px;background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);display:inline-flex;align-items:center;gap:.3rem}
+.kw-remove{cursor:pointer;opacity:.6;font-size:12px;line-height:1;background:none;border:none;color:inherit;padding:0}
+.kw-remove:hover{opacity:1}
+.kw-input{background:transparent;border:none;outline:none;font-family:'Inter',sans-serif;font-size:12px;color:var(--text);min-width:80px;flex:1;padding:.1rem 0}
+.freq-row{display:flex;gap:.4rem}
+.freq-opt{flex:1;padding:.45rem;border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;text-align:center;transition:all .15s;background:transparent;color:var(--muted)}
+.freq-opt.active{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.alert-toggle-row{display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px}
+.alert-toggle-sw{width:36px;height:20px;border-radius:10px;position:relative;cursor:pointer;flex-shrink:0;transition:background .2s}
+.alert-toggle-sw.on{background:var(--green)}
+.alert-toggle-sw.off{background:var(--border)}
+.alert-toggle-sw::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:2px;transition:left .2s}
+.alert-toggle-sw.on::after{left:18px}
+.alert-toggle-sw.off::after{left:2px}
+.alert-hist{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:1.2rem}
+.alert-hist-item{display:flex;align-items:center;gap:.75rem;padding:.65rem 1rem;border-bottom:1px solid var(--border);font-size:13px}
+.alert-hist-item:last-child{border-bottom:none}
+.alert-hist-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.alert-next{background:var(--green-dim);border:1px solid var(--green-border);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-top:1rem}
+.alert-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.2rem}
+.alert-stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.85rem;text-align:center}
+.alert-stat-val{font-family:'Lora',serif;font-size:22px;font-weight:700;color:var(--green)}
+.alert-stat-label{font-size:11px;color:var(--muted)}
 .k-empty{text-align:center;padding:1.5rem .5rem;font-size:11px;color:var(--muted)}
 .tracker-stats{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.2rem}
 .tracker-stat{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:.3rem .85rem;font-size:12px;font-weight:600;color:var(--muted)}
@@ -474,6 +508,10 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
     <button class="dash-tab active" onclick="switchDashTab('painel')">Painel</button>
     <button class="dash-tab" onclick="switchDashTab('candidaturas')">Candidaturas<span class="tab-count" id="trackerTabCount" style="display:none">0</span></button>
     <button class="dash-tab" onclick="switchDashTab('historico')">Histórico</button>
+    <button class="dash-tab" onclick="switchDashTab('alertas')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:.3rem"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Alertas
+    </button>
   </div>
 
   <!-- TAB: PAINEL -->
@@ -567,6 +605,108 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
     <button id="loadMoreBtn" onclick="loadMoreAnalyses()" style="background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.6rem 1.4rem;border-radius:8px;cursor:pointer;transition:all .2s">Carregar mais</button>
   </div>
   </div><!-- /tab-historico -->
+
+  <!-- TAB: ALERTAS -->
+  <div id="tab-alertas" style="display:none">
+
+    <!-- Stats (só aparece quando tem histórico) -->
+    <div id="alertStatsWrap" style="display:none">
+      <div class="alert-stat-row">
+        <div class="alert-stat"><div class="alert-stat-val" id="alertStatVagas">0</div><div class="alert-stat-label">Vagas recebidas</div></div>
+        <div class="alert-stat"><div class="alert-stat-val" id="alertStatAnalisadas" style="color:var(--blue)">0</div><div class="alert-stat-label">Analisadas</div></div>
+        <div class="alert-stat"><div class="alert-stat-val" id="alertStatEnvios" style="color:var(--yellow)">0</div><div class="alert-stat-label">Envios realizados</div></div>
+      </div>
+    </div>
+
+    <!-- Formulário de perfil -->
+    <div class="buy-section" style="margin-bottom:1.2rem">
+      <div class="buy-title">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:.4rem"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Meu perfil de alerta de vagas
+      </div>
+      <p class="buy-sub" style="margin-bottom:1.2rem">Configure uma vez. Receba vagas compatíveis no seu e-mail toda semana.</p>
+
+      <div class="alerts-grid">
+        <div class="alerts-field">
+          <label>Cargo desejado</label>
+          <input id="al-cargo" placeholder="Ex: Desenvolvedor Front-end, Designer UX...">
+        </div>
+        <div class="alerts-field">
+          <label>Nível</label>
+          <select id="al-nivel">
+            <option value="qualquer">Qualquer nível</option>
+            <option value="estagio">Estágio</option>
+            <option value="junior">Júnior</option>
+            <option value="pleno">Pleno</option>
+            <option value="senior">Sênior</option>
+          </select>
+        </div>
+        <div class="alerts-field">
+          <label>Cidade / Localização</label>
+          <input id="al-cidade" placeholder="Ex: São Paulo, Remoto, Rio de Janeiro...">
+        </div>
+        <div class="alerts-field">
+          <label>Salário mínimo (R$)</label>
+          <input type="number" id="al-salario" placeholder="Ex: 8000">
+        </div>
+        <div class="alerts-field alerts-field-full">
+          <label>Keywords do seu perfil</label>
+          <div class="kw-wrap" id="kwWrap" onclick="document.getElementById('kwInput').focus()">
+            <input class="kw-input" id="kwInput" placeholder="Digite uma skill e pressione Enter..." onkeydown="handleKwInput(event)">
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:.3rem">Adicione tecnologias e habilidades do seu CV para melhorar a compatibilidade estimada</div>
+        </div>
+        <div class="alerts-field alerts-field-full">
+          <label>Frequência dos alertas</label>
+          <div class="freq-row">
+            <button class="freq-opt" id="freq-semanal" onclick="setFreq('semanal')">Semanal (sextas)</button>
+            <button class="freq-opt" id="freq-quinzenal" onclick="setFreq('quinzenal')">Quinzenal</button>
+            <button class="freq-opt" id="freq-mensal" onclick="setFreq('mensal')">Mensal</button>
+          </div>
+        </div>
+        <div class="alerts-field alerts-field-full">
+          <div class="alert-toggle-row" onclick="toggleAlertActive()">
+            <div class="alert-toggle-sw on" id="alertToggleSw"></div>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--green)" id="alertToggleLabel">Alertas ativos</div>
+              <div style="font-size:11px;color:var(--muted)" id="alertToggleSub">Você receberá vagas toda sexta às 8h no seu e-mail</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="alertSaveEstimate" style="display:none;margin-top:1rem;padding:.75rem 1rem;background:var(--blue-dim,rgba(100,200,255,0.1));border:1px solid var(--blue-border,rgba(100,200,255,0.25));border-radius:8px;font-size:12px;color:var(--muted)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:.3rem;color:#64c8ff"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Com esse perfil, você receberá vagas de <strong id="alertEstimateText">...</strong> toda semana.
+      </div>
+
+      <div style="display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap">
+        <button onclick="saveAlertProfile()" style="background:var(--green);color:#0a0f0d;border:none;border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:.65rem 1.3rem;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;transition:all .2s">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Salvar perfil de alerta
+        </button>
+        <button id="alertTestBtn" onclick="sendTestAlert()" style="display:none;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.65rem 1.1rem;cursor:pointer;transition:all .2s">
+          ⚡ Enviar agora (teste)
+        </button>
+      </div>
+    </div>
+
+    <!-- Próximo envio -->
+    <div class="alert-next" id="alertNextWrap" style="display:none">
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--green);margin-bottom:.2rem">Próximo envio</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text)" id="alertNextDate">—</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:.1rem" id="alertNextSub">Configure o perfil acima para ativar</div>
+      </div>
+    </div>
+
+    <!-- Histórico de envios -->
+    <div id="alertHistWrap" style="display:none;margin-top:1.2rem">
+      <div class="section-header"><div class="section-title">Histórico de envios</div></div>
+      <div class="alert-hist" id="alertHistList"></div>
+    </div>
+
+  </div><!-- /tab-alertas -->
 
 </div>
 
@@ -1183,14 +1323,230 @@ function addToTracker(empresa, cargo, score) {
 
 // ── DASH TABS ─────────────────────────────────────────────────────────────────
 function switchDashTab(tab) {
-  ['painel','candidaturas','historico'].forEach(function(t) {
+  ['painel','candidaturas','historico','alertas'].forEach(function(t) {
     document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
   });
   document.querySelectorAll('.dash-tab').forEach(function(el, i) {
-    el.classList.toggle('active', ['painel','candidaturas','historico'][i] === tab);
+    el.classList.toggle('active', ['painel','candidaturas','historico','alertas'][i] === tab);
   });
   if (tab === 'historico' && !_analysesFull.length) loadAnalyses();
   if (tab === 'candidaturas') loadKanban();
+  if (tab === 'alertas') loadAlertProfile();
+}
+
+// ── ALERTS ────────────────────────────────────────────────────────────────────
+var _alertKeywords = [];
+var _alertFreq = 'semanal';
+var _alertAtivo = true;
+var _alertProfileLoaded = false;
+
+async function loadAlertProfile() {
+  if (_alertProfileLoaded) return;
+  _alertProfileLoaded = true;
+  if (!currentSession) return;
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?user_id=eq.' + currentUserId + '&select=*', {
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
+    });
+    var rows = await res.json();
+    if (rows && rows[0]) {
+      var p = rows[0];
+      document.getElementById('al-cargo').value = p.cargo_desejado || '';
+      document.getElementById('al-nivel').value = p.nivel || 'qualquer';
+      document.getElementById('al-cidade').value = p.cidade || '';
+      document.getElementById('al-salario').value = p.salario_min || '';
+      _alertKeywords = Array.isArray(p.keywords) ? p.keywords : [];
+      _alertFreq = p.frequencia || 'semanal';
+      _alertAtivo = p.ativo !== false;
+      renderKwTags();
+      setFreq(_alertFreq, true);
+      setAlertToggleUI(_alertAtivo);
+      document.getElementById('alertTestBtn').style.display = 'inline-flex';
+      document.getElementById('alertNextWrap').style.display = 'flex';
+      updateAlertNextDate(p.ultimo_envio, _alertFreq);
+      updateAlertEstimate();
+      loadAlertHistory();
+    } else {
+      setFreq('semanal', true);
+    }
+  } catch(e) { console.error('loadAlertProfile', e); }
+}
+
+async function saveAlertProfile() {
+  if (!currentSession) return;
+  var cargo = document.getElementById('al-cargo').value.trim();
+  var nivel = document.getElementById('al-nivel').value;
+  var cidade = document.getElementById('al-cidade').value.trim();
+  var salario = parseInt(document.getElementById('al-salario').value) || 0;
+  if (!cargo) { showToastAlert('Informe o cargo desejado', true); return; }
+  var body = {
+    user_id: currentUserId,
+    email: currentSession.user.email,
+    cargo_desejado: cargo, nivel, cidade,
+    salario_min: salario,
+    keywords: _alertKeywords,
+    frequencia: _alertFreq,
+    ativo: _alertAtivo,
+    updated_at: new Date().toISOString()
+  };
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles', {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    showToastAlert('✓ Perfil de alerta salvo!');
+    document.getElementById('alertTestBtn').style.display = 'inline-flex';
+    document.getElementById('alertNextWrap').style.display = 'flex';
+    updateAlertNextDate(null, _alertFreq);
+    updateAlertEstimate();
+  } catch(e) { showToastAlert('Erro ao salvar: ' + e.message, true); }
+}
+
+async function sendTestAlert() {
+  showToastAlert('Enviando e-mail de teste...');
+  try {
+    var res = await fetch('/api/send-alerts?test=1&user_id=' + currentUserId, {
+      headers: { Authorization: 'Bearer ' + currentSession.access_token }
+    });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro');
+    showToastAlert('✓ E-mail enviado! Verifique sua caixa de entrada.');
+    loadAlertHistory();
+  } catch(e) { showToastAlert('Erro: ' + e.message + ' — Configure a Jooble API Key primeiro', true); }
+}
+
+async function loadAlertHistory() {
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_sent?user_id=eq.' + currentUserId + '&select=*&order=sent_at.desc&limit=20', {
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
+    });
+    var rows = await res.json();
+    if (!rows || !rows.length) return;
+    // Agrupar por data de envio
+    var byDate = {};
+    rows.forEach(function(r) {
+      var d = r.sent_at ? r.sent_at.slice(0,10) : '?';
+      if (!byDate[d]) byDate[d] = [];
+      byDate[d].push(r);
+    });
+    var dates = Object.keys(byDate).sort(function(a,b){ return b.localeCompare(a); }).slice(0,5);
+    document.getElementById('alertHistWrap').style.display = 'block';
+    document.getElementById('alertStatsWrap').style.display = 'block';
+    document.getElementById('alertStatVagas').textContent = rows.length;
+    document.getElementById('alertStatEnvios').textContent = dates.length;
+    document.getElementById('alertHistList').innerHTML = dates.map(function(d) {
+      var count = byDate[d].length;
+      var dateStr = new Date(d).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+      return '<div class="alert-hist-item">'
+        + '<div class="alert-hist-dot" style="background:var(--green)"></div>'
+        + '<div style="flex:1;font-size:13px"><strong>' + dateStr + '</strong> · ' + count + ' vaga' + (count > 1 ? 's' : '') + ' enviada' + (count > 1 ? 's' : '') + '</div>'
+        + '</div>';
+    }).join('');
+  } catch(e) {}
+}
+
+// Keywords
+function handleKwInput(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    var val = document.getElementById('kwInput').value.trim().replace(/,$/,'');
+    if (val && !_alertKeywords.includes(val)) { _alertKeywords.push(val); renderKwTags(); updateAlertEstimate(); }
+    document.getElementById('kwInput').value = '';
+  }
+}
+function renderKwTags() {
+  var wrap = document.getElementById('kwWrap');
+  var input = document.getElementById('kwInput');
+  wrap.innerHTML = '';
+  _alertKeywords.forEach(function(kw, i) {
+    var tag = document.createElement('span');
+    tag.className = 'kw-tag';
+    tag.innerHTML = escHtml(kw) + '<button class="kw-remove" onclick="removeKw(' + i + ')">×</button>';
+    wrap.appendChild(tag);
+  });
+  wrap.appendChild(input);
+}
+function removeKw(i) { _alertKeywords.splice(i,1); renderKwTags(); updateAlertEstimate(); }
+
+// Frequência
+function setFreq(f, silent) {
+  _alertFreq = f;
+  ['semanal','quinzenal','mensal'].forEach(function(x) {
+    document.getElementById('freq-' + x).classList.toggle('active', x === f);
+  });
+  if (!silent) updateAlertNextDate(null, f);
+}
+
+// Toggle ativo/pausado
+function toggleAlertActive() { _alertAtivo = !_alertAtivo; setAlertToggleUI(_alertAtivo); }
+function setAlertToggleUI(on) {
+  _alertAtivo = on;
+  var sw = document.getElementById('alertToggleSw');
+  var lbl = document.getElementById('alertToggleLabel');
+  var sub = document.getElementById('alertToggleSub');
+  sw.className = 'alert-toggle-sw ' + (on ? 'on' : 'off');
+  lbl.textContent = on ? 'Alertas ativos' : 'Alertas pausados';
+  lbl.style.color = on ? 'var(--green)' : 'var(--muted)';
+  sub.textContent = on ? 'Você receberá vagas no e-mail conforme a frequência configurada' : 'Ative para voltar a receber alertas';
+}
+
+// Próximo envio
+function updateAlertNextDate(ultimoEnvio, freq) {
+  var wrap = document.getElementById('alertNextWrap');
+  var dateEl = document.getElementById('alertNextDate');
+  var subEl = document.getElementById('alertNextSub');
+  wrap.style.display = 'flex';
+  var next = nextSendDate(freq);
+  dateEl.textContent = next.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long' }) + ' · 08:00';
+  var diff = Math.ceil((next - new Date()) / (1000 * 60 * 60 * 24));
+  subEl.textContent = 'Em ' + diff + ' dia' + (diff > 1 ? 's' : '') + ' · estimativa de 5–12 vagas';
+}
+function nextSendDate(freq) {
+  var now = new Date();
+  var d = new Date(now);
+  if (freq === 'semanal') {
+    var day = d.getDay(); // 0=sun,5=fri
+    var daysToFri = (5 - day + 7) % 7 || 7;
+    d.setDate(d.getDate() + daysToFri);
+  } else if (freq === 'quinzenal') {
+    d.setDate(d.getDate() + 14);
+  } else {
+    d.setDate(d.getDate() + 30);
+  }
+  return d;
+}
+
+// Estimativa
+function updateAlertEstimate() {
+  var cargo = document.getElementById('al-cargo').value.trim();
+  var cidade = document.getElementById('al-cidade').value.trim();
+  var el = document.getElementById('alertSaveEstimate');
+  var txt = document.getElementById('alertEstimateText');
+  if (!cargo) { el.style.display = 'none'; return; }
+  var base = 8 + _alertKeywords.length * 2;
+  txt.innerHTML = '<strong style="color:var(--blue)">' + base + '–' + (base+8) + ' vagas</strong>'
+    + (cargo ? ' de <strong>' + escHtml(cargo) + '</strong>' : '')
+    + (cidade ? ' em <strong>' + escHtml(cidade) + '</strong>' : '');
+  el.style.display = 'block';
+}
+document.addEventListener('DOMContentLoaded', function() {
+  var cargoEl = document.getElementById('al-cargo');
+  var cidEl = document.getElementById('al-cidade');
+  if (cargoEl) cargoEl.addEventListener('input', updateAlertEstimate);
+  if (cidEl) cidEl.addEventListener('input', updateAlertEstimate);
+});
+
+function showToastAlert(msg, err) {
+  // Reusa o toast existente do dashboard
+  var existing = document.getElementById('confettiToast') || document.querySelector('.milestone-toast');
+  // Cria toast temporário
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:' + (err ? 'var(--red)' : 'var(--green)') + ';color:' + (err ? '#fff' : '#0a0f0d') + ';font-size:13px;font-weight:700;padding:.65rem 1.3rem;border-radius:8px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3);white-space:nowrap;font-family:Inter,sans-serif';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ document.body.removeChild(t); }, 3000);
 }
 
 // ── KANBAN ────────────────────────────────────────────────────────────────────
