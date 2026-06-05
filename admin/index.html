@@ -510,7 +510,7 @@ async function loadData(tokenOverride) {
     // Carrega admin e GA4 em paralelo
     var [res, ga4Res] = await Promise.all([
       fetch('/api/admin', { headers: { Authorization: 'Bearer ' + token } }),
-      fetch('/api/ga4',   { headers: { Authorization: 'Bearer ' + token } }),
+      fetch('/api/admin?action=ga4', { headers: { Authorization: 'Bearer ' + token } }),
     ]);
 
     if (!res.ok) {
