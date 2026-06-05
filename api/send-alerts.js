@@ -165,11 +165,12 @@ async function markJobsSent(userId, jobs) {
 function buildEmailHTML(profile, jobs, userName) {
   const name = userName || 'você';
   const jobsHTML = jobs.map(j => {
-    const analyzeUrl = `https://www.vagaai.app.br/app?vaga=${encodeURIComponent(j.link)}`;
-    const company = j.company || j.employer || 'Empresa';
-    const companyInitial = company[0].toUpperCase();
+    try {
+    const analyzeUrl = `https://www.vagaai.app.br/app?vaga=${encodeURIComponent(String(j.link || 'https://vagaai.app.br'))}`;
+    const company = String(j.company || j.employer || j.companyName || 'Empresa');
+    const companyInitial = (company[0] || 'E').toUpperCase();
     const colors = ['#820AD1','#EA1D2C','#21C25E','#F04E23','#003D7B','#FF6B00','#0061FF'];
-    const color = colors[Math.abs(company.charCodeAt(0)) % colors.length];
+    const color = colors[Math.abs((company.charCodeAt(0) || 69)) % colors.length];
     return `
     <div style="border:1px solid #e8f5ee;border-radius:10px;padding:14px;margin-bottom:10px;background:#fff;font-family:Arial,sans-serif">
       <div style="display:flex;gap:10px;align-items:flex-start">
@@ -183,6 +184,7 @@ function buildEmailHTML(profile, jobs, userName) {
         </div>
       </div>
     </div>`;
+    } catch(e) { return `<div style="padding:10px;color:#888;font-size:12px">Vaga indisponível</div>`; }
   }).join('');
 
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
