@@ -1,8 +1,10 @@
 // /api/onboarding-emails.js
-// Chamado pelo webhook após criação de conta ou assinatura
+// Chamado pelo webhook após criação de conta/assinatura, ou pelo cliente no primeiro login
 // Envia sequência: Dia 0 (boas-vindas), Dia 2 (dica ATS), Dia 5 (lembrete)
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 async function sendEmail(to, subject, html) {
   if (!RESEND_API_KEY) return;
@@ -98,9 +100,61 @@ const EMAILS = {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  const { action } = req.body || {};
+  const authHeader = (req.headers.authorization || '').replace('Bearer ', '');
+
+  // ── Rota especial: cliente chama com seu próprio token após signup ─────────
+  if (action === 'welcome_self') {
+    if (!authHeader || !SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+      return res.status(401).json({ error: 'Token ou env ausente' });
+    }
+    try {
+      // Valida token do usuário
+      const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${authHeader}` },
+      });
+      if (!userRes.ok) return res.status(401).json({ error: 'Token inválido' });
+      const user = await userRes.json();
+      const email = user.email;
+      if (!email) return res.status(400).json({ error: 'Usuário sem email' });
+
+      // Verifica se já enviou welcome (evita duplicatas)
+      const evtRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/webhook_events?user_id=eq.${user.id}&type=eq.onboarding_welcome&select=id&limit=1`,
+        { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+      );
+      const evts = await evtRes.json();
+      if (Array.isArray(evts) && evts.length > 0) {
+        return res.status(200).json({ sent: false, reason: 'already_sent' });
+      }
+
+      // Envia welcome
+      const name = user.user_metadata?.full_name || user.user_metadata?.name || email.split('@')[0];
+      const emailData = EMAILS.welcome(name);
+      const r = await sendEmail(email, emailData.subject, emailData.html);
+
+      // Registra envio
+      await fetch(`${SUPABASE_URL}/rest/v1/webhook_events`, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'resolution=ignore-duplicates',
+        },
+        body: JSON.stringify({ user_id: user.id, type: 'onboarding_welcome', payload: { email, source: 'signup' }, created_at: new Date().toISOString() }),
+      });
+
+      return res.status(200).json({ sent: r?.ok || false, to: email });
+    } catch (e) {
+      console.error('welcome_self error:', e);
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
+  // ── Rota padrão: chamada pelo cron/webhook com CRON_SECRET ────────────────
   const secret = process.env.CRON_SECRET || 'vagaai-cron-secret-2026';
-  const auth = (req.headers.authorization || '').replace('Bearer ', '');
-  if (auth !== secret) return res.status(401).json({ error: 'Unauthorized' });
+  if (authHeader !== secret) return res.status(401).json({ error: 'Unauthorized' });
 
   const { email, name, type, credits_left } = req.body || {};
   if (!email || !type) return res.status(400).json({ error: 'email e type obrigatórios' });

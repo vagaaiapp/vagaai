@@ -280,6 +280,14 @@ textarea::placeholder{color:var(--muted)}
 .briefing-teaser-lock-btn{pointer-events:auto;font-size:12px;font-weight:700;color:var(--green);background:var(--green-dim);border:1px solid var(--green-border);border-radius:6px;padding:.35rem .9rem;cursor:pointer;transition:all .15s}
 .briefing-teaser-lock-btn:hover{background:rgba(62,207,142,.2)}
 
+/* SIGNUP MODAL */
+.modal-btn-google{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;border-radius:10px;padding:.8rem;cursor:pointer;transition:all .2s;margin-bottom:.65rem;display:flex;align-items:center;justify-content:center;gap:.55rem}
+.modal-btn-google:hover{border-color:var(--green-border);background:rgba(255,255,255,0.04)}
+.modal-or{display:flex;align-items:center;gap:.5rem;margin:.2rem 0 .65rem;color:var(--muted);font-size:12px}
+.modal-or::before,.modal-or::after{content:'';flex:1;height:1px;background:var(--border)}
+/* WELCOME BANNER (pós-cadastro) */
+.welcome-banner{background:var(--green-dim);border:1.5px solid var(--green-border);border-radius:10px;padding:.9rem 1.1rem;margin-bottom:1.2rem;display:none;align-items:center;gap:.8rem;font-size:13px;color:var(--text);line-height:1.5}
+.welcome-banner.show{display:flex}
 /* BRIEFING DA EMPRESA */
 .briefing-section{background:var(--surface);border:1px solid var(--green-border);border-radius:12px;padding:1.4rem;margin-bottom:1.2rem;display:none}
 .briefing-section.show{display:block}
@@ -331,12 +339,20 @@ textarea::placeholder{color:var(--muted)}
     <div id="limitDashLink" style="display:none;margin-top:1rem">
       <a href="/dashboard" style="color:var(--green);font-size:14px;text-decoration:none">→ Comprar créditos no painel</a>
     </div>
+    <div id="limitSignupCTA" style="display:none;margin-top:1.5rem">
+      <button class="btn-analyze" style="max-width:360px;margin:0 auto;font-size:14px" onclick="openSignupModal()">🎯 Criar conta grátis e ver resultado completo</button>
+      <p style="font-size:12px;color:var(--muted);margin-top:.5rem">Sem cartão de crédito necessário</p>
+    </div>
   </div>
 
   <!-- FORM -->
   <div id="freeNotice" class="free-notice">✓ Diagnóstico gratuito · Sem cadastro · Sem cartão</div>
 
   <div class="form-section" id="formSection">
+    <div class="welcome-banner" id="welcomeBanner">
+      <span style="font-size:1.4rem;flex-shrink:0">🎉</span>
+      <div><strong>Conta criada!</strong> Use seu <strong style="color:var(--green)">crédito grátis</strong> para ver o CV otimizado e o briefing completo — os campos estão pré-preenchidos com sua última vaga.</div>
+    </div>
     <div class="field">
       <label>Descrição da vaga <span>— Link ou texto completo</span></label>
       <div class="url-row">
@@ -527,8 +543,10 @@ async function loadUserCredits(session) {
     var rows = await res.json();
     userCredits = rows.length ? (rows[0].credits || 0) : 0;
     updateCreditsUI();
-    // Se sem créditos, mostra tela de limite
-    if (userCredits <= 0) showLimitReached();
+    // Não bloqueia usuário recém-cadastrado (tem banner de boas-vindas)
+    var fromSignup = false;
+    try { fromSignup = !!localStorage.getItem('vagaai_from_signup'); } catch(e) {}
+    if (userCredits <= 0 && !fromSignup) showLimitReached();
   } catch(e) {}
 }
 
@@ -608,8 +626,15 @@ function showLimitReached() {
   document.getElementById('limitSection').classList.add('show');
   document.getElementById('step1').classList.remove('active');
 
-  if (authSession) {
-    // Usuário logado sem créditos
+  if (!authSession) {
+    // Anônimo: CTA de cadastro, sem preços
+    document.getElementById('limitIcon').textContent = '🎯';
+    document.getElementById('limitTitle').textContent = 'Quer ver o resultado completo?';
+    document.getElementById('limitSub').textContent = 'Crie sua conta grátis e desbloqueie o CV otimizado, o briefing da empresa e sua primeira análise completa.';
+    document.getElementById('limitPlans').style.display = 'none';
+    document.getElementById('limitSignupCTA').style.display = 'block';
+  } else {
+    // Logado sem créditos: opções de upgrade
     document.getElementById('limitIcon').innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>';
     document.getElementById('limitTitle').textContent = 'Seus créditos acabaram';
     document.getElementById('limitSub').textContent = 'Você não tem créditos disponíveis. Compre mais para continuar analisando suas candidaturas.';
@@ -844,16 +869,6 @@ async function analyze() {
   var savedJob = job;
   var savedCv = cv;
 
-  // Upsell pré-análise: exibe uma vez por sessão para anônimos
-  if (!authSession) {
-    var preUpsellShown = false;
-    try { preUpsellShown = !!sessionStorage.getItem('vagaai_pre_upsell_shown'); } catch(e) {}
-    if (!preUpsellShown) {
-      showPreUpsellModal(function() { doAnalyze(savedJob, savedCv); });
-      return;
-    }
-  }
-
   doAnalyze(savedJob, savedCv);
 }
 
@@ -938,11 +953,9 @@ async function doAnalyze(job, cv) {
     // Salva para pré-preenchimento em /entrevista e /carta
     try { localStorage.setItem('vagaai_last_job', job); localStorage.setItem('vagaai_last_cv', cv); } catch(e) {}
 
-    // Para anônimos sem e-mail capturado, mostra modal de captura antes do resultado
-    var emailAlreadyCaptured = false;
-    try { emailAlreadyCaptured = !!localStorage.getItem('vagaai_email_captured'); } catch(e) {}
-    if (!authSession && !emailAlreadyCaptured) {
-      showEmailModal(data);
+    // Para anônimos, mostra modal de cadastro antes do resultado completo
+    if (!authSession) {
+      showSignupModal(data);
     } else {
       document.getElementById('loadingSection').classList.remove('show');
       showResult(data);
@@ -1029,16 +1042,13 @@ function showResult(d) {
       + '<li style="filter:blur(5px);user-select:none;pointer-events:none;opacity:.5">Mais itens disponíveis no plano</li>'
       + '<li style="filter:blur(5px);user-select:none;pointer-events:none;opacity:.3">Desbloqueie para ver tudo</li>'
       + '</ul>'
-      + '<div class="briefing-teaser-lock"><button class="briefing-teaser-lock-btn" onclick="document.getElementById(\'upsellSection\').scrollIntoView({behavior:\'smooth\'})">Ver briefing completo →</button></div>'
+      + '<div class="briefing-teaser-lock"><button class="briefing-teaser-lock-btn" onclick="openSignupModal()">Criar conta para ver tudo →</button></div>'
       + '</div>';
     briefingSection.querySelector('.briefing-badge').textContent = '🔒 Prévia gratuita';
     briefingSection.classList.add('show');
   } else {
     briefingSection.classList.remove('show');
   }
-
-  // Upsell: sempre visível para anônimos; escondido para pagos com CV
-  document.getElementById('upsellSection').classList.add('show');
 
   // Botões de ação
   var cvBtn = document.getElementById('cvBtn');
@@ -1047,6 +1057,7 @@ function showResult(d) {
   var interviewBtn = document.getElementById('interviewBtn');
   var cartaBtn = document.getElementById('cartaBtn');
   if (!isAnonymous && d.cv_otimizado && d.cv_otimizado.nome) {
+    // Resultado completo: tem CV, botões de ferramentas
     try { localStorage.setItem('vagaai_cv', JSON.stringify(d.cv_otimizado)); } catch(e) {}
     cvBtn.style.display = 'block';
     cvBtnInline.style.display = 'inline-flex';
@@ -1054,10 +1065,31 @@ function showResult(d) {
     document.getElementById('upsellSection').classList.remove('show');
     if (interviewBtn) interviewBtn.style.display = 'inline-flex';
     if (cartaBtn) cartaBtn.style.display = 'inline-flex';
+  } else if (isAnonymous) {
+    // Anônimo: CTA de cadastro, teasers para ferramentas, sem preços
+    cvBtn.style.display = 'none';
+    cvBtnInline.style.display = 'none';
+    document.getElementById('upsellSection').classList.add('show');
+    var upsellSec = document.getElementById('upsellSection');
+    var uLabel = upsellSec ? upsellSec.querySelector('.upsell-label') : null;
+    var uTitle = upsellSec ? upsellSec.querySelector('.upsell-title') : null;
+    var uSub = upsellSec ? upsellSec.querySelector('.upsell-sub') : null;
+    if (uLabel) uLabel.style.display = 'none';
+    if (uTitle) uTitle.textContent = 'Resultado completo é grátis';
+    if (uSub) uSub.textContent = 'Crie sua conta e veja o CV otimizado para essa vaga e o briefing completo da empresa — sem cartão de crédito.';
+    var uPlans = document.getElementById('upsellPlans');
+    if (uPlans) uPlans.style.display = 'none';
+    upsellBtn.textContent = '🎯 Criar conta grátis e ver tudo →';
+    upsellBtn.onclick = function() { openSignupModal(); };
+    // Teasers de ferramentas (gate no próprio click)
+    if (interviewBtn) { interviewBtn.style.display = 'inline-flex'; interviewBtn.onclick = function() { openSignupModal(); }; }
+    if (cartaBtn) { cartaBtn.style.display = 'inline-flex'; cartaBtn.onclick = function() { openSignupModal(); }; }
   } else {
+    // Logado sem CV: mantém upsell de plano
     cvBtn.style.display = 'none';
     cvBtnInline.style.display = 'none';
     upsellBtn.style.display = 'block';
+    document.getElementById('upsellSection').classList.add('show');
     if (interviewBtn) interviewBtn.style.display = 'none';
     if (cartaBtn) cartaBtn.style.display = 'none';
   }
@@ -1154,8 +1186,10 @@ function renderListWithLock(id, items, locked, showCount, lockLabel) {
       card.style.overflow = 'hidden';
       var ov = document.createElement('div');
       ov.className = 'lock-overlay';
+      var lockAction = !authSession ? 'openSignupModal()' : 'document.getElementById(\'upsellSection\').scrollIntoView({behavior:\'smooth\'})';
+      var lockText = !authSession ? 'Criar conta grátis →' : 'Ver tudo →';
       ov.innerHTML = '<div class="lock-cta-text"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> +' + hidden.length + ' ' + lockLabel + ' ocultas</div>'
-        + '<button class="lock-btn" onclick="document.getElementById(\'upsellSection\').scrollIntoView({behavior:\'smooth\'})">Ver tudo com créditos →</button>';
+        + '<button class="lock-btn" onclick="' + lockAction + '">' + lockText + '</button>';
       card.appendChild(ov);
     }
   }
@@ -1239,9 +1273,34 @@ async function checkVagaParam() {
   }
 }
 
-// Inicia verificação de auth e verifica resultado pendente do histórico
+// Inicia verificação de auth, banner de boas-vindas e resultado pendente
 initAuth().then(function() {
+  // Detecta retorno após signup (magic link ou OAuth)
+  var fromSignup = false;
+  try { fromSignup = !!localStorage.getItem('vagaai_from_signup'); } catch(e) {}
+  if (fromSignup && authSession) {
+    try { localStorage.removeItem('vagaai_from_signup'); } catch(e) {}
+    var banner = document.getElementById('welcomeBanner');
+    if (banner) banner.classList.add('show');
+    // Pré-preenche com a última vaga/CV analisados
+    try {
+      var lj = localStorage.getItem('vagaai_last_job') || '';
+      var lc = localStorage.getItem('vagaai_last_cv') || '';
+      if (lj && jobEl) { jobEl.value = lj; document.getElementById('jobCount').textContent = lj.length + ' caracteres'; }
+      if (lc && cvEl) { cvEl.value = lc; document.getElementById('cvCount').textContent = lc.length + ' caracteres'; }
+    } catch(e) {}
+    // Dispara sequência de onboarding (welcome email)
+    try {
+      fetch('/api/onboarding-emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authSession.access_token },
+        body: JSON.stringify({ action: 'welcome_self' })
+      }).catch(function(){});
+    } catch(e) {}
+  }
+
   checkVagaParam();
+
   var pending = null;
   try { pending = localStorage.getItem('vagaai_pending_result'); } catch(e) {}
   if (pending) {
@@ -1260,7 +1319,7 @@ var ICON_MOON_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" s
 function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')==='light';if(l){document.documentElement.removeAttribute('data-theme');localStorage.setItem('vagaai_theme','dark')}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('vagaai_theme','light')}var b=document.getElementById('themeBtn');if(b)b.innerHTML=l?ICON_SUN_SVG:ICON_MOON_SVG}
 ;(function(){var b=document.getElementById('themeBtn');if(b)b.innerHTML=document.documentElement.getAttribute('data-theme')==='light'?ICON_MOON_SVG:ICON_SUN_SVG})();
 
-// ── MODAL: Captura de e-mail (item 1) ─────────────────────────────────────────
+// ── MODAL: Signup (cadastro para ver resultado completo) ──────────────────────
 var _pendingResultData = null;
 var _lastResultData = null;
 
@@ -1276,32 +1335,69 @@ function addResultToTracker() {
   window.location.href = '/dashboard';
 }
 
-function showEmailModal(data) {
+function openSignupModal() {
+  showSignupModal(null);
+}
+
+function showSignupModal(data) {
   _pendingResultData = data;
-  document.getElementById('emailModal').classList.remove('hidden');
+  // Reset estado
+  var fs = document.getElementById('signupFormState');
+  var ms = document.getElementById('signupMagicSent');
+  if (fs) fs.style.display = 'block';
+  if (ms) ms.style.display = 'none';
+  var inp = document.getElementById('signupEmailInput');
+  if (inp) inp.value = '';
+  var err = document.getElementById('signupEmailErr');
+  if (err) err.style.display = 'none';
+  var btn = document.getElementById('signupEmailBtn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Criar conta e ver resultado →'; }
+  document.getElementById('signupModal').classList.remove('hidden');
 }
 
-function submitEmailCapture() {
-  var email = document.getElementById('emailCaptureInput').value.trim();
-  if (email && email.includes('@')) {
-    // Salva email no Supabase (fire-and-forget)
-    fetch('https://kbcjchjepgejdezeuwwh.supabase.co/rest/v1/email_leads', {
-      method: 'POST',
-      headers: {
-        apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA',
-        'Content-Type': 'application/json',
-        Prefer: 'resolution=ignore-duplicates'
-      },
-      body: JSON.stringify({ email: email, source: 'app_result', created_at: new Date().toISOString() })
-    }).catch(function(){});
-    try { localStorage.setItem('vagaai_email_captured', email); } catch(e) {}
-    track('email_captured');
+async function signupWithGoogle() {
+  track('signup_google_click');
+  try { localStorage.setItem('vagaai_from_signup', '1'); } catch(e) {}
+  await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin + '/app' }
+  });
+}
+
+async function signupWithEmail() {
+  var email = (document.getElementById('signupEmailInput').value || '').trim();
+  var errEl = document.getElementById('signupEmailErr');
+  errEl.style.display = 'none';
+  if (!email || !email.includes('@')) {
+    errEl.textContent = 'Insira um email válido.';
+    errEl.style.display = 'block';
+    return;
   }
-  closeEmailModal();
+  var btn = document.getElementById('signupEmailBtn');
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+  try {
+    var result = await sb.auth.signInWithOtp({
+      email: email,
+      options: { emailRedirectTo: window.location.origin + '/app' }
+    });
+    if (result.error) throw result.error;
+    try { localStorage.setItem('vagaai_from_signup', '1'); } catch(e) {}
+    track('signup_magic_link_sent');
+    document.getElementById('signupFormState').style.display = 'none';
+    document.getElementById('signupMagicSent').style.display = 'block';
+    document.getElementById('signupSentTo').textContent = email;
+  } catch(err) {
+    errEl.textContent = (err && err.message) ? err.message : 'Erro ao enviar email. Tente novamente.';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Criar conta e ver resultado →';
+  }
 }
 
-function closeEmailModal() {
-  document.getElementById('emailModal').classList.add('hidden');
+function skipSignup() {
+  document.getElementById('signupModal').classList.add('hidden');
+  track('signup_skipped');
   if (_pendingResultData) {
     document.getElementById('loadingSection').classList.remove('show');
     showResult(_pendingResultData);
@@ -1309,62 +1405,39 @@ function closeEmailModal() {
     _pendingResultData = null;
   }
 }
-
-// ── MODAL: Upsell pré-análise (item 3) ───────────────────────────────────────
-var _preUpsellCallback = null;
-
-function showPreUpsellModal(onContinue) {
-  _preUpsellCallback = onContinue;
-  document.getElementById('preUpsellModal').classList.remove('hidden');
-  try { sessionStorage.setItem('vagaai_pre_upsell_shown', '1'); } catch(e) {}
-}
-
-function skipPreUpsell() {
-  document.getElementById('preUpsellModal').classList.add('hidden');
-  track('pre_upsell_skipped');
-  if (_preUpsellCallback) { _preUpsellCallback(); _preUpsellCallback = null; }
-}
-
-function clickPreUpsellPlan(url, planName) {
-  document.getElementById('preUpsellModal').classList.add('hidden');
-  track('pre_upsell_clicked', { plan: planName });
-  window.open(url, '_blank');
-}
 </script>
 
-<!-- MODAL: Captura de e-mail ─────────────────────────────── -->
-<div class="modal-overlay hidden" id="emailModal">
+<!-- MODAL: Signup ────────────────────────────────────────── -->
+<div class="modal-overlay hidden" id="signupModal">
   <div class="modal-box">
-    <div class="modal-icon">✉️</div>
-    <div class="modal-title">Sua análise está pronta!</div>
-    <p class="modal-sub">Deixe seu e-mail para salvar o resultado e receber dicas personalizadas para sua candidatura.</p>
-    <input type="email" class="modal-input" id="emailCaptureInput" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')submitEmailCapture()">
-    <button class="modal-btn-primary" onclick="submitEmailCapture()">Salvar e ver resultado →</button>
-    <button class="modal-btn-skip" onclick="closeEmailModal()">Pular por agora</button>
-  </div>
-</div>
-
-<!-- MODAL: Upsell pré-análise ────────────────────────────── -->
-<div class="modal-overlay hidden" id="preUpsellModal">
-  <div class="modal-box">
-    <div class="modal-icon">⚡</div>
-    <div class="modal-title">Desbloqueie o resultado completo</div>
-    <p class="modal-sub">Além do diagnóstico grátis, você pode receber o CV reescrito pela IA e o briefing da empresa — tudo para essa vaga.</p>
-    <div class="pre-upsell-plans">
-      <div class="pre-upsell-plan" onclick="clickPreUpsellPlan('https://buy.stripe.com/7sY5kD9tk5DzgdNf0P9k404','1 candidatura')">
-        <div class="pre-upsell-plan-name">1 candidatura</div>
-        <div class="pre-upsell-plan-price">R$9<small>,90</small></div>
-      </div>
-      <div class="pre-upsell-plan featured" onclick="clickPreUpsellPlan('https://buy.stripe.com/cNi4gz20Sc1XgdNf0P9k403','10 candidaturas')">
-        <div class="pre-upsell-plan-name">⭐ 10 candidaturas</div>
-        <div class="pre-upsell-plan-price">R$39<small>,90</small></div>
-      </div>
-      <div class="pre-upsell-plan" onclick="clickPreUpsellPlan('https://buy.stripe.com/eVqbJ120S0jf3r16uj9k405','50 candidaturas')">
-        <div class="pre-upsell-plan-name">50 candidaturas</div>
-        <div class="pre-upsell-plan-price">R$97<small>,00</small></div>
-      </div>
+    <!-- Estado padrão: formulário de cadastro -->
+    <div id="signupFormState">
+      <div class="modal-icon">🎯</div>
+      <div class="modal-title">Resultado pronto!</div>
+      <p class="modal-sub">Crie sua conta grátis para ver o <strong>CV otimizado</strong> e o <strong>briefing completo</strong> da empresa.</p>
+      <button class="modal-btn-google" onclick="signupWithGoogle()">
+        <svg width="18" height="18" viewBox="0 0 48 48" style="flex-shrink:0"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Continuar com Google
+      </button>
+      <div class="modal-or"><span>ou</span></div>
+      <input type="email" class="modal-input" id="signupEmailInput" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')signupWithEmail()">
+      <p id="signupEmailErr" style="color:var(--red);font-size:12px;margin-top:-.2rem;margin-bottom:.3rem;display:none"></p>
+      <button class="modal-btn-primary" id="signupEmailBtn" onclick="signupWithEmail()">Criar conta e ver resultado →</button>
+      <button class="modal-btn-skip" onclick="skipSignup()">Ver apenas o diagnóstico →</button>
     </div>
-    <button class="modal-btn-skip" onclick="skipPreUpsell()">Continuar com diagnóstico grátis →</button>
+    <!-- Estado: magic link enviado -->
+    <div id="signupMagicSent" style="display:none;text-align:center">
+      <div class="modal-icon">✉️</div>
+      <div class="modal-title">Verifique seu email!</div>
+      <p class="modal-sub">Link de acesso enviado para:</p>
+      <p style="font-weight:700;color:var(--green);font-size:15px;margin-bottom:.8rem" id="signupSentTo"></p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1.2rem">Clique no link para ver seu resultado completo com CV otimizado e briefing da empresa.</p>
+      <div style="display:flex;gap:.5rem;justify-content:center;margin-bottom:1rem;flex-wrap:wrap">
+        <a href="https://mail.google.com" target="_blank" style="font-size:12px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.4rem .8rem;text-decoration:none">→ Gmail</a>
+        <a href="https://outlook.live.com" target="_blank" style="font-size:12px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.4rem .8rem;text-decoration:none">→ Outlook</a>
+      </div>
+      <button class="modal-btn-skip" onclick="skipSignup()">Ver diagnóstico parcial →</button>
+    </div>
   </div>
 </div>
 
