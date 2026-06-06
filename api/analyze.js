@@ -342,9 +342,10 @@ export default async function handler(req, res) {
       // Cache hit ainda consome crédito — o resultado foi salvo, mas o limite deve ser respeitado
       const deduct = await checkAndDeductCredit(authenticatedUserId);
       if (!deduct.ok) {
-        if (deduct.reason === 'no_credits') {
+        if (deduct.reason === 'no_credits' || deduct.reason === 'plan_limit') {
           return res.status(402).json({ error: 'sem_creditos' });
         }
+        // Só fail-open em erros de infra (config, patch_failed, error) — nunca em limites de plano
         console.warn('Credit deduction failed on cache hit:', deduct.reason, '— fail-open');
       }
       // Salva no histórico sem duplicar (verifica se já existe entrada recente idêntica)
@@ -376,10 +377,10 @@ export default async function handler(req, res) {
   if (authenticatedUserId) {
     const deduct = await checkAndDeductCredit(authenticatedUserId);
     if (!deduct.ok) {
-      if (deduct.reason === 'no_credits') {
+      if (deduct.reason === 'no_credits' || deduct.reason === 'plan_limit') {
         return res.status(402).json({ error: 'sem_creditos' });
       }
-      // Infra falhou: fail-open para não bloquear usuário pagante
+      // Só fail-open em erros de infra (config, patch_failed, error) — nunca em limites de plano
       console.warn('Credit deduction failed:', deduct.reason, '— fail-open');
     }
   } else {
