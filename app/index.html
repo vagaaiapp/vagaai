@@ -524,11 +524,6 @@ async function initAuth() {
       if (backBtn) { backBtn.href = '/dashboard'; backBtn.textContent = '← Painel'; }
     }
   } catch(e) {}
-  // Verifica limite grátis (anônimos)
-  if (!authSession) {
-    var alreadyUsed = localStorage.getItem('vagaai_analyzed');
-    if (alreadyUsed) showLimitReached();
-  }
 }
 
 async function loadUserCredits(session) {
@@ -868,6 +863,16 @@ async function analyze() {
   // Salva valores para restaurar em caso de erro
   var savedJob = job;
   var savedCv = cv;
+
+  // Verifica limite gratuito só na hora de analisar (não bloqueia a página na abertura)
+  if (!authSession) {
+    var alreadyUsed = false;
+    try { alreadyUsed = !!localStorage.getItem('vagaai_analyzed'); } catch(e) {}
+    if (alreadyUsed) {
+      showLimitReached();
+      return;
+    }
+  }
 
   doAnalyze(savedJob, savedCv);
 }
