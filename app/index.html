@@ -116,6 +116,24 @@ textarea::placeholder{color:var(--muted)}
 .cv-received-chars{font-size:11px;color:var(--muted);margin-top:.1rem}
 .cv-received-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:.2rem;transition:color .2s;flex-shrink:0}
 .cv-received-remove:hover{color:var(--red)}
+/* CV BUILDER */
+.cv-mode-tabs{display:flex;gap:.35rem;margin-bottom:.85rem;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.25rem}
+.cv-mode-tab{flex:1;background:none;border:none;border-radius:7px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--muted);padding:.45rem .6rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.cv-mode-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.25)}
+[data-theme="light"] .cv-mode-tab.active{box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.cv-builder{display:flex;flex-direction:column;gap:.75rem}
+.cv-builder-field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.04em}
+.cv-builder-field label span{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);opacity:.75}
+.cv-builder-field input,.cv-builder-field textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:.6rem .8rem;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);box-sizing:border-box;transition:border-color .2s;resize:vertical}
+.cv-builder-field input:focus,.cv-builder-field textarea:focus{outline:none;border-color:var(--green-border)}
+.cv-builder-field textarea{min-height:80px}
+.cv-builder-field input::placeholder,.cv-builder-field textarea::placeholder{color:var(--muted);opacity:.6}
+.btn-gerar-cv{width:100%;background:var(--green);color:#0a0f0d;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;padding:.75rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:.25rem}
+.btn-gerar-cv:hover{opacity:.88}
+.btn-gerar-cv:disabled{opacity:.5;cursor:not-allowed}
+.cv-builder-notice{font-size:11px;color:var(--muted);text-align:center;margin-top:.25rem;line-height:1.5}
+.cv-builder-success{display:none;align-items:center;gap:.7rem;background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px;padding:.85rem 1rem;font-size:13px;color:var(--green);font-weight:600}
+.cv-builder-success.show{display:flex}
 
 .btn-analyze{width:100%;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;border:none;border-radius:10px;padding:1rem;cursor:pointer;transition:all .2s;margin-top:.5rem;display:flex;align-items:center;justify-content:center;gap:.5rem}
 .btn-analyze:hover{background:#4ddb9e;transform:translateY(-1px)}
@@ -366,29 +384,74 @@ textarea::placeholder{color:var(--muted)}
     </div>
 
     <div class="field">
-      <label for="cvInput">Seu currículo <span>— Cole o texto ou envie um arquivo</span></label>
-      <div class="upload-row">
-        <label class="upload-btn" for="cvFileInput">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Enviar arquivo
-        </label>
-        <input type="file" id="cvFileInput" accept=".txt,.pdf,.doc,.docx" style="display:none" onchange="handleCvFile(this)">
-        <span class="upload-hint">PDF, Word ou TXT</span>
+      <label>Seu currículo <span>— Cole, envie um arquivo ou crie do zero com IA</span></label>
+
+      <!-- Tabs: Tenho CV / Criar CV -->
+      <div class="cv-mode-tabs">
+        <button class="cv-mode-tab active" id="tabTenhoCV" onclick="switchCvMode('tenho')">📄 Já tenho CV</button>
+        <button class="cv-mode-tab" id="tabCriarCV" onclick="switchCvMode('criar')">✨ Criar do zero com IA</button>
       </div>
-      <div class="upload-progress" id="uploadProgress"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
-      <span class="upload-status" id="uploadStatus"><span id="uploadStatusText"></span></span>
-      <div class="cv-received" id="cvReceived">
-        <div class="cv-received-info">
-          <div class="cv-received-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-          <div>
-            <div class="cv-received-name" id="cvReceivedName"></div>
-            <div class="cv-received-chars" id="cvReceivedChars"></div>
-          </div>
+
+      <!-- Painel: Já tenho CV (original) -->
+      <div id="panelTenhoCV">
+        <div class="upload-row">
+          <label class="upload-btn" for="cvFileInput">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Enviar arquivo
+          </label>
+          <input type="file" id="cvFileInput" accept=".txt,.pdf,.doc,.docx" style="display:none" onchange="handleCvFile(this)">
+          <span class="upload-hint">PDF, Word ou TXT</span>
         </div>
-        <button class="cv-received-remove" title="Remover arquivo" onclick="removeCvFile()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        <div class="upload-progress" id="uploadProgress"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
+        <span class="upload-status" id="uploadStatus"><span id="uploadStatusText"></span></span>
+        <div class="cv-received" id="cvReceived">
+          <div class="cv-received-info">
+            <div class="cv-received-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+            <div>
+              <div class="cv-received-name" id="cvReceivedName"></div>
+              <div class="cv-received-chars" id="cvReceivedChars"></div>
+            </div>
+          </div>
+          <button class="cv-received-remove" title="Remover arquivo" onclick="removeCvFile()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <textarea id="cvInput" rows="10" placeholder="Cole aqui o conteúdo do seu currículo (experiências, formação, habilidades...)"></textarea>
+        <div class="char-count" id="cvCount">0 caracteres</div>
       </div>
-      <textarea id="cvInput" rows="10" placeholder="Cole aqui o conteúdo do seu currículo (experiências, formação, habilidades...)"></textarea>
-      <div class="char-count" id="cvCount">0 caracteres</div>
+
+      <!-- Painel: Criar CV do zero -->
+      <div id="panelCriarCV" style="display:none">
+        <div class="cv-builder">
+          <div class="cv-builder-field">
+            <label>Nome completo</label>
+            <input id="cb-nome" placeholder="Ex: Maria Silva" autocomplete="name">
+          </div>
+          <div class="cv-builder-field">
+            <label>Cargo ou objetivo profissional</label>
+            <input id="cb-cargo" placeholder="Ex: Desenvolvedora Front-end Plena, Analista de Marketing">
+          </div>
+          <div class="cv-builder-field">
+            <label>Experiência profissional <span>— empresa, período e o que fez (pode ser informal)</span></label>
+            <textarea id="cb-experiencias" rows="5" placeholder="Ex: Empresa ABC (2021–2024): Promotora de Vendas. Visitava 15 PDVs por semana, atingia 110% da meta mensal, organizava estoque e treinava equipe de 3 pessoas.&#10;&#10;Loja XYZ (2019–2021): Vendedora. Atendimento ao cliente, emissão de NF."></textarea>
+          </div>
+          <div class="cv-builder-field">
+            <label>Formação acadêmica</label>
+            <textarea id="cb-formacao" rows="2" placeholder="Ex: Técnico em Administração — SENAC (2019)&#10;Cursando: Gestão Comercial — Anhanguera (previsão 2025)"></textarea>
+          </div>
+          <div class="cv-builder-field">
+            <label>Habilidades e ferramentas</label>
+            <input id="cb-habilidades" placeholder="Ex: Excel, SAP, Atendimento ao cliente, Pacote Office, CNH B">
+          </div>
+          <div id="cvBuilderSuccess" class="cv-builder-success">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            CV gerado! Revise e clique em Analisar agora.
+          </div>
+          <button class="btn-gerar-cv" id="btnGerarCV" onclick="gerarCV()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Gerar CV com IA
+          </button>
+          <p class="cv-builder-notice">A IA usa a descrição da vaga (se preenchida) para já otimizar o CV com as keywords certas.</p>
+        </div>
+      </div>
     </div>
 
     <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">
@@ -664,6 +727,64 @@ function showCvReceived(fileName, charCount) {
   document.getElementById('cvInput').style.display = 'none';
   document.getElementById('cvCount').style.display = 'none';
   clearUploadError();
+}
+
+// ── CV Builder ───────────────────────────────────────────────────────────────
+function switchCvMode(mode) {
+  var isCriar = mode === 'criar';
+  document.getElementById('tabTenhoCV').classList.toggle('active', !isCriar);
+  document.getElementById('tabCriarCV').classList.toggle('active', isCriar);
+  document.getElementById('panelTenhoCV').style.display = isCriar ? 'none' : '';
+  document.getElementById('panelCriarCV').style.display = isCriar ? '' : 'none';
+}
+
+async function gerarCV() {
+  var nome = (document.getElementById('cb-nome').value || '').trim();
+  var cargo = (document.getElementById('cb-cargo').value || '').trim();
+  var experiencias = (document.getElementById('cb-experiencias').value || '').trim();
+  var formacao = (document.getElementById('cb-formacao').value || '').trim();
+  var habilidades = (document.getElementById('cb-habilidades').value || '').trim();
+
+  if (!nome) { document.getElementById('cb-nome').focus(); return; }
+  if (!experiencias) { document.getElementById('cb-experiencias').focus(); return; }
+
+  // Pega o contexto da vaga se já preenchida
+  var jobCtx = (document.getElementById('jobInput') && document.getElementById('jobInput').value.trim()) || '';
+
+  var btn = document.getElementById('btnGerarCV');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.06-5"/></svg> Gerando...';
+
+  try {
+    var authHeader = {};
+    try {
+      var sess = await sb.auth.getSession();
+      if (sess?.data?.session?.access_token) {
+        authHeader = { 'Authorization': 'Bearer ' + sess.data.session.access_token };
+      }
+    } catch(_) {}
+
+    var res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeader },
+      body: JSON.stringify({ action: 'create_cv', nome, cargo_objetivo: cargo, experiencias, formacao, habilidades, job: jobCtx || undefined })
+    });
+    var data = await res.json();
+    if (!res.ok || !data.cv_text) {
+      alert(data.error || 'Erro ao gerar currículo. Tente novamente.');
+      return;
+    }
+    // Coloca o CV gerado no campo de texto e muda para a aba "Tenho CV"
+    document.getElementById('cvInput').value = data.cv_text;
+    document.getElementById('cvInput').dispatchEvent(new Event('input'));
+    document.getElementById('cvBuilderSuccess').classList.add('show');
+    setTimeout(function() { switchCvMode('tenho'); }, 1200);
+  } catch(e) {
+    alert('Erro de conexão. Tente novamente.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Gerar CV com IA';
+  }
 }
 
 function removeCvFile() {

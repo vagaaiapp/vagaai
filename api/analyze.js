@@ -298,6 +298,71 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // ── Modo: criar primeiro currículo ──────────────────────────────────────────
+  const { action } = req.body || {};
+  if (action === 'create_cv') {
+    const { nome, cargo_objetivo, experiencias, formacao, habilidades, job: jobCtx } = req.body;
+    if (!nome || !experiencias) {
+      return res.status(400).json({ error: 'Nome e experiência são obrigatórios.' });
+    }
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(500).json({ error: 'Chave de API não configurada.' });
+    }
+
+    const cvPrompt = `Você é especialista em criação de currículos otimizados para sistemas ATS (Applicant Tracking System). Crie um currículo profissional completo em texto puro para o candidato abaixo.
+
+${jobCtx ? `VAGA ALVO — use as keywords desta vaga para otimizar o currículo:
+${jobCtx.substring(0, 2000)}
+
+` : ''}DADOS DO CANDIDATO:
+Nome: ${nome}
+${cargo_objetivo ? `Cargo / Objetivo: ${cargo_objetivo}` : ''}
+${experiencias ? `Experiência profissional: ${experiencias}` : ''}
+${formacao ? `Formação acadêmica: ${formacao}` : ''}
+${habilidades ? `Habilidades e ferramentas: ${habilidades}` : ''}
+
+INSTRUÇÕES:
+- Gere o currículo em texto puro (sem markdown, sem asteriscos, sem caracteres especiais)
+- Use MAIÚSCULAS apenas para títulos de seção
+- Estrutura obrigatória: RESUMO PROFISSIONAL → EXPERIÊNCIA PROFISSIONAL → FORMAÇÃO ACADÊMICA → HABILIDADES
+- Resumo: 3-4 linhas com keywords da vaga incorporadas naturalmente
+- Experiência: bullets começando com verbo de ação no passado + resultado mensurável
+- Se a vaga foi fornecida, incorpore as principais keywords de forma natural
+- Seja conciso e objetivo — máximo 1 página equivalente
+- No topo, coloque o nome em destaque seguido do cargo/objetivo
+
+Responda APENAS com o texto do currículo, sem explicações adicionais.`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5',
+          max_tokens: 2000,
+          temperature: 0.3,
+          messages: [{ role: 'user', content: cvPrompt }],
+        }),
+      });
+      if (!response.ok) {
+        const errText = await response.text().catch(() => '');
+        console.error('create_cv Anthropic error:', response.status, errText);
+        return res.status(500).json({ error: 'Erro ao gerar currículo. Tente novamente.' });
+      }
+      const data = await response.json();
+      const cvText = data.content?.[0]?.text || '';
+      if (!cvText.trim()) return res.status(500).json({ error: 'Resposta vazia da IA.' });
+      return res.status(200).json({ cv_text: cvText.trim() });
+    } catch (err) {
+      console.error('create_cv error:', err);
+      return res.status(500).json({ error: 'Erro interno. Tente novamente.' });
+    }
+  }
+
   const { cv, job } = req.body || {};
 
   if (!cv || !job) {
