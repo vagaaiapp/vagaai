@@ -909,6 +909,11 @@ async function analyze() {
     var alreadyUsed = false;
     try { alreadyUsed = !!localStorage.getItem('vagaai_analyzed'); } catch(e) {}
     if (alreadyUsed) {
+      // Salva inputs para pré-preenchimento após cadastro
+      try {
+        if (job && job.length >= 50) localStorage.setItem('vagaai_last_job', job);
+        if (cv && cv.length >= 100) localStorage.setItem('vagaai_last_cv', cv);
+      } catch(e) {}
       showLimitReached();
       return;
     }
@@ -1381,10 +1386,10 @@ function addResultToTracker() {
 }
 
 function openSignupModal() {
-  showSignupModal(null);
+  showSignupModal(null, true); // sem resultado pendente — esconde "ver parcial"
 }
 
-function showSignupModal(data) {
+function showSignupModal(data, noResult) {
   _pendingResultData = data;
   // Reset estado
   var fs = document.getElementById('signupFormState');
@@ -1397,16 +1402,30 @@ function showSignupModal(data) {
   if (err) err.style.display = 'none';
   var btn = document.getElementById('signupEmailBtn');
   if (btn) { btn.disabled = false; btn.textContent = 'Criar conta e ver resultado →'; }
+  // Esconde "Ver diagnóstico parcial" quando não há resultado para mostrar
+  var skipBtn = document.getElementById('signupSkipBtn');
+  if (skipBtn) skipBtn.style.display = (noResult && !data) ? 'none' : 'block';
   document.getElementById('signupModal').classList.remove('hidden');
 }
 
 async function signupWithGoogle() {
   track('signup_google_click');
   try { localStorage.setItem('vagaai_from_signup', '1'); } catch(e) {}
-  await sb.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.origin + '/app' }
-  });
+  try {
+    var { error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + '/app' }
+    });
+    if (error) throw error;
+  } catch(err) {
+    // Provider não configurado ou outro erro — orienta para email
+    try { localStorage.removeItem('vagaai_from_signup'); } catch(e) {}
+    var errEl = document.getElementById('signupEmailErr');
+    if (errEl) {
+      errEl.textContent = 'Login com Google indisponível no momento. Use o email abaixo.';
+      errEl.style.display = 'block';
+    }
+  }
 }
 
 async function signupWithEmail() {
@@ -1468,7 +1487,7 @@ function skipSignup() {
       <input type="email" class="modal-input" id="signupEmailInput" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')signupWithEmail()">
       <p id="signupEmailErr" style="color:var(--red);font-size:12px;margin-top:-.2rem;margin-bottom:.3rem;display:none"></p>
       <button class="modal-btn-primary" id="signupEmailBtn" onclick="signupWithEmail()">Criar conta e ver resultado →</button>
-      <button class="modal-btn-skip" onclick="skipSignup()">Ver apenas o diagnóstico →</button>
+      <button class="modal-btn-skip" id="signupSkipBtn" onclick="skipSignup()">Ver apenas o diagnóstico →</button>
     </div>
     <!-- Estado: magic link enviado -->
     <div id="signupMagicSent" style="display:none;text-align:center">
