@@ -102,69 +102,47 @@ async function getUserFromToken(token) {
   }
 }
 
-// ─── Planos de assinatura ─────────────────────────────────────────────────────
-
-const PLAN_LIMITS = {
-  free:    { analyses_per_month: 1, unlimited: false },
-  starter: { analyses_per_month: 10, unlimited: false },
-  pro:     { analyses_per_month: Infinity, unlimited: true },
-};
-
-async function getUserSubscription(userId) {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return null;
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${encodeURIComponent(userId)}&select=plan,status,analyses_used_this_month,analyses_reset_at,current_period_end`,
-      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
-    );
-    const rows = await res.json();
-    return rows?.[0] || null;
-  } catch { return null; }
-}
+// ─── Check e incremento atômico via RPC ──────────────────────────────────────
+// A função SQL check_and_increment_analyses faz o check+increment numa única
+// transação com FOR UPDATE, evitando race conditions e falhas silenciosas.
 
 async function checkAndDeductCredit(userId) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return { ok: false, reason: 'config' };
 
-  // 1. Verifica plano de assinatura
-  const sub = await getUserSubscription(userId);
-  if (sub && sub.status === 'active') {
-    const plan = sub.plan || 'free';
-    const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+  // 1. Verifica plano via RPC atômica (check + increment em uma transação)
+  try {
+    const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/check_and_increment_analyses`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ p_user_id: userId }),
+    });
 
-    // Pro: ilimitado
-    if (limits.unlimited) return { ok: true, remaining: 999, plan, via: 'subscription' };
-
-    // Starter/Free: verifica limite mensal
-    const now = new Date();
-    const resetAt = sub.analyses_reset_at ? new Date(sub.analyses_reset_at) : null;
-    let used = sub.analyses_used_this_month || 0;
-
-    // Reset mensal
-    if (resetAt && now > resetAt) {
-      used = 0;
-      await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${encodeURIComponent(userId)}`, {
-        method: 'PATCH',
-        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-        body: JSON.stringify({ analyses_used_this_month: 0, analyses_reset_at: new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString() }),
-      }).catch(() => {});
+    if (!rpcRes.ok) {
+      const errText = await rpcRes.text().catch(() => '');
+      console.error('check_and_increment_analyses RPC error:', rpcRes.status, errText);
+      // Infra falhou: fail-open (não bloquear usuário por falha de DB)
+      return { ok: true, via: 'rpc_error_failopen' };
     }
 
-    if (used >= limits.analyses_per_month) {
-      return { ok: false, reason: 'plan_limit', plan, used, limit: limits.analyses_per_month };
+    const result = await rpcRes.json();
+    // result.via === 'no_subscription' → sem assinatura, cai no sistema de créditos
+    if (result.via === 'no_subscription') {
+      // passa para o fallback de créditos abaixo
+    } else {
+      // tem assinatura: retorna resultado direto (ok:true ou ok:false/plan_limit)
+      return result;
     }
-
-    // Incrementa contador
-    await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${encodeURIComponent(userId)}`, {
-      method: 'PATCH',
-      headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ analyses_used_this_month: used + 1, updated_at: new Date().toISOString() }),
-    }).catch(() => {});
-
-    const remaining = limits.analyses_per_month - (used + 1);
-    return { ok: true, remaining, plan, via: 'subscription' };
+  } catch (err) {
+    console.error('checkAndDeductCredit RPC exception:', err.message);
+    // Infra falhou: fail-open
+    return { ok: true, via: 'rpc_exception_failopen' };
   }
 
-  // 2. Fallback: sistema de créditos avulsos (modelo antigo)
+  // 2. Fallback: sistema de créditos avulsos (usuários sem assinatura ativa)
   try {
     const getRes = await fetch(
       `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&select=credits`,
@@ -181,10 +159,14 @@ async function checkAndDeductCredit(userId) {
         body: JSON.stringify({ credits: current - 1, updated_at: new Date().toISOString() }),
       }
     );
-    if (!patchRes.ok) return { ok: false, reason: 'patch_failed' };
+    if (!patchRes.ok) {
+      const errText = await patchRes.text().catch(() => '');
+      console.error('user_credits PATCH failed:', patchRes.status, errText);
+      return { ok: false, reason: 'patch_failed' };
+    }
     return { ok: true, remaining: current - 1, plan: 'credits', via: 'credits' };
   } catch (err) {
-    console.error('checkAndDeductCredit error:', err);
+    console.error('checkAndDeductCredit credits error:', err);
     return { ok: false, reason: 'error' };
   }
 }
