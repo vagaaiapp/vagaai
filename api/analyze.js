@@ -189,9 +189,21 @@ async function checkAndDeductCredit(userId) {
   }
 }
 
-async function saveAnalysis(userId, score, nivel, jobExcerpt, result) {
+async function saveAnalysis(userId, score, nivel, jobExcerpt, result, hash) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return;
   try {
+    // Evita duplicatas: verifica se já existe análise com o mesmo hash nos últimos 5 min
+    if (hash) {
+      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const dupCheck = await fetch(
+        `${SUPABASE_URL}/rest/v1/analyses?user_id=eq.${encodeURIComponent(userId)}&content_hash=eq.${hash}&created_at=gte.${encodeURIComponent(fiveMinAgo)}&select=id&limit=1`,
+        { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+      ).then(r => r.json()).catch(() => []);
+      if (Array.isArray(dupCheck) && dupCheck.length > 0) {
+        console.log('saveAnalysis: duplicate skipped for user', userId, 'hash', hash);
+        return;
+      }
+    }
     await fetch(`${SUPABASE_URL}/rest/v1/analyses`, {
       method: 'POST',
       headers: {
@@ -205,6 +217,7 @@ async function saveAnalysis(userId, score, nivel, jobExcerpt, result) {
         score: score || 0,
         nivel: nivel || '',
         job_excerpt: (jobExcerpt || '').substring(0, 200),
+        content_hash: hash || null,
         result: result,
         created_at: new Date().toISOString(),
       }),
@@ -323,12 +336,19 @@ export default async function handler(req, res) {
 
   if (cached) {
     console.log('Cache hit:', hash);
-    // Retorna resultado cacheado sem consumir crédito/IP
     const cachedResult = { ...cached, _from_cache: true };
 
     if (authenticatedUserId) {
-      // Salva no histórico mesmo sendo cache (o usuário quer ver no dashboard)
-      saveAnalysis(authenticatedUserId, cached.score, cached.nivel, job, cached);
+      // Cache hit ainda consome crédito — o resultado foi salvo, mas o limite deve ser respeitado
+      const deduct = await checkAndDeductCredit(authenticatedUserId);
+      if (!deduct.ok) {
+        if (deduct.reason === 'no_credits') {
+          return res.status(402).json({ error: 'sem_creditos' });
+        }
+        console.warn('Credit deduction failed on cache hit:', deduct.reason, '— fail-open');
+      }
+      // Salva no histórico sem duplicar (verifica se já existe entrada recente idêntica)
+      await saveAnalysis(authenticatedUserId, cached.score, cached.nivel, job, cached, hash);
       try {
         const credRows = await fetch(
           `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(authenticatedUserId)}&select=credits`,
@@ -336,6 +356,16 @@ export default async function handler(req, res) {
         ).then(r => r.json());
         cachedResult._credits_remaining = credRows[0]?.credits ?? null;
       } catch (_) {}
+    } else {
+      // Anônimo: aplica rate limit mesmo em cache hit
+      const _ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+        || req.headers['x-real-ip']
+        || 'unknown';
+      const { allowed } = await checkRateLimit(_ip);
+      if (!allowed) {
+        return res.status(429).json({ error: 'limite_atingido' });
+      }
+      await recordIpUsage(_ip);
     }
 
     return res.status(200).json(cachedResult);
@@ -499,7 +529,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
 
     // Pós-análise
     if (authenticatedUserId) {
-      await saveAnalysis(authenticatedUserId, result.score, result.nivel, job, result);
+      await saveAnalysis(authenticatedUserId, result.score, result.nivel, job, result, hash);
       // Verifica marcos de gamificação (fire-and-forget com resultado)
       const milestone = await checkAndAwardMilestones(authenticatedUserId);
       if (milestone) result._milestone = milestone;
