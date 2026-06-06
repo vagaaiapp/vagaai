@@ -1713,7 +1713,59 @@ async function loadKanban() {
     _kCards = await res.json();
     if (!Array.isArray(_kCards)) _kCards = [];
     renderKanban();
+    // Tenta vincular análises em cards antigos sem analysis_id
+    autoLinkAnalyses().catch(function(){});
   } catch(e) { console.error('loadKanban', e); }
+}
+
+// Auto-vincula análise aos cards que têm score mas sem analysis_id
+// Busca análise do usuário mais próxima no tempo (±2h do created_at do card)
+async function autoLinkAnalyses() {
+  var unlinked = _kCards.filter(function(c){ return c.score && !c.analysis_id; });
+  if (!unlinked.length) return;
+
+  // Busca todas as análises do usuário (id + created_at)
+  var res = await fetch(SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=id,created_at&order=created_at.desc&limit=100', {
+    headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
+  });
+  var analyses = await res.json();
+  if (!Array.isArray(analyses) || !analyses.length) return;
+
+  var linked = false;
+  var TWO_HOURS = 2 * 60 * 60 * 1000;
+
+  for (var i = 0; i < unlinked.length; i++) {
+    var card = unlinked[i];
+    var cardTime = new Date(card.created_at).getTime();
+
+    // Encontra análise mais próxima dentro de ±2h
+    var best = null, bestDiff = Infinity;
+    for (var j = 0; j < analyses.length; j++) {
+      var aTime = new Date(analyses[j].created_at).getTime();
+      // A análise deve ser anterior ou próxima à criação do card (até 2h antes ou 5min depois)
+      var diff = cardTime - aTime;
+      if (diff >= -5 * 60 * 1000 && diff <= TWO_HOURS && diff < bestDiff) {
+        best = analyses[j];
+        bestDiff = diff;
+      }
+    }
+    if (!best) continue;
+
+    // Verifica se essa análise já foi usada por outro card (evita duplicar)
+    var alreadyUsed = _kCards.some(function(c){ return c.id !== card.id && c.analysis_id === best.id; });
+    if (alreadyUsed) continue;
+
+    // PATCH no banco e atualiza local
+    await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + card.id, {
+      method: 'PATCH',
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ analysis_id: best.id })
+    });
+    card.analysis_id = best.id;
+    linked = true;
+  }
+
+  if (linked) renderKanban(); // Re-renderiza para mostrar botão "Ver análise"
 }
 
 function renderKanban() {
