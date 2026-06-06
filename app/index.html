@@ -1359,16 +1359,31 @@ initAuth().then(function() {
     }
   } catch(e) {}
 
-  // Feature 3: carregar análise salva vinda do tracker ("Ver análise")
+  // Feature 3: carregar análise salva vinda do tracker ("Ver análise" ou "CV")
   try {
     var viewAnalysis = localStorage.getItem('vagaai_view_analysis');
     if (viewAnalysis) {
       localStorage.removeItem('vagaai_view_analysis');
+      var scrollTo = localStorage.getItem('vagaai_scroll_to');
+      localStorage.removeItem('vagaai_scroll_to');
       var vData = JSON.parse(viewAnalysis);
       document.getElementById('formSection').style.display = 'none';
       document.getElementById('freeNotice').style.display = 'none';
       showResult(vData);
       setStep(3);
+      // Scroll para seção de CV se solicitado
+      if (scrollTo === 'cv') {
+        setTimeout(function() {
+          var cvEl = document.getElementById('cvBtnInline') || document.getElementById('cvBtn');
+          if (cvEl) {
+            cvEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Pulsa o botão para chamar atenção
+            cvEl.style.transition = 'box-shadow .3s';
+            cvEl.style.boxShadow = '0 0 0 3px rgba(62,207,142,.5)';
+            setTimeout(function(){ cvEl.style.boxShadow = ''; }, 1800);
+          }
+        }, 500);
+      }
       return; // não executa checkVagaParam nem pending abaixo
     }
   } catch(e) {}
