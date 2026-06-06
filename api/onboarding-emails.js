@@ -71,6 +71,33 @@ const EMAILS = {
 </div>`
   }),
 
+  tracker_followup: (name, empresa, cargo) => ({
+    subject: `Já faz 7 dias desde que você aplicou para ${empresa} — e agora?`,
+    html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#0a0f0d;color:#e8ede9;border-radius:12px;overflow:hidden">
+  <div style="background:#111814;padding:1.5rem 2rem;border-bottom:1px solid rgba(255,255,255,.07)">
+    <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#3ecf8e">VagaAI</div>
+  </div>
+  <div style="padding:2rem">
+    <h1 style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">Olá, ${name}! 👋</h1>
+    <p style="color:#8a9e90;font-size:14px;line-height:1.7;margin-bottom:1rem">
+      Há 7 dias você se candidatou para <strong style="color:#e8ede9">${cargo}</strong> na <strong style="color:#3ecf8e">${empresa}</strong>. Sem retorno ainda?
+    </p>
+    <div style="background:#161d19;border-radius:10px;padding:1.2rem;margin-bottom:.75rem">
+      <div style="font-size:13px;font-weight:700;color:#ffd166;margin-bottom:.4rem">📬 Faça follow-up agora</div>
+      <div style="font-size:13px;color:#8a9e90;line-height:1.6">Um e-mail curto e direto para o recrutador pode fazer toda a diferença. Reforce seu interesse e mencione algo específico da empresa.</div>
+    </div>
+    <div style="background:#161d19;border-radius:10px;padding:1.2rem;margin-bottom:1.5rem">
+      <div style="font-size:13px;font-weight:700;color:#3ecf8e;margin-bottom:.4rem">💡 Modelo de follow-up</div>
+      <div style="font-size:12px;color:#8a9e90;line-height:1.7;font-style:italic">
+        "Olá [Recrutador], tudo bem? Gostaria de reforçar meu interesse na vaga de ${cargo}. Tenho acompanhado o trabalho de ${empresa} e acredito que posso contribuir diretamente com [X]. Fico à disposição para conversar. Abraços, ${name}."
+      </div>
+    </div>
+    <a href="https://www.vagaai.app.br/dashboard" style="display:block;background:#3ecf8e;color:#0a0f0d;font-weight:700;font-size:14px;text-align:center;padding:.9rem;border-radius:9px;text-decoration:none">→ Ver rastreador de candidaturas</a>
+    <p style="color:#4d6e57;font-size:11px;margin-top:1.5rem;text-align:center">VagaAI · <a href="https://vagaai.app.br" style="color:#3ecf8e;text-decoration:none">vagaai.app.br</a></p>
+  </div>
+</div>`
+  }),
+
   day5: (name, creditsLeft) => ({
     subject: creditsLeft > 0
       ? `Você tem ${creditsLeft} análise${creditsLeft > 1 ? 's' : ''} disponíve${creditsLeft > 1 ? 'is' : 'l'} — use antes de precisar`
@@ -156,7 +183,7 @@ export default async function handler(req, res) {
   const secret = process.env.CRON_SECRET || 'vagaai-cron-secret-2026';
   if (authHeader !== secret) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { email, name, type, credits_left } = req.body || {};
+  const { email, name, type, credits_left, empresa, cargo } = req.body || {};
   if (!email || !type) return res.status(400).json({ error: 'email e type obrigatórios' });
 
   const displayName = name || email.split('@')[0];
@@ -166,6 +193,7 @@ export default async function handler(req, res) {
     if (type === 'welcome') emailData = EMAILS.welcome(displayName);
     else if (type === 'day2') emailData = EMAILS.day2(displayName);
     else if (type === 'day5') emailData = EMAILS.day5(displayName, credits_left || 0);
+    else if (type === 'tracker_followup') emailData = EMAILS.tracker_followup(displayName, empresa || 'empresa', cargo || 'vaga');
     else return res.status(400).json({ error: 'type inválido' });
 
     const r = await sendEmail(email, emailData.subject, emailData.html);

@@ -1349,6 +1349,30 @@ initAuth().then(function() {
     } catch(e) {}
   }
 
+  // Feature 4: pré-preenchimento de URL vinda do tracker ("Quero Aplicar → Analisar")
+  try {
+    var prefillUrl = localStorage.getItem('vagaai_prefill_url');
+    if (prefillUrl) {
+      localStorage.removeItem('vagaai_prefill_url');
+      var jobUrlEl = document.getElementById('jobUrl');
+      if (jobUrlEl) { jobUrlEl.value = prefillUrl; jobUrlEl.dispatchEvent(new Event('input')); }
+    }
+  } catch(e) {}
+
+  // Feature 3: carregar análise salva vinda do tracker ("Ver análise")
+  try {
+    var viewAnalysis = localStorage.getItem('vagaai_view_analysis');
+    if (viewAnalysis) {
+      localStorage.removeItem('vagaai_view_analysis');
+      var vData = JSON.parse(viewAnalysis);
+      document.getElementById('formSection').style.display = 'none';
+      document.getElementById('freeNotice').style.display = 'none';
+      showResult(vData);
+      setStep(3);
+      return; // não executa checkVagaParam nem pending abaixo
+    }
+  } catch(e) {}
+
   checkVagaParam();
 
   var pending = null;
@@ -1380,7 +1404,9 @@ function addResultToTracker() {
   var cargo = (d.job_info && d.job_info.cargo) ? d.job_info.cargo : '';
   var score = d.score || 0;
   try {
-    localStorage.setItem('vagaai_tracker_pending', JSON.stringify({ empresa: empresa, cargo: cargo, score: score, status: 'aplicado' }));
+    var jobUrl = (document.getElementById('jobUrl') && document.getElementById('jobUrl').value.trim()) || '';
+    var analysisId = (d && d._analysis_id) ? d._analysis_id : null;
+    localStorage.setItem('vagaai_tracker_pending', JSON.stringify({ empresa: empresa, cargo: cargo, score: score, status: 'aplicado', job_url: jobUrl || null, analysis_id: analysisId }));
   } catch(e) {}
   window.location.href = '/dashboard';
 }

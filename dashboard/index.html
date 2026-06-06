@@ -1700,6 +1700,7 @@ function showToastAlert(msg, err) {
 var _kCards = [];
 var _kDragId = null;
 var _kEditId = null;
+var _kPendingAnalysisId = null;
 var _kColors = ['#3ecf8e','#64c8ff','#ffd166','#ff6b6b','#c084fc','#f97316'];
 var _kColorIdx = 0;
 
@@ -1835,9 +1836,34 @@ function kCardHTML(c) {
   html += '</div>';
   if (nextStep) html += '<div class="k-next-step ' + nextClass + '">' + nextStep + '</div>';
   if (c.nota) html += '<div class="k-card-note">📝 ' + escHtml(c.nota) + '</div>';
-  if (c.job_url) html += '<a class="k-job-link" href="' + escAttr(c.job_url) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 Ver vaga</a>';
+  // Links de ação no footer do card
+  var links = '';
+  if (c.job_url) links += '<a class="k-job-link" href="' + escAttr(c.job_url) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 Ver vaga</a>';
+  if (c.analysis_id) links += '<button class="k-job-link" style="background:none;border:none;cursor:pointer;font-family:inherit;padding:0" onclick="event.stopPropagation();viewTrackerAnalysis(\'' + escAttr(c.analysis_id) + '\')">📊 Ver análise</button>';
+  if (c.status === 'quero') links += '<button class="k-job-link" style="background:none;border:none;cursor:pointer;font-family:inherit;padding:0;color:var(--green)" onclick="event.stopPropagation();analyzeFromTracker(\'' + escAttr(c.job_url || '') + '\')">⚡ Analisar agora</button>';
+  if (links) html += '<div style="display:flex;gap:.75rem;flex-wrap:wrap">' + links + '</div>';
   html += '</div>';
   return html;
+}
+
+async function viewTrackerAnalysis(analysisId) {
+  if (!currentSession) return;
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/analyses?id=eq.' + analysisId + '&select=result&limit=1', {
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
+    });
+    var rows = await res.json();
+    if (!rows || !rows[0] || !rows[0].result) { alert('Análise não encontrada.'); return; }
+    localStorage.setItem('vagaai_view_analysis', JSON.stringify(rows[0].result));
+    window.location.href = '/app';
+  } catch(e) { alert('Erro ao carregar análise.'); }
+}
+
+function analyzeFromTracker(jobUrl) {
+  if (jobUrl) {
+    try { localStorage.setItem('vagaai_prefill_url', jobUrl); } catch(e) {}
+  }
+  window.location.href = '/app';
 }
 
 // Drag & Drop
@@ -1888,7 +1914,7 @@ function openKEdit(id) {
   document.getElementById('kModalDeleteBtn').style.display = 'inline-block';
   document.getElementById('kModal').classList.remove('hidden');
 }
-function closeKModal() { document.getElementById('kModal').classList.add('hidden'); _kEditId = null; }
+function closeKModal() { document.getElementById('kModal').classList.add('hidden'); _kEditId = null; _kPendingAnalysisId = null; }
 
 async function saveKCard() {
   var empresa = document.getElementById('km-empresa').value.trim();
@@ -1920,6 +1946,7 @@ async function saveKCard() {
     body.color = _kColors[_kColorIdx++ % _kColors.length];
     body.created_at = now;
     body.stage_moved_at = now;
+    if (_kPendingAnalysisId) { body.analysis_id = _kPendingAnalysisId; _kPendingAnalysisId = null; }
     var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker', {
       method: 'POST',
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=representation' },
@@ -1969,11 +1996,14 @@ function checkPendingTracker() {
     // Abre aba candidaturas e modal pré-preenchido
     switchDashTab('candidaturas');
     setTimeout(function() {
+      _kEditId = null;
+      if (data.analysis_id) _kPendingAnalysisId = data.analysis_id;
       document.getElementById('km-empresa').value = data.empresa || '';
       document.getElementById('km-cargo').value = data.cargo || '';
       document.getElementById('km-score').value = data.score || '';
       document.getElementById('km-status').value = data.status || 'aplicado';
       document.getElementById('km-nota').value = '';
+      document.getElementById('km-joburl').value = data.job_url || '';
       document.getElementById('kModalTitle').textContent = 'Adicionar ao rastreador';
       document.getElementById('kModalDeleteBtn').style.display = 'none';
       document.getElementById('kModal').classList.remove('hidden');

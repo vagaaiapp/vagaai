@@ -88,6 +88,46 @@ async function callOnboardingEmail(email, name, type, creditsLeft) {
   return res.ok;
 }
 
+// ─── Follow-up: candidaturas "aplicado" há ~7 dias ────────────────────────────
+async function getTrackerFollowupCards() {
+  const now = Date.now();
+  const minMs = now - 8 * 24 * 60 * 60 * 1000; // 8 dias atrás
+  const maxMs = now - 6 * 24 * 60 * 60 * 1000; // 6 dias atrás
+  const minISO = new Date(minMs).toISOString();
+  const maxISO = new Date(maxMs).toISOString();
+
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/job_tracker?status=eq.aplicado&stage_moved_at=gte.${encodeURIComponent(minISO)}&stage_moved_at=lte.${encodeURIComponent(maxISO)}&select=id,user_id,empresa,cargo`,
+    { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+  );
+  if (!res.ok) return [];
+  return await res.json();
+}
+
+async function getUserEmail(userId) {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/auth/v1/admin/users/${userId}`,
+      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+    );
+    if (!res.ok) return null;
+    const u = await res.json();
+    return { email: u.email, name: u.user_metadata?.full_name || u.email?.split('@')[0] || '' };
+  } catch { return null; }
+}
+
+async function callFollowupEmail(email, name, empresa, cargo) {
+  const res = await fetch('https://www.vagaai.app.br/api/onboarding-emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.CRON_SECRET || 'vagaai-cron-secret-2026'}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, name, type: 'tracker_followup', empresa, cargo }),
+  });
+  return res.ok;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'GET' && req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -105,8 +145,9 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Missing Supabase config' });
   }
 
-  const results = { day2: { processed: 0, sent: 0 }, day5: { processed: 0, sent: 0 } };
+  const results = { day2: { processed: 0, sent: 0 }, day5: { processed: 0, sent: 0 }, tracker_followup: { processed: 0, sent: 0 } };
 
+  // ── Onboarding day2 / day5 ────────────────────────────────────────────────
   for (const { type, daysAgo } of [{ type: 'day2', daysAgo: 2 }, { type: 'day5', daysAgo: 5 }]) {
     const users = await getUsersCreatedAround(daysAgo);
     results[type].processed = users.length;
@@ -125,6 +166,24 @@ export default async function handler(req, res) {
         await markEmailSent(user.id, type);
         results[type].sent++;
       }
+    }
+  }
+
+  // ── Follow-up de candidaturas (~7 dias sem retorno) ───────────────────────
+  const cards = await getTrackerFollowupCards();
+  results.tracker_followup.processed = cards.length;
+
+  for (const card of cards) {
+    const dedupeKey = `tracker_followup_${card.id}`;
+    if (await isEmailSent(card.user_id, dedupeKey)) continue;
+
+    const userInfo = await getUserEmail(card.user_id);
+    if (!userInfo || !userInfo.email) continue;
+
+    const sent = await callFollowupEmail(userInfo.email, userInfo.name, card.empresa, card.cargo);
+    if (sent) {
+      await markEmailSent(card.user_id, dedupeKey);
+      results.tracker_followup.sent++;
     }
   }
 

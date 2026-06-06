@@ -186,13 +186,13 @@ async function saveAnalysis(userId, score, nivel, jobExcerpt, result, hash) {
         return;
       }
     }
-    await fetch(`${SUPABASE_URL}/rest/v1/analyses`, {
+    const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/analyses`, {
       method: 'POST',
       headers: {
         apikey: SUPABASE_SERVICE_KEY,
         Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
         'Content-Type': 'application/json',
-        Prefer: 'return=minimal',
+        Prefer: 'return=representation',
       },
       body: JSON.stringify({
         user_id: userId,
@@ -204,8 +204,14 @@ async function saveAnalysis(userId, score, nivel, jobExcerpt, result, hash) {
         created_at: new Date().toISOString(),
       }),
     });
+    if (insertRes.ok) {
+      const rows = await insertRes.json();
+      return rows?.[0]?.id || null;
+    }
+    return null;
   } catch (err) {
     console.error('saveAnalysis error:', err);
+    return null;
   }
 }
 
@@ -331,7 +337,8 @@ export default async function handler(req, res) {
         console.warn('Credit deduction failed on cache hit:', deduct.reason, '— fail-open');
       }
       // Salva no histórico sem duplicar (verifica se já existe entrada recente idêntica)
-      await saveAnalysis(authenticatedUserId, cached.score, cached.nivel, job, cached, hash);
+      const cachedAnalysisId = await saveAnalysis(authenticatedUserId, cached.score, cached.nivel, job, cached, hash);
+      if (cachedAnalysisId) cachedResult._analysis_id = cachedAnalysisId;
       try {
         const credRows = await fetch(
           `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(authenticatedUserId)}&select=credits`,
@@ -512,7 +519,8 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
 
     // Pós-análise
     if (authenticatedUserId) {
-      await saveAnalysis(authenticatedUserId, result.score, result.nivel, job, result, hash);
+      const analysisId = await saveAnalysis(authenticatedUserId, result.score, result.nivel, job, result, hash);
+      if (analysisId) result._analysis_id = analysisId;
       // Verifica marcos de gamificação (fire-and-forget com resultado)
       const milestone = await checkAndAwardMilestones(authenticatedUserId);
       if (milestone) result._milestone = milestone;
