@@ -147,40 +147,40 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .tab-count{font-size:10px;font-weight:700;background:var(--green);color:#0a0f0d;padding:1px 6px;border-radius:20px;margin-left:.35rem;vertical-align:middle}
 
 /* KANBAN */
-.kanban-board{display:grid;grid-template-columns:repeat(5,1fr);gap:.85rem;align-items:start;overflow-x:auto;padding-bottom:.5rem}
-@media(max-width:1100px){.kanban-board{grid-template-columns:repeat(3,minmax(200px,1fr))}}
-@media(max-width:680px){.kanban-board{grid-template-columns:repeat(2,minmax(170px,1fr))}}
-.k-col{background:var(--surface2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-.k-col-header{padding:.65rem .9rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--surface)}
-.k-col-title{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
-.k-col-count{font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;border:1px solid}
-.k-col-body{padding:.5rem;display:flex;flex-direction:column;gap:.4rem;min-height:80px}
-.k-col-add{width:100%;background:transparent;border:1px dashed var(--border);border-radius:8px;color:var(--muted);font-size:11px;font-weight:600;font-family:'Inter',sans-serif;padding:.45rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.3rem;margin-top:.2rem}
+.kanban-board{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;align-items:start;overflow-x:auto;padding-bottom:.5rem}
+@media(max-width:900px){.kanban-board{grid-template-columns:repeat(2,minmax(240px,1fr))}}
+@media(max-width:560px){.kanban-board{grid-template-columns:minmax(260px,1fr)}}
+.k-col{background:var(--surface2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.k-col-header{padding:.8rem 1rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--surface)}
+.k-col-title{font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
+.k-col-count{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid}
+.k-col-body{padding:.65rem;display:flex;flex-direction:column;gap:.6rem;min-height:100px}
+.k-col-add{width:100%;background:transparent;border:1px dashed var(--border);border-radius:9px;color:var(--muted);font-size:12px;font-weight:600;font-family:'Inter',sans-serif;padding:.55rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.3rem;margin-top:.2rem}
 .k-col-add:hover{border-color:var(--green-border);color:var(--green);background:var(--green-dim)}
-.k-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:.75rem .85rem;cursor:grab;transition:all .2s;user-select:none}
-.k-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-1px);box-shadow:0 3px 12px rgba(0,0,0,.25)}
-[data-theme="light"] .k-card:hover{border-color:rgba(0,0,0,.18);box-shadow:0 3px 8px rgba(0,0,0,.1)}
+.k-card{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:1rem 1.1rem;cursor:grab;transition:all .2s;user-select:none}
+.k-card:hover{border-color:rgba(255,255,255,.2);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.3)}
+[data-theme="light"] .k-card:hover{border-color:rgba(0,0,0,.18);box-shadow:0 4px 10px rgba(0,0,0,.12)}
 .k-card.dragging{opacity:.45;transform:rotate(1.5deg)}
-.k-card-company{font-size:12px;font-weight:700;color:var(--text);margin-bottom:.1rem;display:flex;align-items:center;gap:.35rem}
-.k-card-logo{width:16px;height:16px;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0}
-.k-card-role{font-size:11px;color:var(--muted);margin-bottom:.45rem;line-height:1.3}
-.k-card-footer{display:flex;align-items:center;justify-content:space-between;gap:.3rem}
-.k-card-score{font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;border:1px solid}
+.k-card-company{font-size:15px;font-weight:700;color:var(--text);margin-bottom:.25rem;display:flex;align-items:center;gap:.45rem}
+.k-card-logo{width:22px;height:22px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.k-card-role{font-size:13px;color:var(--muted);margin-bottom:.6rem;line-height:1.4}
+.k-card-footer{display:flex;align-items:center;justify-content:space-between;gap:.4rem}
+.k-card-score{font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;border:1px solid}
 .k-card-score.high{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
 .k-card-score.mid{background:var(--yellow-dim);color:var(--yellow);border-color:var(--yellow-border)}
 .k-card-score.low{background:var(--red-dim);color:var(--red);border-color:var(--red-border)}
 .k-card-score.none{background:var(--surface2);color:var(--muted);border-color:var(--border)}
-.k-card-age{font-size:10px;color:var(--muted);margin-left:auto}
-.k-card-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:.1rem .3rem;line-height:1;transition:color .15s;flex-shrink:0}
+.k-card-age{font-size:11px;color:var(--muted);margin-left:auto}
+.k-card-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:.1rem .3rem;line-height:1;transition:color .15s;flex-shrink:0}
 .k-card-del:hover{color:var(--red)}
-.k-card-note{font-size:10px;color:var(--muted);margin-top:.4rem;line-height:1.4;font-style:italic}
-.k-next-step{font-size:10px;color:var(--muted);margin-top:.45rem;padding:.3rem .5rem;border-radius:5px;background:var(--surface2);line-height:1.4}
+.k-card-note{font-size:12px;color:var(--muted);margin-top:.5rem;line-height:1.5;font-style:italic}
+.k-next-step{font-size:11px;color:var(--muted);margin-top:.5rem;padding:.4rem .6rem;border-radius:6px;background:var(--surface2);line-height:1.45}
 .k-next-step.warn{color:#ff9999;background:var(--red-dim)}
 .k-next-step.followup{color:var(--yellow);background:var(--yellow-dim)}
 .k-next-step.good{color:var(--green);background:var(--green-dim)}
 .k-next-step a{color:inherit;text-decoration:underline;cursor:pointer}
-.k-card.k-stagnant{border-color:rgba(255,107,107,0.35)}
-.k-job-link{display:inline-flex;align-items:center;gap:.25rem;font-size:10px;color:var(--muted);margin-top:.35rem;text-decoration:none;transition:color .15s}
+.k-card.k-stagnant{border-color:rgba(255,107,107,0.4)}
+.k-job-link{display:inline-flex;align-items:center;gap:.3rem;font-size:11px;color:var(--muted);margin-top:.4rem;text-decoration:none;transition:color .15s}
 .k-job-link:hover{color:var(--green)}
 /* Funil de conversão */
 .k-funnel{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;font-size:12px;color:var(--muted)}
@@ -206,12 +206,13 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .k-col.col-entrevista .k-col-header{border-top:3px solid var(--yellow)}
 .k-col.col-entrevista .k-col-title{color:var(--yellow)}
 .k-col.col-entrevista .k-col-count{background:var(--yellow-dim);color:var(--yellow);border-color:var(--yellow-border)}
-.k-col.col-oferta .k-col-header{border-top:3px solid var(--purple,#c084fc)}
-.k-col.col-oferta .k-col-title{color:var(--purple,#c084fc)}
-.k-col.col-oferta .k-col-count{background:rgba(192,132,252,.1);color:var(--purple,#c084fc);border-color:rgba(192,132,252,.25)}
-.k-col.col-recusado .k-col-header{border-top:3px solid var(--muted)}
-.k-col.col-recusado .k-col-title{color:var(--muted)}
-.k-col.col-recusado .k-col-count{background:rgba(138,158,144,.1);color:var(--muted);border-color:rgba(138,158,144,.25)}
+.k-col.col-concluido .k-col-header{border-top:3px solid var(--purple,#c084fc)}
+.k-col.col-concluido .k-col-title{color:var(--purple,#c084fc)}
+.k-col.col-concluido .k-col-count{background:rgba(192,132,252,.1);color:var(--purple,#c084fc);border-color:rgba(192,132,252,.25)}
+/* badge de status dentro do card concluído */
+.k-status-badge{font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;border:1px solid;margin-left:.4rem}
+.k-status-badge.oferta{background:rgba(192,132,252,.1);color:#c084fc;border-color:rgba(192,132,252,.3)}
+.k-status-badge.recusado{background:rgba(138,158,144,.1);color:var(--muted);border-color:rgba(138,158,144,.25)}
 /* ALERTS TAB */
 .alerts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 @media(max-width:640px){.alerts-grid{grid-template-columns:1fr}}
@@ -608,24 +609,20 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
     <div id="trackerMeta" style="display:none;margin-bottom:1rem;display:flex;flex-direction:column;gap:.55rem"></div>
     <div class="kanban-board">
       <div class="k-col col-quero" ondrop="kDrop(event,'quero')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
-        <div class="k-col-header"><span class="k-col-title">Quero aplicar</span><span class="k-col-count" id="kc-quero">0</span></div>
+        <div class="k-col-header"><span class="k-col-title">🔍 Quero aplicar</span><span class="k-col-count" id="kc-quero">0</span></div>
         <div class="k-col-body" id="kb-quero"></div>
       </div>
       <div class="k-col col-aplicado" ondrop="kDrop(event,'aplicado')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
-        <div class="k-col-header"><span class="k-col-title">Aplicado</span><span class="k-col-count" id="kc-aplicado">0</span></div>
+        <div class="k-col-header"><span class="k-col-title">📤 Aplicado</span><span class="k-col-count" id="kc-aplicado">0</span></div>
         <div class="k-col-body" id="kb-aplicado"></div>
       </div>
       <div class="k-col col-entrevista" ondrop="kDrop(event,'entrevista')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
-        <div class="k-col-header"><span class="k-col-title">Entrevista</span><span class="k-col-count" id="kc-entrevista">0</span></div>
+        <div class="k-col-header"><span class="k-col-title">💬 Entrevista</span><span class="k-col-count" id="kc-entrevista">0</span></div>
         <div class="k-col-body" id="kb-entrevista"></div>
       </div>
-      <div class="k-col col-oferta" ondrop="kDrop(event,'oferta')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
-        <div class="k-col-header"><span class="k-col-title">Oferta</span><span class="k-col-count" id="kc-oferta">0</span></div>
-        <div class="k-col-body" id="kb-oferta"></div>
-      </div>
-      <div class="k-col col-recusado" ondrop="kDrop(event,'recusado')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
-        <div class="k-col-header"><span class="k-col-title">Recusado</span><span class="k-col-count" id="kc-recusado">0</span></div>
-        <div class="k-col-body" id="kb-recusado"></div>
+      <div class="k-col col-concluido" ondrop="kDrop(event,'oferta')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
+        <div class="k-col-header"><span class="k-col-title">✅ Concluído</span><span class="k-col-count" id="kc-concluido">0</span></div>
+        <div class="k-col-body" id="kb-concluido"></div>
       </div>
     </div>
   </div><!-- /tab-candidaturas -->
@@ -1769,16 +1766,25 @@ async function autoLinkAnalyses() {
 }
 
 function renderKanban() {
-  var cols = ['quero','aplicado','entrevista','oferta','recusado'];
-  cols.forEach(function(col) {
+  // 4 colunas visuais: quero, aplicado, entrevista, concluido (oferta+recusado)
+  var colDefs = [
+    { col: 'quero', statuses: ['quero'] },
+    { col: 'aplicado', statuses: ['aplicado'] },
+    { col: 'entrevista', statuses: ['entrevista'] },
+    { col: 'concluido', statuses: ['oferta', 'recusado'] },
+  ];
+  colDefs.forEach(function(def) {
+    var col = def.col;
     var body = document.getElementById('kb-' + col);
-    var colCards = _kCards.filter(function(c){ return c.status === col; });
+    var colCards = _kCards.filter(function(c){ return def.statuses.indexOf(c.status) >= 0; });
     document.getElementById('kc-' + col).textContent = colCards.length;
     body.innerHTML = colCards.length
       ? colCards.map(kCardHTML).join('')
       : '<div class="k-empty">Sem candidaturas</div>';
+    // Coluna "concluido" não é um status real — usa 'oferta' como padrão
+    var addStatus = col === 'concluido' ? 'oferta' : col;
     body.insertAdjacentHTML('beforeend',
-      '<button class="k-col-add" onclick="openKModal(\'' + col + '\')">'
+      '<button class="k-col-add" onclick="openKModal(\'' + addStatus + '\')">'
       + '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
       + 'Adicionar</button>');
     body.querySelectorAll('.k-card').forEach(function(el) {
@@ -1878,8 +1884,13 @@ function kCardHTML(c) {
     nextClass = '';
   }
 
+  // Badge de status para cards na coluna Concluído
+  var statusBadge = '';
+  if (c.status === 'oferta') statusBadge = '<span class="k-status-badge oferta">🎉 Oferta</span>';
+  else if (c.status === 'recusado') statusBadge = '<span class="k-status-badge recusado">Recusado</span>';
+
   var html = '<div class="k-card' + (isStagnant ? ' k-stagnant' : '') + '" draggable="true" data-id="' + c.id + '" onclick="openKEdit(\'' + escAttr(c.id) + '\')">';
-  html += '<div class="k-card-company"><div class="k-card-logo" style="background:' + color + '">' + initial + '</div>' + escHtml(c.empresa) + '</div>';
+  html += '<div class="k-card-company"><div class="k-card-logo" style="background:' + color + '">' + initial + '</div>' + escHtml(c.empresa) + statusBadge + '</div>';
   html += '<div class="k-card-role">' + escHtml(c.cargo) + '</div>';
   html += '<div class="k-card-footer">';
   html += '<span class="k-card-score ' + scClass + '">' + scLabel + '</span>';
