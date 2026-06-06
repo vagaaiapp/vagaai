@@ -170,9 +170,31 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .k-card-score.mid{background:var(--yellow-dim);color:var(--yellow);border-color:var(--yellow-border)}
 .k-card-score.low{background:var(--red-dim);color:var(--red);border-color:var(--red-border)}
 .k-card-score.none{background:var(--surface2);color:var(--muted);border-color:var(--border)}
+.k-card-age{font-size:10px;color:var(--muted);margin-left:auto}
 .k-card-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:.1rem .3rem;line-height:1;transition:color .15s;flex-shrink:0}
 .k-card-del:hover{color:var(--red)}
 .k-card-note{font-size:10px;color:var(--muted);margin-top:.4rem;line-height:1.4;font-style:italic}
+.k-next-step{font-size:10px;color:var(--muted);margin-top:.45rem;padding:.3rem .5rem;border-radius:5px;background:var(--surface2);line-height:1.4}
+.k-next-step.warn{color:#ff9999;background:var(--red-dim)}
+.k-next-step.followup{color:var(--yellow);background:var(--yellow-dim)}
+.k-next-step.good{color:var(--green);background:var(--green-dim)}
+.k-next-step a{color:inherit;text-decoration:underline;cursor:pointer}
+.k-card.k-stagnant{border-color:rgba(255,107,107,0.35)}
+.k-job-link{display:inline-flex;align-items:center;gap:.25rem;font-size:10px;color:var(--muted);margin-top:.35rem;text-decoration:none;transition:color .15s}
+.k-job-link:hover{color:var(--green)}
+/* Funil de conversão */
+.k-funnel{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.k-funnel-step{display:flex;align-items:center;gap:.3rem}
+.k-funnel-arrow{color:var(--border);font-size:14px}
+.k-funnel-pct{font-weight:700;color:var(--text)}
+/* Meta semanal */
+.k-week-goal{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.65rem .9rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;font-size:12px}
+.k-week-label{color:var(--muted);flex:1;min-width:120px}
+.k-week-bar-wrap{flex:2;min-width:100px;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.k-week-bar{height:100%;background:var(--green);border-radius:3px;transition:width .4s}
+.k-week-count{color:var(--text);font-weight:700;white-space:nowrap}
+.k-week-goal-btn{background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:0;text-decoration:underline;font-family:'Inter',sans-serif}
+.k-week-goal-btn:hover{color:var(--green)}
 .k-col.col-quero .k-col-header{border-top:3px solid #64c8ff}
 .k-col.col-quero .k-col-title{color:#64c8ff}
 .k-col.col-quero .k-col-count{background:rgba(100,200,255,.1);color:#64c8ff;border-color:rgba(100,200,255,.25)}
@@ -576,13 +598,14 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 
   <!-- TAB: CANDIDATURAS (KANBAN) -->
   <div id="tab-candidaturas" style="display:none">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:.75rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:.75rem">
       <div class="tracker-stats" id="trackerStats"></div>
       <button onclick="openKModal()" style="background:var(--green);color:#0a0f0d;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:.45rem .9rem;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;transition:all .2s">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Nova candidatura
       </button>
     </div>
+    <div id="trackerMeta" style="display:none;margin-bottom:1rem;display:flex;flex-direction:column;gap:.55rem"></div>
     <div class="kanban-board">
       <div class="k-col col-quero" ondrop="kDrop(event,'quero')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
         <div class="k-col-header"><span class="k-col-title">Quero aplicar</span><span class="k-col-count" id="kc-quero">0</span></div>
@@ -728,6 +751,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
     <div class="k-modal-title" id="kModalTitle">Nova candidatura</div>
     <div class="k-field"><label>Empresa</label><input id="km-empresa" placeholder="Ex: Nubank, iFood..."></div>
     <div class="k-field"><label>Cargo</label><input id="km-cargo" placeholder="Ex: Desenvolvedor Pleno..."></div>
+    <div class="k-field"><label>Link da vaga (opcional)</label><input id="km-joburl" placeholder="https://..."></div>
     <div class="k-field"><label>Score ATS (opcional)</label><input type="number" id="km-score" placeholder="Ex: 84" min="0" max="100"></div>
     <div class="k-field"><label>Status</label>
       <select id="km-status">
@@ -1709,34 +1733,111 @@ function renderKanban() {
       el.addEventListener('dragend', function() { el.classList.remove('dragging'); });
     });
   });
-  // Stats
+  // Stats básicas
   var total = _kCards.length;
   var entrevistas = _kCards.filter(function(c){ return c.status === 'entrevista'; }).length;
   var ofertas = _kCards.filter(function(c){ return c.status === 'oferta'; }).length;
+  var stagnant = _kCards.filter(function(c){ return c.status === 'aplicado' && kDaysAgo(c.stage_moved_at || c.updated_at) > 14; }).length;
   document.getElementById('trackerStats').innerHTML =
     '<div class="tracker-stat">Total: <strong>' + total + '</strong></div>'
     + (entrevistas ? '<div class="tracker-stat">Entrevistas: <strong style="color:var(--yellow)">' + entrevistas + '</strong></div>' : '')
-    + (ofertas ? '<div class="tracker-stat">Ofertas: <strong style="color:var(--green)">' + ofertas + '</strong></div>' : '');
+    + (ofertas ? '<div class="tracker-stat">Ofertas: <strong style="color:var(--green)">' + ofertas + '</strong></div>' : '')
+    + (stagnant ? '<div class="tracker-stat" style="color:var(--red)">⚠️ <strong>' + stagnant + '</strong> paradas</div>' : '');
   // Tab count badge
   var badge = document.getElementById('trackerTabCount');
   if (badge) { badge.textContent = total; badge.style.display = total ? 'inline' : 'none'; }
+
+  // Funil de conversão + meta semanal
+  var metaEl = document.getElementById('trackerMeta');
+  if (metaEl) {
+    var metaHTML = '';
+    if (total >= 2) {
+      var withEntrev = _kCards.filter(function(c){ return c.status === 'entrevista' || c.status === 'oferta' || c.status === 'recusado'; }).length;
+      var pctEntrev = total ? Math.round(withEntrev / total * 100) : 0;
+      var pctOferta = total ? Math.round(ofertas / total * 100) : 0;
+      metaHTML += '<div class="k-funnel">'
+        + '<span class="k-funnel-step">📋 <strong class="k-funnel-pct">' + total + '</strong> candidaturas</span>'
+        + '<span class="k-funnel-arrow">→</span>'
+        + '<span class="k-funnel-step">🎤 <strong class="k-funnel-pct">' + pctEntrev + '%</strong> chegaram à entrevista</span>'
+        + (ofertas ? '<span class="k-funnel-arrow">→</span><span class="k-funnel-step">🎉 <strong class="k-funnel-pct">' + pctOferta + '%</strong> oferta</span>' : '')
+        + '</div>';
+    }
+    // Meta semanal
+    var weekStart = new Date(); weekStart.setDate(weekStart.getDate() - weekStart.getDay()); weekStart.setHours(0,0,0,0);
+    var thisWeek = _kCards.filter(function(c){ return new Date(c.created_at) >= weekStart; }).length;
+    var weekGoal = parseInt(localStorage.getItem('vagaai_week_goal') || '5');
+    var weekPct = Math.min(100, Math.round(thisWeek / weekGoal * 100));
+    var weekDone = thisWeek >= weekGoal;
+    metaHTML += '<div class="k-week-goal">'
+      + '<span class="k-week-label">' + (weekDone ? '🏆' : '🎯') + ' Meta semanal</span>'
+      + '<div class="k-week-bar-wrap"><div class="k-week-bar" style="width:' + weekPct + '%;background:' + (weekDone ? 'var(--green)' : 'var(--yellow)') + '"></div></div>'
+      + '<span class="k-week-count">' + thisWeek + ' / ' + weekGoal + '</span>'
+      + '<button class="k-week-goal-btn" onclick="changeWeekGoal()">editar meta</button>'
+      + '</div>';
+    metaEl.innerHTML = metaHTML;
+    metaEl.style.display = 'flex';
+    metaEl.style.flexDirection = 'column';
+    metaEl.style.gap = '.55rem';
+  }
+}
+
+function kDaysAgo(dateStr) {
+  if (!dateStr) return null;
+  var d = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+  return d;
 }
 
 function kCardHTML(c) {
   var sc = c.score;
-  var scClass = sc >= 75 ? 'high' : sc >= 55 ? 'mid' : sc ? 'low' : 'none';
+  var scClass = sc >= 70 ? 'high' : sc >= 40 ? 'mid' : sc ? 'low' : 'none';
   var scLabel = sc ? sc + '% ATS' : 'Sem score';
   var initial = (c.empresa || '?')[0].toUpperCase();
   var color = c.color || '#3ecf8e';
-  return '<div class="k-card" draggable="true" data-id="' + c.id + '" onclick="openKEdit(\'' + escAttr(c.id) + '\')">'
-    + '<div class="k-card-company"><div class="k-card-logo" style="background:' + color + '">' + initial + '</div>' + escHtml(c.empresa) + '</div>'
-    + '<div class="k-card-role">' + escHtml(c.cargo) + '</div>'
-    + '<div class="k-card-footer">'
-    + '<span class="k-card-score ' + scClass + '">' + scLabel + '</span>'
-    + '<button class="k-card-del" onclick="event.stopPropagation();confirmDelKCard(\'' + escAttr(c.id) + '\')" title="Remover">×</button>'
-    + '</div>'
-    + (c.nota ? '<div class="k-card-note">📝 ' + escHtml(c.nota) + '</div>' : '')
-    + '</div>';
+
+  // Tempo no stage
+  var stageDateStr = c.stage_moved_at || c.updated_at || c.created_at;
+  var days = kDaysAgo(stageDateStr);
+  var ageStr = days === null ? '' : days === 0 ? 'hoje' : days === 1 ? 'há 1 dia' : 'há ' + days + ' dias';
+
+  // Indicadores de stagnação / follow-up
+  var isStagnant = c.status === 'aplicado' && days !== null && days > 14;
+  var isFollowUp = c.status === 'aplicado' && days !== null && days >= 7 && days <= 14;
+
+  // Próximo passo (regra)
+  var nextStep = '', nextClass = '';
+  if (c.status === 'quero') {
+    nextStep = '⚡ Analise antes de aplicar — clique para abrir no VagaAI';
+    nextClass = 'good';
+  } else if (isStagnant) {
+    nextStep = '⚠️ ' + days + ' dias sem resposta. Faça follow-up ou marque como recusado.';
+    nextClass = 'warn';
+  } else if (isFollowUp) {
+    nextStep = '💬 7+ dias sem resposta — tente um follow-up no LinkedIn.';
+    nextClass = 'followup';
+  } else if (c.status === 'entrevista') {
+    nextStep = '🎯 Prepare-se! Use o Simulador de Entrevista no painel.';
+    nextClass = '';
+  } else if (c.status === 'oferta') {
+    nextStep = '🎉 Oferta recebida! Analise os termos antes de aceitar.';
+    nextClass = 'good';
+  } else if (c.status === 'recusado') {
+    nextStep = '🔄 Ajuste o CV e candidate-se a vagas similares.';
+    nextClass = '';
+  }
+
+  var html = '<div class="k-card' + (isStagnant ? ' k-stagnant' : '') + '" draggable="true" data-id="' + c.id + '" onclick="openKEdit(\'' + escAttr(c.id) + '\')">';
+  html += '<div class="k-card-company"><div class="k-card-logo" style="background:' + color + '">' + initial + '</div>' + escHtml(c.empresa) + '</div>';
+  html += '<div class="k-card-role">' + escHtml(c.cargo) + '</div>';
+  html += '<div class="k-card-footer">';
+  html += '<span class="k-card-score ' + scClass + '">' + scLabel + '</span>';
+  if (ageStr) html += '<span class="k-card-age">' + ageStr + '</span>';
+  html += '<button class="k-card-del" onclick="event.stopPropagation();confirmDelKCard(\'' + escAttr(c.id) + '\')" title="Remover">×</button>';
+  html += '</div>';
+  if (nextStep) html += '<div class="k-next-step ' + nextClass + '">' + nextStep + '</div>';
+  if (c.nota) html += '<div class="k-card-note">📝 ' + escHtml(c.nota) + '</div>';
+  if (c.job_url) html += '<a class="k-job-link" href="' + escAttr(c.job_url) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 Ver vaga</a>';
+  html += '</div>';
+  return html;
 }
 
 // Drag & Drop
@@ -1749,11 +1850,12 @@ async function kDrop(e, newStatus) {
   var card = _kCards.find(function(c){ return c.id === _kDragId; });
   if (!card || card.status === newStatus) { _kDragId = null; return; }
   card.status = newStatus;
+  card.stage_moved_at = new Date().toISOString();
   renderKanban();
   await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + _kDragId, {
     method: 'PATCH',
     headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-    body: JSON.stringify({ status: newStatus, updated_at: new Date().toISOString() })
+    body: JSON.stringify({ status: newStatus, stage_moved_at: card.stage_moved_at, updated_at: card.stage_moved_at })
   });
   _kDragId = null;
 }
@@ -1766,6 +1868,7 @@ function openKModal(status) {
   document.getElementById('km-cargo').value = '';
   document.getElementById('km-score').value = '';
   document.getElementById('km-nota').value = '';
+  document.getElementById('km-joburl').value = '';
   document.getElementById('km-status').value = status || 'quero';
   document.getElementById('kModalDeleteBtn').style.display = 'none';
   document.getElementById('kModal').classList.remove('hidden');
@@ -1780,6 +1883,7 @@ function openKEdit(id) {
   document.getElementById('km-cargo').value = c.cargo || '';
   document.getElementById('km-score').value = c.score || '';
   document.getElementById('km-nota').value = c.nota || '';
+  document.getElementById('km-joburl').value = c.job_url || '';
   document.getElementById('km-status').value = c.status || 'quero';
   document.getElementById('kModalDeleteBtn').style.display = 'inline-block';
   document.getElementById('kModal').classList.remove('hidden');
@@ -1790,13 +1894,19 @@ async function saveKCard() {
   var empresa = document.getElementById('km-empresa').value.trim();
   var cargo = document.getElementById('km-cargo').value.trim();
   if (!empresa || !cargo) { alert('Preencha empresa e cargo.'); return; }
+  var newStatus = document.getElementById('km-status').value;
+  var prevCard = _kEditId ? _kCards.find(function(c){ return c.id === _kEditId; }) : null;
+  var statusChanged = prevCard && prevCard.status !== newStatus;
+  var now = new Date().toISOString();
   var body = {
-    empresa, cargo,
+    empresa: empresa, cargo: cargo,
     score: parseInt(document.getElementById('km-score').value) || null,
     nota: document.getElementById('km-nota').value.trim(),
-    status: document.getElementById('km-status').value,
-    updated_at: new Date().toISOString()
+    job_url: document.getElementById('km-joburl').value.trim() || null,
+    status: newStatus,
+    updated_at: now
   };
+  if (statusChanged) body.stage_moved_at = now;
   if (_kEditId) {
     await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + _kEditId, {
       method: 'PATCH',
@@ -1808,7 +1918,8 @@ async function saveKCard() {
   } else {
     body.user_id = currentUserId;
     body.color = _kColors[_kColorIdx++ % _kColors.length];
-    body.created_at = new Date().toISOString();
+    body.created_at = now;
+    body.stage_moved_at = now;
     var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker', {
       method: 'POST',
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=representation' },
@@ -1839,6 +1950,13 @@ async function deleteKCardById(id) {
     method: 'DELETE',
     headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
   });
+}
+
+function changeWeekGoal() {
+  var cur = parseInt(localStorage.getItem('vagaai_week_goal') || '5');
+  var v = prompt('Quantas candidaturas por semana é sua meta?', cur);
+  var n = parseInt(v);
+  if (n && n > 0 && n <= 100) { localStorage.setItem('vagaai_week_goal', n); renderKanban(); }
 }
 
 // Chamado do app/index.html via localStorage
