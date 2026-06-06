@@ -361,7 +361,7 @@ textarea::placeholder{color:var(--muted)}
       </div>
       <div class="fetch-status" id="fetchStatus"></div>
       <div class="or-divider"><span>ou cole o texto abaixo</span></div>
-      <textarea id="jobInput" rows="3" placeholder="Cole aqui o texto da vaga (título, requisitos, responsabilidades...)"></textarea>
+      <textarea id="jobInput" rows="3" placeholder="Ou cole aqui o texto da vaga (título, requisitos, responsabilidades...)"></textarea>
       <div class="char-count" id="jobCount">0 caracteres</div>
     </div>
 
@@ -849,10 +849,50 @@ async function fetchJobUrl() {
 async function analyze() {
   var job = jobEl.value.trim();
   var cv = cvEl.value.trim();
+  var jobUrl = (document.getElementById('jobUrl').value || '').trim();
   hideError();
 
+  // Se há link mas o textarea está vazio/curto, busca automaticamente antes de validar
+  if (jobUrl && job.length < 50) {
+    var aBtn = document.getElementById('analyzeBtn');
+    var st = document.getElementById('fetchStatus');
+    aBtn.disabled = true;
+    aBtn.innerHTML = '<span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Carregando vaga…';
+    st.textContent = 'Acessando o link da vaga…';
+    st.style.color = 'var(--muted)';
+    try {
+      var fRes = await fetch('/api/fetch-job?url=' + encodeURIComponent(jobUrl));
+      var fData = await fRes.json();
+      if (fData.text && fData.text.length >= 50) {
+        jobEl.value = fData.text;
+        document.getElementById('jobCount').textContent = fData.text.length + ' caracteres';
+        st.textContent = '✓ Vaga carregada com sucesso!';
+        st.style.color = 'var(--green)';
+        job = fData.text;
+      } else {
+        st.textContent = '⚠ Não conseguimos ler essa página automaticamente.';
+        st.style.color = 'var(--yellow)';
+        aBtn.disabled = false;
+        aBtn.innerHTML = '<span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Analisar agora — grátis';
+        showError('Não foi possível carregar a vaga automaticamente (alguns sites bloqueiam acesso direto). Cole o texto da descrição da vaga no campo abaixo e tente novamente.');
+        jobEl.focus();
+        return;
+      }
+    } catch(e) {
+      st.textContent = '⚠ Erro ao acessar o link.';
+      st.style.color = 'var(--red)';
+      aBtn.disabled = false;
+      aBtn.innerHTML = '<span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Analisar agora — grátis';
+      showError('Não foi possível acessar esse link. Cole o texto da vaga diretamente no campo abaixo e tente novamente.');
+      jobEl.focus();
+      return;
+    }
+    aBtn.disabled = false;
+    aBtn.innerHTML = '<span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Analisar agora — grátis';
+  }
+
   if (!job || job.length < 50) {
-    showError('Cole a descrição completa da vaga (mínimo 50 caracteres).');
+    showError('Insira o link da vaga acima ou cole a descrição completa no campo de texto (mínimo 50 caracteres).');
     return;
   }
   if (!cv || cv.length < 100) {
