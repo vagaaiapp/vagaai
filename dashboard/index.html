@@ -426,8 +426,8 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 <div class="del-confirm hidden" id="delConfirm">
   <div class="del-confirm-box">
     <div class="del-confirm-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></div>
-    <div class="del-confirm-title">Excluir análise?</div>
-    <div class="del-confirm-sub">Esta ação não pode ser desfeita. O resultado e o currículo otimizado serão removidos permanentemente.</div>
+    <div class="del-confirm-title" id="delConfirmTitle">Excluir análise?</div>
+    <div class="del-confirm-sub" id="delConfirmSub">Esta ação não pode ser desfeita. O resultado e o currículo otimizado serão removidos permanentemente.</div>
     <div class="del-confirm-btns">
       <button class="del-btn-cancel" onclick="closeDeleteConfirm()">Cancelar</button>
       <button class="del-btn-confirm" id="delBtnConfirm">Excluir</button>
@@ -836,7 +836,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
     <div class="k-field"><label>Nota (opcional)</label><input id="km-nota" placeholder="Ex: Entrevista dia 10/06 às 14h..."></div>
     <div class="k-modal-actions">
       <button onclick="closeKModal()" style="background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.5rem .9rem;border-radius:8px;cursor:pointer">Cancelar</button>
-      <button id="kModalDeleteBtn" onclick="deleteKCard()" style="display:none;background:var(--red-dim);border:1px solid var(--red-border);color:var(--red);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.5rem .9rem;border-radius:8px;cursor:pointer">Excluir</button>
+      <button id="kModalDeleteBtn" onclick="confirmDelKCard()" style="display:none;background:var(--red-dim);border:1px solid var(--red-border);color:var(--red);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.5rem .9rem;border-radius:8px;cursor:pointer">Excluir</button>
       <button onclick="saveKCard()" style="background:var(--green);color:#0a0f0d;border:none;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:.5rem 1rem;border-radius:8px;cursor:pointer">Salvar</button>
     </div>
   </div>
@@ -1375,18 +1375,49 @@ async function doAlterarSenha() {
 // ─── DELETE ───────────────────────────────────────────────────────────────────
 var _pendingDeleteId = null;
 var _pendingDeleteCard = null;
+var _pendingDelKCardId = null;
 
 function confirmDelete(analysisId, btn) {
   _pendingDeleteId = analysisId;
-  // suporta .analysis-card (view antiga) e .uv-row (view unificada)
+  _pendingDelKCardId = null;
   _pendingDeleteCard = btn ? (btn.closest('.analysis-card') || btn.closest('.uv-row')) : null;
+  document.getElementById('delConfirmTitle').textContent = 'Excluir análise?';
+  document.getElementById('delConfirmSub').textContent = 'Esta ação não pode ser desfeita. O resultado e o currículo otimizado serão removidos permanentemente.';
+  document.getElementById('delBtnConfirm').textContent = 'Excluir';
   document.getElementById('delConfirm').classList.remove('hidden');
   document.getElementById('delBtnConfirm').onclick = executeDelete;
 }
+
+// Confirmação estilizada para tracker cards (sem/com id — sem id usa _kEditId)
+function confirmDelKCard(id) {
+  var targetId = id || _kEditId;
+  if (!targetId) return;
+  _pendingDelKCardId = targetId;
+  _pendingDeleteId = null;
+  _pendingDeleteCard = null;
+  var c = _kCards.find(function(x){ return x.id === targetId; });
+  document.getElementById('delConfirmTitle').textContent = 'Remover candidatura?';
+  document.getElementById('delConfirmSub').textContent = '"' + (c ? c.empresa + (c.cargo ? ' — ' + c.cargo : '') : 'esta candidatura') + '" será removida do rastreador. Esta ação não pode ser desfeita.';
+  document.getElementById('delBtnConfirm').textContent = 'Remover';
+  document.getElementById('delConfirm').classList.remove('hidden');
+  document.getElementById('delBtnConfirm').onclick = executeDelKCard;
+  // fecha modal de edição se estiver aberto
+  document.getElementById('kModal').classList.add('hidden');
+}
+
 function closeDeleteConfirm() {
   document.getElementById('delConfirm').classList.add('hidden');
   _pendingDeleteId = null;
   _pendingDeleteCard = null;
+  _pendingDelKCardId = null;
+}
+
+async function executeDelKCard() {
+  if (!_pendingDelKCardId) return;
+  var id = _pendingDelKCardId;
+  closeDeleteConfirm();
+  await deleteKCardById(id);
+  if (_kEditId === id) { _kEditId = null; }
 }
 async function executeDelete() {
   if (!_pendingDeleteId) return;
@@ -1869,17 +1900,21 @@ function renderKanban() {
   });
   // Stats básicas
   var total = _kCards.length;
+  var linkedIds = new Set(_kCards.map(function(c){ return c.analysis_id; }).filter(Boolean));
+  var untrackedCount = _analysesFull.filter(function(a){ return !linkedIds.has(a.id); }).length;
+  var totalAll = total + untrackedCount;
   var entrevistas = _kCards.filter(function(c){ return c.status === 'entrevista'; }).length;
   var ofertas = _kCards.filter(function(c){ return c.status === 'oferta'; }).length;
   var stagnant = _kCards.filter(function(c){ return c.status === 'aplicado' && kDaysAgo(c.stage_moved_at || c.updated_at) > 14; }).length;
   document.getElementById('trackerStats').innerHTML =
-    '<div class="tracker-stat">Total: <strong>' + total + '</strong></div>'
+    '<div class="tracker-stat">Total: <strong>' + totalAll + '</strong></div>'
+    + (total ? '<div class="tracker-stat" style="color:var(--muted);font-size:11px">' + total + ' rastreadas · ' + untrackedCount + ' só analisadas</div>' : '')
     + (entrevistas ? '<div class="tracker-stat">Entrevistas: <strong style="color:var(--yellow)">' + entrevistas + '</strong></div>' : '')
     + (ofertas ? '<div class="tracker-stat">Ofertas: <strong style="color:var(--green)">' + ofertas + '</strong></div>' : '')
     + (stagnant ? '<div class="tracker-stat" style="color:var(--red)">⚠️ <strong>' + stagnant + '</strong> paradas</div>' : '');
   // Tab count badge
   var badge = document.getElementById('trackerTabCount');
-  if (badge) { badge.textContent = total; badge.style.display = total ? 'inline' : 'none'; }
+  if (badge) { badge.textContent = totalAll; badge.style.display = totalAll ? 'inline' : 'none'; }
 
   // Funil de conversão + meta semanal
   var metaEl = document.getElementById('trackerMeta');
@@ -2016,6 +2051,7 @@ async function kDrop(e, newStatus) {
   card.status = newStatus;
   card.stage_moved_at = new Date().toISOString();
   renderKanban();
+  renderUnifiedList();
   await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + _kDragId, {
     method: 'PATCH',
     headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
@@ -2116,24 +2152,13 @@ async function saveKCard() {
     var rows = await res.json();
     if (rows && rows[0]) _kCards.unshift(rows[0]);
   }
-  closeKModal(); renderKanban();
+  closeKModal(); renderKanban(); renderUnifiedList();
 }
 
-async function confirmDelKCard() {
-  if (!_kEditId) return;
-  var c = _kCards.find(function(x){ return x.id === _kEditId; });
-  if (!confirm('Remover "' + (c ? c.empresa : '') + '"?')) return;
-  await deleteKCardById(_kEditId);
-  closeKModal();
-}
-async function confirmDelKCard(id) {
-  var c = _kCards.find(function(x){ return x.id === id; });
-  if (!confirm('Remover "' + (c ? c.empresa : 'essa candidatura') + '"?')) return;
-  await deleteKCardById(id);
-}
 async function deleteKCardById(id) {
   _kCards = _kCards.filter(function(c){ return c.id !== id; });
   renderKanban();
+  renderUnifiedList();
   await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + id, {
     method: 'DELETE',
     headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
