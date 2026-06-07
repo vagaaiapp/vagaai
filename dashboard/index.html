@@ -1378,7 +1378,8 @@ var _pendingDeleteCard = null;
 
 function confirmDelete(analysisId, btn) {
   _pendingDeleteId = analysisId;
-  _pendingDeleteCard = btn.closest('.analysis-card');
+  // suporta .analysis-card (view antiga) e .uv-row (view unificada)
+  _pendingDeleteCard = btn ? (btn.closest('.analysis-card') || btn.closest('.uv-row')) : null;
   document.getElementById('delConfirm').classList.remove('hidden');
   document.getElementById('delBtnConfirm').onclick = executeDelete;
 }
@@ -1392,7 +1393,7 @@ async function executeDelete() {
   var id = _pendingDeleteId;
   var card = _pendingDeleteCard;
   closeDeleteConfirm();
-  if (card) card.classList.add('deleting');
+  if (card) card.style.opacity = '0.4';
   try {
     var { data: { session } } = await sb.auth.getSession();
     if (!session) return;
@@ -1401,24 +1402,32 @@ async function executeDelete() {
       { method: 'DELETE', headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + session.access_token, Prefer: 'return=minimal' } }
     );
     if (res.ok) {
+      // remove do array em memória
+      _analysesFull = _analysesFull.filter(function(a){ return a.id !== id; });
+      _totalAnalyses = Math.max(0, _totalAnalyses - 1);
+      document.getElementById('totalValue').textContent = _totalAnalyses;
+      renderUserLevel(_totalAnalyses);
+      // anima saída do elemento e re-renderiza
       if (card) {
-        card.style.transition = 'all .3s';
+        card.style.transition = 'opacity .2s, max-height .3s, margin .3s, padding .3s';
         card.style.opacity = '0';
         card.style.maxHeight = card.offsetHeight + 'px';
         setTimeout(function() {
           card.style.maxHeight = '0';
           card.style.padding = '0';
           card.style.margin = '0';
-          card.style.border = 'none';
-          setTimeout(function() { card.remove(); _totalAnalyses = Math.max(0,_totalAnalyses-1); renderUserLevel(_totalAnalyses); document.getElementById('totalValue').textContent = _totalAnalyses; renderStreak([]); }, 300);
+          card.style.overflow = 'hidden';
+          setTimeout(function() { card.remove(); renderUnifiedList(); }, 300);
         }, 150);
+      } else {
+        renderUnifiedList();
       }
     } else {
-      if (card) card.classList.remove('deleting');
+      if (card) card.style.opacity = '1';
       alert('Erro ao excluir. Tente novamente.');
     }
   } catch(e) {
-    if (card) card.classList.remove('deleting');
+    if (card) card.style.opacity = '1';
     alert('Erro ao excluir. Tente novamente.');
   }
 }
