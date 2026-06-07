@@ -1307,7 +1307,9 @@ function renderUserLevel(count) {
     document.getElementById('levelProgressLabel').textContent =
       remaining + ' análise' + (remaining !== 1 ? 's' : '') + ' para nível ' + lv.nextName;
     document.getElementById('levelProgressFill').style.width = Math.min(pct, 100) + '%';
-    document.getElementById('levelProgressBonus').innerHTML =
+    // Bônus de crédito só faz sentido para plano free
+    var isPaid = _userPlan === 'pro' || _userPlan === 'starter';
+    document.getElementById('levelProgressBonus').innerHTML = isPaid ? '' :
       '<span style="display:inline-flex;align-items:center;gap:.3rem;vertical-align:middle">' + _IC.gift + ' Ao atingir: +' + lv.bonus + ' crédito' + (lv.bonus !== 1 ? 's' : '') + ' bônus</span>';
     progressWrap.style.display = 'block';
   } else {
