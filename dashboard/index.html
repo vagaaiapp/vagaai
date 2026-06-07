@@ -939,6 +939,8 @@ async function loadSubscription() {
     _userPlan = _userSub.plan || 'free';
     renderCurrentPlanCard();
     renderPlans();
+    // Atualiza exibição de créditos com o plano correto (loadCredits pode ter rodado antes)
+    renderCreditDisplay();
   } catch(e) { renderPlans(); }
 }
 
@@ -1046,22 +1048,43 @@ async function loadCredits() {
     _currentCredits = credits;
     _totalPurchased = total;
 
-    var el = document.getElementById('creditsValue');
-    el.textContent = credits;
-    el.className = 'stat-value' + (credits === 0 ? ' zero' : '');
-    document.getElementById('creditsDesc').textContent = credits === 1 ? 'análise disponível' : 'análises disponíveis';
-
-    // Barra de progresso
-    if (total > 0) {
-      var pct = Math.round((credits / total) * 100);
-      var fillEl = document.getElementById('creditBarFill');
-      fillEl.style.width = pct + '%';
-      fillEl.className = 'credit-bar-fill' + (credits === 0 ? ' empty' : credits <= 2 ? ' low' : '');
-      document.getElementById('creditBarLabel').textContent = credits + ' de ' + total + ' créditos restantes';
-      document.getElementById('creditBarWrap').style.display = 'block';
-    }
+    // Se for plano pago (pro/starter), exibe "∞" em vez do contador de créditos avulsos
+    renderCreditDisplay(credits, total);
   } catch(e) {
     document.getElementById('creditsValue').textContent = '—';
+  }
+}
+
+function renderCreditDisplay(credits, total) {
+  var plan = _userPlan || 'free';
+  var isPaid = plan === 'pro' || plan === 'starter';
+  var el = document.getElementById('creditsValue');
+
+  if (isPaid) {
+    // Plano pago: ilimitado
+    el.textContent = '∞';
+    el.className = 'stat-value'; // verde, sem classe "zero"
+    el.style.color = 'var(--green)';
+    document.getElementById('creditsDesc').textContent = 'análises ilimitadas este mês';
+    document.getElementById('creditBarWrap').style.display = 'none';
+  } else {
+    // Plano free ou avulso
+    el.textContent = credits !== undefined ? credits : _currentCredits;
+    el.style.color = '';
+    var c = credits !== undefined ? credits : _currentCredits;
+    el.className = 'stat-value' + (c === 0 ? ' zero' : '');
+    document.getElementById('creditsDesc').textContent = c === 1 ? 'análise disponível' : 'análises disponíveis';
+    var t = total !== undefined ? total : _totalPurchased;
+    if (t > 0) {
+      var pct = Math.round((c / t) * 100);
+      var fillEl = document.getElementById('creditBarFill');
+      fillEl.style.width = pct + '%';
+      fillEl.className = 'credit-bar-fill' + (c === 0 ? ' empty' : c <= 2 ? ' low' : '');
+      document.getElementById('creditBarLabel').textContent = c + ' de ' + t + ' créditos restantes';
+      document.getElementById('creditBarWrap').style.display = 'block';
+    } else {
+      document.getElementById('creditBarWrap').style.display = 'none';
+    }
   }
 }
 
