@@ -1158,16 +1158,30 @@ async function loadCredits() {
 
 function renderCreditDisplay(credits, total) {
   var plan = _userPlan || 'free';
-  var isPaid = plan === 'pro' || plan === 'starter';
   var el = document.getElementById('creditsValue');
 
-  if (isPaid) {
-    // Plano pago: ilimitado
+  if (plan === 'pro') {
+    // Pro: análises ilimitadas
     el.textContent = '∞';
-    el.className = 'stat-value'; // verde, sem classe "zero"
+    el.className = 'stat-value';
     el.style.color = 'var(--green)';
     document.getElementById('creditsDesc').textContent = 'análises ilimitadas este mês';
     document.getElementById('creditBarWrap').style.display = 'none';
+  } else if (plan === 'starter') {
+    // Starter: 10 análises/mês — mostra uso real
+    var limit = 10;
+    var used = (_userSub && _userSub.analyses_used_this_month) || 0;
+    var remaining = Math.max(0, limit - used);
+    el.textContent = remaining;
+    el.className = 'stat-value' + (remaining === 0 ? ' zero' : '');
+    el.style.color = '';
+    document.getElementById('creditsDesc').textContent = 'análise' + (remaining !== 1 ? 's' : '') + ' restante' + (remaining !== 1 ? 's' : '') + ' este mês';
+    var pct = Math.round((remaining / limit) * 100);
+    var fillEl = document.getElementById('creditBarFill');
+    fillEl.style.width = pct + '%';
+    fillEl.className = 'credit-bar-fill' + (remaining === 0 ? ' empty' : remaining <= 2 ? ' low' : '');
+    document.getElementById('creditBarLabel').textContent = remaining + ' de ' + limit + ' análises restantes';
+    document.getElementById('creditBarWrap').style.display = 'block';
   } else {
     // Plano free ou avulso
     el.textContent = credits !== undefined ? credits : _currentCredits;
@@ -1307,9 +1321,8 @@ function renderUserLevel(count) {
     document.getElementById('levelProgressLabel').textContent =
       remaining + ' análise' + (remaining !== 1 ? 's' : '') + ' para nível ' + lv.nextName;
     document.getElementById('levelProgressFill').style.width = Math.min(pct, 100) + '%';
-    // Bônus de crédito só faz sentido para plano free
-    var isPaid = _userPlan === 'pro' || _userPlan === 'starter';
-    document.getElementById('levelProgressBonus').innerHTML = isPaid ? '' :
+    // Bônus de crédito não faz sentido para Pro (ilimitado)
+    document.getElementById('levelProgressBonus').innerHTML = (_userPlan === 'pro') ? '' :
       '<span style="display:inline-flex;align-items:center;gap:.3rem;vertical-align:middle">' + _IC.gift + ' Ao atingir: +' + lv.bonus + ' crédito' + (lv.bonus !== 1 ? 's' : '') + ' bônus</span>';
     progressWrap.style.display = 'block';
   } else {
