@@ -298,6 +298,75 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .tracker-stat{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:.3rem .85rem;font-size:12px;font-weight:600;color:var(--muted)}
 .tracker-stat strong{font-weight:700}
 
+/* ── INSIGHT BLOCKS (Painel) ──────────────────────────────────────────────── */
+.insights-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+@media(max-width:560px){.insights-grid{grid-template-columns:1fr}}
+.ins-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem}
+/* Score */
+.score-avg-row{display:flex;align-items:center;gap:1.2rem;margin-bottom:.85rem}
+.score-big-ins{font-family:'Lora',serif;font-size:48px;font-weight:700;line-height:1}
+.score-trend-col{display:flex;flex-direction:column;gap:.2rem}
+.ins-trend-up{font-size:13px;font-weight:700;color:var(--green);display:flex;align-items:center;gap:.3rem}
+.ins-trend-down{font-size:13px;font-weight:700;color:var(--red);display:flex;align-items:center;gap:.3rem}
+.ins-trend-neu{font-size:13px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:.3rem}
+.ins-trend-sub{font-size:12px;color:var(--muted)}
+.ins-bar-row{display:flex;align-items:center;gap:.65rem;font-size:12px;margin-bottom:.35rem}
+.ins-bar-lbl{width:70px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.ins-bar-track{flex:1;height:5px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.ins-bar-fill{height:100%;border-radius:99px}
+.ins-bar-val{font-weight:700;width:26px;text-align:right;font-size:12px;flex-shrink:0}
+/* Compatibilidade */
+.funnel-row-ins{display:flex;align-items:center;gap:.6rem;margin-bottom:.85rem}
+.funnel-num-ins{font-family:'Lora',serif;font-size:32px;font-weight:700;color:var(--green);line-height:1}
+.funnel-lbl-ins{font-size:13px;color:var(--muted);line-height:1.4}
+.funnel-lbl-ins strong{color:var(--text);display:block}
+.compat-item-ins{display:flex;align-items:center;gap:.6rem;font-size:13px;margin-bottom:.4rem}
+.compat-dot-ins{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.compat-co-ins{flex:1;color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.compat-sc-ins{font-size:11px;font-weight:700;padding:1px 8px;border-radius:20px;border:1px solid;white-space:nowrap;flex-shrink:0}
+.compat-sc-ins.high{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.compat-sc-ins.mid{background:var(--yellow-dim);color:var(--yellow);border-color:rgba(255,209,102,0.3)}
+.compat-sc-ins.low{background:var(--red-dim);color:var(--red);border-color:rgba(255,107,107,0.3)}
+/* Keywords */
+.kw-insight-box{background:var(--yellow-dim);border:1px solid rgba(255,209,102,0.3);border-radius:10px;padding:.65rem .85rem;margin-bottom:.8rem;font-size:13px;color:var(--yellow);line-height:1.5}
+.kw-ins-item{display:flex;align-items:center;gap:.7rem;margin-bottom:.42rem}
+.kw-ins-name{flex:1;font-size:13px;color:var(--text);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kw-ins-track{flex:1;height:4px;background:var(--surface2);border-radius:99px;overflow:hidden;min-width:30px}
+.kw-ins-fill{height:100%;background:var(--red);border-radius:99px}
+.kw-ins-count{font-size:11px;color:var(--red);white-space:nowrap;flex-shrink:0;font-weight:700}
+.kw-ins-tip{font-size:11px;color:var(--green);margin-top:.7rem;display:flex;align-items:center;gap:.35rem}
+/* Jornada */
+.j-steps-wrap{display:flex;flex-direction:column;gap:0}
+.j-step-ins{display:flex;align-items:flex-start;gap:.85rem;padding:.5rem 0;position:relative}
+.j-step-ins:not(:last-child)::after{content:'';position:absolute;left:15px;top:36px;width:2px;height:calc(100% - 8px);background:var(--border)}
+.j-icon-ins{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;border:2px solid var(--border);background:var(--surface2);position:relative;z-index:1}
+.j-icon-ins.done{background:var(--green-dim);border-color:var(--green-border)}
+.j-icon-ins.active{background:var(--yellow-dim);border-color:rgba(255,209,102,0.35)}
+.j-icon-ins.todo{opacity:.4}
+.j-content-ins{flex:1;padding-top:.2rem}
+.j-title-ins{font-size:13px;font-weight:700;color:var(--text);margin-bottom:.1rem}
+.j-sub-ins{font-size:12px;color:var(--muted);line-height:1.4}
+.j-step-ins.active .j-title-ins{color:var(--yellow)}
+.j-step-ins.todo .j-title-ins,.j-step-ins.todo .j-sub-ins{opacity:.5}
+/* Streak */
+.streak-top-ins{display:flex;align-items:center;gap:.85rem;margin-bottom:.85rem}
+.streak-fire-ins{font-size:30px;line-height:1}
+.streak-num-ins{font-family:'Lora',serif;font-size:26px;font-weight:700;color:var(--green);line-height:1}
+.streak-lbl-ins{font-size:12px;color:var(--muted);margin-top:.15rem}
+.streak-chips{display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:.85rem}
+.streak-chip{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:.28rem .55rem;font-size:11px;color:var(--muted);font-weight:600}
+.streak-chip.on{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.cal-lbl{font-size:11px;color:var(--muted);margin-bottom:.4rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.cal-grid-ins{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:.75rem}
+.cal-day-ins{height:18px;border-radius:3px;background:var(--surface2)}
+.cal-day-ins.done{background:rgba(62,207,142,0.65)}
+.cal-day-ins.today{background:var(--green);box-shadow:0 0 0 2px rgba(62,207,142,.4)}
+.cal-day-ins.future{opacity:.15}
+.goal-row-ins{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:.3rem}
+.goal-bar-track-ins{height:4px;background:var(--surface2);border-radius:99px;overflow:hidden;margin-bottom:.2rem}
+.goal-bar-fill-ins{height:100%;background:var(--green);border-radius:99px;transition:width .4s}
+.ins-empty{font-size:13px;color:var(--muted);text-align:center;padding:1.5rem .5rem}
+
 /* KANBAN MODAL */
 .k-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem}
 .k-modal-overlay.hidden{display:none}
@@ -608,24 +677,56 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
         <span style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);padding:1px 6px;border-radius:20px;margin-left:auto;flex-shrink:0">Starter+</span>
       </a>
     </div>
-    <div class="stat-card" style="display:flex;flex-direction:column;gap:.5rem">
-      <div class="stat-label">Análises realizadas</div>
-      <div class="stat-value-plain" id="totalValue">—</div>
-      <!-- Streak semanal -->
-      <div id="streakWrap" style="display:none;align-items:center;gap:.4rem;font-size:13px;color:var(--muted)">
-        <span id="streakFlame" style="font-size:18px">🔥</span>
-        <span id="streakText"></span>
+    <div class="stat-card" style="display:flex;flex-direction:column">
+      <div class="ins-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Score médio das análises
       </div>
-      <!-- Badge de nível -->
-      <div id="userLevelBadge"></div>
-      <!-- Progresso para próximo nível -->
-      <div id="levelProgressWrap" style="display:none;margin-top:.3rem">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:.3rem" id="levelProgressLabel"></div>
-        <div class="credit-bar-track"><div class="credit-bar-fill" id="levelProgressFill" style="width:0%"></div></div>
-        <div style="font-size:11px;color:var(--muted);margin-top:.25rem" id="levelProgressBonus"></div>
+      <div id="insScoreContent"><div class="ins-empty">Carregando...</div></div>
+    </div>
+  </div>
+
+  <!-- HIDDEN totalValue for legacy compat -->
+  <span id="totalValue" style="display:none">0</span>
+  <!-- HIDDEN legacy streak/level elements (kept so JS doesn't break) -->
+  <div id="streakWrap" style="display:none"><span id="streakFlame"></span><span id="streakText"></span></div>
+  <div id="userLevelBadge" style="display:none"></div>
+  <div id="levelProgressWrap" style="display:none"><div id="levelProgressLabel"></div><div class="credit-bar-track"><div class="credit-bar-fill" id="levelProgressFill"></div></div><div id="levelProgressBonus"></div></div>
+  <div id="motivationalStat" style="display:none"></div>
+
+  <!-- INSIGHTS ROW 2: Compatibilidade + Keywords -->
+  <div class="insights-grid">
+    <div class="stat-card">
+      <div class="ins-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        Compatibilidade das vagas
       </div>
-      <!-- Estatística motivadora -->
-      <div id="motivationalStat" style="display:none;margin-top:.5rem;background:var(--green-dim);border:1px solid var(--green-border);border-radius:8px;padding:.6rem .8rem;font-size:12px;color:var(--green);line-height:1.4"></div>
+      <div id="insCompatContent"><div class="ins-empty">Carregando...</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="ins-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Keywords que faltam no CV
+      </div>
+      <div id="insKwContent"><div class="ins-empty">Carregando...</div></div>
+    </div>
+  </div>
+
+  <!-- INSIGHTS ROW 3: Jornada + Streak -->
+  <div class="insights-grid" style="margin-bottom:2rem">
+    <div class="stat-card">
+      <div class="ins-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Onde você está na busca
+      </div>
+      <div id="insJornadaContent"><div class="ins-empty">Carregando...</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="ins-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+        Sequência de atividade
+      </div>
+      <div id="insStreakContent"><div class="ins-empty">Carregando...</div></div>
     </div>
   </div>
 
@@ -1251,6 +1352,282 @@ function renderStreak(analyses) {
   text.textContent = weekCount === 1
     ? '1 análise essa semana — continue!'
     : weekCount + ' análises essa semana — ótimo ritmo!';
+}
+
+// ── INSIGHT BLOCKS ────────────────────────────────────────────────────────────
+function renderInsights() {
+  if (!document.getElementById('insScoreContent')) return;
+  renderInsScore();
+  renderInsCompat();
+  renderInsKeywords();
+  renderInsJornada();
+  renderInsStreak();
+}
+
+function renderInsScore() {
+  var el = document.getElementById('insScoreContent');
+  if (!el) return;
+  var analyses = _analysesFull.filter(function(a){ return a.score > 0; });
+  if (!analyses.length) {
+    el.innerHTML = '<div class="ins-empty">Nenhuma análise ainda.<br><a href="/app" style="color:var(--green)">Analise sua primeira vaga →</a></div>';
+    return;
+  }
+  var total = analyses.reduce(function(s,a){ return s + a.score; }, 0);
+  var avg = Math.round(total / analyses.length);
+  var avgColor = avg >= 70 ? 'var(--green)' : avg >= 50 ? 'var(--yellow)' : 'var(--red)';
+
+  // Trend: current month vs previous month
+  var now = new Date();
+  var thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  var lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  var thisMonth = analyses.filter(function(a){ return new Date(a.created_at) >= thisMonthStart; });
+  var lastMonth = analyses.filter(function(a){
+    var d = new Date(a.created_at);
+    return d >= lastMonthStart && d < thisMonthStart;
+  });
+  var thisAvg = thisMonth.length ? Math.round(thisMonth.reduce(function(s,a){ return s+a.score; },0)/thisMonth.length) : 0;
+  var lastAvg = lastMonth.length ? Math.round(lastMonth.reduce(function(s,a){ return s+a.score; },0)/lastMonth.length) : 0;
+  var trendHTML = '';
+  if (lastAvg && thisAvg) {
+    var diff = thisAvg - lastAvg;
+    if (diff > 0) trendHTML = '<div class="ins-trend-up"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>+' + diff + ' pts este mês</div><div class="ins-trend-sub">Subiu de ' + lastAvg + ' → ' + thisAvg + '</div>';
+    else if (diff < 0) trendHTML = '<div class="ins-trend-down"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>' + diff + ' pts este mês</div><div class="ins-trend-sub">Caiu de ' + lastAvg + ' → ' + thisAvg + '</div>';
+    else trendHTML = '<div class="ins-trend-neu">= igual ao mês passado</div>';
+  } else if (thisAvg) {
+    trendHTML = '<div class="ins-trend-neu" style="font-size:12px;font-weight:500">' + analyses.length + ' vaga' + (analyses.length>1?'s':'') + ' analisada' + (analyses.length>1?'s':'') + '</div>';
+  }
+
+  // Bars: top 4 analyses by score
+  var sorted = analyses.slice().sort(function(a,b){ return b.score - a.score; }).slice(0, 4);
+  var barsHTML = sorted.map(function(a) {
+    var lbl = (a.result && a.result.job_info && a.result.job_info.empresa) || a.job_excerpt || 'Vaga';
+    lbl = lbl.length > 10 ? lbl.substring(0,10) + '…' : lbl;
+    var sc = a.score;
+    var c = sc >= 70 ? 'var(--green)' : sc >= 50 ? 'var(--yellow)' : 'var(--red)';
+    return '<div class="ins-bar-row"><span class="ins-bar-lbl" title="' + escAttr(lbl) + '">' + escHtml(lbl) + '</span><div class="ins-bar-track"><div class="ins-bar-fill" style="width:' + sc + '%;background:' + c + '"></div></div><span class="ins-bar-val" style="color:' + c + '">' + sc + '</span></div>';
+  }).join('');
+
+  el.innerHTML =
+    '<div class="score-avg-row">' +
+      '<div class="score-big-ins" style="color:' + avgColor + '">' + avg + '<span style="font-size:20px;color:var(--muted)">/100</span></div>' +
+      '<div class="score-trend-col">' + trendHTML + '</div>' +
+    '</div>' +
+    barsHTML;
+}
+
+function renderInsCompat() {
+  var el = document.getElementById('insCompatContent');
+  if (!el) return;
+  var analyses = _analysesFull.filter(function(a){ return a.score > 0; });
+  if (!analyses.length) {
+    el.innerHTML = '<div class="ins-empty">Nenhuma análise ainda.</div>';
+    return;
+  }
+  var sorted = analyses.slice().sort(function(a,b){ return b.score - a.score; });
+  var highCount = sorted.filter(function(a){ return a.score >= 70; }).length;
+  var top = sorted.slice(0, 5);
+  var listHTML = top.map(function(a) {
+    var emp = (a.result && a.result.job_info && a.result.job_info.empresa) || a.job_excerpt || 'Vaga analisada';
+    emp = emp.length > 20 ? emp.substring(0,20) + '…' : emp;
+    var sc = a.score;
+    var cls = sc >= 70 ? 'high' : sc >= 50 ? 'mid' : 'low';
+    var dot = sc >= 70 ? 'var(--green)' : sc >= 50 ? 'var(--yellow)' : 'var(--red)';
+    var chk = sc >= 70 ? ' ✓' : '';
+    return '<div class="compat-item-ins"><div class="compat-dot-ins" style="background:' + dot + '"></div><span class="compat-co-ins" title="' + escAttr(emp) + '">' + escHtml(emp) + '</span><span class="compat-sc-ins ' + cls + '">' + sc + '%' + chk + '</span></div>';
+  }).join('');
+  var totalLabel = 'Das ' + analyses.length + ' vaga' + (analyses.length>1?'s':'') + ' analisada' + (analyses.length>1?'s':'');
+  el.innerHTML =
+    '<div class="funnel-row-ins">' +
+      '<div class="funnel-num-ins">' + highCount + '</div>' +
+      '<div class="funnel-lbl-ins"><strong>vaga' + (highCount!==1?'s':'')+' com score ≥ 70%</strong>' + totalLabel + '</div>' +
+    '</div>' + listHTML;
+}
+
+function renderInsKeywords() {
+  var el = document.getElementById('insKwContent');
+  if (!el) return;
+  // Aggregate keywords_faltando from all analyses
+  var freq = {};
+  _analysesFull.forEach(function(a) {
+    var kws = (a.result && a.result.keywords_faltando) || [];
+    if (!Array.isArray(kws)) return;
+    kws.forEach(function(kw) {
+      var k = (kw || '').trim().toLowerCase();
+      if (!k) return;
+      // Capitalize first char
+      var display = kw.trim();
+      freq[display] = (freq[display] || 0) + 1;
+    });
+  });
+  var entries = Object.keys(freq).map(function(k){ return {name:k, count:freq[k]}; });
+  entries.sort(function(a,b){ return b.count - a.count; });
+  if (!entries.length) {
+    el.innerHTML = '<div class="ins-empty" style="padding:1rem 0">Nenhum dado de keywords ainda.<br><span style="font-size:12px">Aparecem após análises completas.</span></div>';
+    return;
+  }
+  var top = entries.slice(0, 5);
+  var maxCount = top[0].count;
+  var topKw = top[0];
+  var insightHTML = '<div class="kw-insight-box">💡 <strong>"' + escHtml(topKw.name) + '"</strong> aparece em ' + topKw.count + ' vaga' + (topKw.count>1?'s':'') + ' — considere destacar no CV.</div>';
+  var listHTML = top.map(function(e) {
+    var pct = Math.round((e.count / maxCount) * 100);
+    var vagasLbl = e.count + ' vaga' + (e.count>1?'s':'');
+    return '<div class="kw-ins-item"><span class="kw-ins-name" title="' + escAttr(e.name) + '">' + escHtml(e.name) + '</span><div class="kw-ins-track"><div class="kw-ins-fill" style="width:' + pct + '%"></div></div><span class="kw-ins-count">' + vagasLbl + '</span></div>';
+  }).join('');
+  el.innerHTML = insightHTML + listHTML +
+    '<div class="kw-ins-tip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Otimize seu CV para cobrir essas lacunas</div>';
+}
+
+function renderInsJornada() {
+  var el = document.getElementById('insJornadaContent');
+  if (!el) return;
+  var totalAnalyses = _analysesFull.length;
+  var avgScore = 0;
+  if (totalAnalyses) {
+    var scores = _analysesFull.filter(function(a){ return a.score>0; });
+    if (scores.length) avgScore = Math.round(scores.reduce(function(s,a){ return s+a.score; },0)/scores.length);
+  }
+  var totalCards = _kCards.length;
+  var entrevistaCards = _kCards.filter(function(c){ return c.status==='entrevista'; }).length;
+  var concluidoCards = _kCards.filter(function(c){ return c.status==='concluido'; });
+  var ofertaCards = concluidoCards.filter(function(c){ return c.sub_status==='oferta'; }).length;
+
+  // Determine step states
+  var step1done = totalAnalyses > 0;
+  var step2active = step1done && totalCards === 0;
+  var step2done = totalCards > 0;
+  var step3active = step2done && entrevistaCards === 0;
+  var step3done = entrevistaCards > 0;
+  var step4done = ofertaCards > 0;
+  var step4active = step3done && !step4done;
+
+  function stepCls(done, active) {
+    if (done) return 'done';
+    if (active) return 'active';
+    return 'todo';
+  }
+
+  function iconHTML(done, active, icon) {
+    var cls = done ? 'done' : active ? 'active' : 'todo';
+    return '<div class="j-icon-ins ' + cls + '">' + (done ? '✓' : icon) + '</div>';
+  }
+
+  var s1cls = stepCls(step1done, !step1done);
+  var s2cls = stepCls(step2done, step2active);
+  var s3cls = stepCls(step3done, step3active);
+  var s4cls = stepCls(step4done, step4active);
+
+  var s1sub = step1done ? (totalAnalyses + ' vaga' + (totalAnalyses>1?'s':'') + ' analisada' + (totalAnalyses>1?'s':'') + (avgScore ? ' · Score médio ' + avgScore + '%' : '')) : 'Analise vagas para começar';
+  var s2sub = step2done ? (totalCards + ' candidatura' + (totalCards>1?'s':'') + ' rastreada' + (totalCards>1?'s':'') + (entrevistaCards ? ' · ' + entrevistaCards + ' em entrevista' : '')) : (step2active ? '<a href="/app" style="color:var(--green)">Analise uma vaga e adicione ao rastreador</a>' : 'Registre candidaturas enviadas');
+  var s3sub = step3done ? (entrevistaCards + ' entrevista' + (entrevistaCards>1?'s':'') + ' em andamento') : (step3active ? '<a href="/entrevista" style="color:var(--yellow)">Prepare-se com o Simulador de Entrevista</a>' : 'Prepare-se com o Simulador de Entrevista');
+  var s4sub = step4done ? (ofertaCards + ' oferta' + (ofertaCards>1?'s':'') + ' recebida' + (ofertaCards>1?'s':'') + '! 🎉') : 'Continue aplicando!';
+
+  el.innerHTML = '<div class="j-steps-wrap">' +
+    '<div class="j-step-ins ' + s1cls + '">' + iconHTML(step1done, !step1done, '📋') + '<div class="j-content-ins"><div class="j-title-ins">Diagnóstico do CV</div><div class="j-sub-ins">' + s1sub + '</div></div></div>' +
+    '<div class="j-step-ins ' + s2cls + '">' + iconHTML(step2done, step2active, '📤') + '<div class="j-content-ins"><div class="j-title-ins">Candidaturas enviadas</div><div class="j-sub-ins">' + s2sub + '</div></div></div>' +
+    '<div class="j-step-ins ' + s3cls + '">' + iconHTML(step3done, step3active, '💬') + '<div class="j-content-ins"><div class="j-title-ins">Entrevistas</div><div class="j-sub-ins">' + s3sub + '</div></div></div>' +
+    '<div class="j-step-ins ' + s4cls + '">' + iconHTML(step4done, step4active, '🎉') + '<div class="j-content-ins"><div class="j-title-ins">Oferta recebida</div><div class="j-sub-ins">' + s4sub + '</div></div></div>' +
+  '</div>';
+}
+
+function renderInsStreak() {
+  var el = document.getElementById('insStreakContent');
+  if (!el) return;
+
+  // Build set of "active days" from _analysesFull created_at
+  var activeDays = new Set();
+  _analysesFull.forEach(function(a) {
+    var d = new Date(a.created_at);
+    var key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+    activeDays.add(key);
+  });
+
+  var today = new Date();
+  var todayKey = today.getFullYear() + '-' + today.getMonth() + '-' + today.getDate();
+
+  // Compute consecutive week streak (how many consecutive weeks had >= 1 analysis)
+  var weekStreak = 0;
+  for (var w = 0; w < 52; w++) {
+    var hasActivity = false;
+    for (var d = 0; d < 7; d++) {
+      var offset = w * 7 + d;
+      var dt = new Date(today.getTime() - offset * 86400000);
+      var k = dt.getFullYear() + '-' + dt.getMonth() + '-' + dt.getDate();
+      if (activeDays.has(k)) { hasActivity = true; break; }
+    }
+    if (hasActivity) weekStreak++;
+    else break;
+  }
+
+  // This month active days
+  var thisMonthCount = 0;
+  for (var dd = new Date(today.getFullYear(), today.getMonth(), 1); dd <= today; dd.setDate(dd.getDate()+1)) {
+    var mk = dd.getFullYear() + '-' + dd.getMonth() + '-' + dd.getDate();
+    if (activeDays.has(mk)) thisMonthCount++;
+  }
+
+  // Best streak (personal record) — quick scan backwards
+  var bestStreak = weekStreak; // at minimum
+  var tempStreak = 0;
+  for (var bw = 0; bw < 52; bw++) {
+    var bHas = false;
+    for (var bd = 0; bd < 7; bd++) {
+      var bOff = bw * 7 + bd;
+      var bDt = new Date(today.getTime() - bOff * 86400000);
+      var bk = bDt.getFullYear() + '-' + bDt.getMonth() + '-' + bDt.getDate();
+      if (activeDays.has(bk)) { bHas = true; break; }
+    }
+    if (bHas) tempStreak++;
+    else { bestStreak = Math.max(bestStreak, tempStreak); tempStreak = 0; }
+  }
+  bestStreak = Math.max(bestStreak, weekStreak);
+
+  // This week count (for goal)
+  var weekAgo = new Date(today.getTime() - 7 * 86400000);
+  var weekCount = _analysesFull.filter(function(a){ return new Date(a.created_at) >= weekAgo; }).length;
+  var weekGoal = 3;
+  var weekPct = Math.min(100, Math.round((weekCount / weekGoal) * 100));
+
+  // Calendar: last 28 days (4 rows of 7)
+  var calHTML = '<div class="cal-lbl">Últimas 4 semanas</div><div class="cal-grid-ins">';
+  for (var i = 27; i >= 0; i--) {
+    var dayDt = new Date(today.getTime() - i * 86400000);
+    var dayKey = dayDt.getFullYear() + '-' + dayDt.getMonth() + '-' + dayDt.getDate();
+    var cls = 'cal-day-ins';
+    if (dayKey === todayKey) cls += ' today';
+    else if (activeDays.has(dayKey)) cls += ' done';
+    calHTML += '<div class="' + cls + '"></div>';
+  }
+  calHTML += '</div>';
+
+  var streakLabel = weekStreak === 0
+    ? 'Comece hoje!'
+    : weekStreak === 1 ? '1 semana consecutiva'
+    : weekStreak + ' semanas consecutivas';
+
+  var fireEmoji = weekStreak >= 3 ? '🔥🔥' : weekStreak >= 1 ? '🔥' : '💤';
+  var streakColor = weekStreak >= 3 ? 'var(--green)' : weekStreak >= 1 ? 'var(--yellow)' : 'var(--muted)';
+  var isRecord = weekStreak > 0 && weekStreak >= bestStreak;
+
+  var goalLeft = Math.max(0, weekGoal - weekCount);
+  var goalMsg = weekCount >= weekGoal
+    ? '🎉 Meta da semana batida!'
+    : goalLeft + ' análise' + (goalLeft>1?'s':'') + ' para bater a meta';
+
+  el.innerHTML =
+    '<div class="streak-top-ins">' +
+      '<div class="streak-fire-ins">' + fireEmoji + '</div>' +
+      '<div><div class="streak-num-ins" style="color:' + streakColor + '">' + (weekStreak || '0') + (weekStreak===1?' sem.':' sem.') + '</div><div class="streak-lbl-ins">' + streakLabel + '</div></div>' +
+    '</div>' +
+    '<div class="streak-chips">' +
+      (isRecord ? '<div class="streak-chip on">🏆 Recorde pessoal</div>' : '') +
+      '<div class="streak-chip">Recorde: ' + bestStreak + ' sem.</div>' +
+      '<div class="streak-chip">Este mês: ' + thisMonthCount + ' dia' + (thisMonthCount!==1?'s':'') + '</div>' +
+    '</div>' +
+    calHTML +
+    '<div class="goal-row-ins"><span>Meta semanal: ' + weekGoal + ' análises</span><span style="color:var(--text);font-weight:700">' + weekCount + ' / ' + weekGoal + '</span></div>' +
+    '<div class="goal-bar-track-ins"><div class="goal-bar-fill-ins" style="width:' + weekPct + '%"></div></div>' +
+    '<div style="font-size:11px;color:var(--muted)">' + goalMsg + '</div>';
 }
 
 function showMilestoneToast(milestone, credits) {
@@ -2261,6 +2638,9 @@ function renderUnifiedList() {
     soAnaliseHTML += untracked.map(function(a) { return renderUVRow(null, a); }).join('');
   }
   soAnaliseEl.innerHTML = soAnaliseHTML;
+
+  // Update insight blocks whenever list data changes
+  renderInsights();
 }
 
 function renderUVRow(card, analysis) {
