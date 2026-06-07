@@ -1042,6 +1042,13 @@ async function loadSubscription() {
     renderPlans();
     // Atualiza exibição de créditos com o plano correto (loadCredits pode ter rodado antes)
     renderCreditDisplay();
+    // Se Pro, garante que streak/level fiquem ocultos mesmo que loadAnalyses já os tenha exibido
+    if (_userPlan === 'pro') {
+      ['streakWrap','userLevelBadge','levelProgressWrap','motivationalStat'].forEach(function(id){
+        var el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+    }
   } catch(e) { renderPlans(); }
 }
 
@@ -1308,6 +1315,8 @@ var LEVEL_CONFIG = [
 ];
 
 function renderUserLevel(count) {
+  // Pro não usa sistema de nível/bônus — tudo já fica oculto pelo HTML
+  if (_userPlan === 'pro') return;
   var lv = LEVEL_CONFIG.find(function(l){ return count >= l.min && count <= l.max; }) || LEVEL_CONFIG[0];
   document.getElementById('userLevelBadge').innerHTML =
     '<span class="user-level ' + lv.cls + '">' + lv.icon + ' ' + lv.name + '</span>';
@@ -1346,6 +1355,7 @@ function renderUserLevel(count) {
 }
 
 function renderStreak(analyses) {
+  if (_userPlan === 'pro') return; // streak/flame não exibido para Pro
   // Conta análises feitas nos últimos 7 dias
   var now = new Date();
   var weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
