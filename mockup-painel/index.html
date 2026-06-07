@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VagaAI — Mockup Painel</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0f0d;--surface:#111814;--surface2:#161d19;--border:rgba(255,255,255,0.07);
+  --text:#e8ede9;--muted:#8a9e90;--green:#3ecf8e;--green-dim:rgba(62,207,142,0.12);
+  --green-border:rgba(62,207,142,0.25);--yellow:#ffd166;--yellow-dim:rgba(255,209,102,0.12);
+  --yellow-border:rgba(255,209,102,0.25);--red:#ff6b6b;--red-dim:rgba(255,107,107,0.12);
+  --red-border:rgba(255,107,107,0.25);--blue:#64c8ff;--blue-dim:rgba(100,200,255,0.12);
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;padding:2rem 1rem 4rem}
+.page{max-width:900px;margin:0 auto}
+
+/* HEADER */
+.mockup-header{text-align:center;margin-bottom:2.5rem}
+.mockup-badge{display:inline-block;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:3px 12px;border-radius:20px;margin-bottom:.75rem}
+.mockup-title{font-family:'Lora',serif;font-size:clamp(22px,4vw,30px);font-weight:700;margin-bottom:.4rem}
+.mockup-sub{font-size:13px;color:var(--muted)}
+
+/* GRID PAINEL */
+.painel-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:2rem}
+@media(max-width:620px){.painel-grid{grid-template-columns:1fr}}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.4rem 1.6rem}
+.card-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem}
+.card-label svg{flex-shrink:0}
+
+/* ── CARD 1: Score médio ── */
+.score-avg-row{display:flex;align-items:center;gap:1.2rem;margin-bottom:1rem}
+.score-big{font-family:'Lora',serif;font-size:52px;font-weight:700;color:var(--yellow);line-height:1}
+.score-trend{display:flex;flex-direction:column;gap:.2rem}
+.trend-up{font-size:13px;font-weight:700;color:var(--green);display:flex;align-items:center;gap:.3rem}
+.trend-sub{font-size:12px;color:var(--muted)}
+.score-bars{display:flex;flex-direction:column;gap:.45rem}
+.score-bar-row{display:flex;align-items:center;gap:.7rem;font-size:12px}
+.score-bar-row span:first-child{width:72px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;height:5px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px}
+.score-bar-row .val{font-weight:700;width:32px;text-align:right;font-size:12px}
+
+/* ── CARD 2: Compatibilidade / funil ── */
+.funnel-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.9rem}
+.funnel-num{font-family:'Lora',serif;font-size:36px;font-weight:700;color:var(--green);line-height:1}
+.funnel-label{font-size:13px;color:var(--muted);line-height:1.4}
+.funnel-label strong{color:var(--text);display:block}
+.compat-list{display:flex;flex-direction:column;gap:.5rem}
+.compat-item{display:flex;align-items:center;gap:.6rem;font-size:13px}
+.compat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.compat-company{flex:1;color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.compat-score{font-size:12px;font-weight:700;padding:1px 8px;border-radius:20px;border:1px solid;white-space:nowrap}
+.compat-score.high{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.compat-score.mid{background:var(--yellow-dim);color:var(--yellow);border-color:var(--yellow-border)}
+.compat-score.low{background:var(--red-dim);color:var(--red);border-color:var(--red-border)}
+
+/* ── CARD 3: Keywords ── */
+.kw-insight{background:var(--yellow-dim);border:1px solid var(--yellow-border);border-radius:10px;padding:.75rem .9rem;margin-bottom:.85rem;font-size:13px;color:var(--yellow);line-height:1.5}
+.kw-list{display:flex;flex-direction:column;gap:.5rem}
+.kw-item{display:flex;align-items:center;gap:.7rem}
+.kw-name{flex:1;font-size:13px;color:var(--text);font-weight:600}
+.kw-count{font-size:11px;color:var(--muted);white-space:nowrap}
+.kw-bar-track{flex:1;height:4px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.kw-bar-fill{height:100%;background:var(--red);border-radius:99px}
+.kw-tip{font-size:11px;color:var(--green);margin-top:.75rem;display:flex;align-items:center;gap:.35rem}
+
+/* ── CARD 4: Jornada ── */
+.journey-steps{display:flex;flex-direction:column;gap:0}
+.j-step{display:flex;align-items:flex-start;gap:.9rem;padding:.65rem 0;position:relative}
+.j-step:not(:last-child)::after{content:'';position:absolute;left:15px;top:38px;width:2px;height:calc(100% - 10px);background:var(--border)}
+.j-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:2px solid var(--border);background:var(--surface2);position:relative;z-index:1}
+.j-icon.done{background:var(--green-dim);border-color:var(--green-border)}
+.j-icon.active{background:var(--yellow-dim);border-color:var(--yellow-border)}
+.j-icon.todo{opacity:.4}
+.j-content{flex:1;padding-top:.3rem}
+.j-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:.1rem}
+.j-sub{font-size:12px;color:var(--muted);line-height:1.4}
+.j-step.active .j-title{color:var(--yellow)}
+.j-step.todo .j-title,.j-step.todo .j-sub{color:var(--muted);opacity:.5}
+
+/* ── CARD 5: Streak ── */
+.streak-top{display:flex;align-items:center;gap:.9rem;margin-bottom:1rem}
+.streak-fire{font-size:36px;line-height:1}
+.streak-info{flex:1}
+.streak-num{font-family:'Lora',serif;font-size:28px;font-weight:700;color:var(--green);line-height:1}
+.streak-label{font-size:12px;color:var(--muted);margin-top:.15rem}
+.streak-meta-row{display:flex;gap:.6rem;margin-bottom:1rem}
+.streak-badge{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.35rem .65rem;font-size:11px;color:var(--muted);font-weight:600}
+.streak-badge.active{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.cal-label{font-size:11px;color:var(--muted);margin-bottom:.5rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day{height:20px;border-radius:4px;background:var(--surface2)}
+.cal-day.done{background:var(--green);opacity:.8}
+.cal-day.today{background:var(--green);box-shadow:0 0 0 2px rgba(62,207,142,.4)}
+.cal-day.miss{background:var(--red-dim)}
+.goal-row{display:flex;align-items:center;justify-content:space-between;margin-top:.9rem;font-size:12px;color:var(--muted)}
+.goal-bar-wrap{margin-top:.35rem}
+.goal-bar-track{height:5px;background:var(--surface2);border-radius:99px;overflow:hidden;margin-bottom:.25rem}
+.goal-bar-fill{height:100%;background:var(--green);border-radius:99px;width:60%}
+
+/* SECTION LABEL */
+.section-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* BOTTOM NOTE */
+.bottom-note{text-align:center;margin-top:2rem;font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.5rem}
+.bottom-note a{color:var(--green);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="mockup-header">
+    <div class="mockup-badge">🎨 Mockup — Painel VagaAI</div>
+    <div class="mockup-title">Painel repensado — 5 blocos de insight</div>
+    <div class="mockup-sub">Substituindo "créditos gastos" por dados acionáveis sobre a busca de emprego</div>
+  </div>
+
+  <!-- ── LINHA 1 ─────────────────────────────── -->
+  <div class="section-label">Bloco 1 + 2 — Score e compatibilidade</div>
+  <div class="painel-grid" style="margin-bottom:1.8rem">
+
+    <!-- CARD 1: Score médio com evolução -->
+    <div class="card">
+      <div class="card-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Score médio das análises
+      </div>
+      <div class="score-avg-row">
+        <div class="score-big">64<span style="font-size:22px;color:var(--muted)">/100</span></div>
+        <div class="score-trend">
+          <div class="trend-up">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            +8 pts esse mês
+          </div>
+          <div class="trend-sub">Subiu de 56 → 64</div>
+        </div>
+      </div>
+      <div class="score-bars">
+        <div class="score-bar-row">
+          <span>MAG Seguros</span>
+          <div class="bar-track"><div class="bar-fill" style="width:78%;background:var(--green)"></div></div>
+          <span class="val" style="color:var(--green)">78</span>
+        </div>
+        <div class="score-bar-row">
+          <span>BairesDev</span>
+          <div class="bar-track"><div class="bar-fill" style="width:64%;background:var(--yellow)"></div></div>
+          <span class="val" style="color:var(--yellow)">64</span>
+        </div>
+        <div class="score-bar-row">
+          <span>Empresas...</span>
+          <div class="bar-track"><div class="bar-fill" style="width:35%;background:var(--red)"></div></div>
+          <span class="val" style="color:var(--red)">35</span>
+        </div>
+        <div class="score-bar-row">
+          <span>Itaú</span>
+          <div class="bar-track"><div class="bar-fill" style="width:59%;background:var(--yellow)"></div></div>
+          <span class="val" style="color:var(--yellow)">59</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 2: Funil de compatibilidade -->
+    <div class="card">
+      <div class="card-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        Compatibilidade das vagas
+      </div>
+      <div class="funnel-row">
+        <div class="funnel-num">3</div>
+        <div class="funnel-label">
+          <strong>vagas com score acima de 70%</strong>
+          Das 7 vagas analisadas
+        </div>
+      </div>
+      <div class="compat-list">
+        <div class="compat-item">
+          <div class="compat-dot" style="background:var(--green)"></div>
+          <span class="compat-company">MAG Seguros</span>
+          <span class="compat-score high">78% ✓</span>
+        </div>
+        <div class="compat-item">
+          <div class="compat-dot" style="background:var(--green)"></div>
+          <span class="compat-company">Nubank</span>
+          <span class="compat-score high">74% ✓</span>
+        </div>
+        <div class="compat-item">
+          <div class="compat-dot" style="background:var(--green)"></div>
+          <span class="compat-company">Mercado Livre</span>
+          <span class="compat-score high">71% ✓</span>
+        </div>
+        <div class="compat-item">
+          <div class="compat-dot" style="background:var(--yellow)"></div>
+          <span class="compat-company">BairesDev</span>
+          <span class="compat-score mid">64%</span>
+        </div>
+        <div class="compat-item">
+          <div class="compat-dot" style="background:var(--red)"></div>
+          <span class="compat-company">Empresas Anfitriãs</span>
+          <span class="compat-score low">35%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LINHA 2 ─────────────────────────────── -->
+  <div class="section-label">Bloco 3 + 4 — Keywords e Jornada</div>
+  <div class="painel-grid" style="margin-bottom:1.8rem">
+
+    <!-- CARD 3: Keywords mais faltando -->
+    <div class="card">
+      <div class="card-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Keywords que faltam no seu CV
+      </div>
+      <div class="kw-insight">
+        💡 <strong>"Inglês avançado"</strong> aparece em 5 das suas vagas analisadas — considere destacar no CV.
+      </div>
+      <div class="kw-list">
+        <div class="kw-item">
+          <span class="kw-name">Inglês avançado</span>
+          <div class="kw-bar-track"><div class="kw-bar-fill" style="width:100%"></div></div>
+          <span class="kw-count" style="color:var(--red)">5 vagas</span>
+        </div>
+        <div class="kw-item">
+          <span class="kw-name">Gestão de projetos</span>
+          <div class="kw-bar-track"><div class="kw-bar-fill" style="width:80%"></div></div>
+          <span class="kw-count" style="color:var(--red)">4 vagas</span>
+        </div>
+        <div class="kw-item">
+          <span class="kw-name">Scrum / Agile</span>
+          <div class="kw-bar-track"><div class="kw-bar-fill" style="width:60%"></div></div>
+          <span class="kw-count" style="color:var(--red)">3 vagas</span>
+        </div>
+        <div class="kw-item">
+          <span class="kw-name">Liderança de equipes</span>
+          <div class="kw-bar-track"><div class="kw-bar-fill" style="width:40%"></div></div>
+          <span class="kw-count" style="color:var(--red)">2 vagas</span>
+        </div>
+        <div class="kw-item">
+          <span class="kw-name">Power BI</span>
+          <div class="kw-bar-track"><div class="kw-bar-fill" style="width:20%"></div></div>
+          <span class="kw-count" style="color:var(--red)">1 vaga</span>
+        </div>
+      </div>
+      <div class="kw-tip">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Otimize seu CV para cobrir essas lacunas
+      </div>
+    </div>
+
+    <!-- CARD 4: Jornada / posição na busca -->
+    <div class="card">
+      <div class="card-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Onde você está na busca
+      </div>
+      <div class="journey-steps">
+        <div class="j-step done">
+          <div class="j-icon done">✓</div>
+          <div class="j-content">
+            <div class="j-title">Diagnóstico do CV</div>
+            <div class="j-sub">7 vagas analisadas · Score médio 64%</div>
+          </div>
+        </div>
+        <div class="j-step active">
+          <div class="j-icon active">📤</div>
+          <div class="j-content">
+            <div class="j-title">Candidaturas enviadas</div>
+            <div class="j-sub">3 vagas rastreadas · 1 em entrevista</div>
+          </div>
+        </div>
+        <div class="j-step todo">
+          <div class="j-icon todo">💬</div>
+          <div class="j-content">
+            <div class="j-title">Entrevistas</div>
+            <div class="j-sub">Prepare-se com o Simulador de Entrevista</div>
+          </div>
+        </div>
+        <div class="j-step todo">
+          <div class="j-icon todo">🎉</div>
+          <div class="j-content">
+            <div class="j-title">Oferta recebida</div>
+            <div class="j-sub">Continue aplicando!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LINHA 3 ─────────────────────────────── -->
+  <div class="section-label">Bloco 5 — Sequência e consistência</div>
+  <div style="max-width:440px">
+
+    <!-- CARD 5: Streak com calendário -->
+    <div class="card">
+      <div class="card-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+        Sequência de atividade
+      </div>
+      <div class="streak-top">
+        <div class="streak-fire">🔥</div>
+        <div class="streak-info">
+          <div class="streak-num">3 semanas</div>
+          <div class="streak-label">consecutivas analisando vagas</div>
+        </div>
+      </div>
+      <div class="streak-meta-row">
+        <div class="streak-badge active">🏆 Recorde pessoal</div>
+        <div class="streak-badge">Melhor: 3 sem.</div>
+        <div class="streak-badge">Este mês: 7 dias</div>
+      </div>
+      <div class="cal-label">Últimas 4 semanas</div>
+      <div class="cal-grid">
+        <!-- Semana 1 -->
+        <div class="cal-day done"></div>
+        <div class="cal-day"></div>
+        <div class="cal-day done"></div>
+        <div class="cal-day"></div>
+        <div class="cal-day done"></div>
+        <div class="cal-day done"></div>
+        <div class="cal-day"></div>
+        <!-- Semana 2 -->
+        <div class="cal-day done"></div>
+        <div class="cal-day done"></div>
+        <div class="cal-day"></div>
+        <div class="cal-day done"></div>
+        <div class="cal-day done"></div>
+        <div class="cal-day"></div>
+        <div class="cal-day done"></div>
+        <!-- Semana 3 -->
+        <div class="cal-day done"></div>
+        <div class="cal-day done"></div>
+        <div class="cal-day done"></div>
+        <div class="cal-day"></div>
+        <div class="cal-day done"></div>
+        <div class="cal-day done"></div>
+        <div class="cal-day done"></div>
+        <!-- Semana 4 (atual) -->
+        <div class="cal-day done"></div>
+        <div class="cal-day done"></div>
+        <div class="cal-day today"></div>
+        <div class="cal-day" style="opacity:.2"></div>
+        <div class="cal-day" style="opacity:.2"></div>
+        <div class="cal-day" style="opacity:.2"></div>
+        <div class="cal-day" style="opacity:.2"></div>
+      </div>
+      <div class="goal-row">
+        <span>Meta semanal: 5 análises</span>
+        <span style="color:var(--text);font-weight:700">3 / 5</span>
+      </div>
+      <div class="goal-bar-wrap">
+        <div class="goal-bar-track"><div class="goal-bar-fill"></div></div>
+        <div style="font-size:11px;color:var(--muted)">2 análises para bater a meta dessa semana</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-note">
+    🎨 Este é um mockup estático com dados fictícios · <a href="/dashboard">← Voltar ao painel real</a>
+  </div>
+
+</div>
+</body>
+</html>
