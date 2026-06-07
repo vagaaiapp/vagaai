@@ -320,6 +320,19 @@ textarea::placeholder{color:var(--muted)}
 .briefing-atencao{grid-column:1/-1;margin-top:.2rem}
 .briefing-atencao .briefing-block-list li{color:#ff8f8f}
 .briefing-atencao .briefing-block-list li::before{color:var(--red)}
+/* TRACKER PROMPT MODAL (bottom sheet) */
+.tracker-prompt-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;display:flex;align-items:flex-end;justify-content:center;padding:1rem;backdrop-filter:blur(3px);transition:opacity .25s}
+.tracker-prompt-overlay.hidden{display:none}
+.tracker-prompt-box{background:var(--surface);border:1px solid var(--border);border-radius:18px 18px 12px 12px;padding:1.4rem 1.5rem 1.5rem;width:100%;max-width:500px;animation:tpSlideUp .3s cubic-bezier(.22,.61,.36,1) both}
+@keyframes tpSlideUp{from{transform:translateY(50px);opacity:0}to{transform:translateY(0);opacity:1}}
+.tracker-prompt-icon{font-size:26px;margin-bottom:.5rem}
+.tracker-prompt-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:.25rem}
+.tracker-prompt-sub{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:1.2rem}
+.tracker-prompt-btns{display:flex;gap:.75rem;flex-wrap:wrap}
+.tracker-prompt-yes{flex:1;min-width:140px;background:var(--green);color:#0a0f0d;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;padding:.7rem 1rem;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;gap:.4rem}
+.tracker-prompt-yes:hover{background:#4ddb9e}
+.tracker-prompt-no{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.7rem 1rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.tracker-prompt-no:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
 </style>
 <script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
 </head>
@@ -1275,22 +1288,24 @@ function showResult(d) {
     newBtn.textContent = '✓ Diagnóstico usado';
   }
 
-  // CTA rastreador — só para logados
+  // CTA rastreador — banner fica oculto inicialmente; o bottom sheet modal aparece após 2s
   _lastResultData = d;
   var cta = document.getElementById('trackerCTA');
-  if (cta && !isAnonymous) {
-    var empresa = (d.job_info && d.job_info.empresa) ? d.job_info.empresa : '';
-    var cargo = (d.job_info && d.job_info.cargo) ? d.job_info.cargo : '';
-    document.getElementById('trackerCTASub').textContent = (empresa || cargo) ? (empresa + (cargo ? ' · ' + cargo : '')) + ' · Score ' + (d.score || 0) + '%' : 'Score ' + (d.score || 0) + '% — adicione ao seu rastreador';
-    cta.style.display = 'flex';
-  } else if (cta) {
-    cta.style.display = 'none';
+  if (cta) cta.style.display = 'none'; // escondido — modal toma o lugar
+  if (!isAnonymous) {
+    // Cancela timer anterior se existir (ex: nova análise sem recarregar)
+    if (_trackerPromptTimer) { clearTimeout(_trackerPromptTimer); _trackerPromptTimer = null; }
+    document.getElementById('trackerPromptModal').classList.add('hidden');
+    showTrackerPrompt(d);
   }
 
   section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function tryNewAnalysis() {
+  // Fecha o bottom sheet se estiver aberto
+  if (_trackerPromptTimer) { clearTimeout(_trackerPromptTimer); _trackerPromptTimer = null; }
+  document.getElementById('trackerPromptModal').classList.add('hidden');
   if (authSession) {
     // Usuário logado: verifica créditos
     if (userCredits <= 0) {
@@ -1533,7 +1548,7 @@ function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')
 var _pendingResultData = null;
 var _lastResultData = null;
 
-function addResultToTracker() {
+function addResultToTracker(status) {
   if (!_lastResultData) return;
   var d = _lastResultData;
   var empresa = (d.job_info && d.job_info.empresa) ? d.job_info.empresa : '';
@@ -1542,9 +1557,35 @@ function addResultToTracker() {
   try {
     var jobUrl = (document.getElementById('jobUrl') && document.getElementById('jobUrl').value.trim()) || '';
     var analysisId = (d && d._analysis_id) ? d._analysis_id : null;
-    localStorage.setItem('vagaai_tracker_pending', JSON.stringify({ empresa: empresa, cargo: cargo, score: score, status: 'aplicado', job_url: jobUrl || null, analysis_id: analysisId }));
+    localStorage.setItem('vagaai_tracker_pending', JSON.stringify({ empresa: empresa, cargo: cargo, score: score, status: status || 'quero', job_url: jobUrl || null, analysis_id: analysisId }));
   } catch(e) {}
   window.location.href = '/dashboard';
+}
+
+var _trackerPromptTimer = null;
+function showTrackerPrompt(d) {
+  if (!authSession) return;
+  // Preenche subtítulo com empresa/cargo/score
+  var empresa = (d.job_info && d.job_info.empresa) || '';
+  var cargo = (d.job_info && d.job_info.cargo) || '';
+  var info = [empresa, cargo].filter(Boolean).join(' — ');
+  document.getElementById('trackerPromptSub').textContent = info
+    ? info + ' · Score ' + (d.score || 0) + '% — monitore o status da candidatura'
+    : 'Score ' + (d.score || 0) + '% — organize sua busca e receba lembretes de follow-up.';
+  _trackerPromptTimer = setTimeout(function() {
+    document.getElementById('trackerPromptModal').classList.remove('hidden');
+  }, 2000);
+}
+function confirmTrackerPrompt() {
+  document.getElementById('trackerPromptModal').classList.add('hidden');
+  addResultToTracker('quero');
+}
+function dismissTrackerPrompt() {
+  if (_trackerPromptTimer) { clearTimeout(_trackerPromptTimer); _trackerPromptTimer = null; }
+  document.getElementById('trackerPromptModal').classList.add('hidden');
+  // Mostra o banner trackerCTA como fallback secundário
+  var cta = document.getElementById('trackerCTA');
+  if (cta && _lastResultData && authSession) cta.style.display = 'flex';
 }
 
 function openSignupModal() {
@@ -1663,6 +1704,22 @@ function skipSignup() {
         <a href="https://outlook.live.com" target="_blank" style="font-size:12px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.4rem .8rem;text-decoration:none">→ Outlook</a>
       </div>
       <button class="modal-btn-skip" onclick="skipSignup()">Ver diagnóstico parcial →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRACKER PROMPT — bottom sheet pós-análise -->
+<div class="tracker-prompt-overlay hidden" id="trackerPromptModal" onclick="if(event.target===this)dismissTrackerPrompt()">
+  <div class="tracker-prompt-box">
+    <div class="tracker-prompt-icon">📋</div>
+    <div class="tracker-prompt-title">Quer rastrear essa candidatura?</div>
+    <div class="tracker-prompt-sub" id="trackerPromptSub">Adicione ao seu painel e monitore o status, receba lembretes e organize sua busca.</div>
+    <div class="tracker-prompt-btns">
+      <button class="tracker-prompt-yes" onclick="confirmTrackerPrompt()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Sim, adicionar
+      </button>
+      <button class="tracker-prompt-no" onclick="dismissTrackerPrompt()">Não por enquanto</button>
     </div>
   </div>
 </div>
