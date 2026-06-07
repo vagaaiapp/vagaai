@@ -213,6 +213,47 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .k-status-badge{font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;border:1px solid;margin-left:.4rem}
 .k-status-badge.oferta{background:rgba(192,132,252,.1);color:#c084fc;border-color:rgba(192,132,252,.3)}
 .k-status-badge.recusado{background:rgba(138,158,144,.1);color:var(--muted);border-color:rgba(138,158,144,.25)}
+/* ── UNIFIED VAGAS VIEW ─────────────────────────────────────────────────── */
+.uv-toolbar{display:flex;align-items:center;gap:.65rem;margin-bottom:1.1rem;flex-wrap:wrap}
+.uv-view-toggle{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:.2rem;gap:.15rem;flex-shrink:0}
+.uv-view-btn{background:none;border:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;padding:.35rem .7rem;border-radius:7px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.3rem}
+.uv-view-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.uv-section-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:.5rem;margin:1.25rem 0 .6rem}
+.uv-section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.uv-row{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:.95rem 1.1rem;display:grid;grid-template-columns:52px 1fr auto;gap:.9rem;align-items:center;transition:border-color .2s;cursor:pointer;margin-bottom:.5rem}
+.uv-row:hover{border-color:rgba(255,255,255,.15)}
+.uv-row.stagnant{border-color:rgba(255,107,107,.35)}
+.uv-score{width:48px;height:48px;border-radius:50%;border:2.5px solid;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;line-height:1}
+.uv-score.high{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+.uv-score.mid{border-color:var(--yellow);color:var(--yellow);background:var(--yellow-dim)}
+.uv-score.low{border-color:var(--red);color:var(--red);background:var(--red-dim)}
+.uv-score.none{border-color:var(--border);color:var(--muted);background:var(--surface2);font-size:11px}
+.uv-main{min-width:0}
+.uv-top{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.2rem}
+.uv-company{font-size:15px;font-weight:700;color:var(--text)}
+.uv-role{font-size:13px;color:var(--muted);margin-bottom:.4rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uv-sbadge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid;white-space:nowrap;flex-shrink:0}
+.uv-sbadge.quero{background:var(--blue-dim,rgba(100,200,255,.1));color:#64c8ff;border-color:rgba(100,200,255,.25)}
+.uv-sbadge.aplicado{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.uv-sbadge.entrevista{background:var(--yellow-dim);color:var(--yellow);border-color:var(--yellow-border)}
+.uv-sbadge.concluido{background:var(--purple-dim,rgba(192,132,252,.1));color:#c084fc;border-color:rgba(192,132,252,.25)}
+.uv-sbadge.soanalise{background:var(--surface2);color:var(--muted);border-color:var(--border)}
+.uv-insights{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+.uv-tag{font-size:10px;padding:2px 7px;border-radius:5px;font-weight:600;white-space:nowrap}
+.uv-tag.miss{background:var(--red-dim);color:var(--red)}
+.uv-tag.ok{background:var(--green-dim);color:var(--green)}
+.uv-tag.age{color:var(--muted);font-weight:400;padding:0}
+.uv-tag.followup{background:var(--yellow-dim);color:var(--yellow)}
+.uv-tag.warn{background:var(--red-dim);color:var(--red)}
+.uv-nota{font-size:11px;color:var(--muted);margin-top:.3rem;font-style:italic}
+.uv-actions{display:flex;align-items:center;gap:.35rem;flex-shrink:0}
+.uv-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:'Inter',sans-serif;font-size:11px;font-weight:600;padding:.35rem .6rem;border-radius:7px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.3rem;white-space:nowrap}
+.uv-btn:hover{border-color:var(--green-border);color:var(--green)}
+.uv-btn.primary{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.uv-btn.del{border-color:transparent;background:none}
+.uv-btn.del:hover{color:var(--red);border-color:var(--red-border)}
+.uv-empty{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:12px}
+@media(max-width:680px){.uv-row{grid-template-columns:44px 1fr}.uv-actions{display:none}}
 /* ALERTS TAB */
 .alerts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 @media(max-width:640px){.alerts-grid{grid-template-columns:1fr}}
@@ -529,8 +570,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
   <!-- TABS -->
   <div class="dash-tabs">
     <button class="dash-tab active" onclick="switchDashTab('painel')">Painel</button>
-    <button class="dash-tab" onclick="switchDashTab('candidaturas')">Candidaturas<span class="tab-count" id="trackerTabCount" style="display:none">0</span></button>
-    <button class="dash-tab" onclick="switchDashTab('historico')">Histórico</button>
+    <button class="dash-tab" onclick="switchDashTab('vagas')">Minhas Vagas<span class="tab-count" id="trackerTabCount" style="display:none">0</span></button>
     <button class="dash-tab" onclick="switchDashTab('alertas')">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:.3rem"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       Alertas
@@ -597,46 +637,64 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 
   </div><!-- /tab-painel -->
 
-  <!-- TAB: CANDIDATURAS (KANBAN) -->
-  <div id="tab-candidaturas" style="display:none">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:.75rem">
+  <!-- TAB: MINHAS VAGAS (unificado: candidaturas + histórico) -->
+  <div id="tab-vagas" style="display:none">
+
+    <!-- Toolbar -->
+    <div class="uv-toolbar">
+      <div class="uv-view-toggle">
+        <button class="uv-view-btn active" id="uvBtnLista" onclick="switchVagasView('lista')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          Lista
+        </button>
+        <button class="uv-view-btn" id="uvBtnKanban" onclick="switchVagasView('kanban')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Kanban
+        </button>
+      </div>
+      <div style="flex:1"></div>
       <div class="tracker-stats" id="trackerStats"></div>
       <button onclick="openKModal()" style="background:var(--green);color:#0a0f0d;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:.45rem .9rem;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;transition:all .2s">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Nova candidatura
       </button>
     </div>
-    <div id="trackerMeta" style="display:none;margin-bottom:1rem;display:flex;flex-direction:column;gap:.55rem"></div>
-    <div class="kanban-board">
-      <div class="k-col col-quero" ondrop="kDrop(event,'quero')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
-        <div class="k-col-header"><span class="k-col-title">🔍 Quero aplicar</span><span class="k-col-count" id="kc-quero">0</span></div>
-        <div class="k-col-body" id="kb-quero"></div>
-      </div>
-      <div class="k-col col-aplicado" ondrop="kDrop(event,'aplicado')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
-        <div class="k-col-header"><span class="k-col-title">📤 Aplicado</span><span class="k-col-count" id="kc-aplicado">0</span></div>
-        <div class="k-col-body" id="kb-aplicado"></div>
-      </div>
-      <div class="k-col col-entrevista" ondrop="kDrop(event,'entrevista')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
-        <div class="k-col-header"><span class="k-col-title">💬 Entrevista</span><span class="k-col-count" id="kc-entrevista">0</span></div>
-        <div class="k-col-body" id="kb-entrevista"></div>
-      </div>
-      <div class="k-col col-concluido" ondrop="kDrop(event,'oferta')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
-        <div class="k-col-header"><span class="k-col-title">✅ Concluído</span><span class="k-col-count" id="kc-concluido">0</span></div>
-        <div class="k-col-body" id="kb-concluido"></div>
+
+    <!-- Meta semanal + funil -->
+    <div id="trackerMeta" style="display:none;margin-bottom:1rem;flex-direction:column;gap:.55rem"></div>
+
+    <!-- VIEW: LISTA UNIFICADA -->
+    <div id="uvListaView">
+      <div id="uvListaAndamento"></div>
+      <div id="uvListaSoAnalise"></div>
+      <div id="loadMoreWrap" style="display:none;text-align:center;margin-top:1rem">
+        <button id="loadMoreBtn" onclick="loadMoreAnalyses()" style="background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.6rem 1.4rem;border-radius:8px;cursor:pointer;transition:all .2s">Carregar mais</button>
       </div>
     </div>
-  </div><!-- /tab-candidaturas -->
 
-  <!-- TAB: HISTÓRICO -->
-  <div id="tab-historico" style="display:none">
-  <div class="section-header">
-    <div class="section-title">Histórico de análises</div>
-  </div>
-  <div class="analyses-list" id="analysesList"></div>
-  <div id="loadMoreWrap" style="display:none;text-align:center;margin-top:1rem">
-    <button id="loadMoreBtn" onclick="loadMoreAnalyses()" style="background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.6rem 1.4rem;border-radius:8px;cursor:pointer;transition:all .2s">Carregar mais</button>
-  </div>
-  </div><!-- /tab-historico -->
+    <!-- VIEW: KANBAN (existente) -->
+    <div id="uvKanbanView" style="display:none">
+      <div class="kanban-board">
+        <div class="k-col col-quero" ondrop="kDrop(event,'quero')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
+          <div class="k-col-header"><span class="k-col-title">🔍 Quero aplicar</span><span class="k-col-count" id="kc-quero">0</span></div>
+          <div class="k-col-body" id="kb-quero"></div>
+        </div>
+        <div class="k-col col-aplicado" ondrop="kDrop(event,'aplicado')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
+          <div class="k-col-header"><span class="k-col-title">📤 Aplicado</span><span class="k-col-count" id="kc-aplicado">0</span></div>
+          <div class="k-col-body" id="kb-aplicado"></div>
+        </div>
+        <div class="k-col col-entrevista" ondrop="kDrop(event,'entrevista')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
+          <div class="k-col-header"><span class="k-col-title">💬 Entrevista</span><span class="k-col-count" id="kc-entrevista">0</span></div>
+          <div class="k-col-body" id="kb-entrevista"></div>
+        </div>
+        <div class="k-col col-concluido" ondrop="kDrop(event,'oferta')" ondragover="kAllowDrop(event)" ondragleave="kLeaveDrop(event)">
+          <div class="k-col-header"><span class="k-col-title">✅ Concluído</span><span class="k-col-count" id="kc-concluido">0</span></div>
+          <div class="k-col-body" id="kb-concluido"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-vagas -->
 
   <!-- TAB: ALERTAS -->
   <div id="tab-alertas" style="display:none">
@@ -849,7 +907,7 @@ async function init() {
   // Guarda para o modal de perfil
   window._perfilData = { email: email, memberSince: memberSince, displayName: displayName, savedName: savedName };
 
-  await Promise.all([loadCredits(), loadAnalyses(), loadSubscription()]);
+  await Promise.all([loadCredits(), loadAnalyses(), loadSubscription(), loadKanban()]);
   checkPendingTracker();
 
   document.getElementById('pageLoading').classList.add('hidden');
@@ -1005,7 +1063,6 @@ var _analysesFull = [];
 async function loadAnalyses() {
   _analysesOffset = 0;
   _analysesFull = [];
-  var listEl = document.getElementById('analysesList');
   try {
     var res = await fetch(
       SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=id,score,nivel,job_excerpt,created_at,result&order=created_at.desc&limit=' + _analysesPageSize + '&offset=0',
@@ -1018,25 +1075,11 @@ async function loadAnalyses() {
     _analysesOffset = rows.length;
     _totalAnalyses = totalCount;
     document.getElementById('loadMoreWrap').style.display = (_analysesOffset < totalCount) ? 'block' : 'none';
-
+    renderUnifiedList();
     document.getElementById('totalValue').textContent = totalCount;
     renderUserLevel(totalCount);
     renderStreak(rows);
-
-    if (!rows.length) {
-      listEl.innerHTML = '<div class="empty-state">'
-        + '<div class="empty-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></div>'
-        + '<div class="empty-title">Nenhuma análise ainda</div>'
-        + '<p class="empty-sub">Faça sua primeira análise e veja o resultado aqui.</p>'
-        + '<a href="/app" class="btn-start"><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Analisar minha vaga</a>'
-        + '</div>';
-      return;
-    }
-
-    listEl.innerHTML = rows.map(renderAnalysisCard).join('');
-  } catch(e) {
-    listEl.innerHTML = '<div style="color:var(--muted);font-size:14px;padding:1rem">Erro ao carregar histórico.</div>';
-  }
+  } catch(e) { console.error('loadAnalyses', e); }
 }
 
 async function loadMoreAnalyses() {
@@ -1052,9 +1095,8 @@ async function loadMoreAnalyses() {
     var totalCount = parseInt((contentRange.split('/')[1] || '0'), 10) || (_analysesOffset + rows.length);
     _analysesFull = _analysesFull.concat(rows);
     _analysesOffset += rows.length;
-    var listEl = document.getElementById('analysesList');
-    listEl.insertAdjacentHTML('beforeend', rows.map(renderAnalysisCard).join(''));
     document.getElementById('loadMoreWrap').style.display = (_analysesOffset < totalCount) ? 'block' : 'none';
+    renderUnifiedList();
   } catch(e) {}
   if (btn) { btn.disabled = false; btn.textContent = 'Carregar mais'; }
 }
@@ -1463,7 +1505,7 @@ function escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&
 
 // ── ADD TO TRACKER FROM HISTORY ───────────────────────────────────────────────
 function addToTracker(empresa, cargo, score) {
-  switchDashTab('candidaturas');
+  switchDashTab('vagas');
   setTimeout(function() {
     document.getElementById('km-empresa').value = empresa || '';
     document.getElementById('km-cargo').value = cargo || '';
@@ -1477,15 +1519,22 @@ function addToTracker(empresa, cargo, score) {
 }
 
 // ── DASH TABS ─────────────────────────────────────────────────────────────────
+function switchVagasView(mode) {
+  var isList = mode === 'lista';
+  document.getElementById('uvListaView').style.display = isList ? '' : 'none';
+  document.getElementById('uvKanbanView').style.display = isList ? 'none' : '';
+  document.getElementById('uvBtnLista').classList.toggle('active', isList);
+  document.getElementById('uvBtnKanban').classList.toggle('active', !isList);
+}
+
 function switchDashTab(tab) {
-  ['painel','candidaturas','historico','alertas'].forEach(function(t) {
+  ['painel','vagas','alertas'].forEach(function(t) {
     document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
   });
   document.querySelectorAll('.dash-tab').forEach(function(el, i) {
-    el.classList.toggle('active', ['painel','candidaturas','historico','alertas'][i] === tab);
+    el.classList.toggle('active', ['painel','vagas','alertas'][i] === tab);
   });
-  if (tab === 'historico' && !_analysesFull.length) loadAnalyses();
-  if (tab === 'candidaturas') loadKanban();
+  if (tab === 'vagas') { if (!_kCards.length) loadKanban(); }
   if (tab === 'alertas') loadAlertProfile();
 }
 
@@ -1721,6 +1770,7 @@ async function loadKanban() {
     _kCards = await res.json();
     if (!Array.isArray(_kCards)) _kCards = [];
     renderKanban();
+    renderUnifiedList();
     // Tenta vincular análises em cards antigos sem analysis_id
     autoLinkAnalyses().catch(function(){});
   } catch(e) { console.error('loadKanban', e); }
@@ -2083,6 +2133,174 @@ function changeWeekGoal() {
   if (n && n > 0 && n <= 100) { localStorage.setItem('vagaai_week_goal', n); renderKanban(); }
 }
 
+// ── UNIFIED LIST VIEW ────────────────────────────────────────────────────────
+function renderUnifiedList() {
+  var andamentoEl = document.getElementById('uvListaAndamento');
+  var soAnaliseEl = document.getElementById('uvListaSoAnalise');
+  if (!andamentoEl || !soAnaliseEl) return;
+
+  // IDs de análise já vinculados a algum card do tracker
+  var linkedAnalysisIds = new Set(_kCards.map(function(c){ return c.analysis_id; }).filter(Boolean));
+
+  // ── Seção 1: Em andamento (cards do job_tracker) ─────────────────────────
+  var statusOrder = { entrevista: 0, aplicado: 1, quero: 2, oferta: 3, recusado: 4 };
+  var sorted = _kCards.slice().sort(function(a, b) {
+    return (statusOrder[a.status] ?? 5) - (statusOrder[b.status] ?? 5);
+  });
+
+  var andamentoHTML = '<div class="uv-section-label">Em andamento <span style="color:var(--text);font-weight:700;font-size:11px">' + _kCards.length + '</span></div>';
+  if (!sorted.length) {
+    andamentoHTML += '<div class="uv-empty">Nenhuma candidatura ainda — <a href="/app" style="color:var(--green)">analise uma vaga</a> para começar.</div>';
+  } else {
+    andamentoHTML += sorted.map(function(c) { return renderUVRow(c, null); }).join('');
+  }
+  andamentoEl.innerHTML = andamentoHTML;
+
+  // ── Seção 2: Só analisado (análises sem card no tracker) ─────────────────
+  var untracked = _analysesFull.filter(function(a) { return !linkedAnalysisIds.has(a.id); });
+  var soAnaliseHTML = '';
+  if (untracked.length) {
+    soAnaliseHTML = '<div class="uv-section-label">Só analisado — não rastreado <span style="color:var(--text);font-weight:700;font-size:11px">' + untracked.length + '</span></div>';
+    soAnaliseHTML += untracked.map(function(a) { return renderUVRow(null, a); }).join('');
+  }
+  soAnaliseEl.innerHTML = soAnaliseHTML;
+}
+
+function renderUVRow(card, analysis) {
+  // card = job_tracker row | analysis = analyses row (um ou outro pode ser null)
+  var isCard = !!card;
+  var score, empresa, cargo, status, jobUrl, analysisId, analysisResult, nota, createdAt, stageDate;
+
+  if (isCard) {
+    score = card.score || 0;
+    empresa = card.empresa || '';
+    cargo = card.cargo || '';
+    status = card.status;
+    jobUrl = card.job_url || '';
+    analysisId = card.analysis_id || '';
+    nota = card.nota || '';
+    createdAt = card.created_at;
+    stageDate = card.stage_moved_at || card.updated_at || card.created_at;
+    // Tenta pegar dados da análise vinculada da lista em memória
+    analysisResult = null;
+    if (analysisId) {
+      var found = _analysesFull.find(function(a){ return a.id === analysisId; });
+      if (found) analysisResult = found.result;
+    }
+  } else {
+    score = analysis.score || 0;
+    empresa = (analysis.result && analysis.result.job_info && analysis.result.job_info.empresa) || analysis.job_excerpt || 'Vaga analisada';
+    cargo = (analysis.result && analysis.result.job_info && analysis.result.job_info.cargo) || '';
+    status = 'soanalise';
+    jobUrl = '';
+    analysisId = analysis.id;
+    nota = '';
+    createdAt = analysis.created_at;
+    stageDate = analysis.created_at;
+    analysisResult = analysis.result || null;
+  }
+
+  var scClass = score >= 70 ? 'high' : score >= 40 ? 'mid' : score ? 'low' : 'none';
+  var days = stageDate ? Math.floor((Date.now() - new Date(stageDate).getTime()) / 86400000) : null;
+  var ageStr = days === null ? '' : days === 0 ? 'hoje' : days === 1 ? 'há 1 dia' : 'há ' + days + ' dias';
+  var isStagnant = status === 'aplicado' && days !== null && days > 14;
+  var isFollowUp = status === 'aplicado' && days !== null && days >= 7 && days <= 14;
+
+  // Status badge
+  var statusLabels = { quero:'🔍 Quero aplicar', aplicado:'📤 Aplicado', entrevista:'💬 Entrevista', oferta:'✅ Oferta', recusado:'Recusado', soanalise:'📊 Só análise' };
+  var statusBadge = '<span class="uv-sbadge ' + (status === 'oferta' || status === 'recusado' ? 'concluido' : status) + '">' + (statusLabels[status] || status) + '</span>';
+
+  // Keywords inline (da análise)
+  var insightsHTML = '';
+  if (analysisResult) {
+    var missing = (analysisResult.keywords_faltando || []).slice(0, 2);
+    var found2 = (analysisResult.keywords_encontradas || []).slice(0, 1);
+    found2.forEach(function(k){ insightsHTML += '<span class="uv-tag ok">✓ ' + escHtml(k) + '</span>'; });
+    missing.forEach(function(k){ insightsHTML += '<span class="uv-tag miss">❌ ' + escHtml(k) + '</span>'; });
+  }
+  if (isStagnant) insightsHTML += '<span class="uv-tag warn">⚠️ ' + days + ' dias sem resposta</span>';
+  else if (isFollowUp) insightsHTML += '<span class="uv-tag followup">💬 Considere follow-up</span>';
+  if (ageStr) insightsHTML += '<span class="uv-tag age">' + ageStr + '</span>';
+
+  // Ações
+  var actions = '';
+  if (status === 'soanalise') {
+    // Análise sem tracker: principal CTA é Rastrear
+    actions += '<button class="uv-btn primary" onclick="event.stopPropagation();addToTrackerFromAnalysis(\'' + escAttr(analysis.id) + '\')">+ Rastrear</button>';
+  }
+  if (analysisId) {
+    actions += '<button class="uv-btn" onclick="event.stopPropagation();viewTrackerAnalysis(\'' + escAttr(analysisId) + '\')">📊 Ver análise</button>';
+    // CV btn (abre análise e rola até CV)
+    if (analysisResult && analysisResult.cv_otimizado) {
+      actions += '<button class="uv-btn" onclick="event.stopPropagation();viewTrackerCV(\'' + escAttr(analysisId) + '\')">📄 CV</button>';
+    }
+  }
+  if (jobUrl) actions += '<a class="uv-btn" href="' + escAttr(jobUrl) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 Vaga</a>';
+  if (isCard) actions += '<button class="uv-btn del" onclick="event.stopPropagation();confirmDelKCard(\'' + escAttr(card.id) + '\')">×</button>';
+  else actions += '<button class="uv-btn del" onclick="event.stopPropagation();confirmDelete(\'' + escAttr(analysis.id) + '\',this)" title="Excluir análise">×</button>';
+
+  var clickAttr = isCard ? 'onclick="openKEdit(\'' + escAttr(card.id) + '\')"' : (analysisResult ? 'onclick="openResultFromHistoryById(\'' + escAttr(analysis.id) + '\')"' : '');
+
+  return '<div class="uv-row' + (isStagnant ? ' stagnant' : '') + '" ' + clickAttr + '>'
+    + '<div class="uv-score ' + scClass + '">' + (score || '—') + '</div>'
+    + '<div class="uv-main">'
+    + '<div class="uv-top"><span class="uv-company">' + escHtml(empresa) + '</span>' + statusBadge + '</div>'
+    + (cargo ? '<div class="uv-role">' + escHtml(cargo) + '</div>' : '')
+    + (insightsHTML ? '<div class="uv-insights">' + insightsHTML + '</div>' : '')
+    + (nota ? '<div class="uv-nota">📝 ' + escHtml(nota) + '</div>' : '')
+    + '</div>'
+    + '<div class="uv-actions">' + actions + '</div>'
+    + '</div>';
+}
+
+function addToTrackerFromAnalysis(analysisId) {
+  var a = _analysesFull.find(function(x){ return x.id === analysisId; });
+  var empresa = (a && a.result && a.result.job_info && a.result.job_info.empresa) || '';
+  var cargo = (a && a.result && a.result.job_info && a.result.job_info.cargo) || '';
+  var score = (a && a.score) || 0;
+  _kPendingAnalysisId = analysisId;
+  setTimeout(function() {
+    _kEditId = null;
+    document.getElementById('km-empresa').value = empresa;
+    document.getElementById('km-cargo').value = cargo;
+    document.getElementById('km-score').value = score || '';
+    document.getElementById('km-status').value = 'aplicado';
+    document.getElementById('km-nota').value = '';
+    document.getElementById('km-joburl').value = '';
+    document.getElementById('kModalTitle').textContent = 'Adicionar ao rastreador';
+    document.getElementById('kModalDeleteBtn').style.display = 'none';
+    document.getElementById('kModalQuickActions').style.display = 'none';
+    document.getElementById('kModal').classList.remove('hidden');
+  }, 100);
+}
+
+function openResultFromHistoryById(analysisId) {
+  var a = _analysesFull.find(function(x){ return x.id === analysisId; });
+  if (!a || !a.result) return;
+  localStorage.setItem('vagaai_view_analysis', JSON.stringify(a.result));
+  window.location.href = '/app';
+}
+
+function viewTrackerCV(analysisId) {
+  var a = _analysesFull.find(function(x){ return x.id === analysisId; });
+  if (a && a.result) {
+    localStorage.setItem('vagaai_view_analysis', JSON.stringify(a.result));
+    localStorage.setItem('vagaai_scroll_to', 'cv');
+    window.location.href = '/app';
+    return;
+  }
+  // Fallback: busca no Supabase
+  if (!currentSession) return;
+  fetch(SUPABASE_URL + '/rest/v1/analyses?id=eq.' + analysisId + '&select=result&limit=1', {
+    headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
+  }).then(function(r){ return r.json(); }).then(function(rows) {
+    if (!rows || !rows[0] || !rows[0].result) { alert('Análise não encontrada.'); return; }
+    localStorage.setItem('vagaai_view_analysis', JSON.stringify(rows[0].result));
+    localStorage.setItem('vagaai_scroll_to', 'cv');
+    window.location.href = '/app';
+  }).catch(function(){ alert('Erro ao carregar análise.'); });
+}
+
 // Chamado do app/index.html via localStorage
 function checkPendingTracker() {
   try {
@@ -2090,8 +2308,8 @@ function checkPendingTracker() {
     if (!pending) return;
     localStorage.removeItem('vagaai_tracker_pending');
     var data = JSON.parse(pending);
-    // Abre aba candidaturas e modal pré-preenchido
-    switchDashTab('candidaturas');
+    // Abre aba vagas e modal pré-preenchido
+    switchDashTab('vagas');
     setTimeout(function() {
       _kEditId = null;
       if (data.analysis_id) _kPendingAnalysisId = data.analysis_id;
