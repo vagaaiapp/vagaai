@@ -6,6 +6,7 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   const token = (req.headers.authorization || '').replace('Bearer ', '');

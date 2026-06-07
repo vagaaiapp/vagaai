@@ -210,21 +210,43 @@ export default async function handler(req, res) {
 
   // ── Busca user_id pelo customer_id ou email ───────────────────────────────────
   async function getUserIdByCustomerOrEmail(customerId, email) {
-    // 1. Tenta pelo stripe_customer_id
+    // 1. Tenta pelo stripe_customer_id na tabela subscriptions
     if (customerId) {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?stripe_customer_id=eq.${customerId}&select=user_id`, {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?stripe_customer_id=eq.${encodeURIComponent(customerId)}&select=user_id`, {
         headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` }
       });
       const rows = await r.json();
       if (rows?.length) return rows[0].user_id;
     }
-    // 2. Fallback: busca pelo email na tabela auth.users via service role
+    // 2. Fallback: busca pelo email via SQL (admin users endpoint não filtra por query param)
     if (email) {
-      const r = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`, {
-        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` }
-      });
-      const data = await r.json();
-      if (data?.users?.length) return data.users[0].id;
+      const r = await fetch(
+        `${SUPABASE_URL}/rest/v1/rpc/get_user_id_by_email`,
+        {
+          method: 'POST',
+          headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ p_email: email }),
+        }
+      );
+      if (r.ok) {
+        const uid = await r.json();
+        if (uid) return uid;
+      }
+      // Fallback secundário: lista usuários e filtra por email
+      try {
+        let page = 1;
+        while (page <= 5) { // máximo 5 páginas
+          const ur = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?page=${page}&per_page=1000`, {
+            headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` }
+          });
+          const data = await ur.json();
+          const users = data?.users || [];
+          const found = users.find(u => u.email === email);
+          if (found) return found.id;
+          if (users.length < 1000) break;
+          page++;
+        }
+      } catch(e) { console.warn('Webhook: email lookup failed', e.message); }
     }
     return null;
   }
@@ -286,17 +308,35 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing session object' });
   }
 
-  // Se for assinatura, o evento customer.subscription.created já cuida
+  // Se for assinatura: salva mapeamento user_id → customer_id via UPSERT
+  // (PATCH não funciona se a linha ainda não existe — novo assinante)
   if (session.mode === 'subscription') {
-    // Apenas salva o customer_id vinculado ao user_id para lookups futuros
     const userId2 = session.client_reference_id;
     const customerId2 = session.customer;
+    const subId2 = session.subscription;
     if (userId2 && customerId2) {
-      await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${userId2}`, {
-        method: 'PATCH',
-        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-        body: JSON.stringify({ stripe_customer_id: customerId2 }),
-      }).catch(() => {});
+      const now = new Date().toISOString();
+      // UPSERT: cria a linha se não existir, atualiza se existir
+      await fetch(`${SUPABASE_URL}/rest/v1/subscriptions`, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'resolution=merge-duplicates,return=minimal',
+        },
+        body: JSON.stringify({
+          user_id: userId2,
+          stripe_customer_id: customerId2,
+          stripe_subscription_id: subId2 || null,
+          plan: 'free',       // placeholder — customer.subscription.created atualiza para o plano real
+          status: 'pending',
+          updated_at: now,
+        }),
+      }).catch((e) => console.error('Webhook: upsert sub mapping failed', e.message));
+      console.log(`Webhook: checkout subscription → mapped user=${userId2} customer=${customerId2}`);
+    } else {
+      console.warn(`Webhook: checkout subscription sem client_reference_id session=${session.id}`);
     }
     return res.status(200).json({ received: true, note: 'subscription_checkout_handled' });
   }
