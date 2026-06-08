@@ -129,10 +129,13 @@ textarea::placeholder{color:var(--muted)}
 .cv-received-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:.2rem;transition:color .2s;flex-shrink:0}
 .cv-received-remove:hover{color:var(--red)}
 /* CV BUILDER */
-.cv-mode-tabs{display:flex;gap:.35rem;margin-bottom:.85rem;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.25rem}
-.cv-mode-tab{flex:1;background:none;border:none;border-radius:7px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--muted);padding:.45rem .6rem;cursor:pointer;transition:all .2s;white-space:nowrap}
-.cv-mode-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.25)}
-[data-theme="light"] .cv-mode-tab.active{box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.cv-mode-tabs{display:flex;gap:0;margin-bottom:.85rem;border:1px solid var(--border);border-radius:9px;overflow:hidden}
+.cv-mode-tab{flex:1;background:none;border:none;border-right:1px solid var(--border);font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:var(--muted);padding:.55rem .6rem;cursor:pointer;transition:all .2s;white-space:nowrap;letter-spacing:.01em}
+.cv-mode-tab:last-child{border-right:none}
+.cv-mode-tab.active{background:var(--surface);color:var(--text);font-weight:600}
+.cv-mode-tab:hover:not(.active){color:var(--text);background:rgba(255,255,255,.03)}
+[data-theme="light"] .cv-mode-tab.active{background:#fff}
+[data-theme="light"] .cv-mode-tab:hover:not(.active){background:rgba(0,0,0,.03)}
 .cv-builder{display:flex;flex-direction:column;gap:.75rem}
 .cv-builder-field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.04em}
 .cv-builder-field label span{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);opacity:.75}
@@ -429,8 +432,8 @@ textarea::placeholder{color:var(--muted)}
 
       <!-- Tabs: Tenho CV / Criar CV -->
       <div class="cv-mode-tabs">
-        <button class="cv-mode-tab active" id="tabTenhoCV" onclick="switchCvMode('tenho')">📄 Já tenho CV</button>
-        <button class="cv-mode-tab" id="tabCriarCV" onclick="switchCvMode('criar')">✨ Criar do zero</button>
+        <button class="cv-mode-tab active" id="tabTenhoCV" onclick="switchCvMode('tenho')">Já tenho currículo</button>
+        <button class="cv-mode-tab" id="tabCriarCV" onclick="switchCvMode('criar')">Criar do zero</button>
       </div>
 
       <!-- Painel: Já tenho CV (original) -->
