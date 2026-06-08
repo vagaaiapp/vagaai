@@ -96,6 +96,18 @@ textarea::placeholder{color:var(--muted)}
 .fetch-status{font-size:12px;margin-top:.3rem;min-height:1rem}
 .or-divider{display:flex;align-items:center;gap:.6rem;margin:.6rem 0 .2rem;color:var(--muted);font-size:12px}
 .or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+/* Job preview card */
+.job-preview{background:var(--surface2);border:1px solid var(--green-border);border-radius:10px;padding:.85rem 1rem;margin:.5rem 0 .4rem;display:none}
+.job-preview.show{display:block}
+.job-preview-header{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.55rem}
+.job-preview-badge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--green);background:var(--green-dim);border:1px solid var(--green-border);padding:1px 8px;border-radius:20px}
+.job-preview-edit{font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit;padding:0;text-decoration:underline;text-underline-offset:2px;transition:color .15s}
+.job-preview-edit:hover{color:var(--text)}
+.job-preview-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:.2rem;line-height:1.3}
+.job-preview-company{font-size:13px;color:var(--muted);margin-bottom:.55rem}
+.job-preview-chips{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.55rem}
+.job-preview-chip{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--muted)}
+.job-preview-excerpt{font-size:12px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
 /* FILE UPLOAD */
 .upload-row{display:flex;align-items:center;gap:.6rem;margin-top:.5rem;flex-wrap:wrap}
@@ -391,8 +403,24 @@ textarea::placeholder{color:var(--muted)}
         <button class="btn-fetch" id="fetchBtn" onclick="fetchJobUrl()">Carregar</button>
       </div>
       <div class="fetch-status" id="fetchStatus"></div>
-      <div class="or-divider"><span>ou cole o texto abaixo</span></div>
-      <textarea id="jobInput" rows="3" placeholder="Ou cole aqui o texto da vaga (título, requisitos, responsabilidades...)"></textarea>
+
+      <!-- Preview card (aparece após carregar URL) -->
+      <div class="job-preview" id="jobPreview">
+        <div class="job-preview-header">
+          <span class="job-preview-badge">✓ Vaga carregada</span>
+          <button class="job-preview-edit" onclick="showJobTextArea()">editar texto →</button>
+        </div>
+        <div class="job-preview-title" id="jpTitle"></div>
+        <div class="job-preview-company" id="jpCompany"></div>
+        <div class="job-preview-chips" id="jpChips"></div>
+        <div class="job-preview-excerpt" id="jpExcerpt"></div>
+      </div>
+
+      <!-- Textarea (visível por padrão, oculto após URL carregada) -->
+      <div id="jobTextWrap">
+        <div class="or-divider"><span>ou cole o texto abaixo</span></div>
+        <textarea id="jobInput" rows="3" placeholder="Ou cole aqui o texto da vaga (título, requisitos, responsabilidades...)"></textarea>
+      </div>
       <div class="char-count" id="jobCount">0 caracteres</div>
     </div>
 
@@ -959,6 +987,8 @@ var jobEl = document.getElementById('jobInput');
 var cvEl = document.getElementById('cvInput');
 jobEl.addEventListener('input', function() {
   document.getElementById('jobCount').textContent = this.value.length + ' caracteres';
+  // Se o usuário editar manualmente, descarta o preview (não faz mais sentido)
+  document.getElementById('jobPreview').classList.remove('show');
 });
 cvEl.addEventListener('input', function() {
   document.getElementById('cvCount').textContent = this.value.length + ' caracteres';
@@ -997,6 +1027,90 @@ function hideError() {
   document.getElementById('errorBox').classList.remove('show');
 }
 
+// Extrai infos básicas do texto da vaga heuristicamente (sem custo de API)
+function extractJobPreview(text) {
+  var lines = text.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+
+  // Cargo: primeira linha curta não-boilerplate, ou linha com palavras-chave de cargo
+  var cargoKeywords = /gerente|analista|coordenador|diretor|engenheiro|desenvolvedor|designer|especialista|assistente|consultor|supervisor|tech lead|product|marketing|vendas|comercial|financeiro|recursos humanos|ti |junior|pleno|sênior|sr\.|jr\./i;
+  var cargo = '';
+  for (var i = 0; i < Math.min(lines.length, 12); i++) {
+    var l = lines[i];
+    if (l.length > 5 && l.length < 80 && cargoKeywords.test(l)) { cargo = l; break; }
+  }
+  if (!cargo) {
+    // Fallback: primeira linha razoável
+    for (var j = 0; j < Math.min(lines.length, 5); j++) {
+      if (lines[j].length > 4 && lines[j].length < 70 && !/^(https?:|www\.|anunciar|cadastrar|entrar|login|menu)/i.test(lines[j])) {
+        cargo = lines[j]; break;
+      }
+    }
+  }
+
+  // Empresa: linha após cargo, ou pattern "empresa:" / "sobre a empresa" próximo
+  var empresa = '';
+  var sobreEmpresaIdx = -1;
+  for (var k = 0; k < lines.length; k++) {
+    if (/^(sobre (a |n?ós|a empresa)|quem somos|a empresa)/i.test(lines[k])) { sobreEmpresaIdx = k; break; }
+  }
+  if (sobreEmpresaIdx >= 0 && lines[sobreEmpresaIdx + 1]) {
+    empresa = lines[sobreEmpresaIdx + 1].substring(0, 50);
+  }
+  if (!empresa) {
+    for (var m = 0; m < Math.min(lines.length, 20); m++) {
+      var ll = lines[m];
+      if (/empresa:|companhia:|organiza[çc][aã]o:/i.test(ll)) {
+        empresa = ll.replace(/empresa:|companhia:|organiza[çc][aã]o:/i, '').trim().substring(0, 50);
+        break;
+      }
+    }
+  }
+
+  // Modalidade / localização: busca palavras-chave
+  var modalidade = '';
+  var cidade = '';
+  var regiaoRE = /\b(remoto|remote|home.?office|h[ií]brido|presencial|hybrid|on.?site)\b/i;
+  var cidadeRE = /\b(s[aã]o paulo|rio de janeiro|belo horizonte|curitiba|porto alegre|bras[ií]lia|salvador|campinas|fortaleza|recife|minas gerais|sp|rj|mg|pr|rs|df)\b/i;
+  for (var n = 0; n < lines.length; n++) {
+    if (!modalidade) { var mMatch = lines[n].match(regiaoRE); if (mMatch) modalidade = mMatch[0]; }
+    if (!cidade) { var cMatch = lines[n].match(cidadeRE); if (cMatch) cidade = cMatch[0]; }
+    if (modalidade && cidade) break;
+  }
+
+  // Trecho de descrição: primeiros 2 parágrafos não-boilerplate com mais de 60 chars
+  var excerptLines = lines.filter(function(l){
+    return l.length > 60 && !/^(https?:|www\.|cookie|copyright|©|\+\d{2}|\d{2}\/\d{2})/i.test(l);
+  }).slice(0, 3);
+  var excerpt = excerptLines.join(' ').substring(0, 220);
+
+  return { cargo: cargo, empresa: empresa, modalidade: modalidade, cidade: cidade, excerpt: excerpt };
+}
+
+function showJobPreview(preview, charCount) {
+  document.getElementById('jpTitle').textContent = preview.cargo || 'Vaga identificada';
+  document.getElementById('jpCompany').textContent = preview.empresa || '';
+
+  var chips = [];
+  if (preview.modalidade) chips.push(preview.modalidade.charAt(0).toUpperCase() + preview.modalidade.slice(1).toLowerCase());
+  if (preview.cidade) chips.push(preview.cidade);
+  chips.push(charCount.toLocaleString('pt-BR') + ' caracteres carregados');
+  document.getElementById('jpChips').innerHTML = chips.map(function(c){
+    return '<span class="job-preview-chip">' + c + '</span>';
+  }).join('');
+
+  document.getElementById('jpExcerpt').textContent = preview.excerpt || '';
+
+  document.getElementById('jobPreview').classList.add('show');
+  document.getElementById('jobTextWrap').style.display = 'none';
+  document.getElementById('fetchStatus').textContent = '';
+}
+
+function showJobTextArea() {
+  document.getElementById('jobPreview').classList.remove('show');
+  document.getElementById('jobTextWrap').style.display = 'block';
+  document.getElementById('jobInput').focus();
+}
+
 async function fetchJobUrl() {
   var url = document.getElementById('jobUrl').value.trim();
   var st = document.getElementById('fetchStatus');
@@ -1009,14 +1123,19 @@ async function fetchJobUrl() {
   btn.disabled = true;
   btn.textContent = 'Carregando…';
   st.textContent = '';
+  // Esconde preview anterior se houver
+  document.getElementById('jobPreview').classList.remove('show');
+  document.getElementById('jobTextWrap').style.display = 'block';
   try {
     var res = await fetch('/api/fetch-job?url=' + encodeURIComponent(url));
     var data = await res.json();
     if (data.text && data.text.length > 50) {
+      // Salva o texto completo no textarea (garante que análise use tudo)
       document.getElementById('jobInput').value = data.text;
       document.getElementById('jobCount').textContent = data.text.length + ' caracteres';
-      st.textContent = '✓ Vaga carregada com sucesso!';
-      st.style.color = 'var(--green)';
+      // Extrai preview e exibe card
+      var preview = extractJobPreview(data.text);
+      showJobPreview(preview, data.text.length);
     } else {
       st.textContent = 'Não foi possível extrair o texto. Cole a descrição manualmente abaixo.';
       st.style.color = 'var(--yellow)';
