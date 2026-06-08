@@ -588,6 +588,8 @@ var sb = window.supabase.createClient(
 
 var authSession = null;
 var userCredits = 0;
+var userPlan = 'free';   // 'free' | 'starter' | 'pro'
+var userPlanSub = null;  // objeto completo da subscription
 
 async function initAuth() {
   try {
@@ -604,6 +606,16 @@ async function initAuth() {
 
 async function loadUserCredits(session) {
   try {
+    // 1. Busca plano de assinatura (fonte verdadeira para Pro/Starter)
+    var subRes = await fetch('/api/subscription', {
+      headers: { Authorization: 'Bearer ' + session.access_token }
+    });
+    if (subRes.ok) {
+      userPlanSub = await subRes.json();
+      userPlan = userPlanSub.plan || 'free';
+    }
+
+    // 2. Busca créditos avulsos (legado — free/avulso)
     var res = await fetch(
       'https://kbcjchjepgejdezeuwwh.supabase.co/rest/v1/user_credits?user_id=eq.' + session.user.id + '&select=credits',
       { headers: {
@@ -613,8 +625,21 @@ async function loadUserCredits(session) {
     );
     var rows = await res.json();
     userCredits = rows.length ? (rows[0].credits || 0) : 0;
+
     updateCreditsUI();
-    // Não bloqueia usuário recém-cadastrado (tem banner de boas-vindas)
+
+    // 3. Decide se bloqueia ou libera
+    if (userPlan === 'pro') return; // Pro: sempre libera
+
+    if (userPlan === 'starter') {
+      // Starter: libera enquanto tiver análises restantes no mês
+      var used = userPlanSub ? (userPlanSub.analyses_used_this_month || 0) : 0;
+      if (used < 10) return; // ainda tem análises
+      showLimitReachedStarter();
+      return;
+    }
+
+    // Free/avulso: usa créditos legados
     var fromSignup = false;
     try { fromSignup = !!localStorage.getItem('vagaai_from_signup'); } catch(e) {}
     if (userCredits <= 0 && !fromSignup) showLimitReached();
@@ -624,21 +649,45 @@ async function loadUserCredits(session) {
 function updateCreditsUI() {
   var navEl = document.getElementById('navCredits');
   var numEl = document.getElementById('navCreditsNum');
-  numEl.textContent = userCredits;
+
+  if (userPlan === 'pro') {
+    numEl.textContent = '∞';
+  } else if (userPlan === 'starter') {
+    var used = userPlanSub ? (userPlanSub.analyses_used_this_month || 0) : 0;
+    numEl.textContent = Math.max(0, 10 - used);
+  } else {
+    numEl.textContent = userCredits;
+  }
+
   navEl.classList.add('show');
+
   // Atualiza texto do botão de análise
   var btn = document.getElementById('analyzeBtn');
   if (btn) {
-    btn.innerHTML = '<span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Analisar agora — 1 crédito';
+    var btnLabel = userPlan === 'pro' ? 'Analisar agora' : 'Analisar agora — 1 crédito';
+    btn.innerHTML = '<span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> ' + btnLabel;
   }
   // Remove aviso "grátis sem cadastro"
   document.getElementById('freeNotice').style.display = 'none';
-  // Habilita nova análise para usuários com créditos
+  // Habilita nova análise
   var newBtn = document.getElementById('newAnalysisBtn');
   if (newBtn) {
     newBtn.disabled = false;
     newBtn.textContent = '← Nova análise';
   }
+}
+
+function showLimitReachedStarter() {
+  // Starter esgotou as 10 análises do mês
+  document.getElementById('inputSection').classList.remove('show');
+  document.getElementById('limitSection').classList.add('show');
+  document.getElementById('limitIcon').innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>';
+  document.getElementById('limitTitle').textContent = 'Limite mensal atingido';
+  document.getElementById('limitSub').textContent = 'Você usou as 10 análises do plano Starter este mês. Renova no início do próximo mês ou faça upgrade para Pro.';
+  document.getElementById('limitPlans').style.display = 'none';
+  document.getElementById('limitDashLink').style.display = 'block';
+  var signupCTA = document.getElementById('limitSignupCTA');
+  if (signupCTA) signupCTA.style.display = 'none';
 }
 
 var PLANS = [
@@ -1281,8 +1330,9 @@ function showResult(d) {
   // Botão de nova análise
   var newBtn = document.getElementById('newAnalysisBtn');
   if (authSession) {
-    newBtn.disabled = userCredits <= 0;
-    newBtn.textContent = userCredits > 0 ? '← Nova análise' : '← Sem créditos';
+    var hasAccess = userPlan === 'pro' || (userPlan === 'starter' && (userPlanSub ? (userPlanSub.analyses_used_this_month||0) < 10 : true)) || userCredits > 0;
+    newBtn.disabled = !hasAccess;
+    newBtn.textContent = hasAccess ? '← Nova análise' : '← Sem créditos';
   } else {
     newBtn.disabled = true;
     newBtn.textContent = '✓ Diagnóstico usado';
@@ -1307,10 +1357,13 @@ function tryNewAnalysis() {
   if (_trackerPromptTimer) { clearTimeout(_trackerPromptTimer); _trackerPromptTimer = null; }
   document.getElementById('trackerPromptModal').classList.add('hidden');
   if (authSession) {
-    // Usuário logado: verifica créditos
-    if (userCredits <= 0) {
+    // Usuário logado: verifica acesso (plano ou créditos avulsos)
+    var starterOk = userPlan === 'starter' && (userPlanSub ? (userPlanSub.analyses_used_this_month||0) < 10 : true);
+    var hasAccess = userPlan === 'pro' || starterOk || userCredits > 0;
+    if (!hasAccess) {
       document.getElementById('resultSection').classList.remove('show');
-      showLimitReached();
+      if (userPlan === 'starter') showLimitReachedStarter();
+      else showLimitReached();
       return;
     }
   } else {
