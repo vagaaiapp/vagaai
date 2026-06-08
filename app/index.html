@@ -1027,63 +1027,108 @@ function hideError() {
   document.getElementById('errorBox').classList.remove('show');
 }
 
-// Extrai infos básicas do texto da vaga heuristicamente (sem custo de API)
-function extractJobPreview(text) {
-  var lines = text.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+// Extrai infos básicas da vaga — prioriza URL slug (mais confiável) + heurísticas no texto
+function extractJobPreview(text, jobUrlStr) {
+  // ── 1. Extração a partir da URL (fonte mais confiável) ────────────────────
+  var cargoFromUrl = '';
+  var empresaFromUrl = '';
+  var platform = '';
+  try {
+    var urlObj = new URL(jobUrlStr || '');
+    var host = urlObj.hostname.toLowerCase().replace(/^www\./, '');
+    var path = urlObj.pathname;
 
-  // Cargo: primeira linha curta não-boilerplate, ou linha com palavras-chave de cargo
-  var cargoKeywords = /gerente|analista|coordenador|diretor|engenheiro|desenvolvedor|designer|especialista|assistente|consultor|supervisor|tech lead|product|marketing|vendas|comercial|financeiro|recursos humanos|ti |junior|pleno|sênior|sr\.|jr\./i;
-  var cargo = '';
-  for (var i = 0; i < Math.min(lines.length, 12); i++) {
-    var l = lines[i];
-    if (l.length > 5 && l.length < 80 && cargoKeywords.test(l)) { cargo = l; break; }
-  }
+    // Plataforma
+    if (host.includes('catho'))          platform = 'Catho';
+    else if (host.includes('linkedin'))  platform = 'LinkedIn';
+    else if (host.includes('gupy'))      { platform = 'Gupy'; var sub = urlObj.hostname.split('.')[0]; if (sub && sub !== 'www') empresaFromUrl = sub.charAt(0).toUpperCase() + sub.slice(1); }
+    else if (host.includes('indeed'))    platform = 'Indeed';
+    else if (host.includes('vagas.com')) platform = 'Vagas.com';
+    else if (host.includes('infojobs')) platform = 'InfoJobs';
+    else if (host.includes('glassdoor')) platform = 'Glassdoor';
+    else if (host.includes('trabalhabrasil')) platform = 'Trabalha Brasil';
+    else if (host.includes('empregare')) platform = 'Empregare';
+    else if (host.includes('kenoby'))    platform = 'Kenoby';
+    else if (host.includes('solides') || host.includes('sólides')) platform = 'Sólides';
+
+    // Slug do cargo conforme padrão de cada plataforma
+    var slugRaw = '';
+    if (host.includes('catho')) {
+      var m = path.match(/\/vagas\/([^\/\?#]+)/); if (m) slugRaw = m[1];
+    } else if (host.includes('linkedin')) {
+      var m = path.match(/\/jobs\/view\/([^\/\?#]+)/);
+      if (m) slugRaw = m[1].replace(/-?\d{6,}$/, ''); // remove ID numérico final
+    } else if (host.includes('indeed')) {
+      slugRaw = urlObj.searchParams.get('q') || '';
+    } else if (host.includes('vagas.com')) {
+      var m = path.match(/\/([^\/\?#]+-emprego[s]?)/); if (m) slugRaw = m[1].replace(/-empregos?$/, '');
+    } else if (host.includes('gupy')) {
+      var m = path.match(/\/jobs?\/([^\/\?#]+)/); if (m) slugRaw = m[1];
+    } else {
+      // Genérico: pega segmento com hífen mais longo que não seja só um ID
+      var segs = path.split('/').filter(function(s){ return s && s.includes('-') && !/^\d+$/.test(s) && s.length > 4; });
+      if (segs.length) slugRaw = segs[0];
+    }
+
+    if (slugRaw) {
+      // slug → título legível: "gerente-de-marketing" → "Gerente de Marketing"
+      var preps = /^(de|da|do|dos|das|e|em|na|no|para|por|com|a|o|as|os|um|uma)$/i;
+      cargoFromUrl = slugRaw.replace(/[-_]/g, ' ').trim().split(/\s+/).map(function(w, i){
+        return (i === 0 || !preps.test(w)) ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w.toLowerCase();
+      }).join(' ');
+    }
+  } catch(e) {}
+
+  // ── 2. Limpeza do texto scrapeado ────────────────────────────────────────
+  var boilerplate = /^(envie (seu|o seu)|cadastr|anunciar|criar conta|entrar|login|sign (in|up)|apply|already have|baixar|baixe|politica|pol[ií]tica|termos|cookie|copyright|©|todos os direitos|compartilhar|salvar vaga|siga(-nos)?|redes sociais|home$|voltar$|menu$|whatsapp|instagram|facebook|twitter|linkedin$)/i;
+  var lines = text.split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l.length > 2 && !boilerplate.test(l); });
+
+  // ── 3. Cargo (fallback se não extraiu da URL) ─────────────────────────────
+  var cargo = cargoFromUrl;
   if (!cargo) {
-    // Fallback: primeira linha razoável
-    for (var j = 0; j < Math.min(lines.length, 5); j++) {
-      if (lines[j].length > 4 && lines[j].length < 70 && !/^(https?:|www\.|anunciar|cadastrar|entrar|login|menu)/i.test(lines[j])) {
-        cargo = lines[j]; break;
+    var cargoRE = /gerente|analista|coordenador|diretor|engenheiro|desenvolvedor|designer|especialista|assistente|consultor|supervisor|tech lead|product manager|marketing|vendas|comercial|financeiro|recursos humanos|\bti\b|junior|pleno|s[eê]nior|sr\.|jr\.|estagi[aá]rio|trainee|cientista|arquiteto|pesquisador/i;
+    for (var i = 0; i < Math.min(lines.length, 20); i++) {
+      if (lines[i].length > 4 && lines[i].length < 90 && cargoRE.test(lines[i])) { cargo = lines[i]; break; }
+    }
+    if (!cargo) {
+      for (var j = 0; j < Math.min(lines.length, 6); j++) {
+        if (lines[j].length > 4 && lines[j].length < 70) { cargo = lines[j]; break; }
       }
     }
   }
 
-  // Empresa: linha após cargo, ou pattern "empresa:" / "sobre a empresa" próximo
-  var empresa = '';
-  var sobreEmpresaIdx = -1;
-  for (var k = 0; k < lines.length; k++) {
-    if (/^(sobre (a |n?ós|a empresa)|quem somos|a empresa)/i.test(lines[k])) { sobreEmpresaIdx = k; break; }
-  }
-  if (sobreEmpresaIdx >= 0 && lines[sobreEmpresaIdx + 1]) {
-    empresa = lines[sobreEmpresaIdx + 1].substring(0, 50);
-  }
+  // ── 4. Empresa (fallback) ─────────────────────────────────────────────────
+  var empresa = empresaFromUrl;
   if (!empresa) {
-    for (var m = 0; m < Math.min(lines.length, 20); m++) {
-      var ll = lines[m];
-      if (/empresa:|companhia:|organiza[çc][aã]o:/i.test(ll)) {
-        empresa = ll.replace(/empresa:|companhia:|organiza[çc][aã]o:/i, '').trim().substring(0, 50);
-        break;
+    for (var k = 0; k < lines.length; k++) {
+      if (/^(sobre (a |n[oó]s|a empresa)|quem somos|nossa empresa|a empresa)/i.test(lines[k])) {
+        if (lines[k+1] && lines[k+1].length < 60) { empresa = lines[k+1]; break; }
       }
     }
   }
+  if (!empresa && platform) empresa = 'via ' + platform;
 
-  // Modalidade / localização: busca palavras-chave
+  // ── 5. Modalidade e cidade ────────────────────────────────────────────────
   var modalidade = '';
   var cidade = '';
   var regiaoRE = /\b(remoto|remote|home.?office|h[ií]brido|presencial|hybrid|on.?site)\b/i;
-  var cidadeRE = /\b(s[aã]o paulo|rio de janeiro|belo horizonte|curitiba|porto alegre|bras[ií]lia|salvador|campinas|fortaleza|recife|minas gerais|sp|rj|mg|pr|rs|df)\b/i;
+  var cidadeRE = /\b(s[aã]o paulo|rio de janeiro|belo horizonte|curitiba|porto alegre|bras[ií]lia|salvador|campinas|fortaleza|recife|manaus|goi[aâ]nia|minas gerais|s\.?\s*p\.?|r\.?\s*j\.?|m\.?\s*g\.?|p\.?\s*r\.?|r\.?\s*s\.?|d\.?\s*f\.?)\b/i;
   for (var n = 0; n < lines.length; n++) {
-    if (!modalidade) { var mMatch = lines[n].match(regiaoRE); if (mMatch) modalidade = mMatch[0]; }
-    if (!cidade) { var cMatch = lines[n].match(cidadeRE); if (cMatch) cidade = cMatch[0]; }
+    if (!modalidade) { var mm = lines[n].match(regiaoRE); if (mm) modalidade = mm[0]; }
+    if (!cidade)     { var cm = lines[n].match(cidadeRE);  if (cm) cidade = cm[0]; }
     if (modalidade && cidade) break;
   }
 
-  // Trecho de descrição: primeiros 2 parágrafos não-boilerplate com mais de 60 chars
-  var excerptLines = lines.filter(function(l){
-    return l.length > 60 && !/^(https?:|www\.|cookie|copyright|©|\+\d{2}|\d{2}\/\d{2})/i.test(l);
-  }).slice(0, 3);
+  // ── 6. Trecho descritivo ──────────────────────────────────────────────────
+  var descRE = /atua[rá]|responsab|requisito|buscamos|procuramos|desafio|atividade|fun[çc][aã]o|perfil|experi[eê]ncia|habilidade|conhecimento|forma[çc][aã]o|objetivo|missão|voc[eê] vai|você será|o que esperamos/i;
+  var excerptLines = [];
+  for (var p = 0; p < lines.length && excerptLines.length < 2; p++) {
+    if (lines[p].length > 50 && descRE.test(lines[p])) excerptLines.push(lines[p]);
+  }
+  if (!excerptLines.length) excerptLines = lines.filter(function(l){ return l.length > 70; }).slice(0, 2);
   var excerpt = excerptLines.join(' ').substring(0, 220);
 
-  return { cargo: cargo, empresa: empresa, modalidade: modalidade, cidade: cidade, excerpt: excerpt };
+  return { cargo: cargo, empresa: empresa, modalidade: modalidade, cidade: cidade, excerpt: excerpt, platform: platform };
 }
 
 function showJobPreview(preview, charCount) {
@@ -1133,8 +1178,8 @@ async function fetchJobUrl() {
       // Salva o texto completo no textarea (garante que análise use tudo)
       document.getElementById('jobInput').value = data.text;
       document.getElementById('jobCount').textContent = data.text.length + ' caracteres';
-      // Extrai preview e exibe card
-      var preview = extractJobPreview(data.text);
+      // Extrai preview e exibe card (passa URL para extração via slug)
+      var preview = extractJobPreview(data.text, url);
       showJobPreview(preview, data.text.length);
     } else {
       st.textContent = 'Não foi possível extrair o texto. Cole a descrição manualmente abaixo.';
@@ -1168,8 +1213,8 @@ async function analyze() {
       if (fData.text && fData.text.length >= 50) {
         jobEl.value = fData.text;
         document.getElementById('jobCount').textContent = fData.text.length + ' caracteres';
-        st.textContent = '✓ Vaga carregada com sucesso!';
-        st.style.color = 'var(--green)';
+        var fPreview = extractJobPreview(fData.text, jobUrl);
+        showJobPreview(fPreview, fData.text.length);
         job = fData.text;
       } else {
         st.textContent = '⚠ Não conseguimos ler essa página automaticamente.';
