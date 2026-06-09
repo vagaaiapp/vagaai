@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VagaAI — Analisar minha vaga grátis</title>
 <meta name="description" content="Cole a descrição da vaga e seu currículo. O VagaAI analisa sua compatibilidade ATS, identifica as principais falhas e sugere melhorias. Grátis, sem cadastro.">
-<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="index, follow">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -321,6 +321,9 @@ textarea::placeholder{color:var(--muted)}
 /* WELCOME BANNER (pós-cadastro) */
 .welcome-banner{background:var(--green-dim);border:1.5px solid var(--green-border);border-radius:10px;padding:.9rem 1.1rem;margin-bottom:1.2rem;display:none;align-items:center;gap:.8rem;font-size:13px;color:var(--text);line-height:1.5}
 .welcome-banner.show{display:flex}
+/* TOAST de notificação */
+#appToast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1.5px solid var(--green-border);border-radius:12px;padding:.85rem 1.3rem;font-size:13.5px;color:var(--text);font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.22);z-index:9999;opacity:0;transition:opacity .3s,transform .35s;pointer-events:none;white-space:nowrap;max-width:90vw}
+#appToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 /* BRIEFING DA EMPRESA */
 .briefing-section{background:var(--surface);border:1px solid var(--green-border);border-radius:12px;padding:1.4rem;margin-bottom:1.2rem;display:none}
 .briefing-section.show{display:block}
@@ -335,19 +338,10 @@ textarea::placeholder{color:var(--muted)}
 .briefing-atencao{grid-column:1/-1;margin-top:.2rem}
 .briefing-atencao .briefing-block-list li{color:#ff8f8f}
 .briefing-atencao .briefing-block-list li::before{color:var(--red)}
-/* TRACKER PROMPT MODAL (bottom sheet) */
-.tracker-prompt-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;display:flex;align-items:flex-end;justify-content:center;padding:1rem;backdrop-filter:blur(3px);transition:opacity .25s}
-.tracker-prompt-overlay.hidden{display:none}
-.tracker-prompt-box{background:var(--surface);border:1px solid var(--border);border-radius:18px 18px 12px 12px;padding:1.4rem 1.5rem 1.5rem;width:100%;max-width:500px;animation:tpSlideUp .3s cubic-bezier(.22,.61,.36,1) both}
-@keyframes tpSlideUp{from{transform:translateY(50px);opacity:0}to{transform:translateY(0);opacity:1}}
-.tracker-prompt-icon{font-size:26px;margin-bottom:.5rem}
-.tracker-prompt-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:.25rem}
-.tracker-prompt-sub{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:1.2rem}
-.tracker-prompt-btns{display:flex;gap:.75rem;flex-wrap:wrap}
-.tracker-prompt-yes{flex:1;min-width:140px;background:var(--green);color:#0a0f0d;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;padding:.7rem 1rem;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;gap:.4rem}
-.tracker-prompt-yes:hover{background:#4ddb9e}
-.tracker-prompt-no{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.7rem 1rem;cursor:pointer;transition:all .2s;white-space:nowrap}
-.tracker-prompt-no:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
+/* TRACKER ADD BUTTON */
+.tracker-add-btn{display:inline-flex;align-items:center;gap:.4rem;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;padding:.4rem .8rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.tracker-add-btn:hover{border-color:var(--green);color:var(--green);background:rgba(62,207,142,.06)}
+.tracker-add-btn.added{border-color:var(--green);color:var(--green);background:rgba(62,207,142,.06);pointer-events:none;cursor:default}
 </style>
 <script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
 </head>
@@ -573,24 +567,18 @@ textarea::placeholder{color:var(--muted)}
       <div class="briefing-grid" id="briefingGrid"></div>
     </div>
 
-    <!-- CTA RASTREADOR (só para usuários logados) -->
-    <div id="trackerCTA" style="display:none;background:var(--green-dim);border:1.5px solid var(--green-border);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.2rem;display:none;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
-      <div>
-        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--green);margin-bottom:.2rem">📋 Rastreador de candidaturas</div>
-        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:.15rem" id="trackerCTATitle">Quer acompanhar essa candidatura?</div>
-        <div style="font-size:12px;color:var(--muted)" id="trackerCTASub">Adicione ao seu rastreador e monitore o status</div>
-      </div>
-      <button id="trackerCTABtn" onclick="addResultToTracker()" style="background:var(--green);color:#0a0f0d;border:none;border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:.6rem 1.1rem;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:.4rem;transition:all .2s">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>
-        Adicionar ao rastreador
-      </button>
-    </div>
-
     <div class="result-actions">
       <button class="btn-outline" id="newAnalysisBtn" onclick="tryNewAnalysis()"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span> Nova análise</button>
       <button class="btn-cv" id="cvBtn" style="display:none" onclick="openCV()"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Baixar CV Otimizado</button>
       <button class="btn-outline" id="interviewBtn" style="display:none" onclick="openInterview()"><span class="ic">🎯</span> Treinar entrevista</button>
       <button class="btn-outline" id="cartaBtn" style="display:none" onclick="openCarta()"><span class="ic">✉️</span> Gerar carta</button>
+      <!-- TRACKER BUTTON (só para usuários logados) -->
+      <div id="trackerCTA" style="display:none;align-items:center">
+        <button id="trackerAddBtn" class="tracker-add-btn" onclick="addResultToTracker()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>
+          + Rastreador
+        </button>
+      </div>
       <button class="btn-pro" id="upsellBtn" onclick="document.getElementById('upsellSection').scrollIntoView({behavior:'smooth'})"><span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span> Desbloquear resultado completo</button>
     </div>
 
@@ -1348,6 +1336,15 @@ async function doAnalyze(job, cv) {
       document.getElementById('navCreditsNum').textContent = userCredits;
     }
 
+    // Notifica sobre marcos de gamificação desbloqueados
+    if (authSession && data._milestone) {
+      var ms = data._milestone;
+      var totalCred = ms.totalCredits || ms.credits || 0;
+      var credText = totalCred > 0 ? ' +' + totalCred + ' crédito' + (totalCred > 1 ? 's' : '') + ' bônus!' : '';
+      showAppToast('🏆 Marco desbloqueado: <strong>' + ms.label + '</strong>' + credText, 7000);
+      track('milestone_unlocked', { milestone: ms.milestone, credits: totalCred });
+    }
+
     track('analyze_complete', { score: data.score, nivel: data.nivel });
     // Salva para pré-preenchimento em /entrevista e /carta
     try { localStorage.setItem('vagaai_last_job', job); localStorage.setItem('vagaai_last_cv', cv); } catch(e) {}
@@ -1504,24 +1501,17 @@ function showResult(d) {
     newBtn.textContent = '✓ Diagnóstico usado';
   }
 
-  // CTA rastreador — banner fica oculto inicialmente; o bottom sheet modal aparece após 2s
   _lastResultData = d;
   var cta = document.getElementById('trackerCTA');
-  if (cta) cta.style.display = 'none'; // escondido — modal toma o lugar
-  if (!isAnonymous) {
-    // Cancela timer anterior se existir (ex: nova análise sem recarregar)
-    if (_trackerPromptTimer) { clearTimeout(_trackerPromptTimer); _trackerPromptTimer = null; }
-    document.getElementById('trackerPromptModal').classList.add('hidden');
-    showTrackerPrompt(d);
-  }
+  if (cta) cta.style.display = isAnonymous ? 'none' : 'flex';
+  // Reset do botão caso seja uma nova análise
+  var addBtn = document.getElementById('trackerAddBtn');
+  if (addBtn) { addBtn.classList.remove('added'); addBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg> + Rastreador'; }
 
   section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function tryNewAnalysis() {
-  // Fecha o bottom sheet se estiver aberto
-  if (_trackerPromptTimer) { clearTimeout(_trackerPromptTimer); _trackerPromptTimer = null; }
-  document.getElementById('trackerPromptModal').classList.add('hidden');
   if (authSession) {
     // Usuário logado: verifica acesso (plano ou créditos avulsos)
     var starterOk = userPlan === 'starter' && (userPlanSub ? (userPlanSub.analyses_used_this_month||0) < 10 : true);
@@ -1769,6 +1759,9 @@ var _lastResultData = null;
 
 function addResultToTracker(status) {
   if (!_lastResultData) return;
+  // Feedback visual imediato no botão
+  var btn = document.getElementById('trackerAddBtn');
+  if (btn) { btn.classList.add('added'); btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Adicionado!'; }
   var d = _lastResultData;
   var empresa = (d.job_info && d.job_info.empresa) ? d.job_info.empresa : '';
   var cargo = (d.job_info && d.job_info.cargo) ? d.job_info.cargo : '';
@@ -1778,34 +1771,9 @@ function addResultToTracker(status) {
     var analysisId = (d && d._analysis_id) ? d._analysis_id : null;
     localStorage.setItem('vagaai_tracker_pending', JSON.stringify({ empresa: empresa, cargo: cargo, score: score, status: status || 'quero', job_url: jobUrl || null, analysis_id: analysisId }));
   } catch(e) {}
-  window.location.href = '/dashboard';
+  setTimeout(function(){ window.location.href = '/dashboard'; }, 600);
 }
 
-var _trackerPromptTimer = null;
-function showTrackerPrompt(d) {
-  if (!authSession) return;
-  // Preenche subtítulo com empresa/cargo/score
-  var empresa = (d.job_info && d.job_info.empresa) || '';
-  var cargo = (d.job_info && d.job_info.cargo) || '';
-  var info = [empresa, cargo].filter(Boolean).join(' — ');
-  document.getElementById('trackerPromptSub').textContent = info
-    ? info + ' · Score ' + (d.score || 0) + '% — monitore o status da candidatura'
-    : 'Score ' + (d.score || 0) + '% — organize sua busca e receba lembretes de follow-up.';
-  _trackerPromptTimer = setTimeout(function() {
-    document.getElementById('trackerPromptModal').classList.remove('hidden');
-  }, 2000);
-}
-function confirmTrackerPrompt() {
-  document.getElementById('trackerPromptModal').classList.add('hidden');
-  addResultToTracker('quero');
-}
-function dismissTrackerPrompt() {
-  if (_trackerPromptTimer) { clearTimeout(_trackerPromptTimer); _trackerPromptTimer = null; }
-  document.getElementById('trackerPromptModal').classList.add('hidden');
-  // Mostra o banner trackerCTA como fallback secundário
-  var cta = document.getElementById('trackerCTA');
-  if (cta && _lastResultData && authSession) cta.style.display = 'flex';
-}
 
 function openSignupModal() {
   showSignupModal(null, true); // sem resultado pendente — esconde "ver parcial"
@@ -1927,21 +1895,18 @@ function skipSignup() {
   </div>
 </div>
 
-<!-- TRACKER PROMPT — bottom sheet pós-análise -->
-<div class="tracker-prompt-overlay hidden" id="trackerPromptModal" onclick="if(event.target===this)dismissTrackerPrompt()">
-  <div class="tracker-prompt-box">
-    <div class="tracker-prompt-icon">📋</div>
-    <div class="tracker-prompt-title">Quer rastrear essa candidatura?</div>
-    <div class="tracker-prompt-sub" id="trackerPromptSub">Adicione ao seu painel e monitore o status, receba lembretes e organize sua busca.</div>
-    <div class="tracker-prompt-btns">
-      <button class="tracker-prompt-yes" onclick="confirmTrackerPrompt()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        Sim, adicionar
-      </button>
-      <button class="tracker-prompt-no" onclick="dismissTrackerPrompt()">Não por enquanto</button>
-    </div>
-  </div>
-</div>
 
+<div id="appToast"></div>
+<script>
+var _toastTimer;
+function showAppToast(msg, duration) {
+  var el = document.getElementById('appToast');
+  if (!el) return;
+  el.innerHTML = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function() { el.classList.remove('show'); }, duration || 5000);
+}
+</script>
 </body>
 </html>

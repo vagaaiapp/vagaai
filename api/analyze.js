@@ -47,15 +47,19 @@ async function setCachedResult(hash, result) {
 
 // ─── Rate limit por IP (usuários anônimos) ────────────────────────────────────
 
+const IP_FREE_LIMIT = 3; // análises grátis por IP a cada 30 dias
+
 async function checkRateLimit(ip) {
   if (!SUPABASE_URL || !SUPABASE_KEY) return { allowed: true };
   try {
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/ip_rate_limits?ip=eq.${encodeURIComponent(ip)}&select=count`,
+      `${SUPABASE_URL}/rest/v1/ip_rate_limits?ip=eq.${encodeURIComponent(ip)}&last_seen=gte.${encodeURIComponent(cutoff)}&select=count`,
       { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
     );
     const rows = await res.json();
-    if (rows.length > 0) return { allowed: false };
+    // Bloqueado apenas se atingiu o limite nos últimos 30 dias
+    if (rows.length > 0 && (rows[0].count || 0) >= IP_FREE_LIMIT) return { allowed: false };
     return { allowed: true };
   } catch (err) {
     console.error('Rate limit check error:', err);
@@ -66,6 +70,14 @@ async function checkRateLimit(ip) {
 async function recordIpUsage(ip) {
   if (!SUPABASE_URL || !SUPABASE_KEY) return;
   try {
+    // Verifica se já existe registro recente (últimos 30 dias) para incrementar
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const existing = await fetch(
+      `${SUPABASE_URL}/rest/v1/ip_rate_limits?ip=eq.${encodeURIComponent(ip)}&last_seen=gte.${encodeURIComponent(cutoff)}&select=count`,
+      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+    ).then(r => r.json()).catch(() => []);
+
+    const newCount = existing.length > 0 ? (existing[0].count || 1) + 1 : 1;
     await fetch(`${SUPABASE_URL}/rest/v1/ip_rate_limits`, {
       method: 'POST',
       headers: {
@@ -74,7 +86,7 @@ async function recordIpUsage(ip) {
         'Content-Type': 'application/json',
         Prefer: 'resolution=merge-duplicates',
       },
-      body: JSON.stringify({ ip, count: 1, last_seen: new Date().toISOString() }),
+      body: JSON.stringify({ ip, count: newCount, last_seen: new Date().toISOString() }),
     });
   } catch (err) {
     console.error('Record IP usage error:', err);
@@ -151,11 +163,13 @@ async function checkAndDeductCredit(userId) {
     const rows = await getRes.json();
     if (!rows.length || rows[0].credits <= 0) return { ok: false, reason: 'no_credits' };
     const current = rows[0].credits;
+    // Optimistic lock: filtra por credits=eq.current para evitar race condition entre
+    // duas requisições simultâneas — apenas uma vai conseguir atualizar a linha
     const patchRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}`,
+      `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&credits=eq.${current}`,
       {
         method: 'PATCH',
-        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
         body: JSON.stringify({ credits: current - 1, updated_at: new Date().toISOString() }),
       }
     );
@@ -163,6 +177,11 @@ async function checkAndDeductCredit(userId) {
       const errText = await patchRes.text().catch(() => '');
       console.error('user_credits PATCH failed:', patchRes.status, errText);
       return { ok: false, reason: 'patch_failed' };
+    }
+    const updated = await patchRes.json();
+    // Se nenhuma linha foi atualizada = crédito foi usado por outra requisição simultânea
+    if (!Array.isArray(updated) || updated.length === 0) {
+      return { ok: false, reason: 'no_credits' };
     }
     return { ok: true, remaining: current - 1, plan: 'credits', via: 'credits' };
   } catch (err) {
@@ -243,47 +262,52 @@ async function checkAndAwardMilestones(userId) {
     const awarded = await milestonesRes.json();
     const awardedSet = new Set((awarded || []).map(m => m.milestone));
 
-    // Verifica marcos atingidos mas não concedidos
+    // Verifica todos os marcos atingidos mas não concedidos (sem break — premia todos de uma vez)
     let newMilestone = null;
-    for (const m of MILESTONES) {
-      if (totalAnalyses >= m.count && !awardedSet.has(m.count)) {
-        // Registra marco
-        await fetch(`${SUPABASE_URL}/rest/v1/user_milestones`, {
-          method: 'POST',
+    let totalBonusCredits = 0;
+    const toAward = MILESTONES.filter(m => totalAnalyses >= m.count && !awardedSet.has(m.count));
+
+    for (const m of toAward) {
+      // Registra marco
+      await fetch(`${SUPABASE_URL}/rest/v1/user_milestones`, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({ user_id: userId, milestone: m.count, credits_awarded: m.credits }),
+      });
+      totalBonusCredits += m.credits;
+      // Guarda o marco mais alto para retornar ao front-end
+      newMilestone = { milestone: m.count, credits: m.credits, label: m.label, totalAnalyses };
+    }
+
+    // Adiciona todos os créditos bônus de uma só vez (uma única PATCH)
+    if (totalBonusCredits > 0) {
+      const credRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&select=credits`,
+        { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+      );
+      const credRows = await credRes.json();
+      const current = credRows[0]?.credits || 0;
+      await fetch(
+        `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}`,
+        {
+          method: 'PATCH',
           headers: {
             apikey: SUPABASE_SERVICE_KEY,
             Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
             'Content-Type': 'application/json',
             Prefer: 'return=minimal',
           },
-          body: JSON.stringify({ user_id: userId, milestone: m.count, credits_awarded: m.credits }),
-        });
-
-        // Adiciona créditos bônus
-        const credRes = await fetch(
-          `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&select=credits`,
-          { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
-        );
-        const credRows = await credRes.json();
-        const current = credRows[0]?.credits || 0;
-        await fetch(
-          `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}`,
-          {
-            method: 'PATCH',
-            headers: {
-              apikey: SUPABASE_SERVICE_KEY,
-              Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-              'Content-Type': 'application/json',
-              Prefer: 'return=minimal',
-            },
-            body: JSON.stringify({ credits: current + m.credits, updated_at: new Date().toISOString() }),
-          }
-        );
-
-        newMilestone = { milestone: m.count, credits: m.credits, label: m.label, totalAnalyses };
-        break; // Um marco por vez
-      }
+          body: JSON.stringify({ credits: current + totalBonusCredits, updated_at: new Date().toISOString() }),
+        }
+      );
+      if (newMilestone) newMilestone.totalCredits = totalBonusCredits;
     }
+
     return newMilestone;
   } catch (err) {
     console.error('checkAndAwardMilestones error:', err);

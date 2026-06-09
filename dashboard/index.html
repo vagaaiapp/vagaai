@@ -92,7 +92,8 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.4rem 1.6rem}
 .stat-card.credits{border-color:var(--green-border);background:linear-gradient(135deg,rgba(62,207,142,0.06),var(--surface))}
-.stat-label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.stat-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem}
+.stat-sublabel{font-size:12px;color:var(--muted);font-weight:400;line-height:1.4;margin-bottom:.7rem;opacity:.8}
 .stat-value{font-family:'Lora',serif;font-size:42px;font-weight:700;line-height:1;color:var(--green)}
 .stat-value.zero{color:var(--yellow)}
 .stat-desc{font-size:13px;color:var(--muted);margin-top:.4rem}
@@ -163,7 +164,8 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .k-card.dragging{opacity:.45;transform:rotate(1.5deg)}
 .k-card-company{font-size:15px;font-weight:700;color:var(--text);margin-bottom:.25rem;display:flex;align-items:center;gap:.45rem}
 .k-card-logo{width:22px;height:22px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
-.k-card-role{font-size:13px;color:var(--muted);margin-bottom:.6rem;line-height:1.4}
+.k-card-role{font-size:13px;color:var(--muted);margin-bottom:.25rem;line-height:1.4}
+.k-card-salary{font-size:11px;color:var(--green);font-weight:600;margin-bottom:.5rem;display:flex;align-items:center;gap:.3rem}
 .k-card-footer{display:flex;align-items:center;justify-content:space-between;gap:.4rem}
 .k-card-score{font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;border:1px solid}
 .k-card-score.high{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
@@ -236,7 +238,8 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .uv-main{min-width:0}
 .uv-top{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.2rem}
 .uv-company{font-size:15px;font-weight:700;color:var(--text)}
-.uv-role{font-size:13px;color:var(--muted);margin-bottom:.4rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uv-role{font-size:13px;color:var(--muted);margin-bottom:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uv-salary{font-size:12px;color:var(--green);font-weight:600;margin-bottom:.35rem;display:flex;align-items:center;gap:.3rem}
 .uv-sbadge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid;white-space:nowrap;flex-shrink:0}
 .uv-sbadge.quero{background:var(--blue-dim,rgba(100,200,255,.1));color:#64c8ff;border-color:rgba(100,200,255,.25)}
 .uv-sbadge.aplicado{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
@@ -284,10 +287,27 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .alert-toggle-sw::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:2px;transition:left .2s}
 .alert-toggle-sw.on::after{left:18px}
 .alert-toggle-sw.off::after{left:2px}
-.alert-hist{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:1.2rem}
-.alert-hist-item{display:flex;align-items:center;gap:.75rem;padding:.65rem 1rem;border-bottom:1px solid var(--border);font-size:13px}
-.alert-hist-item:last-child{border-bottom:none}
-.alert-hist-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.alert-hist{margin-top:.75rem;display:flex;flex-direction:column;gap:.6rem}
+.alert-hist-group{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.alert-hist-header{display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;cursor:pointer;user-select:none;transition:background .15s}
+.alert-hist-header:hover{background:var(--surface2)}
+.alert-hist-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+.alert-hist-date{flex:1;font-size:13px;font-weight:600;color:var(--text)}
+.alert-hist-count{font-size:12px;color:var(--muted);margin-right:.25rem}
+.alert-hist-chevron{transition:transform .2s;color:var(--muted);flex-shrink:0}
+.alert-hist-chevron.open{transform:rotate(180deg)}
+.alert-hist-jobs{border-top:1px solid var(--border);padding:.5rem .75rem;display:none;flex-direction:column;gap:.35rem}
+.alert-hist-jobs.open{display:flex}
+.alert-hist-job{display:flex;align-items:center;gap:.65rem;padding:.45rem .4rem;border-radius:8px;transition:background .15s}
+.alert-hist-job:hover{background:var(--surface2)}
+.alert-hist-logo{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.alert-hist-info{flex:1;min-width:0}
+.alert-hist-title{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alert-hist-company{font-size:11px;color:var(--muted)}
+.alert-hist-link{font-size:11px;font-weight:600;color:var(--green);text-decoration:none;white-space:nowrap;padding:.25rem .55rem;border:1px solid var(--green-border);border-radius:6px;background:var(--green-dim);transition:all .15s;flex-shrink:0}
+.alert-hist-link:hover{background:var(--green);color:#0a0f0d}
+.alert-hist-analyze{font-size:11px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;padding:.25rem .55rem;border:1px solid var(--border);border-radius:6px;background:none;cursor:pointer;transition:all .15s;flex-shrink:0;font-family:'Inter',sans-serif}
+.alert-hist-analyze:hover{border-color:var(--green);color:var(--green)}
 .alert-next{background:var(--green-dim);border:1px solid var(--green-border);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-top:1rem}
 .alert-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.2rem}
 .alert-stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.85rem;text-align:center}
@@ -301,7 +321,8 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 /* ── INSIGHT BLOCKS (Painel) ──────────────────────────────────────────────── */
 .insights-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
 @media(max-width:560px){.insights-grid{grid-template-columns:1fr}}
-.ins-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem}
+.ins-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem;display:flex;align-items:center;gap:.4rem}
+.ins-sublabel{font-size:12px;color:var(--muted);font-weight:400;line-height:1.4;margin-bottom:.75rem;opacity:.8}
 /* Score */
 .score-avg-row{display:flex;align-items:center;gap:1.2rem;margin-bottom:.85rem}
 .score-big-ins{font-family:'Lora',serif;font-size:48px;font-weight:700;line-height:1}
@@ -329,8 +350,8 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .compat-sc-ins.low{background:var(--red-dim);color:var(--red);border-color:rgba(255,107,107,0.3)}
 /* Keywords */
 .kw-insight-box{background:var(--yellow-dim);border:1px solid rgba(255,209,102,0.3);border-radius:10px;padding:.65rem .85rem;margin-bottom:.8rem;font-size:13px;color:var(--yellow);line-height:1.5}
-.kw-ins-item{display:flex;align-items:center;gap:.7rem;margin-bottom:.42rem}
-.kw-ins-name{flex:1;font-size:13px;color:var(--text);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kw-ins-item{display:flex;align-items:center;gap:.7rem;margin-bottom:.42rem;flex-wrap:nowrap}
+.kw-ins-name{flex:1;font-size:13px;color:var(--text);font-weight:600;min-width:0;word-break:break-word}
 .kw-ins-track{flex:1;height:4px;background:var(--surface2);border-radius:99px;overflow:hidden;min-width:30px}
 .kw-ins-fill{height:100%;background:var(--red);border-radius:99px}
 .kw-ins-count{font-size:11px;color:var(--red);white-space:nowrap;flex-shrink:0;font-weight:700}
@@ -657,7 +678,8 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
   <!-- STATS -->
   <div class="top-grid">
     <div class="stat-card credits">
-      <div class="stat-label">Créditos disponíveis</div>
+      <div class="stat-label">Análises disponíveis</div>
+      <div class="stat-sublabel">Cada análise compara seu CV com uma vaga e mostra o que melhorar</div>
       <div class="stat-value" id="creditsValue">—</div>
       <div class="stat-desc" id="creditsDesc">análises disponíveis</div>
       <div class="credit-bar-wrap" id="creditBarWrap" style="display:none">
@@ -682,6 +704,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         Score médio das análises
       </div>
+      <div class="ins-sublabel">Compatibilidade geral do seu CV com as vagas analisadas — quanto maior, mais chances de passar pelo ATS</div>
       <div id="insScoreContent"><div class="ins-empty">Carregando...</div></div>
     </div>
   </div>
@@ -701,6 +724,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
         Compatibilidade das vagas
       </div>
+      <div class="ins-sublabel">Vagas com score ≥ 70% passam pelos filtros automáticos dos recrutadores</div>
       <div id="insCompatContent"><div class="ins-empty">Carregando...</div></div>
     </div>
     <div class="stat-card">
@@ -708,6 +732,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         Keywords que faltam no CV
       </div>
+      <div class="ins-sublabel">Termos exigidos pelas vagas que estão ausentes no seu currículo — adicione-os para subir o score</div>
       <div id="insKwContent"><div class="ins-empty">Carregando...</div></div>
     </div>
   </div>
@@ -717,8 +742,9 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
     <div class="stat-card">
       <div class="ins-label">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Onde você está na busca
+        Sua jornada de candidatura
       </div>
+      <div class="ins-sublabel">Etapas concluídas e próximos passos para chegar à oferta</div>
       <div id="insJornadaContent"><div class="ins-empty">Carregando...</div></div>
     </div>
     <div class="stat-card">
@@ -726,6 +752,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
         Sequência de atividade
       </div>
+      <div class="ins-sublabel">Quem analisa vagas toda semana consegue 3× mais entrevistas — mantenha a sequência</div>
       <div id="insStreakContent"><div class="ins-empty">Carregando...</div></div>
     </div>
   </div>
@@ -851,7 +878,13 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
           <input type="number" id="al-salario" placeholder="Ex: 8000">
         </div>
         <div class="alerts-field alerts-field-full">
-          <label>Keywords do seu perfil</label>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.45rem;flex-wrap:wrap">
+            <label style="margin-bottom:0">Keywords do seu perfil</label>
+            <button id="importKwBtn" onclick="importKeywordsFromLastAnalysis()" style="background:none;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:'Inter',sans-serif;font-size:11px;font-weight:600;padding:.3rem .7rem;cursor:pointer;display:inline-flex;align-items:center;gap:.35rem;transition:all .2s;white-space:nowrap" onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              Importar do último CV
+            </button>
+          </div>
           <div class="kw-wrap" id="kwWrap" onclick="document.getElementById('kwInput').focus()">
             <input class="kw-input" id="kwInput" placeholder="Digite uma skill e pressione Enter..." onkeydown="handleKwInput(event)">
           </div>
@@ -870,7 +903,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
             <div class="alert-toggle-sw on" id="alertToggleSw"></div>
             <div>
               <div style="font-size:13px;font-weight:600;color:var(--green)" id="alertToggleLabel">Alertas ativos</div>
-              <div style="font-size:11px;color:var(--muted)" id="alertToggleSub">Você receberá vagas toda sexta às 8h no seu e-mail</div>
+              <div style="font-size:11px;color:var(--muted)" id="alertToggleSub">Você receberá vagas toda sexta ~8h (horário de Brasília) no seu e-mail</div>
             </div>
           </div>
         </div>
@@ -886,8 +919,9 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           Salvar perfil de alerta
         </button>
-        <button id="alertTestBtn" onclick="sendTestAlert()" style="display:none;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.65rem 1.1rem;cursor:pointer;transition:all .2s">
-          ⚡ Enviar agora (teste)
+        <button id="alertTestBtn" onclick="sendTestAlert()" style="display:none;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:.65rem 1.1rem;cursor:pointer;transition:all .2s;align-items:center;gap:.4rem">
+          <svg id="alertTestIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span id="alertTestLabel">Enviar agora (teste)</span>
         </button>
       </div>
     </div>
@@ -1268,8 +1302,9 @@ function renderAnalysisCard(a) {
   if (jobInfo) {
     infoHtml += '<div class="analysis-job">' + escHtml(jobInfo.empresa || 'Empresa anônima') + '</div>';
     if (jobInfo.cargo) infoHtml += '<div class="analysis-cargo">' + escHtml(jobInfo.cargo) + '</div>';
-    if (jobInfo.salario && jobInfo.salario !== 'Não informado') {
-      infoHtml += '<div class="analysis-salary"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg> ' + escHtml(jobInfo.salario) + '</div>';
+    var _salRaw = jobInfo.salario || '';
+    if (_salRaw && _salRaw.toLowerCase() !== 'não informado') {
+      infoHtml += '<div class="analysis-salary"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg> ' + escHtml(_salRaw) + '</div>';
     }
     if (jobInfo.beneficios && jobInfo.beneficios.length) {
       infoHtml += '<div class="analysis-benefits">' + jobInfo.beneficios.slice(0,4).map(function(b){ return '<span class="analysis-benefit">' + escHtml(b) + '</span>'; }).join('') + '</div>';
@@ -2010,7 +2045,8 @@ function switchDashTab(tab) {
     el.classList.toggle('active', ['painel','vagas','alertas'][i] === tab);
   });
   if (tab === 'vagas') { if (!_kCards.length) loadKanban(); }
-  if (tab === 'alertas') loadAlertProfile();
+  // Reseta flag ao entrar na aba alertas para sempre buscar dados frescos do banco
+  if (tab === 'alertas') { _alertProfileLoaded = false; loadAlertProfile(); }
 }
 
 // ── ALERTS ────────────────────────────────────────────────────────────────────
@@ -2051,8 +2087,70 @@ async function loadAlertProfile() {
   } catch(e) { console.error('loadAlertProfile', e); }
 }
 
+// Retorna sempre um token válido — faz refresh se o JWT expirou
+async function getValidToken() {
+  try {
+    var { data: { session } } = await sb.auth.getSession();
+    if (session && session.access_token) {
+      currentSession = session;
+      return session.access_token;
+    }
+    // Tenta refresh explícito
+    var { data: refreshed } = await sb.auth.refreshSession();
+    if (refreshed && refreshed.session) {
+      currentSession = refreshed.session;
+      return refreshed.session.access_token;
+    }
+  } catch(e) { console.warn('getValidToken:', e.message); }
+  // Se não conseguiu renovar, redireciona para login
+  window.location.href = '/login';
+  return null;
+}
+
+// Salva silenciosamente (sem toast) — usado antes do envio de teste
+async function saveAlertProfileSilent() {
+  var token = await getValidToken();
+  if (!token) return;
+  var cargo = document.getElementById('al-cargo').value.trim();
+  var nivel = document.getElementById('al-nivel').value;
+  var cidade = document.getElementById('al-cidade').value.trim();
+  var salario = parseInt(document.getElementById('al-salario').value) || 0;
+  if (!cargo) return;
+  var body = {
+    user_id: currentUserId,
+    email: currentSession.user.email,
+    cargo_desejado: cargo, nivel, cidade,
+    salario_min: salario,
+    keywords: _alertKeywords,
+    frequencia: _alertFreq,
+    ativo: _alertAtivo,
+    updated_at: new Date().toISOString()
+  };
+  var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles', {
+    method: 'POST',
+    headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error(await res.text());
+  // Atualiza UI do botão de salvar para refletir que já está salvo
+  document.getElementById('alertTestBtn').style.display = 'inline-flex';
+  document.getElementById('alertNextWrap').style.display = 'flex';
+  // Busca ultimo_envio real do DB para calcular próximo envio com precisão
+  var ultimoEnvio = null;
+  try {
+    var freshRes = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?user_id=eq.' + currentUserId + '&select=ultimo_envio', {
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + token }
+    });
+    var freshData = await freshRes.json();
+    ultimoEnvio = freshData && freshData[0] ? freshData[0].ultimo_envio : null;
+  } catch(e) {}
+  updateAlertNextDate(ultimoEnvio, _alertFreq);
+  updateAlertEstimate();
+}
+
 async function saveAlertProfile() {
-  if (!currentSession) return;
+  var token = await getValidToken();
+  if (!token) return;
   var cargo = document.getElementById('al-cargo').value.trim();
   var nivel = document.getElementById('al-nivel').value;
   var cidade = document.getElementById('al-cidade').value.trim();
@@ -2071,34 +2169,106 @@ async function saveAlertProfile() {
   try {
     var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles', {
       method: 'POST',
-      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify(body)
     });
     if (!res.ok) throw new Error(await res.text());
     showToastAlert('✓ Perfil de alerta salvo!');
     document.getElementById('alertTestBtn').style.display = 'inline-flex';
     document.getElementById('alertNextWrap').style.display = 'flex';
-    updateAlertNextDate(null, _alertFreq);
+    // Busca ultimo_envio real do DB para calcular próximo envio com precisão
+    var ultimoEnvio = null;
+    try {
+      var freshRes = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?user_id=eq.' + currentUserId + '&select=ultimo_envio', {
+        headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + token }
+      });
+      var freshData = await freshRes.json();
+      ultimoEnvio = freshData && freshData[0] ? freshData[0].ultimo_envio : null;
+    } catch(e2) {}
+    updateAlertNextDate(ultimoEnvio, _alertFreq);
     updateAlertEstimate();
   } catch(e) { showToastAlert('Erro ao salvar: ' + e.message, true); }
 }
 
 async function sendTestAlert() {
-  showToastAlert('Enviando e-mail de teste...');
+  var btn = document.getElementById('alertTestBtn');
+  var icon = document.getElementById('alertTestIcon');
+  var label = document.getElementById('alertTestLabel');
+  if (btn && btn.disabled) return; // evita duplo clique
+
+  // Estado: loading
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; btn.style.cursor = 'not-allowed'; }
+  if (icon) icon.innerHTML = '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>';
+  if (label) label.textContent = 'Salvando perfil...';
+
+  // Salva o perfil antes de enviar para garantir que está atualizado
   try {
+    await saveAlertProfileSilent();
+  } catch(e) {
+    // Informa o usuário que o auto-save falhou antes de prosseguir
+    showToastAlert('⚠️ Não foi possível salvar o perfil antes do teste. Verifique sua conexão.', true);
+    // Restaura botão
+    if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = ''; }
+    if (icon) icon.innerHTML = '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>';
+    if (label) label.textContent = 'Enviar agora (teste)';
+    return;
+  }
+
+  if (label) label.textContent = 'Buscando vagas...';
+  showToastAlert('⏳ Buscando vagas nas fontes… pode levar até 20 segundos.');
+
+  try {
+    var token = await getValidToken();
+    if (!token) return;
     var res = await fetch('/api/send-alerts?test=1&user_id=' + currentUserId, {
-      headers: { Authorization: 'Bearer ' + currentSession.access_token }
+      headers: { Authorization: 'Bearer ' + token }
     });
     var data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erro');
-    showToastAlert('✓ E-mail enviado! Verifique sua caixa de entrada.');
+
+    // Verifica se vagas foram encontradas
+    var jobCount = (data.results && data.results[0] && data.results[0].jobs) || 0;
+    if (jobCount > 0) {
+      showToastAlert('✓ E-mail enviado com ' + jobCount + ' vaga' + (jobCount > 1 ? 's' : '') + '! Verifique sua caixa de entrada.');
+    } else {
+      showToastAlert('✓ Alerta processado — sem vagas novas no momento. Tente novamente amanhã.', false);
+    }
     loadAlertHistory();
-  } catch(e) { showToastAlert('Erro: ' + e.message + ' — Configure a Jooble API Key primeiro', true); }
+
+    // Estado: sucesso por 3s
+    if (icon) icon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+    if (label) label.textContent = 'E-mail enviado!';
+    if (btn) { btn.style.borderColor = 'var(--green)'; btn.style.color = 'var(--green)'; }
+    setTimeout(function() {
+      if (icon) icon.innerHTML = '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>';
+      if (label) label.textContent = 'Enviar agora (teste)';
+      if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = 'pointer'; btn.style.borderColor = ''; btn.style.color = ''; }
+    }, 3000);
+
+  } catch(e) {
+    showToastAlert('Erro ao enviar: ' + e.message, true);
+    // Restaura botão
+    if (icon) icon.innerHTML = '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>';
+    if (label) label.textContent = 'Enviar agora (teste)';
+    if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = 'pointer'; }
+  }
 }
 
+var JOB_COLORS = ['#820AD1','#EA1D2C','#21C25E','#F04E23','#003D7B','#FF6B00','#0061FF','#e11d48','#0891b2','#7c3aed'];
+function jobColor(company) {
+  var c = (company || 'E').charCodeAt(0);
+  return JOB_COLORS[Math.abs(c) % JOB_COLORS.length];
+}
+function toggleAlertHistGroup(idx) {
+  var jobs = document.getElementById('ahg-jobs-' + idx);
+  var chev = document.getElementById('ahg-chev-' + idx);
+  if (!jobs) return;
+  var open = jobs.classList.toggle('open');
+  if (chev) chev.classList.toggle('open', open);
+}
 async function loadAlertHistory() {
   try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_sent?user_id=eq.' + currentUserId + '&select=*&order=sent_at.desc&limit=20', {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_sent?user_id=eq.' + currentUserId + '&select=*&order=sent_at.desc&limit=60', {
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
     });
     var rows = await res.json();
@@ -2110,20 +2280,45 @@ async function loadAlertHistory() {
       if (!byDate[d]) byDate[d] = [];
       byDate[d].push(r);
     });
-    var dates = Object.keys(byDate).sort(function(a,b){ return b.localeCompare(a); }).slice(0,5);
+    var dates = Object.keys(byDate).sort(function(a,b){ return b.localeCompare(a); }).slice(0,8);
     document.getElementById('alertHistWrap').style.display = 'block';
     document.getElementById('alertStatsWrap').style.display = 'block';
     document.getElementById('alertStatVagas').textContent = rows.length;
     document.getElementById('alertStatEnvios').textContent = dates.length;
-    document.getElementById('alertHistList').innerHTML = dates.map(function(d) {
-      var count = byDate[d].length;
-      var dateStr = new Date(d).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
-      return '<div class="alert-hist-item">'
-        + '<div class="alert-hist-dot" style="background:var(--green)"></div>'
-        + '<div style="flex:1;font-size:13px"><strong>' + dateStr + '</strong> · ' + count + ' vaga' + (count > 1 ? 's' : '') + ' enviada' + (count > 1 ? 's' : '') + '</div>'
+    document.getElementById('alertHistList').innerHTML = dates.map(function(d, idx) {
+      var jobs = byDate[d];
+      var count = jobs.length;
+      var dateStr = new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+      var jobsHTML = jobs.map(function(j) {
+        var title = j.job_title || 'Vaga';
+        var company = j.job_company || 'Empresa';
+        var url = j.job_url || '';
+        var initial = company[0].toUpperCase();
+        var color = jobColor(company);
+        var analyzeUrl = url ? '/app?vaga=' + encodeURIComponent(url) : '/app';
+        return '<div class="alert-hist-job">'
+          + '<div class="alert-hist-logo" style="background:' + color + '">' + escHtml(initial) + '</div>'
+          + '<div class="alert-hist-info">'
+          + '<div class="alert-hist-title" title="' + escAttr(title) + '">' + escHtml(title) + '</div>'
+          + '<div class="alert-hist-company">' + escHtml(company) + '</div>'
+          + '</div>'
+          + (url ? '<a class="alert-hist-link" href="' + escAttr(url) + '" target="_blank" rel="noopener">Ver vaga</a>' : '')
+          + '<a class="alert-hist-analyze" href="' + escAttr(analyzeUrl) + '">⚡ Analisar</a>'
+          + '</div>';
+      }).join('');
+      // Primeiro grupo começa expandido
+      var isFirst = idx === 0;
+      return '<div class="alert-hist-group">'
+        + '<div class="alert-hist-header" onclick="toggleAlertHistGroup(' + idx + ')">'
+        + '<div class="alert-hist-dot"></div>'
+        + '<div class="alert-hist-date">' + dateStr + '</div>'
+        + '<span class="alert-hist-count">' + count + ' vaga' + (count > 1 ? 's' : '') + '</span>'
+        + '<svg id="ahg-chev-' + idx + '" class="alert-hist-chevron' + (isFirst ? ' open' : '') + '" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>'
+        + '</div>'
+        + '<div id="ahg-jobs-' + idx + '" class="alert-hist-jobs' + (isFirst ? ' open' : '') + '">' + jobsHTML + '</div>'
         + '</div>';
     }).join('');
-  } catch(e) {}
+  } catch(e) { console.error('loadAlertHistory', e); }
 }
 
 // Keywords
@@ -2148,6 +2343,78 @@ function renderKwTags() {
   wrap.appendChild(input);
 }
 function removeKw(i) { _alertKeywords.splice(i,1); renderKwTags(); updateAlertEstimate(); }
+
+async function importKeywordsFromLastAnalysis() {
+  var btn = document.getElementById('importKwBtn');
+  if (!btn) return;
+  var origHTML = btn.innerHTML;
+  btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Buscando...';
+  btn.disabled = true;
+
+  try {
+    var token = await getValidToken();
+    if (!token) return;
+    // Busca as últimas 5 análises para agregar keywords de múltiplas sessões
+    var res = await fetch(
+      SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=result,created_at&order=created_at.desc&limit=5',
+      { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + token } }
+    );
+    var rows = await res.json();
+    if (!Array.isArray(rows) || !rows.length) {
+      showToastAlert('Nenhuma análise encontrada. Analise um CV primeiro na aba "Analisar".', true);
+      btn.innerHTML = origHTML; btn.disabled = false; return;
+    }
+
+    // Agrega keywords_encontradas de todas as análises disponíveis
+    var allKws = [];
+    var kwSeen = new Set();
+    rows.forEach(function(row) {
+      var kws = (row.result && Array.isArray(row.result.keywords_encontradas)) ? row.result.keywords_encontradas : [];
+      kws.forEach(function(kw) {
+        var k = (kw || '').trim();
+        if (k && !kwSeen.has(k.toLowerCase())) { allKws.push(k); kwSeen.add(k.toLowerCase()); }
+      });
+    });
+
+    if (!allKws.length) {
+      showToastAlert('Suas análises não identificaram keywords no CV. Tente analisar uma vaga com mais requisitos técnicos.', true);
+      btn.innerHTML = origHTML; btn.disabled = false; return;
+    }
+
+    // Mescla com as que já existem no campo, sem duplicar
+    var existing = _alertKeywords.map(function(k){ return k.toLowerCase(); });
+    var added = 0;
+    allKws.forEach(function(kw) {
+      if (!existing.includes(kw.toLowerCase())) {
+        _alertKeywords.push(kw);
+        existing.push(kw.toLowerCase());
+        added++;
+      }
+    });
+    renderKwTags();
+    updateAlertEstimate();
+
+    var analysesCount = rows.length;
+    showToastAlert(added > 0
+      ? '✓ ' + added + ' keyword' + (added > 1 ? 's' : '') + ' importada' + (added > 1 ? 's' : '') + ' de ' + analysesCount + ' análise' + (analysesCount > 1 ? 's' : '') + '!'
+      : 'Todas as keywords já estavam no perfil.'
+    );
+
+    btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Importado!';
+    btn.style.borderColor = 'var(--green)';
+    btn.style.color = 'var(--green)';
+    setTimeout(function() {
+      btn.innerHTML = origHTML;
+      btn.style.borderColor = '';
+      btn.style.color = '';
+      btn.disabled = false;
+    }, 2500);
+  } catch(e) {
+    showToastAlert('Erro ao importar keywords: ' + e.message, true);
+    btn.innerHTML = origHTML;
+    btn.disabled = false;
+  }
+}
 
 // Frequência
 function setFreq(f, silent) {
@@ -2459,9 +2726,18 @@ function kCardHTML(c) {
   if (c.status === 'oferta') statusBadge = '<span class="k-status-badge oferta">🎉 Oferta</span>';
   else if (c.status === 'recusado') statusBadge = '<span class="k-status-badge recusado">Recusado</span>';
 
+  // Salário da análise vinculada
+  var kSalario = '';
+  if (c.analysis_id) {
+    var kAna = _analysesFull.find(function(a){ return a.id === c.analysis_id; });
+    var kSal = kAna && kAna.result && kAna.result.job_info && kAna.result.job_info.salario;
+    if (kSal && kSal.toLowerCase() !== 'não informado') kSalario = kSal;
+  }
+
   var html = '<div class="k-card' + (isStagnant ? ' k-stagnant' : '') + '" draggable="true" data-id="' + c.id + '" onclick="openKEdit(\'' + escAttr(c.id) + '\')">';
   html += '<div class="k-card-company"><div class="k-card-logo" style="background:' + color + '">' + initial + '</div>' + escHtml(c.empresa) + statusBadge + '</div>';
   html += '<div class="k-card-role">' + escHtml(c.cargo) + '</div>';
+  if (kSalario) html += '<div class="k-card-salary"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>' + escHtml(kSalario) + '</div>';
   html += '<div class="k-card-footer">';
   html += '<span class="k-card-score ' + scClass + '">' + scLabel + '</span>';
   if (ageStr) html += '<span class="k-card-age">' + ageStr + '</span>';
@@ -2712,6 +2988,11 @@ function renderUVRow(card, analysis) {
   var statusLabels = { quero:'🔍 Quero aplicar', aplicado:'📤 Aplicado', entrevista:'💬 Entrevista', oferta:'✅ Oferta', recusado:'Recusado', soanalise:'📊 Só análise' };
   var statusBadge = '<span class="uv-sbadge ' + (status === 'oferta' || status === 'recusado' ? 'concluido' : status) + '">' + (statusLabels[status] || status) + '</span>';
 
+  // Salário (da análise vinculada)
+  var salario = '';
+  var _rawSal = analysisResult && analysisResult.job_info && analysisResult.job_info.salario;
+  if (_rawSal && _rawSal.toLowerCase() !== 'não informado') salario = _rawSal;
+
   // Keywords inline (da análise)
   var insightsHTML = '';
   if (analysisResult) {
@@ -2748,6 +3029,7 @@ function renderUVRow(card, analysis) {
     + '<div class="uv-main">'
     + '<div class="uv-top"><span class="uv-company">' + escHtml(empresa) + '</span>' + statusBadge + '</div>'
     + (cargo ? '<div class="uv-role">' + escHtml(cargo) + '</div>' : '')
+    + (salario ? '<div class="uv-salary"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>' + escHtml(salario) + '</div>' : '')
     + (insightsHTML ? '<div class="uv-insights">' + insightsHTML + '</div>' : '')
     + (nota ? '<div class="uv-nota">📝 ' + escHtml(nota) + '</div>' : '')
     + '</div>'
