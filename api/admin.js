@@ -2,9 +2,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const GA4_PROPERTY_ID  = process.env.GA4_PROPERTY_ID;
-const GA4_CLIENT_ID    = process.env.GA4_CLIENT_ID;
-const GA4_CLIENT_SECRET = process.env.GA4_CLIENT_SECRET;
-const GA4_REFRESH_TOKEN = process.env.GA4_REFRESH_TOKEN;
+const GA4_SA_JSON      = process.env.GA4_SA_JSON; // Service Account JSON (nunca expira)
 
 const ADMIN_EMAILS = ['contato@vagaai.app.br', 'jvhr96@gmail.com'];
 
@@ -65,19 +63,38 @@ async function fetchSupabaseData() {
 
 // ─── GA4 helpers ─────────────────────────────────────────────────────────────
 
+// Gera access token via Service Account JWT (RS256) — não expira, sem OAuth flow
 async function getGA4AccessToken() {
+  const sa = JSON.parse(GA4_SA_JSON);
+  const { createSign } = await import('crypto');
+
+  const now = Math.floor(Date.now() / 1000);
+  const b64url = (obj) => Buffer.from(JSON.stringify(obj)).toString('base64url');
+  const header  = b64url({ alg: 'RS256', typ: 'JWT' });
+  const payload = b64url({
+    iss: sa.client_email,
+    scope: 'https://www.googleapis.com/auth/analytics.readonly',
+    aud: 'https://oauth2.googleapis.com/token',
+    iat: now,
+    exp: now + 3600,
+  });
+
+  const sigInput = `${header}.${payload}`;
+  const sign = createSign('RSA-SHA256');
+  sign.update(sigInput);
+  const signature = sign.sign(sa.private_key, 'base64url');
+  const jwt = `${sigInput}.${signature}`;
+
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
-      grant_type: 'refresh_token',
-      client_id: GA4_CLIENT_ID,
-      client_secret: GA4_CLIENT_SECRET,
-      refresh_token: GA4_REFRESH_TOKEN,
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      assertion: jwt,
     }).toString(),
   });
   const data = await res.json();
-  if (!data.access_token) throw new Error('OAuth token error: ' + JSON.stringify(data));
+  if (!data.access_token) throw new Error('SA token error: ' + JSON.stringify(data));
   return data.access_token;
 }
 
@@ -95,8 +112,8 @@ async function runGA4Report(token, body) {
 }
 
 async function fetchGA4Data() {
-  if (!GA4_PROPERTY_ID || !GA4_CLIENT_ID || !GA4_CLIENT_SECRET || !GA4_REFRESH_TOKEN) {
-    throw new Error('GA4 não configurado (env vars ausentes)');
+  if (!GA4_PROPERTY_ID || !GA4_SA_JSON) {
+    throw new Error('GA4 não configurado (GA4_PROPERTY_ID ou GA4_SA_JSON ausente)');
   }
   const ga4Token = await getGA4AccessToken();
   const [overviewRes, eventsRes, pagesRes] = await Promise.all([
