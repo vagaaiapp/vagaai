@@ -111,25 +111,32 @@ async function runGA4Report(token, body) {
   return res.json();
 }
 
-async function fetchGA4Data() {
+async function fetchGA4Data(days = 30) {
   if (!GA4_PROPERTY_ID || !GA4_SA_JSON) {
     throw new Error('GA4 não configurado (GA4_PROPERTY_ID ou GA4_SA_JSON ausente)');
   }
+  const d = parseInt(days) || 30;
+  const startDate = `${d}daysAgo`;
+  const prevStart = `${d * 2}daysAgo`;
+  const prevEnd   = `${d + 1}daysAgo`;
+
   const ga4Token = await getGA4AccessToken();
-  const [overviewRes, eventsRes, pagesRes] = await Promise.all([
+  const [overviewRes, eventsRes, pagesRes, countriesRes, citiesRes, devicesRes, sourcesRes] = await Promise.all([
+    // Visão geral com comparação ao período anterior
     runGA4Report(ga4Token, {
       dateRanges: [
-        { startDate: '30daysAgo', endDate: 'today' },
-        { startDate: '60daysAgo', endDate: '31daysAgo' },
+        { startDate, endDate: 'today' },
+        { startDate: prevStart, endDate: prevEnd },
       ],
       metrics: [
         { name: 'activeUsers' }, { name: 'sessions' },
         { name: 'screenPageViews' }, { name: 'bounceRate' },
-        { name: 'averageSessionDuration' },
+        { name: 'averageSessionDuration' }, { name: 'newUsers' },
       ],
     }),
+    // Funil de eventos
     runGA4Report(ga4Token, {
-      dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+      dateRanges: [{ startDate, endDate: 'today' }],
       dimensions: [{ name: 'eventName' }],
       metrics: [{ name: 'eventCount' }],
       dimensionFilter: {
@@ -139,37 +146,98 @@ async function fetchGA4Data() {
         },
       },
     }),
+    // Top páginas
     runGA4Report(ga4Token, {
-      dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+      dateRanges: [{ startDate, endDate: 'today' }],
       dimensions: [{ name: 'pagePath' }],
       metrics: [{ name: 'screenPageViews' }, { name: 'activeUsers' }],
       orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }],
-      limit: 5,
+      limit: 10,
+    }),
+    // Países
+    runGA4Report(ga4Token, {
+      dateRanges: [{ startDate, endDate: 'today' }],
+      dimensions: [{ name: 'country' }],
+      metrics: [{ name: 'activeUsers' }, { name: 'sessions' }],
+      orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }],
+      limit: 10,
+    }),
+    // Cidades (Brasil)
+    runGA4Report(ga4Token, {
+      dateRanges: [{ startDate, endDate: 'today' }],
+      dimensions: [{ name: 'city' }],
+      metrics: [{ name: 'activeUsers' }],
+      dimensionFilter: { filter: { fieldName: 'country', stringFilter: { value: 'Brazil' } } },
+      orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }],
+      limit: 10,
+    }),
+    // Dispositivos
+    runGA4Report(ga4Token, {
+      dateRanges: [{ startDate, endDate: 'today' }],
+      dimensions: [{ name: 'deviceCategory' }],
+      metrics: [{ name: 'activeUsers' }, { name: 'sessions' }],
+      orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }],
+    }),
+    // Fontes de tráfego
+    runGA4Report(ga4Token, {
+      dateRanges: [{ startDate, endDate: 'today' }],
+      dimensions: [{ name: 'sessionDefaultChannelGroup' }],
+      metrics: [{ name: 'sessions' }, { name: 'activeUsers' }],
+      orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+      limit: 8,
     }),
   ]);
+
   const cur = overviewRes.rows?.[0]?.metricValues || [];
   const prev = overviewRes.rows?.[1]?.metricValues || [];
   const overview = {
-    users: parseInt(cur[0]?.value || 0), users_prev: parseInt(prev[0]?.value || 0),
-    sessions: parseInt(cur[1]?.value || 0), sessions_prev: parseInt(prev[1]?.value || 0),
-    pageviews: parseInt(cur[2]?.value || 0),
+    users:       parseInt(cur[0]?.value || 0), users_prev:    parseInt(prev[0]?.value || 0),
+    sessions:    parseInt(cur[1]?.value || 0), sessions_prev: parseInt(prev[1]?.value || 0),
+    pageviews:   parseInt(cur[2]?.value || 0),
     bounce_rate: parseFloat(cur[3]?.value || 0),
     avg_session: parseFloat(cur[4]?.value || 0),
+    new_users:   parseInt(cur[5]?.value || 0), new_users_prev: parseInt(prev[5]?.value || 0),
   };
+
   const eventMap = {};
   for (const row of (eventsRes.rows || [])) eventMap[row.dimensionValues[0].value] = parseInt(row.metricValues[0].value || 0);
   const funnel = {
-    analyze_start: eventMap['analyze_start'] || 0,
+    analyze_start:    eventMap['analyze_start']    || 0,
     analyze_complete: eventMap['analyze_complete'] || 0,
-    begin_checkout: eventMap['begin_checkout'] || 0,
-    cv_download: eventMap['cv_download_click'] || 0,
+    begin_checkout:   eventMap['begin_checkout']   || 0,
+    cv_download:      eventMap['cv_download_click']|| 0,
   };
+
   const pages = (pagesRes.rows || []).map(r => ({
-    path: r.dimensionValues[0].value,
+    path:  r.dimensionValues[0].value,
     views: parseInt(r.metricValues[0].value || 0),
     users: parseInt(r.metricValues[1].value || 0),
   }));
-  return { overview, funnel, pages };
+
+  const countries = (countriesRes.rows || []).map(r => ({
+    name:     r.dimensionValues[0].value,
+    users:    parseInt(r.metricValues[0].value || 0),
+    sessions: parseInt(r.metricValues[1].value || 0),
+  }));
+
+  const cities = (citiesRes.rows || []).map(r => ({
+    name:  r.dimensionValues[0].value,
+    users: parseInt(r.metricValues[0].value || 0),
+  }));
+
+  const devices = (devicesRes.rows || []).map(r => ({
+    name:     r.dimensionValues[0].value,
+    users:    parseInt(r.metricValues[0].value || 0),
+    sessions: parseInt(r.metricValues[1].value || 0),
+  }));
+
+  const sources = (sourcesRes.rows || []).map(r => ({
+    name:     r.dimensionValues[0].value,
+    sessions: parseInt(r.metricValues[0].value || 0),
+    users:    parseInt(r.metricValues[1].value || 0),
+  }));
+
+  return { overview, funnel, pages, countries, cities, devices, sources, days: d };
 }
 
 // ─── Stripe helpers ───────────────────────────────────────────────────────────
@@ -230,7 +298,7 @@ export default async function handler(req, res) {
   // Rota GA4 separada para não atrasar o dashboard principal
   if (req.query.action === 'ga4') {
     try {
-      const ga4 = await fetchGA4Data();
+      const ga4 = await fetchGA4Data(req.query.days || 30);
       return res.status(200).json(ga4);
     } catch (err) {
       console.error('GA4 error:', err);
