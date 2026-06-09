@@ -143,6 +143,31 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 /* PAGINATION */
 .tbl-footer{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;background:var(--surface2);border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
 
+/* ADMIN TABS */
+.admin-tabs{display:flex;gap:.3rem;margin-bottom:1.5rem;border-bottom:2px solid var(--border);padding-bottom:0}
+.admin-tab{background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;padding:.6rem 1.1rem;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s;white-space:nowrap}
+.admin-tab:hover{color:var(--text);background:var(--surface2)}
+.admin-tab.active{color:var(--green);border-bottom-color:var(--green);background:transparent}
+
+/* MODAL */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal-box{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:1.8rem;width:100%;max-width:420px;box-shadow:0 16px 48px rgba(0,0,0,.3)}
+.modal-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:.3rem}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:1.3rem}
+.modal-input{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:.65rem .9rem;font-size:15px;color:var(--text);box-sizing:border-box;margin-bottom:1rem}
+.modal-input:focus{outline:none;border-color:var(--green)}
+.modal-actions{display:flex;gap:.6rem;justify-content:flex-end}
+.btn-modal-cancel{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:.55rem 1.1rem;font-size:13px;color:var(--muted);cursor:pointer;font-weight:600}
+.btn-modal-ok{background:var(--green);border:none;border-radius:8px;padding:.55rem 1.3rem;font-size:13px;color:#fff;cursor:pointer;font-weight:700}
+.btn-modal-danger{background:#e53e3e;border:none;border-radius:8px;padding:.55rem 1.3rem;font-size:13px;color:#fff;cursor:pointer;font-weight:700}
+
+/* USER ACTION BUTTONS */
+.btn-user-action{background:none;border:1.5px solid var(--border);border-radius:6px;padding:.25rem .55rem;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-user-action.add{color:var(--green);border-color:var(--green-border)}
+.btn-user-action.add:hover{background:var(--green-dim)}
+.btn-user-action.del{color:#fc8181;border-color:rgba(252,129,129,.3)}
+.btn-user-action.del:hover{background:rgba(229,62,62,.08)}
+
 /* GA4 TRAFFIC */
 .ga4-period-bar{display:flex;gap:.4rem;margin-bottom:1.1rem;flex-wrap:wrap}
 .ga4-period-btn{font-size:12px;font-weight:600;padding:.35rem .85rem;border-radius:6px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
@@ -253,6 +278,17 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <span id="errorMsg"></span>
   </div>
 
+  <!-- ABAS DE NAVEGAÇÃO -->
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="switchTab('overview')" data-tab="overview">📊 Visão Geral</button>
+    <button class="admin-tab" onclick="switchTab('users')" data-tab="users">👥 Usuários</button>
+    <button class="admin-tab" onclick="switchTab('finance')" data-tab="finance">💰 Financeiro</button>
+    <button class="admin-tab" onclick="switchTab('traffic')" data-tab="traffic">📈 Tráfego</button>
+  </div>
+
+  <!-- ═══════════════ ABA: VISÃO GERAL ═══════════════ -->
+  <div id="panel-overview" class="tab-panel">
+
   <!-- METRIC CARDS -->
   <div class="metrics-grid" id="metricsGrid">
     <!-- Skeletons while loading -->
@@ -288,6 +324,11 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
   </div>
 
+  </div><!-- /panel-overview -->
+
+  <!-- ═══════════════ ABA: TRÁFEGO ═══════════════ -->
+  <div id="panel-traffic" class="tab-panel" style="display:none">
+
   <!-- GA4 TRAFFIC SECTION -->
   <div class="section" id="ga4Section">
     <div class="section-header">
@@ -303,6 +344,11 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       <div class="ga4-loading">Carregando dados de tráfego…</div>
     </div>
   </div>
+
+  </div><!-- /panel-traffic -->
+
+  <!-- ═══════════════ ABA: USUÁRIOS ═══════════════ -->
+  <div id="panel-users" class="tab-panel" style="display:none">
 
   <!-- USERS TABLE -->
   <div class="section">
@@ -324,10 +370,11 @@ tr:hover td{background:rgba(255,255,255,0.02)}
             <th onclick="sortUsers('credits')">Créditos <span class="sort-arrow">↕</span></th>
             <th onclick="sortUsers('analyses')">Análises <span class="sort-arrow">↕</span></th>
             <th>Status</th>
+            <th style="width:130px">Ações</th>
           </tr>
         </thead>
         <tbody id="usersBody">
-          <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem;font-size:13px">Carregando...</td></tr>
+          <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem;font-size:13px">Carregando...</td></tr>
         </tbody>
       </table>
     </div>
@@ -356,6 +403,11 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       </table>
     </div>
   </div>
+
+  </div><!-- /panel-users -->
+
+  <!-- ═══════════════ ABA: FINANCEIRO ═══════════════ -->
+  <div id="panel-finance" class="tab-panel" style="display:none">
 
   <!-- PAYMENTS -->
   <div class="section" id="paymentsSection">
@@ -432,7 +484,42 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
   </div>
 
+  </div><!-- /panel-finance -->
+
 </div><!-- /container -->
+
+<!-- MODAL: Gerenciar créditos -->
+<div id="creditsModal" class="modal-backdrop" style="display:none" onclick="if(event.target===this)closeCreditsModal()">
+  <div class="modal-box">
+    <div class="modal-title">💳 Gerenciar créditos</div>
+    <div class="modal-sub" id="creditsModalSub">Usuário: —</div>
+    <div style="display:flex;gap:.5rem;margin-bottom:.5rem">
+      <button class="btn-user-action add" style="font-size:13px;padding:.4rem .8rem" onclick="setCreditsQty(1)">+1</button>
+      <button class="btn-user-action add" style="font-size:13px;padding:.4rem .8rem" onclick="setCreditsQty(5)">+5</button>
+      <button class="btn-user-action add" style="font-size:13px;padding:.4rem .8rem" onclick="setCreditsQty(10)">+10</button>
+      <button class="btn-user-action del" style="font-size:13px;padding:.4rem .8rem" onclick="setCreditsQty(-1)">−1</button>
+      <button class="btn-user-action del" style="font-size:13px;padding:.4rem .8rem" onclick="setCreditsQty(-5)">−5</button>
+    </div>
+    <input type="number" id="creditsQtyInput" class="modal-input" placeholder="Quantidade (use − para remover)" />
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeCreditsModal()">Cancelar</button>
+      <button class="btn-modal-ok" onclick="confirmAddCredits()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Confirmar remoção de usuário -->
+<div id="removeUserModal" class="modal-backdrop" style="display:none" onclick="if(event.target===this)closeRemoveModal()">
+  <div class="modal-box">
+    <div class="modal-title">🗑️ Remover usuário</div>
+    <div class="modal-sub" id="removeUserSub">Tem certeza?</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:1.3rem">Esta ação é <strong>irreversível</strong>. O usuário, créditos, análises e alertas serão apagados.</p>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeRemoveModal()">Cancelar</button>
+      <button class="btn-modal-danger" onclick="confirmRemoveUser()">Sim, remover</button>
+    </div>
+  </div>
+</div>
 
 <script>
 var SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
@@ -718,6 +805,83 @@ function renderGA4(d) {
   document.getElementById('ga4Content').innerHTML = html;
 }
 
+// ─── Navegação por abas ───────────────────────────────────────────────────────
+
+function switchTab(tab) {
+  ['overview','users','finance','traffic'].forEach(function(t) {
+    var panel = document.getElementById('panel-' + t);
+    var btn   = document.querySelector('.admin-tab[data-tab="' + t + '"]');
+    if (panel) panel.style.display = t === tab ? '' : 'none';
+    if (btn)   btn.classList.toggle('active', t === tab);
+  });
+  // Carrega GA4 ao entrar na aba de tráfego (se ainda não carregado)
+  if (tab === 'traffic' && document.getElementById('ga4Content').querySelector('.ga4-loading')) {
+    loadGA4(30);
+  }
+}
+
+// ─── Gerenciamento de usuários ────────────────────────────────────────────────
+
+var _creditsUserId = null;
+var _removeUserId  = null;
+
+function openCreditsModal(userId, email) {
+  _creditsUserId = userId;
+  document.getElementById('creditsModalSub').textContent = email;
+  document.getElementById('creditsQtyInput').value = '';
+  document.getElementById('creditsModal').style.display = 'flex';
+  setTimeout(function(){ document.getElementById('creditsQtyInput').focus(); }, 100);
+}
+function closeCreditsModal() { document.getElementById('creditsModal').style.display = 'none'; _creditsUserId = null; }
+function setCreditsQty(n) { document.getElementById('creditsQtyInput').value = n; }
+
+async function confirmAddCredits() {
+  var qty = parseInt(document.getElementById('creditsQtyInput').value);
+  if (!_creditsUserId || isNaN(qty) || qty === 0) { alert('Informe uma quantidade válida (ex: 5 ou -2)'); return; }
+  var btn = document.querySelector('#creditsModal .btn-modal-ok');
+  btn.textContent = 'Salvando…'; btn.disabled = true;
+  try {
+    var s = await sb.auth.getSession();
+    var r = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + s.data.session.access_token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'add_credits', userId: _creditsUserId, credits: qty })
+    });
+    var d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Erro');
+    // Atualiza célula na tabela
+    var cell = document.getElementById('cred-' + _creditsUserId);
+    if (cell) { cell.textContent = d.credits; cell.style.color = d.credits > 0 ? 'var(--green)' : 'var(--muted)'; }
+    closeCreditsModal();
+  } catch(e) { alert('Erro: ' + e.message); btn.textContent = 'Confirmar'; btn.disabled = false; }
+}
+
+function openRemoveModal(userId, email) {
+  _removeUserId = userId;
+  document.getElementById('removeUserSub').textContent = 'Remover: ' + email;
+  document.getElementById('removeUserModal').style.display = 'flex';
+}
+function closeRemoveModal() { document.getElementById('removeUserModal').style.display = 'none'; _removeUserId = null; }
+
+async function confirmRemoveUser() {
+  if (!_removeUserId) return;
+  var btn = document.querySelector('#removeUserModal .btn-modal-danger');
+  btn.textContent = 'Removendo…'; btn.disabled = true;
+  try {
+    var s = await sb.auth.getSession();
+    var r = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + s.data.session.access_token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'remove_user', userId: _removeUserId })
+    });
+    if (!r.ok) { var d = await r.json(); throw new Error(d.error || 'Erro'); }
+    // Remove linha da tabela
+    var row = document.getElementById('cred-' + _removeUserId)?.closest('tr');
+    if (row) row.remove();
+    closeRemoveModal();
+  } catch(e) { alert('Erro: ' + e.message); btn.textContent = 'Sim, remover'; btn.disabled = false; }
+}
+
 function renderGA4Error(msg) {
   var notConfigured = msg && msg.includes('env vars');
   document.getElementById('ga4Content').innerHTML = notConfigured
@@ -937,17 +1101,21 @@ function sortAndRenderUsers() {
   var now = Date.now();
   body.innerHTML = sorted.map(function(u) {
     var active = u.last_sign_in_at && (now - new Date(u.last_sign_in_at).getTime()) < 7 * 24 * 60 * 60 * 1000;
-    var statusBadge = active
-      ? '<span class="badge green">Ativo</span>'
-      : '<span class="badge muted">Inativo</span>';
+    var statusBadge = active ? '<span class="badge green">Ativo</span>' : '<span class="badge muted">Inativo</span>';
+    var uid = escHtml(u.id);
+    var uemail = escHtml(u.email);
     return '<tr>'
       + '<td><div class="avatar">' + escHtml(initials(u.email)) + '</div></td>'
-      + '<td>' + escHtml(u.email) + '</td>'
+      + '<td>' + uemail + '</td>'
       + '<td>' + fmtDate(u.created_at) + '</td>'
       + '<td>' + (u.last_sign_in_at ? fmtDate(u.last_sign_in_at) : '<span style="color:var(--muted)">Nunca</span>') + '</td>'
-      + '<td><span style="font-weight:600;color:' + (u.credits > 0 ? 'var(--green)' : 'var(--muted)') + '">' + u.credits + '</span></td>'
+      + '<td><span style="font-weight:600;color:' + (u.credits > 0 ? 'var(--green)' : 'var(--muted)') + '" id="cred-' + uid + '">' + u.credits + '</span></td>'
       + '<td>' + u.analyses + '</td>'
       + '<td>' + statusBadge + '</td>'
+      + '<td style="white-space:nowrap">'
+        + '<button class="btn-user-action add" onclick="openCreditsModal(\'' + uid + '\',\'' + uemail + '\')" title="Gerenciar créditos">+ Créditos</button> '
+        + '<button class="btn-user-action del" onclick="openRemoveModal(\'' + uid + '\',\'' + uemail + '\')" title="Remover usuário">🗑️</button>'
+      + '</td>'
       + '</tr>';
   }).join('');
 }

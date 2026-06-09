@@ -273,8 +273,8 @@ async function fetchStripeData() {
 // ─── Handler ──────────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
-  // Only allow GET
-  if (req.method !== 'GET') {
+  // Permite GET e POST
+  if (req.method !== 'GET' && req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -295,7 +295,52 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: 'Acesso negado. Apenas administradores.' });
   }
 
-  // Rota GA4 separada para não atrasar o dashboard principal
+  // ── POST: ações de gerenciamento de usuário ──────────────────────────────────
+  if (req.method === 'POST') {
+    const { action, userId, credits } = req.body || {};
+
+    // Adicionar créditos avulsos
+    if (action === 'add_credits') {
+      if (!userId || credits == null) return res.status(400).json({ error: 'userId e credits obrigatórios' });
+      const qty = parseInt(credits);
+      if (isNaN(qty) || qty < -1000 || qty > 1000) return res.status(400).json({ error: 'credits inválido (máx ±1000)' });
+
+      // Upsert: se não existir, cria com qty; se existir, incrementa
+      const existing = await fetch(
+        `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&select=credits`,
+        { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+      ).then(r => r.json()).catch(() => []);
+
+      const current = existing[0]?.credits ?? 0;
+      const newVal  = Math.max(0, current + qty);
+
+      const upRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/user_credits`,
+        {
+          method: 'POST',
+          headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=representation' },
+          body: JSON.stringify({ user_id: userId, credits: newVal, updated_at: new Date().toISOString() }),
+        }
+      );
+      if (!upRes.ok) return res.status(500).json({ error: 'Erro ao atualizar créditos: ' + await upRes.text() });
+      return res.status(200).json({ ok: true, credits: newVal });
+    }
+
+    // Remover usuário (apaga do auth Supabase — cascata remove dados via FK)
+    if (action === 'remove_user') {
+      if (!userId) return res.status(400).json({ error: 'userId obrigatório' });
+      const delRes = await fetch(
+        `${SUPABASE_URL}/auth/v1/admin/users/${userId}`,
+        { method: 'DELETE', headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+      );
+      if (!delRes.ok && delRes.status !== 404) return res.status(500).json({ error: 'Erro ao remover usuário: ' + await delRes.text() });
+      return res.status(200).json({ ok: true });
+    }
+
+    return res.status(400).json({ error: 'Ação desconhecida' });
+  }
+
+  // ── GET: rota GA4 separada para não atrasar o dashboard principal ─────────────
   if (req.query.action === 'ga4') {
     try {
       const ga4 = await fetchGA4Data(req.query.days || 30);
