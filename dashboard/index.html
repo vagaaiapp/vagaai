@@ -570,6 +570,106 @@ nav::before{content:'';position:absolute;inset:0;background:linear-gradient(180d
 .confetti-piece{position:absolute;width:8px;height:8px;border-radius:2px;animation:confettiFall linear forwards}
 @keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
 
+/* ══ TOPBAR ══════════════════════════════════════════════════════════ */
+.topbar{
+  position:fixed;left:var(--sidebar-w);right:0;top:0;height:60px;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2rem;z-index:90;
+  transition:background .3s,border-color .3s;
+}
+.tb-breadcrumb{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--text)}
+.tb-breadcrumb svg{color:var(--muted);flex-shrink:0}
+.tb-sep{color:var(--border);font-size:18px;line-height:1;margin:0 -2px}
+.tb-sub{font-size:13px;color:var(--muted);font-weight:400}
+.tb-right{display:flex;align-items:center;gap:10px}
+.tb-plan-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--green-dim);border:1px solid var(--green-border);
+  border-radius:20px;padding:4px 12px 4px 8px;
+  font-size:12px;font-weight:600;color:var(--green);white-space:nowrap;
+}
+.tb-plan-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s ease infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+.tb-icon-btn{
+  width:36px;height:36px;border:1px solid var(--border);
+  border-radius:9px;background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--muted);transition:all .2s;flex-shrink:0;
+}
+.tb-icon-btn:hover{border-color:var(--border-hover);color:var(--green)}
+.tb-icon-btn svg{width:15px;height:15px}
+.tb-cta{
+  background:var(--green);color:#071209;
+  border:none;padding:9px 18px;border-radius:9px;
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+  text-decoration:none;transition:all .2s;box-shadow:var(--sh-btn);white-space:nowrap;
+}
+.tb-cta:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.tb-cta svg{width:12px;height:12px}
+
+/* ══ SIDEBAR NAV ITEMS ══════════════════════════════════════════════ */
+.sb-nav{display:flex;flex-direction:column;gap:4px;flex:1;width:100%;padding:0 10px;position:relative;z-index:1}
+.sb-btn{
+  position:relative;width:100%;height:46px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.3);cursor:pointer;
+  border:none;background:transparent;transition:all .2s;
+}
+.sb-btn:hover{background:rgba(78,206,145,.12);color:#4ece91}
+.sb-btn.active{background:rgba(78,206,145,.16);color:#4ece91}
+.sb-btn.active::before{
+  content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:3px;height:22px;background:#4ece91;border-radius:0 3px 3px 0;
+}
+.sb-btn svg{width:19px;height:19px;flex-shrink:0}
+.sb-tooltip{
+  position:absolute;left:calc(100% + 14px);top:50%;transform:translateY(-50%);
+  background:#0a0f0b;color:rgba(255,255,255,.88);
+  font-size:11.5px;font-weight:500;padding:5px 11px;border-radius:7px;
+  white-space:nowrap;opacity:0;pointer-events:none;
+  transition:opacity .15s;box-shadow:0 4px 14px rgba(0,0,0,.3);
+  font-family:'Inter',sans-serif;z-index:300;
+}
+.sb-tooltip::before{
+  content:'';position:absolute;right:100%;top:50%;transform:translateY(-50%);
+  border:5px solid transparent;border-right-color:#0a0f0b;
+}
+.sb-btn:hover .sb-tooltip{opacity:1}
+
+/* hide old nav elements that moved to topbar */
+.btn-nav.primary{display:none!important}
+.theme-btn{display:none!important}
+/* hide old content-area tab strip (replaced by sidebar nav) */
+.dash-tabs{display:none!important}
+
+/* adjust main container top padding for topbar */
+.container{padding-top:calc(60px + 1.5rem)!important}
+
+/* ══ HERO GREETING ══════════════════════════════════════════════════ */
+.greeting{
+  background:linear-gradient(130deg,#0d3a22 0%,#0a2818 60%,#071a10 100%);
+  border-radius:var(--r);padding:36px 40px 32px;
+  margin-bottom:1.5rem;position:relative;overflow:hidden;
+  animation:fadeUp .4s ease both;box-shadow:0 16px 48px rgba(0,0,0,.35);
+}
+.greeting::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 65% 80% at 105% -5%,rgba(78,206,145,.22) 0%,transparent 55%);
+  pointer-events:none;
+}
+.greeting-title{
+  font-family:'Lora',serif;font-size:clamp(20px,3.5vw,28px);
+  font-weight:700;letter-spacing:-.3px;margin-bottom:.4rem;
+  color:#fff!important;position:relative;z-index:1;
+}
+.greeting-sub{
+  font-size:14px;color:rgba(255,255,255,.62)!important;
+  position:relative;z-index:1;max-width:520px;line-height:1.65;
+}
+@media(max-width:600px){.greeting{padding:24px 20px 20px}}
+
 /* ══ LIGHT THEME ═════════════════════════════════════════════════════ */
 [data-theme="light"]{
   --bg:#f2f6f3;--surface:#ffffff;--surface2:#eaf0ec;
@@ -693,6 +793,22 @@ nav::before{content:'';position:absolute;inset:0;background:linear-gradient(180d
     <img src="/logo.svg" alt="VagaAI" height="38" class="logo-dark" style="display:block;">
     <img src="/logo-icon.svg" alt="VagaAI" height="38" class="logo-light" style="display:none;">
   </a>
+  <!-- sidebar nav tabs -->
+  <div class="sb-nav">
+    <button class="sb-btn active" data-tab="painel" onclick="switchDashTab('painel')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      <span class="sb-tooltip">Painel</span>
+    </button>
+    <button class="sb-btn" data-tab="vagas" onclick="switchDashTab('vagas')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+      <span class="sb-tooltip">Candidaturas</span>
+    </button>
+    <button class="sb-btn" data-tab="alertas" onclick="switchDashTab('alertas')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <span class="sb-tooltip">Alertas de vagas</span>
+    </button>
+  </div>
+
   <div class="nav-right">
     <a href="/app" class="btn-nav primary">
       <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
@@ -731,6 +847,29 @@ nav::before{content:'';position:absolute;inset:0;background:linear-gradient(180d
     </div>
   </div>
 </nav>
+
+<!-- ─── TOPBAR ─────────────────────────────────────── -->
+<div class="topbar" id="topBar" style="display:none">
+  <div class="tb-breadcrumb">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    <span id="tbSection">Painel</span>
+    <span class="tb-sep">·</span>
+    <span class="tb-sub" id="tbSub">Visão geral</span>
+  </div>
+  <div class="tb-right">
+    <span class="tb-plan-badge" id="tbPlanBadge" style="display:none">
+      <span class="tb-plan-dot"></span>
+      <span id="tbPlanLabel">Pro</span>
+    </span>
+    <button class="tb-icon-btn" onclick="toggleTheme()" title="Alternar tema">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+    </button>
+    <a href="/app" class="tb-cta">
+      <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Analisar vaga
+    </a>
+  </div>
+</div>
 
 <!-- ─── CONTEÚDO ──────────────────────────────────── -->
 <div class="container" id="mainContent" style="display:none">
@@ -1135,6 +1274,7 @@ async function init() {
 
   document.getElementById('pageLoading').classList.add('hidden');
   document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('topBar').style.display = 'flex';
 }
 
 // ─── PLANS ────────────────────────────────────────────────────────────────────
@@ -1202,6 +1342,14 @@ function renderCurrentPlanCard() {
 
   var el = document.getElementById('currentPlanCard');
   if (el) el.innerHTML = html;
+  // topbar plan badge
+  var tbBadge = document.getElementById('tbPlanBadge');
+  var tbLabel = document.getElementById('tbPlanLabel');
+  if (tbBadge && tbLabel && plan !== 'free') {
+    var tbLabels = {starter:'Starter',pro:'Pro ativo'};
+    tbLabel.textContent = tbLabels[plan] || plan;
+    tbBadge.style.display = 'inline-flex';
+  }
 }
 
 function renderPlans() {
@@ -2122,6 +2270,14 @@ function switchDashTab(tab) {
   document.querySelectorAll('.dash-tab').forEach(function(el, i) {
     el.classList.toggle('active', ['painel','vagas','alertas'][i] === tab);
   });
+  document.querySelectorAll('.sb-btn[data-tab]').forEach(function(el) {
+    el.classList.toggle('active', el.dataset.tab === tab);
+  });
+  var labels = {painel:'Painel',vagas:'Candidaturas',alertas:'Alertas'};
+  var subs   = {painel:'Visão geral',vagas:'Rastreamento',alertas:'Configurações'};
+  var tbS = document.getElementById('tbSection'), tbSb = document.getElementById('tbSub');
+  if (tbS) tbS.textContent = labels[tab] || tab;
+  if (tbSb) tbSb.textContent = subs[tab] || '';
   if (tab === 'vagas') { if (!_kCards.length) loadKanban(); }
   // Reseta flag ao entrar na aba alertas para sempre buscar dados frescos do banco
   if (tab === 'alertas') { _alertProfileLoaded = false; loadAlertProfile(); }
