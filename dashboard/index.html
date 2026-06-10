@@ -697,6 +697,12 @@ body {
 .job-btn:hover { border-color: var(--gb-emerald); color: var(--gb-emerald); }
 .job-btn-del:hover { border-color: var(--s-red); color: var(--s-red); }
 
+.job-analysis-hint {
+  font-size: 11px; color: var(--gb-emerald);
+  font-weight: 600; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 4px;
+}
+
 .fld-label { font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--t3); margin-bottom: 6px; }
 .fld-input {
   width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
@@ -1590,7 +1596,7 @@ async function loadAnalyses() {
 
 async function loadKanban() {
   try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker?user_id=eq.' + currentUserId, {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker?user_id=eq.' + currentUserId + '&select=*,analyses(score,job_excerpt,result)&order=created_at.desc', {
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
     });
     _kTracked = await res.json();
@@ -1615,20 +1621,24 @@ function renderTrackedJobs() {
     var statusColors = { 'quero': '#c47d0a', 'aplicado': '#1a7a4a', 'entrevista': '#2cba74', 'oferta': '#50d393' };
     var statusLabels = { 'quero': 'Quero aplicar', 'aplicado': 'Aplicado', 'entrevista': 'Entrevista', 'oferta': 'Oferta' };
     var createdDate = job.created_at ? new Date(job.created_at).toLocaleDateString('pt-BR') : '—';
+    var hasAnalysis = job.analyses && job.analyses.result;
+    var scoreColor = job.score >= 70 ? 'var(--s-grn)' : job.score >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
 
     html += '<div class="job-card" data-job-id="' + job.id + '">' +
       '<div class="job-header">' +
         '<div class="job-badge" style="background:' + (statusColors[job.status] || '#7a9886') + '">' + (statusLabels[job.status] || job.status) + '</div>' +
-        '<div class="job-score">' + (job.score || '—') + '</div>' +
+        '<div class="job-score" style="color:' + scoreColor + ';border-color:' + scoreColor + '">' + (job.score || '—') + '</div>' +
       '</div>' +
       '<div class="job-title">' + escHtml(job.cargo || '—') + '</div>' +
       '<div class="job-company">' + escHtml(job.empresa || '—') + '</div>' +
-      '<div class="job-date">Candidatura: ' + createdDate + '</div>' +
-      (job.job_url ? '<div class="job-link"><a href="' + escHtml(job.job_url) + '" target="_blank">Ver vaga →</a></div>' : '') +
-      (job.notas ? '<div class="job-notes">📝 ' + escHtml(job.notas.substring(0, 60)) + (job.notas.length > 60 ? '...' : '') + '</div>' : '') +
+      '<div class="job-date">📅 ' + createdDate + '</div>' +
+      (job.job_url ? '<div class="job-link"><a href="' + escHtml(job.job_url) + '" target="_blank" rel="noopener">🔗 Ver vaga →</a></div>' : '') +
+      (job.nota ? '<div class="job-notes">📝 ' + escHtml(job.nota.substring(0, 80)) + (job.nota.length > 80 ? '...' : '') + '</div>' : '') +
+      (hasAnalysis ? '<div class="job-analysis-hint">✨ Análise disponível</div>' : '') +
       '<div class="job-actions">' +
-        '<button class="job-btn job-btn-edit" data-action="edit" data-job-id="' + job.id + '">Editar</button>' +
-        '<button class="job-btn job-btn-del" data-action="delete" data-job-id="' + job.id + '">Remover</button>' +
+        (hasAnalysis ? '<button class="job-btn job-btn-analysis" data-job-id="' + job.id + '">Ver análise</button>' : '') +
+        '<button class="job-btn job-btn-edit" data-job-id="' + job.id + '">Editar</button>' +
+        '<button class="job-btn job-btn-del" data-job-id="' + job.id + '">Remover</button>' +
       '</div>' +
     '</div>';
   });
@@ -1636,88 +1646,165 @@ function renderTrackedJobs() {
   container.innerHTML = html;
 
   // Attach event listeners
+  document.querySelectorAll('.job-btn-analysis').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var job = _kTracked.find(j => String(j.id) === String(this.dataset.jobId));
+      if (job) openAnalysisModal(job);
+    });
+  });
+
   document.querySelectorAll('.job-btn-edit').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      var jobId = this.dataset.jobId; // UUID — não usar parseInt
-      var job = _kTracked.find(j => String(j.id) === String(jobId));
-      if (job) openTracker(job.empresa, job.cargo, job.score);
+    btn.addEventListener('click', function() {
+      var job = _kTracked.find(j => String(j.id) === String(this.dataset.jobId));
+      if (job) openTrackerEdit(job);
     });
   });
 
   document.querySelectorAll('.job-btn-del').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      var jobId = this.dataset.jobId; // UUID — não usar parseInt
-      if (confirm('Remover candidatura?')) {
-        deleteTracker(jobId);
-      }
+    btn.addEventListener('click', function() {
+      var jobId = this.dataset.jobId;
+      if (confirm('Remover candidatura?')) deleteTracker(jobId);
     });
   });
 }
 
 function openTracker(empresa, cargo, score) {
-  setTimeout(function() {
-    var modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.innerHTML = '<div class="modal-box"><button class="modal-close">✕</button><div class="modal-title">Rastrear candidatura</div><div class="modal-field"><label class="modal-label">Empresa</label><input class="modal-input" id="tkEmpresa" value="' + escHtml(empresa || '') + '"></div><div class="modal-field"><label class="modal-label">Cargo</label><input class="modal-input" id="tkCargo" value="' + escHtml(cargo || '') + '"></div><div class="modal-field"><label class="modal-label">Score</label><input class="modal-input" type="number" id="tkScore" value="' + (score || '') + '"></div><div class="modal-field"><label class="modal-label">Status</label><select class="modal-input" id="tkStatus"><option value="quero">Quero aplicar</option><option value="aplicado" selected>Aplicado</option><option value="entrevista">Entrevista</option><option value="oferta">Oferta</option></select></div><button class="modal-btn tracker-save-btn">Salvar</button></div>';
-    document.body.appendChild(modal);
-
-    // Close button
-    var closeBtn = modal.querySelector('.modal-close');
-    if (closeBtn) closeBtn.addEventListener('click', function() { modal.remove(); });
-
-    // Save button
-    var saveBtn = modal.querySelector('.tracker-save-btn');
-    if (saveBtn) saveBtn.addEventListener('click', function() { saveTrackerModal(modal); });
-
-    // Click outside to close
-    modal.onclick = function(e) { if (e.target === this) this.remove(); };
-  }, 200);
+  openTrackerEdit({ empresa: empresa, cargo: cargo, score: score, status: 'aplicado' });
 }
 
-async function saveTrackerModal(modal) {
+function openTrackerEdit(job) {
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  var statusOptions = ['quero', 'aplicado', 'entrevista', 'oferta'];
+  var statusLabels = { quero: 'Quero aplicar', aplicado: 'Aplicado', entrevista: 'Entrevista', oferta: 'Oferta' };
+  var selectOpts = statusOptions.map(function(s) {
+    return '<option value="' + s + '"' + (job.status === s ? ' selected' : '') + '>' + statusLabels[s] + '</option>';
+  }).join('');
+
+  modal.innerHTML = '<div class="modal-box" style="max-width:440px">' +
+    '<button class="modal-close">✕</button>' +
+    '<div class="modal-title">' + (job.id ? 'Editar candidatura' : 'Rastrear candidatura') + '</div>' +
+    '<div class="modal-field"><label class="modal-label">Empresa</label><input class="modal-input" id="tkEmpresa" value="' + escHtml(job.empresa || '') + '"></div>' +
+    '<div class="modal-field"><label class="modal-label">Cargo</label><input class="modal-input" id="tkCargo" value="' + escHtml(job.cargo || '') + '"></div>' +
+    '<div class="modal-field"><label class="modal-label">Score ATS</label><input class="modal-input" type="number" id="tkScore" value="' + (job.score || '') + '"></div>' +
+    '<div class="modal-field"><label class="modal-label">Status</label><select class="modal-input" id="tkStatus">' + selectOpts + '</select></div>' +
+    '<div class="modal-field"><label class="modal-label">Link da vaga</label><input class="modal-input" id="tkUrl" placeholder="https://..." value="' + escHtml(job.job_url || '') + '"></div>' +
+    '<div class="modal-field"><label class="modal-label">Notas</label><textarea class="modal-input" id="tkNota" rows="3" style="resize:vertical">' + escHtml(job.nota || '') + '</textarea></div>' +
+    '<button class="modal-btn tracker-save-btn">Salvar</button>' +
+  '</div>';
+
+  document.body.appendChild(modal);
+  modal.querySelector('.modal-close').addEventListener('click', function() { modal.remove(); });
+  modal.querySelector('.tracker-save-btn').addEventListener('click', function() { saveTrackerModal(modal, job.id || null); });
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+}
+
+function openAnalysisModal(job) {
+  var a = job.analyses || {};
+  var r = a.result || {};
+  var cv = r.cv_otimizado || {};
+  var jobInfo = r.job_info || {};
+  var fatores = r.fatores || {};
+  var keywords_ok = (r.keywords_encontradas || []).join(', ') || '—';
+  var keywords_falt = (r.keywords_faltando || []).join(', ') || '—';
+
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = '<div class="modal-box" style="max-width:680px;max-height:85vh;overflow-y:auto">' +
+    '<button class="modal-close">✕</button>' +
+    '<div class="modal-title">' + escHtml(job.cargo || 'Análise') + ' — ' + escHtml(job.empresa || '') + '</div>' +
+
+    // Score + nivel
+    '<div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">' +
+      '<div style="background:var(--bg-sub);border-radius:var(--r-sm);padding:14px 20px;flex:1;text-align:center">' +
+        '<div style="font-size:28px;font-weight:800;color:var(--gb-emerald)">' + (r.score || job.score || '—') + '</div>' +
+        '<div style="font-size:11px;color:var(--t3);margin-top:2px">Score ATS</div>' +
+      '</div>' +
+      '<div style="background:var(--bg-sub);border-radius:var(--r-sm);padding:14px 20px;flex:1;text-align:center">' +
+        '<div style="font-size:18px;font-weight:700">' + escHtml(r.nivel || '—') + '</div>' +
+        '<div style="font-size:11px;color:var(--t3);margin-top:2px">Nível</div>' +
+      '</div>' +
+      (job.job_url ? '<a href="' + escHtml(job.job_url) + '" target="_blank" rel="noopener" style="display:flex;align-items:center;padding:14px 20px;background:var(--s-grn-bg);border:1.5px solid var(--gb-emerald);border-radius:var(--r-sm);color:var(--gb-emerald);font-weight:700;font-size:13px;text-decoration:none">🔗 Ver vaga</a>' : '') +
+    '</div>' +
+
+    // Resumo
+    (r.resumo ? '<div style="margin-bottom:16px"><div class="modal-label" style="margin-bottom:6px">Resumo da análise</div><div style="font-size:13px;color:var(--t2);line-height:1.6;background:var(--bg-sub);padding:12px;border-radius:var(--r-sm)">' + escHtml(r.resumo) + '</div></div>' : '') +
+
+    // Keywords
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">' +
+      '<div><div class="modal-label" style="margin-bottom:6px;color:var(--s-grn)">✓ Keywords encontradas</div><div style="font-size:12px;color:var(--t2);background:var(--s-grn-bg);padding:10px;border-radius:var(--r-sm);line-height:1.7">' + escHtml(keywords_ok) + '</div></div>' +
+      '<div><div class="modal-label" style="margin-bottom:6px;color:var(--s-red)">✗ Keywords faltando</div><div style="font-size:12px;color:var(--t2);background:var(--s-red-bg);padding:10px;border-radius:var(--r-sm);line-height:1.7">' + escHtml(keywords_falt) + '</div></div>' +
+    '</div>' +
+
+    // CV Otimizado
+    (cv.resumo_profissional ? '<div style="margin-bottom:16px"><div class="modal-label" style="margin-bottom:8px">CV Otimizado</div>' +
+      '<div style="background:var(--bg-sub);padding:14px;border-radius:var(--r-sm);font-size:13px;line-height:1.6">' +
+        '<div style="font-size:15px;font-weight:700;margin-bottom:4px">' + escHtml(cv.titulo_profissional || '') + '</div>' +
+        '<div style="color:var(--t3);margin-bottom:10px">' + escHtml(cv.nome || '') + ' · ' + escHtml((cv.contato || {}).email || '') + '</div>' +
+        '<div style="color:var(--t2)">' + escHtml(cv.resumo_profissional) + '</div>' +
+      '</div>' +
+      (cv.habilidades && cv.habilidades.length ? '<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px">' + cv.habilidades.map(function(h){ return '<span style="background:var(--bg-card);border:1px solid var(--border);padding:3px 10px;border-radius:20px;font-size:11px">' + escHtml(h) + '</span>'; }).join('') + '</div>' : '') +
+    '</div>' : '') +
+
+    // Sugestões
+    (r.sugestoes && r.sugestoes.length ? '<div><div class="modal-label" style="margin-bottom:8px">Sugestões</div><ul style="padding-left:18px;font-size:13px;color:var(--t2);line-height:1.8">' + r.sugestoes.map(function(s){ return '<li>' + escHtml(s) + '</li>'; }).join('') + '</ul></div>' : '') +
+
+  '</div>';
+
+  document.body.appendChild(modal);
+  modal.querySelector('.modal-close').addEventListener('click', function() { modal.remove(); });
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+}
+
+async function saveTrackerModal(modal, editId) {
   var empresa = document.getElementById('tkEmpresa').value.trim();
   if (!empresa) { alert('Digite a empresa'); return; }
 
   var body = {
-    user_id: currentUserId,
     empresa,
     cargo: document.getElementById('tkCargo').value.trim(),
     score: parseInt(document.getElementById('tkScore').value) || 0,
     status: document.getElementById('tkStatus').value,
-    created_at: new Date().toISOString()
+    job_url: document.getElementById('tkUrl').value.trim() || null,
+    nota: document.getElementById('tkNota').value.trim() || null,
+    updated_at: new Date().toISOString()
   };
 
+  if (!editId) {
+    body.user_id = currentUserId;
+    body.created_at = new Date().toISOString();
+  }
+
+  var saveBtn = modal.querySelector('.tracker-save-btn');
   try {
-    var saveBtn = modal.querySelector('.tracker-save-btn');
     if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Salvando...'; }
 
-    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker', {
-      method: 'POST',
+    var url = editId
+      ? SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + editId
+      : SUPABASE_URL + '/rest/v1/job_tracker';
+
+    var res = await fetch(url, {
+      method: editId ? 'PATCH' : 'POST',
       headers: {
         apikey: SUPABASE_ANON,
         Authorization: 'Bearer ' + (currentSession?.access_token || ''),
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
       },
       body: JSON.stringify(body)
     });
 
-    var resText = await res.text();
-    console.log('SaveTracker Response:', res.status, resText);
-
-    if (res.ok || res.status === 201) {
+    if (res.ok || res.status === 201 || res.status === 204) {
       modal.remove();
-      alert('✓ Candidatura rastreada!');
-      if (typeof loadKanban === 'function') await loadKanban();
+      await loadKanban();
     } else {
-      alert('Erro ao salvar: ' + resText);
+      var txt = await res.text();
+      alert('Erro: ' + txt);
       if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Salvar'; }
     }
   } catch(e) {
     console.error('SaveTracker Error:', e);
     alert('Erro: ' + e.message);
-    var saveBtn = modal.querySelector('.tracker-save-btn');
     if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Salvar'; }
   }
 }
