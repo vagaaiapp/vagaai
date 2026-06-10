@@ -1597,12 +1597,11 @@ async function init() {
   document.getElementById('avatarInitials').textContent = initials;
   document.getElementById('dropName').textContent = displayName;
   document.getElementById('dropEmail').textContent = email;
-  document.getElementById('heroTitle').textContent = 'Bem-vindo, ' + displayName;
 
   window._perfilData = { email, displayName };
   window._userName = displayName;
 
-  await Promise.all([loadAnalyses(), loadKanban(), loadAlerts(), loadHeroLastAnalysis()]);
+  await Promise.all([loadAnalyses(), loadKanban(), loadAlerts()]);
 
   document.getElementById('pageLoading').classList.add('hidden');
 }
@@ -2891,7 +2890,9 @@ async function doSalvarNome() {
   if (!error) {
     document.getElementById('nomeMsg').textContent = '✓ Nome atualizado!';
     document.getElementById('dropName').textContent = nome;
-    document.getElementById('heroTitle').textContent = 'Bem-vindo, ' + nome;
+    window._userName = nome;
+    var pgG = document.getElementById('pgGreeting');
+    if (pgG) pgG.textContent = getGreetingWord() + ', ' + nome + '!';
   }
 }
 
