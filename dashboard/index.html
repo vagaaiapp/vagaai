@@ -1539,9 +1539,37 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         <div class="hero-text">
           <div class="hero-eyebrow">⭐ Plano</div>
           <h1 class="hero-title">Seu Plano</h1>
-          <p class="hero-sub">Gerenciar sua assinatura.</p>
-          <div style="margin-top:32px;padding-bottom:20px;border-bottom:2px solid var(--gb-bright);display:inline-block;">
-            <div style="font-size:13px;font-weight:700;color:var(--gb-emerald);text-transform:uppercase;letter-spacing:1px;">Análises</div>
+          <p class="hero-sub">Gerencie sua assinatura e créditos de análise.</p>
+          <div class="hero-metrics">
+            <div><div class="hm-val accent" id="planoNome">Pro</div><div class="hm-lbl">Plano ativo</div></div>
+            <div><div class="hm-val" id="planoAnalises">∞</div><div class="hm-lbl">Análises/mês</div></div>
+            <div><div class="hm-val" id="planoVagas">—</div><div class="hm-lbl">Vagas rastreadas</div></div>
+          </div>
+        </div>
+        <!-- Card visual direito -->
+        <div class="hero-card-wrap" style="flex-shrink:0">
+          <div class="hero-card" style="width:220px">
+            <div class="hc-chrome">
+              <div class="hc-dot" style="background:#ff5f57"></div>
+              <div class="hc-dot" style="background:#ffbd2e"></div>
+              <div class="hc-dot" style="background:#28c840"></div>
+              <span class="hc-title-sm">vagaai.app.br</span>
+            </div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);margin-bottom:10px;">Seu plano atual</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+              <div style="width:36px;height:36px;background:var(--s-grn-bg);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">⭐</div>
+              <div>
+                <div style="font-size:14px;font-weight:800;color:var(--t1)">Pro</div>
+                <div style="font-size:11px;color:var(--gb-emerald);font-weight:600">Ativo</div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div style="display:flex;justify-content:space-between;font-size:11px;"><span style="color:var(--t3)">Análises</span><span style="font-weight:700;color:var(--t1)">Ilimitadas</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;"><span style="color:var(--t3)">CV Otimizado</span><span style="color:var(--gb-emerald)">✓</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;"><span style="color:var(--t3)">Simulador</span><span style="color:var(--gb-emerald)">✓</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;"><span style="color:var(--t3)">Rastreador</span><span style="color:var(--gb-emerald)">✓</span></div>
+            </div>
+            <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--t3);text-align:center;">R$39,90/mês · Renova automaticamente</div>
           </div>
         </div>
       </div>
@@ -1560,7 +1588,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           <li style="display:flex;gap:8px;"><span style="color:var(--gb-emerald)">✓</span> Carta de apresentação</li>
           <li style="display:flex;gap:8px;"><span style="color:var(--t3)">—</span><span style="color:var(--t3)">Simulador de entrevista</span></li>
         </ul>
-        <button style="width:100%;padding:11px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--bg);color:var(--t1);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Mudar para Starter</button>
+        <button style="width:100%;padding:11px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--bg);color:var(--t1);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" onclick="window.open('https://buy.stripe.com/7sY5kD9tk5DzgdNf0P9k404','_blank')">Mudar para Starter</button>
       </div>
 
       <!-- Pro (ativo) -->
@@ -1585,15 +1613,15 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         <div style="display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);">
             <div><div style="font-size:13px;font-weight:600;">1 análise</div><div style="font-size:11px;color:var(--t3)">Sem assinatura</div></div>
-            <div style="display:flex;align-items:center;gap:10px;"><strong>R$9,90</strong><button style="border:1.5px solid var(--border);background:var(--bg);padding:5px 12px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Comprar</button></div>
+            <div style="display:flex;align-items:center;gap:10px;"><strong>R$9,90</strong><button onclick="window.open('https://buy.stripe.com/7sY5kD9tk5DzgdNf0P9k404','_blank')" style="border:none;background:var(--gb-emerald);color:#fff;padding:6px 14px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Comprar</button></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--s-grn-bg);">
+            <div><div style="font-size:13px;font-weight:600;">10 análises</div><div style="font-size:11px;color:var(--gb-emerald);font-weight:600">⭐ Mais escolhido · R$3,99 cada</div></div>
+            <div style="display:flex;align-items:center;gap:10px;"><strong>R$39,90</strong><button onclick="window.open('https://buy.stripe.com/cNi4gz20Sc1XgdNf0P9k403','_blank')" style="border:none;background:var(--gb-emerald);color:#fff;padding:6px 14px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Comprar</button></div>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);">
-            <div><div style="font-size:13px;font-weight:600;">10 análises</div><div style="font-size:11px;color:var(--t3)">R$3,99 cada</div></div>
-            <div style="display:flex;align-items:center;gap:10px;"><strong>R$39,90</strong><button style="border:1.5px solid var(--border);background:var(--bg);padding:5px 12px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Comprar</button></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);">
-            <div><div style="font-size:13px;font-weight:600;">50 análises</div><div style="font-size:11px;color:var(--t3)">R$1,94 cada</div></div>
-            <div style="display:flex;align-items:center;gap:10px;"><strong>R$97,00</strong><button style="border:1.5px solid var(--border);background:var(--bg);padding:5px 12px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Comprar</button></div>
+            <div><div style="font-size:13px;font-weight:600;">50 análises</div><div style="font-size:11px;color:var(--t3)">R$1,94 cada · Sem expiração</div></div>
+            <div style="display:flex;align-items:center;gap:10px;"><strong>R$97,00</strong><button onclick="window.open('https://buy.stripe.com/eVqbJ120S0jf3r16uj9k405','_blank')" style="border:none;background:var(--gb-emerald);color:#fff;padding:6px 14px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Comprar</button></div>
           </div>
         </div>
       </div>
