@@ -8,13 +8,8 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ══════════════════════════════════════════════════
-   DESIGN TOKENS (V2 — default light)
-══════════════════════════════════════════════════ */
 :root {
-  --gb-deep:    #071209;
   --gb-forest:  #0a1a10;
-  --gb-dark:    #0d5a35;
   --gb-emerald: #1a7a4a;
   --gb-mid:     #2cba74;
   --gb-bright:  #4ece91;
@@ -54,15 +49,12 @@
   --bg-sub:     #101a12;
   --border:     #1a2b1d;
   --border-soft:#152018;
-
   --t1: #ddeae0;
   --t2: #6d9b7a;
   --t3: #3d5c47;
-
   --s-red-bg: rgba(217,79,79,.12);
   --s-amb-bg: rgba(196,125,10,.12);
   --s-grn-bg: rgba(26,122,74,.15);
-
   --sh-card:  0 2px 8px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.25);
   --sh-hover: 0 16px 48px rgba(0,0,0,.5);
 }
@@ -77,9 +69,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ══════════════════════════════════════════════════
-   SIDEBAR
-══════════════════════════════════════════════════ */
 .sidebar {
   width: var(--sb);
   background: var(--gb-forest);
@@ -91,6 +80,7 @@ body {
   inset: 0 auto 0 0;
   z-index: 200;
 }
+
 .sidebar::before {
   content: '';
   position: absolute; inset: 0;
@@ -107,6 +97,7 @@ body {
   transition: transform .3s cubic-bezier(.34,1.56,.64,1);
   position: relative; z-index: 1;
 }
+
 .sb-logo:hover { transform: scale(1.08); }
 .sb-logo img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -122,6 +113,7 @@ body {
   border: none; background: transparent;
   transition: all .2s ease;
 }
+
 .sb-btn svg { width: 19px; height: 19px; }
 .sb-btn:hover { background: rgba(78,206,145,.12); color: var(--gb-bright); }
 .sb-btn.active { background: rgba(78,206,145,.16); color: var(--gb-bright); }
@@ -134,22 +126,46 @@ body {
 }
 
 .sb-bottom { position: relative; z-index: 1; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.07); }
+
 .sb-avatar {
   width: 36px; height: 36px; border-radius: 10px;
   background: linear-gradient(135deg, var(--gb-emerald), var(--gb-mid));
   display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 700; color: #fff;
   cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  position: relative;
 }
 
-/* ══════════════════════════════════════════════════
-   MAIN
-══════════════════════════════════════════════════ */
+.user-dropdown {
+  position: absolute; bottom: calc(100% + 8px); right: 0;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; min-width: 220px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.15); z-index: 200;
+  overflow: hidden; display: none;
+}
+
+.user-dropdown.active { display: block; }
+
+.dropdown-header {
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+}
+
+.dropdown-name { font-size: 13px; font-weight: 600; color: var(--t1); margin-bottom: 2px; }
+.dropdown-email { font-size: 11px; color: var(--t3); }
+
+.dropdown-item {
+  width: 100%; background: none; border: none;
+  font-family: inherit; font-size: 13px; color: var(--t1);
+  padding: 10px 14px; text-align: left; cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  transition: background .15s;
+}
+
+.dropdown-item:hover { background: var(--bg-sub); }
+.dropdown-item.danger { color: var(--s-red); }
+
 .main { margin-left: var(--sb); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
 
-/* ══════════════════════════════════════════════════
-   HEADER
-══════════════════════════════════════════════════ */
 .header {
   height: 64px;
   background: var(--bg-card);
@@ -162,12 +178,14 @@ body {
 
 .header-logo img { height: 24px; display: block; }
 [data-theme="dark"] .header-logo img { filter: brightness(0) invert(1); }
+
 .header-sep { width: 1px; height: 22px; background: var(--border); }
 
 .breadcrumb {
   display: flex; align-items: center; gap: 7px;
   font-size: 13.5px; color: var(--t3);
 }
+
 .breadcrumb strong { color: var(--t1); font-weight: 600; }
 .breadcrumb svg { width: 12px; height: 12px; opacity: .3; }
 
@@ -180,7 +198,9 @@ body {
   border-radius: 20px; padding: 5px 12px 5px 8px;
   font-size: 12px; font-weight: 600; color: var(--gb-emerald);
 }
+
 .plan-badge-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gb-bright); animation: blink 2s ease infinite; }
+
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
 
 .icon-btn {
@@ -189,6 +209,7 @@ body {
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; color: var(--t2); transition: all .2s;
 }
+
 .icon-btn:hover { border-color: var(--gb-emerald); color: var(--gb-emerald); }
 .icon-btn svg { width: 16px; height: 16px; }
 
@@ -200,20 +221,16 @@ body {
   transition: all .3s cubic-bezier(.34,1.56,.64,1);
   white-space: nowrap;
 }
+
 .btn-cta:hover { transform: translateY(-2px); box-shadow: var(--sh-btn); }
 .btn-cta svg { width: 13px; height: 13px; }
 
-/* ══════════════════════════════════════════════════
-   CONTENT
-══════════════════════════════════════════════════ */
 .content { flex: 1; padding: 32px 36px 48px; overflow-y: auto; scrollbar-width: none; }
 .content::-webkit-scrollbar { display: none; }
+
 .tab { display: none; }
 .tab.active { display: block; }
 
-/* ══════════════════════════════════════════════════
-   HERO
-══════════════════════════════════════════════════ */
 .hero {
   background: linear-gradient(130deg, #0d3a22 0%, #0a2818 60%, #071a10 100%);
   border-radius: var(--r);
@@ -222,6 +239,7 @@ body {
   position: relative; overflow: hidden;
   animation: fadeUp .4s ease both;
 }
+
 .hero::before {
   content: ''; position: absolute; inset: 0;
   background: radial-gradient(ellipse 65% 90% at 100% 0%, rgba(78,206,145,.2) 0%, transparent 55%);
@@ -243,47 +261,57 @@ body {
   font-size: 32px; font-weight: 800; color: #fff;
   letter-spacing: -.7px; line-height: 1.15; margin-bottom: 10px;
 }
+
 .hero-sub {
   font-size: 14px; color: rgba(255,255,255,.62);
   line-height: 1.65; max-width: 480px; margin-bottom: 30px;
 }
+
 .hero-metrics { display: flex; gap: 36px; }
 .hm-val { font-size: 40px; font-weight: 800; color: #fff; letter-spacing: -1.5px; line-height: 1; }
 .hm-val.accent { color: var(--gb-bright); }
 .hm-lbl { font-size: 11.5px; color: rgba(255,255,255,.5); margin-top: 5px; letter-spacing: .2px; }
 
 .hero-card-wrap { position: relative; flex-shrink: 0; }
+
 .hero-card {
   width: 260px;
   background: rgba(255,255,255,.97);
   border-radius: 16px; padding: 20px;
   box-shadow: 0 24px 64px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.08);
 }
+
 [data-theme="dark"] .hero-card {
   background: rgba(15,26,17,.96);
   border: 1px solid rgba(78,206,145,.15);
 }
+
 .hc-chrome { display: flex; align-items: center; gap: 5px; margin-bottom: 14px; }
 .hc-dot { width: 9px; height: 9px; border-radius: 50%; }
 .hc-title-sm { font-size: 11px; color: var(--t3); margin-left: 8px; }
 
 .hc-center { display: flex; flex-direction: column; align-items: center; margin-bottom: 14px; }
+
 .hc-ring-wrap { position: relative; width: 84px; height: 84px; margin-bottom: 8px; }
 .hc-ring-wrap svg { width: 84px; height: 84px; transform: rotate(-90deg); }
+
 .hcr-bg   { fill: none; stroke: var(--border); stroke-width: 7; }
 .hcr-fill {
   fill: none; stroke: url(#hcGrad); stroke-width: 7; stroke-linecap: round;
   stroke-dasharray: 226; stroke-dashoffset: 170;
 }
+
 .hc-num {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
+
 .hc-num span { font-size: 22px; font-weight: 800; letter-spacing: -1px; color: var(--t1); }
 .hc-num small { font-size: 10px; color: var(--t3); }
 .hc-lbl { font-size: 9.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--t3); }
 
 .hc-bars { display: flex; flex-direction: column; gap: 9px; }
+
 .hcb-row {}
 .hcb-top { display: flex; justify-content: space-between; margin-bottom: 5px; }
 .hcb-name { font-size: 11px; color: var(--t2); }
@@ -299,6 +327,7 @@ body {
   box-shadow: 0 4px 18px rgba(0,0,0,.13);
   display: flex; align-items: center; gap: 7px; white-space: nowrap;
 }
+
 .f-badge.tr { top: -16px; right: -18px; }
 .f-badge.bl { bottom: -14px; left: -16px; }
 .f-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gb-bright); }
@@ -313,18 +342,9 @@ body {
   border-radius: var(--r); box-shadow: var(--sh-card); overflow: hidden;
   transition: border-color .25s, box-shadow .25s, transform .25s;
 }
+
 .card:hover { border-color: rgba(26,122,74,.2); box-shadow: var(--sh-hover); transform: translateY(-3px); }
 .card-pad { padding: 24px; }
-.card-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 22px; }
-.card-ico {
-  width: 42px; height: 42px; border-radius: var(--r-sm);
-  background: var(--s-grn-bg);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--gb-emerald); flex-shrink: 0;
-}
-.card-ico svg { width: 20px; height: 20px; }
-.card-ttl { font-size: 15px; font-weight: 700; line-height: 1.2; margin-bottom: 4px; }
-.card-sub { font-size: 12.5px; color: var(--t3); line-height: 1.45; }
 
 .goals-card {
   background: var(--bg-card); border: 1px solid var(--border);
@@ -333,6 +353,7 @@ body {
   animation: fadeUp .45s .08s ease both;
   transition: border-color .25s, box-shadow .25s, transform .25s;
 }
+
 .goals-card:hover { border-color: rgba(26,122,74,.2); box-shadow: var(--sh-hover); transform: translateY(-3px); }
 
 .goals-row { display: grid; grid-template-columns: 110px 1fr 128px; gap: 36px; align-items: center; }
@@ -345,6 +366,7 @@ body {
   stroke-dasharray: 283; stroke-dashoffset: 94;
   transition: stroke-dashoffset 1.1s cubic-bezier(.34,1.56,.64,1);
 }
+
 .g-ring-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .g-ring-num { font-size: 28px; font-weight: 800; letter-spacing: -1.2px; }
 .g-ring-den { font-size: 11px; color: var(--t3); margin-top: 1px; }
@@ -379,6 +401,7 @@ body {
   animation: fadeUp .45s .14s ease both;
   transition: border-color .25s, box-shadow .25s, transform .25s;
 }
+
 .score-card:hover { border-color: rgba(26,122,74,.18); box-shadow: var(--sh-hover); transform: translateY(-3px); }
 
 .score-card-head {
@@ -386,6 +409,11 @@ body {
   padding: 22px 28px 0;
   margin-bottom: 6px;
 }
+
+.score-card-head h3 { font-size: 16px; font-weight: 700; }
+.score-card-head p { font-size: 12.5px; color: var(--t3); margin-top: 3px; }
+.score-card-head a { font-size: 12.5px; color: var(--gb-emerald); text-decoration: none; font-weight: 600; }
+
 .score-card-body { display: grid; grid-template-columns: 1fr 1fr; }
 
 .score-col { padding: 20px 28px 28px; position: relative; }
@@ -403,17 +431,20 @@ body {
 .sc-fill.red   { stroke: #d94f4f; }
 .sc-fill.amber { stroke: #f59e0b; }
 .sc-fill.green { stroke: var(--gb-bright); }
+
 .sc-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .sc-num { font-size: 21px; font-weight: 800; letter-spacing: -1px; }
 .sc-den { font-size: 9.5px; color: var(--t3); }
 
 .sc-company { font-size: 16px; font-weight: 700; margin-bottom: 3px; }
 .sc-role    { font-size: 12px; color: var(--t3); margin-bottom: 10px; }
+
 .sc-status  {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 3px 10px; border-radius: 20px;
   font-size: 11.5px; font-weight: 600;
 }
+
 .sc-status.bad  { background: var(--s-red-bg); color: var(--s-red);  }
 .sc-status.med  { background: var(--s-amb-bg); color: var(--s-amb);  }
 .sc-status.good { background: var(--s-grn-bg); color: var(--s-grn);  }
@@ -425,6 +456,7 @@ body {
 .sc-mrow-pct.red   { color: var(--s-red); }
 .sc-mrow-pct.amber { color: var(--s-amb); }
 .sc-mrow-pct.green { color: var(--gb-emerald); }
+
 .sc-track { height: 6px; background: var(--bg-sub); border-radius: 3px; overflow: hidden; }
 .sc-bar { height: 100%; border-radius: 3px; animation: barGrow .9s cubic-bezier(.34,1.2,.64,1) both; }
 .sc-bar.red   { background: linear-gradient(90deg, #d94f4f, #f87171); }
@@ -437,37 +469,43 @@ body {
   border-radius: var(--r-sm); padding: 12px 16px;
   font-size: 12.5px; color: var(--t2); line-height: 1.55;
 }
+
 .sc-insight strong { color: var(--gb-emerald); }
 
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 28px; }
+
+.card-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 22px; }
+.card-ico {
+  width: 42px; height: 42px; border-radius: var(--r-sm);
+  background: var(--s-grn-bg);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gb-emerald); flex-shrink: 0;
+}
+
+.card-ico svg { width: 20px; height: 20px; }
+.card-ttl { font-size: 15px; font-weight: 700; line-height: 1.2; margin-bottom: 4px; }
+.card-sub { font-size: 12.5px; color: var(--t3); line-height: 1.45; }
 
 .kw-section { margin-bottom: 18px; }
 .kw-section:last-child { margin-bottom: 0; }
+
 .kw-sec-lbl {
   font-size: 10.5px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
   color: var(--t3); margin-bottom: 10px;
   display: flex; align-items: center; gap: 8px;
 }
+
 .kw-sec-lbl::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
 .kw-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .kw-tag {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 5px 11px; border-radius: var(--r-xs);
   font-size: 12px; font-weight: 600;
 }
+
 .kw-tag.miss { background: var(--s-red-bg); color: var(--s-red); border: 1px solid rgba(217,79,79,.14); }
 .kw-tag.pres { background: var(--s-grn-bg); color: var(--s-grn); border: 1px solid rgba(26,122,74,.14); }
-
-.kw-chip {
-  display: inline-flex; align-items: center; gap: 4px;
-  background: var(--s-grn-bg); color: var(--gb-emerald);
-  border: 1px solid rgba(26,122,74,.18); border-radius: 5px;
-  padding: 3px 9px; font-size: 12px; font-weight: 500;
-}
-.kw-chip-x {
-  opacity: .45; cursor: pointer;
-}
 
 .kw-tip {
   margin-top: 18px;
@@ -475,6 +513,7 @@ body {
   border: 1px solid rgba(78,206,145,.18); border-radius: var(--r-sm);
   padding: 14px 16px; font-size: 12.5px; color: var(--t2); line-height: 1.55;
 }
+
 .kw-tip strong { color: var(--gb-emerald); }
 
 .journey { display: flex; flex-direction: column; }
@@ -484,15 +523,19 @@ body {
   content: ''; position: absolute; left: 16px; top: 36px;
   width: 2px; height: calc(100% - 20px); background: var(--border);
 }
+
 .j-step:last-child::after { display: none; }
+
 .j-dot {
   width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   font-size: 14px; font-weight: 700; z-index: 1;
 }
+
 .j-done   { background: var(--gb-bright); color: #fff; box-shadow: 0 2px 8px rgba(78,206,145,.28); }
 .j-active { background: var(--s-amb-bg); color: var(--s-amb); border: 2px solid #f59e0b; animation: softPulse 2s ease infinite; }
 .j-todo   { background: var(--bg-sub); color: var(--t3); border: 2px solid var(--border); }
+
 .j-body { padding-top: 5px; }
 .j-name { font-size: 13.5px; font-weight: 600; }
 .j-desc { font-size: 12px; color: var(--t3); margin-top: 3px; line-height: 1.5; }
@@ -504,7 +547,9 @@ body {
   border: 1px solid rgba(78,206,145,.18); border-radius: var(--r);
   padding: 24px; color: #fff; position: relative; overflow: hidden;
   box-shadow: var(--sh-card); transition: transform .25s, box-shadow .25s;
+  animation: fadeUp .45s .28s ease both;
 }
+
 .insight-ai:hover { transform: translateY(-3px); box-shadow: var(--sh-hover); }
 .insight-ai::before {
   content: ''; position: absolute; top: -70px; right: -50px;
@@ -512,6 +557,7 @@ body {
   background: radial-gradient(circle, rgba(78,206,145,.14) 0%, transparent 70%);
   border-radius: 50%;
 }
+
 .ai-eyebrow {
   display: inline-flex; align-items: center; gap: 6px;
   background: rgba(78,206,145,.14); border: 1px solid rgba(78,206,145,.22);
@@ -519,14 +565,17 @@ body {
   font-size: 11px; font-weight: 700; color: var(--gb-bright); letter-spacing: .4px; text-transform: uppercase;
   margin-bottom: 14px;
 }
+
 .ai-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
 .ai-text  { font-size: 13px; color: rgba(255,255,255,.68); line-height: 1.65; margin-bottom: 16px; }
 .ai-text strong { color: var(--gb-bright); }
+
 .ai-tags  { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
 .ai-tag   {
   background: rgba(78,206,145,.13); border: 1px solid rgba(78,206,145,.22);
   border-radius: 6px; padding: 4px 11px; font-size: 12px; font-weight: 600; color: var(--gb-bright);
 }
+
 .ai-btn {
   display: inline-flex; align-items: center; gap: 7px;
   background: var(--gb-bright); color: var(--gb-forest);
@@ -534,29 +583,36 @@ body {
   font-size: 13px; font-weight: 700; cursor: pointer;
   transition: all .3s cubic-bezier(.34,1.56,.64,1);
 }
+
 .ai-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(78,206,145,.3); }
 
 .vaga-item {
   display: flex; align-items: center; gap: 14px;
   padding: 14px 0; border-bottom: 1px solid var(--border-soft);
 }
+
 .vaga-item:last-child { border-bottom: none; }
+
 .vaga-score {
   width: 48px; height: 48px; border-radius: var(--r-sm);
   display: flex; align-items: center; justify-content: center;
   font-size: 16px; font-weight: 800; flex-shrink: 0;
 }
+
 .vs-bad  { background: var(--s-red-bg); color: var(--s-red); }
 .vs-med  { background: var(--s-amb-bg); color: var(--s-amb); }
 .vs-good { background: var(--s-grn-bg); color: var(--s-grn); }
+
 .vaga-info { flex: 1; min-width: 0; }
 .vaga-name { font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .vaga-role { font-size: 11.5px; color: var(--t3); margin-top: 2px; }
+
 .track-btn {
   border: 1.5px solid var(--gb-emerald); background: transparent; color: var(--gb-emerald);
   padding: 6px 14px; border-radius: var(--r-xs); font-size: 12px; font-weight: 600;
   cursor: pointer; transition: all .2s; white-space: nowrap;
 }
+
 .track-btn:hover { background: var(--s-grn-bg); }
 
 .empty-state { text-align: center; padding: 64px 32px; }
@@ -565,6 +621,7 @@ body {
   background: var(--s-grn-bg); margin: 0 auto 18px;
   display: flex; align-items: center; justify-content: center;
 }
+
 .empty-ico svg { width: 30px; height: 30px; color: var(--gb-emerald); }
 .empty-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
 .empty-sub   { font-size: 13px; color: var(--t3); line-height: 1.6; max-width: 320px; margin: 0 auto; }
@@ -574,66 +631,41 @@ body {
   width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
   border-radius: var(--r-sm); background: var(--bg); color: var(--t1);
   font-size: 13.5px; outline: none; transition: border-color .2s;
+  font-family: inherit;
 }
+
 .fld-input:focus { border-color: var(--gb-emerald); }
 
 .freq-row { display: flex; gap: 8px; margin-top: 8px; }
-.freq-btn { flex: 1; padding: 10px; border: 1.5px solid var(--border); border-radius: var(--r-sm); background: var(--bg); color: var(--t2); font-size: 13px; cursor: pointer; transition: all .2s; }
+.freq-btn { flex: 1; padding: 10px; border: 1.5px solid var(--border); border-radius: var(--r-sm); background: var(--bg); color: var(--t2); font-size: 13px; cursor: pointer; transition: all .2s; font-family: inherit; }
 .freq-btn.on { background: var(--s-grn-bg); border-color: var(--gb-emerald); color: var(--gb-emerald); font-weight: 600; }
 
-.kw-chips-box { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--r-sm); background: var(--bg); min-height: 46px; }
-.save-btn { margin-top: 20px; background: var(--gb-emerald); color: #fff; border: none; padding: 12px 28px; border-radius: var(--r-sm); font-size: 14px; font-weight: 600; cursor: pointer; transition: all .3s cubic-bezier(.34,1.56,.64,1); }
+.kw-wrap {
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); padding: 8px 10px;
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  min-height: 40px; cursor: text; transition: border-color .2s;
+}
+
+.kw-wrap:focus-within { border-color: var(--gb-emerald); }
+
+.kw-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--s-grn-bg); color: var(--gb-emerald);
+  border: 1px solid rgba(26,122,74,.18); border-radius: 5px;
+  padding: 3px 9px; font-size: 12px; font-weight: 500;
+}
+
+.kw-chip-x { opacity: .45; cursor: pointer; }
+
+.save-btn { margin-top: 20px; background: var(--gb-emerald); color: #fff; border: none; padding: 12px 28px; border-radius: var(--r-sm); font-size: 14px; font-weight: 600; cursor: pointer; transition: all .3s cubic-bezier(.34,1.56,.64,1); font-family: inherit; }
 .save-btn:hover { transform: translateY(-2px); box-shadow: var(--sh-btn); }
 
 .plan-tile { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 28px; box-shadow: var(--sh-card); transition: border-color .25s, box-shadow .25s, transform .25s; }
 .plan-tile:hover { border-color: rgba(26,122,74,.18); box-shadow: var(--sh-hover); transform: translateY(-3px); }
 .plan-tile.active { border: 2px solid var(--gb-emerald); }
 
-/* ══════════════════════════════════════════════════
-   ANIMATIONS
-══════════════════════════════════════════════════ */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes barGrow {
-  from { transform: scaleX(0); transform-origin: left; }
-  to   { transform: scaleX(1); transform-origin: left; }
-}
-@keyframes softPulse {
-  0%,100% { box-shadow: 0 0 0 3px rgba(245,158,11,.14); }
-  50%     { box-shadow: 0 0 0 7px rgba(245,158,11,.24); }
-}
-
-/* ══════════════════════════════════════════════════
-   PRODUCTION ADDITIONS
-══════════════════════════════════════════════════ */
-
-/* User dropdown */
-.user-dropdown {
-  position: absolute; bottom: calc(100% + 8px); right: 0;
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: 12px; min-width: 220px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.15); z-index: 200;
-  overflow: hidden; display: none;
-}
-.user-dropdown.active { display: block; }
-
-.dropdown-header {
-  padding: 12px 14px; border-bottom: 1px solid var(--border);
-}
-.dropdown-name { font-size: 13px; font-weight: 600; color: var(--t1); margin-bottom: 2px; }
-.dropdown-email { font-size: 11px; color: var(--t3); }
-
-.dropdown-item {
-  width: 100%; background: none; border: none;
-  font-family: inherit; font-size: 13px; color: var(--t1);
-  padding: 10px 14px; text-align: left; cursor: pointer;
-  display: flex; align-items: center; gap: 8px;
-  transition: background .15s;
-}
-.dropdown-item:hover { background: var(--bg-sub); }
-.dropdown-item.danger { color: var(--s-red); }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 28px; }
 
 /* Modals */
 .modal-overlay {
@@ -641,12 +673,13 @@ body {
   background: rgba(0,0,0,.5); backdrop-filter: blur(4px);
   z-index: 300; display: flex; align-items: center; justify-content: center;
 }
+
 .modal-overlay.hidden { display: none; }
 
 .modal-box {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: 14px; padding: 24px; max-width: 400px; width: 90%;
-  box-shadow: 0 16px 48px rgba(0,0,0,.2);
+  box-shadow: 0 16px 48px rgba(0,0,0,.2); position: relative;
 }
 
 .modal-close {
@@ -654,6 +687,7 @@ body {
   background: none; border: none; color: var(--t3); cursor: pointer;
   padding: 6px; border-radius: 6px; transition: all .15s;
 }
+
 .modal-close:hover { background: var(--bg-sub); color: var(--t1); }
 
 .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
@@ -671,29 +705,32 @@ body {
   background: var(--bg); color: var(--t1); font-family: inherit; font-size: 13px;
   transition: border-color .2s; outline: none;
 }
+
 .modal-input:focus { border-color: var(--gb-emerald); }
 
 .modal-btn {
   width: 100%; background: var(--gb-emerald); color: #fff;
   border: none; border-radius: 8px; padding: 11px;
   font-size: 13px; font-weight: 600; cursor: pointer;
-  transition: all .2s; margin-top: 8px;
+  transition: all .2s; margin-top: 8px; font-family: inherit;
 }
+
 .modal-btn:hover { transform: translateY(-1px); box-shadow: var(--sh-btn); }
 .modal-btn:disabled { opacity: .5; cursor: not-allowed; }
 
 .modal-msg {
   font-size: 12px; margin-top: 10px; text-align: center; min-height: 16px;
 }
+
 .modal-msg.ok { color: var(--gb-emerald); }
 .modal-msg.err { color: var(--s-red); }
 
-/* Delete confirm */
 .del-confirm {
   position: fixed; inset: 0;
   background: rgba(0,0,0,.5); backdrop-filter: blur(4px);
   z-index: 999; display: flex; align-items: center; justify-content: center;
 }
+
 .del-confirm.hidden { display: none; }
 
 .del-confirm-box {
@@ -708,29 +745,32 @@ body {
 .del-confirm-sub { font-size: 12px; color: var(--t3); margin-bottom: 14px; line-height: 1.5; }
 
 .del-confirm-btns { display: flex; gap: 8px; justify-content: center; }
+
 .del-btn-cancel {
   background: transparent; border: 1px solid var(--border);
   color: var(--t2); font-size: 13px; font-weight: 600;
   padding: 8px 16px; border-radius: 8px; cursor: pointer;
-  transition: all .15s;
+  transition: all .15s; font-family: inherit;
 }
+
 .del-btn-cancel:hover { border-color: var(--gb-emerald); color: var(--t1); }
 
 .del-btn-confirm {
   background: var(--s-red-bg); border: 1px solid rgba(217,79,79,.2);
   color: var(--s-red); font-size: 13px; font-weight: 700;
   padding: 8px 16px; border-radius: 8px; cursor: pointer;
-  transition: all .15s;
+  transition: all .15s; font-family: inherit;
 }
+
 .del-btn-confirm:hover { background: rgba(217,79,79,.2); }
 
-/* Loading overlay */
 .page-loading {
   position: fixed; inset: 0;
   background: var(--bg);
   display: flex; align-items: center; justify-content: center;
   z-index: 9999; flex-direction: column; gap: 12px;
 }
+
 .page-loading.hidden { display: none; }
 
 .spinner {
@@ -741,6 +781,9 @@ body {
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes barGrow { from { transform: scaleX(0); transform-origin: left; } to { transform: scaleX(1); transform-origin: left; } }
+@keyframes softPulse { 0%,100% { box-shadow: 0 0 0 3px rgba(245,158,11,.14); } 50% { box-shadow: 0 0 0 7px rgba(245,158,11,.24); } }
 </style>
 <script>
 if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');
@@ -770,40 +813,12 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       <label class="modal-label">Nome</label>
       <div style="display:flex;gap:6px">
         <input class="modal-input" type="text" id="perfilNome" placeholder="Seu nome" style="flex:1">
-        <button id="btnSalvarNome" onclick="doSalvarNome()" style="background:var(--gb-emerald);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;padding:10px 14px;cursor:pointer;white-space:nowrap">Salvar</button>
+        <button id="btnSalvarNome" onclick="doSalvarNome()" style="background:var(--gb-emerald);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;padding:10px 14px;cursor:pointer;white-space:nowrap;font-family:inherit">Salvar</button>
       </div>
       <div class="modal-msg" id="nomeMsg" style="text-align:left"></div>
     </div>
     <div id="perfilRows"></div>
     <button class="modal-btn" onclick="closePerfil();openSenha()">Alterar senha</button>
-  </div>
-</div>
-
-<div class="modal-overlay hidden" id="modalSuporte">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeSuporte()">✕</button>
-    <div class="modal-title">Suporte</div>
-    <div class="modal-sub">Envie sua dúvida.</div>
-    <div class="modal-field">
-      <label class="modal-label">E-mail</label>
-      <input class="modal-input" type="email" id="suporteEmail" readonly>
-    </div>
-    <div class="modal-field">
-      <label class="modal-label">Motivo</label>
-      <select class="modal-input" id="suporteMotivo">
-        <option value="">Selecione...</option>
-        <option value="duvida">Dúvida</option>
-        <option value="problema">Problema técnico</option>
-        <option value="cobranca">Cobrança</option>
-        <option value="sugestao">Sugestão</option>
-      </select>
-    </div>
-    <div class="modal-field">
-      <label class="modal-label">Mensagem</label>
-      <textarea class="modal-input" id="suporteMensagem" rows="4" placeholder="Descreva..." style="resize:vertical"></textarea>
-    </div>
-    <button class="modal-btn" id="btnEnviarSuporte" onclick="doEnviarSuporte()">Enviar</button>
-    <div class="modal-msg" id="suporteMsg"></div>
   </div>
 </div>
 
@@ -858,7 +873,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     </button>
   </nav>
   <div class="sb-bottom">
-    <button class="sb-avatar" id="avatarBtn" onclick="toggleDropdown()">
+    <button class="sb-avatar" id="avatarBtn" onclick="toggleDropdown()" style="border:none">
       <span id="avatarInitials">?</span>
     </button>
     <div class="user-dropdown" id="userDropdown">
@@ -867,7 +882,6 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         <div class="dropdown-email" id="dropEmail">—</div>
       </div>
       <button class="dropdown-item" onclick="closeDropdown();openPerfil()">👤 Meu Perfil</button>
-      <button class="dropdown-item" onclick="closeDropdown();openSuporte()">💬 Suporte</button>
       <button class="dropdown-item danger" onclick="logout()">🚪 Sair</button>
     </div>
   </div>
@@ -892,69 +906,101 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       <span id="bc-sub">Visão geral</span>
     </div>
     <div class="header-right">
-      <div class="plan-badge" id="headerPlanBadge"><div class="plan-badge-dot"></div><span id="headerPlanLabel">Pro</span></div>
+      <div class="plan-badge"><div class="plan-badge-dot"></div><span id="headerPlanLabel">Pro</span></div>
       <button class="icon-btn" onclick="toggleTheme()" title="Tema">
         <svg id="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
         <svg id="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </button>
       <button class="btn-cta" onclick="window.location.href='/app'">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Analisar
+        Analisar vaga
       </button>
     </div>
   </header>
 
   <div class="content">
 
-  <!-- ══ PAINEL TAB ══ -->
+  <!-- ══ PAINEL ══ -->
   <div id="tab-painel" class="tab active">
 
     <!-- HERO -->
     <div class="hero">
       <div class="hero-inner">
         <div class="hero-text">
-          <div class="hero-eyebrow"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg> Plan</div>
-          <h1 class="hero-title" id="heroTitle">Bem‑vindo, João</h1>
-          <p class="hero-sub" id="heroSub">Seu painel de candidaturas VagaAI.</p>
+          <div class="hero-eyebrow">
+            <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
+            <span id="heroEyebrow">Plano Pro ativo</span>
+          </div>
+          <h1 class="hero-title" id="heroTitle">Bem-vindo, João Victor</h1>
+          <p class="hero-sub" id="heroSub">Seu CV ainda não passa pelos filtros ATS da maioria das vagas. Com ajustes estratégicos de palavras-chave, você pode dobrar seu score e chegar mais forte nas entrevistas.</p>
           <div class="hero-metrics">
             <div>
-              <div class="hm-val" id="heroAvgScore">—</div>
-              <div class="hm-lbl">Score médio</div>
+              <div class="hm-val" id="heroAvgScore">17%</div>
+              <div class="hm-lbl">Score médio atual</div>
             </div>
             <div>
-              <div class="hm-val" id="heroVagasCount">—</div>
-              <div class="hm-lbl">Analisadas</div>
+              <div class="hm-val" id="heroVagasCount">2</div>
+              <div class="hm-lbl">Vagas analisadas</div>
+            </div>
+            <div>
+              <div class="hm-val accent" id="heroMetaScore">70%</div>
+              <div class="hm-lbl">Meta de score</div>
             </div>
           </div>
         </div>
+
+        <!-- LP-style card -->
         <div class="hero-card-wrap">
           <div class="hero-card">
             <div class="hc-chrome">
               <div class="hc-dot" style="background:#ff5f57"></div>
               <div class="hc-dot" style="background:#febc2e"></div>
               <div class="hc-dot" style="background:#28c840"></div>
-              <span class="hc-title-sm">Compatibilidade</span>
+              <span class="hc-title-sm">Análise VagaAI</span>
             </div>
             <div class="hc-center">
               <div class="hc-ring-wrap">
                 <svg viewBox="0 0 100 100">
                   <circle class="hcr-bg" cx="50" cy="50" r="36"/>
-                  <circle class="hcr-fill" id="hcrFillV2" cx="50" cy="50" r="36" style="stroke-dashoffset:170"/>
+                  <circle class="hcr-fill" id="hcrFillV2" cx="50" cy="50" r="36"/>
                 </svg>
                 <div class="hc-num" id="hcNumV2">
-                  <span>—</span>
+                  <span>75</span>
                   <small>/ 100</small>
                 </div>
               </div>
-              <div class="hc-lbl">Compatibilidade</div>
+              <div class="hc-lbl">Índice de compatibilidade</div>
             </div>
-            <div class="hc-bars" id="hcBarsV2"></div>
+            <div class="hc-bars" id="hcBarsV2">
+              <div class="hcb-row">
+                <div class="hcb-top"><span class="hcb-name">Compatibilidade</span><span class="hcb-pct" style="color:var(--gb-emerald)">82%</span></div>
+                <div class="hcb-track"><div class="hcb-fill" style="width:82%"></div></div>
+              </div>
+              <div class="hcb-row">
+                <div class="hcb-top"><span class="hcb-name">Keywords ATS</span><span class="hcb-pct" style="color:var(--gb-emerald)">71%</span></div>
+                <div class="hcb-track"><div class="hcb-fill" style="width:71%"></div></div>
+              </div>
+              <div class="hcb-row">
+                <div class="hcb-top"><span class="hcb-name">Legibilidade</span><span class="hcb-pct" style="color:var(--gb-emerald)">90%</span></div>
+                <div class="hcb-track"><div class="hcb-fill" style="width:90%"></div></div>
+              </div>
+              <div class="hcb-row">
+                <div class="hcb-top"><span class="hcb-name">Força dos bullets</span><span class="hcb-pct" style="color:#f59e0b">60%</span></div>
+                <div class="hcb-track"><div class="hcb-fill" style="width:60%;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="f-badge tr">
+            <span style="color:var(--gb-emerald)">⚡</span> Análise em 15s
+          </div>
+          <div class="f-badge bl">
+            <div class="f-badge-dot"></div> ATS-ready
           </div>
         </div>
       </div>
     </div>
 
-    <!-- METAS -->
+    <!-- PROGRESSO SEMANAL -->
     <div class="sec-label">Progresso semanal</div>
     <div class="goals-card">
       <div class="goals-row">
@@ -964,42 +1010,127 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
             <circle class="g-ring-fill" id="goalsRingFill" cx="60" cy="60" r="45"/>
           </svg>
           <div class="g-ring-label">
-            <div class="g-ring-num" id="goalsRingNum">—</div>
-            <div class="g-ring-den" id="goalsRingDen">de —</div>
+            <div class="g-ring-num" id="goalsRingNum">2</div>
+            <div class="g-ring-den" id="goalsRingDen">de 3</div>
           </div>
         </div>
         <div>
-          <div class="goals-ttl">Meta semanal</div>
-          <div class="goals-sub" id="goalsSub">Configure suas metas.</div>
+          <div class="goals-ttl">Meta semanal de análises</div>
+          <div class="goals-sub" id="goalsSub">Falta 1 análise para bater sua meta desta semana. Usuários que atingem a meta têm 2× mais entrevistas.</div>
           <div class="week-row" id="weekDots"></div>
         </div>
         <div class="goals-right">
-          <span class="streak-fire" id="streakNumV2">🔥</span>
-          <div class="streak-num" id="streakLblV2">—</div>
-          <div class="streak-lbl">semanas</div>
+          <span class="streak-fire" id="streakEmoji">🔥</span>
+          <div class="streak-num" id="streakNumV2">1</div>
+          <div class="streak-lbl">semana consecutiva</div>
           <div class="streak-chips">
-            <span class="s-chip" id="streakChip1">—</span>
-            <span class="s-chip" id="streakChip2">—</span>
+            <span class="s-chip" id="streakChip1">🏆 Recorde pessoal</span>
+            <span class="s-chip" id="streakChip2">📅 Mês: 1 semana</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- SCORE CARD -->
-    <div class="sec-label">Resultados</div>
+    <!-- RESULTADOS -->
+    <div class="sec-label">Resultados das análises</div>
     <div class="score-card">
       <div class="score-card-head">
         <div>
-          <div style="font-size:15px;font-weight:700">Compatibilidade das vagas</div>
-          <div style="font-size:12px;color:var(--t3);margin-top:2px">Score acima de 70% passa pelos filtros ATS</div>
+          <h3>Como seu CV performou em cada vaga</h3>
+          <p>Score acima de 70% passa pelos filtros ATS · Análise detalhada dos critérios de seleção</p>
+        </div>
+        <a href="#">Ver histórico →</a>
+      </div>
+      <div class="score-card-body" id="scoreCardBody">
+        <!-- Coluna 1 -->
+        <div class="score-col">
+          <div class="sc-top">
+            <div class="sc-ring-wrap">
+              <svg viewBox="0 0 100 100">
+                <circle class="sc-bg" cx="50" cy="50" r="36"/>
+                <circle class="sc-fill red" cx="50" cy="50" r="36" style="stroke-dashoffset:163"/>
+              </svg>
+              <div class="sc-label">
+                <div class="sc-num" style="color:var(--s-red)">28%</div>
+                <div class="sc-den">score</div>
+              </div>
+            </div>
+            <div>
+              <div class="sc-company">PRIMIZIE</div>
+              <div class="sc-role">Gerente de Marketing · R$10k+</div>
+              <span class="sc-status bad">Não passou nos filtros ATS</span>
+            </div>
+          </div>
+          <div class="sc-metrics">
+            <div>
+              <div class="sc-mrow-top"><span class="sc-mrow-name">Compatibilidade com a vaga</span><span class="sc-mrow-pct red">28%</span></div>
+              <div class="sc-track"><div class="sc-bar red" style="width:28%"></div></div>
+            </div>
+            <div>
+              <div class="sc-mrow-top"><span class="sc-mrow-name">Keywords ATS detectadas</span><span class="sc-mrow-pct red">20%</span></div>
+              <div class="sc-track"><div class="sc-bar red" style="width:20%"></div></div>
+            </div>
+            <div>
+              <div class="sc-mrow-top"><span class="sc-mrow-name">Legibilidade e estrutura</span><span class="sc-mrow-pct amber">65%</span></div>
+              <div class="sc-track"><div class="sc-bar amber" style="width:65%"></div></div>
+            </div>
+            <div>
+              <div class="sc-mrow-top"><span class="sc-mrow-name">Força dos bullet points</span><span class="sc-mrow-pct red">18%</span></div>
+              <div class="sc-track"><div class="sc-bar red" style="width:18%"></div></div>
+            </div>
+          </div>
+          <div class="sc-insight">
+            Adicionar <strong>Meta Ads, Facebook Ads e Google Ads</strong> ao CV pode elevar seu score de 28% para ~58% nessa vaga.
+          </div>
+        </div>
+        <!-- Coluna 2 -->
+        <div class="score-col">
+          <div class="sc-top">
+            <div class="sc-ring-wrap">
+              <svg viewBox="0 0 100 100">
+                <circle class="sc-bg" cx="50" cy="50" r="36"/>
+                <circle class="sc-fill red" cx="50" cy="50" r="36" style="stroke-dashoffset:215"/>
+              </svg>
+              <div class="sc-label">
+                <div class="sc-num" style="color:var(--s-red)">5%</div>
+                <div class="sc-den">score</div>
+              </div>
+            </div>
+            <div>
+              <div class="sc-company">Empresa anônima</div>
+              <div class="sc-role">Verificação de Segurança</div>
+              <span class="sc-status bad">Área muito diferente do perfil</span>
+            </div>
+          </div>
+          <div class="sc-metrics">
+            <div>
+              <div class="sc-mrow-top"><span class="sc-mrow-name">Compatibilidade com a vaga</span><span class="sc-mrow-pct red">5%</span></div>
+              <div class="sc-track"><div class="sc-bar red" style="width:5%"></div></div>
+            </div>
+            <div>
+              <div class="sc-mrow-top"><span class="sc-mrow-name">Keywords ATS detectadas</span><span class="sc-mrow-pct red">3%</span></div>
+              <div class="sc-track"><div class="sc-bar red" style="width:3%"></div></div>
+            </div>
+            <div>
+              <div class="sc-mrow-top"><span class="sc-mrow-name">Legibilidade e estrutura</span><span class="sc-mrow-pct amber">65%</span></div>
+              <div class="sc-track"><div class="sc-bar amber" style="width:65%"></div></div>
+            </div>
+            <div>
+              <div class="sc-mrow-top"><span class="sc-mrow-name">Match de área de atuação</span><span class="sc-mrow-pct red">0%</span></div>
+              <div class="sc-track"><div class="sc-bar red" style="width:1%"></div></div>
+            </div>
+          </div>
+          <div class="sc-insight">
+            Vaga fora da sua área. <strong>Foque em vagas de Marketing</strong> para aumentar suas chances de entrevista e otimizar seu tempo.
+          </div>
         </div>
       </div>
-      <div class="score-card-body" id="scoreCardBody"></div>
     </div>
 
     <!-- GRID -->
     <div class="sec-label">Próximos passos</div>
     <div class="grid-2">
+
       <!-- Keywords -->
       <div class="card">
         <div class="card-pad">
@@ -1008,11 +1139,32 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </div>
             <div>
-              <div class="card-ttl">Palavras-chave</div>
-              <div class="card-sub">Keywords que faltam no seu CV</div>
+              <div class="card-ttl">Palavras-chave ATS</div>
+              <div class="card-sub">O que está faltando no seu CV para passar pelos filtros automáticos dos recrutadores</div>
             </div>
           </div>
-          <div id="kwCardBody"></div>
+          <div class="kw-section">
+            <div class="kw-sec-lbl">Ausentes — adicione ao CV</div>
+            <div class="kw-tags">
+              <span class="kw-tag miss">✕ Meta Ads</span>
+              <span class="kw-tag miss">✕ Facebook Ads</span>
+              <span class="kw-tag miss">✕ Google Ads</span>
+              <span class="kw-tag miss">✕ Performance Mkt</span>
+              <span class="kw-tag miss">✕ Gestão de Budget</span>
+            </div>
+          </div>
+          <div class="kw-section">
+            <div class="kw-sec-lbl">Presentes no CV</div>
+            <div class="kw-tags">
+              <span class="kw-tag pres">✓ SEO</span>
+              <span class="kw-tag pres">✓ Copywriting</span>
+              <span class="kw-tag pres">✓ Email Marketing</span>
+              <span class="kw-tag pres">✓ Branding</span>
+            </div>
+          </div>
+          <div class="kw-tip">
+            Adicionar as <strong>5 palavras ausentes</strong> pode aumentar seu score médio de <strong>17% para ~48%</strong>, passando pelo filtro automático na maioria das vagas de Marketing.
+          </div>
         </div>
       </div>
 
@@ -1025,26 +1177,63 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
             </div>
             <div>
               <div class="card-ttl">Sua jornada</div>
-              <div class="card-sub">Etapas para chegar à oferta</div>
+              <div class="card-sub">Cada etapa concluída aumenta em 3× suas chances de receber uma oferta de emprego</div>
             </div>
           </div>
-          <div class="journey" id="journeyCardBody"></div>
+          <div class="journey">
+            <div class="j-step">
+              <div class="j-dot j-done">✓</div>
+              <div class="j-body">
+                <div class="j-name">Diagnóstico do currículo</div>
+                <div class="j-desc">2 vagas analisadas · Score médio 17% · Ajustes identificados</div>
+              </div>
+            </div>
+            <div class="j-step">
+              <div class="j-dot j-active">→</div>
+              <div class="j-body">
+                <div class="j-name" style="color:var(--s-amb)">Otimizar o currículo</div>
+                <div class="j-desc">Adicione as keywords ausentes para superar o filtro ATS</div>
+                <a class="j-cta" href="#">Otimizar agora →</a>
+              </div>
+            </div>
+            <div class="j-step">
+              <div class="j-dot j-todo">3</div>
+              <div class="j-body">
+                <div class="j-name" style="color:var(--t3)">Enviar candidaturas</div>
+                <div class="j-desc">Rastreie cada aplicação e acompanhe retornos</div>
+              </div>
+            </div>
+            <div class="j-step">
+              <div class="j-dot j-todo">4</div>
+              <div class="j-body">
+                <div class="j-name" style="color:var(--t3)">Preparar para a entrevista</div>
+                <div class="j-desc">Simulador com perguntas baseadas na vaga específica</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Insight AI -->
-      <div class="insight-ai" id="insightAICard" style="animation:fadeUp .45s .28s ease both;">
+      <div class="insight-ai">
         <div class="ai-eyebrow">✦ Insight da VagaAI</div>
-        <div class="ai-title">Otimize seu CV</div>
-        <div class="ai-text">Com algumas palavras-chave adicionadas, seu score pode aumentar bastante.</div>
+        <div class="ai-title">Seu CV pode chegar a 58% hoje</div>
+        <div class="ai-text">
+          Com apenas <strong>3 palavras-chave</strong> adicionadas ao seu CV, seu score na PRIMIZIE saltaria de <strong>28% → ~58%</strong> — passando pelos filtros automáticos e chegando à mesa do recrutador.
+        </div>
+        <div class="ai-tags">
+          <span class="ai-tag">Meta Ads</span>
+          <span class="ai-tag">Facebook Ads</span>
+          <span class="ai-tag">Google Ads</span>
+        </div>
         <button class="ai-btn" onclick="window.location.href='/app'">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          Otimizar CV
+          Otimizar meu CV agora
         </button>
       </div>
 
       <!-- Candidaturas -->
-      <div class="card" style="animation:fadeUp .45s .34s ease both;">
+      <div class="card">
         <div class="card-pad">
           <div class="card-head">
             <div class="card-ico">
@@ -1052,157 +1241,214 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
             </div>
             <div>
               <div class="card-ttl">Candidaturas</div>
-              <div class="card-sub">Rastreie cada vaga</div>
+              <div class="card-sub">Rastreie cada vaga para acompanhar retornos e não perder nenhuma oportunidade</div>
             </div>
           </div>
-          <div id="vagasCardBody"></div>
+
+          <div class="vaga-item">
+            <div class="vaga-score vs-bad">28</div>
+            <div class="vaga-info">
+              <div class="vaga-name">PRIMIZIE</div>
+              <div class="vaga-role">Gerente de Marketing · R$10k+ · Remoto</div>
+            </div>
+            <button class="track-btn" onclick="addToTracker('PRIMIZIE','Gerente de Marketing',28)">Rastrear</button>
+          </div>
+
+          <div class="vaga-item">
+            <div class="vaga-score vs-bad">5</div>
+            <div class="vaga-info">
+              <div class="vaga-name">Empresa anônima</div>
+              <div class="vaga-role">Verificação de Segurança · Fora da área</div>
+            </div>
+            <button class="track-btn" onclick="addToTracker('Empresa anônima','Verificação de Segurança',5)">Rastrear</button>
+          </div>
+
+          <div style="margin-top:20px;padding:16px;background:var(--bg-sub);border-radius:var(--r-sm);text-align:center;">
+            <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Analise mais vagas para aumentar suas chances</div>
+            <button class="btn-cta" onclick="window.location.href='/app'" style="margin:0 auto;font-size:12.5px;padding:9px 18px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nova análise
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
+    </div>
   </div><!-- /tab-painel -->
 
-  <!-- ══ VAGAS TAB ══ -->
-  <div id="tab-vagas" class="tab">
+  <!-- ══ VAGAS ══ -->
+  <div id="tab-vagas" class="tab" style="display:none">
     <div class="hero">
       <div class="hero-inner">
         <div class="hero-text">
-          <div class="hero-eyebrow">📋 Rastreador</div>
+          <div class="hero-eyebrow">📋 Rastreador de candidaturas</div>
           <h1 class="hero-title">Minhas Candidaturas</h1>
-          <p class="hero-sub">Acompanhe cada aplicação até a oferta.</p>
+          <p class="hero-sub">Acompanhe cada aplicação da análise até a oferta. Nunca mais perca o prazo ou esqueça o follow-up.</p>
           <div class="hero-metrics">
-            <div><div class="hm-val" id="vagasHeroAndamento">—</div><div class="hm-lbl">Em andamento</div></div>
-            <div><div class="hm-val" id="vagasHeroEntrevista">—</div><div class="hm-lbl">Entrevistas</div></div>
-            <div><div class="hm-val" id="vagasHeroTotal">—</div><div class="hm-lbl">Total</div></div>
+            <div><div class="hm-val" id="vagasAndamento">0</div><div class="hm-lbl">Em andamento</div></div>
+            <div><div class="hm-val" id="vagasEntrevista">0</div><div class="hm-lbl">Em entrevista</div></div>
+            <div><div class="hm-val" id="vagasTotal">0</div><div class="hm-lbl">Para rastrear</div></div>
           </div>
         </div>
       </div>
     </div>
-    <div class="card" style="text-align:center;padding:40px">
-      <div style="font-size:24px;margin-bottom:12px">📭</div>
-      <div style="font-size:15px;font-weight:600;margin-bottom:6px">Nenhuma candidatura</div>
-      <div style="font-size:13px;color:var(--t3)">Adicione vagas analisadas ao rastreador.</div>
-    </div>
+    <div id="vagasListView"></div>
   </div>
 
-  <!-- ══ ALERTAS TAB ══ -->
-  <div id="tab-alertas" class="tab">
+  <!-- ══ ALERTAS ══ -->
+  <div id="tab-alertas" class="tab" style="display:none">
     <div class="hero">
       <div class="hero-inner">
         <div class="hero-text">
-          <div class="hero-eyebrow">🔔 Alertas</div>
-          <h1 class="hero-title">Vagas no seu e‑mail</h1>
-          <p class="hero-sub">Configure uma vez e receba oportunidades toda semana.</p>
+          <div class="hero-eyebrow">🔔 Alertas personalizados</div>
+          <h1 class="hero-title">Vagas no seu e‑mail toda semana</h1>
+          <p class="hero-sub">Configure seu perfil uma vez e receba oportunidades compatíveis com sua área, salário e formato — sem ficar buscando manualmente.</p>
+          <div class="hero-metrics">
+            <div><div class="hm-val">8</div><div class="hm-lbl">Vagas recebidas</div></div>
+            <div><div class="hm-val">1</div><div class="hm-lbl">Candidatura enviada</div></div>
+            <div><div class="hm-val accent">Ativo</div><div class="hm-lbl">Status do alerta</div></div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="card">
-      <div class="card-pad">
-        <div class="card-head">
-          <div class="card-ico">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-pad">
+          <div class="card-head">
+            <div class="card-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+            <div><div class="card-ttl">Perfil de busca</div><div class="card-sub">Personalize quais vagas você quer receber na sua caixa de entrada</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+            <div><div class="fld-label">Cargo</div><input class="fld-input" id="al-cargo" value="Marketing"></div>
+            <div><div class="fld-label">Nível</div><select class="fld-input" id="al-nivel"><option>Qualquer</option><option>Júnior</option><option>Pleno</option><option>Sênior</option></select></div>
+            <div><div class="fld-label">Localização</div><input class="fld-input" id="al-cidade" value="Remoto"></div>
+            <div><div class="fld-label">Salário mínimo (R$)</div><input class="fld-input" type="number" id="al-salario" value="6000"></div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div class="fld-label">Keywords do perfil</div>
+            <div class="kw-wrap" id="kwWrap">
+              <span class="kw-chip">SEO<span class="kw-chip-x" onclick="removeKw(0)">×</span></span>
+              <span class="kw-chip">Copywriting<span class="kw-chip-x" onclick="removeKw(1)">×</span></span>
+              <span class="kw-chip">Mkt de Conteúdo<span class="kw-chip-x" onclick="removeKw(2)">×</span></span>
+              <input class="fld-input" id="kwInput" placeholder="Digite e pressione Enter..." onkeydown="handleKwInput(event)" style="background:none;border:none;padding:0;min-width:120px;flex:1">
+            </div>
           </div>
           <div>
-            <div class="card-ttl">Perfil de alerta</div>
-            <div class="card-sub">Personalize quais vagas quer receber</div>
+            <div class="fld-label">Frequência</div>
+            <div class="freq-row">
+              <button class="freq-btn on" id="freq-semanal" onclick="setFreq('semanal')">Semanal</button>
+              <button class="freq-btn" id="freq-quinzenal" onclick="setFreq('quinzenal')">Quinzenal</button>
+              <button class="freq-btn" id="freq-mensal" onclick="setFreq('mensal')">Mensal</button>
+            </div>
+          </div>
+          <button class="save-btn" onclick="saveAlertProfile()">Salvar perfil de alerta</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-pad">
+          <div class="card-head">
+            <div class="card-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            <div><div class="card-ttl">Próximo envio</div><div class="card-sub">Sexta-feira, 13 de junho de 2026 · Previstas ~8 vagas</div></div>
+          </div>
+          <div style="background:var(--bg-sub);border-radius:var(--r-sm);padding:20px;margin-bottom:20px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+              <div style="width:34px;height:34px;border-radius:9px;background:var(--gb-emerald);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+              </div>
+              <div>
+                <div style="font-size:12.5px;font-weight:600;color:var(--t1);">Vagas da semana para você</div>
+                <div style="font-size:11px;color:var(--t3);">vagaai.com → joaovictor@email.com</div>
+              </div>
+            </div>
+            <div style="font-size:12.5px;color:var(--t2);line-height:1.6;margin-bottom:14px;">
+              <strong style="color:var(--t1);">8 vagas de Marketing</strong> compatíveis com seu perfil — remoto, salário a partir de R$6.000.
+            </div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:var(--gb-emerald);color:#fff;padding:8px 16px;border-radius:var(--r-xs);font-size:12.5px;font-weight:600;">
+              Ver vagas da semana →
+            </div>
+          </div>
+          <div style="font-size:12.5px;color:var(--t3);line-height:1.65;">
+            Recebendo vagas de <strong style="color:var(--t2);">Marketing</strong> · Formato remoto · Salário a partir de <strong style="color:var(--t2);">R$6.000</strong> · Toda sexta-feira.
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
-          <div><div class="fld-label">Cargo</div><input class="fld-input" id="al-cargo" placeholder="Ex: Marketing"></div>
-          <div><div class="fld-label">Nível</div><select class="fld-input" id="al-nivel"><option value="qualquer">Qualquer</option><option value="junior">Júnior</option><option value="pleno">Pleno</option><option value="senior">Sênior</option></select></div>
-          <div><div class="fld-label">Localização</div><input class="fld-input" id="al-cidade" placeholder="Ex: Remoto"></div>
-          <div><div class="fld-label">Salário mín</div><input class="fld-input" type="number" id="al-salario" placeholder="Ex: 6000"></div>
-        </div>
-        <div style="margin-bottom:16px">
-          <div class="fld-label">Keywords</div>
-          <div class="kw-chips-box" id="kwWrap" onclick="document.getElementById('kwInput').focus()">
-            <input class="fld-input" id="kwInput" placeholder="Digite e pressione Enter..." onkeydown="handleKwInput(event)" style="background:none;border:none;padding:0;min-width:120px;flex:1">
-          </div>
-        </div>
-        <div>
-          <div class="fld-label">Frequência</div>
-          <div class="freq-row">
-            <button class="freq-btn on" id="freq-semanal" onclick="setFreq('semanal')">Semanal</button>
-            <button class="freq-btn" id="freq-quinzenal" onclick="setFreq('quinzenal')">Quinzenal</button>
-            <button class="freq-btn" id="freq-mensal" onclick="setFreq('mensal')">Mensal</button>
-          </div>
-        </div>
-        <button class="save-btn" onclick="saveAlertProfile()">Salvar perfil</button>
       </div>
     </div>
   </div>
 
-  <!-- ══ PLANO TAB ══ -->
-  <div id="tab-plano" class="tab">
+  <!-- ══ PLANO ══ -->
+  <div id="tab-plano" class="tab" style="display:none">
     <div class="hero">
       <div class="hero-inner">
         <div class="hero-text">
-          <div class="hero-eyebrow">⭐ Plano</div>
-          <h1 class="hero-title" id="planHeroTitle">Seu Plano</h1>
-          <p class="hero-sub" id="planHeroSub">Gerenciar sua assinatura.</p>
+          <div class="hero-eyebrow">⭐ Plano atual</div>
+          <h1 class="hero-title">Plano Pro ativo</h1>
+          <p class="hero-sub">Análises ilimitadas, simulador de entrevista e todos os recursos disponíveis. Renova em 07 de julho de 2026.</p>
           <div class="hero-metrics">
-            <div><div class="hm-val" id="planHeroLeft">—</div><div class="hm-lbl">Análises</div></div>
+            <div><div class="hm-val accent">∞</div><div class="hm-lbl">Análises/mês</div></div>
+            <div><div class="hm-val">5</div><div class="hm-lbl">Funcionalidades</div></div>
           </div>
         </div>
       </div>
     </div>
-    <div class="grid-3" id="planTilesGrid"></div>
+    <div class="grid-3" id="planTilesGrid">
+      <div class="plan-tile">
+        <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;">Starter</div>
+        <div style="font-size:30px;font-weight:800;letter-spacing:-1.5px;margin-bottom:4px;">R$19<span style="font-size:15px;font-weight:400;color:var(--t3)">,90/mês</span></div>
+        <div style="font-size:12px;color:var(--t3);margin-bottom:22px;">Para quem está começando</div>
+        <ul style="list-style:none;font-size:13px;color:var(--t2);display:flex;flex-direction:column;gap:10px;margin-bottom:26px;">
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-emerald)">✓</span> 10 análises/mês</li>
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-emerald)">✓</span> CV otimizado</li>
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-emerald)">✓</span> Briefing da empresa</li>
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-emerald)">✓</span> Carta de apresentação</li>
+          <li style="display:flex;gap:8px;"><span style="color:var(--t3)">—</span><span style="color:var(--t3)">Simulador de entrevista</span></li>
+        </ul>
+        <button style="width:100%;padding:11px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--bg);color:var(--t1);font-size:13px;font-weight:600;cursor:pointer;">Mudar para Starter</button>
+      </div>
+      <div class="plan-tile active" style="position:relative;">
+        <div style="position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--gb-emerald);color:#fff;font-size:10px;font-weight:700;padding:3px 16px;border-radius:0 0 8px 8px;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;">Plano atual</div>
+        <div style="font-size:11px;font-weight:700;color:var(--gb-emerald);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;margin-top:16px;">Pro</div>
+        <div style="font-size:30px;font-weight:800;letter-spacing:-1.5px;margin-bottom:4px;">R$39<span style="font-size:15px;font-weight:400;color:var(--t3)">,90/mês</span></div>
+        <div style="font-size:12px;color:var(--t3);margin-bottom:22px;">Para quem leva a sério</div>
+        <ul style="list-style:none;font-size:13px;color:var(--t2);display:flex;flex-direction:column;gap:10px;margin-bottom:26px;">
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-bright)">✓</span> Análises ilimitadas</li>
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-bright)">✓</span> CV otimizado</li>
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-bright)">✓</span> Briefing da empresa</li>
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-bright)">✓</span> Carta de apresentação</li>
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-bright)">✓</span> Simulador de entrevista</li>
+        </ul>
+        <button style="width:100%;padding:11px;background:var(--s-grn-bg);border:none;border-radius:var(--r-sm);color:var(--gb-emerald);font-size:13px;font-weight:700;cursor:default;">Plano ativo ✓</button>
+      </div>
+      <div class="plan-tile">
+        <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:18px;">Análises avulsas</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);">
+            <div><div style="font-size:13px;font-weight:600;">1 análise</div><div style="font-size:11px;color:var(--t3)">Sem assinatura</div></div>
+            <div style="display:flex;align-items:center;gap:10px;"><strong>R$9,90</strong><button style="border:1.5px solid var(--border);background:var(--bg);padding:5px 12px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;">Comprar</button></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);">
+            <div><div style="font-size:13px;font-weight:600;">10 análises</div><div style="font-size:11px;color:var(--t3)">R$3,99 cada</div></div>
+            <div style="display:flex;align-items:center;gap:10px;"><strong>R$39,90</strong><button style="border:1.5px solid var(--border);background:var(--bg);padding:5px 12px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;">Comprar</button></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);">
+            <div><div style="font-size:13px;font-weight:600;">50 análises</div><div style="font-size:11px;color:var(--t3)">R$1,94 cada</div></div>
+            <div style="display:flex;align-items:center;gap:10px;"><strong>R$97,00</strong><button style="border:1.5px solid var(--border);background:var(--bg);padding:5px 12px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;">Comprar</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   </div><!-- /content -->
 </main>
 
-<!-- Hidden compat elements (for legacy JS) -->
-<div style="display:none">
-  <div id="themeBtn"></div>
-  <div id="topBar"></div>
-  <div id="tbSection"></div>
-  <div id="tbSub"></div>
-  <div id="tbPlanBadge"></div>
-  <div id="tbPlanLabel"></div>
-  <div id="creditsValue"></div>
-  <div id="creditsDesc"></div>
-  <div id="creditBarFill"></div>
-  <div id="creditBarWrap"></div>
-  <div id="creditBarLabel"></div>
-  <div id="totalValue"></div>
-  <div id="insScoreContent"></div>
-  <div id="insCompatContent"></div>
-  <div id="insKwContent"></div>
-  <div id="insJornadaContent"></div>
-  <div id="insStreakContent"></div>
-  <div id="streakWrap"></div>
-  <div id="streakFlame"></div>
-  <div id="streakText"></div>
-  <div id="userLevelBadge"></div>
-  <div id="levelProgressWrap"></div>
-  <div id="levelProgressLabel"></div>
-  <div id="levelProgressFill"></div>
-  <div id="levelProgressBonus"></div>
-  <div id="motivationalStat"></div>
-  <div id="currentPlanCard"></div>
-  <div id="plansRow"></div>
-  <div id="trackerTabCount"></div>
-</div>
-
 <script>
 var SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
 var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
-
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-var SUBSCRIPTION_PLANS = [
-  { id: 'free', name: 'Grátis', price: 'R$0', sub: '/mês', badge: null, featured: false, features: ['1 análise/mês', 'Score ATS', 'Rastreador'], url: null },
-  { id: 'starter', name: 'Starter', price: 'R$19', sub: ',90/mês', badge: null, featured: false, features: ['10 análises/mês', 'CV otimizado', 'Briefing'], url: 'https://buy.stripe.com/28E14n0WO2rne5Ff0P9k406' },
-  { id: 'pro', name: 'Pro', price: 'R$39', sub: ',90/mês', badge: 'Recomendado', featured: true, features: ['Ilimitadas', 'CV otimizado', 'Simulador'], url: 'https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408' }
-];
-
-var currentUserId = null;
-var currentSession = null;
-var _userPlan = 'free';
-var _analysesFull = [];
+var currentSession = null, currentUserId = null;
+var _kTracked = [];
 var _alertKeywords = [];
-var _alertFreq = 'semanal';
 
 async function init() {
   var { data: { session } } = await sb.auth.getSession();
@@ -1216,146 +1462,162 @@ async function init() {
   document.getElementById('avatarInitials').textContent = initials;
   document.getElementById('dropName').textContent = displayName;
   document.getElementById('dropEmail').textContent = email;
-  document.getElementById('heroTitle').textContent = 'Bem‑vindo, ' + displayName;
+  document.getElementById('heroTitle').textContent = 'Bem-vindo, ' + displayName;
 
-  window._perfilData = { email: email, displayName: displayName };
+  window._perfilData = { email, displayName };
 
-  await Promise.all([loadAnalyses(), loadSubscription()]);
+  await Promise.all([loadAnalyses(), loadKanban(), loadAlerts()]);
+
+  // Setup week dots
+  var days = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
+  var wrap = document.getElementById('weekDots');
+  wrap.innerHTML = '';
+  days.forEach(function(d, i) {
+    var item = document.createElement('div');
+    item.className = 'w-item';
+    var state = i < 2 ? 'done' : i === 2 ? 'today' : 'empty';
+    var icon = i < 2 ? '✓' : i === 2 ? '·' : '';
+    item.innerHTML = '<div class="w-lbl">' + d + '</div><div class="w-dot ' + state + '">' + icon + '</div>';
+    wrap.appendChild(item);
+  });
 
   document.getElementById('pageLoading').classList.add('hidden');
-  renderHeroSectionV2();
-  renderGoalsCardV2();
-  renderScoreCardV2();
-  renderKwCardV2();
-  renderJornadaV2();
-  renderInsightAICard();
-  renderCandidaturasMini();
-  renderVagasHeroV2();
-  renderPlanTabV2();
 }
 
 async function loadAnalyses() {
   try {
-    var res = await fetch(
-      SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=id,score,nivel,job_excerpt,created_at,result&order=created_at.desc&limit=50',
-      { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, Prefer: 'count=exact' } }
-    );
-    _analysesFull = await res.json();
-  } catch(e) { console.error('loadAnalyses', e); }
-}
-
-async function loadSubscription() {
-  try {
-    var res = await fetch('/api/subscription', { headers: { Authorization: 'Bearer ' + currentSession.access_token } });
-    if (res.ok) {
-      var sub = await res.json();
-      _userPlan = sub.plan || 'free';
+    var res = await fetch(SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=id,score,job_excerpt,created_at&order=created_at.desc&limit=50', {
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, Prefer: 'count=exact' }
+    });
+    var data = await res.json();
+    if (Array.isArray(data)) {
+      var scores = data.filter(function(a){ return a.score > 0; });
+      if (scores.length) {
+        var avg = Math.round(scores.reduce(function(s,a){ return s+a.score; }, 0) / scores.length);
+        document.getElementById('heroAvgScore').textContent = avg + '%';
+      }
+      document.getElementById('heroVagasCount').textContent = data.length;
     }
   } catch(e) {}
 }
 
-function renderHeroSectionV2() {
-  var analyses = _analysesFull.filter(function(a){ return a.score > 0; });
-  var avgScore = analyses.length ? Math.round(analyses.reduce(function(s,a){ return s+a.score; },0)/analyses.length) : 0;
-  document.getElementById('heroAvgScore').textContent = avgScore + '%';
-  document.getElementById('heroVagasCount').textContent = analyses.length;
-
-  var score = 75, pct = Math.round((score / 100) * 100);
-  var fill = document.getElementById('hcrFillV2');
-  if (fill) fill.style.strokeDashoffset = Math.round(226 * (1 - pct / 100));
-  var num = document.getElementById('hcNumV2');
-  if (num) num.innerHTML = '<span>' + score + '</span><small>/ 100</small>';
-
-  var bars = document.getElementById('hcBarsV2');
-  if (bars) {
-    bars.innerHTML = '<div><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:11px;color:var(--t2)">Compatibilidade</span><span style="font-size:11px;font-weight:700">82%</span></div><div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;background:linear-gradient(90deg,var(--gb-emerald),var(--gb-bright));width:82%;animation:barGrow .9s cubic-bezier(.34,1.2,.64,1) both"></div></div></div>';
-  }
-}
-
-function renderGoalsCardV2() {
-  document.getElementById('goalsRingNum').textContent = '2';
-  document.getElementById('goalsRingDen').textContent = 'de 3';
-  document.getElementById('goalsSub').textContent = 'Falta 1 análise para bater sua meta desta semana.';
-
-  var weekDots = document.getElementById('weekDots');
-  if (weekDots) {
-    weekDots.innerHTML = '';
-    var days = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
-    var states = ['done','done','today','empty','empty','empty','empty'];
-    days.forEach(function(d, i) {
-      var item = document.createElement('div');
-      item.className = 'w-item';
-      item.innerHTML = '<div class="w-lbl">' + d + '</div><div class="w-dot ' + states[i] + '">' + (states[i]==='done'?'✓':states[i]==='today'?'·':'') + '</div>';
-      weekDots.appendChild(item);
+async function loadKanban() {
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker?user_id=eq.' + currentUserId, {
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
     });
-  }
-
-  document.getElementById('streakLblV2').textContent = '1';
-  document.getElementById('streakChip1').textContent = '🏆 Recorde pessoal';
-  document.getElementById('streakChip2').textContent = '📅 Mês: 1 semana';
+    _kTracked = await res.json();
+  } catch(e) {}
 }
 
-function renderScoreCardV2() {
-  var body = document.getElementById('scoreCardBody');
-  if (!body) return;
-  body.innerHTML = '<div style="padding:20px 28px 28px;position:relative"><div style="display:flex;gap:20px;margin-bottom:20px"><div style="position:relative;width:88px;height:88px"><svg style="width:88px;height:88px;transform:rotate(-90deg)" viewBox="0 0 100 100"><circle fill="none" stroke="var(--border)" stroke-width="8" cx="50" cy="50" r="36"/><circle fill="none" stroke="#d94f4f" stroke-width="8" stroke-linecap="round" stroke-dasharray="226" stroke-dashoffset="163" cx="50" cy="50" r="36"/></svg><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:21px;font-weight:800;color:#d94f4f">28%</div><div style="font-size:9.5px;color:var(--t3)">score</div></div></div><div><div style="font-size:16px;font-weight:700">PRIMIZIE</div><div style="font-size:12px;color:var(--t3);margin-bottom:10px">Gerente de Marketing</div><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;background:var(--s-red-bg);color:var(--s-red)">Não passou</span></div></div><div style="display:flex;flex-direction:column;gap:13px"><div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;color:var(--t2)">Compatibilidade</span><span style="font-size:12px;font-weight:700;color:var(--s-red)">28%</span></div><div style="height:6px;background:var(--bg-sub);border-radius:3px;overflow:hidden"><div style="height:100%;background:linear-gradient(90deg,#d94f4f,#f87171);width:28%;animation:barGrow .9s cubic-bezier(.34,1.2,.64,1) both"></div></div></div></div></div><div style="margin-top:18px;background:var(--bg-sub);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 16px;font-size:12.5px;color:var(--t2)">Adicionar <strong>Meta Ads, Facebook Ads e Google Ads</strong> pode elevar seu score para ~58%.</div></div>';
+async function loadAlerts() {
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?user_id=eq.' + currentUserId, {
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
+    });
+    var rows = await res.json();
+    if (rows && rows[0]) {
+      var p = rows[0];
+      document.getElementById('al-cargo').value = p.cargo_desejado || '';
+      document.getElementById('al-nivel').value = p.nivel || 'qualquer';
+      document.getElementById('al-cidade').value = p.cidade || '';
+      document.getElementById('al-salario').value = p.salario_min || '';
+      _alertKeywords = Array.isArray(p.keywords) ? p.keywords : [];
+      renderKwTags();
+      var freq = p.frequencia || 'semanal';
+      ['semanal','quinzenal','mensal'].forEach(function(f){ document.getElementById('freq-'+f).classList.toggle('on', f===freq); });
+    }
+  } catch(e) {}
 }
 
-function renderKwCardV2() {
-  var body = document.getElementById('kwCardBody');
-  if (!body) return;
-  body.innerHTML = '<div class="kw-section"><div class="kw-sec-lbl">Ausentes</div><div class="kw-tags"><span class="kw-tag miss">✕ Meta Ads</span><span class="kw-tag miss">✕ Facebook Ads</span><span class="kw-tag miss">✕ Google Ads</span></div></div><div class="kw-section"><div class="kw-sec-lbl">Presentes</div><div class="kw-tags"><span class="kw-tag pres">✓ SEO</span><span class="kw-tag pres">✓ Copywriting</span><span class="kw-tag pres">✓ Email Marketing</span></div></div>';
-}
-
-function renderJornadaV2() {
-  var body = document.getElementById('journeyCardBody');
-  if (!body) return;
-  body.innerHTML = '<div class="j-step"><div class="j-dot j-done">✓</div><div class="j-body"><div class="j-name">Diagnóstico do CV</div><div class="j-desc">2 vagas analisadas · Score médio 28%</div></div></div><div class="j-step"><div class="j-dot j-active">→</div><div class="j-body"><div class="j-name">Otimizar o CV</div><div class="j-desc">Adicione as keywords ausentes</div></div></div><div class="j-step"><div class="j-dot j-todo">3</div><div class="j-body"><div class="j-name">Enviar candidaturas</div><div class="j-desc">Rastreie cada aplicação</div></div></div><div class="j-step"><div class="j-dot j-todo">4</div><div class="j-body"><div class="j-name">Preparar para entrevista</div><div class="j-desc">Use o simulador de entrevista</div></div></div>';
-}
-
-function renderInsightAICard() {
-  var card = document.getElementById('insightAICard');
-  if (card) {
-    card.innerHTML = '<div class="ai-eyebrow">✦ Insight da VagaAI</div><div class="ai-title">Seu CV pode chegar a 58% hoje</div><div class="ai-text">Com apenas <strong>3 palavras-chave</strong> adicionadas, seu score na PRIMIZIE saltaria de <strong>28% → ~58%</strong>.</div><div class="ai-tags"><span class="ai-tag">Meta Ads</span><span class="ai-tag">Facebook Ads</span><span class="ai-tag">Google Ads</span></div><button class="ai-btn" onclick="window.location.href=\'/app\'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Otimizar meu CV</button>';
-  }
-}
-
-function renderCandidaturasMini() {
-  var body = document.getElementById('vagasCardBody');
-  if (!body) return;
-  body.innerHTML = '<div class="vaga-item"><div class="vaga-score vs-bad">28</div><div class="vaga-info"><div class="vaga-name">PRIMIZIE</div><div class="vaga-role">Gerente de Marketing</div></div><button class="track-btn" onclick="addToTracker(\'PRIMIZIE\',\'Gerente de Marketing\',28)">Rastrear</button></div>';
-}
-
-function renderVagasHeroV2() {
-  document.getElementById('vagasHeroAndamento').textContent = '0';
-  document.getElementById('vagasHeroEntrevista').textContent = '0';
-  document.getElementById('vagasHeroTotal').textContent = '0';
-}
-
-function renderPlanTabV2() {
-  var grid = document.getElementById('planTilesGrid');
-  if (!grid) return;
+function renderKwTags() {
+  var wrap = document.getElementById('kwWrap');
+  var input = document.getElementById('kwInput');
   var html = '';
-  SUBSCRIPTION_PLANS.forEach(function(p) {
-    var isCurrent = _userPlan === p.id;
-    html += '<div class="plan-tile' + (isCurrent ? ' active' : '') + '">'
-      + (isCurrent ? '<div style="text-align:center;margin-bottom:10px;font-size:11px;font-weight:700;color:var(--gb-emerald);background:var(--s-grn-bg);padding:4px 8px;border-radius:6px">Plano atual</div>' : '')
-      + '<div style="font-size:12px;color:var(--t3);margin-bottom:8px">' + p.name + '</div>'
-      + '<div style="font-size:24px;font-weight:800;margin-bottom:2px">' + p.price + '<span style="font-size:13px;font-weight:400;color:var(--t3)">' + p.sub + '</span></div>'
-      + '<ul style="list-style:none;font-size:12px;color:var(--t2);margin:12px 0;display:flex;flex-direction:column;gap:6px">'
-      + p.features.slice(0,3).map(function(f){ return '<li style="display:flex;gap:6px"><span style="color:var(--gb-emerald)">✓</span>' + f + '</li>'; }).join('')
-      + '</ul>'
-      + (isCurrent ? '<button style="width:100%;padding:8px;background:var(--s-grn-bg);border:none;border-radius:8px;color:var(--gb-emerald);font-size:12px;font-weight:600;cursor:default">Ativo ✓</button>'
-                   : (p.url ? '<button style="width:100%;padding:8px;background:var(--gb-emerald);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer" onclick="window.open(\'' + p.url + '\',\'_blank\')">Assinar</button>' : ''))
-      + '</div>';
+  _alertKeywords.forEach(function(kw, i) {
+    html += '<span class="kw-chip">' + escHtml(kw) + '<span class="kw-chip-x" onclick="removeKw(' + i + ')">×</span></span>';
   });
-  grid.innerHTML = html;
+  html += '<input class="fld-input" id="kwInput" placeholder="Digite e pressione Enter..." onkeydown="handleKwInput(event)" style="background:none;border:none;padding:0;min-width:120px;flex:1">';
+  wrap.innerHTML = html;
+}
+
+function handleKwInput(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    var val = document.getElementById('kwInput').value.trim().replace(/,$/,'');
+    if (val && !_alertKeywords.includes(val)) { _alertKeywords.push(val); renderKwTags(); }
+    document.getElementById('kwInput').value = '';
+  }
+}
+
+function removeKw(i) { _alertKeywords.splice(i, 1); renderKwTags(); }
+function setFreq(freq) { ['semanal','quinzenal','mensal'].forEach(function(f){ document.getElementById('freq-'+f).classList.toggle('on', f===freq); }); }
+
+async function saveAlertProfile() {
+  var cargo = document.getElementById('al-cargo').value.trim();
+  if (!cargo) return alert('Informe o cargo');
+  var body = {
+    user_id: currentUserId,
+    email: currentSession.user.email,
+    cargo_desejado: cargo,
+    nivel: document.getElementById('al-nivel').value,
+    cidade: document.getElementById('al-cidade').value.trim(),
+    salario_min: parseInt(document.getElementById('al-salario').value) || 0,
+    keywords: _alertKeywords,
+    frequencia: ['semanal','quinzenal','mensal'].find(function(f){ return document.getElementById('freq-'+f).classList.contains('on'); }) || 'semanal',
+    ativo: true,
+    updated_at: new Date().toISOString()
+  };
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles', {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(body)
+    });
+    alert('✓ Perfil salvo!');
+  } catch(e) { alert('Erro ao salvar.'); }
+}
+
+function addToTracker(empresa, cargo, score) {
+  switchDashTab('vagas');
+  setTimeout(function() {
+    var modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = '<div class="modal-box"><button class="modal-close" onclick="this.parentElement.parentElement.remove()">✕</button><div class="modal-title">Rastrear candidatura</div><div class="modal-field"><label class="modal-label">Empresa</label><input class="modal-input" id="tkEmpresa" value="' + escHtml(empresa) + '"></div><div class="modal-field"><label class="modal-label">Cargo</label><input class="modal-input" id="tkCargo" value="' + escHtml(cargo) + '"></div><div class="modal-field"><label class="modal-label">Score</label><input class="modal-input" type="number" id="tkScore" value="' + score + '"></div><div class="modal-field"><label class="modal-label">Status</label><select class="modal-input" id="tkStatus"><option value="quero">Quero aplicar</option><option value="aplicado" selected>Aplicado</option><option value="entrevista">Entrevista</option><option value="oferta">Oferta</option></select></div><button class="modal-btn" onclick="saveTracker(this)">Salvar</button></div>';
+    document.body.appendChild(modal);
+    modal.onclick = function(e) { if (e.target === this) this.remove(); };
+  }, 200);
+}
+
+async function saveTracker(btn) {
+  var empresa = document.getElementById('tkEmpresa').value;
+  if (!empresa) return;
+  var body = {
+    user_id: currentUserId,
+    empresa,
+    cargo: document.getElementById('tkCargo').value,
+    score: parseInt(document.getElementById('tkScore').value) || 0,
+    status: document.getElementById('tkStatus').value,
+    created_at: new Date().toISOString()
+  };
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker', {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      btn.parentElement.parentElement.remove();
+      alert('✓ Candidatura rastreada!');
+      await loadKanban();
+    }
+  } catch(e) {}
 }
 
 function switchDashTab(tab) {
   ['painel','vagas','alertas','plano'].forEach(function(t) {
-    var el = document.getElementById('tab-' + t);
-    if (el) el.classList.toggle('active', t === tab);
+    var el = document.getElementById('tab-'+t);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
   });
   document.querySelectorAll('.sb-btn[data-tab]').forEach(function(el) {
     el.classList.toggle('active', el.dataset.tab === tab);
@@ -1398,13 +1660,11 @@ function openPerfil() {
   var d = window._perfilData || {};
   document.getElementById('perfilNome').value = d.displayName || '';
   document.getElementById('nomeMsg').textContent = '';
-  document.getElementById('perfilRows').innerHTML = '<div><strong>E-mail:</strong> ' + (d.email || '—') + '</div>';
+  document.getElementById('perfilRows').innerHTML = '<div><strong>E-mail:</strong> ' + escHtml(d.email || '—') + '</div>';
   document.getElementById('modalPerfil').classList.remove('hidden');
 }
 
-function closePerfil() {
-  document.getElementById('modalPerfil').classList.add('hidden');
-}
+function closePerfil() { document.getElementById('modalPerfil').classList.add('hidden'); }
 
 async function doSalvarNome() {
   var nome = document.getElementById('perfilNome').value.trim();
@@ -1413,7 +1673,7 @@ async function doSalvarNome() {
   if (!error) {
     document.getElementById('nomeMsg').textContent = '✓ Nome atualizado!';
     document.getElementById('dropName').textContent = nome;
-    document.getElementById('heroTitle').textContent = 'Bem‑vindo, ' + nome;
+    document.getElementById('heroTitle').textContent = 'Bem-vindo, ' + nome;
   }
 }
 
@@ -1424,9 +1684,7 @@ function openSenha() {
   document.getElementById('modalSenha').classList.remove('hidden');
 }
 
-function closeSenha() {
-  document.getElementById('modalSenha').classList.add('hidden');
-}
+function closeSenha() { document.getElementById('modalSenha').classList.add('hidden'); }
 
 async function doAlterarSenha() {
   var pw = document.getElementById('newPassword').value;
@@ -1442,107 +1700,7 @@ async function doAlterarSenha() {
   }
 }
 
-function openSuporte() {
-  var d = window._perfilData || {};
-  document.getElementById('suporteEmail').value = d.email || '';
-  document.getElementById('suporteMotivo').value = '';
-  document.getElementById('suporteMensagem').value = '';
-  document.getElementById('suporteMsg').textContent = '';
-  document.getElementById('modalSuporte').classList.remove('hidden');
-}
-
-function closeSuporte() {
-  document.getElementById('modalSuporte').classList.add('hidden');
-}
-
-async function doEnviarSuporte() {
-  var motivo = document.getElementById('suporteMotivo').value;
-  var mensagem = document.getElementById('suporteMensagem').value.trim();
-  if (!motivo || !mensagem || mensagem.length < 10) {
-    document.getElementById('suporteMsg').textContent = 'Preencha todos os campos.';
-    return;
-  }
-  var res = await fetch('/api/support', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + currentSession.access_token },
-    body: JSON.stringify({ email: currentSession.user.email, motivo, mensagem })
-  });
-  if (res.ok) {
-    document.getElementById('suporteMsg').textContent = '✓ Enviado!';
-    setTimeout(closeSuporte, 2000);
-  }
-}
-
-function closeDeleteConfirm() {
-  document.getElementById('delConfirm').classList.add('hidden');
-}
-
-function handleKwInput(e) {
-  if (e.key === 'Enter' || e.key === ',') {
-    e.preventDefault();
-    var val = document.getElementById('kwInput').value.trim().replace(/,$/,'');
-    if (val && !_alertKeywords.includes(val)) { _alertKeywords.push(val); renderKwTags(); }
-    document.getElementById('kwInput').value = '';
-  }
-}
-
-function renderKwTags() {
-  var wrap = document.getElementById('kwWrap');
-  var input = document.getElementById('kwInput');
-  wrap.innerHTML = '';
-  _alertKeywords.forEach(function(kw, i) {
-    var tag = document.createElement('span');
-    tag.className = 'kw-chip';
-    tag.innerHTML = kw + '<span class="kw-chip-x" onclick="removeKw(' + i + ')">×</span>';
-    wrap.appendChild(tag);
-  });
-  wrap.appendChild(input);
-}
-
-function removeKw(i) {
-  _alertKeywords.splice(i, 1);
-  renderKwTags();
-}
-
-function setFreq(freq, noRender) {
-  _alertFreq = freq;
-  ['freq-semanal', 'freq-quinzenal', 'freq-mensal'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.classList.toggle('on', id === 'freq-' + freq);
-  });
-}
-
-async function saveAlertProfile() {
-  var cargo = document.getElementById('al-cargo').value.trim();
-  var nivel = document.getElementById('al-nivel').value;
-  var cidade = document.getElementById('al-cidade').value.trim();
-  var salario = parseInt(document.getElementById('al-salario').value) || 0;
-  if (!cargo) return alert('Informe o cargo');
-
-  var body = {
-    user_id: currentUserId,
-    email: currentSession.user.email,
-    cargo_desejado: cargo, nivel, cidade, salario_min: salario,
-    keywords: _alertKeywords, frequencia: _alertFreq, ativo: true,
-    updated_at: new Date().toISOString()
-  };
-
-  try {
-    await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles', {
-      method: 'POST',
-      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify(body)
-    });
-    alert('✓ Perfil salvo!');
-  } catch(e) {
-    alert('Erro ao salvar.');
-  }
-}
-
-function addToTracker(empresa, cargo, score) {
-  switchDashTab('vagas');
-  alert('Função de rastreamento será implementada em breve.');
-}
+function closeDeleteConfirm() { document.getElementById('delConfirm').classList.add('hidden'); }
 
 function logout() {
   sb.auth.signOut().then(function() {
@@ -1550,7 +1708,8 @@ function logout() {
   });
 }
 
-// Init
+function escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
 window.addEventListener('load', function() {
   setTimeout(init, 100);
 });
