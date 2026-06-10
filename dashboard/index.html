@@ -1616,7 +1616,7 @@ function renderTrackedJobs() {
     var statusLabels = { 'quero': 'Quero aplicar', 'aplicado': 'Aplicado', 'entrevista': 'Entrevista', 'oferta': 'Oferta' };
     var createdDate = job.created_at ? new Date(job.created_at).toLocaleDateString('pt-BR') : '—';
 
-    html += '<div class="job-card">' +
+    html += '<div class="job-card" data-job-id="' + job.id + '">' +
       '<div class="job-header">' +
         '<div class="job-badge" style="background:' + (statusColors[job.status] || '#7a9886') + '">' + (statusLabels[job.status] || job.status) + '</div>' +
         '<div class="job-score">' + (job.score || '—') + '</div>' +
@@ -1627,31 +1627,46 @@ function renderTrackedJobs() {
       (job.job_url ? '<div class="job-link"><a href="' + escHtml(job.job_url) + '" target="_blank">Ver vaga →</a></div>' : '') +
       (job.notas ? '<div class="job-notes">📝 ' + escHtml(job.notas.substring(0, 60)) + (job.notas.length > 60 ? '...' : '') + '</div>' : '') +
       '<div class="job-actions">' +
-        '<button class="job-btn" onclick="window._editJobId=' + job.id + '; openTracker(\'' + escHtml(job.empresa).replace(/'/g, "\\'") + '\', \'' + escHtml(job.cargo).replace(/'/g, "\\'") + '\', ' + (job.score || 0) + ')">Editar</button>' +
-        '<button class="job-btn job-btn-del" onclick="window._deleteJobId=' + job.id + '; if(confirm(\'Remover candidatura?\')) { deleteTracker(' + job.id + '); }">Remover</button>' +
+        '<button class="job-btn job-btn-edit" data-action="edit" data-job-id="' + job.id + '">Editar</button>' +
+        '<button class="job-btn job-btn-del" data-action="delete" data-job-id="' + job.id + '">Remover</button>' +
       '</div>' +
     '</div>';
   });
   html += '</div>';
   container.innerHTML = html;
-}
 
-function editTracker(id) {
-  var job = _kTracked.find(j => j.id === id);
-  if (!job) return;
-  openTracker(job.empresa, job.cargo, job.score);
+  // Attach event listeners
+  document.querySelectorAll('.job-btn-edit').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      var jobId = parseInt(this.dataset.jobId);
+      var job = _kTracked.find(j => j.id === jobId);
+      if (job) openTracker(job.empresa, job.cargo, job.score);
+    });
+  });
+
+  document.querySelectorAll('.job-btn-del').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      var jobId = parseInt(this.dataset.jobId);
+      if (confirm('Remover candidatura?')) {
+        deleteTracker(jobId);
+      }
+    });
+  });
 }
 
 async function deleteTracker(id) {
-  if (!confirm('Remover candidatura?')) return;
   try {
-    await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + id, {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + id, {
       method: 'DELETE',
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
     });
+    console.log('Delete response:', res.status);
     await loadKanban();
   } catch(e) {
     console.error('deleteTracker error:', e);
+    alert('Erro ao remover: ' + e.message);
   }
 }
 
