@@ -1376,75 +1376,46 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
 
   <!-- ══ VAGAS ══ -->
   <div id="tab-vagas" class="tab" style="display:none">
-    <div class="hero">
-      <div class="hero-inner">
-        <div class="hero-text">
+    <div class="hero" style="padding:44px 56px">
+      <div class="hero-inner" style="justify-content:flex-start;gap:48px">
+        <div class="hero-text" style="flex:0 0 46%;max-width:46%">
           <div class="hero-eyebrow">📋 Rastreador de candidaturas</div>
           <h1 class="hero-title">Minhas Candidaturas</h1>
           <p class="hero-sub">Acompanhe cada aplicação da análise até a oferta. Nunca mais perca o prazo ou esqueça o follow-up.</p>
           <div class="hero-metrics">
-            <div><div class="hm-val" id="vagasAndamento">0</div><div class="hm-lbl">Em andamento</div></div>
+            <div><div class="hm-val" id="vagasAndamento">0</div><div class="hm-lbl">Rastreando</div></div>
             <div><div class="hm-val" id="vagasEntrevista">0</div><div class="hm-lbl">Em entrevista</div></div>
-            <div><div class="hm-val" id="vagasTotal">2</div><div class="hm-lbl">Para rastrear</div></div>
+            <div><div class="hm-val" id="vagasTotal">0</div><div class="hm-lbl">Analisadas</div></div>
           </div>
         </div>
-        <!-- Mockup kanban -->
-        <div class="hero-card-wrap" style="flex-shrink:0">
-          <div class="hero-card" style="width:240px;padding:16px">
-            <div class="hc-chrome">
-              <div class="hc-dot" style="background:#ff5f57"></div>
-              <div class="hc-dot" style="background:#ffbd2e"></div>
-              <div class="hc-dot" style="background:#28c840"></div>
-              <span class="hc-title-sm">Rastreamento de vagas</span>
-            </div>
-            <!-- mini kanban cards -->
-            <div style="display:flex;flex-direction:column;gap:7px">
-              <div style="background:var(--s-grn-bg);border:1px solid rgba(26,122,74,.2);border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;">
-                <div>
-                  <div style="font-size:11px;font-weight:700;color:var(--t1)">Gerente de Marketing</div>
-                  <div style="font-size:10px;color:var(--t3)">PRIMIZIE</div>
-                </div>
-                <span style="background:var(--gb-emerald);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px">Aplicado</span>
-              </div>
-              <div style="background:var(--bg-sub);border:1px solid var(--border);border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;">
-                <div>
-                  <div style="font-size:11px;font-weight:700;color:var(--t1)">UX Designer Sr.</div>
-                  <div style="font-size:10px;color:var(--t3)">Nubank</div>
-                </div>
-                <span style="background:#fef9ee;color:#c47d0a;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;border:1px solid rgba(196,125,10,.2)">Entrevista</span>
-              </div>
-              <div style="background:var(--bg-sub);border:1px solid var(--border);border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;">
-                <div>
-                  <div style="font-size:11px;font-weight:700;color:var(--t1)">Head de Conteúdo</div>
-                  <div style="font-size:10px;color:var(--t3)">iFood</div>
-                </div>
-                <span style="background:#f0f4ff;color:#4a6fa5;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;border:1px solid rgba(74,111,165,.2)">Oferta</span>
-              </div>
-            </div>
-            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:10px;color:var(--t3)">
-              <span>3 candidaturas ativas</span>
-              <span style="color:var(--gb-emerald);font-weight:600">+1 esta semana</span>
-            </div>
+        <div style="flex:1;background:var(--bg-card);border-radius:14px;padding:20px 22px;box-shadow:var(--sh-card)">
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:14px">
+            <div style="width:8px;height:8px;border-radius:50%;background:#ff5f57"></div>
+            <div style="width:8px;height:8px;border-radius:50%;background:#ffbd2e"></div>
+            <div style="width:8px;height:8px;border-radius:50%;background:#28c840"></div>
+            <span style="font-size:10.5px;color:var(--t3);margin-left:6px">Candidaturas rastreadas</span>
           </div>
-          <div class="f-badge tr" style="top:-12px;right:-12px;font-size:11px">
-            <span class="f-badge-dot"></span> 3 vagas rastreadas
+          <div id="vagasHeroList" style="display:flex;flex-direction:column;gap:6px">
+            <div style="text-align:center;padding:16px 0;font-size:12px;color:var(--t3)">Carregando...</div>
           </div>
-          <div class="f-badge bl" style="bottom:-12px;left:-14px;font-size:11px">
-            <span style="color:var(--gb-emerald)">✓</span> Atualizado hoje
+          <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:10px;color:var(--t3)">
+            <span id="vagasHeroCount">0 candidaturas ativas</span>
+            <span style="color:var(--gb-emerald);font-weight:600">✓ Atualizado hoje</span>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="card" style="margin-bottom: 28px; max-width: 100%;">
+    <div class="mv-outer" style="margin-bottom:28px">
+      <div class="mv-outer-head">
+        <h3>Todas as vagas analisadas</h3>
+        <button class="btn-cta" onclick="window.location.href='/app'" style="font-size:12px;padding:7px 14px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nova análise
+        </button>
+      </div>
       <div id="vagasListView">
-        <div class="empty-state">
-          <div class="empty-ico">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
-          </div>
-          <div class="empty-title">Nenhuma candidatura rastreada ainda</div>
-          <div class="empty-sub">Clique em "Rastrear" em qualquer vaga analisada no Painel para começar a acompanhar.</div>
-        </div>
+        <div style="padding:32px;text-align:center;color:var(--t3);font-size:13px">Carregando...</div>
       </div>
     </div>
   </div>
@@ -1937,6 +1908,7 @@ async function loadAnalyses() {
       window._lastAnalysesData = data;
       updateMinhasVagas(data);
       updateInsightAmbar(data);
+      renderVagasPage();
     }
   } catch(e) { console.error('loadAnalyses error:', e); }
 }
@@ -2047,67 +2019,84 @@ async function loadKanban() {
   }
 }
 
-function renderTrackedJobs() {
-  var container = document.getElementById('vagasListView');
-  if (!container) return;
+function renderVagasPage() {
+  var analyses = window._lastAnalysesData || [];
+  var tracked = _kTracked || [];
 
-  if (!_kTracked || _kTracked.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div><div class="empty-title">Nenhuma candidatura rastreada ainda</div><div class="empty-sub">Clique em "Rastrear" em qualquer vaga analisada no Painel para começar a acompanhar.</div></div>';
-    return;
+  // hero metrics
+  var andamentoEl = document.getElementById('vagasAndamento');
+  var entrevistaEl = document.getElementById('vagasEntrevista');
+  var totalEl = document.getElementById('vagasTotal');
+  if (andamentoEl) andamentoEl.textContent = tracked.length;
+  if (entrevistaEl) entrevistaEl.textContent = tracked.filter(function(j){ return j.status === 'entrevista' || j.status === 'oferta'; }).length;
+  if (totalEl) totalEl.textContent = analyses.length;
+
+  // hero mini list
+  var heroList = document.getElementById('vagasHeroList');
+  var heroCount = document.getElementById('vagasHeroCount');
+  if (heroList) {
+    if (!tracked.length) {
+      heroList.innerHTML = '<div style="text-align:center;padding:16px 0;font-size:12px;color:var(--t3)">Nenhuma vaga rastreada ainda.<br>Clique em "Rastrear" no Painel.</div>';
+    } else {
+      var statusColors = { quero:'#c47d0a', aplicado:'var(--gb-emerald)', entrevista:'#c47d0a', oferta:'#4a6fa5', recusado:'var(--s-red)' };
+      var statusBg = { quero:'#fef9ee', aplicado:'var(--s-grn-bg)', entrevista:'#fef9ee', oferta:'#f0f4ff', recusado:'var(--s-red-bg)' };
+      var statusLabel = { quero:'Quero', aplicado:'Aplicado', entrevista:'Entrevista', oferta:'Oferta', recusado:'Recusado' };
+      heroList.innerHTML = tracked.slice(0, 3).map(function(j) {
+        var lbl = statusLabel[j.status] || j.status || 'Aplicado';
+        var clr = statusColors[j.status] || 'var(--gb-emerald)';
+        var bg = statusBg[j.status] || 'var(--s-grn-bg)';
+        return '<div style="background:var(--bg-sub);border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between">' +
+          '<div><div style="font-size:11px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px">' + escHtml(j.cargo || '—') + '</div>' +
+          '<div style="font-size:10px;color:var(--t3)">' + escHtml(j.empresa || '—') + '</div></div>' +
+          '<span style="background:' + bg + ';color:' + clr + ';font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0">' + escHtml(lbl) + '</span></div>';
+      }).join('');
+    }
+    if (heroCount) heroCount.textContent = tracked.length + (tracked.length === 1 ? ' candidatura ativa' : ' candidaturas ativas');
   }
 
-  var html = '<div class="jobs-grid">';
-  _kTracked.forEach(function(job) {
-    var statusColors = { 'quero': '#c47d0a', 'aplicado': '#1a7a4a', 'entrevista': '#2cba74', 'oferta': '#50d393' };
-    var statusLabels = { 'quero': 'Quero aplicar', 'aplicado': 'Aplicado', 'entrevista': 'Entrevista', 'oferta': 'Oferta' };
-    var createdDate = job.created_at ? new Date(job.created_at).toLocaleDateString('pt-BR') : '—';
-    var hasAnalysis = job.analyses && job.analyses.result;
-    var scoreColor = job.score >= 70 ? 'var(--s-grn)' : job.score >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
-
-    html += '<div class="job-card" data-job-id="' + job.id + '">' +
-      '<div class="job-header">' +
-        '<div class="job-badge" style="background:' + (statusColors[job.status] || '#7a9886') + '">' + (statusLabels[job.status] || job.status) + '</div>' +
-        '<div class="job-score" style="color:' + scoreColor + ';border-color:' + scoreColor + '">' + (job.score || '—') + '</div>' +
-      '</div>' +
-      '<div class="job-title">' + escHtml(job.cargo || '—') + '</div>' +
-      '<div class="job-company">' + escHtml(job.empresa || '—') + '</div>' +
-      (job.salario ? '<div class="job-salary">💰 ' + escHtml(job.salario) + '</div>' : '') +
-      '<div class="job-date">📅 ' + createdDate + '</div>' +
-      (job.job_url ? '<div class="job-link"><a href="' + escHtml(job.job_url) + '" target="_blank" rel="noopener">🔗 Ver vaga →</a></div>' : '') +
-      (job.nota ? '<div class="job-notes">📝 ' + escHtml(job.nota.substring(0, 80)) + (job.nota.length > 80 ? '...' : '') + '</div>' : '') +
-      (hasAnalysis ? '<div class="job-analysis-hint">✨ Análise disponível</div>' : '') +
-      '<div class="job-actions">' +
-        (hasAnalysis ? '<button class="job-btn job-btn-analysis" data-job-id="' + job.id + '">Ver análise</button>' : '') +
-        '<button class="job-btn job-btn-edit" data-job-id="' + job.id + '">Editar</button>' +
-        '<button class="job-btn job-btn-del" data-job-id="' + job.id + '">Remover</button>' +
-      '</div>' +
-    '</div>';
+  // full list — all analyses sorted by score desc
+  var container = document.getElementById('vagasListView');
+  if (!container) return;
+  if (!analyses.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div><div class="empty-title">Nenhuma análise ainda</div><div class="empty-sub">Analise sua primeira vaga para ver o resultado aqui.</div></div>';
+    return;
+  }
+  var sorted = analyses.slice().sort(function(a,b){ return b.score - a.score; });
+  var html = '';
+  sorted.forEach(function(a) {
+    var r = a.result || {};
+    var ji = r.job_info || {};
+    var cargo = ji.cargo || (a.job_excerpt ? a.job_excerpt.slice(0,40) : 'Análise');
+    var empresa = ji.empresa || 'Empresa';
+    var s = a.score || 0;
+    var bg = s >= 70 ? 'var(--s-grn-bg)' : s >= 40 ? 'var(--s-amb-bg)' : 'var(--s-red-bg)';
+    var clr = s >= 70 ? 'var(--s-grn)' : s >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
+    var atsLabel = s >= 70 ? '<span class="sc-status good" style="font-size:10px">Passou ATS</span>' : s >= 40 ? '<span class="sc-status med" style="font-size:10px">Parcial</span>' : '<span class="sc-status bad" style="font-size:10px">Não passou ATS</span>';
+    var fatores = Array.isArray(r.fatores) ? r.fatores : [];
+    var barsHtml = '';
+    fatores.slice(0, 4).forEach(function(f) {
+      var pct = Math.round((f.valor || 0) * 100);
+      var bc = pct >= 70 ? 'var(--s-grn)' : pct >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
+      barsHtml += '<div class="mv-bar-row"><div class="mv-bar-lbl">' + escHtml(f.nome || '') + '</div><div class="mv-bar-track"><div class="mv-bar-fill" style="width:' + pct + '%;background:' + bc + '"></div></div><div class="mv-bar-val" style="color:' + bc + '">' + pct + '%</div></div>';
+    });
+    var trackedJob = tracked.find(function(t){ return t.analysis_id === a.id; });
+    var statusLabels = { quero:'Quero aplicar', aplicado:'Aplicado', entrevista:'Entrevista', oferta:'Oferta', recusado:'Recusado' };
+    var rightHtml;
+    if (trackedJob) {
+      var sl = statusLabels[trackedJob.status] || trackedJob.status || 'Aplicado';
+      rightHtml = '<span class="mv-tracking">✓ Rastreando</span><span class="sc-status good" style="font-size:10px;margin-top:4px">' + escHtml(sl) + '</span>';
+    } else {
+      rightHtml = '<button class="mv-track-btn" onclick="addToTracker(' + JSON.stringify(empresa) + ',' + JSON.stringify(cargo) + ',' + s + ',' + JSON.stringify(a.id) + ')">Rastrear</button>';
+    }
+    html += '<div class="mv-item"><div><div class="mv-score" style="background:' + bg + ';color:' + clr + '">' + s + '%</div></div><div class="mv-body"><div class="mv-cargo">' + escHtml(cargo) + '</div><div class="mv-emp">' + escHtml(empresa) + '</div><div class="mv-bars">' + barsHtml + '</div><div class="mv-tags">' + atsLabel + '</div></div><div class="mv-right">' + rightHtml + '</div></div>';
   });
-  html += '</div>';
   container.innerHTML = html;
-
-  // Attach event listeners
-  document.querySelectorAll('.job-btn-analysis').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var job = _kTracked.find(j => String(j.id) === String(this.dataset.jobId));
-      if (job) openAnalysisModal(job);
-    });
-  });
-
-  document.querySelectorAll('.job-btn-edit').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var job = _kTracked.find(j => String(j.id) === String(this.dataset.jobId));
-      if (job) openTrackerEdit(job);
-    });
-  });
-
-  document.querySelectorAll('.job-btn-del').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var jobId = this.dataset.jobId;
-      showConfirm('Remover candidatura?', 'Esta ação não pode ser desfeita.', function() { deleteTracker(jobId); });
-    });
-  });
 }
+
+function renderTrackedJobs() {
+  renderVagasPage();
+}
+
 
 function openTracker(empresa, cargo, score) {
   openTrackerEdit({ empresa: empresa, cargo: cargo, score: score, status: 'aplicado' });
