@@ -1656,6 +1656,16 @@ function renderTrackedJobs() {
   });
 }
 
+function openTracker(empresa, cargo, score) {
+  setTimeout(function() {
+    var modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = '<div class="modal-box"><button class="modal-close" onclick="this.parentElement.parentElement.remove()">✕</button><div class="modal-title">Rastrear candidatura</div><div class="modal-field"><label class="modal-label">Empresa</label><input class="modal-input" id="tkEmpresa" value="' + escHtml(empresa || '') + '"></div><div class="modal-field"><label class="modal-label">Cargo</label><input class="modal-input" id="tkCargo" value="' + escHtml(cargo || '') + '"></div><div class="modal-field"><label class="modal-label">Score</label><input class="modal-input" type="number" id="tkScore" value="' + (score || '') + '"></div><div class="modal-field"><label class="modal-label">Status</label><select class="modal-input" id="tkStatus"><option value="quero">Quero aplicar</option><option value="aplicado" selected>Aplicado</option><option value="entrevista">Entrevista</option><option value="oferta">Oferta</option></select></div><button class="modal-btn" onclick="saveTracker(this)">Salvar</button></div>';
+    document.body.appendChild(modal);
+    modal.onclick = function(e) { if (e.target === this) this.remove(); };
+  }, 200);
+}
+
 async function deleteTracker(id) {
   try {
     var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + id, {
