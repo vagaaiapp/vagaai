@@ -657,8 +657,32 @@ body {
 
 .job-company {
   font-size: 12px; color: var(--t3);
-  margin-bottom: 14px; white-space: nowrap; overflow: hidden;
+  margin-bottom: 8px; white-space: nowrap; overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.job-date {
+  font-size: 11px; color: var(--t3); margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.job-link {
+  margin-bottom: 8px;
+}
+
+.job-link a {
+  font-size: 11px; color: var(--gb-emerald); text-decoration: none;
+  font-weight: 600; display: inline-flex; align-items: center; gap: 4px;
+  transition: all .2s;
+}
+
+.job-link a:hover { gap: 6px; }
+
+.job-notes {
+  font-size: 11px; color: var(--t2);
+  background: var(--bg-sub); padding: 8px;
+  border-radius: var(--r-xs); margin-bottom: 10px;
+  line-height: 1.4;
 }
 
 .job-actions { display: flex; gap: 8px; }
@@ -671,6 +695,7 @@ body {
 }
 
 .job-btn:hover { border-color: var(--gb-emerald); color: var(--gb-emerald); }
+.job-btn-del:hover { border-color: var(--s-red); color: var(--s-red); }
 
 .fld-label { font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--t3); margin-bottom: 6px; }
 .fld-input {
@@ -1589,6 +1614,7 @@ function renderTrackedJobs() {
   _kTracked.forEach(function(job) {
     var statusColors = { 'quero': '#c47d0a', 'aplicado': '#1a7a4a', 'entrevista': '#2cba74', 'oferta': '#50d393' };
     var statusLabels = { 'quero': 'Quero aplicar', 'aplicado': 'Aplicado', 'entrevista': 'Entrevista', 'oferta': 'Oferta' };
+    var createdDate = job.created_at ? new Date(job.created_at).toLocaleDateString('pt-BR') : '—';
 
     html += '<div class="job-card">' +
       '<div class="job-header">' +
@@ -1597,9 +1623,12 @@ function renderTrackedJobs() {
       '</div>' +
       '<div class="job-title">' + escHtml(job.cargo || '—') + '</div>' +
       '<div class="job-company">' + escHtml(job.empresa || '—') + '</div>' +
+      '<div class="job-date">Candidatura: ' + createdDate + '</div>' +
+      (job.job_url ? '<div class="job-link"><a href="' + escHtml(job.job_url) + '" target="_blank">Ver vaga →</a></div>' : '') +
+      (job.notas ? '<div class="job-notes">📝 ' + escHtml(job.notas.substring(0, 60)) + (job.notas.length > 60 ? '...' : '') + '</div>' : '') +
       '<div class="job-actions">' +
-        '<button class="job-btn" onclick="editTracker(' + job.id + ')">Editar</button>' +
-        '<button class="job-btn" onclick="deleteTracker(' + job.id + ')">Remover</button>' +
+        '<button class="job-btn" onclick="window._editJobId=' + job.id + '; openTracker(\'' + escHtml(job.empresa).replace(/'/g, "\\'") + '\', \'' + escHtml(job.cargo).replace(/'/g, "\\'") + '\', ' + (job.score || 0) + ')">Editar</button>' +
+        '<button class="job-btn job-btn-del" onclick="window._deleteJobId=' + job.id + '; if(confirm(\'Remover candidatura?\')) { deleteTracker(' + job.id + '); }">Remover</button>' +
       '</div>' +
     '</div>';
   });
