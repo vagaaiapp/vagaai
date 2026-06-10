@@ -1128,9 +1128,9 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     <!-- PROGRESSO SEMANAL -->
     <div class="sec-label">Progresso semanal</div>
     <div class="goals-card" style="padding:32px 40px">
-      <div style="display:flex;align-items:center;gap:48px">
+      <div style="display:flex;align-items:flex-start;gap:48px">
         <!-- Bloco esquerdo -->
-        <div style="flex:0 0 54%">
+        <div style="flex:0 0 52%">
           <div style="display:flex;align-items:center;gap:22px;margin-bottom:18px">
             <div class="g-ring-wrap" style="flex-shrink:0">
               <svg viewBox="0 0 120 120">
@@ -1144,29 +1144,68 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
             </div>
             <div>
               <div class="goals-ttl">Meta semanal de análises</div>
-              <div class="goals-sub" style="margin-bottom:0" id="goalsSub">Carregando...</div>
+              <div class="goals-sub" style="margin-bottom:4px" id="goalsSub">Carregando...</div>
+              <div id="goalsOverflow" style="display:none;font-size:11px;color:var(--gb-emerald);font-weight:600"></div>
             </div>
           </div>
           <div class="week-row" id="weekDots"></div>
+          <!-- Heatmap 8 semanas -->
+          <div style="margin-top:18px">
+            <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:8px">Últimas 8 semanas</div>
+            <div style="display:flex;align-items:center;gap:5px">
+              <div id="goalsHeatmap" style="display:flex;gap:5px"></div>
+              <div style="display:flex;align-items:center;gap:4px;margin-left:8px">
+                <div style="width:10px;height:10px;border-radius:2px;background:var(--bg-sub);border:1px solid var(--border)"></div>
+                <div style="width:10px;height:10px;border-radius:2px;background:#9fe1cb"></div>
+                <div style="width:10px;height:10px;border-radius:2px;background:#1d9e75"></div>
+                <div style="font-size:9px;color:var(--t3);margin-left:2px">meta+</div>
+              </div>
+            </div>
+          </div>
         </div>
         <!-- Bloco direito -->
         <div style="flex:1;background:var(--bg-sub);border-radius:14px;padding:22px 24px">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px">
+          <!-- Melhor análise -->
+          <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:12px">Melhor análise desta semana</div>
+          <div id="bestAnalysisCard" style="background:var(--bg-card);border-radius:10px;padding:12px 14px;margin-bottom:14px;border:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div id="bestAnalysisScoreBadge" style="width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;background:#e8f5e9;color:#2e7d32">—</div>
+              <div style="flex:1;min-width:0">
+                <div id="bestAnalysisCargo" style="font-size:13px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+                <div id="bestAnalysisEmpresa" style="font-size:11px;color:var(--t3);margin-top:2px">—</div>
+              </div>
+            </div>
+          </div>
+          <!-- Score médio + trend -->
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px">
             <div>
-              <span class="streak-fire" id="streakEmoji">🔥</span>
-              <div class="streak-num" id="streakNumV2">—</div>
-              <div class="streak-lbl">semanas consecutivas</div>
+              <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:4px">Média semanal</div>
+              <div style="font-size:24px;font-weight:800;color:var(--t1);line-height:1" id="scoreThisWeek">—</div>
             </div>
             <div style="text-align:right">
-              <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:6px">Score esta semana</div>
-              <div style="font-size:24px;font-weight:800;color:var(--t1);line-height:1" id="scoreThisWeek">—</div>
-              <div style="font-size:11px;margin-top:5px;color:var(--t3)" id="scoreTrend">vs semana anterior</div>
+              <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:4px">Sequência</div>
+              <div style="display:flex;align-items:baseline;gap:4px;justify-content:flex-end">
+                <span id="streakEmoji" style="font-size:14px">—</span>
+                <span id="streakNumV2" style="font-size:24px;font-weight:800;color:var(--t1);line-height:1">—</span>
+                <span style="font-size:11px;color:var(--t3)">sem.</span>
+              </div>
             </div>
           </div>
-          <div style="border-top:1px solid var(--border);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px">
-            <span class="s-chip" id="streakChip1">—</span>
-            <span class="s-chip" id="streakChip2">—</span>
+          <!-- Próximo marco -->
+          <div id="nextMarcoWrap" style="border-top:1px solid var(--border);padding-top:12px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:16px">🏆</span>
+              <div style="flex:1">
+                <div id="nextMarcoText" style="font-size:12px;font-weight:600;color:var(--t1);margin-bottom:5px">—</div>
+                <div style="height:5px;background:var(--bg-card);border-radius:3px;overflow:hidden;border:1px solid var(--border)">
+                  <div id="nextMarcoPct" style="height:100%;border-radius:3px;background:var(--gb-emerald);width:0%;transition:width .6s ease"></div>
+                </div>
+              </div>
+            </div>
           </div>
+          <div style="display:none" id="scoreTrend"></div>
+          <div style="display:none" id="streakChip1"></div>
+          <div style="display:none" id="streakChip2"></div>
         </div>
       </div>
     </div>
@@ -1788,21 +1827,26 @@ function updateGoalsSection(analyses) {
   var thisAvg = avgScore(thisWeekList);
   var lastAvg = avgScore(lastWeekList);
 
-  // Ring
+  // Ring (capped at META visually)
   var circumference = 283;
   var pct = Math.min(thisWeekCount / META, 1);
   var fillEl = document.getElementById('goalsRingFill');
   if (fillEl) fillEl.style.strokeDashoffset = circumference - pct * circumference;
-  document.getElementById('goalsRingNum').textContent = thisWeekCount;
+  document.getElementById('goalsRingNum').textContent = Math.min(thisWeekCount, META);
   document.getElementById('goalsRingDen').textContent = 'de ' + META;
+  var overflowEl = document.getElementById('goalsOverflow');
+  if (overflowEl) {
+    if (thisWeekCount > META) { overflowEl.style.display = ''; overflowEl.textContent = '+' + (thisWeekCount - META) + ' além da meta'; }
+    else { overflowEl.style.display = 'none'; }
+  }
 
   // Sub
   var sub;
   if (thisWeekCount === 0) sub = 'Faça sua primeira análise desta semana para começar.';
   else if (thisWeekCount < META) {
     var faltam = META - thisWeekCount;
-    sub = 'Falt' + (faltam === 1 ? 'a 1 análise' : 'am ' + faltam + ' análises') + ' para bater a meta desta semana.';
-  } else sub = 'Meta atingida esta semana! Continue assim. 🎉';
+    sub = 'Falt' + (faltam === 1 ? 'a 1 análise' : 'am ' + faltam + ' análises') + ' para bater a meta.';
+  } else sub = 'Meta atingida esta semana!';
   document.getElementById('goalsSub').textContent = sub;
 
   // Week dots
@@ -1827,6 +1871,24 @@ function updateGoalsSection(analyses) {
     wrap.appendChild(item);
   });
 
+  // Heatmap 8 semanas
+  var hmWrap = document.getElementById('goalsHeatmap');
+  if (hmWrap) {
+    hmWrap.innerHTML = '';
+    for (var w = 7; w >= 0; w--) {
+      var wKey = getWeekKey(now, w);
+      var wCount = (weekMap[wKey] || []).length;
+      var cell = document.createElement('div');
+      cell.style.cssText = 'width:22px;height:22px;border-radius:4px;';
+      if (w === 0) { cell.style.border = '1.5px solid var(--gb-emerald)'; cell.style.background = wCount >= META ? 'var(--gb-emerald)' : wCount > 0 ? '#9fe1cb' : 'var(--bg-sub)'; }
+      else if (wCount >= META) { cell.style.background = 'var(--gb-emerald)'; }
+      else if (wCount > 0) { cell.style.background = '#9fe1cb'; }
+      else { cell.style.background = 'var(--bg-sub)'; cell.style.border = '1px solid var(--border)'; }
+      cell.title = wCount + ' análises';
+      hmWrap.appendChild(cell);
+    }
+  }
+
   // Streak
   var streak = 0;
   var wa = thisWeekCount >= META ? 0 : 1;
@@ -1835,36 +1897,51 @@ function updateGoalsSection(analyses) {
     else break;
   }
   document.getElementById('streakNumV2').textContent = streak;
-  document.getElementById('streakEmoji').textContent = streak >= 4 ? '🔥' : streak >= 1 ? '⚡' : '—';
+  document.getElementById('streakEmoji').textContent = streak >= 4 ? '🔥' : streak >= 1 ? '⚡' : '';
 
-  // Score trend
+  // Média semanal
   var scoreEl = document.getElementById('scoreThisWeek');
-  var trendEl = document.getElementById('scoreTrend');
-  if (scoreEl) {
-    scoreEl.textContent = thisAvg !== null ? thisAvg + '%' : '—';
-    if (thisAvg !== null && lastAvg !== null) {
-      var diff = thisAvg - lastAvg;
-      trendEl.textContent = (diff >= 0 ? '+' : '') + diff + ' pts vs semana anterior';
-      trendEl.style.color = diff >= 0 ? 'var(--gb-emerald)' : '#e53e3e';
-    } else if (thisAvg !== null) {
-      trendEl.textContent = 'Primeira semana com dados';
-      trendEl.style.color = 'var(--t3)';
-    } else {
-      trendEl.textContent = 'Sem análises esta semana';
-      trendEl.style.color = 'var(--t3)';
-    }
+  if (scoreEl) scoreEl.textContent = thisAvg !== null ? thisAvg + '%' : '—';
+
+  // Melhor análise desta semana
+  var bestThisWeek = thisWeekList.filter(function(a){ return a.score > 0; }).sort(function(a,b){ return b.score - a.score; })[0];
+  var badgeEl = document.getElementById('bestAnalysisScoreBadge');
+  var cargoEl = document.getElementById('bestAnalysisCargo');
+  var empresaEl = document.getElementById('bestAnalysisEmpresa');
+  if (bestThisWeek && badgeEl) {
+    var s = bestThisWeek.score;
+    var bgC = s >= 70 ? '#e8f5e9' : s >= 40 ? '#fff8e1' : '#fdecea';
+    var txtC = s >= 70 ? '#2e7d32' : s >= 40 ? '#e65100' : '#c62828';
+    badgeEl.style.background = bgC; badgeEl.style.color = txtC;
+    badgeEl.textContent = s + '%';
+    var r = bestThisWeek.result;
+    var cargo = (r && r.job_info && r.job_info.cargo) ? r.job_info.cargo : (bestThisWeek.job_excerpt ? bestThisWeek.job_excerpt.slice(0,40) : 'Análise');
+    var empresa = (r && r.job_info && r.job_info.empresa) ? r.job_info.empresa : '—';
+    cargoEl.textContent = cargo;
+    empresaEl.textContent = empresa;
+  } else if (badgeEl) {
+    badgeEl.textContent = '—'; cargoEl.textContent = 'Nenhuma análise esta semana'; empresaEl.textContent = 'Faça uma análise para ver aqui';
   }
 
-  // Chips
-  var chip1 = document.getElementById('streakChip1');
-  var chip2 = document.getElementById('streakChip2');
-  if (chip1) chip1.textContent = streak >= 12 ? '🏅 3 meses seguidos' : streak >= 4 ? '🏆 1 mês seguido' : streak >= 1 ? '🏆 Meta atingida' : '—';
-  if (chip2) chip2.textContent = '📅 ' + streak + (streak === 1 ? ' semana' : ' semanas') + ' no total';
+  // Próximo marco
+  var marcoEl = document.getElementById('nextMarcoText');
+  var pctEl = document.getElementById('nextMarcoPct');
+  if (marcoEl) {
+    var milestones = [1, 4, 12, 26];
+    var next = milestones.find(function(m){ return m > streak; });
+    if (next) {
+      marcoEl.textContent = 'Falt' + (next - streak === 1 ? 'a 1 semana' : 'am ' + (next - streak) + ' semanas') + ' para badge de ' + (next === 1 ? '1 semana' : next === 4 ? '1 mês' : next === 12 ? '3 meses' : '6 meses');
+      if (pctEl) pctEl.style.width = Math.round((streak / next) * 100) + '%';
+    } else {
+      marcoEl.textContent = '6 meses consecutivos — você é lendário!';
+      if (pctEl) pctEl.style.width = '100%';
+    }
+  }
 }
 
 async function loadAnalyses() {
   try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=id,score,job_excerpt,created_at&order=created_at.desc&limit=200', {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=id,score,job_excerpt,created_at,result&order=created_at.desc&limit=200', {
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
     });
     var data = await res.json();
