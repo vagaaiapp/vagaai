@@ -1639,8 +1639,8 @@ function renderTrackedJobs() {
   document.querySelectorAll('.job-btn-edit').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
-      var jobId = parseInt(this.dataset.jobId);
-      var job = _kTracked.find(j => j.id === jobId);
+      var jobId = this.dataset.jobId; // UUID — não usar parseInt
+      var job = _kTracked.find(j => String(j.id) === String(jobId));
       if (job) openTracker(job.empresa, job.cargo, job.score);
     });
   });
@@ -1648,7 +1648,7 @@ function renderTrackedJobs() {
   document.querySelectorAll('.job-btn-del').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
-      var jobId = parseInt(this.dataset.jobId);
+      var jobId = this.dataset.jobId; // UUID — não usar parseInt
       if (confirm('Remover candidatura?')) {
         deleteTracker(jobId);
       }
