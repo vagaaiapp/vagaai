@@ -613,6 +613,15 @@ body {
 .vf-chip { font-size:11px; font-weight:600; padding:5px 12px; border-radius:20px; border:1px solid var(--border); background:var(--bg-card); color:var(--t2); cursor:pointer; transition:all .15s; }
 .vf-chip:hover { background:var(--bg-sub); }
 .vf-chip-active { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); }
+.mv-detail { border-top:1px solid var(--border); background:var(--bg-sub); padding:16px 20px; }
+.vd-section { margin-bottom:14px; }
+.vd-section:last-child { margin-bottom:0; }
+.vd-lbl { font-size:10px; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:.04em; margin-bottom:7px; }
+.vd-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:4px; }
+.vd-btn { font-size:11px; font-weight:600; padding:6px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-card); color:var(--t2); cursor:pointer; }
+.vd-btn:hover { border-color:var(--gb-emerald); color:var(--gb-emerald); }
+.vd-btn-primary { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); }
+.vd-btn-primary:hover { background:var(--gb-bright); border-color:var(--gb-bright); color:#fff; }
 .insight-amber { background:#fffbf2; border:1px solid rgba(196,125,10,.25); border-radius:var(--r); padding:28px 32px; position:relative; overflow:hidden; }
 .insight-amber:hover { transform:translateY(-3px); box-shadow:var(--sh-hover); }
 .amber-eyebrow { display:inline-flex; align-items:center; gap:6px; background:rgba(196,125,10,.1); border:1px solid rgba(196,125,10,.2); border-radius:20px; padding:4px 12px; font-size:11px; font-weight:600; color:#854f0b; margin-bottom:14px; }
@@ -1409,6 +1418,8 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       </div>
     </div>
 
+    <div id="vagasFilterBar" style="margin-bottom:16px"></div>
+
     <div class="mv-outer" style="margin-bottom:28px">
       <div class="mv-outer-head">
         <h3>Todas as vagas analisadas</h3>
@@ -2029,9 +2040,7 @@ var STATUS_BG = { quero:'#fef9ee', aplicado:'var(--s-grn-bg)', em_processo:'#e6f
 
 function setVagasFilter(f) {
   _vagasFilter = f;
-  document.querySelectorAll('.vf-chip').forEach(function(el) {
-    el.classList.toggle('vf-chip-active', el.dataset.filter === f);
-  });
+  renderFilterBar();
   renderVagasList();
 }
 
@@ -2071,28 +2080,41 @@ function renderVagasPage() {
   renderVagasList();
 }
 
+function renderFilterBar() {
+  var bar = document.getElementById('vagasFilterBar');
+  if (!bar) return;
+  var filters = [['todas','Todas'],['aplicado','Aplicado'],['em_processo','Em processo'],['entrevista','Entrevista'],['oferta','Oferta']];
+  var chips = filters.map(function(f) {
+    var active = _vagasFilter === f[0] ? ' vf-chip-active' : '';
+    return '<button class="vf-chip' + active + '" data-filter="' + f[0] + '" onclick="setVagasFilter(\'' + f[0] + '\')">' + f[1] + '</button>';
+  }).join('');
+  bar.innerHTML = '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">' + chips +
+    '<button class="mv-track-btn" style="margin-left:auto;font-size:11px;padding:5px 12px" onclick="openTrackerEdit({status:\'aplicado\'})">+ Nova vaga</button></div>';
+}
+
 function renderVagasList() {
   var analyses = window._lastAnalysesData || [];
   var tracked = _kTracked || [];
   var container = document.getElementById('vagasListView');
   if (!container) return;
 
+  renderFilterBar();
+
   // Build merged list: all analyses + manual tracked jobs (no analysis_id)
   var analysisIds = analyses.map(function(a){ return a.id; });
   var manualTracked = tracked.filter(function(j){ return !j.analysis_id || !analysisIds.includes(j.analysis_id); });
 
   if (!analyses.length && !manualTracked.length) {
-    container.innerHTML = '<div style="padding:14px 22px 8px">' + filterChipsHtml() + '</div><div class="empty-state"><div class="empty-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div><div class="empty-title">Nenhuma análise ainda</div><div class="empty-sub">Analise sua primeira vaga para ela aparecer aqui automaticamente.</div></div>';
+    container.innerHTML = '<div class="empty-state"><div class="empty-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div><div class="empty-title">Nenhuma análise ainda</div><div class="empty-sub">Analise sua primeira vaga para ela aparecer aqui automaticamente.</div></div>';
     return;
   }
 
   var sorted = analyses.slice().sort(function(a,b){ return b.score - a.score; });
 
-  // Apply filter
   var filtered = sorted.filter(function(a) {
     if (_vagasFilter === 'todas') return true;
     var tj = tracked.find(function(t){ return t.analysis_id === a.id; });
-    if (!tj) return false;
+    if (!tj) return _vagasFilter === 'sem_status';
     return tj.status === _vagasFilter;
   });
   var filteredManual = manualTracked.filter(function(j){
@@ -2100,30 +2122,28 @@ function renderVagasList() {
     return j.status === _vagasFilter;
   });
 
-  var html = '<div style="padding:14px 22px 12px;border-bottom:1px solid var(--border)">' + filterChipsHtml() + '</div>';
-
+  var html = '';
   if (!filtered.length && !filteredManual.length) {
-    html += '<div style="padding:32px;text-align:center;color:var(--t3);font-size:13px">Nenhuma vaga com esse status ainda.</div>';
+    html = '<div style="padding:32px;text-align:center;color:var(--t3);font-size:13px">Nenhuma vaga com esse status ainda.</div>';
   } else {
-    filtered.forEach(function(a) {
-      html += renderAnalysisItem(a, tracked);
-    });
-    filteredManual.forEach(function(j) {
-      html += renderManualItem(j);
-    });
+    filtered.forEach(function(a) { html += renderAnalysisItem(a, tracked); });
+    filteredManual.forEach(function(j) { html += renderManualItem(j); });
   }
-
   container.innerHTML = html;
 }
 
-function filterChipsHtml() {
-  var filters = [['todas','Todas'],['aplicado','Aplicado'],['em_processo','Em processo'],['entrevista','Entrevista'],['oferta','Oferta']];
-  var chips = filters.map(function(f) {
-    var active = _vagasFilter === f[0] ? ' vf-chip-active' : '';
-    return '<button class="vf-chip' + active + '" data-filter="' + f[0] + '" onclick="setVagasFilter(\'' + f[0] + '\')">' + f[1] + '</button>';
-  }).join('');
-  return '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">' + chips +
-    '<button class="mv-track-btn" style="margin-left:auto;font-size:11px;padding:5px 12px" onclick="openTrackerEdit({status:\'aplicado\'})">+ Nova</button></div>';
+function escAttr(v) {
+  return String(v || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+var _vagasExpanded = {};
+
+function toggleVagaDetail(id) {
+  _vagasExpanded[id] = !_vagasExpanded[id];
+  var panel = document.getElementById('vd-' + id);
+  var chevron = document.getElementById('vc-' + id);
+  if (panel) panel.style.display = _vagasExpanded[id] ? 'block' : 'none';
+  if (chevron) chevron.style.transform = _vagasExpanded[id] ? 'rotate(180deg)' : 'rotate(0deg)';
 }
 
 function renderAnalysisItem(a, tracked) {
@@ -2134,43 +2154,132 @@ function renderAnalysisItem(a, tracked) {
   var s = a.score || 0;
   var bg = s >= 70 ? 'var(--s-grn-bg)' : s >= 40 ? 'var(--s-amb-bg)' : 'var(--s-red-bg)';
   var clr = s >= 70 ? 'var(--s-grn)' : s >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
-  var atsTag = s >= 70 ? '<span class="sc-status good" style="font-size:10px">ATS ✓</span>' : s >= 40 ? '<span class="sc-status med" style="font-size:10px">Parcial</span>' : '<span class="sc-status bad" style="font-size:10px">Não ATS</span>';
+  var nivel = r.nivel || (s >= 70 ? 'Alto' : s >= 40 ? 'Médio' : 'Baixo');
+  var atsTag = s >= 70 ? '<span class="sc-status good" style="font-size:10px">ATS ✓</span>' : s >= 40 ? '<span class="sc-status med" style="font-size:10px">ATS Parcial</span>' : '<span class="sc-status bad" style="font-size:10px">ATS ✗</span>';
+  var tj = tracked.find(function(t){ return t.analysis_id === a.id; });
+  var curStatus = tj ? (tj.status || '') : '';
+  var selectHtml = buildStatusSelect(curStatus, a.id, null);
+  var statusBadge = curStatus
+    ? '<span style="font-size:10px;font-weight:600;color:' + (STATUS_COLORS[curStatus]||'var(--t2)') + ';background:' + (STATUS_BG[curStatus]||'var(--bg-sub)') + ';padding:2px 8px;border-radius:10px">' + (STATUS_LABELS[curStatus]||curStatus) + '</span>'
+    : '<span style="font-size:10px;color:var(--t3)">Sem status</span>';
+
+  // Detail panel
   var fatores = Array.isArray(r.fatores) ? r.fatores : [];
-  var barsHtml = fatores.slice(0, 4).map(function(f) {
+  var barsHtml = fatores.slice(0, 6).map(function(f) {
     var pct = Math.round((f.valor || 0) * 100);
     var bc = pct >= 70 ? 'var(--s-grn)' : pct >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
     return '<div class="mv-bar-row"><div class="mv-bar-lbl">' + escHtml(f.nome || '') + '</div><div class="mv-bar-track"><div class="mv-bar-fill" style="width:' + pct + '%;background:' + bc + '"></div></div><div class="mv-bar-val" style="color:' + bc + '">' + pct + '%</div></div>';
   }).join('');
-  var tj = tracked.find(function(t){ return t.analysis_id === a.id; });
-  var curStatus = tj ? (tj.status || 'aplicado') : '';
-  var selectHtml = buildStatusSelect(curStatus, 'handleStatusChange(\'' + a.id + '\',' + JSON.stringify(empresa) + ',' + JSON.stringify(cargo) + ',' + s + ',this.value)');
-  var trackingBadge = tj ? '<span class="mv-tracking" style="font-size:10px">✓ Rastreando</span>' : '<span style="font-size:10px;color:var(--t3)">Não rastreado</span>';
-  return '<div class="mv-item"><div><div class="mv-score" style="background:' + bg + ';color:' + clr + '">' + s + '%</div></div>' +
-    '<div class="mv-body"><div class="mv-cargo">' + escHtml(cargo) + '</div><div class="mv-emp">' + escHtml(empresa) + '</div>' +
-    '<div class="mv-bars">' + barsHtml + '</div>' +
-    '<div class="mv-tags">' + atsTag + trackingBadge + '</div></div>' +
-    '<div class="mv-right">' + selectHtml + '</div></div>';
+  var kwFalt = Array.isArray(r.keywords_faltando) ? r.keywords_faltando : [];
+  var kwOk = Array.isArray(r.keywords_encontradas) ? r.keywords_encontradas : [];
+  var kwFaltHtml = kwFalt.slice(0,8).map(function(k){ return '<span class="sc-status bad" style="font-size:10px">' + escHtml(k) + '</span>'; }).join('');
+  var kwOkHtml = kwOk.slice(0,8).map(function(k){ return '<span class="sc-status good" style="font-size:10px">' + escHtml(k) + '</span>'; }).join('');
+  var salario = tj && tj.salario ? escHtml(tj.salario) : '';
+  var jobUrl = tj && tj.job_url ? tj.job_url : '';
+  var nota = tj && tj.nota ? escHtml(tj.nota) : '';
+  var resumo = r.resumo ? escHtml(r.resumo.slice(0, 200)) + (r.resumo.length > 200 ? '…' : '') : '';
+  var detailDisplay = _vagasExpanded[a.id] ? 'block' : 'none';
+  var chevronRot = _vagasExpanded[a.id] ? 'rotate(180deg)' : 'rotate(0deg)';
+
+  var detailHtml = '<div id="vd-' + escAttr(a.id) + '" class="mv-detail" style="display:' + detailDisplay + '">';
+  // Score breakdown
+  if (barsHtml) {
+    detailHtml += '<div class="vd-section"><div class="vd-lbl">Score por área</div><div class="mv-bars" style="grid-template-columns:1fr 1fr;gap:6px 16px">' + barsHtml + '</div></div>';
+  }
+  // Keywords
+  if (kwFalt.length || kwOk.length) {
+    detailHtml += '<div class="vd-section">';
+    if (kwFalt.length) detailHtml += '<div class="vd-lbl">Keywords ausentes no CV <span style="color:var(--s-red);font-weight:600">(' + kwFalt.length + ')</span></div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">' + kwFaltHtml + '</div>';
+    if (kwOk.length) detailHtml += '<div class="vd-lbl">Keywords presentes <span style="color:var(--s-grn);font-weight:600">(' + kwOk.length + ')</span></div><div style="display:flex;flex-wrap:wrap;gap:5px">' + kwOkHtml + '</div>';
+    detailHtml += '</div>';
+  }
+  // Resumo
+  if (resumo) {
+    detailHtml += '<div class="vd-section"><div class="vd-lbl">Resumo da análise</div><div style="font-size:12px;color:var(--t2);line-height:1.5">' + resumo + '</div></div>';
+  }
+  // Meta (salário, url, nota) — só se rastreado
+  if (tj) {
+    detailHtml += '<div class="vd-section" style="display:flex;gap:12px;flex-wrap:wrap">';
+    if (salario) detailHtml += '<div style="font-size:11px;color:var(--t2)"><span style="color:var(--t3)">Salário:</span> ' + salario + '</div>';
+    if (jobUrl) detailHtml += '<a href="' + escAttr(jobUrl) + '" target="_blank" style="font-size:11px;color:var(--gb-emerald);font-weight:600">Ver vaga →</a>';
+    if (nota) detailHtml += '<div style="font-size:11px;color:var(--t2)"><span style="color:var(--t3)">Nota:</span> ' + nota + '</div>';
+    detailHtml += '</div>';
+  }
+  // Actions
+  detailHtml += '<div class="vd-section vd-actions">';
+  if (tj) {
+    detailHtml += '<button class="vd-btn" onclick="openTrackerEdit(_kTracked.find(function(x){return x.id===\'' + escAttr(tj.id) + '\';}))" >Editar detalhes</button>';
+  }
+  detailHtml += '<button class="vd-btn vd-btn-primary" onclick="window.location.href=\'/app\'">Otimizar CV →</button>';
+  detailHtml += '<button class="vd-btn" onclick="window.print()">Imprimir CV</button>';
+  detailHtml += '</div></div>';
+
+  return '<div class="mv-item" style="flex-direction:column;padding:0">' +
+    '<div style="display:flex;align-items:flex-start;gap:14px;padding:14px 20px">' +
+    '<div class="mv-score" style="background:' + bg + ';color:' + clr + ';margin-top:2px">' + s + '%</div>' +
+    '<div class="mv-body">' +
+      '<div class="mv-cargo">' + escHtml(cargo) + '</div>' +
+      '<div class="mv-emp">' + escHtml(empresa) + ' · ' + escHtml(nivel) + '</div>' +
+      '<div class="mv-tags" style="margin-top:6px">' + atsTag + statusBadge + '</div>' +
+    '</div>' +
+    '<div class="mv-right" style="gap:8px">' +
+      selectHtml +
+      '<button onclick="toggleVagaDetail(\'' + escAttr(a.id) + '\')" style="background:none;border:1px solid var(--border);border-radius:8px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">' +
+        '<svg id="vc-' + escAttr(a.id) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12" style="transition:.2s;transform:' + chevronRot + '"><polyline points="6 9 12 15 18 9"/></svg>' +
+      '</button>' +
+    '</div>' +
+    '</div>' +
+    detailHtml +
+    '</div>';
 }
 
 function renderManualItem(j) {
-  var selectHtml = buildStatusSelect(j.status || 'aplicado', 'handleStatusUpdate(' + JSON.stringify(j.id) + ',this.value)');
-  return '<div class="mv-item"><div style="width:44px;height:44px;border-radius:8px;background:var(--bg-sub);border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;margin-top:2px;flex-shrink:0">' +
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="color:var(--t3)"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div>' +
-    '<div class="mv-body"><div class="mv-cargo">' + escHtml(j.cargo || '—') + '</div><div class="mv-emp">' + escHtml(j.empresa || '—') + '</div>' +
-    '<div class="mv-tags"><span class="sc-status" style="font-size:10px;background:var(--bg-sub);color:var(--t3)">Sem análise</span>' +
-    '<button onclick="openTrackerEdit(' + JSON.stringify(j) + ')" style="font-size:10px;color:var(--gb-emerald);background:none;border:none;cursor:pointer;padding:0;font-weight:600">Editar</button>' +
-    '<button onclick="deleteTracker(' + JSON.stringify(j.id) + ')" style="font-size:10px;color:var(--s-red);background:none;border:none;cursor:pointer;padding:0;font-weight:600">Remover</button>' +
-    '</div></div><div class="mv-right">' + selectHtml + '</div></div>';
+  var jid = j.id || '';
+  var selectHtml = buildStatusSelect(j.status || '', null, jid);
+  return '<div class="mv-item">' +
+    '<div style="width:44px;height:44px;border-radius:8px;background:var(--bg-sub);border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;margin-top:2px;flex-shrink:0">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="color:var(--t3)"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>' +
+    '</div>' +
+    '<div class="mv-body">' +
+      '<div class="mv-cargo">' + escHtml(j.cargo || '—') + '</div>' +
+      '<div class="mv-emp">' + escHtml(j.empresa || '—') + '</div>' +
+      '<div class="mv-tags"><span class="sc-status" style="font-size:10px;background:var(--bg-sub);color:var(--t3)">Sem análise</span>' +
+        '<button onclick="openTrackerEditById(\'' + escAttr(jid) + '\')" style="font-size:10px;color:var(--gb-emerald);background:none;border:none;cursor:pointer;padding:0;font-weight:600">Editar</button>' +
+        '<button onclick="deleteTracker(\'' + escAttr(jid) + '\')" style="font-size:10px;color:var(--s-red);background:none;border:none;cursor:pointer;padding:0;font-weight:600">Remover</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="mv-right">' + selectHtml + '</div></div>';
 }
 
-function buildStatusSelect(currentStatus, onchange) {
+function openTrackerEditById(id) {
+  var j = (_kTracked || []).find(function(x){ return x.id === id; });
+  if (j) openTrackerEdit(j);
+}
+
+function buildStatusSelect(currentStatus, analysisId, jobId) {
   var opts = [['','— Status —'],['aplicado','Aplicado'],['em_processo','Em processo'],['entrevista','Entrevista'],['oferta','Oferta'],['recusado','Recusado']];
   var optsHtml = opts.map(function(o) {
     return '<option value="' + o[0] + '"' + (currentStatus === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
   }).join('');
   var selColor = currentStatus ? (STATUS_COLORS[currentStatus] || 'var(--t2)') : 'var(--t3)';
   var selBg = currentStatus ? (STATUS_BG[currentStatus] || 'var(--bg-sub)') : 'var(--bg-sub)';
-  return '<select onchange="' + onchange + '" style="font-size:11px;font-weight:600;color:' + selColor + ';background:' + selBg + ';border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer;appearance:auto">' + optsHtml + '</select>';
+  var dataAttrs = analysisId ? 'data-aid="' + escAttr(analysisId) + '"' : 'data-jid="' + escAttr(jobId) + '"';
+  return '<select onchange="handleSelectChange(this)" ' + dataAttrs + ' style="font-size:11px;font-weight:600;color:' + selColor + ';background:' + selBg + ';border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer;appearance:auto;max-width:130px">' + optsHtml + '</select>';
+}
+
+function handleSelectChange(el) {
+  var v = el.value;
+  if (!v) return;
+  var aid = el.dataset.aid;
+  var jid = el.dataset.jid;
+  if (aid) {
+    var a = (window._lastAnalysesData || []).find(function(x){ return x.id === aid; });
+    var r = a ? (a.result || {}) : {};
+    var ji = r.job_info || {};
+    handleStatusChange(aid, ji.empresa || '', ji.cargo || (a && a.job_excerpt ? a.job_excerpt.slice(0,40) : ''), a ? (a.score || 0) : 0, v);
+  } else if (jid) {
+    handleStatusUpdate(jid, v);
+  }
 }
 
 async function handleStatusChange(analysisId, empresa, cargo, score, newStatus) {
@@ -2193,12 +2302,12 @@ async function handleStatusChange(analysisId, empresa, cargo, score, newStatus) 
 
 async function handleStatusUpdate(jobId, newStatus) {
   try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + jobId, {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + encodeURIComponent(jobId), {
       method: 'PATCH',
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: newStatus })
     });
-    if (res.ok) { await loadKanban(); }
+    if (res.ok) { await loadKanban(); showToast('Status atualizado!'); }
     else showToast('Erro ao atualizar', 'error');
   } catch(e) { showToast('Erro ao atualizar', 'error'); }
 }
