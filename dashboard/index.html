@@ -1607,7 +1607,8 @@ function addToTracker(empresa, cargo, score) {
 
 async function saveTracker(btn) {
   var empresa = document.getElementById('tkEmpresa').value;
-  if (!empresa) return;
+  if (!empresa) { alert('Digite a empresa'); return; }
+
   var body = {
     user_id: currentUserId,
     empresa,
@@ -1616,18 +1617,39 @@ async function saveTracker(btn) {
     status: document.getElementById('tkStatus').value,
     created_at: new Date().toISOString()
   };
+
   try {
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+
     var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker', {
       method: 'POST',
-      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json' },
+      headers: {
+        apikey: SUPABASE_ANON,
+        Authorization: 'Bearer ' + (currentSession?.access_token || ''),
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify(body)
     });
-    if (res.ok) {
+
+    var resText = await res.text();
+    console.log('SaveTracker Response:', res.status, resText);
+
+    if (res.ok || res.status === 201) {
       btn.parentElement.parentElement.remove();
       alert('✓ Candidatura rastreada!');
-      await loadKanban();
+      if (typeof loadKanban === 'function') await loadKanban();
+    } else {
+      alert('Erro ao salvar: ' + resText);
+      btn.disabled = false;
+      btn.textContent = 'Salvar';
     }
-  } catch(e) {}
+  } catch(e) {
+    console.error('SaveTracker Error:', e);
+    alert('Erro: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = 'Salvar';
+  }
 }
 
 function switchDashTab(tab) {
