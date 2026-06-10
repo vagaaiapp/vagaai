@@ -1150,13 +1150,13 @@ body {
 .funil-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); padding:18px 20px; }
 .funil-title-t { font-size:13.5px; font-weight:700; color:var(--t1); margin-bottom:2px; }
 .funil-sub-t { font-size:11px; color:var(--t3); margin-bottom:16px; }
-.funil-pipe { display:flex; align-items:flex-end; gap:0; margin-bottom:4px; }
-.funil-stage { flex:1; padding:0 3px; text-align:center; }
-.funil-bar-wrap { height:6px; border-radius:3px; background:var(--bg-sub); overflow:hidden; margin-bottom:6px; }
-.funil-bar-fill { height:100%; border-radius:3px; transition:width .5s ease; }
-.funil-stage-lbl { font-size:9px; color:var(--t3); font-weight:600; }
-.funil-stage-num { font-size:19px; font-weight:800; }
-.funil-arrow { flex-shrink:0; display:flex; align-items:center; padding-bottom:10px; color:var(--t3); font-size:12px; }
+.funil-pipe { display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
+.funil-stage { display:flex; align-items:center; gap:10px; }
+.funil-bar-outer { flex:1; height:22px; border-radius:3px; overflow:hidden; background:transparent; display:flex; align-items:stretch; }
+.funil-bar-fill { border-radius:3px; transition:width .6s cubic-bezier(.4,0,.2,1); }
+.funil-stage-meta { min-width:76px; display:flex; flex-direction:column; align-items:flex-end; }
+.funil-stage-num { font-size:13px; font-weight:800; line-height:1.15; }
+.funil-stage-lbl { font-size:8.5px; color:var(--t3); font-weight:600; text-transform:uppercase; white-space:nowrap; letter-spacing:.03em; }
 .funil-divider { height:1px; background:var(--border); margin:14px 0; }
 .funil-insight-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--s-amb); margin-bottom:7px; }
 .funil-insight-txt { font-size:11.5px; color:var(--t2); line-height:1.5; }
@@ -2298,14 +2298,17 @@ function buildFunilCard(analyses, tracked) {
     { lbl:'Ofertas', num:ofertas, clr:'#534ab7' }
   ];
 
-  pipe.innerHTML = stages.map(function(st, i) {
-    var pct = Math.round((st.num / maxN) * 100);
+  pipe.innerHTML = stages.map(function(st) {
+    var pct = Math.max(st.num > 0 ? 8 : 3, Math.round((st.num / maxN) * 100));
     return '<div class="funil-stage">' +
-      '<div class="funil-stage-num" style="color:' + st.clr + '">' + st.num + '</div>' +
-      '<div class="funil-bar-wrap"><div class="funil-bar-fill" style="width:' + pct + '%;background:' + st.clr + '"></div></div>' +
-      '<div class="funil-stage-lbl">' + st.lbl + '</div>' +
+      '<div class="funil-bar-outer">' +
+        '<div class="funil-bar-fill" style="width:' + pct + '%;background:' + st.clr + ';opacity:.82;height:100%"></div>' +
       '</div>' +
-      (i < stages.length - 1 ? '<div class="funil-arrow">›</div>' : '');
+      '<div class="funil-stage-meta">' +
+        '<span class="funil-stage-num" style="color:' + st.clr + '">' + st.num + '</span>' +
+        '<span class="funil-stage-lbl">' + st.lbl + '</span>' +
+      '</div>' +
+    '</div>';
   }).join('');
 
   if (insightEl) {
