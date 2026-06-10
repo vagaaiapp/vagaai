@@ -1127,30 +1127,45 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
 
     <!-- PROGRESSO SEMANAL -->
     <div class="sec-label">Progresso semanal</div>
-    <div class="goals-card">
-      <div class="goals-row">
-        <div class="g-ring-wrap">
-          <svg viewBox="0 0 120 120">
-            <circle class="g-ring-bg" cx="60" cy="60" r="45"/>
-            <circle class="g-ring-fill" id="goalsRingFill" cx="60" cy="60" r="45"/>
-          </svg>
-          <div class="g-ring-label">
-            <div class="g-ring-num" id="goalsRingNum">2</div>
-            <div class="g-ring-den" id="goalsRingDen">de 3</div>
+    <div class="goals-card" style="padding:32px 40px">
+      <div style="display:flex;align-items:center;gap:48px">
+        <!-- Bloco esquerdo -->
+        <div style="flex:0 0 54%">
+          <div style="display:flex;align-items:center;gap:22px;margin-bottom:18px">
+            <div class="g-ring-wrap" style="flex-shrink:0">
+              <svg viewBox="0 0 120 120">
+                <circle class="g-ring-bg" cx="60" cy="60" r="45"/>
+                <circle class="g-ring-fill" id="goalsRingFill" cx="60" cy="60" r="45"/>
+              </svg>
+              <div class="g-ring-label">
+                <div class="g-ring-num" id="goalsRingNum">—</div>
+                <div class="g-ring-den" id="goalsRingDen">de 3</div>
+              </div>
+            </div>
+            <div>
+              <div class="goals-ttl">Meta semanal de análises</div>
+              <div class="goals-sub" style="margin-bottom:0" id="goalsSub">Carregando...</div>
+            </div>
           </div>
-        </div>
-        <div>
-          <div class="goals-ttl">Meta semanal de análises</div>
-          <div class="goals-sub" id="goalsSub">Falta 1 análise para bater sua meta desta semana. Usuários que atingem a meta têm 2× mais entrevistas.</div>
           <div class="week-row" id="weekDots"></div>
         </div>
-        <div class="goals-right">
-          <span class="streak-fire" id="streakEmoji">🔥</span>
-          <div class="streak-num" id="streakNumV2">1</div>
-          <div class="streak-lbl">semana consecutiva</div>
-          <div class="streak-chips">
-            <span class="s-chip" id="streakChip1">🏆 Recorde pessoal</span>
-            <span class="s-chip" id="streakChip2">📅 Mês: 1 semana</span>
+        <!-- Bloco direito -->
+        <div style="flex:1;background:var(--bg-sub);border-radius:14px;padding:22px 24px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px">
+            <div>
+              <span class="streak-fire" id="streakEmoji">🔥</span>
+              <div class="streak-num" id="streakNumV2">—</div>
+              <div class="streak-lbl">semanas consecutivas</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:6px">Score esta semana</div>
+              <div style="font-size:24px;font-weight:800;color:var(--t1);line-height:1" id="scoreThisWeek">—</div>
+              <div style="font-size:11px;margin-top:5px;color:var(--t3)" id="scoreTrend">vs semana anterior</div>
+            </div>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px">
+            <span class="s-chip" id="streakChip1">—</span>
+            <span class="s-chip" id="streakChip2">—</span>
           </div>
         </div>
       </div>
@@ -1731,37 +1746,138 @@ async function init() {
 
   await Promise.all([loadAnalyses(), loadKanban(), loadAlerts(), loadHeroLastAnalysis()]);
 
-  // Setup week dots
+  document.getElementById('pageLoading').classList.add('hidden');
+}
+
+function getWeekStart(date, weeksAgo) {
+  var d = new Date(date);
+  var day = d.getDay();
+  var diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff - (weeksAgo || 0) * 7);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function getWeekKey(date, weeksAgo) {
+  return getWeekStart(date, weeksAgo).toISOString().slice(0, 10);
+}
+
+function updateGoalsSection(analyses) {
+  var META = 3;
+  var now = new Date();
+
+  var weekMap = {};
+  analyses.forEach(function(a) {
+    var key = getWeekKey(new Date(a.created_at));
+    if (!weekMap[key]) weekMap[key] = [];
+    weekMap[key].push(a);
+  });
+
+  var thisWeekKey = getWeekKey(now);
+  var thisWeekList = weekMap[thisWeekKey] || [];
+  var thisWeekCount = thisWeekList.length;
+
+  var lastWeekKey = getWeekKey(now, 1);
+  var lastWeekList = weekMap[lastWeekKey] || [];
+
+  function avgScore(list) {
+    var scored = list.filter(function(a){ return a.score > 0; });
+    if (!scored.length) return null;
+    return Math.round(scored.reduce(function(s,a){ return s+a.score; },0) / scored.length);
+  }
+  var thisAvg = avgScore(thisWeekList);
+  var lastAvg = avgScore(lastWeekList);
+
+  // Ring
+  var circumference = 283;
+  var pct = Math.min(thisWeekCount / META, 1);
+  var fillEl = document.getElementById('goalsRingFill');
+  if (fillEl) fillEl.style.strokeDashoffset = circumference - pct * circumference;
+  document.getElementById('goalsRingNum').textContent = thisWeekCount;
+  document.getElementById('goalsRingDen').textContent = 'de ' + META;
+
+  // Sub
+  var sub;
+  if (thisWeekCount === 0) sub = 'Faça sua primeira análise desta semana para começar.';
+  else if (thisWeekCount < META) {
+    var faltam = META - thisWeekCount;
+    sub = 'Falt' + (faltam === 1 ? 'a 1 análise' : 'am ' + faltam + ' análises') + ' para bater a meta desta semana.';
+  } else sub = 'Meta atingida esta semana! Continue assim. 🎉';
+  document.getElementById('goalsSub').textContent = sub;
+
+  // Week dots
   var days = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
   var wrap = document.getElementById('weekDots');
   wrap.innerHTML = '';
-  days.forEach(function(d, i) {
+  var todayIdx = now.getDay() === 0 ? 6 : now.getDay() - 1;
+  var weekStart = getWeekStart(now);
+  var dayHas = [false,false,false,false,false,false,false];
+  thisWeekList.forEach(function(a) {
+    var offset = Math.floor((new Date(a.created_at) - weekStart) / 86400000);
+    if (offset >= 0 && offset <= 6) dayHas[offset] = true;
+  });
+  days.forEach(function(lbl, i) {
     var item = document.createElement('div');
     item.className = 'w-item';
-    var state = i < 2 ? 'done' : i === 2 ? 'today' : 'empty';
-    var icon = i < 2 ? '✓' : i === 2 ? '·' : '';
-    item.innerHTML = '<div class="w-lbl">' + d + '</div><div class="w-dot ' + state + '">' + icon + '</div>';
+    var state, icon;
+    if (i < todayIdx) { state = dayHas[i] ? 'done' : 'empty'; icon = dayHas[i] ? '✓' : ''; }
+    else if (i === todayIdx) { state = dayHas[i] ? 'done' : 'today'; icon = dayHas[i] ? '✓' : '·'; }
+    else { state = 'empty'; icon = ''; }
+    item.innerHTML = '<div class="w-lbl">' + lbl + '</div><div class="w-dot ' + state + '">' + icon + '</div>';
     wrap.appendChild(item);
   });
 
-  document.getElementById('pageLoading').classList.add('hidden');
+  // Streak
+  var streak = 0;
+  var wa = thisWeekCount >= META ? 0 : 1;
+  while (wa <= 52) {
+    if ((weekMap[getWeekKey(now, wa)] || []).length >= META) { streak++; wa++; }
+    else break;
+  }
+  document.getElementById('streakNumV2').textContent = streak;
+  document.getElementById('streakEmoji').textContent = streak >= 4 ? '🔥' : streak >= 1 ? '⚡' : '—';
+
+  // Score trend
+  var scoreEl = document.getElementById('scoreThisWeek');
+  var trendEl = document.getElementById('scoreTrend');
+  if (scoreEl) {
+    scoreEl.textContent = thisAvg !== null ? thisAvg + '%' : '—';
+    if (thisAvg !== null && lastAvg !== null) {
+      var diff = thisAvg - lastAvg;
+      trendEl.textContent = (diff >= 0 ? '+' : '') + diff + ' pts vs semana anterior';
+      trendEl.style.color = diff >= 0 ? 'var(--gb-emerald)' : '#e53e3e';
+    } else if (thisAvg !== null) {
+      trendEl.textContent = 'Primeira semana com dados';
+      trendEl.style.color = 'var(--t3)';
+    } else {
+      trendEl.textContent = 'Sem análises esta semana';
+      trendEl.style.color = 'var(--t3)';
+    }
+  }
+
+  // Chips
+  var chip1 = document.getElementById('streakChip1');
+  var chip2 = document.getElementById('streakChip2');
+  if (chip1) chip1.textContent = streak >= 12 ? '🏅 3 meses seguidos' : streak >= 4 ? '🏆 1 mês seguido' : streak >= 1 ? '🏆 Meta atingida' : '—';
+  if (chip2) chip2.textContent = '📅 ' + streak + (streak === 1 ? ' semana' : ' semanas') + ' no total';
 }
 
 async function loadAnalyses() {
   try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=id,score,job_excerpt,created_at&order=created_at.desc&limit=50', {
-      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, Prefer: 'count=exact' }
+    var res = await fetch(SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=id,score,job_excerpt,created_at&order=created_at.desc&limit=200', {
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
     });
     var data = await res.json();
     if (Array.isArray(data)) {
       var scores = data.filter(function(a){ return a.score > 0; });
       if (scores.length) {
-        var avg = Math.round(scores.reduce(function(s,a){ return s+a.score; }, 0) / scores.length);
+        var avg = Math.round(scores.reduce(function(s,a){ return s+a.score; },0) / scores.length);
         document.getElementById('heroAvgScore').textContent = avg + '%';
       }
       document.getElementById('heroVagasCount').textContent = data.length;
+      updateGoalsSection(data);
     }
-  } catch(e) {}
+  } catch(e) { console.error('loadAnalyses error:', e); }
 }
 
 async function loadHeroLastAnalysis() {
