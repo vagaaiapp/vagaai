@@ -980,6 +980,88 @@ body {
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes barGrow { from { transform: scaleX(0); transform-origin: left; } to { transform: scaleX(1); transform-origin: left; } }
 @keyframes softPulse { 0%,100% { box-shadow: 0 0 0 3px rgba(245,158,11,.14); } 50% { box-shadow: 0 0 0 7px rgba(245,158,11,.24); } }
+
+/* ── Painel V2 ─────────────────────────────────────────────── */
+.pg-greeting { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:28px; padding-top:4px; }
+.pg-eyebrow { font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--gb-emerald); margin-bottom:6px; }
+.pg-title { font-size:26px; font-weight:800; color:var(--t1); margin-bottom:6px; }
+.pg-sub { font-size:13px; color:var(--t2); }
+.pg-date { font-size:12px; color:var(--t3); white-space:nowrap; padding-top:6px; }
+.pba-card { background:linear-gradient(135deg,#081510 0%,#0d3a22 55%,#0f4029 100%); border-radius:var(--r); padding:36px 40px; margin-bottom:28px; display:flex; align-items:center; gap:40px; }
+.pba-left { flex:1; min-width:0; }
+.pba-eyebrow { display:flex; align-items:center; gap:7px; font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#4ecf8e; margin-bottom:14px; }
+.pba-eyebrow-dot { width:6px; height:6px; border-radius:50%; background:#4ecf8e; flex-shrink:0; }
+.pba-title { font-size:21px; font-weight:800; color:#e8f5ee; margin-bottom:10px; line-height:1.3; }
+.pba-desc { font-size:13px; color:rgba(200,240,210,.72); margin-bottom:20px; line-height:1.5; }
+.pba-btns { display:flex; gap:10px; flex-wrap:wrap; }
+.pba-btn-primary { background:#3ecf8e; color:#081510; font-size:12.5px; font-weight:700; padding:10px 18px; border-radius:9px; border:none; cursor:pointer; transition:all .15s; }
+.pba-btn-primary:hover { background:#4edfa0; }
+.pba-btn-ghost { background:rgba(255,255,255,.07); color:#c8f0d2; border:1px solid rgba(255,255,255,.14); font-size:12.5px; font-weight:600; padding:10px 18px; border-radius:9px; cursor:pointer; transition:all .15s; }
+.pba-btn-ghost:hover { background:rgba(255,255,255,.12); }
+.pba-right { flex-shrink:0; width:210px; }
+.pba-priority { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:18px 20px; }
+.pba-priority-eyebrow { font-size:9px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:rgba(200,230,210,.45); margin-bottom:10px; }
+.pba-priority-cargo { font-size:13.5px; font-weight:700; color:#e8f5ee; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pba-priority-empresa { font-size:11px; color:rgba(200,230,210,.55); margin-bottom:14px; }
+.pba-score-row { display:flex; align-items:center; gap:12px; }
+.pba-ring-wrap { position:relative; width:50px; height:50px; flex-shrink:0; }
+.pba-ring-inner { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:#e8f5ee; }
+.pba-score-label { font-size:12px; font-weight:600; color:#c8f0d2; margin-bottom:2px; }
+.pba-score-sub { font-size:10px; color:rgba(200,230,210,.5); }
+.psa-section { margin-bottom:28px; }
+.psa-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px; }
+.psa-title { font-size:16px; font-weight:700; color:var(--t1); margin-bottom:3px; }
+.psa-sub-txt { font-size:12px; color:var(--t3); }
+.psa-link { font-size:12px; font-weight:600; color:var(--gb-emerald); text-decoration:none; white-space:nowrap; padding-top:4px; }
+.psa-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.psa-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); padding:18px 20px; box-shadow:var(--sh-card); display:flex; flex-direction:column; }
+.psa-badge { font-size:10px; font-weight:700; padding:2px 9px; border-radius:20px; width:fit-content; margin-bottom:12px; }
+.psa-badge-hoje { background:#fef3c7; color:#92400e; }
+.psa-badge-amanha { background:#dbeafe; color:#1e40af; }
+.psa-badge-impacto { background:#fee2e2; color:#991b1b; }
+.psa-badge-ok { background:var(--s-grn-bg); color:var(--gb-emerald); }
+.psa-ico { font-size:18px; margin-bottom:8px; }
+.psa-card-title { font-size:13px; font-weight:700; color:var(--t1); margin-bottom:5px; }
+.psa-card-desc { font-size:11.5px; color:var(--t2); line-height:1.45; flex:1; margin-bottom:14px; }
+.psa-cta { font-size:11.5px; font-weight:700; color:var(--gb-emerald); text-decoration:none; background:none; border:none; cursor:pointer; padding:0; text-align:left; }
+.opp-section { margin-bottom:28px; }
+.opp-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px; }
+.opp-title { font-size:16px; font-weight:700; color:var(--t1); margin-bottom:3px; }
+.opp-sub-txt { font-size:12px; color:var(--t3); }
+.opp-cols { display:grid; grid-template-columns:1fr 268px; gap:16px; align-items:start; }
+.opp-list-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); overflow:hidden; }
+.opp-list-head { padding:14px 18px 12px; border-bottom:1px solid var(--border); }
+.opp-list-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.opp-list-title-t { font-size:13.5px; font-weight:700; color:var(--t1); }
+.opp-list-count-t { font-size:11px; color:var(--t3); }
+.opp-chips { display:flex; gap:5px; }
+.opp-chip { font-size:10.5px; font-weight:600; padding:4px 11px; border-radius:20px; border:1px solid var(--border); background:var(--bg-card); color:var(--t2); cursor:pointer; transition:all .15s; }
+.opp-chip-active { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); }
+.opp-item { display:flex; align-items:center; gap:12px; padding:11px 18px; border-bottom:1px solid var(--border); transition:background .12s; cursor:pointer; }
+.opp-item:last-child { border-bottom:none; }
+.opp-item:hover { background:var(--bg-sub); }
+.opp-item-score { width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0; }
+.opp-item-body { flex:1; min-width:0; }
+.opp-item-cargo { font-size:12.5px; font-weight:700; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.opp-item-sub { font-size:10.5px; color:var(--t3); margin-top:1px; }
+.opp-status-pill { font-size:10px; font-weight:600; padding:3px 8px; border-radius:6px; white-space:nowrap; flex-shrink:0; }
+.opp-item-action { text-align:right; flex-shrink:0; min-width:110px; }
+.opp-action-lbl { font-size:11px; font-weight:600; color:var(--gb-emerald); }
+.opp-action-when { font-size:10px; color:var(--t3); margin-top:1px; }
+.opp-item-chevron { color:var(--t3); flex-shrink:0; }
+.funil-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); padding:18px 20px; }
+.funil-title-t { font-size:13.5px; font-weight:700; color:var(--t1); margin-bottom:2px; }
+.funil-sub-t { font-size:11px; color:var(--t3); margin-bottom:16px; }
+.funil-pipe { display:flex; align-items:flex-end; gap:0; margin-bottom:4px; }
+.funil-stage { flex:1; padding:0 3px; text-align:center; }
+.funil-bar-wrap { height:6px; border-radius:3px; background:var(--bg-sub); overflow:hidden; margin-bottom:6px; }
+.funil-bar-fill { height:100%; border-radius:3px; transition:width .5s ease; }
+.funil-stage-lbl { font-size:9px; color:var(--t3); font-weight:600; }
+.funil-stage-num { font-size:19px; font-weight:800; }
+.funil-arrow { flex-shrink:0; display:flex; align-items:center; padding-bottom:10px; color:var(--t3); font-size:12px; }
+.funil-divider { height:1px; background:var(--border); margin:14px 0; }
+.funil-insight-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--s-amb); margin-bottom:7px; }
+.funil-insight-txt { font-size:11.5px; color:var(--t2); line-height:1.5; }
 </style>
 <script>
 if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');
@@ -1118,270 +1200,104 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
   <!-- ══ PAINEL ══ -->
   <div id="tab-painel" class="tab active">
 
-    <!-- HERO -->
-    <div class="hero" style="padding:44px 56px">
-      <div class="hero-inner" style="justify-content:flex-start;gap:48px">
-        <div class="hero-text" style="flex:0 0 46%;max-width:46%">
-          <div class="hero-eyebrow">
-            <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
-            <span id="heroEyebrow">Plano Pro ativo</span>
-          </div>
-          <h1 class="hero-title" id="heroTitle">Bem-vindo, João Victor</h1>
-          <p class="hero-sub" id="heroSub">Seu CV ainda não passa pelos filtros ATS da maioria das vagas. Com ajustes estratégicos de palavras-chave, você pode dobrar seu score e chegar mais forte nas entrevistas.</p>
-          <div class="hero-metrics">
-            <div>
-              <div class="hm-val" id="heroAvgScore">—</div>
-              <div class="hm-lbl">Score médio atual</div>
-            </div>
-            <div>
-              <div class="hm-val" id="heroVagasCount">—</div>
-              <div class="hm-lbl">Vagas analisadas</div>
-            </div>
-            <div>
-              <div class="hm-val accent" id="heroMetaScore">70%</div>
-              <div class="hm-lbl">Meta de score</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card última análise -->
-        <div style="flex:1;background:var(--bg-card);border-radius:14px;padding:22px 24px;box-shadow:var(--sh-card)">
-          <div style="display:flex;align-items:center;gap:5px;margin-bottom:18px;">
-            <div style="width:8px;height:8px;border-radius:50%;background:#ff5f57"></div>
-            <div style="width:8px;height:8px;border-radius:50%;background:#febc2e"></div>
-            <div style="width:8px;height:8px;border-radius:50%;background:#28c840"></div>
-            <span style="font-size:10.5px;color:var(--t3);margin-left:6px;">Última análise</span>
-          </div>
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:16px;">
-            <div>
-              <div style="font-size:14px;font-weight:700;color:var(--t1);margin-bottom:4px;line-height:1.3" id="heroLastCargo">—</div>
-              <div style="font-size:11px;color:var(--t3)" id="heroLastEmpresa">—</div>
-            </div>
-            <span id="heroLastScoreBadge" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0;background:var(--bg-sub);color:var(--t3)">—</span>
-          </div>
-          <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:14px;">
-            <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);font-weight:700;margin-bottom:10px;">Keywords que faltam no CV</div>
-            <div id="heroLastKeywords">
-              <div style="font-size:11px;color:var(--t3)">Carregando...</div>
-            </div>
-          </div>
-          <div id="heroLastCTA" onclick="" style="cursor:pointer;background:var(--s-grn-bg);border-radius:8px;padding:9px 14px;font-size:11px;color:var(--gb-emerald);font-weight:700;display:flex;align-items:center;justify-content:space-between;">
-            <span>Ver análise completa</span>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </div>
-        </div>
+    <!-- GREETING -->
+    <div class="pg-greeting">
+      <div>
+        <div class="pg-eyebrow">Seu painel de candidaturas</div>
+        <h1 class="pg-title" id="pgGreeting">Carregando...</h1>
+        <p class="pg-sub" id="pgActionSub"> </p>
       </div>
+      <div class="pg-date" id="pgDate"></div>
     </div>
 
-    <!-- PROGRESSO SEMANAL -->
-    <div class="sec-label">Progresso semanal</div>
-    <div class="goals-card" style="padding:32px 40px">
-      <div style="display:flex;align-items:flex-start;gap:48px">
-        <!-- Bloco esquerdo -->
-        <div style="flex:0 0 52%">
-          <div style="display:flex;align-items:center;gap:22px;margin-bottom:18px">
-            <div class="g-ring-wrap" style="flex-shrink:0">
-              <svg viewBox="0 0 120 120">
-                <circle class="g-ring-bg" cx="60" cy="60" r="45"/>
-                <circle class="g-ring-fill" id="goalsRingFill" cx="60" cy="60" r="45"/>
+    <!-- PRÓXIMA MELHOR AÇÃO -->
+    <div class="pba-card">
+      <div class="pba-left">
+        <div class="pba-eyebrow"><span class="pba-eyebrow-dot"></span>Próxima melhor ação</div>
+        <h2 class="pba-title" id="pbaTitle">Carregando...</h2>
+        <p class="pba-desc" id="pbaDesc"> </p>
+        <div class="pba-btns">
+          <button class="pba-btn-primary" id="pbaBtnPrimary" onclick="window.location.href='/app'">Otimizar CV agora →</button>
+          <button class="pba-btn-ghost" id="pbaBtnSecondary" onclick="switchDashTab('vagas')">Ver candidaturas</button>
+        </div>
+      </div>
+      <div class="pba-right">
+        <div class="pba-priority">
+          <div class="pba-priority-eyebrow">Candidatura prioritária</div>
+          <div class="pba-priority-cargo" id="pbaCargo">—</div>
+          <div class="pba-priority-empresa" id="pbaEmpresa">—</div>
+          <div class="pba-score-row">
+            <div class="pba-ring-wrap">
+              <svg width="50" height="50" viewBox="0 0 50 50">
+                <circle cx="25" cy="25" r="20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="5"/>
+                <circle id="pbaRingFill" cx="25" cy="25" r="20" fill="none" stroke="#3ecf8e" stroke-width="5"
+                  stroke-dasharray="125.66" stroke-dashoffset="125.66" stroke-linecap="round"
+                  transform="rotate(-90 25 25)"/>
               </svg>
-              <div class="g-ring-label">
-                <div class="g-ring-num" id="goalsRingNum">—</div>
-                <div class="g-ring-den" id="goalsRingDen">de 3</div>
-              </div>
+              <div class="pba-ring-inner" id="pbaScoreNum">—</div>
             </div>
             <div>
-              <div class="goals-ttl">Meta semanal de análises</div>
-              <div class="goals-sub" style="margin-bottom:4px" id="goalsSub">Carregando...</div>
-              <div id="goalsOverflow" style="display:none;font-size:11px;color:var(--gb-emerald);font-weight:600"></div>
+              <div class="pba-score-label" id="pbaScoreLabel">—</div>
+              <div class="pba-score-sub" id="pbaScoreSub">—</div>
             </div>
           </div>
-          <div class="week-row" id="weekDots"></div>
-          <!-- Heatmap 8 semanas -->
-          <div style="margin-top:18px">
-            <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:8px">Últimas 8 semanas</div>
-            <div style="display:flex;align-items:center;gap:5px">
-              <div id="goalsHeatmap" style="display:flex;gap:5px"></div>
-              <div style="display:flex;align-items:center;gap:4px;margin-left:8px">
-                <div style="width:10px;height:10px;border-radius:2px;background:var(--bg-sub);border:1px solid var(--border)"></div>
-                <div style="width:10px;height:10px;border-radius:2px;background:#9fe1cb"></div>
-                <div style="width:10px;height:10px;border-radius:2px;background:#1d9e75"></div>
-                <div style="font-size:9px;color:var(--t3);margin-left:2px">meta+</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Bloco direito -->
-        <div style="flex:1;background:var(--bg-sub);border-radius:14px;padding:22px 24px">
-          <!-- Melhor análise -->
-          <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:12px">Melhor análise desta semana</div>
-          <div id="bestAnalysisCard" style="background:var(--bg-card);border-radius:10px;padding:12px 14px;margin-bottom:14px;border:1px solid var(--border)">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div id="bestAnalysisScoreBadge" style="width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;background:#e8f5e9;color:#2e7d32">—</div>
-              <div style="flex:1;min-width:0">
-                <div id="bestAnalysisCargo" style="font-size:13px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
-                <div id="bestAnalysisEmpresa" style="font-size:11px;color:var(--t3);margin-top:2px">—</div>
-              </div>
-            </div>
-          </div>
-          <!-- Score médio + trend -->
-          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px">
-            <div>
-              <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:4px">Média semanal</div>
-              <div style="font-size:24px;font-weight:800;color:var(--t1);line-height:1" id="scoreThisWeek">—</div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:4px">Sequência</div>
-              <div style="display:flex;align-items:baseline;gap:4px;justify-content:flex-end">
-                <span id="streakEmoji" style="font-size:14px">—</span>
-                <span id="streakNumV2" style="font-size:24px;font-weight:800;color:var(--t1);line-height:1">—</span>
-                <span style="font-size:11px;color:var(--t3)">sem.</span>
-              </div>
-            </div>
-          </div>
-          <!-- Próximo marco -->
-          <div id="nextMarcoWrap" style="border-top:1px solid var(--border);padding-top:12px">
-            <div style="display:flex;align-items:center;gap:10px">
-              <span style="font-size:16px">🏆</span>
-              <div style="flex:1">
-                <div id="nextMarcoText" style="font-size:12px;font-weight:600;color:var(--t1);margin-bottom:5px">—</div>
-                <div style="height:5px;background:var(--bg-card);border-radius:3px;overflow:hidden;border:1px solid var(--border)">
-                  <div id="nextMarcoPct" style="height:100%;border-radius:3px;background:var(--gb-emerald);width:0%;transition:width .6s ease"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div style="display:none" id="scoreTrend"></div>
-          <div style="display:none" id="streakChip1"></div>
-          <div style="display:none" id="streakChip2"></div>
         </div>
       </div>
     </div>
 
-    <!-- MINHAS VAGAS -->
-    <div class="mv-outer">
-      <div class="mv-outer-head">
-        <h3>Minhas vagas</h3>
-        <a href="#" onclick="switchDashTab('vagas');return false;">Ver todas →</a>
+    <!-- PRECISA DA SUA ATENÇÃO -->
+    <div class="psa-section">
+      <div class="psa-header">
+        <div>
+          <div class="psa-title">Precisa da sua atenção</div>
+          <div class="psa-sub-txt">Ações organizadas por urgência e impacto.</div>
+        </div>
+        <a href="#" class="psa-link" onclick="switchDashTab('vagas');return false;">Ver todas as tarefas →</a>
       </div>
-      <div id="minhasVagasBody">
-        <div style="padding:32px;text-align:center;color:var(--t3);font-size:13px">Carregando...</div>
-      </div>
-      <div class="mv-footer">
-        <span class="mv-footer-note">Vagas analisadas aparecem aqui automaticamente</span>
-        <button class="btn-cta" onclick="window.location.href='/app'" style="font-size:12px;padding:7px 14px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Nova análise
-        </button>
+      <div class="psa-grid" id="psaGrid">
+        <div class="psa-card"><div class="psa-card-desc" style="color:var(--t3)">Carregando...</div></div>
+        <div class="psa-card"><div class="psa-card-desc" style="color:var(--t3)"> </div></div>
+        <div class="psa-card"><div class="psa-card-desc" style="color:var(--t3)"> </div></div>
       </div>
     </div>
 
-    <!-- GRID -->
-    <div class="sec-label">Próximos passos</div>
-    <div class="grid-2">
-
-      <!-- Keywords -->
-      <div class="card">
-        <div class="card-pad">
-          <div class="card-head">
-            <div class="card-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <!-- SUAS OPORTUNIDADES -->
+    <div class="opp-section">
+      <div class="opp-header">
+        <div>
+          <div class="opp-title">Suas oportunidades</div>
+          <div class="opp-sub-txt">Vagas analisadas, candidaturas enviadas e próximas ações em uma única visão.</div>
+        </div>
+        <a href="#" class="psa-link" onclick="switchDashTab('vagas');return false;">Abrir rastreador completo →</a>
+      </div>
+      <div class="opp-cols">
+        <div class="opp-list-card">
+          <div class="opp-list-head">
+            <div class="opp-list-top">
+              <div>
+                <div class="opp-list-title-t">Em andamento</div>
+                <div class="opp-list-count-t" id="oppActiveCount">—</div>
+              </div>
             </div>
-            <div>
-              <div class="card-ttl">Palavras-chave ATS</div>
-              <div class="card-sub">O que está faltando no seu CV para passar pelos filtros automáticos dos recrutadores</div>
-            </div>
-          </div>
-          <div class="kw-section">
-            <div class="kw-sec-lbl">Ausentes — adicione ao CV</div>
-            <div class="kw-tags">
-              <span class="kw-tag miss">✕ Meta Ads</span>
-              <span class="kw-tag miss">✕ Facebook Ads</span>
-              <span class="kw-tag miss">✕ Google Ads</span>
-              <span class="kw-tag miss">✕ Performance Mkt</span>
-              <span class="kw-tag miss">✕ Gestão de Budget</span>
+            <div class="opp-chips">
+              <button class="opp-chip opp-chip-active" data-filter="todas" onclick="setOppFilter('todas')">Todas</button>
+              <button class="opp-chip" data-filter="aplicado" onclick="setOppFilter('aplicado')">Aplicadas</button>
+              <button class="opp-chip" data-filter="entrevista" onclick="setOppFilter('entrevista')">Entrevistas</button>
             </div>
           </div>
-          <div class="kw-section">
-            <div class="kw-sec-lbl">Presentes no CV</div>
-            <div class="kw-tags">
-              <span class="kw-tag pres">✓ SEO</span>
-              <span class="kw-tag pres">✓ Copywriting</span>
-              <span class="kw-tag pres">✓ Email Marketing</span>
-              <span class="kw-tag pres">✓ Branding</span>
-            </div>
-          </div>
-          <div class="kw-tip">
-            Adicionar as <strong>5 palavras ausentes</strong> pode aumentar seu score médio de <strong>17% para ~48%</strong>, passando pelo filtro automático na maioria das vagas de Marketing.
-          </div>
+          <div id="oppList"><div style="padding:28px;text-align:center;color:var(--t3);font-size:12px">Carregando...</div></div>
+        </div>
+        <div class="funil-card">
+          <div class="funil-title-t">Seu funil</div>
+          <div class="funil-sub-t">Últimos 30 dias</div>
+          <div class="funil-pipe" id="funilPipe"></div>
+          <div class="funil-divider"></div>
+          <div class="funil-insight-lbl">✦ Insight da VagaAI</div>
+          <div class="funil-insight-txt" id="funilInsight">Analise mais vagas para receber insights personalizados.</div>
         </div>
       </div>
-
-      <!-- Journey -->
-      <div class="card">
-        <div class="card-pad">
-          <div class="card-head">
-            <div class="card-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <div>
-              <div class="card-ttl">Sua jornada</div>
-              <div class="card-sub">Cada etapa concluída aumenta em 3× suas chances de receber uma oferta de emprego</div>
-            </div>
-          </div>
-          <div class="journey">
-            <div class="j-step">
-              <div class="j-dot j-done">✓</div>
-              <div class="j-body">
-                <div class="j-name">Diagnóstico do currículo</div>
-                <div class="j-desc">2 vagas analisadas · Score médio 17% · Ajustes identificados</div>
-              </div>
-            </div>
-            <div class="j-step">
-              <div class="j-dot j-active">→</div>
-              <div class="j-body">
-                <div class="j-name" style="color:var(--s-amb)">Otimizar o currículo</div>
-                <div class="j-desc">Adicione as keywords ausentes para superar o filtro ATS</div>
-                <a class="j-cta" href="#">Otimizar agora →</a>
-              </div>
-            </div>
-            <div class="j-step">
-              <div class="j-dot j-todo">3</div>
-              <div class="j-body">
-                <div class="j-name" style="color:var(--t3)">Enviar candidaturas</div>
-                <div class="j-desc">Rastreie cada aplicação e acompanhe retornos</div>
-              </div>
-            </div>
-            <div class="j-step">
-              <div class="j-dot j-todo">4</div>
-              <div class="j-body">
-                <div class="j-name" style="color:var(--t3)">Preparar para a entrevista</div>
-                <div class="j-desc">Simulador com perguntas baseadas na vaga específica</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Insight AI -->
-      <div class="insight-amber" id="insightAiCard" style="grid-column:1/-1">
-        <div class="amber-eyebrow">✦ Insight da VagaAI</div>
-        <div class="amber-title" id="insightTitle">Otimize seu CV para passar nos filtros ATS</div>
-        <div class="amber-text" id="insightText">Analise mais vagas para receber insights personalizados sobre como melhorar seu score.</div>
-        <div class="amber-tags" id="insightTags"></div>
-        <div class="amber-section">
-          <div id="insightPresWrap" style="display:none">
-            <div class="amber-pres-lbl">Presentes no CV</div>
-            <div class="amber-pres-tags" id="insightPresTags"></div>
-          </div>
-          <button class="amber-btn" onclick="window.location.href='/app'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            Otimizar meu CV agora
-          </button>
-        </div>
-      </div>
-
     </div>
+
   </div><!-- /tab-painel -->
 
   <!-- ══ VAGAS ══ -->
@@ -1684,6 +1600,7 @@ async function init() {
   document.getElementById('heroTitle').textContent = 'Bem-vindo, ' + displayName;
 
   window._perfilData = { email, displayName };
+  window._userName = displayName;
 
   await Promise.all([loadAnalyses(), loadKanban(), loadAlerts(), loadHeroLastAnalysis()]);
 
@@ -1903,6 +1820,322 @@ function updateInsightAmbar(analyses) {
   }
 }
 
+/* ── Painel V2 ─────────────────────────────── */
+var _oppFilter = 'todas';
+
+function setOppFilter(f) {
+  _oppFilter = f;
+  document.querySelectorAll('.opp-chip').forEach(function(el) {
+    el.classList.toggle('opp-chip-active', el.dataset.filter === f);
+  });
+  renderOppList();
+}
+
+function getGreetingWord() {
+  var h = new Date().getHours();
+  if (h >= 5 && h < 12) return 'Bom dia';
+  if (h >= 12 && h < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
+
+function buildPainelV2(analyses, tracked) {
+  var name = ((window._userName || '').split(' ')[0]) || 'você';
+
+  var pgGreeting = document.getElementById('pgGreeting');
+  if (pgGreeting) pgGreeting.textContent = getGreetingWord() + ', ' + name;
+
+  var pgDate = document.getElementById('pgDate');
+  if (pgDate) {
+    var now = new Date();
+    var days = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+    var months = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    pgDate.textContent = days[now.getDay()] + ', ' + now.getDate() + ' de ' + months[now.getMonth()];
+  }
+
+  var actionCount = buildAttentionCards(analyses, tracked);
+  var pgActionSub = document.getElementById('pgActionSub');
+  if (pgActionSub) {
+    pgActionSub.textContent = actionCount > 0
+      ? 'Você tem ' + actionCount + ' ' + (actionCount === 1 ? 'ação que pode' : 'ações que podem') + ' aumentar suas chances esta semana.'
+      : 'Tudo em dia! Continue analisando vagas para aumentar suas chances.';
+  }
+
+  buildPBACard(analyses, tracked);
+  renderOppList();
+  buildFunilCard(analyses, tracked);
+}
+
+function updatePBAPriority(score, cargo, empresa, subText) {
+  var s = score || 0;
+  var circumference = 125.66;
+  var offset = circumference - (s / 100) * circumference;
+  var ringFill = document.getElementById('pbaRingFill');
+  if (ringFill) {
+    ringFill.setAttribute('stroke-dashoffset', offset);
+    ringFill.setAttribute('stroke', s >= 70 ? '#3ecf8e' : s >= 40 ? '#fbbf24' : '#f87171');
+  }
+  var numEl = document.getElementById('pbaScoreNum');
+  if (numEl) numEl.textContent = s + '%';
+  var labelEl = document.getElementById('pbaScoreLabel');
+  if (labelEl) labelEl.textContent = s >= 70 ? 'Boa aderência' : s >= 40 ? 'Aderência moderada' : 'Baixa aderência';
+  var subEl = document.getElementById('pbaScoreSub');
+  if (subEl) subEl.textContent = subText || '';
+  var cargoEl = document.getElementById('pbaCargo');
+  if (cargoEl) cargoEl.textContent = cargo || '—';
+  var empEl = document.getElementById('pbaEmpresa');
+  if (empEl) empEl.textContent = empresa || '—';
+}
+
+function buildPBACard(analyses, tracked) {
+  var titleEl = document.getElementById('pbaTitle');
+  var descEl = document.getElementById('pbaDesc');
+  var btnPri = document.getElementById('pbaBtnPrimary');
+  var btnSec = document.getElementById('pbaBtnSecondary');
+  if (btnSec) btnSec.style.display = '';
+
+  var now = Date.now();
+
+  // Priority 1: entrevista
+  var interviewJob = tracked.find(function(t){ return t.status === 'entrevista'; });
+  // Priority 2: follow-up (aplicado > 5 days)
+  var followUpJob = null;
+  tracked.forEach(function(t) {
+    if (t.status !== 'aplicado') return;
+    var d = Math.floor((now - new Date(t.updated_at || t.created_at).getTime()) / 86400000);
+    if (d >= 5 && (!followUpJob || d > followUpJob._days)) followUpJob = Object.assign({ _days: d }, t);
+  });
+  // Priority 3: best untracked analysis
+  var untrackedBest = analyses.filter(function(a) {
+    return a.score > 0 && !tracked.find(function(t){ return t.analysis_id === a.id; });
+  }).sort(function(a,b){ return b.score - a.score; })[0] || null;
+  // Priority 4: any analysis
+  var anyBest = analyses.filter(function(a){ return a.score > 0; }).sort(function(a,b){ return b.score - a.score; })[0] || null;
+
+  if (interviewJob) {
+    var a = analyses.find(function(x){ return x.id === interviewJob.analysis_id; });
+    var cargo = interviewJob.cargo || (a && (a.result||{}).job_info ? a.result.job_info.cargo : '') || 'essa vaga';
+    var emp = interviewJob.empresa || (a && (a.result||{}).job_info ? a.result.job_info.empresa : '') || '';
+    if (titleEl) titleEl.textContent = 'Prepare-se para a entrevista de ' + cargo;
+    if (descEl) descEl.textContent = 'Você tem uma entrevista marcada para ' + cargo + (emp ? ' na ' + emp : '') + '. Use o simulador para chegar mais preparado e aumentar suas chances.';
+    if (btnPri) { btnPri.textContent = 'Treinar entrevista →'; btnPri.onclick = function(){ window.location.href='/entrevista'; }; }
+    if (btnSec) { btnSec.textContent = 'Ver candidaturas'; btnSec.onclick = function(){ switchDashTab('vagas'); }; }
+    updatePBAPriority(interviewJob.score || (a ? a.score : 0), cargo, emp || 'Entrevista marcada', 'Entrevista marcada');
+  } else if (followUpJob) {
+    var a = analyses.find(function(x){ return x.id === followUpJob.analysis_id; });
+    var cargo = followUpJob.cargo || 'essa vaga';
+    var emp = followUpJob.empresa || '';
+    if (titleEl) titleEl.textContent = 'Faça follow-up com ' + (emp || cargo);
+    if (descEl) descEl.textContent = 'Você se candidatou há ' + followUpJob._days + ' dias e ainda não registrou um retorno. Um follow-up aumenta muito suas chances de resposta.';
+    if (btnPri) { btnPri.textContent = 'Registrar follow-up →'; btnPri.onclick = function(){ switchDashTab('vagas'); }; }
+    if (btnSec) { btnSec.textContent = 'Ver candidaturas'; btnSec.onclick = function(){ switchDashTab('vagas'); }; }
+    updatePBAPriority(followUpJob.score || (a ? a.score : 0), cargo, emp || '', followUpJob._days + ' dias sem retorno');
+  } else if (untrackedBest) {
+    var r = untrackedBest.result || {};
+    var ji = r.job_info || {};
+    var cargo = ji.cargo || (untrackedBest.job_excerpt ? untrackedBest.job_excerpt.slice(0,40) : 'essa vaga');
+    var emp = ji.empresa || 'Empresa';
+    var missing = (r.keywords_faltando || []).length;
+    if (titleEl) titleEl.textContent = 'Aumente seu score na vaga de ' + cargo;
+    if (descEl) descEl.textContent = 'Seu currículo ainda não menciona ' + (missing > 0 ? missing + ' requisito' + (missing > 1 ? 's importantes' : ' importante') : 'alguns requisitos') + ' da vaga. Com esses ajustes, sua aderência pode subir significativamente.';
+    if (btnPri) { btnPri.textContent = 'Otimizar CV agora →'; btnPri.onclick = function(){ window.location.href='/app'; }; }
+    if (btnSec) { btnSec.textContent = 'Ver análise completa'; btnSec.onclick = function(){ switchDashTab('vagas'); }; }
+    updatePBAPriority(untrackedBest.score, cargo, emp, missing + ' requisito' + (missing !== 1 ? 's' : '') + ' ausente' + (missing !== 1 ? 's' : ''));
+  } else if (anyBest) {
+    var r = anyBest.result || {};
+    var ji = r.job_info || {};
+    var cargo = ji.cargo || (anyBest.job_excerpt ? anyBest.job_excerpt.slice(0,40) : 'essa vaga');
+    var emp = ji.empresa || '';
+    var missing = (r.keywords_faltando || []).length;
+    if (titleEl) titleEl.textContent = 'Aumente seu score na vaga de ' + cargo;
+    if (descEl) descEl.textContent = 'Revise sua melhor análise e otimize o currículo para aumentar sua compatibilidade com essa vaga.';
+    if (btnPri) { btnPri.textContent = 'Otimizar CV agora →'; btnPri.onclick = function(){ window.location.href='/app'; }; }
+    if (btnSec) { btnSec.textContent = 'Ver candidaturas'; btnSec.onclick = function(){ switchDashTab('vagas'); }; }
+    updatePBAPriority(anyBest.score, cargo, emp, missing > 0 ? missing + ' requisito' + (missing > 1 ? 's' : '') + ' ausente' + (missing > 1 ? 's' : '') : 'Boa compatibilidade');
+  } else {
+    if (titleEl) titleEl.textContent = 'Analise sua primeira vaga';
+    if (descEl) descEl.textContent = 'Cole a descrição de uma vaga e seu currículo para receber diagnóstico completo de compatibilidade ATS.';
+    if (btnPri) { btnPri.textContent = 'Analisar uma vaga →'; btnPri.onclick = function(){ window.location.href='/app'; }; }
+    if (btnSec) btnSec.style.display = 'none';
+    updatePBAPriority(0, '—', '—', 'Nenhuma análise ainda');
+  }
+}
+
+function buildAttentionCards(analyses, tracked) {
+  var cards = [];
+  var now = Date.now();
+
+  // Detect follow-up
+  var followUp = null;
+  tracked.forEach(function(t) {
+    if (t.status !== 'aplicado') return;
+    var d = Math.floor((now - new Date(t.updated_at || t.created_at).getTime()) / 86400000);
+    if (d >= 5 && (!followUp || d > followUp._days)) followUp = Object.assign({ _days: d }, t);
+  });
+
+  // Detect interview
+  var interviewJob = tracked.find(function(t){ return t.status === 'entrevista'; });
+
+  // Detect untracked analysis (not applied)
+  var untrackedAnalysis = analyses.filter(function(a) {
+    return a.score > 0 && !tracked.find(function(t){ return t.analysis_id === a.id; });
+  }).sort(function(a,b){ return b.score - a.score; })[0] || null;
+
+  var actionCount = 0;
+
+  if (followUp) {
+    actionCount++;
+    var cargo = followUp.cargo || 'essa vaga';
+    var emp = followUp.empresa || cargo;
+    cards.push('<div class="psa-card"><div class="psa-badge psa-badge-hoje">Hoje</div><div class="psa-ico">✉️</div>' +
+      '<div class="psa-card-title">Faça follow-up com ' + escHtml(emp) + '</div>' +
+      '<div class="psa-card-desc">Você se candidatou há ' + followUp._days + ' dias e ainda não registrou um retorno.</div>' +
+      '<button class="psa-cta" onclick="switchDashTab(\'vagas\')">Registrar follow-up →</button></div>');
+  }
+
+  if (interviewJob) {
+    actionCount++;
+    var cargo = interviewJob.cargo || 'essa vaga';
+    var emp = interviewJob.empresa ? ' na ' + interviewJob.empresa : '';
+    cards.push('<div class="psa-card"><div class="psa-badge psa-badge-amanha">Entrevista</div><div class="psa-ico">🎯</div>' +
+      '<div class="psa-card-title">Prepare sua entrevista</div>' +
+      '<div class="psa-card-desc">Entrevista marcada para ' + escHtml(cargo) + escHtml(emp) + '. Use o simulador para chegar preparado.</div>' +
+      '<button class="psa-cta" onclick="window.location.href=\'/entrevista\'">Treinar entrevista →</button></div>');
+  }
+
+  if (untrackedAnalysis) {
+    actionCount++;
+    var r = untrackedAnalysis.result || {};
+    var ji = r.job_info || {};
+    var cargo = ji.cargo || (untrackedAnalysis.job_excerpt ? untrackedAnalysis.job_excerpt.slice(0,40) : 'essa vaga');
+    var emp = ji.empresa ? ' na ' + ji.empresa : '';
+    cards.push('<div class="psa-card"><div class="psa-badge psa-badge-impacto">Alto impacto</div><div class="psa-ico">⚡</div>' +
+      '<div class="psa-card-title">Complete a candidatura</div>' +
+      '<div class="psa-card-desc">Seu CV foi analisado para ' + escHtml(cargo) + escHtml(emp) + ', mas a candidatura ainda não foi enviada.</div>' +
+      '<button class="psa-cta" onclick="switchDashTab(\'vagas\')">Continuar candidatura →</button></div>');
+  }
+
+  // Fill remaining slots with tips
+  var tips = [
+    '<div class="psa-card"><div class="psa-badge psa-badge-ok">✓ Dica</div><div class="psa-ico">📋</div><div class="psa-card-title">Rastreie suas candidaturas</div><div class="psa-card-desc">Mantenha as candidaturas atualizadas para receber lembretes de follow-up automáticos.</div><button class="psa-cta" onclick="switchDashTab(\'vagas\')">Ver candidaturas →</button></div>',
+    '<div class="psa-card"><div class="psa-badge psa-badge-ok">✓ Dica</div><div class="psa-ico">🔔</div><div class="psa-card-title">Configure alertas de vagas</div><div class="psa-card-desc">Receba vagas compatíveis com seu perfil toda semana diretamente no e-mail.</div><button class="psa-cta" onclick="switchDashTab(\'alertas\')">Configurar alertas →</button></div>',
+    '<div class="psa-card"><div class="psa-badge psa-badge-ok">✓ Dica</div><div class="psa-ico">✍️</div><div class="psa-card-title">Analise mais vagas</div><div class="psa-card-desc">Quanto mais vagas você analisar, mais preciso fica o Insight da VagaAI sobre seu perfil.</div><button class="psa-cta" onclick="window.location.href=\'/app\'">Nova análise →</button></div>'
+  ];
+  var tipIdx = 0;
+  while (cards.length < 3) { cards.push(tips[tipIdx++ % tips.length]); }
+
+  var grid = document.getElementById('psaGrid');
+  if (grid) grid.innerHTML = cards.slice(0,3).join('');
+  return actionCount;
+}
+
+function renderOppList() {
+  var analyses = window._lastAnalysesData || [];
+  var tracked = _kTracked || [];
+  var container = document.getElementById('oppList');
+  if (!container) return;
+
+  var now = Date.now();
+  var sorted = analyses.slice().sort(function(a,b){ return b.score - a.score; }).slice(0, 8);
+
+  var filtered = sorted.filter(function(a) {
+    if (_oppFilter === 'todas') return true;
+    var tj = tracked.find(function(t){ return t.analysis_id === a.id; });
+    if (!tj) return false;
+    return tj.status === _oppFilter;
+  });
+
+  var activeCount = tracked.filter(function(t){ return t.status && t.status !== 'recusado'; }).length;
+  var countEl = document.getElementById('oppActiveCount');
+  if (countEl) countEl.textContent = activeCount + ' candidatura' + (activeCount !== 1 ? 's' : '') + ' ativa' + (activeCount !== 1 ? 's' : '');
+
+  if (!filtered.length) {
+    container.innerHTML = '<div style="padding:28px;text-align:center;color:var(--t3);font-size:12px">Nenhuma vaga nesta categoria ainda.</div>';
+    return;
+  }
+
+  var STATUS_BG_OPP = { '':'var(--bg-sub)','aplicado':'var(--s-grn-bg)','em_processo':'#e6f1fb','entrevista':'#faeeda','oferta':'#eeedfe','recusado':'var(--s-red-bg)' };
+  var STATUS_CLR_OPP = { '':'var(--t3)','aplicado':'var(--gb-emerald)','em_processo':'#185fa5','entrevista':'#854f0b','oferta':'#534ab7','recusado':'var(--s-red)' };
+  var STATUS_LBL_OPP = { '':'Só análise','aplicado':'Aplicado','em_processo':'Em processo','entrevista':'Entrevista','oferta':'Oferta','recusado':'Recusado' };
+
+  function nextAction(status, updatedAt) {
+    if (!status) return { lbl:'Iniciar candidatura', when:'Sem prazo' };
+    if (status === 'aplicado') {
+      var d = Math.floor((now - new Date(updatedAt).getTime()) / 86400000);
+      if (d >= 7) return { lbl:'Fazer follow-up', when:'Vence hoje' };
+      if (d >= 5) return { lbl:'Fazer follow-up', when:'Em breve' };
+      return { lbl:'Aguardar retorno', when:'Há ' + d + ' dia' + (d !== 1 ? 's' : '') };
+    }
+    if (status === 'em_processo') return { lbl:'Aguardar retorno', when:'' };
+    if (status === 'entrevista') return { lbl:'Treinar entrevista', when:'Alta prioridade' };
+    if (status === 'oferta') return { lbl:'Avaliar proposta', when:'Alta prioridade' };
+    return { lbl:'—', when:'' };
+  }
+
+  container.innerHTML = filtered.map(function(a) {
+    var r = a.result || {};
+    var ji = r.job_info || {};
+    var cargo = ji.cargo || (a.job_excerpt ? a.job_excerpt.slice(0,32) : 'Análise');
+    var empresa = ji.empresa || 'Empresa';
+    var s = a.score || 0;
+    var sbg = s >= 70 ? 'var(--s-grn-bg)' : s >= 40 ? 'var(--s-amb-bg)' : 'var(--s-red-bg)';
+    var sclr = s >= 70 ? 'var(--s-grn)' : s >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
+    var tj = tracked.find(function(t){ return t.analysis_id === a.id; });
+    var status = tj ? (tj.status || '') : '';
+    var na = nextAction(status, tj ? (tj.updated_at || tj.created_at) : null);
+    var daysAgo = Math.floor((now - new Date(a.created_at).getTime()) / 86400000);
+    var dStr = daysAgo === 0 ? 'hoje' : daysAgo === 1 ? 'ontem' : 'há ' + daysAgo + ' dias';
+    return '<div class="opp-item" onclick="switchDashTab(\'vagas\')">' +
+      '<div class="opp-item-score" style="background:' + sbg + ';color:' + sclr + '">' + s + '%</div>' +
+      '<div class="opp-item-body"><div class="opp-item-cargo">' + escHtml(cargo) + '</div>' +
+      '<div class="opp-item-sub">' + escHtml(empresa) + ' · ' + dStr + '</div></div>' +
+      '<span class="opp-status-pill" style="background:' + (STATUS_BG_OPP[status]||'var(--bg-sub)') + ';color:' + (STATUS_CLR_OPP[status]||'var(--t3)') + '">' + (STATUS_LBL_OPP[status]||'—') + '</span>' +
+      '<div class="opp-item-action"><div class="opp-action-lbl">' + escHtml(na.lbl) + '</div>' +
+      (na.when ? '<div class="opp-action-when">' + escHtml(na.when) + '</div>' : '') + '</div>' +
+      '<svg class="opp-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>' +
+      '</div>';
+  }).join('');
+}
+
+function buildFunilCard(analyses, tracked) {
+  var pipe = document.getElementById('funilPipe');
+  var insightEl = document.getElementById('funilInsight');
+  if (!pipe) return;
+
+  var total = analyses.length;
+  var candidaturas = tracked.filter(function(t){ return t.status && t.status !== ''; }).length;
+  var entrevistas = tracked.filter(function(t){ return t.status === 'entrevista' || t.status === 'oferta'; }).length;
+  var ofertas = tracked.filter(function(t){ return t.status === 'oferta'; }).length;
+  var maxN = Math.max(total, 1);
+
+  var stages = [
+    { lbl:'Analisadas', num:total, clr:'#1d9e75' },
+    { lbl:'Candidaturas', num:candidaturas, clr:'#185fa5' },
+    { lbl:'Entrevistas', num:entrevistas, clr:'#ba7517' },
+    { lbl:'Ofertas', num:ofertas, clr:'#534ab7' }
+  ];
+
+  pipe.innerHTML = stages.map(function(st, i) {
+    var pct = Math.round((st.num / maxN) * 100);
+    return '<div class="funil-stage">' +
+      '<div class="funil-stage-num" style="color:' + st.clr + '">' + st.num + '</div>' +
+      '<div class="funil-bar-wrap"><div class="funil-bar-fill" style="width:' + pct + '%;background:' + st.clr + '"></div></div>' +
+      '<div class="funil-stage-lbl">' + st.lbl + '</div>' +
+      '</div>' +
+      (i < stages.length - 1 ? '<div class="funil-arrow">›</div>' : '');
+  }).join('');
+
+  if (insightEl) {
+    var txt = 'Analise mais vagas para receber insights personalizados.';
+    if (total >= 3) {
+      if (candidaturas === 0) txt = 'Você analisou ' + total + ' vagas mas ainda não iniciou nenhuma candidatura. Escolha as de maior score para começar.';
+      else if (entrevistas === 0 && candidaturas >= 2) txt = 'Nenhuma entrevista ainda. Considere fazer follow-up nas vagas com status "Aplicado".';
+      else if (entrevistas > 0) txt = 'Você avançou para entrevista em ' + entrevistas + ' de ' + candidaturas + ' candidatura' + (candidaturas > 1 ? 's' : '') + '. Use o simulador para se preparar.';
+      else txt = 'Priorize vagas com score acima de 70% para maximizar suas chances de retorno.';
+    }
+    insightEl.textContent = txt;
+  }
+}
+
 async function loadAnalyses() {
   try {
     var res = await fetch(SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=id,score,job_excerpt,created_at,result&order=created_at.desc&limit=200', {
@@ -1910,16 +2143,8 @@ async function loadAnalyses() {
     });
     var data = await res.json();
     if (Array.isArray(data)) {
-      var scores = data.filter(function(a){ return a.score > 0; });
-      if (scores.length) {
-        var avg = Math.round(scores.reduce(function(s,a){ return s+a.score; },0) / scores.length);
-        document.getElementById('heroAvgScore').textContent = avg + '%';
-      }
-      document.getElementById('heroVagasCount').textContent = data.length;
-      updateGoalsSection(data);
       window._lastAnalysesData = data;
-      updateMinhasVagas(data);
-      updateInsightAmbar(data);
+      buildPainelV2(data, _kTracked || []);
       renderVagasPage();
     }
   } catch(e) { console.error('loadAnalyses error:', e); }
@@ -2024,8 +2249,7 @@ async function loadKanban() {
     }
 
     renderTrackedJobs();
-    // re-render minhasVagas para atualizar botões Rastrear/Rastreando
-    if (window._lastAnalysesData) updateMinhasVagas(window._lastAnalysesData);
+    if (window._lastAnalysesData) buildPainelV2(window._lastAnalysesData, _kTracked || []);
   } catch(e) {
     console.error('loadKanban error:', e);
   }
