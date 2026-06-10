@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VagaAI — Painel</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=Lora:wght@600;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -40,7 +43,7 @@
   --r: 18px;
   --r-sm: 10px;
   --r-xs: 6px;
-  --sb: 78px;
+  --sb: 230px;
 }
 
 [data-theme="dark"] {
@@ -60,7 +63,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--bg);
   color: var(--t1);
   display: flex;
@@ -69,75 +72,143 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ── Sidebar expandida ─────────────────────────────────────── */
 .sidebar {
   width: var(--sb);
-  background: var(--gb-forest);
+  background: linear-gradient(180deg, #07170f 0%, #0b2116 100%);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 22px 0 20px;
+  padding: 24px 16px 20px;
   position: fixed;
   inset: 0 auto 0 0;
   z-index: 200;
+  overflow: hidden;
 }
 
 .sidebar::before {
   content: '';
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(78,206,145,.06) 0%, transparent 40%);
+  background: linear-gradient(180deg, rgba(78,206,145,.07) 0%, transparent 38%);
   pointer-events: none;
 }
 
-.sb-logo {
-  width: 44px; height: 44px;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 30px;
-  cursor: pointer;
-  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+.sb-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 6px 26px;
   position: relative; z-index: 1;
 }
 
-.sb-logo:hover { transform: scale(1.08); }
-.sb-logo img { width: 100%; height: 100%; object-fit: cover; }
+.sb-brand-logo {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
 
-.sb-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; position: relative; z-index: 1; }
+.sb-brand-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+.sb-brand-name {
+  font-family: Lora, Georgia, serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  letter-spacing: -.2px;
+}
+
+.sb-brand-name span { color: #47d99b; }
+
+.sb-section-label {
+  color: rgba(255,255,255,.3);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  padding: 0 10px;
+  margin-bottom: 7px;
+  position: relative; z-index: 1;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sb-nav { display: flex; flex-direction: column; gap: 3px; flex: 1; position: relative; z-index: 1; }
 
 .sb-btn {
   position: relative;
-  width: 46px; height: 46px;
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  color: rgba(255,255,255,.3);
+  width: 100%;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255,255,255,.45);
   cursor: pointer;
-  border: none; background: transparent;
-  transition: all .2s ease;
+  border: none;
+  background: transparent;
+  transition: all .18s ease;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  font-family: inherit;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
-.sb-btn svg { width: 19px; height: 19px; }
-.sb-btn:hover { background: rgba(78,206,145,.12); color: var(--gb-bright); }
-.sb-btn.active { background: rgba(78,206,145,.16); color: var(--gb-bright); }
-.sb-btn.active::before {
-  content: '';
-  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 3px; height: 22px;
-  background: var(--gb-bright);
-  border-radius: 0 3px 3px 0;
+.sb-btn svg { width: 17px; height: 17px; flex-shrink: 0; }
+.sb-btn:hover { background: rgba(78,206,145,.1); color: rgba(255,255,255,.85); }
+.sb-btn:focus-visible { outline: 2px solid var(--gb-bright); outline-offset: 2px; }
+.sb-btn.active { color: #fff; background: rgba(62,207,142,.13); box-shadow: inset 3px 0 0 #3ecf8e; }
+
+.sb-bottom {
+  position: relative; z-index: 1;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.07);
+  display: flex; flex-direction: column; gap: 8px;
 }
 
-.sb-bottom { position: relative; z-index: 1; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.07); }
+.sb-support {
+  background: rgba(255,255,255,.035);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 10px;
+  padding: 11px 12px;
+  font-size: 10.5px;
+  color: rgba(255,255,255,.42);
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+.sb-support strong { color: rgba(255,255,255,.7); font-size: 11px; display: block; margin-bottom: 2px; }
+
+.sb-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .15s;
+  overflow: hidden;
+}
+
+.sb-profile-row:hover { background: rgba(255,255,255,.05); }
 
 .sb-avatar {
-  width: 36px; height: 36px; border-radius: 10px;
+  width: 34px; height: 34px; border-radius: 9px;
   background: linear-gradient(135deg, var(--gb-emerald), var(--gb-mid));
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700; color: #fff;
+  font-size: 11px; font-weight: 700; color: #fff;
   cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.3);
-  position: relative;
+  flex-shrink: 0; border: none;
 }
 
+.sb-profile-info { min-width: 0; overflow: hidden; }
+.sb-profile-info strong { display: block; font-size: 11.5px; color: rgba(255,255,255,.85); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-profile-info span { font-size: 10px; color: rgba(255,255,255,.38); white-space: nowrap; }
+
 .user-dropdown {
-  position: fixed; bottom: 70px; left: 90px;
+  position: fixed; bottom: 70px; left: calc(var(--sb) + 8px);
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: 12px; min-width: 220px;
   box-shadow: 0 8px 32px rgba(0,0,0,.18); z-index: 500;
@@ -983,8 +1054,8 @@ body {
 
 /* ── Painel V2 ─────────────────────────────────────────────── */
 .pg-greeting { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:28px; padding-top:4px; }
-.pg-eyebrow { font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--gb-emerald); margin-bottom:6px; }
-.pg-title { font-size:26px; font-weight:800; color:var(--t1); margin-bottom:6px; }
+.pg-eyebrow { font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--gb-emerald); margin-bottom:7px; }
+.pg-title { font-family: Lora, Georgia, serif; font-size:28px; font-weight:700; color:var(--t1); margin-bottom:7px; letter-spacing:-.4px; }
 .pg-sub { font-size:13px; color:var(--t2); }
 .pg-date { font-size:12px; color:var(--t3); white-space:nowrap; padding-top:6px; }
 .pba-card { background:linear-gradient(135deg,#081510 0%,#0d3a22 55%,#0f4029 100%); border-radius:var(--r); padding:36px 40px; margin-bottom:28px; display:flex; align-items:center; gap:40px; }
@@ -1062,6 +1133,51 @@ body {
 .funil-divider { height:1px; background:var(--border); margin:14px 0; }
 .funil-insight-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--s-amb); margin-bottom:7px; }
 .funil-insight-txt { font-size:11.5px; color:var(--t2); line-height:1.5; }
+
+/* ── Responsividade ─────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .opp-cols { grid-template-columns: 1fr 230px; }
+}
+
+@media (max-width: 1023px) {
+  :root { --sb: 72px; }
+  .sidebar { padding: 22px 10px 16px; align-items: center; }
+  .sb-brand { padding: 0 0 24px; justify-content: center; }
+  .sb-brand-logo { width: 34px; height: 34px; }
+  .sb-brand-name,
+  .sb-section-label,
+  .sb-btn span,
+  .sb-support,
+  .sb-profile-info { display: none; }
+  .sb-btn { justify-content: center; padding: 11px; width: 48px; gap: 0; }
+  .sb-profile-row { justify-content: center; padding: 5px; }
+  .psa-grid { grid-template-columns: repeat(2, 1fr); }
+  .opp-cols { grid-template-columns: 1fr; }
+  .funil-card { display: none; }
+  .pba-card { flex-direction: column; gap: 20px; }
+  .pba-right { width: 100%; }
+  .content { padding: 28px 24px 48px; }
+}
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  :root { --sb: 0px; }
+  .main { margin-left: 0; }
+  .content { padding: 22px 16px 40px; }
+  .psa-grid { grid-template-columns: 1fr; }
+  .opp-cols { grid-template-columns: 1fr; }
+  .pg-title { font-size: 22px; }
+  .pba-card { padding: 24px 20px; border-radius: 14px; }
+  .opp-item-action { display: none; }
+  .funil-card { display: none; }
+}
+
+@media (max-width: 1023px) {
+  .user-dropdown { left: calc(72px + 8px); }
+}
+@media (max-width: 768px) {
+  .user-dropdown { left: 16px; bottom: 16px; }
+}
 </style>
 <script>
 if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');
@@ -1126,42 +1242,65 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
 </div>
 
 <!-- SIDEBAR -->
-<aside class="sidebar">
-  <div class="sb-logo"><img src="/logo-icon.svg" alt="VagaAI"></div>
-  <nav class="sb-nav">
-    <button class="sb-btn active" data-tab="painel" onclick="switchDashTab('painel')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<aside class="sidebar" aria-label="Menu principal">
+  <div class="sb-brand">
+    <div class="sb-brand-logo"><img src="/logo-icon.svg" alt="VagaAI"></div>
+    <strong class="sb-brand-name">Vaga<span>AI</span></strong>
+  </div>
+  <div class="sb-section-label" aria-hidden="true">Seu espaço</div>
+  <nav class="sb-nav" role="navigation" aria-label="Navegação principal">
+    <button class="sb-btn active" data-tab="painel" onclick="switchDashTab('painel')" aria-label="Visão geral" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
         <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
       </svg>
+      <span>Visão geral</span>
     </button>
-    <button class="sb-btn" data-tab="vagas" onclick="switchDashTab('vagas')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <button class="sb-btn" data-tab="vagas" onclick="switchDashTab('vagas')" aria-label="Candidaturas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
       </svg>
+      <span>Candidaturas</span>
     </button>
-    <button class="sb-btn" data-tab="alertas" onclick="switchDashTab('alertas')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <button class="sb-btn" data-tab="alertas" onclick="switchDashTab('alertas')" aria-label="Alertas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
       </svg>
+      <span>Alertas</span>
     </button>
-    <button class="sb-btn" data-tab="plano" onclick="switchDashTab('plano')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+    <button class="sb-btn" data-tab="plano" onclick="switchDashTab('plano')" aria-label="Conta e plano">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
       </svg>
+      <span>Conta e plano</span>
     </button>
   </nav>
   <div class="sb-bottom">
-    <button class="sb-avatar" id="avatarBtn" onclick="toggleDropdown()" style="border:none">
-      <span id="avatarInitials">?</span>
-    </button>
-    <div class="user-dropdown" id="userDropdown">
+    <div class="sb-support" aria-hidden="true">
+      <strong>Precisa de ajuda?</strong>Veja dicas para melhorar suas candidaturas.
+    </div>
+    <div class="sb-profile-row" onclick="toggleDropdown()" role="button" aria-haspopup="true" aria-expanded="false" aria-label="Menu da conta">
+      <button class="sb-avatar" id="avatarBtn" style="border:none;pointer-events:none" tabindex="-1" aria-hidden="true">
+        <span id="avatarInitials">?</span>
+      </button>
+      <div class="sb-profile-info">
+        <strong id="sbDisplayName">—</strong>
+        <span id="sbPlanLabel">Plano Pro</span>
+      </div>
+    </div>
+    <div class="user-dropdown" id="userDropdown" role="menu">
       <div class="dropdown-header">
         <div class="dropdown-name" id="dropName">—</div>
         <div class="dropdown-email" id="dropEmail">—</div>
       </div>
-      <button class="dropdown-item" onclick="closeDropdown();openPerfil()">👤 Meu Perfil</button>
-      <button class="dropdown-item danger" onclick="logout()">🚪 Sair</button>
+      <button class="dropdown-item" role="menuitem" onclick="closeDropdown();openPerfil()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Meu Perfil
+      </button>
+      <button class="dropdown-item danger" role="menuitem" onclick="logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sair
+      </button>
     </div>
   </div>
 </aside>
@@ -1178,9 +1317,9 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     </svg>
 
     <div class="breadcrumb">
-      <strong id="bc-sec">Painel</strong>
+      <strong id="bc-sec">Visão geral</strong>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      <span id="bc-sub">Visão geral</span>
+      <span id="bc-sub">Sua busca de emprego</span>
     </div>
     <div class="header-right">
       <div class="plan-badge"><div class="plan-badge-dot"></div><span id="headerPlanLabel">Pro</span></div>
@@ -1597,6 +1736,8 @@ async function init() {
   document.getElementById('avatarInitials').textContent = initials;
   document.getElementById('dropName').textContent = displayName;
   document.getElementById('dropEmail').textContent = email;
+  var sbDisp = document.getElementById('sbDisplayName');
+  if (sbDisp) sbDisp.textContent = displayName;
 
   window._perfilData = { email, displayName };
   window._userName = displayName;
@@ -2837,10 +2978,12 @@ function switchDashTab(tab) {
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
   document.querySelectorAll('.sb-btn[data-tab]').forEach(function(el) {
-    el.classList.toggle('active', el.dataset.tab === tab);
+    var isActive = el.dataset.tab === tab;
+    el.classList.toggle('active', isActive);
+    el.setAttribute('aria-current', isActive ? 'page' : 'false');
   });
-  var labels = { painel:'Painel', vagas:'Candidaturas', alertas:'Alertas', plano:'Meu Plano' };
-  var subs = { painel:'Visão geral', vagas:'Rastreamento', alertas:'Configurações', plano:'Assinatura' };
+  var labels = { painel:'Visão geral', vagas:'Candidaturas', alertas:'Alertas', plano:'Conta e Plano' };
+  var subs   = { painel:'Sua busca de emprego', vagas:'Rastreamento de candidaturas', alertas:'Configurações de alertas', plano:'Assinatura e conta' };
   var bcSec = document.getElementById('bc-sec');
   var bcSub = document.getElementById('bc-sub');
   if (bcSec) bcSec.textContent = labels[tab] || tab;
@@ -2859,16 +3002,25 @@ function toggleTheme() {
 
 function toggleDropdown() {
   var dd = document.getElementById('userDropdown');
-  if (dd) dd.classList.toggle('active');
+  if (!dd) return;
+  var open = dd.classList.toggle('active');
+  var trigger = document.querySelector('.sb-profile-row');
+  if (trigger) trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (open) { var firstBtn = dd.querySelector('button'); if (firstBtn) firstBtn.focus(); }
 }
 
 function closeDropdown() {
   var dd = document.getElementById('userDropdown');
   if (dd) dd.classList.remove('active');
+  var trigger = document.querySelector('.sb-profile-row');
+  if (trigger) trigger.setAttribute('aria-expanded', 'false');
 }
 
 document.addEventListener('click', function(e) {
-  if (e.target.id !== 'avatarBtn' && !document.getElementById('userDropdown').contains(e.target)) {
+  var profileRow = document.querySelector('.sb-profile-row');
+  var dd = document.getElementById('userDropdown');
+  if (!profileRow || !dd) return;
+  if (!profileRow.contains(e.target) && !dd.contains(e.target)) {
     closeDropdown();
   }
 });
@@ -2890,9 +3042,11 @@ async function doSalvarNome() {
   if (!error) {
     document.getElementById('nomeMsg').textContent = '✓ Nome atualizado!';
     document.getElementById('dropName').textContent = nome;
+    var sbDisp = document.getElementById('sbDisplayName');
+    if (sbDisp) sbDisp.textContent = nome;
     window._userName = nome;
     var pgG = document.getElementById('pgGreeting');
-    if (pgG) pgG.textContent = getGreetingWord() + ', ' + nome + '!';
+    if (pgG) pgG.textContent = getGreetingWord() + ', ' + nome;
   }
 }
 
