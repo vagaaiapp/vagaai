@@ -1724,15 +1724,30 @@ async function saveTrackerModal(modal) {
 
 async function deleteTracker(id) {
   try {
+    console.log('Starting delete for id:', id);
+
     var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + id, {
       method: 'DELETE',
-      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
+      headers: {
+        apikey: SUPABASE_ANON,
+        Authorization: 'Bearer ' + (currentSession?.access_token || ''),
+        'Content-Type': 'application/json'
+      }
     });
+
     console.log('Delete response:', res.status);
-    await loadKanban();
+    var resText = await res.text();
+    console.log('Delete response text:', resText);
+
+    if (res.ok || res.status === 204 || res.status === 200) {
+      alert('✓ Candidatura removida!');
+      await loadKanban();
+    } else {
+      alert('Erro ao remover: Status ' + res.status);
+    }
   } catch(e) {
     console.error('deleteTracker error:', e);
-    alert('Erro ao remover: ' + e.message);
+    alert('Erro: ' + e.message);
   }
 }
 
