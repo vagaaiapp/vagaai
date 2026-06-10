@@ -587,6 +587,44 @@ body {
 
 .ai-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(78,206,145,.3); }
 
+.mv-outer { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); overflow:hidden; margin-bottom:28px; }
+.mv-outer-head { display:flex; align-items:center; justify-content:space-between; padding:18px 24px 14px; border-bottom:1px solid var(--border); }
+.mv-outer-head h3 { font-size:15px; font-weight:700; }
+.mv-outer-head a { font-size:12.5px; color:var(--gb-emerald); text-decoration:none; font-weight:600; }
+.mv-item { display:flex; align-items:flex-start; gap:14px; padding:16px 24px; border-bottom:1px solid var(--border-soft); }
+.mv-item:last-child { border-bottom:none; }
+.mv-score { width:44px; height:44px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; margin-top:2px; }
+.mv-body { flex:1; min-width:0; }
+.mv-cargo { font-size:13px; font-weight:700; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+.mv-emp { font-size:11px; color:var(--t3); margin-bottom:7px; }
+.mv-bars { display:grid; grid-template-columns:1fr 1fr; gap:4px 12px; margin-bottom:7px; }
+.mv-bar-row { display:flex; align-items:center; gap:6px; }
+.mv-bar-lbl { font-size:9px; color:var(--t3); width:80px; flex-shrink:0; }
+.mv-bar-track { flex:1; height:4px; background:var(--bg-sub); border-radius:2px; overflow:hidden; }
+.mv-bar-fill { height:100%; border-radius:2px; }
+.mv-bar-val { font-size:9px; font-weight:600; width:24px; text-align:right; flex-shrink:0; }
+.mv-tags { display:flex; gap:5px; flex-wrap:wrap; }
+.mv-right { flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:6px; padding-top:2px; }
+.mv-track-btn { font-size:11px; font-weight:600; padding:6px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-card); color:var(--t2); cursor:pointer; transition:all .15s; white-space:nowrap; }
+.mv-track-btn:hover { border-color:var(--gb-emerald); color:var(--gb-emerald); }
+.mv-tracking { font-size:11px; font-weight:600; padding:6px 12px; border-radius:8px; background:var(--s-grn-bg); color:var(--gb-emerald); border:1px solid rgba(26,122,74,.2); white-space:nowrap; }
+.mv-footer { padding:13px 24px; display:flex; align-items:center; justify-content:space-between; background:var(--bg-sub); border-top:1px solid var(--border); }
+.mv-footer-note { font-size:11px; color:var(--t3); }
+.insight-amber { background:#fffbf2; border:1px solid rgba(196,125,10,.25); border-radius:var(--r); padding:28px 32px; position:relative; overflow:hidden; }
+.insight-amber:hover { transform:translateY(-3px); box-shadow:var(--sh-hover); }
+.amber-eyebrow { display:inline-flex; align-items:center; gap:6px; background:rgba(196,125,10,.1); border:1px solid rgba(196,125,10,.2); border-radius:20px; padding:4px 12px; font-size:11px; font-weight:600; color:#854f0b; margin-bottom:14px; }
+.amber-title { font-size:15px; font-weight:700; color:#412402; margin-bottom:10px; }
+.amber-text { font-size:13px; color:#633806; line-height:1.65; margin-bottom:16px; }
+.amber-text strong { color:#854f0b; }
+.amber-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px; }
+.amber-tag { background:rgba(196,125,10,.1); border:1px solid rgba(196,125,10,.2); border-radius:6px; padding:4px 11px; font-size:12px; font-weight:600; color:#854f0b; }
+.amber-section { border-top:1px solid rgba(196,125,10,.15); padding-top:14px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.amber-pres-lbl { font-size:10px; font-weight:600; color:#854f0b; text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; }
+.amber-pres-tags { display:flex; gap:6px; flex-wrap:wrap; }
+.amber-pres-tag { font-size:11px; background:rgba(26,122,74,.08); color:var(--gb-emerald); padding:3px 9px; border-radius:20px; font-weight:600; }
+.amber-btn { display:inline-flex; align-items:center; gap:7px; background:#ba7517; color:#fff; border:none; border-radius:8px; padding:10px 18px; font-size:12.5px; font-weight:700; cursor:pointer; transition:all .15s; white-space:nowrap; }
+.amber-btn:hover { background:#854f0b; }
+
 .vaga-item {
   display: flex; align-items: center; gap: 14px;
   padding: 14px 0; border-bottom: 1px solid var(--border-soft);
@@ -1210,99 +1248,21 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       </div>
     </div>
 
-    <!-- RESULTADOS -->
-    <div class="sec-label">Resultados das análises</div>
-    <div class="score-card">
-      <div class="score-card-head">
-        <div>
-          <h3>Como seu CV performou em cada vaga</h3>
-          <p>Score acima de 70% passa pelos filtros ATS · Análise detalhada dos critérios de seleção</p>
-        </div>
-        <a href="#">Ver histórico →</a>
+    <!-- MINHAS VAGAS -->
+    <div class="mv-outer">
+      <div class="mv-outer-head">
+        <h3>Minhas vagas</h3>
+        <a href="#" onclick="switchDashTab('vagas');return false;">Ver todas →</a>
       </div>
-      <div class="score-card-body" id="scoreCardBody">
-        <!-- Coluna 1 -->
-        <div class="score-col">
-          <div class="sc-top">
-            <div class="sc-ring-wrap">
-              <svg viewBox="0 0 100 100">
-                <circle class="sc-bg" cx="50" cy="50" r="36"/>
-                <circle class="sc-fill red" cx="50" cy="50" r="36" style="stroke-dashoffset:163"/>
-              </svg>
-              <div class="sc-label">
-                <div class="sc-num" style="color:var(--s-red)">28%</div>
-                <div class="sc-den">score</div>
-              </div>
-            </div>
-            <div>
-              <div class="sc-company">PRIMIZIE</div>
-              <div class="sc-role">Gerente de Marketing · R$10k+</div>
-              <span class="sc-status bad">Não passou nos filtros ATS</span>
-            </div>
-          </div>
-          <div class="sc-metrics">
-            <div>
-              <div class="sc-mrow-top"><span class="sc-mrow-name">Compatibilidade com a vaga</span><span class="sc-mrow-pct red">28%</span></div>
-              <div class="sc-track"><div class="sc-bar red" style="width:28%"></div></div>
-            </div>
-            <div>
-              <div class="sc-mrow-top"><span class="sc-mrow-name">Keywords ATS detectadas</span><span class="sc-mrow-pct red">20%</span></div>
-              <div class="sc-track"><div class="sc-bar red" style="width:20%"></div></div>
-            </div>
-            <div>
-              <div class="sc-mrow-top"><span class="sc-mrow-name">Legibilidade e estrutura</span><span class="sc-mrow-pct amber">65%</span></div>
-              <div class="sc-track"><div class="sc-bar amber" style="width:65%"></div></div>
-            </div>
-            <div>
-              <div class="sc-mrow-top"><span class="sc-mrow-name">Força dos bullet points</span><span class="sc-mrow-pct red">18%</span></div>
-              <div class="sc-track"><div class="sc-bar red" style="width:18%"></div></div>
-            </div>
-          </div>
-          <div class="sc-insight">
-            Adicionar <strong>Meta Ads, Facebook Ads e Google Ads</strong> ao CV pode elevar seu score de 28% para ~58% nessa vaga.
-          </div>
-        </div>
-        <!-- Coluna 2 -->
-        <div class="score-col">
-          <div class="sc-top">
-            <div class="sc-ring-wrap">
-              <svg viewBox="0 0 100 100">
-                <circle class="sc-bg" cx="50" cy="50" r="36"/>
-                <circle class="sc-fill red" cx="50" cy="50" r="36" style="stroke-dashoffset:215"/>
-              </svg>
-              <div class="sc-label">
-                <div class="sc-num" style="color:var(--s-red)">5%</div>
-                <div class="sc-den">score</div>
-              </div>
-            </div>
-            <div>
-              <div class="sc-company">Empresa anônima</div>
-              <div class="sc-role">Verificação de Segurança</div>
-              <span class="sc-status bad">Área muito diferente do perfil</span>
-            </div>
-          </div>
-          <div class="sc-metrics">
-            <div>
-              <div class="sc-mrow-top"><span class="sc-mrow-name">Compatibilidade com a vaga</span><span class="sc-mrow-pct red">5%</span></div>
-              <div class="sc-track"><div class="sc-bar red" style="width:5%"></div></div>
-            </div>
-            <div>
-              <div class="sc-mrow-top"><span class="sc-mrow-name">Keywords ATS detectadas</span><span class="sc-mrow-pct red">3%</span></div>
-              <div class="sc-track"><div class="sc-bar red" style="width:3%"></div></div>
-            </div>
-            <div>
-              <div class="sc-mrow-top"><span class="sc-mrow-name">Legibilidade e estrutura</span><span class="sc-mrow-pct amber">65%</span></div>
-              <div class="sc-track"><div class="sc-bar amber" style="width:65%"></div></div>
-            </div>
-            <div>
-              <div class="sc-mrow-top"><span class="sc-mrow-name">Match de área de atuação</span><span class="sc-mrow-pct red">0%</span></div>
-              <div class="sc-track"><div class="sc-bar red" style="width:1%"></div></div>
-            </div>
-          </div>
-          <div class="sc-insight">
-            Vaga fora da sua área. <strong>Foque em vagas de Marketing</strong> para aumentar suas chances de entrevista e otimizar seu tempo.
-          </div>
-        </div>
+      <div id="minhasVagasBody">
+        <div style="padding:32px;text-align:center;color:var(--t3);font-size:13px">Carregando...</div>
+      </div>
+      <div class="mv-footer">
+        <span class="mv-footer-note">Vagas analisadas aparecem aqui automaticamente</span>
+        <button class="btn-cta" onclick="window.location.href='/app'" style="font-size:12px;padding:7px 14px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nova análise
+        </button>
       </div>
     </div>
 
@@ -1394,61 +1354,20 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       </div>
 
       <!-- Insight AI -->
-      <div class="insight-ai">
-        <div class="ai-eyebrow">✦ Insight da VagaAI</div>
-        <div class="ai-title">Seu CV pode chegar a 58% hoje</div>
-        <div class="ai-text">
-          Com apenas <strong>3 palavras-chave</strong> adicionadas ao seu CV, seu score na PRIMIZIE saltaria de <strong>28% → ~58%</strong> — passando pelos filtros automáticos e chegando à mesa do recrutador.
-        </div>
-        <div class="ai-tags">
-          <span class="ai-tag">Meta Ads</span>
-          <span class="ai-tag">Facebook Ads</span>
-          <span class="ai-tag">Google Ads</span>
-        </div>
-        <button class="ai-btn" onclick="window.location.href='/app'">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          Otimizar meu CV agora
-        </button>
-      </div>
-
-      <!-- Candidaturas -->
-      <div class="card">
-        <div class="card-pad">
-          <div class="card-head">
-            <div class="card-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
-            </div>
-            <div>
-              <div class="card-ttl">Candidaturas</div>
-              <div class="card-sub">Rastreie cada vaga para acompanhar retornos e não perder nenhuma oportunidade</div>
-            </div>
+      <div class="insight-amber" id="insightAiCard" style="grid-column:1/-1">
+        <div class="amber-eyebrow">✦ Insight da VagaAI</div>
+        <div class="amber-title" id="insightTitle">Otimize seu CV para passar nos filtros ATS</div>
+        <div class="amber-text" id="insightText">Analise mais vagas para receber insights personalizados sobre como melhorar seu score.</div>
+        <div class="amber-tags" id="insightTags"></div>
+        <div class="amber-section">
+          <div id="insightPresWrap" style="display:none">
+            <div class="amber-pres-lbl">Presentes no CV</div>
+            <div class="amber-pres-tags" id="insightPresTags"></div>
           </div>
-
-          <div class="vaga-item">
-            <div class="vaga-score vs-bad">28</div>
-            <div class="vaga-info">
-              <div class="vaga-name">PRIMIZIE</div>
-              <div class="vaga-role">Gerente de Marketing · R$10k+ · Remoto</div>
-            </div>
-            <button class="track-btn" onclick="addToTracker('PRIMIZIE','Gerente de Marketing',28)">Rastrear</button>
-          </div>
-
-          <div class="vaga-item">
-            <div class="vaga-score vs-bad">5</div>
-            <div class="vaga-info">
-              <div class="vaga-name">Empresa anônima</div>
-              <div class="vaga-role">Verificação de Segurança · Fora da área</div>
-            </div>
-            <button class="track-btn" onclick="addToTracker('Empresa anônima','Verificação de Segurança',5)">Rastrear</button>
-          </div>
-
-          <div style="margin-top:20px;padding:16px;background:var(--bg-sub);border-radius:var(--r-sm);text-align:center;">
-            <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Analise mais vagas para aumentar suas chances</div>
-            <button class="btn-cta" onclick="window.location.href='/app'" style="margin:0 auto;font-size:12.5px;padding:9px 18px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Nova análise
-            </button>
-          </div>
+          <button class="amber-btn" onclick="window.location.href='/app'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Otimizar meu CV agora
+          </button>
         </div>
       </div>
 
@@ -1524,7 +1443,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
           </div>
           <div class="empty-title">Nenhuma candidatura rastreada ainda</div>
-          <div class="empty-sub">Volte ao Painel e clique em "Rastrear" em qualquer vaga analisada para começar.</div>
+          <div class="empty-sub">Clique em "Rastrear" em qualquer vaga analisada no Painel para começar a acompanhar.</div>
         </div>
       </div>
     </div>
@@ -1939,6 +1858,68 @@ function updateGoalsSection(analyses) {
   }
 }
 
+function updateMinhasVagas(analyses) {
+  var body = document.getElementById('minhasVagasBody');
+  if (!body) return;
+  if (!analyses || !analyses.length) {
+    body.innerHTML = '<div style="padding:32px;text-align:center;color:var(--t3);font-size:13px">Nenhuma análise ainda. Analise sua primeira vaga!</div>';
+    return;
+  }
+  var sorted = analyses.filter(function(a){ return a.score >= 0; }).sort(function(a,b){ return b.score - a.score; }).slice(0, 3);
+  var html = '';
+  sorted.forEach(function(a) {
+    var r = a.result || {};
+    var ji = r.job_info || {};
+    var cargo = ji.cargo || (a.job_excerpt ? a.job_excerpt.slice(0,40) : 'Análise');
+    var empresa = ji.empresa || 'Empresa';
+    var s = a.score || 0;
+    var bg = s >= 70 ? 'var(--s-grn-bg)' : s >= 40 ? 'var(--s-amb-bg)' : 'var(--s-red-bg)';
+    var clr = s >= 70 ? 'var(--s-grn)' : s >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
+    var atsLabel = s >= 70 ? '<span class="sc-status good" style="font-size:10px">Passou ATS</span>' : s >= 40 ? '<span class="sc-status med" style="font-size:10px">Parcial</span>' : '<span class="sc-status bad" style="font-size:10px">Não passou ATS</span>';
+    var fatores = Array.isArray(r.fatores) ? r.fatores : [];
+    var barsHtml = '';
+    var barItems = fatores.slice(0, 4);
+    barItems.forEach(function(f) {
+      var pct = Math.round((f.valor || 0) * 100);
+      var bc = pct >= 70 ? 'var(--s-grn)' : pct >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
+      barsHtml += '<div class="mv-bar-row"><div class="mv-bar-lbl">' + escHtml(f.nome || '') + '</div><div class="mv-bar-track"><div class="mv-bar-fill" style="width:' + pct + '%;background:' + bc + '"></div></div><div class="mv-bar-val" style="color:' + bc + '">' + pct + '%</div></div>';
+    });
+    var isTracked = Array.isArray(_kTracked) && _kTracked.some(function(t){ return t.analysis_id === a.id; });
+    var trackBtn = isTracked
+      ? '<span class="mv-tracking">✓ Rastreando</span>'
+      : '<button class="mv-track-btn" onclick="addToTracker(' + JSON.stringify(empresa) + ',' + JSON.stringify(cargo) + ',' + s + ',' + JSON.stringify(a.id) + ')">Rastrear</button>';
+    html += '<div class="mv-item"><div><div class="mv-score" style="background:' + bg + ';color:' + clr + '">' + s + '%</div></div><div class="mv-body"><div class="mv-cargo">' + escHtml(cargo) + '</div><div class="mv-emp">' + escHtml(empresa) + '</div><div class="mv-bars">' + barsHtml + '</div><div class="mv-tags">' + atsLabel + '</div></div><div class="mv-right">' + trackBtn + '</div></div>';
+  });
+  body.innerHTML = html;
+}
+
+function updateInsightAmbar(analyses) {
+  if (!analyses || !analyses.length) return;
+  var best = analyses.filter(function(a){ return a.score > 0 && a.result && a.result.keywords_faltando && a.result.keywords_faltando.length; }).sort(function(a,b){ return b.score - a.score; })[0];
+  if (!best) return;
+  var r = best.result;
+  var ji = r.job_info || {};
+  var empresa = ji.empresa || 'essa vaga';
+  var missing = (r.keywords_faltando || []).slice(0, 3);
+  var present = (r.keywords_encontradas || []).slice(0, 4);
+  var curScore = best.score;
+  var projScore = Math.min(curScore + missing.length * 10, 95);
+  var titleEl = document.getElementById('insightTitle');
+  var textEl = document.getElementById('insightText');
+  var tagsEl = document.getElementById('insightTags');
+  var presWrap = document.getElementById('insightPresWrap');
+  var presTags = document.getElementById('insightPresTags');
+  if (titleEl && missing.length) {
+    titleEl.textContent = 'Adicione ' + missing.length + ' palavra' + (missing.length > 1 ? 's-chave' : '-chave') + ' e suba de ' + curScore + '% para ~' + projScore + '% em ' + empresa;
+    textEl.innerHTML = 'Com <strong>' + escHtml(missing.join(', ')) + '</strong> no seu CV, você passa pelo filtro automático e chega à mesa do recrutador.';
+    tagsEl.innerHTML = missing.map(function(k){ return '<span class="amber-tag">' + escHtml(k) + '</span>'; }).join('');
+    if (present.length && presWrap) {
+      presWrap.style.display = '';
+      presTags.innerHTML = present.map(function(k){ return '<span class="amber-pres-tag">✓ ' + escHtml(k) + '</span>'; }).join('');
+    }
+  }
+}
+
 async function loadAnalyses() {
   try {
     var res = await fetch(SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=id,score,job_excerpt,created_at,result&order=created_at.desc&limit=200', {
@@ -1953,6 +1934,9 @@ async function loadAnalyses() {
       }
       document.getElementById('heroVagasCount').textContent = data.length;
       updateGoalsSection(data);
+      window._lastAnalysesData = data;
+      updateMinhasVagas(data);
+      updateInsightAmbar(data);
     }
   } catch(e) { console.error('loadAnalyses error:', e); }
 }
@@ -2056,6 +2040,8 @@ async function loadKanban() {
     }
 
     renderTrackedJobs();
+    // re-render minhasVagas para atualizar botões Rastrear/Rastreando
+    if (window._lastAnalysesData) updateMinhasVagas(window._lastAnalysesData);
   } catch(e) {
     console.error('loadKanban error:', e);
   }
@@ -2066,7 +2052,7 @@ function renderTrackedJobs() {
   if (!container) return;
 
   if (!_kTracked || _kTracked.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div><div class="empty-title">Nenhuma candidatura rastreada ainda</div><div class="empty-sub">Volte ao Painel e clique em "Rastrear" em qualquer vaga analisada para começar.</div></div>';
+    container.innerHTML = '<div class="empty-state"><div class="empty-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div><div class="empty-title">Nenhuma candidatura rastreada ainda</div><div class="empty-sub">Clique em "Rastrear" em qualquer vaga analisada no Painel para começar a acompanhar.</div></div>';
     return;
   }
 
@@ -2362,10 +2348,10 @@ async function saveAlertProfile() {
   } catch(e) { showToast('Erro ao salvar', 'error'); }
 }
 
-function addToTracker(empresa, cargo, score) {
+function addToTracker(empresa, cargo, score, analysisId) {
   switchDashTab('vagas');
   setTimeout(function() {
-    openTrackerEdit({ empresa: empresa, cargo: cargo, score: score, status: 'aplicado' });
+    openTrackerEdit({ empresa: empresa, cargo: cargo, score: score, status: 'aplicado', analysis_id: analysisId || null });
   }, 200);
 }
 
