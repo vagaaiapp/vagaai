@@ -610,6 +610,9 @@ body {
 .mv-tracking { font-size:11px; font-weight:600; padding:6px 12px; border-radius:8px; background:var(--s-grn-bg); color:var(--gb-emerald); border:1px solid rgba(26,122,74,.2); white-space:nowrap; }
 .mv-footer { padding:13px 24px; display:flex; align-items:center; justify-content:space-between; background:var(--bg-sub); border-top:1px solid var(--border); }
 .mv-footer-note { font-size:11px; color:var(--t3); }
+.vf-chip { font-size:11px; font-weight:600; padding:5px 12px; border-radius:20px; border:1px solid var(--border); background:var(--bg-card); color:var(--t2); cursor:pointer; transition:all .15s; }
+.vf-chip:hover { background:var(--bg-sub); }
+.vf-chip-active { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); }
 .insight-amber { background:#fffbf2; border:1px solid rgba(196,125,10,.25); border-radius:var(--r); padding:28px 32px; position:relative; overflow:hidden; }
 .insight-amber:hover { transform:translateY(-3px); box-shadow:var(--sh-hover); }
 .amber-eyebrow { display:inline-flex; align-items:center; gap:6px; background:rgba(196,125,10,.1); border:1px solid rgba(196,125,10,.2); border-radius:20px; padding:4px 12px; font-size:11px; font-weight:600; color:#854f0b; margin-bottom:14px; }
@@ -2019,6 +2022,19 @@ async function loadKanban() {
   }
 }
 
+var _vagasFilter = 'todas';
+var STATUS_LABELS = { quero:'Quero aplicar', aplicado:'Aplicado', em_processo:'Em processo', entrevista:'Entrevista', oferta:'Oferta', recusado:'Recusado' };
+var STATUS_COLORS = { quero:'#c47d0a', aplicado:'var(--gb-emerald)', em_processo:'#185fa5', entrevista:'#c47d0a', oferta:'#534ab7', recusado:'var(--s-red)' };
+var STATUS_BG = { quero:'#fef9ee', aplicado:'var(--s-grn-bg)', em_processo:'#e6f1fb', entrevista:'#fef9ee', oferta:'#eeedfe', recusado:'var(--s-red-bg)' };
+
+function setVagasFilter(f) {
+  _vagasFilter = f;
+  document.querySelectorAll('.vf-chip').forEach(function(el) {
+    el.classList.toggle('vf-chip-active', el.dataset.filter === f);
+  });
+  renderVagasList();
+}
+
 function renderVagasPage() {
   var analyses = window._lastAnalysesData || [];
   var tracked = _kTracked || [];
@@ -2035,18 +2051,16 @@ function renderVagasPage() {
   var heroList = document.getElementById('vagasHeroList');
   var heroCount = document.getElementById('vagasHeroCount');
   if (heroList) {
-    if (!tracked.length) {
-      heroList.innerHTML = '<div style="text-align:center;padding:16px 0;font-size:12px;color:var(--t3)">Nenhuma vaga rastreada ainda.<br>Clique em "Rastrear" no Painel.</div>';
+    var recent = tracked.slice(0, 3);
+    if (!recent.length) {
+      heroList.innerHTML = '<div style="text-align:center;padding:16px 0;font-size:12px;color:var(--t3)">Analise vagas para acompanhar o status aqui.</div>';
     } else {
-      var statusColors = { quero:'#c47d0a', aplicado:'var(--gb-emerald)', entrevista:'#c47d0a', oferta:'#4a6fa5', recusado:'var(--s-red)' };
-      var statusBg = { quero:'#fef9ee', aplicado:'var(--s-grn-bg)', entrevista:'#fef9ee', oferta:'#f0f4ff', recusado:'var(--s-red-bg)' };
-      var statusLabel = { quero:'Quero', aplicado:'Aplicado', entrevista:'Entrevista', oferta:'Oferta', recusado:'Recusado' };
-      heroList.innerHTML = tracked.slice(0, 3).map(function(j) {
-        var lbl = statusLabel[j.status] || j.status || 'Aplicado';
-        var clr = statusColors[j.status] || 'var(--gb-emerald)';
-        var bg = statusBg[j.status] || 'var(--s-grn-bg)';
-        return '<div style="background:var(--bg-sub);border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between">' +
-          '<div><div style="font-size:11px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px">' + escHtml(j.cargo || '—') + '</div>' +
+      heroList.innerHTML = recent.map(function(j) {
+        var lbl = STATUS_LABELS[j.status] || j.status || 'Aplicado';
+        var clr = STATUS_COLORS[j.status] || 'var(--gb-emerald)';
+        var bg = STATUS_BG[j.status] || 'var(--s-grn-bg)';
+        return '<div style="background:var(--bg-sub);border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px">' +
+          '<div style="min-width:0"><div style="font-size:11px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escHtml(j.cargo || '—') + '</div>' +
           '<div style="font-size:10px;color:var(--t3)">' + escHtml(j.empresa || '—') + '</div></div>' +
           '<span style="background:' + bg + ';color:' + clr + ';font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0">' + escHtml(lbl) + '</span></div>';
       }).join('');
@@ -2054,43 +2068,139 @@ function renderVagasPage() {
     if (heroCount) heroCount.textContent = tracked.length + (tracked.length === 1 ? ' candidatura ativa' : ' candidaturas ativas');
   }
 
-  // full list — all analyses sorted by score desc
+  renderVagasList();
+}
+
+function renderVagasList() {
+  var analyses = window._lastAnalysesData || [];
+  var tracked = _kTracked || [];
   var container = document.getElementById('vagasListView');
   if (!container) return;
-  if (!analyses.length) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div><div class="empty-title">Nenhuma análise ainda</div><div class="empty-sub">Analise sua primeira vaga para ver o resultado aqui.</div></div>';
+
+  // Build merged list: all analyses + manual tracked jobs (no analysis_id)
+  var analysisIds = analyses.map(function(a){ return a.id; });
+  var manualTracked = tracked.filter(function(j){ return !j.analysis_id || !analysisIds.includes(j.analysis_id); });
+
+  if (!analyses.length && !manualTracked.length) {
+    container.innerHTML = '<div style="padding:14px 22px 8px">' + filterChipsHtml() + '</div><div class="empty-state"><div class="empty-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div><div class="empty-title">Nenhuma análise ainda</div><div class="empty-sub">Analise sua primeira vaga para ela aparecer aqui automaticamente.</div></div>';
     return;
   }
+
   var sorted = analyses.slice().sort(function(a,b){ return b.score - a.score; });
-  var html = '';
-  sorted.forEach(function(a) {
-    var r = a.result || {};
-    var ji = r.job_info || {};
-    var cargo = ji.cargo || (a.job_excerpt ? a.job_excerpt.slice(0,40) : 'Análise');
-    var empresa = ji.empresa || 'Empresa';
-    var s = a.score || 0;
-    var bg = s >= 70 ? 'var(--s-grn-bg)' : s >= 40 ? 'var(--s-amb-bg)' : 'var(--s-red-bg)';
-    var clr = s >= 70 ? 'var(--s-grn)' : s >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
-    var atsLabel = s >= 70 ? '<span class="sc-status good" style="font-size:10px">Passou ATS</span>' : s >= 40 ? '<span class="sc-status med" style="font-size:10px">Parcial</span>' : '<span class="sc-status bad" style="font-size:10px">Não passou ATS</span>';
-    var fatores = Array.isArray(r.fatores) ? r.fatores : [];
-    var barsHtml = '';
-    fatores.slice(0, 4).forEach(function(f) {
-      var pct = Math.round((f.valor || 0) * 100);
-      var bc = pct >= 70 ? 'var(--s-grn)' : pct >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
-      barsHtml += '<div class="mv-bar-row"><div class="mv-bar-lbl">' + escHtml(f.nome || '') + '</div><div class="mv-bar-track"><div class="mv-bar-fill" style="width:' + pct + '%;background:' + bc + '"></div></div><div class="mv-bar-val" style="color:' + bc + '">' + pct + '%</div></div>';
-    });
-    var trackedJob = tracked.find(function(t){ return t.analysis_id === a.id; });
-    var statusLabels = { quero:'Quero aplicar', aplicado:'Aplicado', entrevista:'Entrevista', oferta:'Oferta', recusado:'Recusado' };
-    var rightHtml;
-    if (trackedJob) {
-      var sl = statusLabels[trackedJob.status] || trackedJob.status || 'Aplicado';
-      rightHtml = '<span class="mv-tracking">✓ Rastreando</span><span class="sc-status good" style="font-size:10px;margin-top:4px">' + escHtml(sl) + '</span>';
-    } else {
-      rightHtml = '<button class="mv-track-btn" onclick="addToTracker(' + JSON.stringify(empresa) + ',' + JSON.stringify(cargo) + ',' + s + ',' + JSON.stringify(a.id) + ')">Rastrear</button>';
-    }
-    html += '<div class="mv-item"><div><div class="mv-score" style="background:' + bg + ';color:' + clr + '">' + s + '%</div></div><div class="mv-body"><div class="mv-cargo">' + escHtml(cargo) + '</div><div class="mv-emp">' + escHtml(empresa) + '</div><div class="mv-bars">' + barsHtml + '</div><div class="mv-tags">' + atsLabel + '</div></div><div class="mv-right">' + rightHtml + '</div></div>';
+
+  // Apply filter
+  var filtered = sorted.filter(function(a) {
+    if (_vagasFilter === 'todas') return true;
+    var tj = tracked.find(function(t){ return t.analysis_id === a.id; });
+    if (!tj) return false;
+    return tj.status === _vagasFilter;
   });
+  var filteredManual = manualTracked.filter(function(j){
+    if (_vagasFilter === 'todas') return true;
+    return j.status === _vagasFilter;
+  });
+
+  var html = '<div style="padding:14px 22px 12px;border-bottom:1px solid var(--border)">' + filterChipsHtml() + '</div>';
+
+  if (!filtered.length && !filteredManual.length) {
+    html += '<div style="padding:32px;text-align:center;color:var(--t3);font-size:13px">Nenhuma vaga com esse status ainda.</div>';
+  } else {
+    filtered.forEach(function(a) {
+      html += renderAnalysisItem(a, tracked);
+    });
+    filteredManual.forEach(function(j) {
+      html += renderManualItem(j);
+    });
+  }
+
   container.innerHTML = html;
+}
+
+function filterChipsHtml() {
+  var filters = [['todas','Todas'],['aplicado','Aplicado'],['em_processo','Em processo'],['entrevista','Entrevista'],['oferta','Oferta']];
+  var chips = filters.map(function(f) {
+    var active = _vagasFilter === f[0] ? ' vf-chip-active' : '';
+    return '<button class="vf-chip' + active + '" data-filter="' + f[0] + '" onclick="setVagasFilter(\'' + f[0] + '\')">' + f[1] + '</button>';
+  }).join('');
+  return '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">' + chips +
+    '<button class="mv-track-btn" style="margin-left:auto;font-size:11px;padding:5px 12px" onclick="openTrackerEdit({status:\'aplicado\'})">+ Nova</button></div>';
+}
+
+function renderAnalysisItem(a, tracked) {
+  var r = a.result || {};
+  var ji = r.job_info || {};
+  var cargo = ji.cargo || (a.job_excerpt ? a.job_excerpt.slice(0,40) : 'Análise');
+  var empresa = ji.empresa || 'Empresa';
+  var s = a.score || 0;
+  var bg = s >= 70 ? 'var(--s-grn-bg)' : s >= 40 ? 'var(--s-amb-bg)' : 'var(--s-red-bg)';
+  var clr = s >= 70 ? 'var(--s-grn)' : s >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
+  var atsTag = s >= 70 ? '<span class="sc-status good" style="font-size:10px">ATS ✓</span>' : s >= 40 ? '<span class="sc-status med" style="font-size:10px">Parcial</span>' : '<span class="sc-status bad" style="font-size:10px">Não ATS</span>';
+  var fatores = Array.isArray(r.fatores) ? r.fatores : [];
+  var barsHtml = fatores.slice(0, 4).map(function(f) {
+    var pct = Math.round((f.valor || 0) * 100);
+    var bc = pct >= 70 ? 'var(--s-grn)' : pct >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
+    return '<div class="mv-bar-row"><div class="mv-bar-lbl">' + escHtml(f.nome || '') + '</div><div class="mv-bar-track"><div class="mv-bar-fill" style="width:' + pct + '%;background:' + bc + '"></div></div><div class="mv-bar-val" style="color:' + bc + '">' + pct + '%</div></div>';
+  }).join('');
+  var tj = tracked.find(function(t){ return t.analysis_id === a.id; });
+  var curStatus = tj ? (tj.status || 'aplicado') : '';
+  var selectHtml = buildStatusSelect(curStatus, 'handleStatusChange(\'' + a.id + '\',' + JSON.stringify(empresa) + ',' + JSON.stringify(cargo) + ',' + s + ',this.value)');
+  var trackingBadge = tj ? '<span class="mv-tracking" style="font-size:10px">✓ Rastreando</span>' : '<span style="font-size:10px;color:var(--t3)">Não rastreado</span>';
+  return '<div class="mv-item"><div><div class="mv-score" style="background:' + bg + ';color:' + clr + '">' + s + '%</div></div>' +
+    '<div class="mv-body"><div class="mv-cargo">' + escHtml(cargo) + '</div><div class="mv-emp">' + escHtml(empresa) + '</div>' +
+    '<div class="mv-bars">' + barsHtml + '</div>' +
+    '<div class="mv-tags">' + atsTag + trackingBadge + '</div></div>' +
+    '<div class="mv-right">' + selectHtml + '</div></div>';
+}
+
+function renderManualItem(j) {
+  var selectHtml = buildStatusSelect(j.status || 'aplicado', 'handleStatusUpdate(' + JSON.stringify(j.id) + ',this.value)');
+  return '<div class="mv-item"><div style="width:44px;height:44px;border-radius:8px;background:var(--bg-sub);border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;margin-top:2px;flex-shrink:0">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="color:var(--t3)"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div>' +
+    '<div class="mv-body"><div class="mv-cargo">' + escHtml(j.cargo || '—') + '</div><div class="mv-emp">' + escHtml(j.empresa || '—') + '</div>' +
+    '<div class="mv-tags"><span class="sc-status" style="font-size:10px;background:var(--bg-sub);color:var(--t3)">Sem análise</span>' +
+    '<button onclick="openTrackerEdit(' + JSON.stringify(j) + ')" style="font-size:10px;color:var(--gb-emerald);background:none;border:none;cursor:pointer;padding:0;font-weight:600">Editar</button>' +
+    '<button onclick="deleteTracker(' + JSON.stringify(j.id) + ')" style="font-size:10px;color:var(--s-red);background:none;border:none;cursor:pointer;padding:0;font-weight:600">Remover</button>' +
+    '</div></div><div class="mv-right">' + selectHtml + '</div></div>';
+}
+
+function buildStatusSelect(currentStatus, onchange) {
+  var opts = [['','— Status —'],['aplicado','Aplicado'],['em_processo','Em processo'],['entrevista','Entrevista'],['oferta','Oferta'],['recusado','Recusado']];
+  var optsHtml = opts.map(function(o) {
+    return '<option value="' + o[0] + '"' + (currentStatus === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+  }).join('');
+  var selColor = currentStatus ? (STATUS_COLORS[currentStatus] || 'var(--t2)') : 'var(--t3)';
+  var selBg = currentStatus ? (STATUS_BG[currentStatus] || 'var(--bg-sub)') : 'var(--bg-sub)';
+  return '<select onchange="' + onchange + '" style="font-size:11px;font-weight:600;color:' + selColor + ';background:' + selBg + ';border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer;appearance:auto">' + optsHtml + '</select>';
+}
+
+async function handleStatusChange(analysisId, empresa, cargo, score, newStatus) {
+  var existing = (_kTracked || []).find(function(t){ return t.analysis_id === analysisId; });
+  if (existing) {
+    await handleStatusUpdate(existing.id, newStatus);
+  } else if (newStatus) {
+    try {
+      var body = { user_id: currentUserId, empresa: empresa, cargo: cargo, score: score, status: newStatus, analysis_id: analysisId };
+      var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker', {
+        method: 'POST',
+        headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+        body: JSON.stringify(body)
+      });
+      if (res.ok) { await loadKanban(); showToast('Candidatura adicionada!'); }
+      else showToast('Erro ao salvar', 'error');
+    } catch(e) { showToast('Erro ao salvar', 'error'); }
+  }
+}
+
+async function handleStatusUpdate(jobId, newStatus) {
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + jobId, {
+      method: 'PATCH',
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    if (res.ok) { await loadKanban(); }
+    else showToast('Erro ao atualizar', 'error');
+  } catch(e) { showToast('Erro ao atualizar', 'error'); }
 }
 
 function renderTrackedJobs() {
