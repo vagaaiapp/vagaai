@@ -1108,18 +1108,27 @@ body {
 .opp-chips { display:flex; gap:5px; }
 .opp-chip { font-size:10.5px; font-weight:600; padding:4px 11px; border-radius:20px; border:1px solid var(--border); background:var(--bg-card); color:var(--t2); cursor:pointer; transition:all .15s; }
 .opp-chip-active { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); }
-.opp-item { display:flex; align-items:center; gap:12px; padding:11px 18px; border-bottom:1px solid var(--border); transition:background .12s; cursor:pointer; }
+.opp-item {
+  display:grid;
+  grid-template-columns:42px minmax(0,1.5fr) 100px minmax(110px,.8fr) 18px;
+  gap:12px;
+  align-items:center;
+  padding:13px 18px;
+  border-bottom:1px solid var(--border-soft);
+  transition:background .12s;
+  cursor:pointer;
+}
 .opp-item:last-child { border-bottom:none; }
 .opp-item:hover { background:var(--bg-sub); }
-.opp-item-score { width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0; }
-.opp-item-body { flex:1; min-width:0; }
+.opp-item-score { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0; }
+.opp-item-body { min-width:0; }
 .opp-item-cargo { font-size:12.5px; font-weight:700; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.opp-item-sub { font-size:10.5px; color:var(--t3); margin-top:1px; }
-.opp-status-pill { font-size:10px; font-weight:600; padding:3px 8px; border-radius:6px; white-space:nowrap; flex-shrink:0; }
-.opp-item-action { text-align:right; flex-shrink:0; min-width:110px; }
-.opp-action-lbl { font-size:11px; font-weight:600; color:var(--gb-emerald); }
-.opp-action-when { font-size:10px; color:var(--t3); margin-top:1px; }
-.opp-item-chevron { color:var(--t3); flex-shrink:0; }
+.opp-item-sub { font-size:10.5px; color:var(--t3); margin-top:2px; }
+.opp-status-pill { font-size:9.5px; font-weight:700; padding:4px 9px; border-radius:14px; white-space:nowrap; text-align:center; }
+.opp-item-action { min-width:0; }
+.opp-action-lbl { font-size:11px; font-weight:700; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.opp-action-when { font-size:10px; color:var(--t3); margin-top:2px; }
+.opp-item-chevron { color:var(--t3); justify-self:center; }
 .funil-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); padding:18px 20px; }
 .funil-title-t { font-size:13.5px; font-weight:700; color:var(--t1); margin-bottom:2px; }
 .funil-sub-t { font-size:11px; color:var(--t3); margin-bottom:16px; }
@@ -2036,11 +2045,11 @@ function buildPBACard(analyses, tracked) {
   var now = Date.now();
 
   // Priority 1: entrevista
-  var interviewJob = tracked.find(function(t){ return t.status === 'entrevista'; });
-  // Priority 2: follow-up (aplicado > 5 days)
+  var interviewJob = tracked.find(function(t){ return normalizeStatus(t.status) === 'entrevista'; });
+  // Priority 2: follow-up (aplicado/aplicada > 5 days)
   var followUpJob = null;
   tracked.forEach(function(t) {
-    if (t.status !== 'aplicado') return;
+    if (normalizeStatus(t.status) !== 'aplicada') return;
     var d = Math.floor((now - new Date(t.updated_at || t.created_at).getTime()) / 86400000);
     if (d >= 5 && (!followUpJob || d > followUpJob._days)) followUpJob = Object.assign({ _days: d }, t);
   });
@@ -2104,16 +2113,16 @@ function buildAttentionCards(analyses, tracked) {
   var cards = [];
   var now = Date.now();
 
-  // Detect follow-up
+  // Detect follow-up (status aplicado ou aplicada > 5 dias)
   var followUp = null;
   tracked.forEach(function(t) {
-    if (t.status !== 'aplicado') return;
+    if (normalizeStatus(t.status) !== 'aplicada') return;
     var d = Math.floor((now - new Date(t.updated_at || t.created_at).getTime()) / 86400000);
     if (d >= 5 && (!followUp || d > followUp._days)) followUp = Object.assign({ _days: d }, t);
   });
 
   // Detect interview
-  var interviewJob = tracked.find(function(t){ return t.status === 'entrevista'; });
+  var interviewJob = tracked.find(function(t){ return normalizeStatus(t.status) === 'entrevista'; });
 
   // Detect untracked analysis (not applied)
   var untrackedAnalysis = analyses.filter(function(a) {
@@ -2184,7 +2193,7 @@ function renderOppList() {
     return tj.status === _oppFilter;
   });
 
-  var activeCount = tracked.filter(function(t){ return t.status && t.status !== 'recusado'; }).length;
+  var activeCount = tracked.filter(function(t){ var ns = normalizeStatus(t.status); return ns && ns !== 'recusada' && ns !== 'encerrada'; }).length;
   var countEl = document.getElementById('oppActiveCount');
   if (countEl) countEl.textContent = activeCount + ' candidatura' + (activeCount !== 1 ? 's' : '') + ' ativa' + (activeCount !== 1 ? 's' : '');
 
@@ -2193,13 +2202,17 @@ function renderOppList() {
     return;
   }
 
-  var STATUS_BG_OPP = { '':'var(--bg-sub)','aplicado':'var(--s-grn-bg)','em_processo':'#e6f1fb','entrevista':'#faeeda','oferta':'#eeedfe','recusado':'var(--s-red-bg)' };
-  var STATUS_CLR_OPP = { '':'var(--t3)','aplicado':'var(--gb-emerald)','em_processo':'#185fa5','entrevista':'#854f0b','oferta':'#534ab7','recusado':'var(--s-red)' };
-  var STATUS_LBL_OPP = { '':'Só análise','aplicado':'Aplicado','em_processo':'Em processo','entrevista':'Entrevista','oferta':'Oferta','recusado':'Recusado' };
+  /* Usa as tabelas globais de status (que já incluem valores novos e antigos) */
+  var STATUS_BG_OPP = STATUS_BG;
+  var STATUS_CLR_OPP = STATUS_COLORS;
+  function statusLabel(s) { return s ? (STATUS_LABELS[s] || s) : 'Só análise'; }
 
-  function nextAction(status, updatedAt) {
+  function nextAction(rawStatus, updatedAt) {
+    var status = normalizeStatus(rawStatus);
     if (!status) return { lbl:'Iniciar candidatura', when:'Sem prazo' };
-    if (status === 'aplicado') {
+    if (status === 'quero_aplicar') return { lbl:'Analisar vaga', when:'Pendente' };
+    if (status === 'analisada' || status === 'cv_pronto') return { lbl:'Enviar candidatura', when:'Pendente' };
+    if (status === 'aplicada') {
       var d = Math.floor((now - new Date(updatedAt).getTime()) / 86400000);
       if (d >= 7) return { lbl:'Fazer follow-up', when:'Vence hoje' };
       if (d >= 5) return { lbl:'Fazer follow-up', when:'Em breve' };
@@ -2228,7 +2241,7 @@ function renderOppList() {
       '<div class="opp-item-score" style="background:' + sbg + ';color:' + sclr + '">' + s + '%</div>' +
       '<div class="opp-item-body"><div class="opp-item-cargo">' + escHtml(cargo) + '</div>' +
       '<div class="opp-item-sub">' + escHtml(empresa) + ' · ' + dStr + '</div></div>' +
-      '<span class="opp-status-pill" style="background:' + (STATUS_BG_OPP[status]||'var(--bg-sub)') + ';color:' + (STATUS_CLR_OPP[status]||'var(--t3)') + '">' + (STATUS_LBL_OPP[status]||'—') + '</span>' +
+      '<span class="opp-status-pill" style="background:' + (STATUS_BG_OPP[status]||'var(--bg-sub)') + ';color:' + (STATUS_CLR_OPP[status]||'var(--t3)') + '">' + escHtml(statusLabel(status)) + '</span>' +
       '<div class="opp-item-action"><div class="opp-action-lbl">' + escHtml(na.lbl) + '</div>' +
       (na.when ? '<div class="opp-action-when">' + escHtml(na.when) + '</div>' : '') + '</div>' +
       '<svg class="opp-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>' +
@@ -2241,11 +2254,24 @@ function buildFunilCard(analyses, tracked) {
   var insightEl = document.getElementById('funilInsight');
   if (!pipe) return;
 
-  var total = analyses.length;
-  var candidaturas = tracked.filter(function(t){ return t.status && t.status !== ''; }).length;
-  var entrevistas = tracked.filter(function(t){ return t.status === 'entrevista' || t.status === 'oferta'; }).length;
-  var ofertas = tracked.filter(function(t){ return t.status === 'oferta'; }).length;
-  var maxN = Math.max(total, 1);
+  var thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  var recentAnalyses = analyses.filter(function(a) { return new Date(a.created_at).getTime() >= thirtyDaysAgo; });
+  var recentIds = recentAnalyses.map(function(a){ return a.id; });
+  var recentTracked = tracked.filter(function(t) {
+    return new Date(t.created_at || t.updated_at).getTime() >= thirtyDaysAgo;
+  });
+
+  var total = recentAnalyses.length;
+  var candidaturas = recentTracked.filter(function(t){
+    var ns = normalizeStatus(t.status);
+    return ns && ns !== 'quero_aplicar' && ns !== 'analisada';
+  }).length;
+  var entrevistas = recentTracked.filter(function(t){
+    var ns = normalizeStatus(t.status);
+    return ns === 'entrevista' || ns === 'oferta';
+  }).length;
+  var ofertas = recentTracked.filter(function(t){ return normalizeStatus(t.status) === 'oferta'; }).length;
+  var maxN = Math.max(total, candidaturas, 1);
 
   var stages = [
     { lbl:'Analisadas', num:total, clr:'#1d9e75' },
@@ -2267,10 +2293,18 @@ function buildFunilCard(analyses, tracked) {
   if (insightEl) {
     var txt = 'Analise mais vagas para receber insights personalizados.';
     if (total >= 3) {
-      if (candidaturas === 0) txt = 'Você analisou ' + total + ' vagas mas ainda não iniciou nenhuma candidatura. Escolha as de maior score para começar.';
-      else if (entrevistas === 0 && candidaturas >= 2) txt = 'Nenhuma entrevista ainda. Considere fazer follow-up nas vagas com status "Aplicado".';
-      else if (entrevistas > 0) txt = 'Você avançou para entrevista em ' + entrevistas + ' de ' + candidaturas + ' candidatura' + (candidaturas > 1 ? 's' : '') + '. Use o simulador para se preparar.';
-      else txt = 'Priorize vagas com score acima de 70% para maximizar suas chances de retorno.';
+      var convRate = candidaturas > 0 ? Math.round((entrevistas / candidaturas) * 100) : 0;
+      if (candidaturas === 0) {
+        txt = 'Você analisou ' + total + ' vagas nos últimos 30 dias mas ainda não iniciou nenhuma candidatura. Escolha as de maior score para começar.';
+      } else if (entrevistas === 0 && candidaturas >= 2) {
+        txt = 'Nenhuma entrevista nos últimos 30 dias. Considere fazer follow-up nas candidaturas aplicadas.';
+      } else if (entrevistas > 0 && candidaturas > 0) {
+        txt = convRate + '% das candidaturas avançaram para entrevista (' + entrevistas + ' de ' + candidaturas + '). Use o simulador para se preparar.';
+      } else {
+        txt = 'Priorize vagas com score acima de 70% para maximizar suas chances de retorno.';
+      }
+    } else if (analyses.length >= 3 && total === 0) {
+      txt = 'Todas as suas análises são de mais de 30 dias. Continue analisando vagas regularmente.';
     }
     insightEl.textContent = txt;
   }
@@ -2396,9 +2430,32 @@ async function loadKanban() {
 }
 
 var _vagasFilter = 'todas';
-var STATUS_LABELS = { quero:'Quero aplicar', aplicado:'Aplicado', em_processo:'Em processo', entrevista:'Entrevista', oferta:'Oferta', recusado:'Recusado' };
-var STATUS_COLORS = { quero:'#c47d0a', aplicado:'var(--gb-emerald)', em_processo:'#185fa5', entrevista:'#c47d0a', oferta:'#534ab7', recusado:'var(--s-red)' };
-var STATUS_BG = { quero:'#fef9ee', aplicado:'var(--s-grn-bg)', em_processo:'#e6f1fb', entrevista:'#fef9ee', oferta:'#eeedfe', recusado:'var(--s-red-bg)' };
+
+/* Camada de normalização: aceita valores antigos e novos */
+var STATUS_NORM = {
+  quero:'quero_aplicar', aplicado:'aplicada', recusado:'recusada'
+};
+function normalizeStatus(s) { return STATUS_NORM[s] || s || ''; }
+
+var STATUS_LABELS = {
+  quero_aplicar:'Quero aplicar', analisada:'Analisada', cv_pronto:'CV pronto',
+  aplicada:'Aplicada', em_processo:'Em processo', entrevista:'Entrevista',
+  oferta:'Oferta', recusada:'Recusada', encerrada:'Encerrada',
+  /* backwards compat */
+  quero:'Quero aplicar', aplicado:'Aplicada', recusado:'Recusada'
+};
+var STATUS_COLORS = {
+  quero_aplicar:'#854f0b', analisada:'var(--t3)', cv_pronto:'#185fa5',
+  aplicada:'var(--gb-emerald)', em_processo:'#185fa5', entrevista:'#854f0b',
+  oferta:'#534ab7', recusada:'var(--s-red)', encerrada:'var(--t3)',
+  quero:'#854f0b', aplicado:'var(--gb-emerald)', recusado:'var(--s-red)'
+};
+var STATUS_BG = {
+  quero_aplicar:'#fef9ee', analisada:'var(--bg-sub)', cv_pronto:'#e6f1fb',
+  aplicada:'var(--s-grn-bg)', em_processo:'#e6f1fb', entrevista:'#fef9ee',
+  oferta:'#eeedfe', recusada:'var(--s-red-bg)', encerrada:'var(--bg-sub)',
+  quero:'#fef9ee', aplicado:'var(--s-grn-bg)', recusado:'var(--s-red-bg)'
+};
 
 function setVagasFilter(f) {
   _vagasFilter = f;
@@ -2415,7 +2472,7 @@ function renderVagasPage() {
   var entrevistaEl = document.getElementById('vagasEntrevista');
   var totalEl = document.getElementById('vagasTotal');
   if (andamentoEl) andamentoEl.textContent = tracked.length;
-  if (entrevistaEl) entrevistaEl.textContent = tracked.filter(function(j){ return j.status === 'entrevista' || j.status === 'oferta'; }).length;
+  if (entrevistaEl) entrevistaEl.textContent = tracked.filter(function(j){ var ns = normalizeStatus(j.status); return ns === 'entrevista' || ns === 'oferta'; }).length;
   if (totalEl) totalEl.textContent = analyses.length;
 
   // hero mini list
@@ -2445,7 +2502,7 @@ function renderVagasPage() {
 function renderFilterBar() {
   var bar = document.getElementById('vagasFilterBar');
   if (!bar) return;
-  var filters = [['todas','Todas'],['aplicado','Aplicado'],['em_processo','Em processo'],['entrevista','Entrevista'],['oferta','Oferta']];
+  var filters = [['todas','Todas'],['aplicada','Aplicada'],['em_processo','Em processo'],['entrevista','Entrevista'],['oferta','Oferta']];
   var chips = filters.map(function(f) {
     var active = _vagasFilter === f[0] ? ' vf-chip-active' : '';
     return '<button class="vf-chip' + active + '" data-filter="' + f[0] + '" onclick="setVagasFilter(\'' + f[0] + '\')">' + f[1] + '</button>';
@@ -2476,12 +2533,12 @@ function renderVagasList() {
   var filtered = sorted.filter(function(a) {
     if (_vagasFilter === 'todas') return true;
     var tj = tracked.find(function(t){ return t.analysis_id === a.id; });
-    if (!tj) return _vagasFilter === 'sem_status';
-    return tj.status === _vagasFilter;
+    if (!tj) return false;
+    return normalizeStatus(tj.status) === _vagasFilter;
   });
   var filteredManual = manualTracked.filter(function(j){
     if (_vagasFilter === 'todas') return true;
-    return j.status === _vagasFilter;
+    return normalizeStatus(j.status) === _vagasFilter;
   });
 
   var html = '';
