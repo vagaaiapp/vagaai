@@ -1596,11 +1596,26 @@ async function loadAnalyses() {
 
 async function loadKanban() {
   try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker?user_id=eq.' + currentUserId + '&select=*,analyses(score,job_excerpt,result)&order=created_at.desc', {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker?user_id=eq.' + currentUserId + '&order=created_at.desc', {
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
     });
     _kTracked = await res.json();
-    console.log('Tracked jobs loaded:', _kTracked);
+    if (!Array.isArray(_kTracked)) { _kTracked = []; }
+
+    // Carregar análises vinculadas separadamente
+    var analysisIds = _kTracked.map(j => j.analysis_id).filter(Boolean);
+    if (analysisIds.length) {
+      var aRes = await fetch(SUPABASE_URL + '/rest/v1/analyses?id=in.(' + analysisIds.join(',') + ')&select=id,score,job_excerpt,result', {
+        headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
+      });
+      var analyses = await aRes.json();
+      if (Array.isArray(analyses)) {
+        var aMap = {};
+        analyses.forEach(function(a) { aMap[a.id] = a; });
+        _kTracked.forEach(function(j) { if (j.analysis_id) j.analyses = aMap[j.analysis_id] || null; });
+      }
+    }
+
     renderTrackedJobs();
   } catch(e) {
     console.error('loadKanban error:', e);
