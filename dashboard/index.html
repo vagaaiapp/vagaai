@@ -1660,10 +1660,66 @@ function openTracker(empresa, cargo, score) {
   setTimeout(function() {
     var modal = document.createElement('div');
     modal.className = 'modal-overlay';
-    modal.innerHTML = '<div class="modal-box"><button class="modal-close" onclick="this.parentElement.parentElement.remove()">✕</button><div class="modal-title">Rastrear candidatura</div><div class="modal-field"><label class="modal-label">Empresa</label><input class="modal-input" id="tkEmpresa" value="' + escHtml(empresa || '') + '"></div><div class="modal-field"><label class="modal-label">Cargo</label><input class="modal-input" id="tkCargo" value="' + escHtml(cargo || '') + '"></div><div class="modal-field"><label class="modal-label">Score</label><input class="modal-input" type="number" id="tkScore" value="' + (score || '') + '"></div><div class="modal-field"><label class="modal-label">Status</label><select class="modal-input" id="tkStatus"><option value="quero">Quero aplicar</option><option value="aplicado" selected>Aplicado</option><option value="entrevista">Entrevista</option><option value="oferta">Oferta</option></select></div><button class="modal-btn" onclick="saveTracker(this)">Salvar</button></div>';
+    modal.innerHTML = '<div class="modal-box"><button class="modal-close">✕</button><div class="modal-title">Rastrear candidatura</div><div class="modal-field"><label class="modal-label">Empresa</label><input class="modal-input" id="tkEmpresa" value="' + escHtml(empresa || '') + '"></div><div class="modal-field"><label class="modal-label">Cargo</label><input class="modal-input" id="tkCargo" value="' + escHtml(cargo || '') + '"></div><div class="modal-field"><label class="modal-label">Score</label><input class="modal-input" type="number" id="tkScore" value="' + (score || '') + '"></div><div class="modal-field"><label class="modal-label">Status</label><select class="modal-input" id="tkStatus"><option value="quero">Quero aplicar</option><option value="aplicado" selected>Aplicado</option><option value="entrevista">Entrevista</option><option value="oferta">Oferta</option></select></div><button class="modal-btn tracker-save-btn">Salvar</button></div>';
     document.body.appendChild(modal);
+
+    // Close button
+    var closeBtn = modal.querySelector('.modal-close');
+    if (closeBtn) closeBtn.addEventListener('click', function() { modal.remove(); });
+
+    // Save button
+    var saveBtn = modal.querySelector('.tracker-save-btn');
+    if (saveBtn) saveBtn.addEventListener('click', function() { saveTrackerModal(modal); });
+
+    // Click outside to close
     modal.onclick = function(e) { if (e.target === this) this.remove(); };
   }, 200);
+}
+
+async function saveTrackerModal(modal) {
+  var empresa = document.getElementById('tkEmpresa').value.trim();
+  if (!empresa) { alert('Digite a empresa'); return; }
+
+  var body = {
+    user_id: currentUserId,
+    empresa,
+    cargo: document.getElementById('tkCargo').value.trim(),
+    score: parseInt(document.getElementById('tkScore').value) || 0,
+    status: document.getElementById('tkStatus').value,
+    created_at: new Date().toISOString()
+  };
+
+  try {
+    var saveBtn = modal.querySelector('.tracker-save-btn');
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Salvando...'; }
+
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker', {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON,
+        Authorization: 'Bearer ' + (currentSession?.access_token || ''),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    var resText = await res.text();
+    console.log('SaveTracker Response:', res.status, resText);
+
+    if (res.ok || res.status === 201) {
+      modal.remove();
+      alert('✓ Candidatura rastreada!');
+      if (typeof loadKanban === 'function') await loadKanban();
+    } else {
+      alert('Erro ao salvar: ' + resText);
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Salvar'; }
+    }
+  } catch(e) {
+    console.error('SaveTracker Error:', e);
+    alert('Erro: ' + e.message);
+    var saveBtn = modal.querySelector('.tracker-save-btn');
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Salvar'; }
+  }
 }
 
 async function deleteTracker(id) {
