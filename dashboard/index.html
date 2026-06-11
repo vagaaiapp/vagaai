@@ -1758,25 +1758,31 @@ var _kTracked = [];
 var _alertKeywords = [];
 
 async function init() {
-  var { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = '/login'; return; }
-  currentSession = session;
-  currentUserId = session.user.id;
-  var email = session.user.email || '';
-  var displayName = (session.user.user_metadata && session.user.user_metadata.full_name) || email.split('@')[0];
-  var initials = displayName.slice(0,2).toUpperCase();
+  try {
+    var { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = '/login'; return; }
+    currentSession = session;
+    currentUserId = session.user.id;
+    var email = session.user.email || '';
+    var displayName = (session.user.user_metadata && session.user.user_metadata.full_name) || email.split('@')[0];
+    var initials = displayName.slice(0,2).toUpperCase();
 
-  document.getElementById('avatarInitials').textContent = initials;
-  document.getElementById('dropName').textContent = displayName;
-  document.getElementById('dropEmail').textContent = email;
-  var sbDisp = document.getElementById('sbDisplayName');
-  if (sbDisp) sbDisp.textContent = displayName;
+    document.getElementById('avatarInitials').textContent = initials;
+    document.getElementById('dropName').textContent = displayName;
+    document.getElementById('dropEmail').textContent = email;
+    var sbDisp = document.getElementById('sbDisplayName');
+    if (sbDisp) sbDisp.textContent = displayName;
 
-  window._perfilData = { email, displayName };
-  window._userName = displayName;
+    window._perfilData = { email, displayName };
+    window._userName = displayName;
 
-  await Promise.all([loadAnalyses(), loadKanban(), loadAlerts()]);
-
+    await Promise.all([loadAnalyses(), loadKanban(), loadAlerts()]);
+  } catch(e) {
+    console.error('init error:', e);
+    var loadEl = document.getElementById('pageLoading');
+    if (loadEl) loadEl.innerHTML = '<div style="text-align:center;padding:32px"><div style="font-size:14px;color:#d94f4f;margin-bottom:8px">Erro ao carregar o painel</div><div style="font-size:12px;color:var(--t3);margin-bottom:16px">' + (e.message || 'Tente recarregar a página') + '</div><button onclick="location.reload()" style="background:var(--gb-emerald);color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">Recarregar</button></div>';
+    return;
+  }
   document.getElementById('pageLoading').classList.add('hidden');
 }
 
