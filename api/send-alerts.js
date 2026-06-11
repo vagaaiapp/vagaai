@@ -21,6 +21,10 @@ function jobHash(title, company, location) {
     .digest('hex').slice(0, 16);
 }
 
+function makeUnsubToken(userId) {
+  return crypto.createHmac('sha256', CRON_SECRET || '').update(userId).digest('hex');
+}
+
 // Fontes brasileiras — ganham boost de prioridade no score
 const BR_SOURCES = new Set([
   'indeed', 'vagas_com', 'infojobs', 'catho', 'empregos_br',
@@ -1085,7 +1089,7 @@ async function markJobsSent(userId, jobs) {
 }
 
 // Gera HTML do email
-function buildEmailHTML(profile, jobs, userName) {
+function buildEmailHTML(profile, jobs, userName, userId) {
   const name = userName || 'você';
   const jobsHTML = jobs.map(j => {
     try {
@@ -1129,7 +1133,7 @@ function buildEmailHTML(profile, jobs, userName) {
       Compatibilidades acima são <em>estimadas</em>. O score real aparece após analisar.<br>
       <a href="https://www.vagaai.app.br/dashboard" style="color:#1a8f5c;text-decoration:none;font-weight:600">Gerenciar alertas</a>
       &nbsp;·&nbsp;
-      <a href="https://www.vagaai.app.br/dashboard" style="color:#aaa;text-decoration:none">Cancelar inscrição</a>
+      <a href="https://www.vagaai.app.br/api/unsubscribe?uid=${encodeURIComponent(userId || '')}&tok=${makeUnsubToken(userId || '')}" style="color:#aaa;text-decoration:none">Cancelar inscrição</a>
     </div>
   </div>
   <div style="background:#f9f9f9;padding:14px;text-align:center;font-size:11px;color:#bbb;border-top:1px solid #eee">
@@ -1223,7 +1227,7 @@ async function processUserAlert(profile, isTest = false) {
   } catch(e) {}
 
   // Envia email
-  const html = buildEmailHTML(profile, jobs, userName);
+  const html = buildEmailHTML(profile, jobs, userName, userId);
   const emailRes = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },

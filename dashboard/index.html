@@ -2040,7 +2040,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         <div class="hero-text" style="flex:0 0 46%;max-width:46%">
           <div class="hero-eyebrow">⭐ Plano</div>
           <h1 class="hero-title">Seu Plano</h1>
-          <p class="hero-sub">Você está no plano Pro com análises ilimitadas. Acompanhe seus recursos ativos, gerencie sua assinatura e compre créditos avulsos quando precisar.</p>
+          <p class="hero-sub" id="planoHeroSub">Acompanhe seus recursos ativos, gerencie sua assinatura e compre créditos avulsos quando precisar.</p>
           <div class="hero-metrics">
             <div><div class="hm-val accent" id="planoNome">Pro</div><div class="hm-lbl">Plano ativo</div></div>
             <div><div class="hm-val" id="planoAnalises">∞</div><div class="hm-lbl">Análises/mês</div></div>
@@ -2487,11 +2487,12 @@ function buildPBACard(analyses, tracked) {
     var a = analyses.find(function(x){ return x.id === interviewJob.analysis_id; });
     var cargo = interviewJob.cargo || (a && (a.result||{}).job_info ? a.result.job_info.cargo : '') || 'essa vaga';
     var emp = interviewJob.empresa || (a && (a.result||{}).job_info ? a.result.job_info.empresa : '') || '';
+    var hasDate = !!(interviewJob.interview_at);
     if (titleEl) titleEl.textContent = 'Prepare-se para a entrevista de ' + cargo;
-    if (descEl) descEl.textContent = 'Você tem uma entrevista marcada para ' + cargo + (emp ? ' na ' + emp : '') + '. Use o simulador para chegar mais preparado e aumentar suas chances.';
+    if (descEl) descEl.textContent = (hasDate ? 'Você tem uma entrevista marcada para ' + cargo + (emp ? ' na ' + emp : '') : 'Você está em processo de entrevista para ' + cargo + (emp ? ' na ' + emp : '')) + '. Use o simulador para chegar mais preparado e aumentar suas chances.';
     if (btnPri) { btnPri.textContent = 'Treinar entrevista →'; btnPri.onclick = function(){ window.location.href='/entrevista'; }; }
     if (btnSec) { btnSec.textContent = 'Ver candidaturas'; btnSec.onclick = function(){ switchDashTab('vagas'); }; }
-    updatePBAPriority(interviewJob.score || (a ? a.score : 0), cargo, emp || 'Entrevista marcada', 'Entrevista marcada');
+    updatePBAPriority(interviewJob.score || (a ? a.score : 0), cargo, emp || '', hasDate ? 'Entrevista marcada' : 'Em entrevista');
   } else if (followUpJob) {
     var a = analyses.find(function(x){ return x.id === followUpJob.analysis_id; });
     var cargo = followUpJob.cargo || 'essa vaga';
@@ -2570,7 +2571,7 @@ function buildAttentionCards(analyses, tracked) {
     var emp = interviewJob.empresa ? ' na ' + interviewJob.empresa : '';
     cards.push('<div class="psa-card"><div class="psa-badge psa-badge-amanha">Entrevista</div><div class="psa-ico">🎯</div>' +
       '<div class="psa-card-title">Prepare sua entrevista</div>' +
-      '<div class="psa-card-desc">Entrevista marcada para ' + escHtml(cargo) + escHtml(emp) + '. Use o simulador para chegar preparado.</div>' +
+      '<div class="psa-card-desc">' + (interviewJob.interview_at ? 'Entrevista marcada para ' : 'Em processo de entrevista para ') + escHtml(cargo) + escHtml(emp) + '. Use o simulador para chegar preparado.</div>' +
       '<button class="psa-cta" onclick="window.location.href=\'/entrevista\'">Treinar entrevista →</button></div>');
   }
 
@@ -3010,7 +3011,7 @@ function renderCandMetrics(all) {
   var ctaEl = document.getElementById('cpCta');
   if (titleEl) titleEl.textContent = pa.title;
   if (subEl) subEl.textContent = pa.sub;
-  if (ctaEl) { ctaEl.textContent = pa.cta; ctaEl.onclick = pa.id ? function(){ openCandDetail(pa.id); } : null; }
+  if (ctaEl) { ctaEl.textContent = pa.cta; ctaEl.onclick = pa.id ? function(){ openCandDetail(pa.id); } : function(){ switchDashTab('vagas'); }; }
   var el = function(id, val) { var e = document.getElementById(id); if (e) e.textContent = val; };
   el('cmAtivas', m.ativas);
   el('cmEntrevistas', m.entrevistas);
@@ -4450,6 +4451,10 @@ async function loadSubscriptionData() {
     el = document.getElementById('planoVagas'); if (el) el.textContent = Array.isArray(_kTracked) ? String(_kTracked.length) : '—';
     // Sidebar label
     el = document.getElementById('sbPlanLabel'); if (el) el.textContent = planLabel;
+    // Hero subtitle
+    var heroAnDesc = sub.plan === 'pro' ? 'análises ilimitadas' : sub.plan === 'starter' ? '10 análises/mês' : 'plano gratuito';
+    el = document.getElementById('planoHeroSub');
+    if (el) el.textContent = 'Você está no plano ' + planLabel + ' com ' + heroAnDesc + '. Acompanhe seus recursos ativos, gerencie sua assinatura e compre créditos avulsos quando precisar.';
     // Plan card details
     var statusMap = { active:'Ativo', trialing:'Trial', past_due:'Pagamento pendente', canceled:'Cancelado', incomplete:'Incompleto' };
     var statusLabel = statusMap[sub.status] || sub.status || '';

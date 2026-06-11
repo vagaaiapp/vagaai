@@ -382,9 +382,9 @@ async function generateInterview() {
 function renderQuestion() {
   if (_currentQ >= _questions.length) { showResult(); return; }
   var q = _questions[_currentQ];
-  var pct = Math.round((_currentQ / _questions.length) * 100);
+  var pct = Math.round(((_currentQ + 1) / _questions.length) * 100);
   document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('progressText').textContent = _currentQ + ' / ' + _questions.length;
+  document.getElementById('progressText').textContent = (_currentQ + 1) + ' / ' + _questions.length;
 
   var nivelStars = { fácil: '●○○', médio: '●●○', difícil: '●●●' }[q.nivel] || '●○○';
 
