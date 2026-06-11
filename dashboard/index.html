@@ -1332,6 +1332,177 @@ body {
 .cand-empty-sub { font-size:12.5px; color:var(--t3); line-height:1.5; }
 @media (max-width:1200px) { .cand-summary { grid-template-columns:1fr 1fr; } }
 @media (max-width:768px) { .cand-summary { grid-template-columns:1fr 1fr; } .cand-layout.has-detail { grid-template-columns:1fr; } }
+
+/* ── Alertas redesign ──────────────────────────────────────── */
+.al-page { display:flex; flex-direction:column; gap:20px; }
+.al-page-header { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+.al-eyebrow { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--gb-emerald); margin-bottom:6px; }
+.al-title { font-size:26px; font-weight:800; color:var(--t1); font-family:Lora,serif; margin-bottom:6px; }
+.al-desc { font-size:13px; color:var(--t2); line-height:1.5; }
+.al-header-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.al-status-badge { display:flex; align-items:center; gap:7px; padding:7px 13px; border-radius:20px; font-size:11px; font-weight:700; border:1px solid var(--border); background:var(--bg-card); color:var(--t2); }
+.al-status-badge.active { background:var(--s-grn-bg); color:var(--gb-emerald); border-color:var(--gb-emerald); }
+.al-status-badge.paused { background:var(--s-amb-bg); color:var(--s-amb); border-color:#f1dfb9; }
+.al-status-badge.error { background:var(--s-red-bg); color:var(--s-red); border-color:#f0c0c0; }
+.al-status-dot { width:8px; height:8px; border-radius:50%; background:currentColor; flex-shrink:0; }
+.al-status-badge.active .al-status-dot { box-shadow:0 0 0 3px rgba(26,122,74,.2); }
+.al-new-btn { font-size:12px; font-weight:700; padding:9px 16px; background:var(--gb-emerald); color:#fff; border:none; border-radius:10px; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; }
+.al-new-btn:hover { background:var(--gb-mid); }
+.al-hero-row { display:grid; grid-template-columns:1.35fr repeat(3,.62fr); gap:13px; }
+.al-next-card { background:linear-gradient(120deg,#0b2b1a,#176c45); color:#fff; border-radius:var(--r); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:18px; box-shadow:var(--sh-card); }
+.al-next-label { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.09em; color:#76daa9; margin-bottom:5px; }
+.al-next-date { font-size:14px; font-weight:700; color:#fff; margin-bottom:3px; }
+.al-next-meta { font-size:10px; color:#b9d4c5; }
+.al-next-actions { display:flex; flex-direction:column; gap:6px; flex-shrink:0; }
+.al-next-btn { border:none; border-radius:8px; padding:8px 12px; font-size:10px; font-weight:800; font-family:inherit; cursor:pointer; white-space:nowrap; }
+.al-next-btn.primary { background:#4bd895; color:#092416; }
+.al-next-btn.primary:hover { background:#3ecf8e; }
+.al-next-btn.primary:disabled { opacity:.6; cursor:not-allowed; }
+.al-next-btn.secondary { background:rgba(255,255,255,.08); color:#fff; border:1px solid rgba(255,255,255,.18); }
+.al-next-btn.secondary:hover { background:rgba(255,255,255,.15); }
+.al-metric { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); padding:16px 18px; box-shadow:var(--sh-card); }
+.al-metric-val { font-size:24px; font-weight:800; color:var(--t1); margin-bottom:3px; }
+.al-metric-lbl { font-size:10.5px; color:var(--t3); margin-bottom:2px; }
+.al-metric-sub { font-size:9.5px; color:var(--gb-emerald); font-weight:700; }
+.al-metric-na { font-size:9.5px; color:var(--t3); font-style:italic; }
+.al-main-grid { display:grid; grid-template-columns:340px minmax(0,1fr); gap:16px; align-items:start; }
+.al-summary-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); overflow:hidden; }
+.al-sum-head { padding:15px 18px 13px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; }
+.al-sum-head-title { font-size:13.5px; font-weight:700; color:var(--t1); margin-bottom:2px; }
+.al-sum-head-sub { font-size:10px; color:var(--t3); }
+.al-quality-badge { font-size:10px; font-weight:800; color:var(--gb-emerald); background:var(--s-grn-bg); padding:5px 9px; border-radius:12px; white-space:nowrap; flex-shrink:0; }
+.al-quality-badge.warn { color:var(--s-amb); background:var(--s-amb-bg); }
+.al-quality-badge.bad { color:var(--s-red); background:var(--s-red-bg); }
+.al-sum-body { padding:15px 18px; }
+.al-sum-name { font-size:17px; font-weight:700; color:var(--t1); margin-bottom:4px; }
+.al-sum-meta { font-size:11px; color:var(--t2); line-height:1.75; }
+.al-sum-tags { display:flex; gap:5px; flex-wrap:wrap; margin:11px 0; }
+.al-sum-tag { font-size:9.5px; background:var(--bg-sub); color:var(--t2); padding:4px 8px; border-radius:6px; }
+.al-sum-actions { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:14px; }
+.al-sum-btn { border:1px solid var(--border); background:var(--bg-card); border-radius:8px; padding:8px 10px; font-size:10px; font-weight:700; color:var(--t2); cursor:pointer; font-family:inherit; transition:all .12s; }
+.al-sum-btn:hover { border-color:var(--gb-emerald); color:var(--gb-emerald); }
+.al-sum-btn.edit { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); }
+.al-sum-btn.edit:hover { background:var(--gb-mid); }
+.al-sum-btn.full { grid-column:1/-1; }
+.al-sum-btn.danger { color:var(--s-red); border-color:var(--s-red); }
+.al-quality-box { border-top:1px solid var(--border); padding:13px 18px; }
+.al-quality-line { display:flex; justify-content:space-between; align-items:center; font-size:10.5px; font-weight:700; color:var(--t1); margin-bottom:7px; }
+.al-quality-pct { font-size:12px; font-weight:800; color:var(--gb-emerald); }
+.al-quality-track { height:6px; background:var(--bg-sub); border-radius:4px; overflow:hidden; margin-bottom:9px; }
+.al-quality-fill { height:100%; border-radius:4px; transition:width .5s ease; background:var(--gb-mid); }
+.al-quality-fill.warn { background:var(--s-amb); }
+.al-quality-fill.bad { background:var(--s-red); }
+.al-check-row { display:flex; justify-content:space-between; align-items:center; padding:3px 0; font-size:9.5px; }
+.al-check-lbl { color:var(--t2); }
+.al-check-done { color:var(--gb-emerald); font-weight:700; font-size:9px; }
+.al-check-pending { color:var(--s-amb); font-weight:700; font-size:9px; }
+.al-improve-box { margin-top:9px; background:var(--s-amb-bg); border:1px solid #f1dfb9; border-radius:8px; padding:9px 11px; font-size:9.5px; color:#76500d; line-height:1.5; }
+[data-theme="dark"] .al-improve-box { color:var(--s-amb); border-color:rgba(196,125,10,.3); }
+.al-filters-note { margin:8px 18px 14px; border:1px dashed var(--border); border-radius:9px; padding:9px 11px; font-size:9px; color:var(--t2); line-height:1.6; }
+.al-filters-note-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--t3); display:block; margin-bottom:3px; }
+.al-right-col { display:flex; flex-direction:column; gap:16px; }
+.al-jobs-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); overflow:hidden; }
+.al-jobs-head { padding:15px 18px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; }
+.al-jobs-title { font-size:13.5px; font-weight:700; color:var(--t1); margin-bottom:2px; }
+.al-jobs-sub { font-size:10px; color:var(--t3); }
+.al-link-btn { font-size:10px; font-weight:700; color:var(--gb-emerald); background:none; border:none; cursor:pointer; font-family:inherit; white-space:nowrap; }
+.al-jobs-body { padding:14px 18px 16px; }
+.al-quick-filters { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:12px; }
+.al-qf { border:1px solid var(--border); background:var(--bg-card); border-radius:12px; padding:5px 10px; font-size:9.5px; font-weight:700; color:var(--t2); cursor:pointer; font-family:inherit; transition:all .12s; }
+.al-qf.on { background:var(--s-grn-bg); color:var(--gb-emerald); border-color:var(--gb-emerald); }
+.al-jobs-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.al-job-card { border:1px solid var(--border); border-radius:12px; padding:13px; position:relative; background:var(--bg-card); }
+.al-job-match { position:absolute; right:10px; top:10px; background:var(--s-grn-bg); color:var(--gb-emerald); border-radius:12px; padding:3px 8px; font-size:9.5px; font-weight:800; }
+.al-job-match.warn { color:var(--s-amb); background:var(--s-amb-bg); }
+.al-job-company { color:var(--t3); font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+.al-job-title { font-size:11.5px; font-weight:700; color:var(--t1); margin:9px 0 3px; padding-right:44px; }
+.al-job-location { font-size:9.5px; color:var(--t3); margin-bottom:8px; }
+.al-job-reason { font-size:9px; color:var(--t2); line-height:1.5; min-height:32px; margin-bottom:9px; padding:6px 8px; background:var(--bg-sub); border-radius:6px; }
+.al-job-reason strong { color:var(--gb-emerald); }
+.al-job-actions { display:grid; grid-template-columns:auto auto 1fr; gap:5px; }
+.al-jact-btn { border:1px solid var(--border); background:var(--bg-card); color:var(--t2); border-radius:7px; padding:6px 8px; font-size:9px; font-weight:700; cursor:pointer; font-family:inherit; transition:all .12s; }
+.al-jact-btn:hover { border-color:var(--gb-emerald); color:var(--gb-emerald); }
+.al-jact-btn.analyze { background:var(--s-grn-bg); border-color:var(--gb-emerald); color:var(--gb-emerald); }
+.al-jact-btn.saved { background:var(--s-grn-bg); color:var(--gb-emerald); border-color:var(--gb-emerald); pointer-events:none; }
+.al-jact-btn.dismissed { background:var(--s-red-bg); color:var(--s-red); border-color:var(--s-red); }
+.al-empty { padding:40px 28px; text-align:center; }
+.al-empty-ico { margin-bottom:12px; color:var(--t3); }
+.al-empty-title { font-size:14px; font-weight:700; color:var(--t1); margin-bottom:5px; }
+.al-empty-sub { font-size:12px; color:var(--t3); line-height:1.5; margin-bottom:14px; }
+.al-empty-cta { font-size:12px; font-weight:700; padding:9px 18px; background:var(--gb-emerald); color:#fff; border:none; border-radius:10px; cursor:pointer; font-family:inherit; }
+.al-bottom-grid { display:grid; grid-template-columns:1.1fr .9fr; gap:16px; }
+.al-history-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); overflow:hidden; }
+.al-history-head { padding:14px 18px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; }
+.al-history-title { font-size:13.5px; font-weight:700; color:var(--t1); margin-bottom:2px; }
+.al-history-sub { font-size:10px; color:var(--t3); }
+.al-history-item { display:grid; grid-template-columns:36px 1fr auto; gap:10px; align-items:center; padding:11px 18px; border-bottom:1px solid var(--border-soft); }
+.al-history-item:last-child { border-bottom:none; }
+.al-hist-ico { width:34px; height:34px; border-radius:9px; background:var(--s-grn-bg); color:var(--gb-emerald); display:flex; align-items:center; justify-content:center; }
+.al-hist-ico.error { background:var(--s-red-bg); color:var(--s-red); }
+.al-hist-date { font-size:10.5px; font-weight:700; color:var(--t1); }
+.al-hist-detail { font-size:9.5px; color:var(--t3); }
+.al-hist-rate { text-align:right; }
+.al-hist-rate-val { font-size:10.5px; font-weight:800; color:var(--gb-emerald); display:block; }
+.al-hist-rate-lbl { font-size:8.5px; color:var(--t3); }
+.al-preview-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); overflow:hidden; }
+.al-preview-head { padding:14px 18px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; }
+.al-preview-body { padding:14px 18px 16px; }
+.al-email-box { border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.al-email-header-row { background:var(--bg-sub); border-bottom:1px solid var(--border); padding:8px 11px; font-size:9.5px; color:var(--t3); }
+.al-email-content { padding:11px; }
+.al-email-subject { font-size:8.5px; color:var(--t3); margin-bottom:4px; }
+.al-email-title { font-size:11px; font-weight:700; color:var(--t1); margin-bottom:4px; }
+.al-email-body-txt { font-size:9px; color:var(--t2); line-height:1.5; margin-bottom:7px; }
+.al-email-item { background:var(--bg-sub); border-radius:6px; padding:6px 9px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; font-size:9px; color:var(--t2); }
+.al-email-cta { margin-top:8px; background:var(--gb-emerald); color:#fff; border-radius:6px; text-align:center; padding:7px; font-size:9.5px; font-weight:800; }
+.al-email-secondary { text-align:center; color:var(--gb-emerald); font-size:8.5px; font-weight:700; margin-top:6px; cursor:pointer; }
+/* Edit Modal */
+.al-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; }
+.al-modal-box { background:var(--bg-card); border-radius:var(--r); max-width:620px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 24px 80px rgba(0,0,0,.3); }
+.al-modal-head { padding:20px 24px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:var(--bg-card); z-index:1; }
+.al-modal-title { font-size:16px; font-weight:800; color:var(--t1); }
+.al-modal-close-btn { background:none; border:none; cursor:pointer; color:var(--t3); font-size:20px; padding:2px; line-height:1; }
+.al-modal-body { padding:20px 24px; display:flex; flex-direction:column; gap:16px; }
+.al-modal-section { display:flex; flex-direction:column; gap:10px; }
+.al-modal-section-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--t3); padding-bottom:6px; border-bottom:1px solid var(--border); }
+.al-form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.al-field { display:flex; flex-direction:column; gap:4px; }
+.al-field label { font-size:11px; font-weight:600; color:var(--t2); }
+.al-field input, .al-field select { padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px; background:var(--bg-card); color:var(--t1); outline:none; width:100%; }
+.al-field input:focus, .al-field select:focus { border-color:var(--gb-emerald); }
+.al-checkgroup { display:flex; flex-wrap:wrap; gap:6px; }
+.al-check-opt { display:inline-flex; align-items:center; gap:5px; padding:5px 11px; border:1px solid var(--border); border-radius:8px; cursor:pointer; font-size:11px; font-weight:600; color:var(--t2); background:var(--bg-sub); transition:all .12s; user-select:none; }
+.al-check-opt.on { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); }
+.al-check-opt.neg.on { background:var(--s-red-bg); color:var(--s-red); border-color:var(--s-red); }
+.al-tag-wrap { display:flex; flex-wrap:wrap; gap:6px; align-items:center; border:1px solid var(--border); border-radius:8px; padding:7px 10px; min-height:40px; background:var(--bg-card); }
+.al-tag-wrap:focus-within { border-color:var(--gb-emerald); }
+.al-tag { font-size:10.5px; font-weight:600; background:var(--s-grn-bg); color:var(--gb-emerald); border-radius:6px; padding:3px 8px; display:flex; align-items:center; gap:4px; }
+.al-tag-x { cursor:pointer; color:var(--t3); font-size:13px; line-height:1; background:none; border:none; padding:0; }
+.al-tag-x:hover { color:var(--s-red); }
+.al-tag-inp { border:none; outline:none; font-family:inherit; font-size:12px; background:transparent; color:var(--t1); min-width:100px; flex:1; }
+.al-freq-row { display:flex; gap:6px; }
+.al-freq-btn { flex:1; padding:8px; border:1px solid var(--border); border-radius:8px; font-size:11px; font-weight:600; font-family:inherit; background:var(--bg-sub); color:var(--t2); cursor:pointer; transition:all .12s; }
+.al-freq-btn.on { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); }
+.al-conflict-warn { font-size:10.5px; color:var(--s-amb); background:var(--s-amb-bg); border:1px solid #f1dfb9; border-radius:7px; padding:8px 11px; display:none; }
+.al-conflict-warn.show { display:block; }
+.al-modal-footer { padding:14px 24px 18px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; position:sticky; bottom:0; background:var(--bg-card); }
+.al-modal-save-btn { font-size:13px; font-weight:700; padding:9px 18px; background:var(--gb-emerald); color:#fff; border:none; border-radius:10px; cursor:pointer; font-family:inherit; }
+.al-modal-save-btn:disabled { opacity:.5; cursor:not-allowed; }
+.al-modal-cancel-btn { font-size:13px; font-weight:600; padding:9px 14px; background:none; color:var(--t2); border:1px solid var(--border); border-radius:10px; cursor:pointer; font-family:inherit; }
+/* Feedback popup */
+.al-fb-panel { position:fixed; bottom:96px; right:24px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-hover); padding:14px 16px; z-index:600; min-width:220px; display:none; }
+.al-fb-panel.open { display:block; }
+.al-fb-title { font-size:11px; font-weight:700; color:var(--t1); margin-bottom:8px; }
+.al-fb-opts { display:flex; flex-direction:column; gap:4px; }
+.al-fb-opt { font-size:10.5px; font-weight:600; padding:7px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-sub); color:var(--t2); cursor:pointer; font-family:inherit; text-align:left; transition:all .12s; }
+.al-fb-opt:hover { border-color:var(--s-red); color:var(--s-red); }
+/* Skeleton */
+.al-skel { background:linear-gradient(90deg,var(--bg-sub) 25%,var(--border) 50%,var(--bg-sub) 75%); background-size:200% 100%; animation:al-shimmer 1.5s infinite; border-radius:6px; display:inline-block; }
+@keyframes al-shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+@media (max-width:1200px) { .al-hero-row { grid-template-columns:1.2fr 1fr 1fr 1fr; } .al-main-grid { grid-template-columns:300px 1fr; } .al-jobs-grid { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:1100px) { .al-main-grid { grid-template-columns:1fr; } }
+@media (max-width:900px) { .al-hero-row { grid-template-columns:1fr 1fr; } .al-bottom-grid { grid-template-columns:1fr; } }
+@media (max-width:768px) { .al-hero-row { grid-template-columns:1fr; } .al-jobs-grid { grid-template-columns:1fr; } }
 </style>
 <script>
 if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');
@@ -1716,122 +1887,149 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
 
   <!-- ══ ALERTAS ══ -->
   <div id="tab-alertas" class="tab" style="display:none">
-    <div class="hero" style="padding:44px 56px">
-      <div class="hero-inner" style="justify-content:flex-start;gap:48px">
-        <div class="hero-text" style="flex:0 0 46%;max-width:46%">
-          <div class="hero-eyebrow">🔔 Alertas personalizados</div>
-          <h1 class="hero-title">Vagas no seu e‑mail toda semana</h1>
-          <p class="hero-sub">Configure seu perfil uma vez e receba oportunidades compatíveis com sua área, salário e formato — sem precisar buscar manualmente toda semana.</p>
-          <div class="hero-metrics">
-            <div><div class="hm-val">8</div><div class="hm-lbl">Vagas recebidas</div></div>
-            <div><div class="hm-val">1</div><div class="hm-lbl">Candidatura enviada</div></div>
-            <div><div class="hm-val accent">Ativo</div><div class="hm-lbl">Status do alerta</div></div>
-          </div>
+    <div class="al-page">
+
+      <!-- Header -->
+      <div class="al-page-header">
+        <div>
+          <div class="al-eyebrow">Seu radar de vagas</div>
+          <h1 class="al-title">Seus alertas de vagas</h1>
+          <p class="al-desc">Configure uma vez e receba vagas compatíveis com seu perfil, salário e momento de carreira.</p>
         </div>
-        <!-- Card mockup alerta semanal -->
-        <div style="flex:1;background:var(--bg-card);border-radius:14px;padding:22px 24px;box-shadow:var(--sh-card)">
-          <div style="display:flex;align-items:center;gap:5px;margin-bottom:18px;">
-            <div style="width:8px;height:8px;border-radius:50%;background:#ff5f57"></div>
-            <div style="width:8px;height:8px;border-radius:50%;background:#febc2e"></div>
-            <div style="width:8px;height:8px;border-radius:50%;background:#28c840"></div>
-            <span style="font-size:10.5px;color:var(--t3);margin-left:6px;">Alerta semanal · VagaAI</span>
+        <div class="al-header-right">
+          <div class="al-status-badge" id="alStatusBadge" role="status">
+            <span class="al-status-dot" aria-hidden="true"></span>
+            <span id="alStatusText">Carregando…</span>
           </div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-            <div style="width:32px;height:32px;background:var(--s-grn-bg);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🔔</div>
-            <div>
-              <div style="font-size:13px;font-weight:700;color:var(--t1)">3 novas vagas para você</div>
-              <div style="font-size:11px;color:var(--t3)">Marketing · Remoto · Acima de R$6k</div>
-            </div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
-            <div style="background:var(--bg-sub);border-radius:9px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <div style="font-size:11.5px;font-weight:700;color:var(--t1)">Head de Marketing</div>
-                <div style="font-size:10px;color:var(--t3)">Hotmart · Remoto</div>
-              </div>
-              <span style="font-size:11px;font-weight:700;color:var(--gb-emerald)">92%</span>
-            </div>
-            <div style="background:var(--bg-sub);border-radius:9px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <div style="font-size:11.5px;font-weight:700;color:var(--t1)">Growth Manager</div>
-                <div style="font-size:10px;color:var(--t3)">Loft · São Paulo</div>
-              </div>
-              <span style="font-size:11px;font-weight:700;color:var(--gb-emerald)">87%</span>
-            </div>
-            <div style="background:var(--bg-sub);border-radius:9px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <div style="font-size:11.5px;font-weight:700;color:var(--t1)">Marketing Content Lead</div>
-                <div style="font-size:10px;color:var(--t3)">99Freelas · Remoto</div>
-              </div>
-              <span style="font-size:11px;font-weight:700;color:var(--s-amb)">74%</span>
-            </div>
-          </div>
-          <div style="background:var(--gb-emerald);border-radius:8px;padding:9px 14px;text-align:center;font-size:11px;font-weight:700;color:#fff">Ver todas as vagas →</div>
+          <button class="al-new-btn" id="alNewBtn" onclick="openAlertEditModal()" aria-label="Criar novo alerta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Criar novo alerta
+          </button>
         </div>
       </div>
-    </div>
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-pad">
-          <div class="card-head">
-            <div class="card-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
-            <div><div class="card-ttl">Perfil de busca</div><div class="card-sub">Personalize quais vagas você quer receber na sua caixa de entrada</div></div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
-            <div><div class="fld-label">Cargo</div><input class="fld-input" id="al-cargo" value="Marketing"></div>
-            <div><div class="fld-label">Nível</div><select class="fld-input" id="al-nivel"><option>Qualquer</option><option>Júnior</option><option>Pleno</option><option>Sênior</option></select></div>
-            <div><div class="fld-label">Localização</div><input class="fld-input" id="al-cidade" value="Remoto"></div>
-            <div><div class="fld-label">Salário mínimo (R$)</div><input class="fld-input" type="number" id="al-salario" value="6000"></div>
-          </div>
-          <div style="margin-bottom:16px;">
-            <div class="fld-label">Keywords do perfil</div>
-            <div class="kw-wrap" id="kwWrap">
-              <span class="kw-chip">SEO<span class="kw-chip-x" onclick="removeKw(0)">×</span></span>
-              <span class="kw-chip">Copywriting<span class="kw-chip-x" onclick="removeKw(1)">×</span></span>
-              <span class="kw-chip">Mkt de Conteúdo<span class="kw-chip-x" onclick="removeKw(2)">×</span></span>
-              <input class="fld-input" id="kwInput" placeholder="Digite e pressione Enter..." onkeydown="handleKwInput(event)" style="background:none;border:none;padding:0;min-width:120px;flex:1">
-            </div>
-          </div>
+
+      <!-- Hero row: próximo envio + métricas -->
+      <div class="al-hero-row">
+        <div class="al-next-card" id="alNextCard">
           <div>
-            <div class="fld-label">Frequência</div>
-            <div class="freq-row">
-              <button class="freq-btn on" id="freq-semanal" onclick="setFreq('semanal')">Semanal</button>
-              <button class="freq-btn" id="freq-quinzenal" onclick="setFreq('quinzenal')">Quinzenal</button>
-              <button class="freq-btn" id="freq-mensal" onclick="setFreq('mensal')">Mensal</button>
-            </div>
+            <div class="al-next-label">Próximo envio</div>
+            <div class="al-next-date" id="alNextDate">Configure o alerta</div>
+            <div class="al-next-meta" id="alNextMeta">Nenhum alerta ativo</div>
           </div>
-          <button class="save-btn" onclick="saveAlertProfile()">Salvar perfil de alerta</button>
+          <div class="al-next-actions">
+            <button class="al-next-btn primary" id="alTestBtn" onclick="sendTestAlert()" aria-label="Enviar e-mail de teste agora">Enviar teste agora</button>
+            <button class="al-next-btn secondary" onclick="openAlertEditModal()">Editar alerta</button>
+          </div>
+        </div>
+        <div class="al-metric">
+          <div class="al-metric-val" id="alMetricVagas">—</div>
+          <div class="al-metric-lbl">vagas encontradas</div>
+          <div class="al-metric-sub" id="alMetricVagasSub">nos últimos 30 dias</div>
+        </div>
+        <div class="al-metric">
+          <div class="al-metric-val">—</div>
+          <div class="al-metric-lbl">vagas visualizadas</div>
+          <div class="al-metric-na">Rastreamento indisponível</div>
+        </div>
+        <div class="al-metric">
+          <div class="al-metric-val" id="alMetricCandidaturas">—</div>
+          <div class="al-metric-lbl">candidaturas dos alertas</div>
+          <div class="al-metric-na" id="alMetricCandSub">Dados insuficientes</div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-pad">
-          <div class="card-head">
-            <div class="card-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-            <div><div class="card-ttl">Próximo envio</div><div class="card-sub">Sexta-feira, 13 de junho de 2026 · Previstas ~8 vagas</div></div>
+
+      <!-- Main grid: summary LEFT + content RIGHT -->
+      <div class="al-main-grid">
+
+        <!-- LEFT: Alert summary card -->
+        <div id="alSummaryCard">
+          <div class="al-empty">
+            <div class="al-empty-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="44" height="44"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg>
+            </div>
+            <div class="al-empty-title">Nenhum alerta configurado</div>
+            <div class="al-empty-sub">Crie um alerta para receber vagas compatíveis com seu perfil toda semana.</div>
+            <button class="al-empty-cta" onclick="openAlertEditModal()">Criar primeiro alerta</button>
           </div>
-          <div style="background:var(--bg-sub);border-radius:var(--r-sm);padding:20px;margin-bottom:20px;">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-              <div style="width:34px;height:34px;border-radius:9px;background:var(--gb-emerald);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-              </div>
+        </div>
+
+        <!-- RIGHT: Jobs + history + email preview -->
+        <div class="al-right-col">
+
+          <!-- Recommended jobs -->
+          <div class="al-jobs-card">
+            <div class="al-jobs-head">
               <div>
-                <div style="font-size:12.5px;font-weight:600;color:var(--t1);">Vagas da semana para você</div>
-                <div style="font-size:11px;color:var(--t3);">vagaai.com → joaovictor@email.com</div>
+                <div class="al-jobs-title">Vagas compatíveis encontradas agora</div>
+                <div class="al-jobs-sub">Prévia das vagas que podem chegar no próximo alerta.</div>
               </div>
             </div>
-            <div style="font-size:12.5px;color:var(--t2);line-height:1.6;margin-bottom:14px;">
-              <strong style="color:var(--t1);">8 vagas de Marketing</strong> compatíveis com seu perfil — remoto, salário a partir de R$6.000.
-            </div>
-            <div style="display:inline-flex;align-items:center;gap:6px;background:var(--gb-emerald);color:#fff;padding:8px 16px;border-radius:var(--r-xs);font-size:12.5px;font-weight:600;">
-              Ver vagas da semana →
+            <div class="al-jobs-body">
+              <div class="al-quick-filters" id="alJobFilters" role="group" aria-label="Filtros de vagas">
+                <button class="al-qf on" onclick="setAlJobFilter('todas',this)">Todas</button>
+                <button class="al-qf" onclick="setAlJobFilter('80',this)">80%+</button>
+                <button class="al-qf" onclick="setAlJobFilter('remoto',this)">Remotas</button>
+                <button class="al-qf" onclick="setAlJobFilter('salario',this)">Salário informado</button>
+              </div>
+              <div id="alJobsGrid">
+                <div class="al-empty" style="padding:28px">
+                  <div class="al-empty-ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="38" height="38"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+                  </div>
+                  <div class="al-empty-title">As vagas aparecerão aqui</div>
+                  <div class="al-empty-sub">Configure e ative um alerta para ver as oportunidades encontradas para você. Use "Enviar teste agora" para disparar um envio imediato.</div>
+                </div>
+              </div>
             </div>
           </div>
-          <div style="font-size:12.5px;color:var(--t3);line-height:1.65;">
-            Recebendo vagas de <strong style="color:var(--t2);">Marketing</strong> · Formato remoto · Salário a partir de <strong style="color:var(--t2);">R$6.000</strong> · Toda sexta-feira.
+
+          <!-- Bottom: history + email preview -->
+          <div class="al-bottom-grid">
+
+            <!-- History -->
+            <div class="al-history-card">
+              <div class="al-history-head">
+                <div>
+                  <div class="al-history-title">Histórico de envios</div>
+                  <div class="al-history-sub">Desempenho dos alertas recentes.</div>
+                </div>
+              </div>
+              <div id="alHistoryBody">
+                <div style="padding:24px 18px;text-align:center">
+                  <div style="font-size:12px;color:var(--t3)">Nenhum envio ainda.</div>
+                  <div style="font-size:11px;color:var(--t3);margin-top:5px">O histórico aparece após o primeiro envio automático ou teste.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Email preview -->
+            <div class="al-preview-card">
+              <div class="al-preview-head">
+                <div>
+                  <div class="al-history-title">Prévia do e-mail</div>
+                  <div class="al-history-sub" id="alPreviewWhen">Aguardando configuração.</div>
+                </div>
+                <button class="al-link-btn" onclick="sendTestAlert()" id="alPreviewTestBtn">Enviar teste</button>
+              </div>
+              <div class="al-preview-body" id="alEmailPreviewBody">
+                <div style="text-align:center;padding:20px;color:var(--t3);font-size:11px">Configure um alerta para ver a prévia do e-mail.</div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
+
     </div>
+
+    <!-- Feedback popup (hidden) -->
+    <div class="al-fb-panel" id="alFbPanel" role="dialog" aria-modal="true" aria-label="Por que não gostou?">
+      <div class="al-fb-title">Por que não gostou?</div>
+      <div class="al-fb-opts" id="alFbOpts"></div>
+    </div>
+
+    <!-- aria-live region -->
+    <div id="alLiveRegion" role="status" aria-live="polite" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"></div>
   </div>
 
   <!-- ══ PLANO ══ -->
@@ -3406,73 +3604,703 @@ async function deleteTracker(id) {
   }
 }
 
+/* ── Alert state ─────────────────────────────────────────────── */
+var _alertProfile   = null;   // from Supabase
+var _alertExtended  = {};     // from localStorage (extended prefs)
+var _alJobFilter    = 'todas';
+var _alJobFeedback  = {};     // { hash: 'dismissed'|'saved' }
+var _alTestSending  = false;
+var _alFbTargetHash = null;   // job hash for feedback popup
+// Modal state
+var _alMKw      = [];  // competências
+var _alMEmpresas = [];
+var _alMSetores  = [];
+var _alMNegPal   = [];
+var _alMOriginal = '';
+
+function _alLoadExt() {
+  try { _alertExtended = JSON.parse(localStorage.getItem('vagaai_alert_ext') || '{}'); } catch(e) { _alertExtended = {}; }
+  try { _alJobFeedback = JSON.parse(localStorage.getItem('vagaai_job_fb') || '{}'); } catch(e) { _alJobFeedback = {}; }
+}
+function _alSaveExt() {
+  localStorage.setItem('vagaai_alert_ext', JSON.stringify(_alertExtended));
+}
+
+/* ── Load & render ────────────────────────────────────────────── */
 async function loadAlerts() {
+  _alLoadExt();
   try {
     var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?user_id=eq.' + currentUserId, {
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
     });
     var rows = await res.json();
-    if (rows && rows[0]) {
-      var p = rows[0];
-      document.getElementById('al-cargo').value = p.cargo_desejado || '';
-      document.getElementById('al-nivel').value = p.nivel || 'qualquer';
-      document.getElementById('al-cidade').value = p.cidade || '';
-      document.getElementById('al-salario').value = p.salario_min || '';
-      _alertKeywords = Array.isArray(p.keywords) ? p.keywords : [];
-      renderKwTags();
-      var freq = p.frequencia || 'semanal';
-      ['semanal','quinzenal','mensal'].forEach(function(f){ document.getElementById('freq-'+f).classList.toggle('on', f===freq); });
-    }
-  } catch(e) {}
+    _alertProfile = (Array.isArray(rows) && rows[0]) ? rows[0] : null;
+  } catch(e) { _alertProfile = null; }
+  renderAlertPage();
 }
 
-function renderKwTags() {
-  var wrap = document.getElementById('kwWrap');
-  var input = document.getElementById('kwInput');
-  var html = '';
-  _alertKeywords.forEach(function(kw, i) {
-    html += '<span class="kw-chip">' + escHtml(kw) + '<span class="kw-chip-x" onclick="removeKw(' + i + ')">×</span></span>';
-  });
-  html += '<input class="fld-input" id="kwInput" placeholder="Digite e pressione Enter..." onkeydown="handleKwInput(event)" style="background:none;border:none;padding:0;min-width:120px;flex:1">';
-  wrap.innerHTML = html;
+function renderAlertPage() {
+  var p = _alertProfile;
+  var ext = _alertExtended;
+  renderAlertStatus(p);
+  renderAlertNextSend(p, ext);
+  renderAlertMetrics(p);
+  renderAlertSummary(p, ext);
+  renderAlertJobsGrid();
+  renderAlertEmailPreview(p, ext);
 }
 
-function handleKwInput(e) {
-  if (e.key === 'Enter' || e.key === ',') {
-    e.preventDefault();
-    var val = document.getElementById('kwInput').value.trim().replace(/,$/,'');
-    if (val && !_alertKeywords.includes(val)) { _alertKeywords.push(val); renderKwTags(); }
-    document.getElementById('kwInput').value = '';
+function renderAlertStatus(p) {
+  var badge = document.getElementById('alStatusBadge');
+  var txt   = document.getElementById('alStatusText');
+  if (!badge || !txt) return;
+  badge.className = 'al-status-badge';
+  if (!p) {
+    txt.textContent = 'Sem alerta';
+    return;
+  }
+  if (p.ativo) {
+    badge.classList.add('active');
+    txt.textContent = (p.frequencia === 'semanal' ? 'Alerta semanal ativo' : p.frequencia === 'quinzenal' ? 'Alerta quinzenal ativo' : 'Alerta mensal ativo');
+  } else {
+    badge.classList.add('paused');
+    txt.textContent = 'Alerta pausado';
   }
 }
 
-function removeKw(i) { _alertKeywords.splice(i, 1); renderKwTags(); }
-function setFreq(freq) { ['semanal','quinzenal','mensal'].forEach(function(f){ document.getElementById('freq-'+f).classList.toggle('on', f===freq); }); }
+function calculateNextAlertRun(p, ext) {
+  if (!p || !p.ativo) return null;
+  var freq    = p.frequencia || 'semanal';
+  var dayEnvio = (ext.dia_envio !== undefined && ext.dia_envio !== '') ? parseInt(ext.dia_envio) : 5;
+  var hora    = ext.horario_envio || '08:00';
+  var parts   = hora.split(':');
+  var hh = parseInt(parts[0]) || 8, mm = parseInt(parts[1]) || 0;
+  var now = new Date();
+  var d   = new Date(now);
+  var diff = (dayEnvio - d.getDay() + 7) % 7;
+  if (diff === 0) {
+    var todayAt = new Date(d.getFullYear(), d.getMonth(), d.getDate(), hh, mm);
+    if (now >= todayAt) diff = 7;
+  }
+  if (freq === 'quinzenal') diff += (diff === 0 ? 14 : 7);
+  d.setDate(d.getDate() + diff);
+  d.setHours(hh, mm, 0, 0);
+  if (freq === 'mensal') {
+    var nm = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    var nd = (dayEnvio - nm.getDay() + 7) % 7;
+    d = new Date(nm);
+    d.setDate(d.getDate() + nd);
+    d.setHours(hh, mm, 0, 0);
+  }
+  return d;
+}
+
+function renderAlertNextSend(p, ext) {
+  var dateEl = document.getElementById('alNextDate');
+  var metaEl = document.getElementById('alNextMeta');
+  var testBtn = document.getElementById('alTestBtn');
+  if (!dateEl) return;
+  if (!p) {
+    dateEl.textContent = 'Configure o alerta';
+    metaEl.textContent = 'Nenhum alerta ativo';
+    if (testBtn) testBtn.disabled = true;
+    return;
+  }
+  if (!p.ativo) {
+    dateEl.textContent = 'Alerta pausado';
+    metaEl.textContent = 'Reative para retomar os envios';
+    if (testBtn) testBtn.disabled = true;
+    return;
+  }
+  var next = calculateNextAlertRun(p, ext);
+  if (!next) { dateEl.textContent = '—'; metaEl.textContent = ''; return; }
+  var dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  var meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  var hStr = String(next.getHours()).padStart(2,'0') + 'h';
+  dateEl.textContent = dias[next.getDay()] + ', ' + next.getDate() + ' de ' + meses[next.getMonth()] + ', às ' + hStr;
+  var q = calculateAlertQuality(p, ext);
+  metaEl.textContent = 'Qualidade do alerta: ' + q.score + '%';
+  if (testBtn) testBtn.disabled = false;
+}
+
+function renderAlertMetrics(p) {
+  var vagasEl = document.getElementById('alMetricVagas');
+  var candEl  = document.getElementById('alMetricCandidaturas');
+  var subEl   = document.getElementById('alMetricCandSub');
+  if (!p) {
+    if (vagasEl) vagasEl.textContent = '—';
+    if (candEl)  candEl.textContent  = '—';
+    return;
+  }
+  // Calcular candidaturas originadas de alertas (job_tracker vinculado a análise que veio de alerta)
+  var tracked = _kTracked || [];
+  var fromAlert = tracked.filter(function(t){ return t.origem === 'alerta' || t.source === 'alerta'; }).length;
+  if (vagasEl) vagasEl.textContent = '—';  // sem tabela de alert_runs ainda
+  if (candEl)  candEl.textContent  = fromAlert > 0 ? fromAlert : '—';
+  if (subEl)   subEl.textContent   = fromAlert > 0 ? fromAlert + ' rastreadas' : 'Dados insuficientes';
+}
+
+/* ── Quality score ────────────────────────────────────────────── */
+function calculateAlertQuality(p, ext) {
+  if (!p) return { score:0, checks:[], completed:[], pending:[], recommendations:[] };
+  var checks = [
+    { key:'cargo',     label:'Cargo ou área definidos',      done: !!(p.cargo_desejado && p.cargo_desejado.trim()),             pts:20 },
+    { key:'nivel',     label:'Senioridade definida',         done: !!(p.nivel && p.nivel !== 'qualquer' && p.nivel !== 'Qualquer'), pts:10 },
+    { key:'local',     label:'Localização ou modalidade',    done: !!(p.cidade && p.cidade.trim()),                              pts:10 },
+    { key:'salario',   label:'Faixa salarial',               done: !!(p.salario_min && parseInt(p.salario_min) > 0),            pts:10 },
+    { key:'keywords',  label:'Competências prioritárias (≥2)', done: Array.isArray(p.keywords) && p.keywords.length >= 2,        pts:15 },
+    { key:'freq',      label:'Frequência configurada',       done: !!(p.frequencia),                                            pts:5  },
+    { key:'contrato',  label:'Tipo de contrato',             done: Array.isArray(ext.contrato_tipos) && ext.contrato_tipos.length > 0, pts:10 },
+    { key:'empresas',  label:'Empresas de interesse',        done: Array.isArray(ext.empresas) && ext.empresas.length > 0,      pts:10 },
+    { key:'setores',   label:'Setores preferidos',           done: Array.isArray(ext.setores) && ext.setores.length > 0,        pts:5  },
+    { key:'filtros',   label:'Filtros negativos',            done: (Array.isArray(ext.filtros_neg) && ext.filtros_neg.length > 0) || (Array.isArray(ext.neg_palavras) && ext.neg_palavras.length > 0), pts:5 },
+  ];
+  var score     = checks.reduce(function(s,c){ return s + (c.done ? c.pts : 0); }, 0);
+  var completed = checks.filter(function(c){ return c.done; });
+  var pending   = checks.filter(function(c){ return !c.done; });
+  return { score: score, checks: checks, completed: completed, pending: pending,
+    recommendations: pending.slice(0,2).map(function(c){ return c.label; }) };
+}
+
+/* ── Summary card ────────────────────────────────────────────── */
+function renderAlertSummary(p, ext) {
+  var container = document.getElementById('alSummaryCard');
+  if (!container) return;
+  if (!p) {
+    container.innerHTML = '<div class="al-empty">' +
+      '<div class="al-empty-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="44" height="44"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg></div>' +
+      '<div class="al-empty-title">Nenhum alerta configurado</div>' +
+      '<div class="al-empty-sub">Crie um alerta para receber vagas compatíveis com seu perfil toda semana.</div>' +
+      '<button class="al-empty-cta" onclick="openAlertEditModal()">Criar primeiro alerta</button></div>';
+    return;
+  }
+  var q = calculateAlertQuality(p, ext);
+  var qCls = q.score >= 70 ? '' : q.score >= 40 ? ' warn' : ' bad';
+  var freq = p.frequencia || 'semanal';
+  var next = calculateNextAlertRun(p, ext);
+  var dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  var nextStr = next ? (dias[next.getDay()] + 's às ' + String(next.getHours()).padStart(2,'0') + 'h') : '—';
+  var metaLines = [
+    (p.nivel && p.nivel !== 'qualquer' ? escHtml(p.nivel) : '') + (p.nivel && p.nivel !== 'qualquer' && p.cidade ? ' · ' : '') + (p.cidade ? escHtml(p.cidade) : ''),
+    (p.salario_min && parseInt(p.salario_min) > 0 ? 'R$ ' + parseInt(p.salario_min).toLocaleString('pt-BR') + '+' : '') + (p.salario_min && ext.contrato_tipos && ext.contrato_tipos.length ? ' · ' : '') + (ext.contrato_tipos && ext.contrato_tipos.length ? escHtml(ext.contrato_tipos.slice(0,2).join(' ou ')) : ''),
+    freq.charAt(0).toUpperCase() + freq.slice(1) + ' · ' + nextStr,
+  ].filter(Boolean).join('<br>');
+  var tags = (Array.isArray(p.keywords) ? p.keywords.slice(0,6) : []).map(function(k){ return '<span class="al-sum-tag">'+escHtml(k)+'</span>'; }).join('');
+  var pauseLbl = p.ativo ? 'Pausar alerta' : 'Reativar alerta';
+  var checksHtml = q.checks.map(function(c){
+    return '<div class="al-check-row"><span class="al-check-lbl">'+escHtml(c.label)+'</span><span class="'+(c.done?'al-check-done':'al-check-pending')+'">'+(c.done?'Completo':'Pendente')+'</span></div>';
+  }).join('');
+  var improveHtml = q.pending.length ? '<div class="al-improve-box"><strong>Faltam '+q.pending.length+' ajuste'+(q.pending.length>1?'s':'')+':</strong> adicione '+q.recommendations.join(' e ')+' para melhorar a precisão.</div>' : '';
+  var filtersNote = '<div class="al-filters-note"><span class="al-filters-note-lbl">Disponível ao editar</span>Tipo de contrato: CLT, PJ, freela, estágio ou temporário.<br>Filtros negativos: estágio, presencial, banco de talentos, palavras excluídas.</div>';
+  container.innerHTML =
+    '<div class="al-summary-card">'+
+      '<div class="al-sum-head">'+
+        '<div><div class="al-sum-head-title">Seu alerta principal</div><div class="al-sum-head-sub">Resumo das preferências ativas.</div></div>'+
+        '<span class="al-quality-badge'+qCls+'">'+q.score+'%</span>'+
+      '</div>'+
+      '<div class="al-sum-body">'+
+        '<div class="al-sum-name">'+escHtml(p.cargo_desejado || '(sem cargo definido)')+'</div>'+
+        '<div class="al-sum-meta">'+metaLines+'</div>'+
+        (tags ? '<div class="al-sum-tags">'+tags+'</div>' : '')+
+        '<div class="al-sum-actions">'+
+          '<button class="al-sum-btn edit" onclick="openAlertEditModal()">Editar alerta</button>'+
+          '<button class="al-sum-btn" onclick="sendTestAlert()">Enviar teste</button>'+
+          '<button class="al-sum-btn full" onclick="toggleAlertActive()">'+escHtml(pauseLbl)+'</button>'+
+          '<button class="al-sum-btn full danger" onclick="confirmDeleteAlert()">Excluir alerta</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="al-quality-box">'+
+        '<div class="al-quality-line"><span>Qualidade do alerta</span><span class="al-quality-pct">'+q.score+'%</span></div>'+
+        '<div class="al-quality-track"><div class="al-quality-fill'+qCls+'" style="width:'+q.score+'%"></div></div>'+
+        checksHtml+
+        improveHtml+
+      '</div>'+
+      filtersNote+
+    '</div>';
+}
+
+/* ── Email preview ─────────────────────────────────────────────── */
+function renderAlertEmailPreview(p, ext) {
+  var whenEl   = document.getElementById('alPreviewWhen');
+  var bodyEl   = document.getElementById('alEmailPreviewBody');
+  if (!p) {
+    if (whenEl) whenEl.textContent = 'Aguardando configuração.';
+    if (bodyEl) bodyEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--t3);font-size:11px">Configure um alerta para ver a prévia.</div>';
+    return;
+  }
+  var next = calculateNextAlertRun(p, ext);
+  var dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  var meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  var nextStr = next ? 'Chegará '+dias[next.getDay()]+'feira, '+next.getDate()+' de '+meses[next.getMonth()]+' às '+String(next.getHours()).padStart(2,'0')+'h.' : 'Aguardando configuração.';
+  if (whenEl) whenEl.textContent = nextStr;
+  var email = (currentSession && currentSession.user) ? escHtml(currentSession.user.email) : 'seu e-mail';
+  var cargo = escHtml(p.cargo_desejado || 'suas preferências');
+  var subject = 'Vagas de ' + cargo + ' selecionadas para você';
+  if (!bodyEl) return;
+  bodyEl.innerHTML =
+    '<div class="al-email-box">'+
+      '<div class="al-email-header-row">VagaAI → '+email+'</div>'+
+      '<div class="al-email-content">'+
+        '<div class="al-email-subject">Assunto: '+escHtml(subject)+'</div>'+
+        '<div class="al-email-title">Vagas selecionadas para você</div>'+
+        '<div class="al-email-body-txt">Encontramos oportunidades com boa aderência ao seu perfil'+(p.cidade?' em '+escHtml(p.cidade):'')+'.</div>'+
+        '<div class="al-email-item"><span>'+escHtml(p.cargo_desejado||'Cargo')+'</span><span style="font-size:9px;color:var(--t3)">compatível</span></div>'+
+        '<div class="al-email-cta">Ver oportunidades</div>'+
+        '<div class="al-email-secondary" onclick="openAlertEditModal()">Editar preferências</div>'+
+      '</div>'+
+    '</div>'+
+    '<div style="margin-top:10px;font-size:9px;color:var(--t3);text-align:center">Use "Enviar teste" para receber o e-mail real.</div>';
+}
+
+/* ── Test send ─────────────────────────────────────────────────── */
+async function sendTestAlert() {
+  if (_alTestSending) { showToast('Envio em andamento…'); return; }
+  if (!_alertProfile) { showToast('Configure o alerta primeiro.', 'error'); return; }
+  if (!confirm('Enviar e-mail de teste para ' + (currentSession.user.email || 'sua conta') + '? Isso buscará vagas reais e enviará o e-mail agora.')) return;
+  _alTestSending = true;
+  var btns = document.querySelectorAll('#alTestBtn, #alPreviewTestBtn');
+  btns.forEach(function(b){ if(b){ b.disabled = true; b.textContent = 'Enviando…'; } });
+  _alLive('Enviando e-mail de teste…');
+  try {
+    var res = await fetch('/api/send-alerts?test=1&user_id=' + encodeURIComponent(currentUserId), {
+      method: 'GET',
+      headers: { Authorization: 'Bearer ' + currentSession.access_token }
+    });
+    var data = await res.json();
+    if (res.ok && data.ok) {
+      showToast('E-mail de teste enviado para ' + currentSession.user.email + '!');
+      _alLive('E-mail de teste enviado com sucesso.');
+    } else {
+      var msg = (data && data.error) ? data.error : 'Erro ao enviar teste.';
+      showToast(msg, 'error');
+      _alLive(msg);
+    }
+  } catch(e) {
+    showToast('Falha ao conectar. Tente novamente.', 'error');
+    _alLive('Falha ao enviar e-mail de teste.');
+  } finally {
+    _alTestSending = false;
+    btns.forEach(function(b){
+      if (!b) return;
+      b.disabled = false;
+      if (b.id === 'alTestBtn') b.textContent = 'Enviar teste agora';
+      else b.textContent = 'Enviar teste';
+    });
+  }
+}
+
+function _alLive(msg) {
+  var el = document.getElementById('alLiveRegion');
+  if (el) el.textContent = msg;
+}
+
+/* ── Job filter ─────────────────────────────────────────────────── */
+function setAlJobFilter(val, btn) {
+  _alJobFilter = val;
+  document.querySelectorAll('.al-qf').forEach(function(b){ b.classList.remove('on'); });
+  if (btn) btn.classList.add('on');
+  renderAlertJobsGrid();
+}
+
+/* ── Job feedback ───────────────────────────────────────────────── */
+function recordJobFeedback(hash, reason) {
+  _alJobFeedback[hash] = { type:'dismissed', reason:reason, at: new Date().toISOString() };
+  localStorage.setItem('vagaai_job_fb', JSON.stringify(_alJobFeedback));
+  var card = document.getElementById('aljob-' + hash);
+  if (card) card.style.opacity = '0.35';
+  var panel = document.getElementById('alFbPanel');
+  if (panel) { panel.classList.remove('open'); _alFbTargetHash = null; }
+  showToast('Feedback registrado. Não aparecerá mais.');
+  _alLive('Feedback registrado.');
+}
+
+function undoJobFeedback(hash) {
+  delete _alJobFeedback[hash];
+  localStorage.setItem('vagaai_job_fb', JSON.stringify(_alJobFeedback));
+  var card = document.getElementById('aljob-' + hash);
+  if (card) card.style.opacity = '';
+  showToast('Feedback desfeito.');
+}
+
+function openJobFeedback(hash, x, y) {
+  _alFbTargetHash = hash;
+  var reasons = ['Cargo não é relevante','Empresa não interessa','Salário inadequado','Localização inadequada','Modalidade inadequada','Senioridade errada','Tipo de contrato inadequado','Vaga duplicada','Outro motivo'];
+  var panel = document.getElementById('alFbPanel');
+  var optsEl = document.getElementById('alFbOpts');
+  if (!panel || !optsEl) return;
+  optsEl.innerHTML = reasons.map(function(r){
+    return '<button class="al-fb-opt" onclick="recordJobFeedback(\''+escAttr(hash)+'\',\''+escAttr(r)+'\')">'+escHtml(r)+'</button>';
+  }).join('');
+  panel.classList.add('open');
+  // position near click
+  panel.style.bottom = '96px';
+  panel.style.right  = '24px';
+  // close on outside click
+  setTimeout(function(){
+    function closeOnOutside(e){ if (!panel.contains(e.target)){ panel.classList.remove('open'); document.removeEventListener('click', closeOnOutside); } }
+    document.addEventListener('click', closeOnOutside);
+  }, 10);
+}
+
+async function saveRecommendedJob(job, hash) {
+  if (_alJobFeedback[hash] === 'saved') { showToast('Já salva!'); return; }
+  try {
+    var body = {
+      user_id: currentUserId,
+      empresa: job.company || '—',
+      cargo: job.title || '—',
+      score: job.score || 0,
+      status: 'quero_aplicar',
+      job_url: job.link || null,
+      nota: 'Salvo do alerta',
+      origem: 'alerta',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker', {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify(body)
+    });
+    if (res.ok || res.status === 201 || res.status === 204) {
+      _alJobFeedback[hash] = 'saved';
+      localStorage.setItem('vagaai_job_fb', JSON.stringify(_alJobFeedback));
+      var btn = document.getElementById('aljsave-' + hash);
+      if (btn) { btn.textContent = 'Salvo ✓'; btn.classList.add('saved'); btn.disabled = true; }
+      showToast('Vaga salva em Candidaturas!');
+      _alLive('Vaga salva em Candidaturas com status Quero aplicar.');
+      await loadKanban();
+    } else {
+      showToast('Erro ao salvar vaga.', 'error');
+    }
+  } catch(e) { showToast('Erro ao salvar.', 'error'); }
+}
+
+function openJobAnalysis(job, hash) {
+  if (job.link) {
+    var url = '/app?prefill_url=' + encodeURIComponent(job.link) + '&alert_job=' + encodeURIComponent(hash);
+    window.location.href = url;
+  } else {
+    window.location.href = '/app';
+  }
+}
+
+function renderAlertJobsGrid() {
+  // Jobs preview requires server-side fetch — show instructional empty state
+  var grid = document.getElementById('alJobsGrid');
+  if (!grid) return;
+  if (!_alertProfile) {
+    grid.innerHTML = '<div class="al-empty" style="padding:28px"><div class="al-empty-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="38" height="38"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div><div class="al-empty-title">As vagas aparecerão aqui</div><div class="al-empty-sub">Configure e ative um alerta para ver as oportunidades encontradas para você.</div></div>';
+    return;
+  }
+  grid.innerHTML = '<div class="al-empty" style="padding:28px"><div class="al-empty-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="38" height="38"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg></div><div class="al-empty-title">A prévia chega no seu e-mail</div><div class="al-empty-sub">Clique em <strong>Enviar teste agora</strong> para receber as vagas do momento direto na sua caixa de entrada. As oportunidades são buscadas em tempo real.</div><button class="al-empty-cta" onclick="sendTestAlert()" style="margin-top:12px">Enviar teste agora</button></div>';
+}
+
+/* ── Toggle active / Delete ─────────────────────────────────────── */
+async function toggleAlertActive() {
+  if (!_alertProfile) return;
+  var newVal = !_alertProfile.ativo;
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?user_id=eq.' + currentUserId, {
+      method: 'PATCH',
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ ativo: newVal, updated_at: new Date().toISOString() })
+    });
+    _alertProfile.ativo = newVal;
+    showToast(newVal ? 'Alerta reativado!' : 'Alerta pausado.');
+    _alLive(newVal ? 'Alerta reativado.' : 'Alerta pausado.');
+    renderAlertPage();
+  } catch(e) { showToast('Erro ao atualizar.', 'error'); }
+}
+
+function confirmDeleteAlert() {
+  if (!confirm('Excluir o alerta permanentemente? Esta ação não pode ser desfeita.')) return;
+  deleteAlertProfile();
+}
+
+async function deleteAlertProfile() {
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?user_id=eq.' + currentUserId, {
+      method: 'DELETE',
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, Prefer: 'return=minimal' }
+    });
+    _alertProfile = null;
+    showToast('Alerta excluído.');
+    renderAlertPage();
+  } catch(e) { showToast('Erro ao excluir.', 'error'); }
+}
+
+/* ── Edit modal ─────────────────────────────────────────────────── */
+function openAlertEditModal() {
+  var p   = _alertProfile || {};
+  var ext = _alertExtended || {};
+  _alMKw       = Array.isArray(p.keywords) ? p.keywords.slice() : [];
+  _alMEmpresas = Array.isArray(ext.empresas) ? ext.empresas.slice() : [];
+  _alMSetores  = Array.isArray(ext.setores)  ? ext.setores.slice()  : [];
+  _alMNegPal   = Array.isArray(ext.neg_palavras) ? ext.neg_palavras.slice() : [];
+  var contTipos   = Array.isArray(ext.contrato_tipos) ? ext.contrato_tipos : [];
+  var filtNeg     = Array.isArray(ext.filtros_neg)    ? ext.filtros_neg    : [];
+  var formatoPref = ext.formato || '';
+  var diaEnvio    = ext.dia_envio !== undefined ? String(ext.dia_envio) : '5';
+  var horario     = ext.horario_envio || '08:00';
+  var CONTRATOS   = ['CLT','PJ','Freela','Estágio','Temporário','Qualquer um'];
+  var FORMATOS    = ['Remoto','Híbrido','Presencial'];
+  var NIVEIS      = ['qualquer','junior','pleno','senior'];
+  var NÍVEL_LBLS  = {'qualquer':'Qualquer','junior':'Júnior','pleno':'Pleno','senior':'Sênior'};
+  var DIAS        = [['0','Dom'],['1','Seg'],['2','Ter'],['3','Qua'],['4','Qui'],['5','Sex'],['6','Sáb']];
+  var FILTROS_NEG = ['Estágio','PJ','Presencial','Salário não informado','Empresa confidencial','Banco de talentos','Vaga internacional'];
+  function chkHtml(arr, val, cls) {
+    var on = arr.includes(val) ? ' on' : '';
+    return '<span class="al-check-opt'+(cls?' '+cls:'')+on+'" onclick="_alToggleChk(this,\''+escAttr(val)+'\')" tabindex="0" role="checkbox" aria-checked="'+(on?'true':'false')+'">'+escHtml(val)+'</span>';
+  }
+  var html =
+    '<div class="al-modal-overlay" id="alModal" role="dialog" aria-modal="true" aria-labelledby="alModalTitle">'+
+    '<div class="al-modal-box">'+
+      '<div class="al-modal-head">'+
+        '<span class="al-modal-title" id="alModalTitle">'+(p.cargo_desejado?'Editar alerta':'Criar alerta')+'</span>'+
+        '<button class="al-modal-close-btn" onclick="closeAlertModal()" aria-label="Fechar modal">✕</button>'+
+      '</div>'+
+      '<div class="al-modal-body">'+
+
+        '<div class="al-modal-section">'+
+          '<div class="al-modal-section-title">Cargo e Perfil</div>'+
+          '<div class="al-form-row">'+
+            '<div class="al-field"><label for="alMCargo">Cargo ou área desejada</label><input id="alMCargo" type="text" value="'+escHtml(p.cargo_desejado||'')+'" placeholder="ex: Marketing Digital" oninput="_alCheckDirty()"></div>'+
+            '<div class="al-field"><label for="alMNivel">Senioridade</label><select id="alMNivel" onchange="_alCheckDirty()">'+
+              NIVEIS.map(function(n){ return '<option value="'+n+'"'+(((p.nivel||'qualquer')===n)?' selected':'')+'>'+NÍVEL_LBLS[n]+'</option>'; }).join('')+
+            '</select></div>'+
+          '</div>'+
+        '</div>'+
+
+        '<div class="al-modal-section">'+
+          '<div class="al-modal-section-title">Localização e Formato</div>'+
+          '<div class="al-form-row">'+
+            '<div class="al-field"><label for="alMCidade">Localização base</label><input id="alMCidade" type="text" value="'+escHtml(p.cidade||'')+'" placeholder="ex: São Paulo ou Remoto" oninput="_alCheckDirty()"></div>'+
+            '<div class="al-field"><label for="alMSalario">Salário mínimo (R$)</label><input id="alMSalario" type="number" value="'+(p.salario_min||'')+'" placeholder="ex: 6000" oninput="_alCheckDirty()"></div>'+
+          '</div>'+
+          '<div class="al-field"><label>Formato de trabalho</label><div class="al-checkgroup" id="alMFormato">'+
+            FORMATOS.map(function(f){ return chkHtml([formatoPref.includes(f)?f:'x'],f,''); }).join('')+
+          '</div></div>'+
+        '</div>'+
+
+        '<div class="al-modal-section">'+
+          '<div class="al-modal-section-title">Tipo de contrato</div>'+
+          '<div class="al-checkgroup" id="alMContrato">'+CONTRATOS.map(function(c){ return chkHtml(contTipos,c,''); }).join('')+'</div>'+
+        '</div>'+
+
+        '<div class="al-modal-section">'+
+          '<div class="al-modal-section-title">Competências prioritárias</div>'+
+          '<div class="al-tag-wrap" id="alMKwWrap" onclick="_alFocusTagInp(\'alMKwInp\')">'+
+            '<span id="alMKwTags"></span>'+
+            '<input class="al-tag-inp" id="alMKwInp" placeholder="Digite e pressione Enter…" onkeydown="_alTagKd(event,\'kw\')" oninput="_alCheckDirty()">'+
+          '</div>'+
+        '</div>'+
+
+        '<div class="al-modal-section">'+
+          '<div class="al-modal-section-title">Empresas de interesse</div>'+
+          '<div class="al-tag-wrap" id="alMEmpWrap" onclick="_alFocusTagInp(\'alMEmpInp\')">'+
+            '<span id="alMEmpTags"></span>'+
+            '<input class="al-tag-inp" id="alMEmpInp" placeholder="ex: Nubank, Mercado Livre…" onkeydown="_alTagKd(event,\'emp\')" oninput="_alCheckDirty()">'+
+          '</div>'+
+        '</div>'+
+
+        '<div class="al-modal-section">'+
+          '<div class="al-modal-section-title">Setores preferidos</div>'+
+          '<div class="al-tag-wrap" id="alMSetWrap" onclick="_alFocusTagInp(\'alMSetInp\')">'+
+            '<span id="alMSetTags"></span>'+
+            '<input class="al-tag-inp" id="alMSetInp" placeholder="ex: Fintech, SaaS, E-commerce…" onkeydown="_alTagKd(event,\'set\')" oninput="_alCheckDirty()">'+
+          '</div>'+
+        '</div>'+
+
+        '<div class="al-modal-section">'+
+          '<div class="al-modal-section-title">Filtros negativos (excluir)</div>'+
+          '<div class="al-checkgroup" id="alMFiltros">'+FILTROS_NEG.map(function(f){ return chkHtml(filtNeg,f,'neg'); }).join('')+'</div>'+
+          '<div class="al-field" style="margin-top:10px"><label for="alMNegInp">Palavras a excluir (separadas por vírgula)</label>'+
+          '<div class="al-tag-wrap" id="alMNegWrap" onclick="_alFocusTagInp(\'alMNegInp\')">'+
+            '<span id="alMNegTags"></span>'+
+            '<input class="al-tag-inp" id="alMNegInp" placeholder="ex: estágio, telemarketing…" onkeydown="_alTagKd(event,\'neg\')" oninput="_alCheckDirty()">'+
+          '</div></div>'+
+          '<div class="al-conflict-warn" id="alConflictWarn">⚠ Atenção: algumas preferências positivas conflitam com filtros negativos.</div>'+
+        '</div>'+
+
+        '<div class="al-modal-section">'+
+          '<div class="al-modal-section-title">Frequência e horário</div>'+
+          '<div class="al-field"><label>Frequência</label>'+
+          '<div class="al-freq-row" id="alMFreq">'+
+            ['semanal','quinzenal','mensal'].map(function(f){ return '<button class="al-freq-btn'+(((p.frequencia||'semanal')===f)?' on':'')+'" onclick="_alSetFreq(\''+f+'\')">'+(f.charAt(0).toUpperCase()+f.slice(1))+'</button>'; }).join('')+
+          '</div></div>'+
+          '<div class="al-form-row">'+
+            '<div class="al-field"><label for="alMDia">Dia de envio</label><select id="alMDia" onchange="_alCheckDirty()">'+
+              DIAS.map(function(d){ return '<option value="'+d[0]+'"'+(diaEnvio===d[0]?' selected':'')+'>'+d[1]+'</option>'; }).join('')+
+            '</select></div>'+
+            '<div class="al-field"><label for="alMHora">Horário</label><input id="alMHora" type="time" value="'+escHtml(horario)+'" oninput="_alCheckDirty()"></div>'+
+          '</div>'+
+        '</div>'+
+
+      '</div>'+
+      '<div class="al-modal-footer">'+
+        '<button class="al-modal-cancel-btn" onclick="closeAlertModal()">Cancelar</button>'+
+        '<button class="al-modal-save-btn" id="alMSaveBtn" onclick="saveAlertProfile()" disabled>Salvar alterações</button>'+
+      '</div>'+
+    '</div></div>';
+  document.body.insertAdjacentHTML('beforeend', html);
+  _alRenderModalTags();
+  _alMOriginal = _alModalSnapshot();
+  // focus first input
+  setTimeout(function(){ var i = document.getElementById('alMCargo'); if(i) i.focus(); }, 60);
+  // close on overlay click
+  document.getElementById('alModal').addEventListener('click', function(e){ if (e.target === this) closeAlertModal(); });
+  // keyboard escape
+  document.getElementById('alModal').addEventListener('keydown', function(e){ if (e.key === 'Escape') closeAlertModal(); });
+}
+
+function closeAlertModal() {
+  var m = document.getElementById('alModal');
+  if (m) m.remove();
+}
+
+function _alModalSnapshot() {
+  var fields = ['alMCargo','alMNivel','alMCidade','alMSalario','alMDia','alMHora'];
+  return fields.map(function(id){ var el=document.getElementById(id); return el?el.value:''; }).join('|') +
+    '|kw:' + _alMKw.join(',') + '|emp:' + _alMEmpresas.join(',') + '|set:' + _alMSetores.join(',') + '|neg:' + _alMNegPal.join(',') +
+    '|ct:' + Array.from(document.querySelectorAll('#alMContrato .on')||[]).map(function(e){return e.textContent;}).join(',') +
+    '|fn:' + Array.from(document.querySelectorAll('#alMFiltros .on')||[]).map(function(e){return e.textContent;}).join(',') +
+    '|fr:' + Array.from(document.querySelectorAll('#alMFreq .on')||[]).map(function(e){return e.textContent;}).join(',') +
+    '|fmt:' + Array.from(document.querySelectorAll('#alMFormato .on')||[]).map(function(e){return e.textContent;}).join(',');
+}
+
+function _alCheckDirty() {
+  var btn = document.getElementById('alMSaveBtn');
+  if (btn) btn.disabled = (_alModalSnapshot() === _alMOriginal);
+  _alCheckConflicts();
+}
+
+function _alCheckConflicts() {
+  var warn = document.getElementById('alConflictWarn');
+  if (!warn) return;
+  var neg = Array.from(document.querySelectorAll('#alMFiltros .on')||[]).map(function(e){ return e.textContent.toLowerCase(); });
+  var contrato = Array.from(document.querySelectorAll('#alMContrato .on')||[]).map(function(e){ return e.textContent.toLowerCase(); });
+  var conflict = neg.includes('pj') && contrato.includes('pj');
+  warn.classList.toggle('show', conflict);
+}
+
+function _alToggleChk(el, val) {
+  el.classList.toggle('on');
+  var on = el.classList.contains('on');
+  el.setAttribute('aria-checked', on ? 'true' : 'false');
+  _alCheckDirty();
+}
+
+function _alSetFreq(val) {
+  document.querySelectorAll('#alMFreq .al-freq-btn').forEach(function(b){ b.classList.toggle('on', b.textContent.toLowerCase() === val); });
+  _alCheckDirty();
+}
+
+function _alFocusTagInp(id) { var el = document.getElementById(id); if (el) el.focus(); }
+
+function _alTagKd(e, field) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    var inpId = field === 'kw' ? 'alMKwInp' : field === 'emp' ? 'alMEmpInp' : field === 'set' ? 'alMSetInp' : 'alMNegInp';
+    var arr   = field === 'kw' ? _alMKw : field === 'emp' ? _alMEmpresas : field === 'set' ? _alMSetores : _alMNegPal;
+    var inp   = document.getElementById(inpId);
+    if (!inp) return;
+    var val   = inp.value.trim().replace(/,+$/, '');
+    if (val && !arr.includes(val)) { arr.push(val); _alRenderModalTags(); _alCheckDirty(); }
+    inp.value = '';
+  }
+}
+
+function _alRemoveTag(field, idx) {
+  var arr = field === 'kw' ? _alMKw : field === 'emp' ? _alMEmpresas : field === 'set' ? _alMSetores : _alMNegPal;
+  arr.splice(idx, 1);
+  _alRenderModalTags();
+  _alCheckDirty();
+}
+
+function _alRenderTags(tagsId, arr, field) {
+  var el = document.getElementById(tagsId);
+  if (!el) return;
+  el.innerHTML = arr.map(function(v, i){
+    return '<span class="al-tag">'+escHtml(v)+'<button class="al-tag-x" onclick="_alRemoveTag(\''+field+'\','+i+')" aria-label="Remover '+escHtml(v)+'">×</button></span>';
+  }).join('');
+}
+
+function _alRenderModalTags() {
+  _alRenderTags('alMKwTags',  _alMKw,       'kw');
+  _alRenderTags('alMEmpTags', _alMEmpresas, 'emp');
+  _alRenderTags('alMSetTags', _alMSetores,  'set');
+  _alRenderTags('alMNegTags', _alMNegPal,   'neg');
+}
 
 async function saveAlertProfile() {
-  var cargo = document.getElementById('al-cargo').value.trim();
-  if (!cargo) return showToast('Informe o cargo', 'error');
+  var cargoEl = document.getElementById('alMCargo');
+  var cargo   = cargoEl ? cargoEl.value.trim() : '';
+  if (!cargo) { showToast('Informe o cargo ou área desejada.', 'error'); if(cargoEl) cargoEl.focus(); return; }
+  var nivelEl   = document.getElementById('alMNivel');
+  var cidadeEl  = document.getElementById('alMCidade');
+  var salarioEl = document.getElementById('alMSalario');
+  var diaEl     = document.getElementById('alMDia');
+  var horaEl    = document.getElementById('alMHora');
+  var nivel     = nivelEl  ? nivelEl.value  : 'qualquer';
+  var cidade    = cidadeEl ? cidadeEl.value.trim() : '';
+  var salario   = salarioEl? parseInt(salarioEl.value)||0 : 0;
+  var freq      = (document.querySelector('#alMFreq .al-freq-btn.on') || {textContent:'semanal'}).textContent.toLowerCase();
+  var dia       = diaEl  ? diaEl.value  : '5';
+  var hora      = horaEl ? horaEl.value : '08:00';
+  var contTipos = Array.from(document.querySelectorAll('#alMContrato .on')||[]).map(function(e){ return e.textContent; });
+  var filtNeg   = Array.from(document.querySelectorAll('#alMFiltros .on')||[]).map(function(e){ return e.textContent; });
+  var formato   = Array.from(document.querySelectorAll('#alMFormato .on')||[]).map(function(e){ return e.textContent; }).join(',');
+  // Save core to Supabase
   var body = {
     user_id: currentUserId,
     email: currentSession.user.email,
     cargo_desejado: cargo,
-    nivel: document.getElementById('al-nivel').value,
-    cidade: document.getElementById('al-cidade').value.trim(),
-    salario_min: parseInt(document.getElementById('al-salario').value) || 0,
-    keywords: _alertKeywords,
-    frequencia: ['semanal','quinzenal','mensal'].find(function(f){ return document.getElementById('freq-'+f).classList.contains('on'); }) || 'semanal',
+    nivel: nivel,
+    cidade: cidade,
+    salario_min: salario,
+    keywords: _alMKw,
+    frequencia: freq,
     ativo: true,
     updated_at: new Date().toISOString()
   };
+  var saveBtn = document.getElementById('alMSaveBtn');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Salvando…'; }
   try {
-    await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles', {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles', {
       method: 'POST',
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify(body)
     });
-    showToast('Perfil de alertas salvo!');
-  } catch(e) { showToast('Erro ao salvar', 'error'); }
+    if (!res.ok && res.status !== 204) throw new Error('HTTP ' + res.status);
+    // Save extended to localStorage
+    _alertExtended.contrato_tipos  = contTipos;
+    _alertExtended.filtros_neg     = filtNeg;
+    _alertExtended.neg_palavras    = _alMNegPal;
+    _alertExtended.empresas        = _alMEmpresas;
+    _alertExtended.setores         = _alMSetores;
+    _alertExtended.formato         = formato;
+    _alertExtended.dia_envio       = dia;
+    _alertExtended.horario_envio   = hora;
+    _alSaveExt();
+    // Update local state
+    _alertProfile = Object.assign(_alertProfile || {}, body);
+    _alertKeywords = _alMKw;
+    closeAlertModal();
+    showToast('Alerta salvo com sucesso!');
+    _alLive('Alerta salvo com sucesso.');
+    renderAlertPage();
+  } catch(e) {
+    showToast('Erro ao salvar. Tente novamente.', 'error');
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Salvar alterações'; }
+  }
 }
+
+/* ── Legacy shims (mantidos para compatibilidade) ─────────────── */
+function renderKwTags()  {}
+function handleKwInput() {}
+function removeKw()      {}
+function setFreq()       {}
 
 function addToTracker(empresa, cargo, score, analysisId) {
   switchDashTab('vagas');
