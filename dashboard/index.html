@@ -2739,7 +2739,7 @@ function buildFunilCard(analyses, tracked) {
 
 async function loadAnalyses() {
   try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=id,score,job_excerpt,created_at,result&order=created_at.desc&limit=200', {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&archived_at=is.null&select=id,score,job_excerpt,created_at,result&order=created_at.desc&limit=200', {
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
     });
     var data = await res.json();
@@ -2753,7 +2753,7 @@ async function loadAnalyses() {
 
 async function loadHeroLastAnalysis() {
   try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&select=id,score,job_excerpt,created_at,result&order=created_at.desc&limit=1', {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&archived_at=is.null&select=id,score,job_excerpt,created_at,result&order=created_at.desc&limit=1', {
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
     });
     var data = await res.json();

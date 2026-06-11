@@ -166,18 +166,112 @@ textarea::placeholder{color:var(--muted)}
 .result{display:none}
 .result.show{display:block}
 
-.result-header{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.8rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:1.8rem;flex-wrap:wrap}
+/* RESULT HERO */
+.result-hero{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.8rem;margin-bottom:1.2rem;display:grid;grid-template-columns:1fr 1fr;gap:1.8rem;align-items:start}
+.result-hero-archive{grid-column:1/-1}
+@media(max-width:700px){.result-hero{grid-template-columns:1fr;gap:1.2rem;padding:1.2rem}}
+.result-hero-left{display:flex;gap:1.4rem;align-items:flex-start}
+@media(max-width:400px){.result-hero-left{flex-direction:column;align-items:center;text-align:center}}
+.result-hero-meta{flex:1;min-width:0}
 .score-ring-wrap{position:relative;flex-shrink:0}
-.score-ring{width:100px;height:100px}
+.score-ring{width:96px;height:96px}
+@media(max-width:480px){.score-ring{width:80px;height:80px}}
 .score-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
 .score-n{font-size:28px;font-weight:700;font-family:'Lora',serif}
+@media(max-width:480px){.score-n{font-size:22px}}
 .score-label{font-size:10px;color:var(--muted);margin-top:2px}
-.score-info{flex:1;min-width:0}
-.score-nivel{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.3rem}
-.score-resumo{font-size:14px;color:var(--muted);line-height:1.5;margin-bottom:.9rem}
-.btn-cv-inline{display:none;align-items:center;gap:.5rem;padding:.55rem 1.1rem;background:var(--green);color:#050e09;border:none;border-radius:9px;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;letter-spacing:.01em;transition:opacity .15s,transform .15s}
+.score-nivel{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem;display:inline-block;padding:3px 10px;border-radius:20px;border:1px solid}
+.score-nivel.nivel-high{color:var(--green);background:var(--green-dim);border-color:var(--green-border)}
+.score-nivel.nivel-mid{color:var(--yellow);background:var(--yellow-dim);border-color:rgba(255,209,102,.35)}
+.score-nivel.nivel-low{color:var(--red);background:var(--red-dim);border-color:rgba(255,107,107,.35)}
+.score-resumo{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:.5rem}
+.score-benchmark{background:var(--surface2);border-radius:8px;padding:.4rem .75rem;font-size:11px;margin-bottom:.5rem;display:none;align-items:center;gap:.5rem;flex-wrap:wrap}
+.score-benchmark.show{display:flex}
+.result-status-badge{display:inline-flex;align-items:center;gap:.35rem;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:20px;margin-top:.3rem}
+.btn-archive{background:none;border:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:11px;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:.35rem;transition:color .15s}
+.btn-archive:hover{color:var(--red)}
+/* Next step card */
+.next-step-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.4rem}
+.next-step-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--green);margin-bottom:.45rem}
+.next-step-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:.3rem;line-height:1.4}
+.next-step-estimate{font-size:12px;color:var(--muted);margin:.6rem 0 .15rem;line-height:1.4}
+.next-step-estimate strong{font-size:22px;font-weight:700;color:var(--green);display:block;line-height:1.2;margin-top:.1rem}
+.next-step-sep{border:none;border-top:1px solid var(--border);margin:.6rem 0}
+.next-step-microcopy{font-size:11px;color:var(--muted);margin-bottom:.9rem;line-height:1.5}
+.btn-cv-inline{display:none;align-items:center;gap:.5rem;padding:.65rem 1.1rem;background:var(--green);color:#050e09;border:none;border-radius:9px;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;letter-spacing:.01em;transition:opacity .15s,transform .15s;width:100%;justify-content:center}
 .btn-cv-inline:hover{opacity:.88;transform:translateY(-1px)}
 
+/* PRIORITIES GRID */
+.priorities-section{margin-bottom:1.2rem;display:none}
+.priorities-section.show{display:block}
+.priorities-section-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem}
+.priorities-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+@media(max-width:700px){.priorities-grid{grid-template-columns:1fr}}
+.priority-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem;display:flex;flex-direction:column}
+.priority-card-num{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-bottom:.65rem}
+.priority-card-titulo{font-size:13px;font-weight:700;color:var(--text);margin-bottom:.35rem;line-height:1.4}
+.priority-card-exp{font-size:12px;color:var(--muted);line-height:1.55;flex:1;margin-bottom:.65rem}
+.priority-card-link{background:none;border:none;color:var(--green);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;transition:opacity .15s;text-align:left}
+.priority-card-link:hover{opacity:.8}
+
+/* KEYWORDS note */
+.kw-note{font-size:11px;color:var(--muted);margin-top:.75rem;line-height:1.5;font-style:italic}
+
+/* IMPROVEMENT PLAN */
+.improvement-plan-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem;margin-bottom:1.2rem;display:none}
+.improvement-plan-section.show{display:block}
+.plan-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;flex-wrap:wrap;gap:.5rem}
+.plan-section-title{font-size:14px;font-weight:700;color:var(--text)}
+.plan-expand-center{text-align:center;margin-top:.9rem;padding-top:.75rem;border-top:1px solid var(--border)}
+.result-hero-archive{display:none;justify-content:flex-end;margin-top:1rem;padding-top:.75rem;border-top:1px solid var(--border)}
+.result-hero-archive.show{display:flex}
+.score-breakdown-sub{font-size:11px;color:var(--muted);margin-bottom:.75rem}
+.sdim-total td{font-weight:700;border-top:1px solid var(--border);padding-top:.45rem}
+.plan-item{display:flex;gap:.9rem;padding:.8rem 0;border-bottom:1px solid var(--border)}
+.plan-item:last-of-type{border-bottom:none;padding-bottom:0}
+.plan-item:first-of-type{padding-top:0}
+.plan-icon{flex-shrink:0;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.plan-body{flex:1;min-width:0}
+.plan-title-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.15rem;flex-wrap:wrap}
+.plan-titulo{font-size:13px;font-weight:700;color:var(--text)}
+.plan-badge{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border-radius:20px;border:1px solid}
+.plan-badge.pendente{color:var(--yellow);background:var(--yellow-dim);border-color:rgba(255,209,102,0.25)}
+.plan-badge.concluido{color:var(--green);background:var(--green-dim);border-color:var(--green-border)}
+.plan-desc{font-size:12px;color:var(--muted);line-height:1.5}
+.plan-detalhes{display:none;margin-top:.5rem}
+.plan-detalhes.show{display:block}
+.plan-detalhes ul{list-style:none;display:flex;flex-direction:column;gap:.3rem}
+.plan-detalhes ul li{font-size:12px;color:var(--muted);padding-left:1.1rem;position:relative;line-height:1.45}
+.plan-detalhes ul li::before{content:'→';position:absolute;left:0;color:var(--green);font-size:10px;top:1px}
+.plan-expand-btn{background:none;border:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:11px;cursor:pointer;padding:.3rem 0 0;transition:color .15s;display:flex;align-items:center;gap:.3rem}
+.plan-expand-btn:hover{color:var(--text)}
+.plan-chevron{background:none;border:none;color:var(--muted);cursor:pointer;padding:.2rem;display:flex;align-items:center;margin-left:auto;flex-shrink:0;transition:transform .2s,color .15s;border-radius:4px}
+.plan-chevron:hover{color:var(--text)}
+.plan-expand-all{background:none;border:none;color:var(--green);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;transition:opacity .15s}
+.plan-expand-all:hover{opacity:.8}
+
+/* BRIEFING */
+.briefing-section{background:var(--surface);border:1px solid var(--green-border);border-radius:12px;padding:1.4rem;margin-bottom:1.2rem;display:none}
+.briefing-section.show{display:block}
+.briefing-badge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--green);background:var(--green-dim);border:1px solid var(--green-border);padding:2px 9px;border-radius:20px;display:inline-block;margin-bottom:.7rem}
+.briefing-header{font-size:14px;font-weight:700;color:var(--text);margin-bottom:.3rem}
+.briefing-sub{font-size:12px;color:var(--muted);margin-bottom:1rem;line-height:1.5}
+.briefing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+@media(max-width:860px){.briefing-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.briefing-grid{grid-template-columns:1fr}}
+.briefing-block-title{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem}
+.briefing-block-list{list-style:none;display:flex;flex-direction:column;gap:.45rem}
+.briefing-block-list li{font-size:12px;color:var(--muted);line-height:1.5;padding-left:.9rem;position:relative}
+.briefing-block-list li::before{content:'—';position:absolute;left:0;color:var(--muted);font-size:10px;top:2px}
+.briefing-expand-btn{background:none;border:none;color:var(--green);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;padding:.5rem 0 0;text-decoration:underline;text-underline-offset:2px;display:block}
+.briefing-expand-btn:hover{opacity:.8}
+.briefing-footer{margin-top:.9rem;padding-top:.75rem;border-top:1px solid var(--border)}
+
+/* INTERVIEW MICROCOPY */
+.interview-microcopy{font-size:11px;color:var(--muted);display:none;padding:.4rem 0 0;line-height:1.5}
+.interview-microcopy.show{display:block}
+
+/* RESULT GRID */
 .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem}
 @media(max-width:580px){.result-grid{grid-template-columns:1fr}}
 
@@ -302,17 +396,15 @@ textarea::placeholder{color:var(--muted)}
   .nav-credits{font-size:11px;padding:.25rem .6rem}
   .container{padding:1.5rem .9rem 3rem}
   .page-title{font-size:clamp(20px,5vw,28px)}
-  .score-info{min-width:140px}
-  .result-header{gap:1rem;padding:1.2rem}
-  .score-ring{width:80px;height:80px}
-  .score-n{font-size:22px}
   .result-actions{flex-direction:column}
-  .btn-outline,.btn-pro,.btn-cv{min-width:0;width:100%}
+  .btn-outline,.btn-pro,.btn-cv,.btn-cv-primary{min-width:0;width:100%}
   .factor-label{width:90px;font-size:11px}
   .steps-bar{font-size:11px}
   .step{padding:.5rem .4rem}
   .upsell-plans{grid-template-columns:1fr}
   textarea{font-size:16px}
+  .score-breakdown-table{font-size:11px}
+  .sdim-bar-wrap{width:30px}
 }
 
 /* LOCK OVERLAY (usuários anônimos) */
@@ -360,13 +452,7 @@ textarea::placeholder{color:var(--muted)}
 /* TOAST de notificação */
 #appToast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1.5px solid var(--green-border);border-radius:12px;padding:.85rem 1.3rem;font-size:13.5px;color:var(--text);font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.22);z-index:9999;opacity:0;transition:opacity .3s,transform .35s;pointer-events:none;white-space:nowrap;max-width:90vw}
 #appToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-/* BRIEFING DA EMPRESA */
-.briefing-section{background:var(--surface);border:1px solid var(--green-border);border-radius:12px;padding:1.4rem;margin-bottom:1.2rem;display:none}
-.briefing-section.show{display:block}
-.briefing-badge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--green);background:var(--green-dim);border:1px solid var(--green-border);padding:2px 9px;border-radius:20px;display:inline-block;margin-bottom:.7rem}
-.briefing-header{font-size:14px;font-weight:700;color:var(--text);margin-bottom:1rem}
-.briefing-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-@media(max-width:580px){.briefing-grid{grid-template-columns:1fr}}
+/* briefing moved to RESULT section styles above */
 .briefing-block-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.45rem}
 .briefing-block-list{list-style:none;display:flex;flex-direction:column;gap:.4rem;margin:0;padding:0}
 .briefing-block-list li{font-size:13px;color:var(--text);line-height:1.45;padding-left:1rem;position:relative}
@@ -547,90 +633,138 @@ textarea::placeholder{color:var(--muted)}
   <!-- RESULTADO -->
   <div class="result" id="resultSection">
 
-    <div class="result-header">
-      <div class="score-ring-wrap">
-        <svg class="score-ring" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="7"/>
-          <circle id="scoreArc" cx="50" cy="50" r="40" fill="none" stroke="#3ecf8e" stroke-width="7"
-            stroke-dasharray="251" stroke-dashoffset="251" stroke-linecap="round"
-            transform="rotate(-90 50 50)" style="transition:stroke-dashoffset 1s ease"/>
-        </svg>
-        <div class="score-inner">
-          <div class="score-n" id="scoreNum">0</div>
-          <div class="score-label">/ 100</div>
+    <!-- HERO: diagnóstico + próximo passo -->
+    <div class="result-hero">
+      <div class="result-hero-left">
+        <div class="score-ring-wrap">
+          <svg class="score-ring" viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="7"/>
+            <circle id="scoreArc" cx="50" cy="50" r="40" fill="none" stroke="#3ecf8e" stroke-width="7"
+              stroke-dasharray="251" stroke-dashoffset="251" stroke-linecap="round"
+              transform="rotate(-90 50 50)" style="transition:stroke-dashoffset 1s ease"/>
+          </svg>
+          <div class="score-inner" aria-label="Score">
+            <div class="score-n" id="scoreNum">0</div>
+            <div class="score-label">/ 100</div>
+          </div>
+        </div>
+        <div class="result-hero-meta">
+          <div class="score-nivel" id="scoreNivel"></div>
+          <div class="score-resumo" id="scoreResumo"></div>
+          <div class="score-benchmark" id="scoreBenchmark" aria-live="polite"></div>
+          <div class="result-status-badge" id="resultStatusBadge">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Analisada
+          </div>
         </div>
       </div>
-      <div class="score-info">
-        <div class="score-nivel" id="scoreNivel" style="color:var(--green)"></div>
-        <div class="score-resumo" id="scoreResumo"></div>
-        <div class="score-estimate-line" id="scoreEstimateLine"></div>
-        <div id="scoreBenchmark" style="display:none;background:var(--surface2);border-radius:8px;padding:.4rem .75rem;font-size:12px;margin-bottom:.6rem;display:none;align-items:center;gap:.5rem;flex-wrap:wrap"></div>
-        <button class="btn-cv-inline" id="cvBtnInline" onclick="openCV()">
-          <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+
+      <div class="next-step-card" id="nextStepCard">
+        <div class="next-step-label">Seu próximo passo</div>
+        <div class="next-step-title">Otimize o currículo antes de se candidatar.</div>
+        <hr class="next-step-sep">
+        <div class="next-step-estimate" id="nextStepEstimate" style="display:none"></div>
+        <div class="next-step-microcopy">Considerando apenas melhorias no currículo enviado, sem inventar experiências.</div>
+        <button class="btn-cv-inline" id="cvBtnInline" onclick="openCV()" style="display:none">
+          <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
           Gerar versão otimizada do currículo
         </button>
+        <div id="nextStepUpsell" style="display:none;margin-top:.7rem">
+          <button class="btn-cv-inline" style="background:var(--surface);border:1.5px solid var(--green-border);color:var(--green);display:flex" onclick="openSignupModal()">
+            Criar conta grátis para desbloquear →
+          </button>
+        </div>
       </div>
-    </div>
 
-    <div class="result-grid">
-      <div class="result-card">
-        <div class="result-card-title red"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span> Principais falhas</div>
-        <ul class="result-list red" id="falhasList"></ul>
-      </div>
-      <div class="result-card">
-        <div class="result-card-title green"><span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></span> Sugestões</div>
-        <ul class="result-list green" id="sugestoesList"></ul>
+      <div class="result-hero-archive" id="heroArchiveRow">
+        <button class="btn-archive" id="archiveBtn" onclick="confirmArchive()" aria-label="Arquivar esta análise">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+          Arquivar análise
+        </button>
       </div>
     </div>
 
     <!-- 3 PRIORIDADES -->
     <div class="priorities-section" id="prioritiesSection">
-      <div class="priorities-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> 3 prioridades para aumentar sua compatibilidade</div>
-      <div id="prioritiesList"></div>
+      <div class="priorities-section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        3 prioridades para aumentar sua compatibilidade
+      </div>
+      <div class="priorities-grid" id="prioritiesList"></div>
     </div>
 
+    <!-- SCORE BREAKDOWN + KEYWORDS -->
     <div class="result-grid">
       <div class="result-card">
-        <div class="result-card-title muted">Keywords ATS</div>
-        <div style="margin-bottom:.5rem;font-size:12px;color:var(--muted)">Encontradas</div>
-        <div class="keywords-wrap" id="kwFound"></div>
-        <div style="margin:.85rem 0 .5rem;font-size:12px;color:var(--yellow)" id="kwPartialLabel">Presentes mas pouco evidenciadas</div>
-        <div class="keywords-wrap" id="kwPartial"></div>
-        <div style="margin:.85rem 0 .5rem;font-size:12px;color:var(--red)">Ausentes e prioritárias</div>
-        <div class="keywords-wrap" id="kwMissing"></div>
-      </div>
-      <div class="result-card">
         <div class="result-card-title muted">Como seu score foi calculado</div>
-        <table class="score-breakdown-table">
-          <thead><tr><th>Dimensão</th><th>Peso</th><th class="right">Resultado</th></tr></thead>
+        <div class="score-breakdown-sub">Veja o peso de cada dimensão e os pontos conquistados.</div>
+        <table class="score-breakdown-table" role="table" aria-label="Breakdown do score">
+          <thead><tr><th scope="col">Dimensão</th><th scope="col">Peso</th><th scope="col" class="right">Resultado</th></tr></thead>
           <tbody id="scoreBreakdownBody"></tbody>
         </table>
       </div>
+      <div class="result-card">
+        <div class="result-card-title muted">Keywords ATS</div>
+        <div id="kwFoundLabel" style="margin-bottom:.45rem;font-size:12px;color:var(--muted)">Encontradas</div>
+        <div class="keywords-wrap" id="kwFound"></div>
+        <div id="kwPartialLabel" style="margin:.8rem 0 .45rem;font-size:12px;color:var(--yellow);display:none">Presentes, mas pouco evidenciadas</div>
+        <div class="keywords-wrap" id="kwPartial"></div>
+        <div id="kwMissingLabel" style="margin:.8rem 0 .45rem;font-size:12px;color:var(--red);display:none">Ausentes e prioritárias</div>
+        <div class="keywords-wrap" id="kwMissing"></div>
+        <div class="kw-note" id="kwNote" style="display:none">Termos presentes precisam estar ligados a experiências e resultados para ganhar relevância.</div>
+      </div>
     </div>
 
-    <!-- BRIEFING DA EMPRESA (apenas usuários com créditos) -->
+    <!-- PLANO DE MELHORIA -->
+    <div class="improvement-plan-section" id="improvementPlanSection">
+      <div class="plan-header-row">
+        <div class="plan-section-title">Plano de melhoria do currículo</div>
+      </div>
+      <div id="planItems"></div>
+      <div class="plan-expand-center" id="planExpandCenter" style="display:none">
+        <button class="plan-expand-all" id="planExpandAll" onclick="expandAllPlan()">Ver plano completo →</button>
+      </div>
+    </div>
+
+    <!-- BRIEFING DA EMPRESA -->
     <div class="briefing-section" id="briefingSection">
-      <div class="briefing-badge"><span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></span> Incluso no seu plano</div>
-      <div class="briefing-header"><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></span> Briefing da empresa</div>
+      <div class="briefing-badge"><span class="ic"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></span> Incluso no seu plano</div>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;margin-bottom:.3rem">
+        <div class="briefing-header">Briefing da empresa</div>
+        <button class="briefing-expand-btn" id="briefingExpandBtn" onclick="expandBriefing()" style="display:none;flex-shrink:0">Ver briefing completo →</button>
+      </div>
+      <div class="briefing-sub">Resumo rápido para decidir se vale avançar e como se preparar.</div>
       <div class="briefing-grid" id="briefingGrid"></div>
     </div>
 
+    <!-- BARRA FINAL -->
     <div class="result-bottom-bar" id="resultBottomBar">
       <div class="result-bottom-bar-primary">
-        <button class="btn-cv-primary" id="cvBtn" style="display:none" onclick="openCV()"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Gerar versão otimizada do currículo</button>
-        <button class="btn-pro" id="upsellBtn" onclick="document.getElementById('upsellSection').scrollIntoView({behavior:'smooth'})"><span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span> Desbloquear resultado completo</button>
+        <button class="btn-cv-primary" id="cvBtn" style="display:none" onclick="openCV()">
+          <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+          Gerar versão otimizada do currículo
+        </button>
+        <button class="btn-pro" id="upsellBtn" style="display:none" onclick="document.getElementById('upsellSection').scrollIntoView({behavior:'smooth'})">
+          <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+          Desbloquear resultado completo
+        </button>
       </div>
       <div class="result-bottom-bar-secondary">
-        <button class="btn-outline" id="newAnalysisBtn" onclick="tryNewAnalysis()"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span> Nova análise</button>
-        <button class="btn-outline" id="interviewBtn" style="display:none" onclick="openInterview()"><span class="ic">🎯</span> Treinar entrevista</button>
-        <button class="btn-outline" id="cartaBtn" style="display:none" onclick="openCarta()"><span class="ic">✉️</span> Gerar carta</button>
-        <!-- TRACKER BUTTON (só para usuários logados) -->
+        <button class="btn-outline" id="newAnalysisBtn" onclick="tryNewAnalysis()">
+          <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span>
+          Nova análise
+        </button>
         <div id="trackerCTA" style="display:none;align-items:center">
           <button id="trackerAddBtn" class="tracker-add-btn" onclick="addResultToTracker()">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>
-            + Rastreador
+            Adicionar ao rastreador
           </button>
         </div>
+        <button class="btn-outline" id="interviewBtn" style="display:none" onclick="openInterview()"><span class="ic">🎯</span> Treinar entrevista</button>
+        <button class="btn-outline" id="cartaBtn" style="display:none" onclick="openCarta()"><span class="ic">✉️</span> Gerar carta</button>
+      </div>
+      <div class="interview-microcopy" id="interviewMicrocopy" aria-live="polite">
+        O treino de entrevista ficará disponível quando uma entrevista for marcada.
       </div>
     </div>
 
@@ -641,6 +775,22 @@ textarea::placeholder{color:var(--muted)}
       <p class="upsell-sub">Você viu o diagnóstico. Agora receba o currículo reescrito para passar pelo ATS + um briefing com o que a empresa valoriza e o que falar na entrevista.</p>
       <div class="upsell-plans" id="upsellPlans"></div>
     </div>
+
+    <!-- MODAL DE ARQUIVAMENTO -->
+    <div id="archiveModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="archiveModalTitle">
+      <div class="modal-box">
+        <div class="modal-icon">🗂️</div>
+        <div class="modal-title" id="archiveModalTitle">Arquivar análise?</div>
+        <div class="modal-sub">A análise será arquivada e não aparecerá mais no painel. Não é uma exclusão permanente.</div>
+        <button class="modal-btn-primary" id="archiveConfirmBtn" onclick="doArchive()">Confirmar arquivamento</button>
+        <button class="modal-btn-skip" onclick="closeArchiveModal()">Cancelar</button>
+        <div aria-live="polite" id="archiveFeedback" style="font-size:12px;color:var(--muted);margin-top:.5rem;min-height:1em"></div>
+      </div>
+    </div>
+
+    <!-- ids mantidos para compatibilidade com análises antigas e outros scripts -->
+    <ul id="falhasList" style="display:none"></ul>
+    <ul id="sugestoesList" style="display:none"></ul>
 
   </div>
 </div>
@@ -1433,117 +1583,172 @@ function showResult(d) {
   var section = document.getElementById('resultSection');
   section.classList.add('show');
 
-  // Atualiza título e subtítulo para o contexto de resultado
-  var nome = (d.cv_otimizado && d.cv_otimizado.nome) ? d.cv_otimizado.nome : null;
-  document.getElementById('pageTitle').textContent = nome ? 'Análise de ' + nome : 'Sua análise está pronta';
-  document.getElementById('pageSub').textContent = 'Confira a compatibilidade com a vaga, os pontos de melhoria e o currículo otimizado.';
+  var isAnonymous = !authSession;
 
+  // 1. Título: "Análise para [cargo]" / subtítulo "[nome] · Oportunidade analisada agora"
+  var cargo = (d.job_info && d.job_info.cargo) ? d.job_info.cargo : null;
+  var nome = (d.cv_otimizado && d.cv_otimizado.nome) ? d.cv_otimizado.nome : null;
+  document.getElementById('pageTitle').textContent = cargo ? 'Análise para ' + cargo : 'Sua análise está pronta';
+  document.getElementById('pageSub').textContent = nome ? nome + ' · Oportunidade analisada agora' : 'Confira a compatibilidade com a vaga e o plano de melhoria.';
+
+  // 2. Score ring
   var score = Math.max(0, Math.min(100, d.score || 0));
   var circumference = 251;
   var offset = circumference - (score / 100) * circumference;
+  document.getElementById('scoreArc').style.stroke = score >= 75 ? '#3ecf8e' : score >= 50 ? '#ffd166' : '#ff6b6b';
   setTimeout(function() {
     document.getElementById('scoreArc').style.strokeDashoffset = offset;
     animateNumber('scoreNum', 0, score, 1000);
   }, 100);
 
-  var color = score >= 75 ? 'var(--green)' : score >= 50 ? 'var(--yellow)' : 'var(--red)';
-  document.getElementById('scoreArc').style.stroke = score >= 75 ? '#3ecf8e' : score >= 50 ? '#ffd166' : '#ff6b6b';
-  document.getElementById('scoreNivel').style.color = color;
-  document.getElementById('scoreNivel').textContent = d.nivel || '';
+  var nivelEl = document.getElementById('scoreNivel');
+  nivelEl.textContent = d.nivel || '';
+  nivelEl.className = 'score-nivel ' + (score >= 75 ? 'nivel-high' : score >= 50 ? 'nivel-mid' : 'nivel-low');
   document.getElementById('scoreResumo').textContent = d.resumo || '';
 
-  // Score estimate microcopy
-  var estLine = document.getElementById('scoreEstimateLine');
-  if (estLine) {
-    if (d.score_estimado_apos_ajustes && d.score_estimado_apos_ajustes > score) {
-      estLine.textContent = 'Com os ajustes sugeridos, seu score pode chegar a até ' + d.score_estimado_apos_ajustes + '%.';
-      estLine.classList.add('show');
-    } else {
-      estLine.classList.remove('show');
-    }
-  }
-
-  // Score comparativo
+  // 3. Benchmark
   var bm = d._benchmark;
   var benchEl = document.getElementById('scoreBenchmark');
   if (bm && benchEl) {
     var bmColor = score >= bm.threshold_entrevista ? 'var(--green)' : 'var(--yellow)';
     var bmIcon = score >= bm.threshold_entrevista ? '✓' : '↑';
-    benchEl.style.display = 'flex';
-    benchEl.innerHTML = '<span style="font-size:11px;font-weight:700;color:' + bmColor + '">' + bmIcon + ' ' + bm.mensagem + '</span>'
+    benchEl.innerHTML = '<span style="font-size:11px;font-weight:700;color:' + bmColor + '">' + bmIcon + ' ' + escHtml(bm.mensagem) + '</span>'
       + '<span style="font-size:10px;color:var(--muted);margin-left:auto;white-space:nowrap">Top ' + (100 - bm.percentil) + '%</span>';
+    benchEl.style.display = 'flex';
+  } else if (benchEl) {
+    benchEl.style.display = 'none';
+    benchEl.innerHTML = '';
   }
 
-  var isAnonymous = !authSession;
+  // 4. Archive row — only for logged-in users with a saved analysis
+  var heroArchiveRow = document.getElementById('heroArchiveRow');
+  if (heroArchiveRow) {
+    if (!isAnonymous && d._analysis_id) heroArchiveRow.classList.add('show');
+    else heroArchiveRow.classList.remove('show');
+  }
 
-  // Falhas e sugestões: limitadas para anônimos (2 visíveis, resto bloqueado)
-  renderListWithLock('falhasList', d.falhas || [], isAnonymous, 2, 'falhas');
-  renderListWithLock('sugestoesList', d.sugestoes || [], isAnonymous, 2, 'sugestões');
+  // 5. Next-step card: estimate + CTA
+  var cvBtnInline = document.getElementById('cvBtnInline');
+  var nextStepEstimate = document.getElementById('nextStepEstimate');
+  var nextStepUpsell = document.getElementById('nextStepUpsell');
+  var hasCv = !isAnonymous && d.cv_otimizado && d.cv_otimizado.nome;
+  if (hasCv) {
+    if (cvBtnInline) cvBtnInline.style.display = 'flex';
+    if (nextStepUpsell) nextStepUpsell.style.display = 'none';
+    if (nextStepEstimate) {
+      var est = d.score_estimado_apos_ajustes;
+      if (est && est > score) {
+        nextStepEstimate.innerHTML = 'Estimativa após ajustes:<strong>até ' + est + '%</strong>';
+        nextStepEstimate.style.display = '';
+      } else {
+        nextStepEstimate.style.display = 'none';
+      }
+    }
+  } else {
+    if (cvBtnInline) cvBtnInline.style.display = 'none';
+    if (nextStepEstimate) nextStepEstimate.style.display = 'none';
+    if (nextStepUpsell) nextStepUpsell.style.display = '';
+  }
 
-  // 3 Prioridades
+  // 6. Priorities grid — 3 cards com "Ver como corrigir →"
   var priSection = document.getElementById('prioritiesSection');
   var priList = document.getElementById('prioritiesList');
   if (priSection && priList) {
     var prioridades = Array.isArray(d.prioridades) ? d.prioridades : [];
     if (prioridades.length) {
       priList.innerHTML = prioridades.slice(0, 3).map(function(p, i) {
-        return '<div class="priority-item">'
-          + '<div class="priority-num">' + (i + 1) + '</div>'
-          + '<div><div class="priority-titulo">' + escHtml(p.titulo || '') + '</div>'
-          + '<div class="priority-exp">' + escHtml(p.explicacao || '') + '</div></div>'
+        return '<div class="priority-card">'
+          + '<div class="priority-card-num">' + (i + 1) + '</div>'
+          + '<div class="priority-card-titulo">' + escHtml(p.titulo || '') + '</div>'
+          + '<div class="priority-card-exp">' + escHtml(p.explicacao || '') + '</div>'
+          + '<a class="priority-card-link" href="#improvementPlanSection" onclick="document.getElementById(\'improvementPlanSection\').scrollIntoView({behavior:\'smooth\'});return false">Ver como corrigir →</a>'
           + '</div>';
       }).join('');
-      priSection.classList.add('show');
+      priSection.style.display = 'block';
     } else {
-      priSection.classList.remove('show');
+      priSection.style.display = 'none';
     }
   }
 
-  // Keywords ATS — 3 categorias mutuamente exclusivas
-  renderKeywords('kwFound', d.keywords_encontradas || [], 'found');
+  // 7. Keywords ATS — labels visíveis apenas quando a categoria tem itens
+  var found = d.keywords_encontradas || [];
   var partials = Array.isArray(d.keywords_parcialmente_encontradas) ? d.keywords_parcialmente_encontradas : [];
+  var missing = d.keywords_faltando || [];
+  renderKeywords('kwFound', found, 'found');
+  var kwFoundLabel = document.getElementById('kwFoundLabel');
+  if (kwFoundLabel) kwFoundLabel.style.display = found.length ? '' : 'none';
   var kwPartialLabel = document.getElementById('kwPartialLabel');
   if (kwPartialLabel) kwPartialLabel.style.display = partials.length ? '' : 'none';
-  if (partials.length) {
-    renderKeywords('kwPartial', partials, 'partial');
-  } else {
-    var kwPartialEl = document.getElementById('kwPartial');
-    if (kwPartialEl) kwPartialEl.innerHTML = '';
-  }
-  renderKeywords('kwMissing', d.keywords_faltando || [], 'missing');
+  if (partials.length) renderKeywords('kwPartial', partials, 'partial');
+  else { var kwPartialEl = document.getElementById('kwPartial'); if (kwPartialEl) kwPartialEl.innerHTML = ''; }
+  renderKeywords('kwMissing', missing, 'missing');
+  var kwMissingLabel = document.getElementById('kwMissingLabel');
+  if (kwMissingLabel) kwMissingLabel.style.display = missing.length ? '' : 'none';
+  var kwNote = document.getElementById('kwNote');
+  if (kwNote) kwNote.style.display = partials.length ? '' : 'none';
 
-  // Score breakdown — pesos fixos derivados de fatores
+  // 8. Score breakdown — usa score_breakdown da API se disponível; senão computa com pesos 35/30/20/15
   var fatores = d.fatores || {};
-  var breakdownRows = [
-    { dim: 'Compatibilidade com a vaga', key: 'compatibilidade', peso: 30 },
-    { dim: 'Keywords ATS',               key: 'keywords_ats',    peso: 25 },
-    { dim: 'Legibilidade e estrutura',    key: 'legibilidade',    peso: 25 },
-    { dim: 'Força dos bullets',           key: 'forca_bullets',   peso: 20 },
-  ];
   var sbBody = document.getElementById('scoreBreakdownBody');
   if (sbBody) {
     sbBody.innerHTML = '';
+    var breakdownRows;
+    if (Array.isArray(d.score_breakdown) && d.score_breakdown.length) {
+      breakdownRows = d.score_breakdown;
+    } else {
+      breakdownRows = [
+        { dim: 'Compatibilidade com a vaga', key: 'compatibilidade', peso: 35 },
+        { dim: 'Keywords ATS',               key: 'keywords_ats',    peso: 30 },
+        { dim: 'Legibilidade e estrutura',    key: 'legibilidade',    peso: 20 },
+        { dim: 'Força dos bullets',           key: 'forca_bullets',   peso: 15 },
+      ].map(function(r) {
+        var dimPct = fatores[r.key] || 0;
+        return { dim: r.dim, peso: r.peso, pts: Math.round(dimPct * r.peso / 100), pct: dimPct };
+      });
+    }
     breakdownRows.forEach(function(row) {
-      var dimPct = fatores[row.key] || 0;
-      var pts = Math.round(dimPct * row.peso / 100);
+      var pct = row.pct !== undefined ? row.pct : (fatores[row.key] || 0);
+      var pts = row.pts !== undefined ? row.pts : Math.round(pct * row.peso / 100);
       sbBody.innerHTML += '<tr>'
         + '<td class="score-dim-label">' + escHtml(row.dim) + '</td>'
         + '<td class="sdim-peso">' + row.peso + '%</td>'
-        + '<td class="sdim-pts"><span class="sdim-bar-wrap"><span class="sdim-bar" style="width:0%" data-val="' + dimPct + '%"></span></span>' + pts + '/' + row.peso + '</td>'
+        + '<td class="sdim-pts"><span class="sdim-bar-wrap"><span class="sdim-bar" style="width:0%" data-val="' + pct + '%"></span></span>' + pts + '/' + row.peso + '</td>'
         + '</tr>';
     });
+    sbBody.innerHTML += '<tr class="sdim-total">'
+      + '<td class="score-dim-label">Score total</td>'
+      + '<td class="sdim-peso">100%</td>'
+      + '<td class="sdim-pts"><span class="sdim-bar-wrap"><span class="sdim-bar sdim-bar-total" style="width:0%" data-val="' + score + '%"></span></span>' + score + '/100</td>'
+      + '</tr>';
     setTimeout(function() {
       document.querySelectorAll('.sdim-bar').forEach(function(el) { el.style.width = el.dataset.val; });
     }, 200);
   }
 
-  // Briefing da empresa — completo para pagos, teaser para anônimos
+  // 9. Plano de melhoria — usa plano_melhoria da API ou constrói fallback para análises antigas
+  var planSection = document.getElementById('improvementPlanSection');
+  var planItemsEl = document.getElementById('planItems');
+  var planExpandCenter = document.getElementById('planExpandCenter');
+  if (planSection && planItemsEl) {
+    var plan = (Array.isArray(d.plano_melhoria) && d.plano_melhoria.length) ? d.plano_melhoria : buildFallbackPlan(d);
+    if (plan.length) {
+      planItemsEl.innerHTML = plan.slice(0, 3).map(function(item, i) { return renderPlanItem(item, i); }).join('');
+      planSection.style.display = 'block';
+      if (planExpandCenter) {
+        var hasDetalhes = plan.slice(0, 3).some(function(item) { return item.detalhes && item.detalhes.trim(); });
+        planExpandCenter.style.display = hasDetalhes ? '' : 'none';
+      }
+    } else {
+      planSection.style.display = 'none';
+    }
+  }
+
+  // 10. Briefing da empresa — completo para pagos, teaser para anônimos
   var briefingSection = document.getElementById('briefingSection');
   if (!isAnonymous && d.briefing_empresa) {
-    renderBriefing(d.briefing_empresa);
+    renderBriefing(d.briefing_empresa, false);
     briefingSection.classList.add('show');
   } else if (isAnonymous && d.briefing_empresa && d.briefing_empresa.o_que_valorizam && d.briefing_empresa.o_que_valorizam.length) {
-    // Mostra 1 item grátis com lock no restante
     var teaserItem = d.briefing_empresa.o_que_valorizam[0];
     document.getElementById('briefingGrid').innerHTML =
       '<div class="briefing-block" style="position:relative;overflow:hidden">'
@@ -1554,35 +1759,36 @@ function showResult(d) {
       + '</ul>'
       + '<div class="briefing-teaser-lock"><button class="briefing-teaser-lock-btn" onclick="openSignupModal()">Criar conta para ver tudo →</button></div>'
       + '</div>';
-    briefingSection.querySelector('.briefing-badge').textContent = '🔒 Prévia gratuita';
+    var briefBadge = briefingSection.querySelector('.briefing-badge');
+    if (briefBadge) briefBadge.textContent = '🔒 Prévia gratuita';
+    var briefingExpandBtn = document.getElementById('briefingExpandBtn');
+    if (briefingExpandBtn) briefingExpandBtn.style.display = 'none';
     briefingSection.classList.add('show');
   } else {
     briefingSection.classList.remove('show');
   }
 
-  // Botões de ação
+  // 11. Botões de ação
   var cvBtn = document.getElementById('cvBtn');
-  var cvBtnInline = document.getElementById('cvBtnInline');
   var upsellBtn = document.getElementById('upsellBtn');
   var interviewBtn = document.getElementById('interviewBtn');
   var cartaBtn = document.getElementById('cartaBtn');
+  var interviewMicrocopy = document.getElementById('interviewMicrocopy');
+
   if (!isAnonymous && d.cv_otimizado && d.cv_otimizado.nome) {
-    // Resultado completo: tem CV
     try { localStorage.setItem('vagaai_cv', JSON.stringify(d.cv_otimizado)); } catch(e) {}
-    cvBtn.style.display = 'flex';
-    cvBtnInline.style.display = 'inline-flex';
-    upsellBtn.style.display = 'none';
+    if (cvBtn) cvBtn.style.display = 'flex';
+    if (upsellBtn) upsellBtn.style.display = 'none';
     document.getElementById('upsellSection').classList.remove('show');
-    // Entrevista: só aparece se interview_agendada no tracker (verifica async)
     if (interviewBtn) {
       interviewBtn.style.display = 'none';
-      if (d._analysis_id) _checkInterviewState(d._analysis_id, interviewBtn);
+      if (d._analysis_id) _checkInterviewState(d._analysis_id, interviewBtn, interviewMicrocopy);
     }
     if (cartaBtn) cartaBtn.style.display = 'inline-flex';
+    if (interviewMicrocopy) interviewMicrocopy.style.display = '';
   } else if (isAnonymous) {
-    // Anônimo: CTA de cadastro, teasers para ferramentas, sem preços
-    cvBtn.style.display = 'none';
-    cvBtnInline.style.display = 'none';
+    if (cvBtn) cvBtn.style.display = 'none';
+    if (cvBtnInline) cvBtnInline.style.display = 'none';
     document.getElementById('upsellSection').classList.add('show');
     var upsellSec = document.getElementById('upsellSection');
     var uLabel = upsellSec ? upsellSec.querySelector('.upsell-label') : null;
@@ -1593,22 +1799,21 @@ function showResult(d) {
     if (uSub) uSub.textContent = 'Crie sua conta e veja o CV otimizado para essa vaga e o briefing completo da empresa — sem cartão de crédito.';
     var uPlans = document.getElementById('upsellPlans');
     if (uPlans) uPlans.style.display = 'none';
-    upsellBtn.textContent = '🎯 Criar conta grátis e ver tudo →';
-    upsellBtn.onclick = function() { openSignupModal(); };
-    // Teasers de ferramentas (gate no próprio click)
+    if (upsellBtn) { upsellBtn.textContent = '🎯 Criar conta grátis e ver tudo →'; upsellBtn.onclick = function() { openSignupModal(); }; upsellBtn.style.display = 'block'; }
     if (interviewBtn) { interviewBtn.style.display = 'inline-flex'; interviewBtn.onclick = function() { openSignupModal(); }; }
     if (cartaBtn) { cartaBtn.style.display = 'inline-flex'; cartaBtn.onclick = function() { openSignupModal(); }; }
+    if (interviewMicrocopy) interviewMicrocopy.style.display = 'none';
   } else {
-    // Logado sem CV: mantém upsell de plano
-    cvBtn.style.display = 'none';
-    cvBtnInline.style.display = 'none';
-    upsellBtn.style.display = 'block';
+    // Logado sem CV
+    if (cvBtn) cvBtn.style.display = 'none';
+    if (upsellBtn) upsellBtn.style.display = 'block';
     document.getElementById('upsellSection').classList.add('show');
     if (interviewBtn) interviewBtn.style.display = 'none';
     if (cartaBtn) cartaBtn.style.display = 'none';
+    if (interviewMicrocopy) interviewMicrocopy.style.display = 'none';
   }
 
-  // Botão de nova análise
+  // 12. Botão de nova análise
   var newBtn = document.getElementById('newAnalysisBtn');
   if (authSession) {
     var hasAccess = userPlan === 'pro' || (userPlan === 'starter' && (userPlanSub ? (userPlanSub.analyses_used_this_month||0) < 10 : true)) || userCredits > 0;
@@ -1619,12 +1824,21 @@ function showResult(d) {
     newBtn.textContent = '✓ Diagnóstico usado';
   }
 
+  // 13. Compat: falhas/sugestões ocultas (mantidas para análises antigas)
+  renderListWithLock('falhasList', d.falhas || [], isAnonymous, 2, 'falhas');
+  renderListWithLock('sugestoesList', d.sugestoes || [], isAnonymous, 2, 'sugestões');
+
+  // 14. Tracker CTA
   _lastResultData = d;
   var cta = document.getElementById('trackerCTA');
   if (cta) cta.style.display = isAnonymous ? 'none' : 'flex';
-  // Reset do botão caso seja uma nova análise
   var addBtn = document.getElementById('trackerAddBtn');
-  if (addBtn) { addBtn.classList.remove('added'); addBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg> + Rastreador'; }
+  if (addBtn) {
+    addBtn.classList.remove('added');
+    addBtn.disabled = false;
+    addBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg> Adicionar ao rastreador';
+  }
+  if (!isAnonymous && d._analysis_id) _preCheckTracker(d._analysis_id);
 
   section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -1709,41 +1923,31 @@ function renderListWithLock(id, items, locked, showCount, lockLabel) {
 }
 
 var _BRIEFING_BLOCKS = [
-  { title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> O que valorizam', key: 'o_que_valorizam', sub: 'Cultura e valores percebidos na vaga' },
-  { title: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> O que buscam', key: 'buscam_em_candidatos', sub: 'Perfil ideal além dos requisitos técnicos' },
-  { title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> O que mencionar na entrevista', key: 'pontos_para_entrevista', sub: 'Pontos concretos para destacar' },
-  { title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Perguntas para fazer', key: 'perguntas_para_fazer', sub: 'Demonstre interesse genuíno' }
+  { key: 'o_que_valorizam',      titleHtml: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> O que valorizam', sub: 'Cultura e valores percebidos na vaga' },
+  { key: 'buscam_em_candidatos', titleHtml: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> O que buscam', sub: 'Perfil ideal além dos requisitos técnicos' },
+  { key: 'pontos_de_atencao',    titleHtml: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Pontos de atenção', sub: 'Sinais de atenção ou ambiguidades' },
+  { key: 'perguntas_para_fazer', titleHtml: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Perguntas para fazer', sub: 'Demonstre interesse genuíno' }
 ];
 
 function renderBriefing(b, showAll) {
   var html = '';
+  var anyMore = false;
   _BRIEFING_BLOCKS.forEach(function(block) {
     var items = b[block.key] || [];
     if (!items.length) return;
     var visible = (showAll || items.length <= 2) ? items : items.slice(0, 2);
-    var hasMore = !showAll && items.length > 2;
+    if (!showAll && items.length > 2) anyMore = true;
     html += '<div class="briefing-block">'
-      + '<div class="briefing-block-title">' + block.title + '</div>'
+      + '<div class="briefing-block-title">' + block.titleHtml + '</div>'
       + (block.sub ? '<div style="font-size:11px;color:var(--muted);margin-bottom:.5rem">' + escHtml(block.sub) + '</div>' : '')
       + '<ul class="briefing-block-list">'
       + visible.map(function(i) { return '<li>' + escHtml(i) + '</li>'; }).join('')
       + '</ul>'
-      + (hasMore ? '<button class="briefing-expand-btn" onclick="expandBriefing()">Ver briefing completo →</button>' : '')
       + '</div>';
   });
-  if (b.pontos_de_atencao && b.pontos_de_atencao.length) {
-    var atItems = showAll ? b.pontos_de_atencao : b.pontos_de_atencao.slice(0, 2);
-    var atMore = !showAll && b.pontos_de_atencao.length > 2;
-    html += '<div class="briefing-block briefing-atencao">'
-      + '<div class="briefing-block-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Pontos de atenção na vaga</div>'
-      + '<div style="font-size:11px;color:var(--muted);margin-bottom:.5rem">Sinais de atenção ou ambiguidades</div>'
-      + '<ul class="briefing-block-list">'
-      + atItems.map(function(i) { return '<li>' + escHtml(i) + '</li>'; }).join('')
-      + '</ul>'
-      + (atMore ? '<button class="briefing-expand-btn" onclick="expandBriefing()">Ver briefing completo →</button>' : '')
-      + '</div>';
-  }
   document.getElementById('briefingGrid').innerHTML = html;
+  var expandBtn = document.getElementById('briefingExpandBtn');
+  if (expandBtn) expandBtn.style.display = (anyMore && !showAll) ? '' : 'none';
 }
 
 function expandBriefing() {
@@ -1752,7 +1956,7 @@ function expandBriefing() {
   }
 }
 
-async function _checkInterviewState(analysisId, btn) {
+async function _checkInterviewState(analysisId, btn, microcopy) {
   if (!authSession || !analysisId) return;
   try {
     var res = await fetch(
@@ -1762,10 +1966,145 @@ async function _checkInterviewState(analysisId, btn) {
     );
     if (!res.ok) return;
     var rows = await res.json();
-    // Show interview button only when interview is scheduled
     var status = Array.isArray(rows) && rows.length ? rows[0].status : null;
-    if (status === 'entrevista_agendada') btn.style.display = 'inline-flex';
+    var isInterview = status === 'entrevista' || status === 'entrevista_agendada';
+    if (btn) btn.style.display = isInterview ? 'inline-flex' : 'none';
+    if (microcopy) microcopy.style.display = isInterview ? 'none' : '';
   } catch(e) {}
+}
+
+async function _preCheckTracker(analysisId) {
+  if (!authSession || !analysisId) return;
+  try {
+    var res = await fetch(
+      SUPABASE_URL + '/rest/v1/job_tracker?user_id=eq.' + encodeURIComponent(authSession.user.id)
+        + '&analysis_id=eq.' + encodeURIComponent(analysisId) + '&select=id',
+      { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + authSession.access_token } }
+    );
+    if (!res.ok) return;
+    var rows = await res.json();
+    if (Array.isArray(rows) && rows.length > 0) {
+      var btn = document.getElementById('trackerAddBtn');
+      if (btn) {
+        btn.classList.add('added');
+        btn.disabled = true;
+        btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Salva no rastreador';
+      }
+    }
+  } catch(e) {}
+}
+
+var _PLAN_ICONS = [
+  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>'
+];
+
+function renderPlanItem(item, index) {
+  var statusClass = item.status === 'concluido' ? 'concluido' : 'pendente';
+  var statusLabel = item.status === 'concluido' ? 'Concluído' : 'Pendente';
+  var detalhesId = 'planDetalhes' + index;
+  var hasDetalhes = item.detalhes && item.detalhes.trim();
+  var icon = _PLAN_ICONS[index] || _PLAN_ICONS[0];
+  var chevron = hasDetalhes
+    ? '<button class="plan-chevron" id="planChevron' + index + '" onclick="togglePlanItem(' + index + ')" aria-label="Expandir detalhes" aria-expanded="false">'
+      + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>'
+      + '</button>'
+    : '';
+  return '<div class="plan-item">'
+    + '<div class="plan-icon" style="color:var(--green)">' + icon + '</div>'
+    + '<div class="plan-body">'
+    + '<div class="plan-title-row">'
+    + '<div class="plan-titulo">' + escHtml(item.titulo || '') + '</div>'
+    + '<span class="plan-badge ' + statusClass + '">' + statusLabel + '</span>'
+    + chevron
+    + '</div>'
+    + '<div class="plan-desc">' + escHtml(item.descricao || '') + '</div>'
+    + (hasDetalhes ? '<div class="plan-detalhes" id="' + detalhesId + '" style="display:none" aria-hidden="true">' + escHtml(item.detalhes) + '</div>' : '')
+    + '</div>'
+    + '</div>';
+}
+
+function togglePlanItem(index) {
+  var det = document.getElementById('planDetalhes' + index);
+  var btn = document.getElementById('planChevron' + index);
+  if (!det) return;
+  var open = det.style.display !== 'none';
+  det.style.display = open ? 'none' : '';
+  det.setAttribute('aria-hidden', open ? 'true' : 'false');
+  if (btn) {
+    btn.setAttribute('aria-expanded', String(!open));
+    btn.style.transform = open ? '' : 'rotate(180deg)';
+  }
+}
+
+function buildFallbackPlan(d) {
+  var items = [];
+  var prioridades = Array.isArray(d.prioridades) ? d.prioridades.slice(0, 3) : [];
+  prioridades.forEach(function(p, i) {
+    items.push({ id: 'fp_' + i, titulo: p.titulo || ('Prioridade ' + (i + 1)), descricao: p.explicacao || '', status: 'pendente', detalhes: '' });
+  });
+  var extras = (d.falhas || []).concat(d.sugestoes || []);
+  var ei = 0;
+  while (items.length < 3 && ei < extras.length) {
+    items.push({ id: 'fp_e' + ei, titulo: extras[ei], descricao: '', status: 'pendente', detalhes: '' });
+    ei++;
+  }
+  return items;
+}
+
+function expandAllPlan() {
+  document.querySelectorAll('.plan-detalhes').forEach(function(el) {
+    el.style.display = '';
+    el.setAttribute('aria-hidden', 'false');
+  });
+  document.querySelectorAll('.plan-chevron').forEach(function(btn) {
+    btn.setAttribute('aria-expanded', 'true');
+    btn.style.transform = 'rotate(180deg)';
+  });
+  var center = document.getElementById('planExpandCenter');
+  if (center) center.style.display = 'none';
+}
+
+function confirmArchive() {
+  var modal = document.getElementById('archiveModal');
+  if (modal) modal.classList.remove('hidden');
+  var fb = document.getElementById('archiveFeedback');
+  if (fb) fb.textContent = '';
+  var confirmBtn = document.getElementById('archiveConfirmBtn');
+  if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.textContent = 'Confirmar arquivamento'; }
+}
+
+function closeArchiveModal() {
+  var modal = document.getElementById('archiveModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function doArchive() {
+  if (!_lastResultData || !authSession || !_lastResultData._analysis_id) return;
+  var btn = document.getElementById('archiveConfirmBtn');
+  var fb = document.getElementById('archiveFeedback');
+  if (btn) { btn.disabled = true; btn.textContent = 'Arquivando…'; }
+  if (fb) fb.textContent = '';
+  try {
+    var res = await fetch(
+      SUPABASE_URL + '/rest/v1/analyses?id=eq.' + encodeURIComponent(_lastResultData._analysis_id)
+        + '&user_id=eq.' + encodeURIComponent(authSession.user.id),
+      {
+        method: 'PATCH',
+        headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + authSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({ archived_at: new Date().toISOString() })
+      }
+    );
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    closeArchiveModal();
+    var heroArchiveRow = document.getElementById('heroArchiveRow');
+    if (heroArchiveRow) heroArchiveRow.classList.remove('show');
+    showAppToast('Análise arquivada.', 3000);
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Confirmar arquivamento'; }
+    if (fb) fb.textContent = 'Erro ao arquivar. Tente novamente.';
+  }
 }
 
 function renderKeywords(id, items, cls) {
@@ -1908,48 +2247,36 @@ function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')
 var _pendingResultData = null;
 var _lastResultData = null;
 
-async function addResultToTracker(status) {
+async function addResultToTracker() {
   if (!_lastResultData || !authSession) return;
   var btn = document.getElementById('trackerAddBtn');
+  if (btn && btn.classList.contains('added')) return;
   if (btn) { btn.disabled = true; btn.textContent = 'Salvando…'; }
   var d = _lastResultData;
   var empresa = (d.job_info && d.job_info.empresa) ? d.job_info.empresa : '';
   var cargo = (d.job_info && d.job_info.cargo) ? d.job_info.cargo : '';
-  var score = d.score || 0;
+  var scoreVal = d.score || 0;
   var jobUrl = (document.getElementById('jobUrl') && document.getElementById('jobUrl').value.trim()) || '';
-  var analysisId = (d && d._analysis_id) ? d._analysis_id : null;
+  var analysisId = d._analysis_id || null;
   var userId = authSession.user.id;
+  var savedHtml = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Salva no rastreador';
+  var resetHtml = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg> Adicionar ao rastreador';
 
   try {
-    // Prevent duplicate: check if already tracked by (user_id + analysis_id)
-    if (analysisId) {
-      var checkRes = await fetch(
-        SUPABASE_URL + '/rest/v1/job_tracker?user_id=eq.' + encodeURIComponent(userId) + '&analysis_id=eq.' + encodeURIComponent(analysisId) + '&select=id',
-        { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + authSession.access_token } }
-      );
-      if (checkRes.ok) {
-        var existing = await checkRes.json();
-        if (Array.isArray(existing) && existing.length > 0) {
-          if (btn) { btn.disabled = false; btn.classList.add('added'); btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Já adicionado'; }
-          return;
-        }
-      }
-    }
-
-    var body = { user_id: userId, empresa: empresa, cargo: cargo, score: score, status: status || 'quero_aplicar', job_url: jobUrl || null, analysis_id: analysisId || null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+    var body = { user_id: userId, empresa: empresa, cargo: cargo, score: scoreVal, status: 'analisada', job_url: jobUrl || null, analysis_id: analysisId, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
     var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker', {
       method: 'POST',
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + authSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
       body: JSON.stringify(body)
     });
 
-    if (res.ok || res.status === 201 || res.status === 204) {
-      if (btn) { btn.classList.add('added'); btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Adicionado!'; }
+    if (res.ok || res.status === 201 || res.status === 204 || res.status === 409) {
+      if (btn) { btn.classList.add('added'); btn.disabled = true; btn.innerHTML = savedHtml; }
     } else {
-      if (btn) { btn.disabled = false; btn.textContent = '+ Rastreador'; }
+      if (btn) { btn.disabled = false; btn.innerHTML = resetHtml; }
     }
   } catch(e) {
-    if (btn) { btn.disabled = false; btn.textContent = '+ Rastreador'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = resetHtml; }
   }
 }
 

@@ -1,5 +1,52 @@
 import { createHash } from 'crypto';
 
+// ─── Score breakdown determinístico ──────────────────────────────────────────
+
+const SCORE_WEIGHTS = [
+  { key: 'compatibilidade', label: 'Compatibilidade com a vaga', weight: 35 },
+  { key: 'keywords_ats',    label: 'Keywords ATS',               weight: 30 },
+  { key: 'legibilidade',    label: 'Legibilidade e estrutura',    weight: 20 },
+  { key: 'forca_bullets',   label: 'Força dos bullets',           weight: 15 },
+];
+
+function buildScoreBreakdown(fatores) {
+  const rows = SCORE_WEIGHTS.map(item => {
+    const dimensionScore = Math.max(0, Math.min(100, Number(fatores?.[item.key]) || 0));
+    return { ...item, dimension_score: dimensionScore, points: Math.round((dimensionScore * item.weight) / 100) };
+  });
+  return { rows, total: rows.reduce((sum, r) => sum + r.points, 0) };
+}
+
+// ─── Normalização de keywords ────────────────────────────────────────────────
+
+function keywordKey(value) {
+  return String(value || '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+function uniqueKeywords(items) {
+  const seen = new Set();
+  return (Array.isArray(items) ? items : []).filter(item => {
+    const k = keywordKey(item);
+    if (!k || seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
+function normalizeKeywords(result) {
+  const partials   = uniqueKeywords(result.keywords_parcialmente_encontradas);
+  const partialSet = new Set(partials.map(keywordKey));
+
+  const found    = uniqueKeywords(result.keywords_encontradas).filter(k => !partialSet.has(keywordKey(k)));
+  const foundSet = new Set([...found.map(keywordKey), ...partialSet]);
+
+  const missing = uniqueKeywords(result.keywords_faltando).filter(k => !foundSet.has(keywordKey(k)));
+
+  result.keywords_parcialmente_encontradas = partials;
+  result.keywords_encontradas = found;
+  result.keywords_faltando    = missing;
+}
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -841,7 +888,30 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
     {"titulo": "<terceira ação mais impactante>", "explicacao": "<justificativa objetiva>"}
   ],
   "keywords_parcialmente_encontradas": ["<keyword presente no currículo mas mencionada superficialmente ou sem evidência quantificável — DEVE ser mutuamente exclusiva com keywords_encontradas e keywords_faltando>"],
-  "score_estimado_apos_ajustes": <número inteiro de 0 a 100 estimando o score se o candidato implementar as 3 prioridades acima>
+  "score_estimado_apos_ajustes": <número inteiro de 0 a 100 estimando o score se o candidato implementar as 3 prioridades acima>,
+  "plano_melhoria": [
+    {
+      "id": "posicionamento",
+      "titulo": "Ajustar posicionamento",
+      "descricao": "<ajuste específico de posicionamento profissional para esta vaga>",
+      "status": "pendente",
+      "detalhes": ["<ação concreta 1>", "<ação concreta 2>"]
+    },
+    {
+      "id": "experiencias",
+      "titulo": "Fortalecer experiências",
+      "descricao": "<como reescrever as experiências para esta vaga>",
+      "status": "pendente",
+      "detalhes": ["<ação concreta 1>", "<ação concreta 2>"]
+    },
+    {
+      "id": "ats",
+      "titulo": "Otimizar para ATS",
+      "descricao": "<o que mudar na estrutura e keywords para passar pelo filtro>",
+      "status": "pendente",
+      "detalhes": ["<ação concreta 1>", "<ação concreta 2>"]
+    }
+  ]
 }`;
 
   try {
@@ -887,6 +957,14 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
     }
 
     const result = JSON.parse(jsonMatch[0]);
+
+    // Normaliza keywords (remove duplicatas e garante exclusividade mútua)
+    normalizeKeywords(result);
+
+    // Score determinístico calculado dos fatores (sobrescreve o da IA)
+    const breakdown = buildScoreBreakdown(result.fatores);
+    result.score_breakdown = breakdown.rows;
+    result.score = breakdown.total;
 
     // Armazena no cache (fire-and-forget, não bloqueia resposta)
     setCachedResult(hash, result);
