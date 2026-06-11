@@ -14,6 +14,8 @@ const ADZUNA_APP_KEY = process.env.ADZUNA_APP_KEY;       // developer.adzuna.com
 const SERPAPI_KEY = process.env.SERPAPI_KEY;             // serpapi.com
 const JSEARCH_API_KEY = process.env.JSEARCH_API_KEY;     // rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch
 const CRON_SECRET = process.env.CRON_SECRET;
+// UNSUBSCRIBE_SECRET é separado do CRON_SECRET para isolamento de comprometimento
+const UNSUBSCRIBE_SECRET = process.env.UNSUBSCRIBE_SECRET;
 
 function jobHash(title, company, location) {
   return crypto.createHash('md5')
@@ -21,8 +23,20 @@ function jobHash(title, company, location) {
     .digest('hex').slice(0, 16);
 }
 
+// makeUnsubToken: gera token com timestamp explícito de expiração (30 dias)
+// Formato: base64url(userId:expiresAtMs):hmac
+// Retorna null se UNSUBSCRIBE_SECRET não estiver configurado —
+// o chamador deve interromper o envio em vez de inserir um token inválido.
 function makeUnsubToken(userId) {
-  return crypto.createHmac('sha256', CRON_SECRET || '').update(userId).digest('hex');
+  if (!UNSUBSCRIBE_SECRET) {
+    return null;
+  }
+  const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+  const payload = Buffer.from(userId + ':' + expiresAt).toString('base64url');
+  const sig = crypto.createHmac('sha256', UNSUBSCRIBE_SECRET)
+    .update(payload)
+    .digest('hex');
+  return payload + '.' + sig;
 }
 
 // Fontes brasileiras — ganham boost de prioridade no score
@@ -34,6 +48,112 @@ const BR_SOURCES = new Set([
 
 // Regex de palavras comuns em PT-BR para detectar idioma
 const PT_BR_PATTERN = /\b(vaga|empresa|cargo|área|experiência|conhecimento|gestão|análise|desenvolvimento|requisitos|benefícios|você|para|com|são|ção|ões|remuneração|contratação|oportunidade|atuação|salário|remoto|híbrido|presencial)\b/i;
+
+// Aplica filtros de preferências estendidas ao array de vagas
+// Retorna array re-ordenado por _score após aplicação de bônus
+function applyExtendedFilters(jobs, profile) {
+  // filtros_negativos é JSONB — pode chegar como objeto ou string, tratar ambos
+  let filtrosNeg = profile.filtros_negativos || {};
+  if (typeof filtrosNeg === 'string') {
+    try { filtrosNeg = JSON.parse(filtrosNeg); } catch { filtrosNeg = {}; }
+  }
+  const negPalavras = Array.isArray(filtrosNeg.neg_palavras) ? filtrosNeg.neg_palavras.map(w => String(w).toLowerCase()) : [];
+  const filtrosNegList = Array.isArray(filtrosNeg.filtros_neg) ? filtrosNeg.filtros_neg.map(w => String(w).toLowerCase()) : [];
+  const allNeg = [...negPalavras, ...filtrosNegList];
+
+  const empresasInteresse = Array.isArray(profile.empresas_interesse) ? profile.empresas_interesse.map(e => String(e).toLowerCase()) : [];
+  const setoresPref = Array.isArray(profile.setores_preferidos) ? profile.setores_preferidos.map(s => String(s).toLowerCase()) : [];
+
+  // formato pode ser TEXT[] (array) ou TEXT (string separada por vírgula) — normaliza para array
+  let formatos = [];
+  if (Array.isArray(profile.formato)) {
+    formatos = profile.formato.map(f => String(f).toLowerCase().trim()).filter(Boolean);
+  } else if (typeof profile.formato === 'string' && profile.formato.trim()) {
+    formatos = profile.formato.split(',').map(f => f.toLowerCase().trim()).filter(Boolean);
+  }
+  // Remove 'qualquer' do array — não filtra
+  formatos = formatos.filter(f => f !== 'qualquer' && f !== 'qualquer um');
+
+  const fmtMap = {
+    remoto: ['remoto', 'remote', 'home office', 'home-office'],
+    presencial: ['presencial', 'on-site', 'on site'],
+    híbrido: ['híbrido', 'hibrido', 'hybrid'],
+    hibrido: ['híbrido', 'hibrido', 'hybrid'],
+  };
+
+  // Normaliza contrato_tipos: suporta acentos, caixa e sinônimos
+  const contratosRaw = Array.isArray(profile.contrato_tipos)
+    ? profile.contrato_tipos
+    : (typeof profile.contrato_tipos === 'string' && profile.contrato_tipos.trim()
+        ? profile.contrato_tipos.split(',')
+        : []);
+  const contratos = contratosRaw
+    .map(c => String(c).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim())
+    .filter(c => c && c !== 'qualquer' && c !== 'qualquer um');
+
+  // Mapa de sinônimos e variações de tipo de contrato
+  const contratoMap = {
+    clt:       ['clt', 'clt (efetivo)', 'efetivo', 'contrato clt', 'regime clt'],
+    pj:        ['pj', 'pessoa juridica', 'pessoa jurídica', 'contrato pj', 'regime pj'],
+    freela:    ['freela', 'freelance', 'freelancer', 'autonomo', 'autônomo', 'free-lance'],
+    estagio:   ['estagio', 'estágio', 'estagiario', 'estagiário', 'intern', 'internship'],
+    temporario:['temporario', 'temporário', 'contrato temporario', 'trabalho temporario', 'temp'],
+  };
+
+  const filtered = jobs.filter(job => {
+    const title = (job.title || '').toLowerCase();
+    const desc = (job.snippet || job.description || '').toLowerCase();
+    const company = (job.company || '').toLowerCase();
+    const combined = title + ' ' + desc + ' ' + company;
+    const combinedNorm = combined.normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+    // Exclui vagas com palavras/filtros negativos
+    if (allNeg.length && allNeg.some(neg => combinedNorm.includes(neg))) return false;
+
+    // Filtra por formato(s) preferido(s) — só quando a vaga menciona modalidade explicitamente
+    if (formatos.length > 0) {
+      const mentionsAnyMode = /remoto|remote|home.?office|h[ií]brido|presencial|hybrid|on.?site/i.test(combined);
+      if (mentionsAnyMode) {
+        const matches = formatos.some(fmt => {
+          const tokens = fmtMap[fmt] || [fmt];
+          return tokens.some(t => combined.includes(t));
+        });
+        if (!matches) return false;
+      }
+      // Se a vaga não menciona modalidade, não exclui (evita over-filtering)
+    }
+
+    // Filtra por tipo de contrato — só quando a vaga menciona contrato explicitamente
+    if (contratos.length > 0) {
+      const mentionsContract = /\b(clt|pj|freela|freelance|estagio|estágio|temporario|temporário|contrato|regime|efetivo|autonomo|autônomo)\b/i.test(combinedNorm);
+      if (mentionsContract) {
+        const matches = contratos.some(ct => {
+          const tokens = contratoMap[ct] || [ct];
+          return tokens.some(t => combinedNorm.includes(t));
+        });
+        if (!matches) return false;
+      }
+      // Se a vaga não menciona tipo de contrato, não exclui
+    }
+
+    return true;
+  });
+
+  // Aplica bônus e re-ordena por _score descrescente
+  return filtered
+    .map(job => {
+      let bonus = 0;
+      const title = (job.title || '').toLowerCase();
+      const desc = (job.snippet || job.description || '').toLowerCase();
+      const company = (job.company || '').toLowerCase();
+
+      if (empresasInteresse.length && empresasInteresse.some(e => company.includes(e) || title.includes(e))) bonus += 25;
+      if (setoresPref.length && setoresPref.some(s => title.includes(s) || desc.includes(s))) bonus += 10;
+
+      return { ...job, _score: Math.min(100, (job._score || 0) + bonus) };
+    })
+    .sort((a, b) => b._score - a._score);
+}
 
 // Calcula score de compatibilidade estimado (sem IA)
 function calcScore(job, profile) {
@@ -989,45 +1109,75 @@ async function fetchTalentComJobs(profile) {
 }
 
 // ── PRÓXIMO ENVIO ─────────────────────────────────────────────────────────────
+// Todos os cálculos de horário respeitam America/Sao_Paulo independente do fuso do servidor.
+
+const BRT_OFFSET_HOURS = -3; // America/Sao_Paulo (UTC-3, sem considerar horário de verão)
+
+// Retorna o horário alvo como Date UTC, dado hora/minuto no fuso de SP
+function nextOccurrenceAt(hh, mm, fromDateUTC, dayOfWeek = null) {
+  // Converte fromDate para SP
+  const spNow = new Date(fromDateUTC.getTime() + BRT_OFFSET_HOURS * 60 * 60 * 1000);
+
+  // Constrói candidato no fuso SP
+  const candidate = new Date(spNow);
+  candidate.setUTCHours(hh, mm, 0, 0);
+
+  if (dayOfWeek !== null) {
+    const curDay = candidate.getUTCDay();
+    let daysUntil = (dayOfWeek - curDay + 7) % 7;
+    if (daysUntil === 0 && candidate <= spNow) daysUntil = 7;
+    candidate.setUTCDate(candidate.getUTCDate() + daysUntil);
+  } else {
+    // Mesmo dia mas horário já passou → próximo dia
+    if (candidate <= spNow) candidate.setUTCDate(candidate.getUTCDate() + 1);
+  }
+
+  // Converte de volta para UTC
+  return new Date(candidate.getTime() - BRT_OFFSET_HOURS * 60 * 60 * 1000);
+}
 
 function calculateNextRun(profile, fromDate = new Date()) {
   const frequencia = profile.frequencia || 'semanal';
-  const diaEnvio = typeof profile.dia_envio === 'number' ? profile.dia_envio : 5; // default sexta
+  const diaEnvio = (profile.dia_envio !== undefined && profile.dia_envio !== null)
+    ? parseInt(profile.dia_envio) : 5; // default sexta (5)
   const horario = profile.horario_envio || '08:00';
-  const [hh = 8, mm = 0] = horario.split(':').map(Number);
-
-  const next = new Date(fromDate);
-  next.setSeconds(0, 0);
-  next.setHours(hh, mm, 0, 0);
+  const parts = horario.split(':');
+  const hh = parseInt(parts[0]) || 8;
+  const mm = parseInt(parts[1]) || 0;
 
   if (frequencia === 'diario') {
-    if (next <= fromDate) next.setDate(next.getDate() + 1);
-    return next;
+    return nextOccurrenceAt(hh, mm, fromDate, null);
   }
 
   if (frequencia === 'semanal') {
-    const currentDay = next.getDay();
-    let daysUntil = (diaEnvio - currentDay + 7) % 7;
-    if (daysUntil === 0 && next <= fromDate) daysUntil = 7;
-    next.setDate(next.getDate() + daysUntil);
-    return next;
+    return nextOccurrenceAt(hh, mm, fromDate, diaEnvio);
   }
 
   if (frequencia === 'quinzenal') {
-    // Usa ultimo_envio como base; fallback: 14 dias a partir de agora
-    const base = profile.ultimo_envio ? new Date(profile.ultimo_envio) : fromDate;
-    const candidate = new Date(base);
-    candidate.setDate(candidate.getDate() + 14);
-    candidate.setHours(hh, mm, 0, 0);
-    return candidate > fromDate ? candidate : new Date(fromDate.getTime() + 14 * 86400000);
+    if (profile.ultimo_envio) {
+      // Próximo envio = último + 14 dias, no horário configurado em SP
+      let candidate = new Date(new Date(profile.ultimo_envio).getTime() + 14 * 24 * 60 * 60 * 1000);
+      // Ajusta para o horário correto no fuso SP
+      const spCandidate = new Date(candidate.getTime() + BRT_OFFSET_HOURS * 60 * 60 * 1000);
+      spCandidate.setUTCHours(hh, mm, 0, 0);
+      candidate = new Date(spCandidate.getTime() - BRT_OFFSET_HOURS * 60 * 60 * 1000);
+      // Se ainda estiver no passado (envio atrasado), avança de 14 em 14 até o futuro
+      while (candidate <= fromDate) {
+        candidate = new Date(candidate.getTime() + 14 * 24 * 60 * 60 * 1000);
+      }
+      return candidate;
+    }
+    // Primeiro envio: usa o dia da semana configurado como referência (como semanal)
+    return nextOccurrenceAt(hh, mm, fromDate, diaEnvio);
   }
 
   if (frequencia === 'mensal') {
-    const candidate = new Date(next);
-    candidate.setMonth(candidate.getMonth() + 1);
-    candidate.setDate(1);
-    candidate.setHours(hh, mm, 0, 0);
-    return candidate;
+    const spNow = new Date(fromDate.getTime() + BRT_OFFSET_HOURS * 60 * 60 * 1000);
+    const spNext = new Date(spNow);
+    spNext.setUTCMonth(spNext.getUTCMonth() + 1);
+    spNext.setUTCDate(1);
+    spNext.setUTCHours(hh, mm, 0, 0);
+    return new Date(spNext.getTime() - BRT_OFFSET_HOURS * 60 * 60 * 1000);
   }
 
   return null;
@@ -1153,6 +1303,13 @@ async function processUserAlert(profile, isTest = false) {
   let email = profile.email;
   if (!email) return { skipped: 'no email' };
 
+  // Verifica token antes de qualquer processamento pesado
+  // Se UNSUBSCRIBE_SECRET não estiver configurado, aborta para não enviar links inválidos
+  if (!UNSUBSCRIBE_SECRET) {
+    console.error('processUserAlert: UNSUBSCRIBE_SECRET não configurado — envio abortado para', userId);
+    return { skipped: 'unsubscribe_secret_missing' };
+  }
+
   // Busca vagas de todas as fontes em paralelo
   const [jooble, indeed, remotive, adzuna, serp, empregos, sine, vagasCom, infojobs, remoteok, arbeitnow, themuse, trampos, monster, glassdoor, bne, catho, jora, talentCom, jsearch] = await Promise.allSettled([
     fetchJoobleJobs(profile),
@@ -1206,13 +1363,46 @@ async function processUserAlert(profile, isTest = false) {
     jobs = await filterSentJobs(userId, jobs);
   }
 
-  if (!jobs.length) return { skipped: 'no new jobs' };
+  if (!jobs.length) {
+    // Mesmo sem vagas, atualizar next_run_at para evitar re-tentativas imediatas
+    if (!isTest) {
+      const now = new Date();
+      const nextRun = calculateNextRun(profile, now);
+      await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?user_id=eq.${userId}`, {
+        method: 'PATCH',
+        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          last_run_at: now.toISOString(),
+          next_run_at: nextRun ? nextRun.toISOString() : null,
+        }),
+      }).catch(e => console.warn('next_run_at update (no jobs) failed:', e.message));
+    }
+    return { skipped: 'no new jobs' };
+  }
 
   // Normaliza e calcula scores
   jobs = jobs
     .map(j => normalizeJob({ ...j, _score: calcScore(j, profile) }))
-    .sort((a, b) => b._score - a._score)
-    .slice(0, 8);
+    .sort((a, b) => b._score - a._score);
+
+  // Aplica filtros de preferências estendidas (formato, filtros negativos, empresas, setores)
+  // applyExtendedFilters já re-ordena por _score após aplicar bônus
+  jobs = applyExtendedFilters(jobs, profile);
+
+  if (!jobs.length) {
+    if (!isTest) {
+      const now = new Date();
+      const nextRun = calculateNextRun(profile, now);
+      await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?user_id=eq.${userId}`, {
+        method: 'PATCH',
+        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({ last_run_at: now.toISOString(), next_run_at: nextRun ? nextRun.toISOString() : null }),
+      }).catch(e => console.warn('next_run_at update (no jobs after filters) failed:', e.message));
+    }
+    return { skipped: 'no jobs after filters' };
+  }
+
+  jobs = jobs.slice(0, 8);
 
   // Busca email atual e nome do usuário diretamente do auth (evita email desatualizado no perfil)
   let userName = email.split('@')[0];
@@ -1303,7 +1493,10 @@ export default async function handler(req, res) {
       console.error('send-alerts: CRON_SECRET env var não configurada');
       return res.status(500).json({ error: 'CRON_SECRET não configurado' });
     }
-    if (authHeader !== `Bearer ${CRON_SECRET}`) {
+    const cronExpected = Buffer.from(`Bearer ${CRON_SECRET}`, 'utf8');
+    const cronReceived = Buffer.alloc(cronExpected.length);
+    Buffer.from(authHeader || '', 'utf8').copy(cronReceived);
+    if ((authHeader || '').length !== cronExpected.length || !crypto.timingSafeEqual(cronExpected, cronReceived)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
   }
@@ -1340,10 +1533,30 @@ export default async function handler(req, res) {
       try {
         const result = await processUserAlert(profile, isTest);
         results.push({ user: profile.user_id, ...result });
-        console.log(`Alert sent: user=${profile.user_id} jobs=${result.jobs || 0}`);
+        if (result.sent) console.log(`Alert sent: user=${profile.user_id} jobs=${result.jobs || 0}`);
+        else console.log(`Alert skipped: user=${profile.user_id} reason=${result.skipped}`);
       } catch (e) {
         console.error(`Alert error for ${profile.user_id}:`, e.message);
-        results.push({ user: profile.user_id, error: e.message });
+        results.push({ user: profile.user_id, error: e.message, sent: false });
+      }
+    }
+
+    // Em modo teste, expõe resultado explícito para o frontend
+    if (isTest) {
+      const r = results[0] || {};
+      if (r.sent === true) {
+        return res.status(200).json({ ok: true, sent: true, jobs: r.jobs, email: r.email, results });
+      }
+      if (r.skipped) {
+        const skipMsg = r.skipped === 'no new jobs' || r.skipped === 'no jobs after filters'
+          ? 'Nenhuma vaga compatível encontrada no momento.'
+          : r.skipped === 'no email'
+          ? 'E-mail não encontrado no perfil.'
+          : r.skipped;
+        return res.status(200).json({ ok: false, sent: false, skipped: r.skipped, message: skipMsg, results });
+      }
+      if (r.error) {
+        return res.status(200).json({ ok: false, sent: false, error: r.error, results });
       }
     }
 

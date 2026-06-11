@@ -1,28 +1,69 @@
 // /api/unsubscribe
-// Cancela alertas via link no email. Token = HMAC-SHA256(CRON_SECRET, userId).
+// Cancela alertas via link no email.
+// Token = base64url(userId:expiresAtMs).hmac-sha256
+// Expiração real de 30 dias — sem buckets que podem aceitar até 60 dias.
 // GET /api/unsubscribe?uid=<userId>&tok=<token>
 
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual as cryptoTimingSafeEqual } from 'crypto';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const UNSUBSCRIBE_SECRET = process.env.UNSUBSCRIBE_SECRET;
 
-function makeToken(userId) {
-  const secret = process.env.CRON_SECRET || '';
-  return createHmac('sha256', secret).update(userId).digest('hex');
+function verifyToken(userId, tok) {
+  if (!tok || typeof tok !== 'string') return false;
+  const parts = tok.split('.');
+  if (parts.length !== 2) return false;
+  const [payload, receivedSig] = parts;
+
+  // Valida assinatura com timing-safe compare
+  const expectedSig = createHmac('sha256', UNSUBSCRIBE_SECRET)
+    .update(payload)
+    .digest('hex');
+
+  const expectedBuf = Buffer.from(expectedSig, 'utf8');
+  const receivedBuf = Buffer.alloc(expectedBuf.length);
+  Buffer.from(receivedSig || '', 'utf8').copy(receivedBuf);
+
+  if (receivedSig.length !== expectedSig.length) return false;
+  if (!cryptoTimingSafeEqual(expectedBuf, receivedBuf)) return false;
+
+  // Decodifica payload e valida campos
+  let decoded;
+  try {
+    decoded = Buffer.from(payload, 'base64url').toString('utf8');
+  } catch {
+    return false;
+  }
+
+  const colonIdx = decoded.lastIndexOf(':');
+  if (colonIdx < 0) return false;
+
+  const payloadUserId = decoded.slice(0, colonIdx);
+  const expiresAt = parseInt(decoded.slice(colonIdx + 1), 10);
+
+  if (payloadUserId !== userId) return false;
+  if (!expiresAt || isNaN(expiresAt)) return false;
+  if (Date.now() > expiresAt) return false;
+
+  return true;
 }
 
 export default async function handler(req, res) {
+  // UNSUBSCRIBE_SECRET é obrigatório — falha fechada
+  if (!UNSUBSCRIBE_SECRET) {
+    console.error('unsubscribe: UNSUBSCRIBE_SECRET não configurado');
+    return res.status(500).send(page('Erro de configuração', 'O serviço está temporariamente indisponível.', false));
+  }
+
   const { uid, tok } = req.method === 'GET' ? req.query : (req.body || {});
 
   if (!uid || !tok) {
     return res.status(400).send(page('Erro', 'Link inválido ou expirado.', false));
   }
 
-  const expected = makeToken(uid);
-  // Constant-time comparison
-  if (tok.length !== expected.length || !timingSafeEqual(tok, expected)) {
-    return res.status(403).send(page('Erro', 'Token inválido.', false));
+  if (!verifyToken(uid, tok)) {
+    return res.status(403).send(page('Erro', 'Token inválido ou expirado. Abra o dashboard para gerenciar seus alertas.', false));
   }
 
   try {
@@ -45,13 +86,6 @@ export default async function handler(req, res) {
     console.error('unsubscribe error:', e.message);
     return res.status(500).send(page('Erro', 'Não foi possível processar sua solicitação. Tente novamente ou acesse o painel.', false));
   }
-}
-
-function timingSafeEqual(a, b) {
-  // Manual constant-time comparison for strings of equal length
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
 }
 
 function page(title, msg, success) {

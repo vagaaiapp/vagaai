@@ -47,7 +47,7 @@ async function setCachedResult(hash, result) {
 
 // ─── Rate limit por IP (usuários anônimos) ────────────────────────────────────
 
-const IP_FREE_LIMIT = 3; // análises grátis por IP a cada 30 dias
+const IP_FREE_LIMIT = 1; // 1 análise gratuita por IP a cada 30 dias
 
 async function checkRateLimit(ip) {
   if (!SUPABASE_URL || !SUPABASE_KEY) return { allowed: true };
@@ -114,14 +114,68 @@ async function getUserFromToken(token) {
   }
 }
 
+// ─── Estorno de crédito em falha ─────────────────────────────────────────────
+// Chamado quando a IA falha APÓS o crédito já ter sido debitado.
+// Nunca lança erro — falha de estorno é logada mas não propaga.
+
+async function refundAnalysisCredit(userId, deductResult) {
+  if (!userId || !deductResult || !deductResult.ok) return;
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return;
+
+  // Estorno de crédito avulso — RPC atômica (credits + 1), sem race condition
+  if (deductResult.via === 'credits') {
+    try {
+      const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_user_credits`, {
+        method: 'POST',
+        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_user_id: userId }),
+      });
+      const rpcData = rpcRes.ok ? await rpcRes.json().catch(() => null) : null;
+      if (rpcData?.ok) {
+        console.log('refundAnalysisCredit: credit refunded for user', userId, 'new balance:', rpcData.credits);
+      } else {
+        console.error('refundAnalysisCredit: increment_user_credits failed', rpcData);
+      }
+    } catch (err) {
+      console.error('refundAnalysisCredit credits error:', err.message);
+    }
+    return;
+  }
+
+  // Estorno de cota mensal Starter — decrementa subscriptions.analyses_used_this_month
+  if (deductResult.plan === 'starter' || deductResult.via === 'starter') {
+    try {
+      const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/decrement_analyses_used`, {
+        method: 'POST',
+        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_user_id: userId }),
+      });
+      const rpcData = rpcRes.ok ? await rpcRes.json().catch(() => null) : null;
+      if (rpcData?.ok) {
+        console.log('refundAnalysisCredit: starter quota refunded for user', userId);
+      } else {
+        console.warn('refundAnalysisCredit: decrement_analyses_used returned', rpcData, '(may have no eligible subscription)');
+      }
+    } catch (err) {
+      console.error('refundAnalysisCredit starter error:', err.message);
+    }
+  }
+  // Pro: ilimitado, não há cota a estornar
+  // free_monthly / fail-open: nenhuma dedução real, nada a estornar
+}
+
 // ─── Check e incremento atômico via RPC ──────────────────────────────────────
-// A função SQL check_and_increment_analyses faz o check+increment numa única
-// transação com FOR UPDATE, evitando race conditions e falhas silenciosas.
+// Fail-closed: qualquer falha de infraestrutura retorna infrastructure_error.
+// Apenas erros de negócio (no_credits, plan_limit, invalid_plan) são esperados.
+// A IA só é chamada após confirmação atômica de consumo.
 
 async function checkAndDeductCredit(userId) {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return { ok: false, reason: 'config' };
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    return { ok: false, reason: 'infrastructure_error', detail: 'missing_config' };
+  }
 
   // 1. Verifica plano via RPC atômica (check + increment em uma transação)
+  let rpcResult;
   try {
     const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/check_and_increment_analyses`, {
       method: 'POST',
@@ -134,60 +188,104 @@ async function checkAndDeductCredit(userId) {
     });
 
     if (!rpcRes.ok) {
-      const errText = await rpcRes.text().catch(() => '');
-      console.error('check_and_increment_analyses RPC error:', rpcRes.status, errText);
-      // Infra falhou: fail-open (não bloquear usuário por falha de DB)
-      return { ok: true, via: 'rpc_error_failopen' };
+      // Infra falhou — FAIL-CLOSED: não autoriza
+      console.error('check_and_increment_analyses RPC HTTP error:', rpcRes.status);
+      return { ok: false, reason: 'infrastructure_error', detail: 'rpc_http_' + rpcRes.status };
     }
 
-    const result = await rpcRes.json();
-    // result.via === 'no_subscription' → sem assinatura, cai no sistema de créditos
-    if (result.via === 'no_subscription') {
-      // passa para o fallback de créditos abaixo
-    } else {
-      // tem assinatura: retorna resultado direto (ok:true ou ok:false/plan_limit)
-      return result;
-    }
+    rpcResult = await rpcRes.json();
   } catch (err) {
     console.error('checkAndDeductCredit RPC exception:', err.message);
-    // Infra falhou: fail-open
-    return { ok: true, via: 'rpc_exception_failopen' };
+    return { ok: false, reason: 'infrastructure_error', detail: 'rpc_exception' };
   }
 
-  // 2. Fallback: sistema de créditos avulsos (usuários sem assinatura ativa)
+  // 'no_subscription' → cai no sistema de créditos avulsos / free monthly
+  if (rpcResult && rpcResult.via !== 'no_subscription') {
+    // Tem assinatura — retorna diretamente (ok:true = pro/starter, ok:false = plan_limit/invalid_plan)
+    return rpcResult;
+  }
+
+  // 2. Fallback: créditos avulsos (usuários sem assinatura ativa)
+  let credRows;
   try {
     const getRes = await fetch(
       `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&select=credits`,
       { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
     );
-    const rows = await getRes.json();
-    if (!rows.length || rows[0].credits <= 0) return { ok: false, reason: 'no_credits' };
-    const current = rows[0].credits;
-    // Optimistic lock: filtra por credits=eq.current para evitar race condition entre
-    // duas requisições simultâneas — apenas uma vai conseguir atualizar a linha
-    const patchRes = await fetch(
+    if (!getRes.ok) {
+      console.error('user_credits GET failed:', getRes.status);
+      return { ok: false, reason: 'infrastructure_error', detail: 'credits_get_' + getRes.status };
+    }
+    credRows = await getRes.json();
+  } catch (err) {
+    console.error('checkAndDeductCredit credits GET exception:', err.message);
+    return { ok: false, reason: 'infrastructure_error', detail: 'credits_get_exception' };
+  }
+
+  if (!Array.isArray(credRows)) {
+    return { ok: false, reason: 'infrastructure_error', detail: 'credits_invalid_response' };
+  }
+
+  if (!credRows.length || credRows[0].credits <= 0) {
+    // Plano gratuito: 1 análise gratuita por usuário a cada 30 dias
+    try {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const freeCheckRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/analyses?user_id=eq.${encodeURIComponent(userId)}&created_at=gte.${encodeURIComponent(thirtyDaysAgo)}&select=id&limit=1`,
+        { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+      );
+      if (!freeCheckRes.ok) {
+        // Não conseguiu verificar uso gratuito — FAIL-CLOSED
+        console.error('free monthly check HTTP error:', freeCheckRes.status);
+        return { ok: false, reason: 'infrastructure_error', detail: 'free_check_' + freeCheckRes.status };
+      }
+      const freeRows = await freeCheckRes.json();
+      if (Array.isArray(freeRows) && freeRows.length === 0) {
+        return { ok: true, via: 'free_monthly', plan: 'free' };
+      }
+    } catch (freeErr) {
+      console.error('free monthly check exception:', freeErr.message);
+      return { ok: false, reason: 'infrastructure_error', detail: 'free_check_exception' };
+    }
+    return { ok: false, reason: 'no_credits' };
+  }
+
+  const current = credRows[0].credits;
+  // Atomic optimistic-lock: só a requisição que encontrar credits=current vai atualizar
+  let patchRes;
+  try {
+    patchRes = await fetch(
       `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&credits=eq.${current}`,
       {
         method: 'PATCH',
-        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
         body: JSON.stringify({ credits: current - 1, updated_at: new Date().toISOString() }),
       }
     );
-    if (!patchRes.ok) {
-      const errText = await patchRes.text().catch(() => '');
-      console.error('user_credits PATCH failed:', patchRes.status, errText);
-      return { ok: false, reason: 'patch_failed' };
-    }
-    const updated = await patchRes.json();
-    // Se nenhuma linha foi atualizada = crédito foi usado por outra requisição simultânea
-    if (!Array.isArray(updated) || updated.length === 0) {
-      return { ok: false, reason: 'no_credits' };
-    }
-    return { ok: true, remaining: current - 1, plan: 'credits', via: 'credits' };
   } catch (err) {
-    console.error('checkAndDeductCredit credits error:', err);
-    return { ok: false, reason: 'error' };
+    console.error('user_credits PATCH exception:', err.message);
+    return { ok: false, reason: 'infrastructure_error', detail: 'credits_patch_exception' };
   }
+
+  if (!patchRes.ok) {
+    console.error('user_credits PATCH failed:', patchRes.status);
+    return { ok: false, reason: 'infrastructure_error', detail: 'credits_patch_' + patchRes.status };
+  }
+
+  let updated;
+  try { updated = await patchRes.json(); } catch { updated = []; }
+
+  // Nenhuma linha atualizada = race condition, outro request consumiu o crédito
+  if (!Array.isArray(updated) || updated.length === 0) {
+    return { ok: false, reason: 'no_credits' };
+  }
+
+  return { ok: true, remaining: current - 1, plan: 'credits', via: 'credits' };
 }
 
 async function saveAnalysis(userId, score, nivel, jobExcerpt, result, hash) {
@@ -315,6 +413,112 @@ async function checkAndAwardMilestones(userId) {
   }
 }
 
+// ─── Rate limit por usuário autenticado (create_cv) ──────────────────────────
+// Em memória — suficiente por instância serverless; combina com a cota do plano.
+const _cvUserHits = new Map();
+const CV_USER_LIMIT = 5;       // max CVs gerados por janela
+const CV_USER_WINDOW_MS = 60 * 60 * 1000; // 1 hora
+
+function checkCvRateLimit(userId) {
+  const now = Date.now();
+  const entry = _cvUserHits.get(userId) || { count: 0, resetAt: now + CV_USER_WINDOW_MS };
+  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + CV_USER_WINDOW_MS; }
+  entry.count++;
+  _cvUserHits.set(userId, entry);
+  return entry.count <= CV_USER_LIMIT;
+}
+
+// ─── Dedução de crédito exclusiva para create_cv ─────────────────────────────
+// Diferença em relação a checkAndDeductCredit: BLOQUEIA usuários Free.
+// Não usa a gratuidade mensal de análise (free_monthly) para liberar CV.
+
+async function checkAndDeductCreditForCV(userId) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    return { ok: false, reason: 'infrastructure_error', detail: 'missing_config' };
+  }
+
+  // 1. Verifica plano via RPC atômica
+  let rpcResult;
+  try {
+    const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/check_and_increment_analyses`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ p_user_id: userId }),
+    });
+    if (!rpcRes.ok) {
+      console.error('create_cv: check_and_increment_analyses HTTP error:', rpcRes.status);
+      return { ok: false, reason: 'infrastructure_error', detail: 'rpc_http_' + rpcRes.status };
+    }
+    rpcResult = await rpcRes.json();
+  } catch (err) {
+    console.error('create_cv: RPC exception:', err.message);
+    return { ok: false, reason: 'infrastructure_error', detail: 'rpc_exception' };
+  }
+
+  // 'no_subscription' → cai nos créditos avulsos, mas NUNCA em free_monthly
+  if (rpcResult && rpcResult.via !== 'no_subscription') {
+    // Pro ou Starter → resultado da RPC é definitivo
+    return rpcResult;
+  }
+
+  // 2. Sem assinatura: verifica créditos avulsos
+  let credRows;
+  try {
+    const getRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&select=credits`,
+      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+    );
+    if (!getRes.ok) {
+      return { ok: false, reason: 'infrastructure_error', detail: 'credits_get_' + getRes.status };
+    }
+    credRows = await getRes.json();
+  } catch (err) {
+    return { ok: false, reason: 'infrastructure_error', detail: 'credits_get_exception' };
+  }
+
+  if (!Array.isArray(credRows) || !credRows.length || credRows[0].credits <= 0) {
+    // Free sem créditos: bloqueado para create_cv
+    return { ok: false, reason: 'no_credits' };
+  }
+
+  const current = credRows[0].credits;
+  let patchRes;
+  try {
+    patchRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&credits=eq.${current}`,
+      {
+        method: 'PATCH',
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
+        body: JSON.stringify({ credits: current - 1, updated_at: new Date().toISOString() }),
+      }
+    );
+  } catch (err) {
+    return { ok: false, reason: 'infrastructure_error', detail: 'credits_patch_exception' };
+  }
+
+  if (!patchRes.ok) {
+    return { ok: false, reason: 'infrastructure_error', detail: 'credits_patch_' + patchRes.status };
+  }
+
+  let updated;
+  try { updated = await patchRes.json(); } catch { updated = []; }
+
+  if (!Array.isArray(updated) || updated.length === 0) {
+    return { ok: false, reason: 'no_credits' };
+  }
+
+  return { ok: true, remaining: current - 1, plan: 'credits', via: 'credits' };
+}
+
 // ─── Handler principal ────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
@@ -322,37 +526,62 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // ── Modo: criar primeiro currículo ──────────────────────────────────────────
+  // ── Modo: criar currículo otimizado ─────────────────────────────────────────
   const { action } = req.body || {};
   if (action === 'create_cv') {
-    // Requer autenticação
+    // 1. Autenticação obrigatória
     const cvAuthHeader = req.headers['authorization'] || '';
     const cvToken = cvAuthHeader.startsWith('Bearer ') ? cvAuthHeader.slice(7).trim() : null;
     if (!cvToken) return res.status(401).json({ error: 'Autenticação necessária para criar currículo.' });
     const cvUser = await getUserFromToken(cvToken);
     if (!cvUser?.id) return res.status(401).json({ error: 'Token inválido. Faça login novamente.' });
 
-    const { nome, cargo_objetivo, experiencias, formacao, habilidades, job: jobCtx } = req.body;
-    if (!nome || !experiencias) {
-      return res.status(400).json({ error: 'Nome e experiência são obrigatórios.' });
+    // 2. Rate limit por usuário
+    if (!checkCvRateLimit(cvUser.id)) {
+      return res.status(429).json({ error: 'Limite de geração de CVs atingido. Aguarde antes de tentar novamente.' });
     }
-    // Valida tamanho dos campos
-    if (nome.length > 200)            return res.status(400).json({ error: 'Nome muito longo (máx. 200 caracteres).' });
-    if (experiencias.length > 10000)  return res.status(400).json({ error: 'Experiência muito longa (máx. 10.000 caracteres).' });
-    if ((formacao   || '').length > 5000) return res.status(400).json({ error: 'Formação muito longa (máx. 5.000 caracteres).' });
-    if ((habilidades|| '').length > 2000) return res.status(400).json({ error: 'Habilidades muito longas (máx. 2.000 caracteres).' });
-    if ((jobCtx     || '').length > 5000) return res.status(400).json({ error: 'Descrição da vaga muito longa (máx. 5.000 caracteres).' });
+
+    // 3. Validação de campos
+    const { nome, cargo_objetivo, experiencias, formacao, habilidades, job: jobCtx } = req.body;
+    if (!nome || typeof nome !== 'string' || !nome.trim()) {
+      return res.status(400).json({ error: 'Nome é obrigatório.' });
+    }
+    if (!experiencias || typeof experiencias !== 'string' || !experiencias.trim()) {
+      return res.status(400).json({ error: 'Experiência profissional é obrigatória.' });
+    }
+    if (nome.length > 200)              return res.status(400).json({ error: 'Nome muito longo (máx. 200 caracteres).' });
+    if (experiencias.length > 10000)    return res.status(400).json({ error: 'Experiência muito longa (máx. 10.000 caracteres).' });
+    if ((formacao    || '').length > 5000)  return res.status(400).json({ error: 'Formação muito longa (máx. 5.000 caracteres).' });
+    if ((habilidades || '').length > 2000)  return res.status(400).json({ error: 'Habilidades muito longas (máx. 2.000 caracteres).' });
+    if ((jobCtx      || '').length > 5000)  return res.status(400).json({ error: 'Descrição da vaga muito longa (máx. 5.000 caracteres).' });
+    if ((cargo_objetivo || '').length > 200) return res.status(400).json({ error: 'Cargo objetivo muito longo (máx. 200 caracteres).' });
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return res.status(500).json({ error: 'Chave de API não configurada.' });
     }
 
+    // 4. Verifica plano e debita cota/crédito ANTES de chamar a IA
+    //    Free sem créditos = bloqueado (não reutiliza gratuidade mensal de análise)
+    const cvDeduct = await checkAndDeductCreditForCV(cvUser.id);
+    if (!cvDeduct.ok) {
+      if (cvDeduct.reason === 'no_credits') {
+        return res.status(402).json({ error: 'sem_creditos', message: 'CV otimizado não está disponível no plano gratuito. Assine um plano ou adquira créditos.' });
+      }
+      if (cvDeduct.reason === 'plan_limit') {
+        return res.status(402).json({ error: 'plan_limit', message: 'Limite do plano Starter atingido para este mês.' });
+      }
+      if (cvDeduct.reason === 'invalid_plan') {
+        return res.status(403).json({ error: 'invalid_plan', message: 'Plano não reconhecido.' });
+      }
+      // infrastructure_error — FAIL-CLOSED: não executa IA
+      console.error('create_cv: deduction failed (infrastructure):', cvDeduct.detail);
+      return res.status(503).json({ error: 'service_unavailable', message: 'Serviço temporariamente indisponível. Tente novamente em instantes.' });
+    }
+
+    // 5. Chama a IA somente após dedução confirmada
     const cvPrompt = `Você é especialista em criação de currículos otimizados para sistemas ATS (Applicant Tracking System). Crie um currículo profissional completo em texto puro para o candidato abaixo.
 
-${jobCtx ? `VAGA ALVO — use as keywords desta vaga para otimizar o currículo:
-${jobCtx.substring(0, 2000)}
-
-` : ''}DADOS DO CANDIDATO:
+${jobCtx ? `VAGA ALVO — use as keywords desta vaga para otimizar o currículo:\n${jobCtx.substring(0, 2000)}\n\n` : ''}DADOS DO CANDIDATO:
 Nome: ${nome}
 ${cargo_objetivo ? `Cargo / Objetivo: ${cargo_objetivo}` : ''}
 ${experiencias ? `Experiência profissional: ${experiencias}` : ''}
@@ -387,16 +616,38 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
         }),
       });
       if (!response.ok) {
-        const errText = await response.text().catch(() => '');
-        console.error('create_cv Anthropic error:', response.status, errText);
+        // IA falhou: estorna somente se houve cobrança real
+        await refundAnalysisCredit(cvUser.id, cvDeduct);
         return res.status(500).json({ error: 'Erro ao gerar currículo. Tente novamente.' });
       }
       const data = await response.json();
       const cvText = data.content?.[0]?.text || '';
-      if (!cvText.trim()) return res.status(500).json({ error: 'Resposta vazia da IA.' });
+      if (!cvText.trim()) {
+        await refundAnalysisCredit(cvUser.id, cvDeduct);
+        return res.status(500).json({ error: 'Resposta vazia da IA.' });
+      }
+      // 6. Registra uso de forma auditável
+      if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
+        fetch(`${SUPABASE_URL}/rest/v1/cv_generations`, {
+          method: 'POST',
+          headers: {
+            apikey: SUPABASE_SERVICE_KEY,
+            Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({
+            user_id: cvUser.id,
+            plan: cvDeduct.plan || cvDeduct.via || 'unknown',
+            via: cvDeduct.via,
+            created_at: new Date().toISOString(),
+          }),
+        }).catch(e => console.error('cv_generations insert error:', e.message));
+      }
       return res.status(200).json({ cv_text: cvText.trim() });
     } catch (err) {
-      console.error('create_cv error:', err);
+      console.error('create_cv error:', err.message);
+      await refundAnalysisCredit(cvUser.id, cvDeduct).catch(() => {});
       return res.status(500).json({ error: 'Erro interno. Tente novamente.' });
     }
   }
@@ -436,8 +687,12 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
         if (deduct.reason === 'no_credits' || deduct.reason === 'plan_limit') {
           return res.status(402).json({ error: 'sem_creditos' });
         }
-        // Só fail-open em erros de infra (config, patch_failed, error) — nunca em limites de plano
-        console.warn('Credit deduction failed on cache hit:', deduct.reason, '— fail-open');
+        if (deduct.reason === 'invalid_plan') {
+          return res.status(403).json({ error: 'invalid_plan' });
+        }
+        // infrastructure_error — FAIL-CLOSED
+        console.error('Credit deduction infrastructure error on cache hit:', deduct.detail);
+        return res.status(503).json({ error: 'service_unavailable', message: 'Serviço temporariamente indisponível.' });
       }
       // Salva no histórico sem duplicar (verifica se já existe entrada recente idêntica)
       const cachedAnalysisId = await saveAnalysis(authenticatedUserId, cached.score, cached.nivel, job, cached, hash);
@@ -466,14 +721,19 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
 
   // ─── Cache miss: verifica limite / créditos ───────────────────────────────
   let _ip = null;
+  let _deductResult = { ok: false }; // rastreia o resultado para estorno em falha
   if (authenticatedUserId) {
-    const deduct = await checkAndDeductCredit(authenticatedUserId);
-    if (!deduct.ok) {
-      if (deduct.reason === 'no_credits' || deduct.reason === 'plan_limit') {
+    _deductResult = await checkAndDeductCredit(authenticatedUserId);
+    if (!_deductResult.ok) {
+      if (_deductResult.reason === 'no_credits' || _deductResult.reason === 'plan_limit') {
         return res.status(402).json({ error: 'sem_creditos' });
       }
-      // Só fail-open em erros de infra (config, patch_failed, error) — nunca em limites de plano
-      console.warn('Credit deduction failed:', deduct.reason, '— fail-open');
+      if (_deductResult.reason === 'invalid_plan') {
+        return res.status(403).json({ error: 'invalid_plan' });
+      }
+      // infrastructure_error — FAIL-CLOSED: não executa IA
+      console.error('Credit deduction infrastructure error:', _deductResult.detail);
+      return res.status(503).json({ error: 'service_unavailable', message: 'Serviço temporariamente indisponível. Tente novamente em instantes.' });
     }
   } else {
     _ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
@@ -574,7 +834,14 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
     "pontos_de_atencao": [
       "<sinal de atenção ou ambiguidade percebida na descrição da vaga>"
     ]
-  }
+  },
+  "prioridades": [
+    {"titulo": "<ação concreta e mais impactante para aumentar a compatibilidade>", "explicacao": "<por que essa ação tem o maior impacto para essa vaga específica>"},
+    {"titulo": "<segunda ação mais impactante>", "explicacao": "<justificativa objetiva>"},
+    {"titulo": "<terceira ação mais impactante>", "explicacao": "<justificativa objetiva>"}
+  ],
+  "keywords_parcialmente_encontradas": ["<keyword presente no currículo mas mencionada superficialmente ou sem evidência quantificável — DEVE ser mutuamente exclusiva com keywords_encontradas e keywords_faltando>"],
+  "score_estimado_apos_ajustes": <número inteiro de 0 a 100 estimando o score se o candidato implementar as 3 prioridades acima>
 }`;
 
   try {
@@ -587,7 +854,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5',
-        max_tokens: 4000,
+        max_tokens: 4500,
         temperature: 0,   // determinístico — mesmo input, mesmo output
         messages: [{ role: 'user', content: prompt }],
       }),
@@ -605,6 +872,8 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
         else if (type === 'overloaded_error') userMsg = 'Serviço temporariamente sobrecarregado. Tente em alguns segundos.';
         else if (type === 'rate_limit_error') userMsg = 'Limite de uso atingido. Tente novamente em instantes.';
       } catch (_) {}
+      // Estorna crédito: IA falhou antes de produzir resultado
+      if (authenticatedUserId) await refundAnalysisCredit(authenticatedUserId, _deductResult);
       return res.status(500).json({ error: userMsg });
     }
 
@@ -612,6 +881,8 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
     const text = data.content?.[0]?.text || '';
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
+      // Estorna crédito: resposta inválida (IA não retornou JSON)
+      if (authenticatedUserId) await refundAnalysisCredit(authenticatedUserId, _deductResult);
       return res.status(500).json({ error: 'Resposta inválida da IA.' });
     }
 
@@ -654,6 +925,8 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
     return res.status(200).json(result);
   } catch (err) {
     console.error('Handler error:', err);
+    // Estorna crédito em erro inesperado (timeout, rede, etc.)
+    if (authenticatedUserId) await refundAnalysisCredit(authenticatedUserId, _deductResult).catch(() => {});
     return res.status(500).json({ error: 'Erro interno. Tente novamente.' });
   }
 }

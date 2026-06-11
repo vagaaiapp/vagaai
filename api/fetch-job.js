@@ -1,58 +1,190 @@
 // /api/fetch-job.js
-// Extrai texto de uma vaga a partir da URL usando múltiplas estratégias:
-// 1. Jina AI Reader (r.jina.ai) — renderiza JS, funciona na maioria dos job boards
-// 2. Fetch direto com parser HTML — fallback para sites simples
+// Extrai texto de uma vaga a partir da URL.
+//
+// SSRF: dns.lookup(all:true) resolve todos os IPs antes de qualquer conexão,
+// rejeita IPs privados/reservados/loopback/metadata, usa redirect:manual,
+// valida cada salto antes de seguir. Sem DNS rebinding: o lookup ocorre por
+// requisição, não só na validação inicial.
 
-const MAX_RESPONSE_BYTES = 512 * 1024; // 512 KB
+import { lookup as dnsLookup } from 'dns';
+import { promisify } from 'util';
 
-// ── SSRF protection ───────────────────────────────────────────────────────────
+const lookupAll = promisify((hostname, opts, cb) => dnsLookup(hostname, opts, cb));
 
-function isBlockedHost(hostname) {
-  const h = hostname.toLowerCase().replace(/^\[|\]$/g, ''); // strip IPv6 brackets
+const MAX_RESPONSE_BYTES = 512 * 1024;
+const MAX_REDIRECTS = 5;
+const FETCH_TIMEOUT_MS = 10000;
+const MAX_CONTENT_TYPE_LEN = 256;
 
-  if (h === '' || h === 'localhost') return true;
-  if (h === '::1' || h === '0:0:0:0:0:0:0:1' || h === '0000:0000:0000:0000:0000:0000:0000:0001') return true;
+// ── SSRF: bloqueio de IPs ─────────────────────────────────────────────────────
 
-  // Cloud metadata / link-local special hosts
-  const blocked = [
-    '169.254.169.254',     // AWS / Azure / GCP metadata
-    'metadata.google.internal',
-    'instance-data',
-    'metadata.internal',
-    '100.100.100.200',     // Alibaba metadata
-  ];
-  if (blocked.includes(h)) return true;
-
-  // IPv4 private / reserved ranges
-  const m = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
-  if (m) {
-    const [a, b, c, d] = [+m[1], +m[2], +m[3], +m[4]];
-    if (a === 0) return true;                               // 0.0.0.0/8
-    if (a === 10) return true;                              // 10.0.0.0/8
-    if (a === 127) return true;                             // 127.0.0.0/8 loopback
-    if (a === 100 && b >= 64 && b <= 127) return true;     // 100.64.0.0/10 shared
-    if (a === 169 && b === 254) return true;                // 169.254.0.0/16 link-local
-    if (a === 172 && b >= 16 && b <= 31) return true;      // 172.16.0.0/12 private
-    if (a === 192 && b === 0 && c === 2) return true;      // 192.0.2.0/24 TEST-NET
-    if (a === 192 && b === 168) return true;               // 192.168.0.0/16 private
-    if (a === 198 && b >= 18 && b <= 19) return true;      // 198.18.0.0/15 benchmark
-    if (a === 203 && b === 0 && c === 113) return true;    // 203.0.113.0/24 TEST-NET-3
-    if (a === 240) return true;                             // 240.0.0.0/4 reserved
-    if (a === 255 && b === 255 && c === 255 && d === 255) return true; // broadcast
-  }
+function isPrivateIPv4(a, b, c, d) {
+  if (a === 0) return true;
+  if (a === 10) return true;
+  if (a === 127) return true;
+  if (a === 100 && b >= 64 && b <= 127) return true;
+  if (a === 169 && b === 254) return true;
+  if (a === 172 && b >= 16 && b <= 31) return true;
+  if (a === 192 && b === 0 && c === 2) return true;
+  if (a === 192 && b === 168) return true;
+  if (a === 198 && b >= 18 && b <= 19) return true;
+  if (a === 203 && b === 0 && c === 113) return true;
+  if (a === 224) return true;  // multicast 224.0.0.0/4
+  if (a === 240) return true;  // reserved
+  if (a === 255 && b === 255 && c === 255 && d === 255) return true;
   return false;
 }
 
-function validateJobUrl(raw) {
+function isBlockedIPString(ip) {
+  const h = (ip || '').toLowerCase().replace(/^\[|\]$/g, '').trim();
+  if (!h) return true;
+
+  // Loopback / link-local / private IPv6
+  if (h === '::1' || h === '::') return true;
+  if (h.startsWith('fe80:')) return true;  // link-local
+  if (h.startsWith('fc') || h.startsWith('fd')) return true; // ULA
+  if (h.startsWith('ff')) return true;  // multicast
+  // IPv4-mapped in IPv6: ::ffff:127.0.0.1 or ::ffff:7f00:1
+  const v4mapped = h.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+  if (v4mapped) {
+    const parts = v4mapped[1].split('.').map(Number);
+    if (parts.length === 4) return isPrivateIPv4(...parts);
+  }
+  // IPv4-in-IPv6 hex form: ::ffff:7f00:0001
+  const v4hex = h.match(/^::ffff:([0-9a-f]{4}):([0-9a-f]{4})$/i);
+  if (v4hex) {
+    const hi = parseInt(v4hex[1], 16), lo = parseInt(v4hex[2], 16);
+    return isPrivateIPv4((hi >> 8) & 0xff, hi & 0xff, (lo >> 8) & 0xff, lo & 0xff);
+  }
+
+  const BLOCKED_LITERAL = [
+    'localhost',
+    '169.254.169.254',     // AWS metadata
+    '100.100.100.200',     // Alibaba metadata
+    'metadata.google.internal',
+    'instance-data',
+    'metadata.internal',
+  ];
+  if (BLOCKED_LITERAL.includes(h)) return true;
+
+  // Decimal-encoded IPv4: 2130706433 = 127.0.0.1
+  if (/^\d{8,10}$/.test(h)) {
+    const n = parseInt(h, 10);
+    return isPrivateIPv4((n >>> 24) & 0xff, (n >>> 16) & 0xff, (n >>> 8) & 0xff, n & 0xff);
+  }
+  // Hex-encoded: 0x7f000001
+  if (/^0x[0-9a-f]+$/i.test(h)) {
+    const n = parseInt(h, 16);
+    return isPrivateIPv4((n >>> 24) & 0xff, (n >>> 16) & 0xff, (n >>> 8) & 0xff, n & 0xff);
+  }
+  // Octal: 0177.0.0.1
+  if (/^0\d+/.test(h)) {
+    try {
+      const parts = h.split('.').map(p => parseInt(p, 8));
+      if (parts.length === 4 && parts.every(p => !isNaN(p))) return isPrivateIPv4(...parts);
+    } catch {}
+  }
+
+  // Dotted IPv4
+  const m4 = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (m4) return isPrivateIPv4(+m4[1], +m4[2], +m4[3], +m4[4]);
+
+  return false;
+}
+
+function validateUrl(raw) {
   let parsed;
   try { parsed = new URL(raw); } catch { return { ok: false, reason: 'URL inválida' }; }
   if (!['http:', 'https:'].includes(parsed.protocol)) {
     return { ok: false, reason: 'Protocolo não permitido' };
   }
-  if (isBlockedHost(parsed.hostname)) {
+  if (isBlockedIPString(parsed.hostname)) {
     return { ok: false, reason: 'Destino não permitido' };
   }
-  return { ok: true };
+  return { ok: true, parsed };
+}
+
+// dns.lookup com all:true para evitar DNS rebinding:
+// resolve TODOS os IPs do hostname e rejeita se qualquer um for privado.
+async function resolveDnsAndValidate(hostname) {
+  // Rejeita IPs literais blocklist (hostname pode já ser um IP)
+  if (isBlockedIPString(hostname)) {
+    return { ok: false, reason: 'Destino não permitido' };
+  }
+  try {
+    const entries = await lookupAll(hostname, { all: true, verbatim: true });
+    if (!entries || entries.length === 0) {
+      return { ok: false, reason: 'DNS sem resposta' };
+    }
+    for (const entry of entries) {
+      if (isBlockedIPString(entry.address)) {
+        return { ok: false, reason: 'Destino não permitido' };
+      }
+    }
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, reason: 'DNS sem resposta' };
+  }
+}
+
+// Fetch com redirect:manual, validação de cada salto e DNS re-resolve por salto
+async function safeFetch(url, headers, timeoutMs = FETCH_TIMEOUT_MS) {
+  let currentUrl = url;
+  let redirectCount = 0;
+
+  while (redirectCount <= MAX_REDIRECTS) {
+    const urlCheck = validateUrl(currentUrl);
+    if (!urlCheck.ok) throw new Error(urlCheck.reason);
+
+    // Re-resolve DNS a cada salto para evitar DNS rebinding entre saltos
+    const dnsCheck = await resolveDnsAndValidate(urlCheck.parsed.hostname);
+    if (!dnsCheck.ok) throw new Error(dnsCheck.reason);
+
+    const fetchRes = await fetch(currentUrl, {
+      headers,
+      redirect: 'manual',
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+
+    // Segue redirecionamentos 3xx
+    if (fetchRes.status >= 300 && fetchRes.status < 400) {
+      const location = fetchRes.headers.get('location');
+      if (!location) throw new Error('Redirecionamento sem Location');
+
+      const nextUrl = new URL(location, currentUrl).href;
+
+      // Bloqueia downgrade HTTPS → HTTP
+      if (currentUrl.startsWith('https://') && nextUrl.startsWith('http://')) {
+        throw new Error('Redirecionamento HTTPS→HTTP bloqueado');
+      }
+      // Bloqueia protocolos não HTTP/HTTPS no destino
+      if (!nextUrl.startsWith('http://') && !nextUrl.startsWith('https://')) {
+        throw new Error('Protocolo de redirecionamento não permitido');
+      }
+
+      redirectCount++;
+      if (redirectCount > MAX_REDIRECTS) throw new Error('Redirecionamentos excessivos');
+      currentUrl = nextUrl;
+      continue;
+    }
+
+    return fetchRes;
+  }
+  throw new Error('Redirecionamentos excessivos');
+}
+
+// ── Rate limit por IP (em memória) ────────────────────────────────────────────
+const _ipHits = new Map();
+const RATE_LIMIT = 20;
+const RATE_WINDOW_MS = 60000;
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const entry = _ipHits.get(ip) || { count: 0, resetAt: now + RATE_WINDOW_MS };
+  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + RATE_WINDOW_MS; }
+  entry.count++;
+  _ipHits.set(ip, entry);
+  return entry.count <= RATE_LIMIT;
 }
 
 // ── Handler ────────────────────────────────────────────────────────────────────
@@ -61,39 +193,40 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
+  const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+    || req.headers['x-real-ip'] || 'unknown';
+  if (!checkRateLimit(clientIp)) {
+    return res.status(429).json({ error: 'Muitas requisições. Tente novamente em um minuto.' });
+  }
+
   const url = req.query.url;
   if (!url) return res.status(400).json({ error: 'URL obrigatória' });
 
   const decoded = decodeURIComponent(url);
 
-  const validation = validateJobUrl(decoded);
-  if (!validation.ok) return res.status(400).json({ error: validation.reason });
+  // Validação inicial (protocolo + hostname blacklist literal)
+  const initialCheck = validateUrl(decoded);
+  if (!initialCheck.ok) return res.status(400).json({ error: 'URL não permitida' });
+
+  // DNS pre-resolution (não expõe detalhes ao cliente)
+  const dnsCheck = await resolveDnsAndValidate(initialCheck.parsed.hostname);
+  if (!dnsCheck.ok) return res.status(400).json({ error: 'URL não permitida' });
 
   // ── Estratégia 1: Jina AI Reader ─────────────────────────────────────────────
-  // Converte qualquer página em texto limpo, inclusive sites com JS rendering
   try {
-    const jinaRes = await fetch('https://r.jina.ai/' + decoded, {
-      headers: {
-        'Accept': 'text/plain',
-        'X-Return-Format': 'text',
-        'User-Agent': 'VagaAI/1.0',
-      },
-      signal: AbortSignal.timeout(12000),
-    });
+    const jinaUrl = 'https://r.jina.ai/' + decoded;
+    const jinaRes = await safeFetch(jinaUrl, {
+      'Accept': 'text/plain',
+      'X-Return-Format': 'text',
+      'User-Agent': 'VagaAI/1.0',
+    }, 12000);
 
     if (jinaRes.ok) {
-      // Limita tamanho da resposta
-      const reader = jinaRes.body.getReader();
-      const chunks = [];
-      let totalBytes = 0;
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        totalBytes += value.byteLength;
-        if (totalBytes > MAX_RESPONSE_BYTES) { reader.cancel(); break; }
-        chunks.push(value);
+      const ct = (jinaRes.headers.get('content-type') || '').slice(0, MAX_CONTENT_TYPE_LEN);
+      if (!ct.includes('text/') && !ct.includes('application/json') && ct !== '') {
+        throw new Error('Content-Type inesperado: ' + ct);
       }
-      const raw = new TextDecoder().decode(Buffer.concat(chunks.map(c => Buffer.from(c))));
+      const raw = await readBodyLimited(jinaRes);
       const text = cleanText(raw, 8000);
       if (text.length >= 80) {
         return res.status(200).json({ text, length: text.length, source: 'jina' });
@@ -103,37 +236,21 @@ export default async function handler(req, res) {
     console.warn('Jina fetch failed:', e.message);
   }
 
-  // ── Estratégia 2: Fetch direto com parser HTML ────────────────────────────────
+  // ── Estratégia 2: Fetch direto ────────────────────────────────────────────────
   try {
-    const directRes = await fetch(decoded, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)',
-        'Accept': 'text/html,application/xhtml+xml',
-      },
-      signal: AbortSignal.timeout(8000),
-      // Não seguir redirecionamentos para IPs privados
-      redirect: 'follow',
-    });
+    const directRes = await safeFetch(decoded, {
+      'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)',
+      'Accept': 'text/html,application/xhtml+xml',
+    }, 8000);
 
     if (!directRes.ok) throw new Error(`HTTP ${directRes.status}`);
 
-    // Validate final URL after redirects
-    const finalUrl = directRes.url || decoded;
-    const finalValidation = validateJobUrl(finalUrl);
-    if (!finalValidation.ok) throw new Error('Redirecionamento para destino não permitido');
-
-    // Limita tamanho da resposta
-    const reader2 = directRes.body.getReader();
-    const chunks2 = [];
-    let totalBytes2 = 0;
-    while (true) {
-      const { done, value } = await reader2.read();
-      if (done) break;
-      totalBytes2 += value.byteLength;
-      if (totalBytes2 > MAX_RESPONSE_BYTES) { reader2.cancel(); break; }
-      chunks2.push(value);
+    const ct = (directRes.headers.get('content-type') || '').slice(0, MAX_CONTENT_TYPE_LEN);
+    if (ct && !ct.includes('text/') && !ct.includes('application/xhtml')) {
+      throw new Error('Content-Type não suportado: ' + ct);
     }
-    const html = new TextDecoder().decode(Buffer.concat(chunks2.map(c => Buffer.from(c))));
+
+    const html = await readBodyLimited(directRes);
     const text = htmlToText(html, 8000);
     if (text.length >= 80) {
       return res.status(200).json({ text, length: text.length, source: 'direct' });
@@ -147,6 +264,20 @@ export default async function handler(req, res) {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+async function readBodyLimited(fetchRes) {
+  const reader = fetchRes.body.getReader();
+  const chunks = [];
+  let totalBytes = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    totalBytes += value.byteLength;
+    if (totalBytes > MAX_RESPONSE_BYTES) { reader.cancel(); break; }
+    chunks.push(value);
+  }
+  return new TextDecoder().decode(Buffer.concat(chunks.map(c => Buffer.from(c))));
+}
 
 function htmlToText(html, maxLen) {
   return html
@@ -164,8 +295,5 @@ function htmlToText(html, maxLen) {
 }
 
 function cleanText(text, maxLen) {
-  return text
-    .replace(/\s{3,}/g, '\n\n')
-    .trim()
-    .slice(0, maxLen);
+  return text.replace(/\s{3,}/g, '\n\n').trim().slice(0, maxLen);
 }

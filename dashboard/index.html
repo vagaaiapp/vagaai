@@ -2047,7 +2047,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
             <div><div class="hm-val" id="planoVagas">—</div><div class="hm-lbl">Vagas rastreadas</div></div>
           </div>
         </div>
-        <!-- Card plano atual -->
+        <!-- Card plano atual — totalmente dinâmico via loadSubscriptionData() -->
         <div style="flex:1;background:var(--bg-card);border-radius:14px;padding:22px 24px;box-shadow:var(--sh-card)">
           <div style="display:flex;align-items:center;gap:5px;margin-bottom:18px;">
             <div style="width:8px;height:8px;border-radius:50%;background:#ff5f57"></div>
@@ -2057,29 +2057,29 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           </div>
           <div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);margin-bottom:12px;">Seu plano atual</div>
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
-            <div style="width:40px;height:40px;background:var(--s-grn-bg);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">⭐</div>
+            <div style="width:40px;height:40px;background:var(--s-grn-bg);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0" id="planoCardIcon">⭐</div>
             <div>
-              <div style="font-size:16px;font-weight:800;color:var(--t1)">Pro</div>
-              <div style="font-size:11px;color:var(--gb-emerald);font-weight:600">Ativo · renova em 20 dias</div>
+              <div style="font-size:16px;font-weight:800;color:var(--t1)" id="planoCardNome">—</div>
+              <div style="font-size:11px;color:var(--gb-emerald);font-weight:600" id="planoCardStatus">Carregando...</div>
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:16px;">
             <div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;">
-              <span style="color:var(--t3)">Análises</span><span style="font-weight:700;color:var(--t1)">Ilimitadas</span>
+              <span style="color:var(--t3)">Análises</span><span style="font-weight:700;color:var(--t1)" id="planoCardAnalises">—</span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;">
-              <span style="color:var(--t3)">CV Otimizado</span><span style="color:var(--gb-emerald);font-weight:600">✓ Incluído</span>
+              <span style="color:var(--t3)">CV Otimizado</span><span id="planoCardCv" style="font-weight:600">—</span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;">
-              <span style="color:var(--t3)">Simulador de entrevista</span><span style="color:var(--gb-emerald);font-weight:600">✓ Incluído</span>
+              <span style="color:var(--t3)">Simulador de entrevista</span><span id="planoCardEntrevista" style="font-weight:600">—</span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;">
               <span style="color:var(--t3)">Rastreador de vagas</span><span style="color:var(--gb-emerald);font-weight:600">✓ Incluído</span>
             </div>
           </div>
           <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:11px;color:var(--t3)">R$39,90/mês · Renova automaticamente</span>
-            <span style="font-size:10.5px;color:var(--gb-emerald);font-weight:600;cursor:pointer" id="planoRenovacao" onclick="openStripePortal(this)">Gerenciar →</span>
+            <span style="font-size:11px;color:var(--t3)" id="planoCardPreco"></span>
+            <span id="planoRenovacao" style="font-size:10.5px;font-weight:600;cursor:pointer"></span>
           </div>
         </div>
       </div>
@@ -2087,8 +2087,9 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
 
     <div class="grid-3">
       <!-- Starter -->
-      <div class="plan-tile">
-        <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;">Starter</div>
+      <div class="plan-tile" id="planTileStarter" style="position:relative;">
+        <div id="planBadgeStarter" style="display:none;position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--gb-emerald);color:#fff;font-size:10px;font-weight:700;padding:3px 16px;border-radius:4px;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;">Plano atual</div>
+        <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;" id="planLabelStarter">Starter</div>
         <div style="font-size:30px;font-weight:800;letter-spacing:-1.5px;margin-bottom:4px;">R$19<span style="font-size:15px;font-weight:400;color:var(--t3)">,90/mês</span></div>
         <div style="font-size:12px;color:var(--t3);margin-bottom:22px;">Para quem está começando</div>
         <ul style="list-style:none;font-size:13px;color:var(--t2);display:flex;flex-direction:column;gap:10px;margin-bottom:26px;">
@@ -2098,13 +2099,13 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           <li style="display:flex;gap:8px;"><span style="color:var(--gb-emerald)">✓</span> Carta de apresentação</li>
           <li style="display:flex;gap:8px;"><span style="color:var(--t3)">—</span><span style="color:var(--t3)">Simulador de entrevista</span></li>
         </ul>
-        <button style="width:100%;padding:11px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--bg);color:var(--t1);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" onclick="openStripePortal(this)">Mudar para Starter</button>
+        <button id="planBtnStarter" style="width:100%;padding:11px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--bg);color:var(--t1);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" onclick="openStripePortal(this)">Assinar Starter</button>
       </div>
 
-      <!-- Pro (ativo) -->
-      <div class="plan-tile active" style="position:relative;border:2px solid var(--gb-emerald);">
-        <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--gb-emerald);color:#fff;font-size:10px;font-weight:700;padding:3px 16px;border-radius:4px;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;">Plano atual</div>
-        <div style="font-size:11px;font-weight:700;color:var(--gb-emerald);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;">Pro</div>
+      <!-- Pro -->
+      <div class="plan-tile" id="planTilePro" style="position:relative;">
+        <div id="planBadgePro" style="display:none;position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--gb-emerald);color:#fff;font-size:10px;font-weight:700;padding:3px 16px;border-radius:4px;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;">Plano atual</div>
+        <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;" id="planLabelPro">Pro</div>
         <div style="font-size:30px;font-weight:800;letter-spacing:-1.5px;margin-bottom:4px;">R$39<span style="font-size:15px;font-weight:400;color:var(--t3)">,90/mês</span></div>
         <div style="font-size:12px;color:var(--t3);margin-bottom:22px;">Para quem leva a sério</div>
         <ul style="list-style:none;font-size:13px;color:var(--t2);display:flex;flex-direction:column;gap:10px;margin-bottom:26px;">
@@ -2114,7 +2115,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           <li style="display:flex;gap:8px;"><span style="color:var(--gb-bright)">✓</span> Carta de apresentação</li>
           <li style="display:flex;gap:8px;"><span style="color:var(--gb-bright)">✓</span> Simulador de entrevista</li>
         </ul>
-        <button style="width:100%;padding:11px;background:var(--s-grn-bg);border:none;border-radius:var(--r-sm);color:var(--gb-emerald);font-size:13px;font-weight:700;cursor:default;font-family:inherit;">Plano ativo ✓</button>
+        <button id="planBtnPro" style="width:100%;padding:11px;background:var(--gb-emerald);border:none;border-radius:var(--r-sm);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="openAuthCheckout('https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408')">Assinar Pro</button>
       </div>
 
       <!-- Análises avulsas -->
@@ -2488,9 +2489,10 @@ function buildPBACard(analyses, tracked) {
     var cargo = interviewJob.cargo || (a && (a.result||{}).job_info ? a.result.job_info.cargo : '') || 'essa vaga';
     var emp = interviewJob.empresa || (a && (a.result||{}).job_info ? a.result.job_info.empresa : '') || '';
     var hasDate = !!(interviewJob.interview_at);
+    var iDateFmt = hasDate ? formatInterviewAt(interviewJob.interview_at) : '';
     if (titleEl) titleEl.textContent = 'Prepare-se para a entrevista de ' + cargo;
-    if (descEl) descEl.textContent = (hasDate ? 'Você tem uma entrevista marcada para ' + cargo + (emp ? ' na ' + emp : '') : 'Você está em processo de entrevista para ' + cargo + (emp ? ' na ' + emp : '')) + '. Use o simulador para chegar mais preparado e aumentar suas chances.';
-    if (btnPri) { btnPri.textContent = 'Treinar entrevista →'; btnPri.onclick = function(){ window.location.href='/entrevista'; }; }
+    if (descEl) descEl.textContent = (hasDate ? 'Entrevista em ' + iDateFmt + ' — ' + cargo + (emp ? ' na ' + emp : '') : 'Em processo de entrevista para ' + cargo + (emp ? ' na ' + emp : '')) + '. Use o simulador para chegar mais preparado e aumentar suas chances.';
+    if (btnPri) { btnPri.textContent = 'Treinar entrevista →'; (function(aid){ btnPri.onclick = function(){ window.location.href='/entrevista' + (aid ? '?analysis_id=' + encodeURIComponent(aid) : ''); }; })(interviewJob.analysis_id); }
     if (btnSec) { btnSec.textContent = 'Ver candidaturas'; btnSec.onclick = function(){ switchDashTab('vagas'); }; }
     updatePBAPriority(interviewJob.score || (a ? a.score : 0), cargo, emp || '', hasDate ? 'Entrevista marcada' : 'Em entrevista');
   } else if (followUpJob) {
@@ -2571,8 +2573,8 @@ function buildAttentionCards(analyses, tracked) {
     var emp = interviewJob.empresa ? ' na ' + interviewJob.empresa : '';
     cards.push('<div class="psa-card"><div class="psa-badge psa-badge-amanha">Entrevista</div><div class="psa-ico">🎯</div>' +
       '<div class="psa-card-title">Prepare sua entrevista</div>' +
-      '<div class="psa-card-desc">' + (interviewJob.interview_at ? 'Entrevista marcada para ' : 'Em processo de entrevista para ') + escHtml(cargo) + escHtml(emp) + '. Use o simulador para chegar preparado.</div>' +
-      '<button class="psa-cta" onclick="window.location.href=\'/entrevista\'">Treinar entrevista →</button></div>');
+      '<div class="psa-card-desc">' + (interviewJob.interview_at ? 'Entrevista em ' + escHtml(formatInterviewAt(interviewJob.interview_at)) + ' — ' : 'Em processo de entrevista para ') + escHtml(cargo) + escHtml(emp) + '. Use o simulador para chegar preparado.</div>' +
+      '<button class="psa-cta" onclick="window.location.href=\'/entrevista' + (interviewJob.analysis_id ? '?analysis_id=' + encodeURIComponent(interviewJob.analysis_id) : '') + '\'">Treinar entrevista →</button></div>');
   }
 
   if (untrackedAnalysis) {
@@ -3178,20 +3180,51 @@ function renderCandDetail(item) {
 
 function buildTimeline(item) {
   var evs = [];
-  if (item.analysisData && item.createdAt) evs.push({ text:'Análise criada', when:formatDateShort(item.createdAt), done:true });
-  if (item.hasTracker && item.trackerData && item.trackerData.created_at) evs.push({ text:'Adicionado ao tracker', when:formatDateShort(item.trackerData.created_at), done:true });
-  var s = item.status;
-  if (['aplicada','em_processo','entrevista','oferta'].includes(s)) evs.push({ text:'Candidatura enviada', when:'', done:true });
-  if (['em_processo','entrevista','oferta'].includes(s)) evs.push({ text:'Em processo seletivo', when:'', done:true });
-  if (s === 'entrevista' || s === 'oferta') evs.push({ text:'Entrevista agendada', when:s==='oferta'?'Concluída':'Próximo passo', done:s==='oferta' });
-  if (s === 'oferta') evs.push({ text:'Oferta recebida', when:'Avaliando', done:true });
-  if (s === 'recusada' || s === 'encerrada') evs.push({ text:'Processo encerrado', when:formatDateShort(item.updatedAt), done:true });
+  var td = item.trackerData || {};
+  // Only show events that have a real date field from the database
+  if (item.analysisData && item.createdAt) {
+    evs.push({ text:'Análise criada', when:formatDateShort(item.createdAt), done:true });
+  }
+  if (item.hasTracker && td.created_at) {
+    evs.push({ text:'Adicionado ao tracker', when:formatDateShort(td.created_at), done:true });
+  }
+  if (td.applied_at) {
+    evs.push({ text:'Candidatura enviada', when:formatDateShort(td.applied_at), done:true });
+  }
+  if (td.stage_moved_at) {
+    evs.push({ text:'Etapa atualizada', when:formatDateShort(td.stage_moved_at), done:true });
+  }
+  if (td.interview_at) {
+    var interviewPast = new Date(td.interview_at) <= new Date();
+    evs.push({ text:'Entrevista', when:formatDateShort(td.interview_at), done:interviewPast });
+  }
+  if (td.offer_at) {
+    evs.push({ text:'Oferta recebida', when:formatDateShort(td.offer_at), done:true });
+  }
+  if (td.closed_at) {
+    evs.push({ text:'Processo encerrado', when:formatDateShort(td.closed_at), done:true });
+  }
+  // Sort chronologically by date string (ISO dates sort lexicographically)
+  evs.sort(function(a, b) {
+    if (!a.when && !b.when) return 0;
+    if (!a.when) return -1;
+    if (!b.when) return 1;
+    return 0; // already in insertion order which follows DB dates
+  });
   return evs;
 }
 
 function formatDateShort(dateStr) {
   if (!dateStr) return '';
   try { return new Date(dateStr).toLocaleDateString('pt-BR', { day:'2-digit', month:'short' }); } catch(e) { return ''; }
+}
+
+function formatInterviewAt(dtStr) {
+  if (!dtStr) return '';
+  try {
+    var d = new Date(dtStr);
+    return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + ' às ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  } catch(e) { return ''; }
 }
 
 function renderKanban(all) {
@@ -3227,8 +3260,16 @@ function renderCalendar(all) {
   var today = new Date();
   all.forEach(function(item) {
     if (item.status === 'entrevista' || item.status === 'oferta') {
-      var d = item.updatedAt ? new Date(item.updatedAt) : null;
-      if (d) { var k = d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate(); if (!events[k]) events[k]=[]; events[k].push({ text:item.cargo, type:'interview', id:item.id }); }
+      // Usa interview_at/offer_at como data real — NÃO usa updatedAt (editar nota mudaria o evento)
+      var dateRef = item.status === 'entrevista'
+        ? (item.trackerData && item.trackerData.interview_at)
+        : (item.trackerData && (item.trackerData.offer_at || item.trackerData.interview_at));
+      var d = dateRef ? new Date(dateRef) : null;
+      if (d && !isNaN(d.getTime())) {
+        var k = d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate();
+        if (!events[k]) events[k]=[];
+        events[k].push({ text:item.cargo, type:'interview', id:item.id });
+      }
     }
     if (item.status === 'aplicada' && item.daysSince >= 7) {
       var k = today.getFullYear()+'-'+today.getMonth()+'-'+today.getDate();
@@ -3256,6 +3297,15 @@ function candCalPrev() { _candCalMonth--; if (_candCalMonth<0){_candCalMonth=11;
 function candCalNext() { _candCalMonth++; if (_candCalMonth>11){_candCalMonth=0;_candCalYear++;} renderCalendar(mergeApplications()); }
 
 function confirmDeleteTracker(id) { if (confirm('Remover esta candidatura do tracker?')) deleteTracker(id); }
+
+function toggleVagaDetail(analysisId) {
+  var detail = document.getElementById('vd-' + analysisId);
+  var chevron = document.getElementById('vc-' + analysisId);
+  if (!detail) return;
+  var isOpen = detail.style.display !== 'none';
+  detail.style.display = isOpen ? 'none' : 'block';
+  if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+}
 
 /* ── Backward compat shims ── */
 function setVagasFilter(f) { setCandFilter(f); }
@@ -3429,10 +3479,21 @@ async function handleStatusUpdate(jobId, newStatus) {
     var now = new Date().toISOString();
     var patch = { status: canonical, stage_moved_at: now, updated_at: now };
     // Preenche data específica do estágio sem sobrescrever datas históricas
-    if (canonical === 'aplicada') patch.applied_at = now;
-    else if (canonical === 'entrevista') patch.interview_at = now;
-    else if (canonical === 'oferta') patch.offer_at = now;
-    else if (canonical === 'recusada' || canonical === 'encerrada') patch.closed_at = now;
+    // applied_at: seta apenas se ainda não existe (primeira vez aplicando)
+    if (canonical === 'aplicada') {
+      var existing = (_kTracked || []).find(function(t){ return t.id === jobId; });
+      if (!existing || !existing.applied_at) patch.applied_at = now;
+    }
+    // interview_at: NÃO seta automaticamente — entrevista marcada exige data real do usuário
+    // offer_at / closed_at: seta somente uma vez
+    else if (canonical === 'oferta') {
+      var existing = (_kTracked || []).find(function(t){ return t.id === jobId; });
+      if (!existing || !existing.offer_at) patch.offer_at = now;
+    }
+    else if (canonical === 'recusada' || canonical === 'encerrada') {
+      var existing = (_kTracked || []).find(function(t){ return t.id === jobId; });
+      if (!existing || !existing.closed_at) patch.closed_at = now;
+    }
     var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + encodeURIComponent(jobId), {
       method: 'PATCH',
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json' },
@@ -3465,6 +3526,18 @@ function openTrackerEdit(job) {
     return '<option value="' + s[0] + '"' + (currentStatus === s[0] ? ' selected' : '') + '>' + s[1] + '</option>';
   }).join('');
 
+  var interviewAtVal = '';
+  if (job.interview_at) {
+    try {
+      var _d = new Date(job.interview_at);
+      interviewAtVal = _d.getFullYear() + '-' +
+        String(_d.getMonth()+1).padStart(2,'0') + '-' +
+        String(_d.getDate()).padStart(2,'0') + 'T' +
+        String(_d.getHours()).padStart(2,'0') + ':' +
+        String(_d.getMinutes()).padStart(2,'0');
+    } catch(e) {}
+  }
+
   modal.innerHTML = '<div class="modal-box" style="max-width:440px">' +
     '<button class="modal-close">✕</button>' +
     '<div class="modal-title">' + (job.id ? 'Editar candidatura' : 'Rastrear candidatura') + '</div>' +
@@ -3473,6 +3546,10 @@ function openTrackerEdit(job) {
     '<div class="modal-field"><label class="modal-label">Cargo</label><input class="modal-input" id="tkCargo" value="' + escHtml(job.cargo || '') + '"></div>' +
     '<div class="modal-field"><label class="modal-label">Score ATS</label><input class="modal-input" type="number" id="tkScore" value="' + (job.score || '') + '"></div>' +
     '<div class="modal-field"><label class="modal-label">Status</label><select class="modal-input" id="tkStatus">' + selectOpts + '</select></div>' +
+    '<div class="modal-field" id="tkInterviewRow" style="display:' + (currentStatus === 'entrevista' ? '' : 'none') + '">' +
+      '<label class="modal-label">Data e hora da entrevista <span style="color:var(--t3);font-weight:400">(opcional)</span></label>' +
+      '<input class="modal-input" type="datetime-local" id="tkInterviewAt" value="' + escHtml(interviewAtVal) + '">' +
+    '</div>' +
     '<div class="modal-field"><label class="modal-label">Salário</label><input class="modal-input" id="tkSalario" placeholder="Ex: R$ 5.000" value="' + escHtml(job.salario || '') + '"></div>' +
     '<div class="modal-field"><label class="modal-label">Link da vaga</label><input class="modal-input" id="tkUrl" placeholder="https://..." value="' + escHtml(job.job_url || '') + '"></div>' +
     '<div class="modal-field"><label class="modal-label">Notas</label><textarea class="modal-input" id="tkNota" rows="3" style="resize:vertical">' + escHtml(job.nota || '') + '</textarea></div>' +
@@ -3483,6 +3560,13 @@ function openTrackerEdit(job) {
   modal.querySelector('.modal-close').addEventListener('click', function() { modal.remove(); });
   modal.querySelector('.tracker-save-btn').addEventListener('click', function() { saveTrackerModal(modal, job.id || null); });
   modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  var tkStatusEl = modal.querySelector('#tkStatus');
+  var tkInterviewRow = modal.querySelector('#tkInterviewRow');
+  if (tkStatusEl && tkInterviewRow) {
+    tkStatusEl.addEventListener('change', function() {
+      tkInterviewRow.style.display = tkStatusEl.value === 'entrevista' ? '' : 'none';
+    });
+  }
 }
 
 function openAnalysisModal(job) {
@@ -3546,16 +3630,24 @@ async function saveTrackerModal(modal, editId) {
   var empresa = document.getElementById('tkEmpresa').value.trim();
   if (!empresa) { showToast('Digite a empresa', 'error'); return; }
 
+  var status = document.getElementById('tkStatus').value;
   var body = {
     empresa,
     cargo: document.getElementById('tkCargo').value.trim(),
     score: parseInt(document.getElementById('tkScore').value) || 0,
-    status: document.getElementById('tkStatus').value,
+    status: status,
     salario: document.getElementById('tkSalario').value.trim() || null,
     job_url: document.getElementById('tkUrl').value.trim() || null,
     nota: document.getElementById('tkNota').value.trim() || null,
     updated_at: new Date().toISOString()
   };
+  // interview_at: only read when status = entrevista (field is visible)
+  if (status === 'entrevista') {
+    var iAtEl = document.getElementById('tkInterviewAt');
+    if (iAtEl) {
+      body.interview_at = iAtEl.value ? new Date(iAtEl.value).toISOString() : null;
+    }
+  }
 
   if (!editId) {
     body.user_id = currentUserId;
@@ -3657,6 +3749,21 @@ async function loadAlerts() {
     });
     var rows = await res.json();
     _alertProfile = (Array.isArray(rows) && rows[0]) ? rows[0] : null;
+    if (_alertProfile) {
+      // Populate _alertExtended from Supabase columns (authoritative); fall back to localStorage for missing fields
+      var p = _alertProfile;
+      if (p.contrato_tipos !== undefined)   _alertExtended.contrato_tipos  = p.contrato_tipos  || _alertExtended.contrato_tipos  || [];
+      if (p.formato !== undefined)          _alertExtended.formato         = p.formato          || _alertExtended.formato          || '';
+      if (p.empresas_interesse !== undefined) _alertExtended.empresas      = p.empresas_interesse || _alertExtended.empresas      || [];
+      if (p.setores_preferidos !== undefined) _alertExtended.setores       = p.setores_preferidos || _alertExtended.setores       || [];
+      if (p.filtros_negativos !== undefined) {
+        var fn = typeof p.filtros_negativos === 'string' ? JSON.parse(p.filtros_negativos) : (p.filtros_negativos || {});
+        if (fn.filtros_neg !== undefined)   _alertExtended.filtros_neg     = fn.filtros_neg    || _alertExtended.filtros_neg    || [];
+        if (fn.neg_palavras !== undefined)  _alertExtended.neg_palavras    = fn.neg_palavras   || _alertExtended.neg_palavras   || [];
+      }
+      if (p.dia_envio !== undefined && p.dia_envio !== null) _alertExtended.dia_envio       = p.dia_envio;
+      if (p.horario_envio !== undefined && p.horario_envio !== null) _alertExtended.horario_envio = p.horario_envio;
+    }
   } catch(e) { _alertProfile = null; }
   renderAlertPage();
 }
@@ -3683,7 +3790,8 @@ function renderAlertStatus(p) {
   }
   if (p.ativo) {
     badge.classList.add('active');
-    txt.textContent = (p.frequencia === 'semanal' ? 'Alerta semanal ativo' : p.frequencia === 'quinzenal' ? 'Alerta quinzenal ativo' : 'Alerta mensal ativo');
+    var freqLabels = { diario: 'Alerta diário ativo', semanal: 'Alerta semanal ativo', quinzenal: 'Alerta quinzenal ativo', mensal: 'Alerta mensal ativo' };
+    txt.textContent = freqLabels[p.frequencia] || 'Alerta ativo';
   } else {
     badge.classList.add('paused');
     txt.textContent = 'Alerta pausado';
@@ -3692,29 +3800,52 @@ function renderAlertStatus(p) {
 
 function calculateNextAlertRun(p, ext) {
   if (!p || !p.ativo) return null;
-  var freq    = p.frequencia || 'semanal';
-  var dayEnvio = (ext.dia_envio !== undefined && ext.dia_envio !== '') ? parseInt(ext.dia_envio) : 5;
-  var hora    = ext.horario_envio || '08:00';
-  var parts   = hora.split(':');
+  var freq     = p.frequencia || 'semanal';
+  var dayEnvio = (ext && ext.dia_envio !== undefined && ext.dia_envio !== '') ? parseInt(ext.dia_envio) : 5;
+  var hora     = (ext && ext.horario_envio) || '08:00';
+  var parts    = hora.split(':');
   var hh = parseInt(parts[0]) || 8, mm = parseInt(parts[1]) || 0;
   var now = new Date();
-  var d   = new Date(now);
-  var diff = (dayEnvio - d.getDay() + 7) % 7;
-  if (diff === 0) {
-    var todayAt = new Date(d.getFullYear(), d.getMonth(), d.getDate(), hh, mm);
-    if (now >= todayAt) diff = 7;
+
+  if (freq === 'diario') {
+    var todayAt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hh, mm, 0);
+    if (now >= todayAt) todayAt.setDate(todayAt.getDate() + 1);
+    return todayAt;
   }
-  if (freq === 'quinzenal') diff += (diff === 0 ? 14 : 7);
-  d.setDate(d.getDate() + diff);
-  d.setHours(hh, mm, 0, 0);
+
+  if (freq === 'quinzenal') {
+    var ultimoEnvio = (ext && (ext.ultimo_envio || ext.last_run_at)) || (p && p.ultimo_envio);
+    if (ultimoEnvio) {
+      var base = new Date(ultimoEnvio);
+      base.setHours(hh, mm, 0, 0);
+      while (base <= now) base.setDate(base.getDate() + 14);
+      return base;
+    }
+    // Sem histórico: próxima ocorrência do dia da semana configurado + 14 dias
+    var d2 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hh, mm, 0);
+    var diff2 = (dayEnvio - d2.getDay() + 7) % 7 || 7;
+    d2.setDate(d2.getDate() + diff2 + 14);
+    return d2;
+  }
+
+  if (freq === 'semanal') {
+    var d3 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hh, mm, 0);
+    var diff3 = (dayEnvio - d3.getDay() + 7) % 7;
+    if (diff3 === 0 && now >= d3) diff3 = 7;
+    d3.setDate(d3.getDate() + diff3);
+    return d3;
+  }
+
   if (freq === 'mensal') {
     var nm = new Date(now.getFullYear(), now.getMonth() + 1, 1);
     var nd = (dayEnvio - nm.getDay() + 7) % 7;
-    d = new Date(nm);
-    d.setDate(d.getDate() + nd);
-    d.setHours(hh, mm, 0, 0);
+    var d4 = new Date(nm);
+    d4.setDate(d4.getDate() + nd);
+    d4.setHours(hh, mm, 0, 0);
+    return d4;
   }
-  return d;
+
+  return null;
 }
 
 function renderAlertNextSend(p, ext) {
@@ -3889,11 +4020,15 @@ async function sendTestAlert() {
       headers: { Authorization: 'Bearer ' + currentSession.access_token }
     });
     var data = await res.json();
-    if (res.ok && data.ok) {
+    if (res.ok && data.sent === true) {
       showToast('E-mail de teste enviado para ' + currentSession.user.email + '!');
       _alLive('E-mail de teste enviado com sucesso.');
+    } else if (res.ok && data.skipped) {
+      var skipMsg = data.message || 'Nenhuma vaga compatível encontrada no momento. Ajuste as preferências do alerta e tente novamente.';
+      showToast(skipMsg, 'error');
+      _alLive(skipMsg);
     } else {
-      var msg = (data && data.error) ? data.error : 'Erro ao enviar teste.';
+      var msg = (data && (data.error || data.message)) ? (data.error || data.message) : 'Erro ao enviar teste.';
       showToast(msg, 'error');
       _alLive(msg);
     }
@@ -4023,12 +4158,20 @@ async function toggleAlertActive() {
   if (!_alertProfile) return;
   var newVal = !_alertProfile.ativo;
   try {
-    await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?user_id=eq.' + currentUserId, {
+    var patch = { ativo: newVal, updated_at: new Date().toISOString() };
+    // Ao reativar, recalcula next_run_at para que o cron dispare no próximo horário correto
+    if (newVal) {
+      var nextRun = calculateNextAlertRun(Object.assign({}, _alertProfile, { ativo: true }), _alertExtended);
+      if (nextRun) patch.next_run_at = nextRun.toISOString();
+    }
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?user_id=eq.' + currentUserId, {
       method: 'PATCH',
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ ativo: newVal, updated_at: new Date().toISOString() })
+      body: JSON.stringify(patch)
     });
+    if (!res.ok) { showToast('Erro ao atualizar alerta.', 'error'); return; }
     _alertProfile.ativo = newVal;
+    if (patch.next_run_at) _alertProfile.next_run_at = patch.next_run_at;
     showToast(newVal ? 'Alerta reativado!' : 'Alerta pausado.');
     _alLive(newVal ? 'Alerta reativado.' : 'Alerta pausado.');
     renderAlertPage();
@@ -4042,11 +4185,14 @@ function confirmDeleteAlert() {
 
 async function deleteAlertProfile() {
   try {
-    await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?user_id=eq.' + currentUserId, {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?user_id=eq.' + currentUserId, {
       method: 'DELETE',
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, Prefer: 'return=minimal' }
     });
+    if (!res.ok && res.status !== 204) { showToast('Erro ao excluir alerta.', 'error'); return; }
     _alertProfile = null;
+    _alertExtended = {};
+    try { localStorage.removeItem('vagaai_alert_ext'); } catch(e) {}
     showToast('Alerta excluído.');
     renderAlertPage();
   } catch(e) { showToast('Erro ao excluir.', 'error'); }
@@ -4149,9 +4295,9 @@ function openAlertEditModal() {
           '<div class="al-modal-section-title">Frequência e horário</div>'+
           '<div class="al-field"><label>Frequência</label>'+
           '<div class="al-freq-row" id="alMFreq">'+
-            ['semanal','quinzenal','mensal'].map(function(f){ return '<button class="al-freq-btn'+(((p.frequencia||'semanal')===f)?' on':'')+'" onclick="_alSetFreq(\''+f+'\')">'+(f.charAt(0).toUpperCase()+f.slice(1))+'</button>'; }).join('')+
+            [['diario','Diário'],['semanal','Semanal'],['quinzenal','Quinzenal'],['mensal','Mensal']].map(function(fv){ var val=fv[0],lbl=fv[1]; return '<button class="al-freq-btn'+(((p.frequencia||'semanal')===val)?' on':'')+'" data-value="'+val+'" onclick="_alSetFreq(\''+val+'\')">' + lbl + '</button>'; }).join('')+
           '</div></div>'+
-          '<div class="al-form-row">'+
+          '<div class="al-form-row" id="alMDiaRow"'+((p.frequencia||'semanal')==='diario'?' style="display:none"':'')+'>'+
             '<div class="al-field"><label for="alMDia">Dia de envio</label><select id="alMDia" onchange="_alCheckDirty()">'+
               DIAS.map(function(d){ return '<option value="'+d[0]+'"'+(diaEnvio===d[0]?' selected':'')+'>'+d[1]+'</option>'; }).join('')+
             '</select></div>'+
@@ -4214,7 +4360,13 @@ function _alToggleChk(el, val) {
 }
 
 function _alSetFreq(val) {
-  document.querySelectorAll('#alMFreq .al-freq-btn').forEach(function(b){ b.classList.toggle('on', b.textContent.toLowerCase() === val); });
+  // Usa data-value como identificador canônico — não depende de textContent com acentuação
+  document.querySelectorAll('#alMFreq .al-freq-btn').forEach(function(b){
+    b.classList.toggle('on', (b.getAttribute('data-value') || b.textContent.toLowerCase()) === val);
+  });
+  // Oculta "Dia de envio" para frequência diária (não faz sentido para diário)
+  var diaRow = document.getElementById('alMDiaRow');
+  if (diaRow) diaRow.style.display = val === 'diario' ? 'none' : '';
   _alCheckDirty();
 }
 
@@ -4267,13 +4419,20 @@ async function saveAlertProfile() {
   var nivel     = nivelEl  ? nivelEl.value  : 'qualquer';
   var cidade    = cidadeEl ? cidadeEl.value.trim() : '';
   var salario   = salarioEl? parseInt(salarioEl.value)||0 : 0;
-  var freq      = (document.querySelector('#alMFreq .al-freq-btn.on') || {textContent:'semanal'}).textContent.toLowerCase();
+  var freqBtn   = document.querySelector('#alMFreq .al-freq-btn.on');
+  var freq      = freqBtn ? (freqBtn.getAttribute('data-value') || freqBtn.textContent.toLowerCase()) : 'semanal';
   var dia       = diaEl  ? diaEl.value  : '5';
   var hora      = horaEl ? horaEl.value : '08:00';
-  var contTipos = Array.from(document.querySelectorAll('#alMContrato .on')||[]).map(function(e){ return e.textContent; });
+  var contTipos = Array.from(document.querySelectorAll('#alMContrato .on')||[]).map(function(e){ return e.getAttribute('data-value') || e.textContent; });
   var filtNeg   = Array.from(document.querySelectorAll('#alMFiltros .on')||[]).map(function(e){ return e.textContent; });
-  var formato   = Array.from(document.querySelectorAll('#alMFormato .on')||[]).map(function(e){ return e.textContent; }).join(',');
-  // Save core to Supabase
+  // formato enviado como array TEXT[] (não string separada por vírgulas)
+  var formato   = Array.from(document.querySelectorAll('#alMFormato .on')||[]).map(function(e){ return e.textContent; });
+  // Compute next_run_at for new/reactivated profile
+  var extPreview = Object.assign({}, _alertExtended, { dia_envio: dia, horario_envio: hora });
+  // Preserve existing ativo state; only default to true on first creation (no existing profile)
+  var currentAtivo = (_alertProfile && _alertProfile.ativo !== undefined) ? _alertProfile.ativo : true;
+  var nextRun = calculateNextAlertRun({ ativo: currentAtivo, frequencia: freq }, extPreview);
+  // Persist core + extended fields to Supabase in a single upsert
   var body = {
     user_id: currentUserId,
     email: currentSession.user.email,
@@ -4283,9 +4442,17 @@ async function saveAlertProfile() {
     salario_min: salario,
     keywords: _alMKw,
     frequencia: freq,
-    ativo: true,
-    updated_at: new Date().toISOString()
+    ativo: currentAtivo,
+    updated_at: new Date().toISOString(),
+    contrato_tipos: contTipos,
+    formato: formato,
+    empresas_interesse: _alMEmpresas,
+    setores_preferidos: _alMSetores,
+    filtros_negativos: { filtros_neg: filtNeg, neg_palavras: _alMNegPal },
+    dia_envio: parseInt(dia) || 5,
+    horario_envio: hora
   };
+  if (nextRun) body.next_run_at = nextRun.toISOString();
   var saveBtn = document.getElementById('alMSaveBtn');
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Salvando…'; }
   try {
@@ -4295,7 +4462,7 @@ async function saveAlertProfile() {
       body: JSON.stringify(body)
     });
     if (!res.ok && res.status !== 204) throw new Error('HTTP ' + res.status);
-    // Save extended to localStorage
+    // Mirror to local state and localStorage cache
     _alertExtended.contrato_tipos  = contTipos;
     _alertExtended.filtros_neg     = filtNeg;
     _alertExtended.neg_palavras    = _alMNegPal;
@@ -4455,25 +4622,137 @@ async function loadSubscriptionData() {
     var heroAnDesc = sub.plan === 'pro' ? 'análises ilimitadas' : sub.plan === 'starter' ? '10 análises/mês' : 'plano gratuito';
     el = document.getElementById('planoHeroSub');
     if (el) el.textContent = 'Você está no plano ' + planLabel + ' com ' + heroAnDesc + '. Acompanhe seus recursos ativos, gerencie sua assinatura e compre créditos avulsos quando precisar.';
-    // Plan card details
-    var statusMap = { active:'Ativo', trialing:'Trial', past_due:'Pagamento pendente', canceled:'Cancelado', incomplete:'Incompleto' };
-    var statusLabel = statusMap[sub.status] || sub.status || '';
-    var renewEl = document.getElementById('planoRenovacao');
-    if (renewEl && sub.current_period_end) {
-      var d = new Date(sub.current_period_end);
-      var diffDays = Math.ceil((d - Date.now()) / 86400000);
-      renewEl.textContent = diffDays > 0 ? statusLabel + ' · renova em ' + diffDays + ' dias' : statusLabel;
-    }
-    if (sub.cancel_at_period_end) {
-      var cancelEl = document.getElementById('planoCancelInfo');
-      if (cancelEl) {
-        var endDate = sub.current_period_end ? new Date(sub.current_period_end).toLocaleDateString('pt-BR') : '';
-        cancelEl.textContent = 'Cancelamento agendado para ' + endDate;
-        cancelEl.style.display = 'block';
+    // ── Plan card (IDs: planoCardIcon, planoCardNome, planoCardStatus, planoCardAnalises,
+    //                     planoCardCv, planoCardEntrevista, planoCardPreco, planoRenovacao)
+    var ent = sub.entitlements || {};
+    var statusMap = { active: 'Ativo', trialing: 'Trial', past_due: 'Pagamento pendente', canceled: 'Cancelado', incomplete: 'Incompleto', free: 'Gratuito' };
+
+    // Icon
+    var iconEl = document.getElementById('planoCardIcon');
+    if (iconEl) iconEl.textContent = sub.plan === 'pro' ? '⭐' : sub.plan === 'starter' ? '🚀' : '✨';
+
+    // Nome
+    var nomeEl = document.getElementById('planoCardNome');
+    if (nomeEl) nomeEl.textContent = planLabel;
+
+    // Status + renovação / cancelamento
+    var statusEl = document.getElementById('planoCardStatus');
+    if (statusEl) {
+      if (sub.plan === 'free') {
+        statusEl.textContent = 'Plano gratuito';
+        statusEl.style.color = 'var(--t3)';
+      } else if (sub.cancel_at_period_end && sub.current_period_end) {
+        var cancelDate = new Date(sub.current_period_end).toLocaleDateString('pt-BR');
+        statusEl.textContent = 'Cancela em ' + cancelDate;
+        statusEl.style.color = 'var(--gb-orange, #f59e0b)';
+      } else if (sub.current_period_end) {
+        var dEnd = new Date(sub.current_period_end);
+        var diffD = Math.ceil((dEnd - Date.now()) / 86400000);
+        var sLbl = statusMap[sub.status] || sub.status || 'Ativo';
+        statusEl.textContent = diffD > 0 ? sLbl + ' · renova em ' + diffD + ' dias' : sLbl;
+        statusEl.style.color = 'var(--gb-emerald)';
+      } else {
+        statusEl.textContent = statusMap[sub.status] || sub.status || '';
+        statusEl.style.color = 'var(--t3)';
       }
     }
+
+    // Análises
+    var anEl = document.getElementById('planoCardAnalises');
+    if (anEl) {
+      if (ent.unlimited_analyses) {
+        anEl.textContent = 'Ilimitadas';
+      } else if (sub.plan === 'starter') {
+        var used = sub.analyses_used_this_month || 0;
+        var limit = ent.analyses_limit || 10;
+        anEl.textContent = used + '/' + limit + ' usadas';
+        anEl.style.color = used >= limit ? 'var(--gb-orange, #f59e0b)' : 'var(--t1)';
+      } else {
+        anEl.textContent = 'Não incluído';
+        anEl.style.color = 'var(--t3)';
+      }
+    }
+
+    // CV otimizado
+    var cvEl = document.getElementById('planoCardCv');
+    if (cvEl) {
+      if (ent.cv_otimizado) {
+        cvEl.textContent = '✓ Incluído'; cvEl.style.color = 'var(--gb-emerald)';
+      } else {
+        cvEl.textContent = '✗ Não incluído'; cvEl.style.color = 'var(--t3)';
+      }
+    }
+
+    // Simulador de entrevista
+    var entEl = document.getElementById('planoCardEntrevista');
+    if (entEl) {
+      if (ent.simulador_entrevista) {
+        entEl.textContent = '✓ Incluído'; entEl.style.color = 'var(--gb-emerald)';
+      } else {
+        entEl.textContent = '✗ Não incluído'; entEl.style.color = 'var(--t3)';
+      }
+    }
+
+    // Preço
+    var precoEl = document.getElementById('planoCardPreco');
+    if (precoEl) {
+      precoEl.textContent = sub.preco ? sub.preco + ' · Renova automaticamente' : '';
+    }
+
+    // CTA: Gerenciar / Fazer upgrade
+    var renewEl = document.getElementById('planoRenovacao');
+    if (renewEl) {
+      if (sub.plan !== 'free') {
+        renewEl.textContent = 'Gerenciar →';
+        renewEl.style.color = 'var(--gb-emerald)';
+        renewEl.onclick = function() { openStripePortal(this); };
+      } else {
+        renewEl.textContent = 'Fazer upgrade →';
+        renewEl.style.color = 'var(--primary, #1a7a4a)';
+        renewEl.onclick = function() { switchTab('plano'); };
+      }
+    }
+    renderPlanTiles(sub);
   } catch(e) {
     console.error('loadSubscriptionData error:', e);
+  }
+}
+
+function renderPlanTiles(sub) {
+  var plan = sub && sub.plan || 'free';
+  var tileS = document.getElementById('planTileStarter');
+  var tileP = document.getElementById('planTilePro');
+  var badgeS = document.getElementById('planBadgeStarter');
+  var badgeP = document.getElementById('planBadgePro');
+  var btnS = document.getElementById('planBtnStarter');
+  var btnP = document.getElementById('planBtnPro');
+  var lblS = document.getElementById('planLabelStarter');
+  var lblP = document.getElementById('planLabelPro');
+  if (!tileS || !tileP) return;
+
+  // Reset both tiles
+  tileS.classList.remove('active'); tileS.style.border = '';
+  tileP.classList.remove('active'); tileP.style.border = '';
+  badgeS.style.display = 'none'; badgeP.style.display = 'none';
+  if (lblS) { lblS.style.color = 'var(--t3)'; }
+  if (lblP) { lblP.style.color = 'var(--t3)'; }
+
+  if (plan === 'starter') {
+    tileS.classList.add('active'); tileS.style.border = '2px solid var(--gb-emerald)';
+    badgeS.style.display = '';
+    if (lblS) lblS.style.color = 'var(--gb-emerald)';
+    if (btnS) { btnS.style.cssText = 'width:100%;padding:11px;background:var(--s-grn-bg);border:none;border-radius:var(--r-sm);color:var(--gb-emerald);font-size:13px;font-weight:700;cursor:default;font-family:inherit;'; btnS.textContent = 'Plano ativo ✓'; btnS.onclick = null; }
+    if (btnP) { btnP.style.cssText = 'width:100%;padding:11px;background:var(--gb-emerald);border:none;border-radius:var(--r-sm);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;'; btnP.textContent = 'Fazer upgrade para Pro'; btnP.onclick = function(){ openStripePortal(btnP); }; }
+  } else if (plan === 'pro') {
+    tileP.classList.add('active'); tileP.style.border = '2px solid var(--gb-emerald)';
+    badgeP.style.display = '';
+    if (lblP) lblP.style.color = 'var(--gb-emerald)';
+    if (btnP) { btnP.style.cssText = 'width:100%;padding:11px;background:var(--s-grn-bg);border:none;border-radius:var(--r-sm);color:var(--gb-emerald);font-size:13px;font-weight:700;cursor:default;font-family:inherit;'; btnP.textContent = 'Plano ativo ✓'; btnP.onclick = null; }
+    if (btnS) { btnS.style.cssText = 'width:100%;padding:11px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--bg);color:var(--t1);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;'; btnS.textContent = 'Mudar para Starter'; btnS.onclick = function(){ openStripePortal(btnS); }; }
+  } else {
+    // Free: both tiles show subscribe CTAs
+    if (btnS) { btnS.style.cssText = 'width:100%;padding:11px;border:1.5px solid var(--gb-emerald);border-radius:var(--r-sm);background:var(--bg);color:var(--gb-emerald);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;'; btnS.textContent = 'Assinar Starter'; btnS.onclick = function(){ openAuthCheckout('https://buy.stripe.com/28E14n0WO2rne5Ff0P9k406'); }; }
+    if (btnP) { btnP.style.cssText = 'width:100%;padding:11px;background:var(--gb-emerald);border:none;border-radius:var(--r-sm);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;'; btnP.textContent = 'Assinar Pro'; btnP.onclick = function(){ openAuthCheckout('https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408'); }; }
   }
 }
 

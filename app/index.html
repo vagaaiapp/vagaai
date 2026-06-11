@@ -200,6 +200,7 @@ textarea::placeholder{color:var(--muted)}
 .kw{font-size:12px;padding:.25rem .6rem;border-radius:6px;font-weight:500}
 .kw.found{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
 .kw.missing{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,107,107,0.25)}
+.kw.partial{background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(255,209,102,0.25)}
 
 .factors-list{display:flex;flex-direction:column;gap:.7rem}
 .factor-row{display:flex;align-items:center;gap:.7rem}
@@ -207,6 +208,41 @@ textarea::placeholder{color:var(--muted)}
 .factor-bar{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
 .factor-fill{height:100%;border-radius:3px;background:var(--green);transition:width .8s ease}
 .factor-val{font-size:12px;font-weight:600;width:32px;text-align:right;color:var(--text)}
+
+/* Score breakdown table */
+.score-breakdown-table{width:100%;border-collapse:collapse;margin-top:.3rem}
+.score-breakdown-table th{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-align:left;padding-bottom:.6rem;border-bottom:1px solid var(--border);white-space:nowrap}
+.score-breakdown-table th.right{text-align:right}
+.score-breakdown-table td{font-size:12px;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle}
+.score-breakdown-table tr:last-child td{border-bottom:none}
+.sdim-bar-wrap{width:46px;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;display:inline-block;vertical-align:middle;overflow:hidden;margin-right:.35rem}
+.sdim-bar{height:100%;border-radius:3px;background:var(--green);transition:width .8s ease}
+.sdim-peso{color:var(--muted);font-size:11px;padding:0 .6rem;white-space:nowrap}
+.sdim-pts{font-weight:600;color:var(--text);white-space:nowrap;text-align:right}
+
+/* Priorities section */
+.priorities-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem;margin-bottom:1.2rem;display:none}
+.priorities-section.show{display:block}
+.priorities-title{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem}
+.priority-item{display:flex;gap:.85rem;padding:.65rem 0;border-top:1px solid var(--border)}
+.priority-item:first-of-type{border-top:none;padding-top:0}
+.priority-num{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.priority-titulo{font-size:13px;font-weight:600;color:var(--text);margin-bottom:.15rem}
+.priority-exp{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* Score estimate microcopy */
+.score-estimate-line{font-size:12px;color:var(--green);margin-bottom:.7rem;display:none}
+.score-estimate-line.show{display:block}
+
+/* Bottom action bar */
+.result-bottom-bar{display:flex;flex-direction:column;gap:.7rem;margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid var(--border)}
+.result-bottom-bar-primary{display:flex}
+.result-bottom-bar-secondary{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.btn-cv-primary{flex:1;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;border:none;border-radius:10px;padding:.75rem 1rem;cursor:pointer;transition:all .2s;text-align:center;display:flex;align-items:center;justify-content:center;gap:.5rem}
+.btn-cv-primary:hover{background:#4ddb9e}
+.btn-cv-primary:disabled{opacity:.5;cursor:not-allowed}
+.briefing-expand-btn{background:none;border:none;color:var(--green);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;padding:.2rem 0;text-decoration:underline;text-underline-offset:2px}
+.briefing-expand-btn:hover{opacity:.8}
 
 .result-actions{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1.2rem}
 .btn-outline{flex:1;min-width:140px;background:transparent;border:1px solid var(--border);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;border-radius:10px;padding:.75rem 1rem;cursor:pointer;transition:all .2s;text-align:center}
@@ -527,10 +563,11 @@ textarea::placeholder{color:var(--muted)}
       <div class="score-info">
         <div class="score-nivel" id="scoreNivel" style="color:var(--green)"></div>
         <div class="score-resumo" id="scoreResumo"></div>
+        <div class="score-estimate-line" id="scoreEstimateLine"></div>
         <div id="scoreBenchmark" style="display:none;background:var(--surface2);border-radius:8px;padding:.4rem .75rem;font-size:12px;margin-bottom:.6rem;display:none;align-items:center;gap:.5rem;flex-wrap:wrap"></div>
         <button class="btn-cv-inline" id="cvBtnInline" onclick="openCV()">
           <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
-          Baixar CV Otimizado
+          Gerar versão otimizada do currículo
         </button>
       </div>
     </div>
@@ -546,17 +583,28 @@ textarea::placeholder{color:var(--muted)}
       </div>
     </div>
 
+    <!-- 3 PRIORIDADES -->
+    <div class="priorities-section" id="prioritiesSection">
+      <div class="priorities-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> 3 prioridades para aumentar sua compatibilidade</div>
+      <div id="prioritiesList"></div>
+    </div>
+
     <div class="result-grid">
       <div class="result-card">
         <div class="result-card-title muted">Keywords ATS</div>
-        <div style="margin-bottom:.6rem;font-size:12px;color:var(--muted)">Encontradas no currículo</div>
+        <div style="margin-bottom:.5rem;font-size:12px;color:var(--muted)">Encontradas</div>
         <div class="keywords-wrap" id="kwFound"></div>
-        <div style="margin:1rem 0 .6rem;font-size:12px;color:var(--muted)">Faltando no currículo</div>
+        <div style="margin:.85rem 0 .5rem;font-size:12px;color:var(--yellow)" id="kwPartialLabel">Presentes mas pouco evidenciadas</div>
+        <div class="keywords-wrap" id="kwPartial"></div>
+        <div style="margin:.85rem 0 .5rem;font-size:12px;color:var(--red)">Ausentes e prioritárias</div>
         <div class="keywords-wrap" id="kwMissing"></div>
       </div>
       <div class="result-card">
-        <div class="result-card-title muted">Fatores de análise</div>
-        <div class="factors-list" id="factorsList"></div>
+        <div class="result-card-title muted">Como seu score foi calculado</div>
+        <table class="score-breakdown-table">
+          <thead><tr><th>Dimensão</th><th>Peso</th><th class="right">Resultado</th></tr></thead>
+          <tbody id="scoreBreakdownBody"></tbody>
+        </table>
       </div>
     </div>
 
@@ -567,19 +615,23 @@ textarea::placeholder{color:var(--muted)}
       <div class="briefing-grid" id="briefingGrid"></div>
     </div>
 
-    <div class="result-actions">
-      <button class="btn-outline" id="newAnalysisBtn" onclick="tryNewAnalysis()"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span> Nova análise</button>
-      <button class="btn-cv" id="cvBtn" style="display:none" onclick="openCV()"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Baixar CV Otimizado</button>
-      <button class="btn-outline" id="interviewBtn" style="display:none" onclick="openInterview()"><span class="ic">🎯</span> Treinar entrevista</button>
-      <button class="btn-outline" id="cartaBtn" style="display:none" onclick="openCarta()"><span class="ic">✉️</span> Gerar carta</button>
-      <!-- TRACKER BUTTON (só para usuários logados) -->
-      <div id="trackerCTA" style="display:none;align-items:center">
-        <button id="trackerAddBtn" class="tracker-add-btn" onclick="addResultToTracker()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>
-          + Rastreador
-        </button>
+    <div class="result-bottom-bar" id="resultBottomBar">
+      <div class="result-bottom-bar-primary">
+        <button class="btn-cv-primary" id="cvBtn" style="display:none" onclick="openCV()"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Gerar versão otimizada do currículo</button>
+        <button class="btn-pro" id="upsellBtn" onclick="document.getElementById('upsellSection').scrollIntoView({behavior:'smooth'})"><span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span> Desbloquear resultado completo</button>
       </div>
-      <button class="btn-pro" id="upsellBtn" onclick="document.getElementById('upsellSection').scrollIntoView({behavior:'smooth'})"><span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span> Desbloquear resultado completo</button>
+      <div class="result-bottom-bar-secondary">
+        <button class="btn-outline" id="newAnalysisBtn" onclick="tryNewAnalysis()"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span> Nova análise</button>
+        <button class="btn-outline" id="interviewBtn" style="display:none" onclick="openInterview()"><span class="ic">🎯</span> Treinar entrevista</button>
+        <button class="btn-outline" id="cartaBtn" style="display:none" onclick="openCarta()"><span class="ic">✉️</span> Gerar carta</button>
+        <!-- TRACKER BUTTON (só para usuários logados) -->
+        <div id="trackerCTA" style="display:none;align-items:center">
+          <button id="trackerAddBtn" class="tracker-add-btn" onclick="addResultToTracker()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>
+            + Rastreador
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- UPSELL -->
@@ -600,10 +652,9 @@ function track(name,props){
 }
 
 // ── Supabase auth ──────────────────────────────────────────────────────────
-var sb = window.supabase.createClient(
-  'https://kbcjchjepgejdezeuwwh.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA'
-);
+var SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
+var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
+var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 var authSession = null;
 var userCredits = 0;
@@ -636,9 +687,9 @@ async function loadUserCredits(session) {
 
     // 2. Busca créditos avulsos (legado — free/avulso)
     var res = await fetch(
-      'https://kbcjchjepgejdezeuwwh.supabase.co/rest/v1/user_credits?user_id=eq.' + session.user.id + '&select=credits',
+      SUPABASE_URL + '/rest/v1/user_credits?user_id=eq.' + session.user.id + '&select=credits',
       { headers: {
-        apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA',
+        apikey: SUPABASE_ANON,
         Authorization: 'Bearer ' + session.access_token
       }}
     );
@@ -742,13 +793,25 @@ var PLANS = [
   }
 ];
 
+function openAuthCheckout(url) {
+  if (!authSession) {
+    showSignupModal(null, true);
+    return;
+  }
+  var userId = authSession.user.id;
+  var email = authSession.user.email || '';
+  var separator = url.indexOf('?') !== -1 ? '&' : '?';
+  var checkoutUrl = url + separator + 'client_reference_id=' + encodeURIComponent(userId) + '&prefilled_email=' + encodeURIComponent(email);
+  window.open(checkoutUrl, '_blank');
+}
+
 function planCardHTML(p, btnClass) {
   return '<div class="upsell-plan' + (p.featured ? ' featured' : '') + '">'
     + (p.badge ? '<div class="upsell-plan-badge">' + p.badge + '</div>' : '')
     + '<div class="upsell-plan-name">' + p.name + '</div>'
     + '<div class="upsell-plan-price">' + p.price + '<small>' + p.cents + '</small></div>'
     + '<div class="upsell-plan-desc">' + p.desc + '</div>'
-    + '<button class="upsell-plan-btn ' + (p.featured ? '' : 'ghost') + '" onclick="track(\'begin_checkout\',{plan:\'' + p.name + '\',value:' + p.brl + ',currency:\'BRL\'});window.open(\'' + p.url + '\',\'_blank\')">'
+    + '<button class="upsell-plan-btn ' + (p.featured ? '' : 'ghost') + '" onclick="track(\'begin_checkout\',{plan:\'' + p.name + '\',value:' + p.brl + ',currency:\'BRL\'});openAuthCheckout(\'' + p.url + '\')">'
     + (p.featured ? 'Começar agora' : 'Escolher') + '</button>'
     + '</div>';
 }
@@ -1244,7 +1307,7 @@ async function analyze() {
   // Verifica limite gratuito só na hora de analisar (não bloqueia a página na abertura)
   if (!authSession) {
     var alreadyUsed = false;
-    try { alreadyUsed = !!localStorage.getItem('vagaai_analyzed'); } catch(e) {}
+    try { var _va = localStorage.getItem('vagaai_analyzed'); if (_va) { var _vaParsed = JSON.parse(_va); if (_vaParsed && typeof _vaParsed.ts === 'number') { alreadyUsed = (Date.now() - _vaParsed.ts) < 30 * 24 * 60 * 60 * 1000; if (!alreadyUsed) { try{localStorage.removeItem('vagaai_analyzed');}catch(e2){} } } else { try{localStorage.removeItem('vagaai_analyzed');}catch(e2){} alreadyUsed = false; } } } catch(e) { try{localStorage.removeItem('vagaai_analyzed');}catch(e2){} alreadyUsed = false; }
     if (alreadyUsed) {
       // Salva inputs para pré-preenchimento após cadastro
       try {
@@ -1286,11 +1349,11 @@ async function doAnalyze(job, cv) {
     document.getElementById('formSection').style.display = 'flex';
     if (!authSession) document.getElementById('freeNotice').style.display = 'flex';
     document.getElementById('analyzeBtn').disabled = false;
-    // Restaura valores dos campos
-    jobEl.value = savedJob;
-    cvEl.value = savedCv;
-    document.getElementById('jobCount').textContent = savedJob.length + ' caracteres';
-    document.getElementById('cvCount').textContent = savedCv.length + ' caracteres';
+    // Restaura valores dos campos usando os parâmetros de doAnalyze
+    jobEl.value = job;
+    cvEl.value = cv;
+    document.getElementById('jobCount').textContent = job.length + ' caracteres';
+    document.getElementById('cvCount').textContent = cv.length + ' caracteres';
     showError(errMsg);
     setStep(1);
   }
@@ -1315,7 +1378,7 @@ async function doAnalyze(job, cv) {
 
     if (res.status === 429 || data.error === 'limite_atingido') {
       document.getElementById('loadingSection').classList.remove('show');
-      if (!authSession) localStorage.setItem('vagaai_analyzed', '1');
+      if (!authSession) localStorage.setItem('vagaai_analyzed', JSON.stringify({ts: Date.now()}));
       showLimitReached();
       return;
     }
@@ -1328,7 +1391,7 @@ async function doAnalyze(job, cv) {
     if (!res.ok || data.error) throw new Error(data.error || 'Erro ao processar análise.');
 
     // Marca como usada (anônimos)
-    if (!authSession) localStorage.setItem('vagaai_analyzed', '1');
+    if (!authSession) localStorage.setItem('vagaai_analyzed', JSON.stringify({ts: Date.now()}));
 
     // Atualiza créditos se retornados pelo servidor
     if (authSession && data._credits_remaining != null) {
@@ -1389,6 +1452,17 @@ function showResult(d) {
   document.getElementById('scoreNivel').textContent = d.nivel || '';
   document.getElementById('scoreResumo').textContent = d.resumo || '';
 
+  // Score estimate microcopy
+  var estLine = document.getElementById('scoreEstimateLine');
+  if (estLine) {
+    if (d.score_estimado_apos_ajustes && d.score_estimado_apos_ajustes > score) {
+      estLine.textContent = 'Com os ajustes sugeridos, seu score pode chegar a até ' + d.score_estimado_apos_ajustes + '%.';
+      estLine.classList.add('show');
+    } else {
+      estLine.classList.remove('show');
+    }
+  }
+
   // Score comparativo
   var bm = d._benchmark;
   var benchEl = document.getElementById('scoreBenchmark');
@@ -1406,22 +1480,62 @@ function showResult(d) {
   renderListWithLock('falhasList', d.falhas || [], isAnonymous, 2, 'falhas');
   renderListWithLock('sugestoesList', d.sugestoes || [], isAnonymous, 2, 'sugestões');
 
+  // 3 Prioridades
+  var priSection = document.getElementById('prioritiesSection');
+  var priList = document.getElementById('prioritiesList');
+  if (priSection && priList) {
+    var prioridades = Array.isArray(d.prioridades) ? d.prioridades : [];
+    if (prioridades.length) {
+      priList.innerHTML = prioridades.slice(0, 3).map(function(p, i) {
+        return '<div class="priority-item">'
+          + '<div class="priority-num">' + (i + 1) + '</div>'
+          + '<div><div class="priority-titulo">' + escHtml(p.titulo || '') + '</div>'
+          + '<div class="priority-exp">' + escHtml(p.explicacao || '') + '</div></div>'
+          + '</div>';
+      }).join('');
+      priSection.classList.add('show');
+    } else {
+      priSection.classList.remove('show');
+    }
+  }
+
+  // Keywords ATS — 3 categorias mutuamente exclusivas
   renderKeywords('kwFound', d.keywords_encontradas || [], 'found');
+  var partials = Array.isArray(d.keywords_parcialmente_encontradas) ? d.keywords_parcialmente_encontradas : [];
+  var kwPartialLabel = document.getElementById('kwPartialLabel');
+  if (kwPartialLabel) kwPartialLabel.style.display = partials.length ? '' : 'none';
+  if (partials.length) {
+    renderKeywords('kwPartial', partials, 'partial');
+  } else {
+    var kwPartialEl = document.getElementById('kwPartial');
+    if (kwPartialEl) kwPartialEl.innerHTML = '';
+  }
   renderKeywords('kwMissing', d.keywords_faltando || [], 'missing');
 
+  // Score breakdown — pesos fixos derivados de fatores
   var fatores = d.fatores || {};
-  var labels = { compatibilidade:'Compatibilidade', keywords_ats:'Keywords ATS', legibilidade:'Legibilidade', forca_bullets:'Força dos bullets' };
-  var fl = document.getElementById('factorsList');
-  fl.innerHTML = '';
-  Object.keys(labels).forEach(function(k) {
-    var val = fatores[k] || 0;
-    fl.innerHTML += '<div class="factor-row"><span class="factor-label">' + labels[k] + '</span>'
-      + '<div class="factor-bar"><div class="factor-fill" style="width:0%" data-val="' + val + '%"></div></div>'
-      + '<span class="factor-val">' + val + '</span></div>';
-  });
-  setTimeout(function() {
-    document.querySelectorAll('.factor-fill').forEach(function(el) { el.style.width = el.dataset.val; });
-  }, 200);
+  var breakdownRows = [
+    { dim: 'Compatibilidade com a vaga', key: 'compatibilidade', peso: 30 },
+    { dim: 'Keywords ATS',               key: 'keywords_ats',    peso: 25 },
+    { dim: 'Legibilidade e estrutura',    key: 'legibilidade',    peso: 25 },
+    { dim: 'Força dos bullets',           key: 'forca_bullets',   peso: 20 },
+  ];
+  var sbBody = document.getElementById('scoreBreakdownBody');
+  if (sbBody) {
+    sbBody.innerHTML = '';
+    breakdownRows.forEach(function(row) {
+      var dimPct = fatores[row.key] || 0;
+      var pts = Math.round(dimPct * row.peso / 100);
+      sbBody.innerHTML += '<tr>'
+        + '<td class="score-dim-label">' + escHtml(row.dim) + '</td>'
+        + '<td class="sdim-peso">' + row.peso + '%</td>'
+        + '<td class="sdim-pts"><span class="sdim-bar-wrap"><span class="sdim-bar" style="width:0%" data-val="' + dimPct + '%"></span></span>' + pts + '/' + row.peso + '</td>'
+        + '</tr>';
+    });
+    setTimeout(function() {
+      document.querySelectorAll('.sdim-bar').forEach(function(el) { el.style.width = el.dataset.val; });
+    }, 200);
+  }
 
   // Briefing da empresa — completo para pagos, teaser para anônimos
   var briefingSection = document.getElementById('briefingSection');
@@ -1453,13 +1567,17 @@ function showResult(d) {
   var interviewBtn = document.getElementById('interviewBtn');
   var cartaBtn = document.getElementById('cartaBtn');
   if (!isAnonymous && d.cv_otimizado && d.cv_otimizado.nome) {
-    // Resultado completo: tem CV, botões de ferramentas
+    // Resultado completo: tem CV
     try { localStorage.setItem('vagaai_cv', JSON.stringify(d.cv_otimizado)); } catch(e) {}
-    cvBtn.style.display = 'block';
+    cvBtn.style.display = 'flex';
     cvBtnInline.style.display = 'inline-flex';
     upsellBtn.style.display = 'none';
     document.getElementById('upsellSection').classList.remove('show');
-    if (interviewBtn) interviewBtn.style.display = 'inline-flex';
+    // Entrevista: só aparece se interview_agendada no tracker (verifica async)
+    if (interviewBtn) {
+      interviewBtn.style.display = 'none';
+      if (d._analysis_id) _checkInterviewState(d._analysis_id, interviewBtn);
+    }
     if (cartaBtn) cartaBtn.style.display = 'inline-flex';
   } else if (isAnonymous) {
     // Anônimo: CTA de cadastro, teasers para ferramentas, sem preços
@@ -1524,7 +1642,7 @@ function tryNewAnalysis() {
     }
   } else {
     // Anônimo: verifica localStorage
-    if (localStorage.getItem('vagaai_analyzed')) {
+    if ((function(){ try { var _va = localStorage.getItem('vagaai_analyzed'); if (!_va) return false; var _vaParsed = JSON.parse(_va); if (!_vaParsed || typeof _vaParsed.ts !== 'number') { try{localStorage.removeItem('vagaai_analyzed');}catch(e2){} return false; } var _isUsed = (Date.now() - _vaParsed.ts) < 30 * 24 * 60 * 60 * 1000; if (!_isUsed) { try{localStorage.removeItem('vagaai_analyzed');}catch(e2){} } return _isUsed; } catch(e) { try{localStorage.removeItem('vagaai_analyzed');}catch(e2){} return false; } }())) {
       document.getElementById('resultSection').classList.remove('show');
       showLimitReached();
       return;
@@ -1590,31 +1708,64 @@ function renderListWithLock(id, items, locked, showCount, lockLabel) {
   }
 }
 
-function renderBriefing(b) {
-  var blocks = [
-    { title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> O que valorizam', key: 'o_que_valorizam' },
-    { title: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> O que buscam', key: 'buscam_em_candidatos' },
-    { title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> O que mencionar na entrevista', key: 'pontos_para_entrevista' },
-    { title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Perguntas para fazer', key: 'perguntas_para_fazer' }
-  ];
+var _BRIEFING_BLOCKS = [
+  { title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> O que valorizam', key: 'o_que_valorizam', sub: 'Cultura e valores percebidos na vaga' },
+  { title: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> O que buscam', key: 'buscam_em_candidatos', sub: 'Perfil ideal além dos requisitos técnicos' },
+  { title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> O que mencionar na entrevista', key: 'pontos_para_entrevista', sub: 'Pontos concretos para destacar' },
+  { title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Perguntas para fazer', key: 'perguntas_para_fazer', sub: 'Demonstre interesse genuíno' }
+];
+
+function renderBriefing(b, showAll) {
   var html = '';
-  blocks.forEach(function(block) {
+  _BRIEFING_BLOCKS.forEach(function(block) {
     var items = b[block.key] || [];
     if (!items.length) return;
+    var visible = (showAll || items.length <= 2) ? items : items.slice(0, 2);
+    var hasMore = !showAll && items.length > 2;
     html += '<div class="briefing-block">'
       + '<div class="briefing-block-title">' + block.title + '</div>'
+      + (block.sub ? '<div style="font-size:11px;color:var(--muted);margin-bottom:.5rem">' + escHtml(block.sub) + '</div>' : '')
       + '<ul class="briefing-block-list">'
-      + items.map(function(i) { return '<li>' + escHtml(i) + '</li>'; }).join('')
-      + '</ul></div>';
+      + visible.map(function(i) { return '<li>' + escHtml(i) + '</li>'; }).join('')
+      + '</ul>'
+      + (hasMore ? '<button class="briefing-expand-btn" onclick="expandBriefing()">Ver briefing completo →</button>' : '')
+      + '</div>';
   });
   if (b.pontos_de_atencao && b.pontos_de_atencao.length) {
+    var atItems = showAll ? b.pontos_de_atencao : b.pontos_de_atencao.slice(0, 2);
+    var atMore = !showAll && b.pontos_de_atencao.length > 2;
     html += '<div class="briefing-block briefing-atencao">'
       + '<div class="briefing-block-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Pontos de atenção na vaga</div>'
+      + '<div style="font-size:11px;color:var(--muted);margin-bottom:.5rem">Sinais de atenção ou ambiguidades</div>'
       + '<ul class="briefing-block-list">'
-      + b.pontos_de_atencao.map(function(i) { return '<li>' + escHtml(i) + '</li>'; }).join('')
-      + '</ul></div>';
+      + atItems.map(function(i) { return '<li>' + escHtml(i) + '</li>'; }).join('')
+      + '</ul>'
+      + (atMore ? '<button class="briefing-expand-btn" onclick="expandBriefing()">Ver briefing completo →</button>' : '')
+      + '</div>';
   }
   document.getElementById('briefingGrid').innerHTML = html;
+}
+
+function expandBriefing() {
+  if (_lastResultData && _lastResultData.briefing_empresa) {
+    renderBriefing(_lastResultData.briefing_empresa, true);
+  }
+}
+
+async function _checkInterviewState(analysisId, btn) {
+  if (!authSession || !analysisId) return;
+  try {
+    var res = await fetch(
+      SUPABASE_URL + '/rest/v1/job_tracker?user_id=eq.' + encodeURIComponent(authSession.user.id)
+        + '&analysis_id=eq.' + encodeURIComponent(analysisId) + '&select=status',
+      { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + authSession.access_token } }
+    );
+    if (!res.ok) return;
+    var rows = await res.json();
+    // Show interview button only when interview is scheduled
+    var status = Array.isArray(rows) && rows.length ? rows[0].status : null;
+    if (status === 'entrevista_agendada') btn.style.display = 'inline-flex';
+  } catch(e) {}
 }
 
 function renderKeywords(id, items, cls) {
@@ -1757,21 +1908,49 @@ function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')
 var _pendingResultData = null;
 var _lastResultData = null;
 
-function addResultToTracker(status) {
-  if (!_lastResultData) return;
-  // Feedback visual imediato no botão
+async function addResultToTracker(status) {
+  if (!_lastResultData || !authSession) return;
   var btn = document.getElementById('trackerAddBtn');
-  if (btn) { btn.classList.add('added'); btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Adicionado!'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando…'; }
   var d = _lastResultData;
   var empresa = (d.job_info && d.job_info.empresa) ? d.job_info.empresa : '';
   var cargo = (d.job_info && d.job_info.cargo) ? d.job_info.cargo : '';
   var score = d.score || 0;
+  var jobUrl = (document.getElementById('jobUrl') && document.getElementById('jobUrl').value.trim()) || '';
+  var analysisId = (d && d._analysis_id) ? d._analysis_id : null;
+  var userId = authSession.user.id;
+
   try {
-    var jobUrl = (document.getElementById('jobUrl') && document.getElementById('jobUrl').value.trim()) || '';
-    var analysisId = (d && d._analysis_id) ? d._analysis_id : null;
-    localStorage.setItem('vagaai_tracker_pending', JSON.stringify({ empresa: empresa, cargo: cargo, score: score, status: status || 'quero', job_url: jobUrl || null, analysis_id: analysisId }));
-  } catch(e) {}
-  setTimeout(function(){ window.location.href = '/dashboard'; }, 600);
+    // Prevent duplicate: check if already tracked by (user_id + analysis_id)
+    if (analysisId) {
+      var checkRes = await fetch(
+        SUPABASE_URL + '/rest/v1/job_tracker?user_id=eq.' + encodeURIComponent(userId) + '&analysis_id=eq.' + encodeURIComponent(analysisId) + '&select=id',
+        { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + authSession.access_token } }
+      );
+      if (checkRes.ok) {
+        var existing = await checkRes.json();
+        if (Array.isArray(existing) && existing.length > 0) {
+          if (btn) { btn.disabled = false; btn.classList.add('added'); btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Já adicionado'; }
+          return;
+        }
+      }
+    }
+
+    var body = { user_id: userId, empresa: empresa, cargo: cargo, score: score, status: status || 'quero_aplicar', job_url: jobUrl || null, analysis_id: analysisId || null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker', {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + authSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify(body)
+    });
+
+    if (res.ok || res.status === 201 || res.status === 204) {
+      if (btn) { btn.classList.add('added'); btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Adicionado!'; }
+    } else {
+      if (btn) { btn.disabled = false; btn.textContent = '+ Rastreador'; }
+    }
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = '+ Rastreador'; }
+  }
 }
 
 

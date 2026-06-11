@@ -2,6 +2,8 @@
 // Cron diário: envia emails de Day 2 e Day 5 para usuários recém-cadastrados
 // Rastreia envios na tabela webhook_events com chave sintética "onboarding_dayN_USERID"
 
+import { timingSafeEqual } from 'crypto';
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -77,10 +79,15 @@ async function getUserCredits(userId) {
 }
 
 async function callOnboardingEmail(email, name, type, creditsLeft) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    console.error('cron-onboarding: CRON_SECRET not configured');
+    return false;
+  }
   const res = await fetch('https://www.vagaai.app.br/api/onboarding-emails', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.CRON_SECRET || 'vagaai-cron-secret-2026'}`,
+      Authorization: `Bearer ${cronSecret}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ email, name, type, credits_left: creditsLeft }),
@@ -88,7 +95,7 @@ async function callOnboardingEmail(email, name, type, creditsLeft) {
   return res.ok;
 }
 
-// ─── Follow-up: candidaturas "aplicado" há ~7 dias ────────────────────────────
+// ─── Follow-up: candidaturas "aplicada" ou "aplicado" há ~7 dias ─────────────
 async function getTrackerFollowupCards() {
   const now = Date.now();
   const minMs = now - 8 * 24 * 60 * 60 * 1000; // 8 dias atrás
@@ -96,12 +103,23 @@ async function getTrackerFollowupCards() {
   const minISO = new Date(minMs).toISOString();
   const maxISO = new Date(maxMs).toISOString();
 
+  // Busca candidaturas com status aplicada ou aplicado (legado)
+  // Sem filtro de data no DB pois usamos applied_at com fallback para stage_moved_at
+  // e aplicamos o filtro em código para maior precisão
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/job_tracker?status=eq.aplicado&stage_moved_at=gte.${encodeURIComponent(minISO)}&stage_moved_at=lte.${encodeURIComponent(maxISO)}&select=id,user_id,empresa,cargo`,
+    `${SUPABASE_URL}/rest/v1/job_tracker?status=in.(aplicada,aplicado)&select=id,user_id,empresa,cargo,applied_at,stage_moved_at`,
     { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
   );
   if (!res.ok) return [];
-  return await res.json();
+  const cards = await res.json();
+
+  // Filtra em código usando applied_at como referência (fallback: stage_moved_at)
+  return cards.filter(card => {
+    const ref = card.applied_at || card.stage_moved_at;
+    if (!ref) return false;
+    const t = new Date(ref).getTime();
+    return t >= minMs && t <= maxMs;
+  });
 }
 
 async function getUserEmail(userId) {
@@ -117,10 +135,15 @@ async function getUserEmail(userId) {
 }
 
 async function callFollowupEmail(email, name, empresa, cargo) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    console.error('cron-onboarding: CRON_SECRET not configured');
+    return false;
+  }
   const res = await fetch('https://www.vagaai.app.br/api/onboarding-emails', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.CRON_SECRET || 'vagaai-cron-secret-2026'}`,
+      Authorization: `Bearer ${cronSecret}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ email, name, type: 'tracker_followup', empresa, cargo }),
@@ -133,11 +156,18 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const secret = process.env.CRON_SECRET || 'vagaai-cron-secret-2026';
+  // Exige CRON_SECRET configurado — sem fallback
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    console.error('cron-onboarding: CRON_SECRET env var não configurada');
+    return res.status(500).json({ error: 'CRON_SECRET não configurado' });
+  }
+
   const auth = (req.headers.authorization || '').replace('Bearer ', '');
-  // Vercel invoca crons sem Authorization header — aceita sem token nesse caso
-  const isVercelCron = req.headers['x-vercel-cron'] === '1';
-  if (!isVercelCron && auth !== secret) {
+  const cronExpected = Buffer.from(cronSecret, 'utf8');
+  const cronReceived = Buffer.alloc(cronExpected.length);
+  Buffer.from(auth || '', 'utf8').copy(cronReceived);
+  if ((auth || '').length !== cronSecret.length || !timingSafeEqual(cronExpected, cronReceived)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 

@@ -180,8 +180,23 @@ export default async function handler(req, res) {
   }
 
   // ── Rota padrão: chamada pelo cron/webhook com CRON_SECRET ────────────────
-  const secret = process.env.CRON_SECRET || 'vagaai-cron-secret-2026';
-  if (authHeader !== secret) return res.status(401).json({ error: 'Unauthorized' });
+  const secret = process.env.CRON_SECRET;
+  if (!secret) {
+    console.error('onboarding-emails: CRON_SECRET não configurado');
+    return res.status(500).json({ error: 'CRON_SECRET não configurado' });
+  }
+  // Comparação timing-safe: impede ataques de timing
+  const authBuf = Buffer.from(authHeader.slice('Bearer '.length) || '', 'utf8');
+  const secretBuf = Buffer.from(secret, 'utf8');
+  const validLength = authBuf.length === secretBuf.length;
+  // Usa buffers de igual comprimento para timingSafeEqual (padding se necessário)
+  const a = Buffer.alloc(Math.max(authBuf.length, secretBuf.length));
+  const b = Buffer.alloc(Math.max(authBuf.length, secretBuf.length));
+  authBuf.copy(a); secretBuf.copy(b);
+  const { timingSafeEqual } = await import('crypto');
+  if (!validLength || !timingSafeEqual(a, b)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
   const { email, name, type, credits_left, empresa, cargo } = req.body || {};
   if (!email || !type) return res.status(400).json({ error: 'email e type obrigatórios' });

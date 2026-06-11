@@ -273,10 +273,9 @@ textarea::placeholder{color:var(--muted)}
 </div>
 
 <script>
-var sb = window.supabase.createClient(
-  'https://kbcjchjepgejdezeuwwh.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA'
-);
+var _SUPA_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
+var _SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
+var sb = window.supabase.createClient(_SUPA_URL, _SUPA_ANON);
 
 var _session = null;
 var _questions = [];
@@ -291,12 +290,45 @@ var _cvText = '';
   _session = r.data.session;
   if (!_session) { window.location.href = '/login'; return; }
 
-  // Verifica plano
   try {
     var res = await fetch('/api/subscription', { headers: { Authorization: 'Bearer ' + _session.access_token } });
     var sub = await res.json();
-    if (sub.plan === 'pro') {
-      // Carrega vaga/cv do localStorage se vier do /app
+    var canUse = sub.plan === 'pro' || (sub.entitlements && sub.entitlements.simulador_entrevista);
+    if (!canUse) { showScreen('screenGate'); return; }
+
+    // Tenta carregar contexto da análise via analysis_id da URL (Item 3)
+    var urlParams = new URLSearchParams(window.location.search);
+    var analysisId = (urlParams.get('analysis_id') || '').trim();
+
+    if (analysisId) {
+      // Busca análise verificando ownership pelo user_id do token
+      try {
+        var aRes = await fetch(
+          _SUPA_URL + '/rest/v1/analyses?id=eq.' + encodeURIComponent(analysisId) + '&user_id=eq.' + encodeURIComponent(_session.user.id) + '&select=result,job_excerpt&limit=1',
+          { headers: { apikey: _SUPA_ANON, Authorization: 'Bearer ' + _session.access_token } }
+        );
+        if (!aRes.ok) throw new Error('HTTP ' + aRes.status);
+        var rows = await aRes.json();
+        if (!Array.isArray(rows) || rows.length === 0) {
+          showError('setupError', 'Análise não encontrada ou não pertence a esta conta.');
+          showScreen('screenSetup');
+        } else {
+          var analysis = rows[0];
+          var jobCtx = _jobInfoToText(analysis.result);
+          var cvCtx = _cvToText(analysis.result && analysis.result.cv_otimizado);
+          // Se resultado da IA não tiver contexto suficiente, usa job_excerpt como fallback
+          if (!jobCtx && analysis.job_excerpt) jobCtx = analysis.job_excerpt;
+          document.getElementById('jobInput').value = jobCtx;
+          document.getElementById('cvInput').value = cvCtx;
+          showScreen('screenSetup');
+        }
+      } catch(aErr) {
+        console.warn('Falha ao carregar análise:', aErr.message);
+        showError('setupError', 'Não foi possível carregar os dados da análise. Preencha manualmente.');
+        showScreen('screenSetup');
+      }
+    } else {
+      // Sem analysis_id: usa localStorage como fallback
       var savedJob = '';
       var savedCv = '';
       try { savedJob = localStorage.getItem('vagaai_last_job') || ''; } catch(e){}
@@ -304,13 +336,53 @@ var _cvText = '';
       if (savedJob) document.getElementById('jobInput').value = savedJob;
       if (savedCv) document.getElementById('cvInput').value = savedCv;
       showScreen('screenSetup');
-    } else {
-      showScreen('screenGate');
     }
   } catch(e) {
     showScreen('screenGate');
   }
 })();
+
+// Converte job_info do resultado da análise para texto legível
+function _jobInfoToText(result) {
+  if (!result) return '';
+  var ji = result.job_info || {};
+  var parts = [];
+  if (ji.empresa) parts.push('Empresa: ' + ji.empresa);
+  if (ji.cargo) parts.push('Cargo: ' + ji.cargo);
+  if (ji.local) parts.push('Local: ' + ji.local);
+  if (ji.tipo_contrato) parts.push('Tipo de contrato: ' + ji.tipo_contrato);
+  if (Array.isArray(ji.requisitos) && ji.requisitos.length) parts.push('Requisitos:\n- ' + ji.requisitos.join('\n- '));
+  if (Array.isArray(ji.beneficios) && ji.beneficios.length) parts.push('Benefícios: ' + ji.beneficios.join(', '));
+  if (Array.isArray(result.palavras_chave) && result.palavras_chave.length) parts.push('Palavras-chave: ' + result.palavras_chave.join(', '));
+  return parts.join('\n');
+}
+
+// Converte cv_otimizado (objeto ou string) para texto legível
+function _cvToText(cv) {
+  if (!cv) return '';
+  if (typeof cv === 'string') return cv;
+  var parts = [];
+  if (cv.nome) parts.push('Nome: ' + cv.nome);
+  if (cv.objetivo || cv.resumo) parts.push('Objetivo: ' + (cv.objetivo || cv.resumo));
+  if (Array.isArray(cv.experiencias) && cv.experiencias.length) {
+    parts.push('Experiências:');
+    cv.experiencias.forEach(function(e) {
+      if (typeof e === 'string') parts.push('- ' + e);
+      else parts.push('- ' + (e.cargo||'') + (e.empresa ? ' na ' + e.empresa : '') + (e.periodo ? ' (' + e.periodo + ')' : ''));
+    });
+  }
+  if (Array.isArray(cv.formacao) && cv.formacao.length) {
+    parts.push('Formação:');
+    cv.formacao.forEach(function(f) {
+      if (typeof f === 'string') parts.push('- ' + f);
+      else parts.push('- ' + (f.curso || f.instituicao || JSON.stringify(f)));
+    });
+  }
+  if (cv.habilidades) {
+    parts.push('Habilidades: ' + (Array.isArray(cv.habilidades) ? cv.habilidades.join(', ') : String(cv.habilidades)));
+  }
+  return parts.join('\n');
+}
 
 async function fetchJobUrl() {
   var url = document.getElementById('jobUrl').value.trim();
