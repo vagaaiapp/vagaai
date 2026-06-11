@@ -4581,7 +4581,7 @@ async function openStripePortal(btn) {
   var origText = btn ? btn.textContent : '';
   try {
     if (btn) { btn.disabled = true; btn.textContent = 'Aguarde...'; }
-    var res = await fetch('/api/stripe-portal', {
+    var res = await fetch('/api/subscription', {
       method: 'POST',
       headers: { Authorization: 'Bearer ' + (currentSession && currentSession.access_token || '') }
     });

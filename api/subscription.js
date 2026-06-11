@@ -12,8 +12,44 @@ const PAID_PLANS = new Set(['starter', 'pro']);
 const ACTIVE_STATUSES = new Set(['active', 'trialing']);
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', 'https://www.vagaai.app.br');
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+
+  if (req.method === 'POST') {
+    // Cria sessão no Stripe Customer Portal
+    if (!process.env.STRIPE_SECRET_KEY) return res.status(500).json({ error: 'Stripe not configured' });
+    const token = (req.headers.authorization || '').replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Token required' });
+    try {
+      const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` },
+      });
+      if (!userRes.ok) return res.status(401).json({ error: 'Invalid token' });
+      const user = await userRes.json();
+      const subRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${encodeURIComponent(user.id)}&select=stripe_customer_id`,
+        { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+      );
+      const rows = await subRes.json();
+      const customerId = rows?.[0]?.stripe_customer_id;
+      if (!customerId) return res.status(404).json({ error: 'no_subscription', message: 'Nenhuma assinatura encontrada.' });
+      const portalRes = await fetch('https://api.stripe.com/v1/billing_portal/sessions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ customer: customerId, return_url: 'https://www.vagaai.app.br/dashboard' }).toString(),
+      });
+      if (!portalRes.ok) {
+        const errData = await portalRes.json();
+        return res.status(502).json({ error: errData?.error?.message || 'Erro ao criar portal Stripe.' });
+      }
+      const portal = await portalRes.json();
+      return res.status(200).json({ url: portal.url });
+    } catch (err) {
+      console.error('subscription portal error:', err);
+      return res.status(500).json({ error: 'Internal error' });
+    }
+  }
+
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   const token = (req.headers.authorization || '').replace('Bearer ', '');
