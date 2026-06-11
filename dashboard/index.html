@@ -1784,7 +1784,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
             <button class="cvs-btn" id="cvs-kanban" onclick="setCandView('kanban')">Kanban</button>
             <button class="cvs-btn" id="cvs-calendario" onclick="setCandView('calendario')">Calendário</button>
           </div>
-          <button class="cand-new-btn" onclick="openTrackerEdit({status:'aplicada'})">
+          <button class="cand-new-btn" onclick="openTrackerEdit({status:'quero_aplicar'})">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Nova candidatura
           </button>
@@ -2079,7 +2079,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           </div>
           <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;align-items:center;justify-content:space-between;">
             <span style="font-size:11px;color:var(--t3)">R$39,90/mês · Renova automaticamente</span>
-            <span style="font-size:10.5px;color:var(--gb-emerald);font-weight:600;cursor:pointer">Gerenciar →</span>
+            <span style="font-size:10.5px;color:var(--gb-emerald);font-weight:600;cursor:pointer" id="planoRenovacao" onclick="openStripePortal(this)">Gerenciar →</span>
           </div>
         </div>
       </div>
@@ -2098,7 +2098,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           <li style="display:flex;gap:8px;"><span style="color:var(--gb-emerald)">✓</span> Carta de apresentação</li>
           <li style="display:flex;gap:8px;"><span style="color:var(--t3)">—</span><span style="color:var(--t3)">Simulador de entrevista</span></li>
         </ul>
-        <button style="width:100%;padding:11px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--bg);color:var(--t1);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" onclick="window.open('https://buy.stripe.com/7sY5kD9tk5DzgdNf0P9k404','_blank')">Mudar para Starter</button>
+        <button style="width:100%;padding:11px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--bg);color:var(--t1);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" onclick="openStripePortal(this)">Mudar para Starter</button>
       </div>
 
       <!-- Pro (ativo) -->
@@ -2123,15 +2123,15 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         <div style="display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);">
             <div><div style="font-size:13px;font-weight:600;">1 análise</div><div style="font-size:11px;color:var(--t3)">Sem assinatura</div></div>
-            <div style="display:flex;align-items:center;gap:10px;"><strong>R$9,90</strong><button onclick="window.open('https://buy.stripe.com/7sY5kD9tk5DzgdNf0P9k404','_blank')" style="border:none;background:var(--gb-emerald);color:#fff;padding:6px 14px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Comprar</button></div>
+            <div style="display:flex;align-items:center;gap:10px;"><strong>R$9,90</strong><button onclick="openAuthCheckout('https://buy.stripe.com/7sY5kD9tk5DzgdNf0P9k404')" style="border:none;background:var(--gb-emerald);color:#fff;padding:6px 14px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Comprar</button></div>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--s-grn-bg);">
             <div><div style="font-size:13px;font-weight:600;">10 análises</div><div style="font-size:11px;color:var(--gb-emerald);font-weight:600">⭐ Mais escolhido · R$3,99 cada</div></div>
-            <div style="display:flex;align-items:center;gap:10px;"><strong>R$39,90</strong><button onclick="window.open('https://buy.stripe.com/cNi4gz20Sc1XgdNf0P9k403','_blank')" style="border:none;background:var(--gb-emerald);color:#fff;padding:6px 14px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Comprar</button></div>
+            <div style="display:flex;align-items:center;gap:10px;"><strong>R$39,90</strong><button onclick="openAuthCheckout('https://buy.stripe.com/cNi4gz20Sc1XgdNf0P9k403')" style="border:none;background:var(--gb-emerald);color:#fff;padding:6px 14px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Comprar</button></div>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);">
             <div><div style="font-size:13px;font-weight:600;">50 análises</div><div style="font-size:11px;color:var(--t3)">R$1,94 cada · Sem expiração</div></div>
-            <div style="display:flex;align-items:center;gap:10px;"><strong>R$97,00</strong><button onclick="window.open('https://buy.stripe.com/eVqbJ120S0jf3r16uj9k405','_blank')" style="border:none;background:var(--gb-emerald);color:#fff;padding:6px 14px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Comprar</button></div>
+            <div style="display:flex;align-items:center;gap:10px;"><strong>R$97,00</strong><button onclick="openAuthCheckout('https://buy.stripe.com/eVqbJ120S0jf3r16uj9k405')" style="border:none;background:var(--gb-emerald);color:#fff;padding:6px 14px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Comprar</button></div>
           </div>
         </div>
       </div>
@@ -2868,19 +2868,19 @@ function normalizeStatus(s) { return STATUS_NORM[s] || s || ''; }
 var STATUS_LABELS = {
   quero_aplicar:'Quero aplicar', analisada:'Analisada', cv_pronto:'CV pronto',
   aplicada:'Aplicada', em_processo:'Em processo', entrevista:'Entrevista',
-  oferta:'Oferta', recusada:'Recusada', encerrada:'Encerrada',
+  oferta:'Oferta', recusada:'Recusada', encerrada:'Encerrada', arquivada:'Arquivada',
   quero:'Quero aplicar', aplicado:'Aplicada', recusado:'Recusada'
 };
 var STATUS_COLORS = {
   quero_aplicar:'#854f0b', analisada:'var(--t3)', cv_pronto:'#185fa5',
   aplicada:'var(--gb-emerald)', em_processo:'#185fa5', entrevista:'#854f0b',
-  oferta:'#534ab7', recusada:'var(--s-red)', encerrada:'var(--t3)',
+  oferta:'#534ab7', recusada:'var(--s-red)', encerrada:'var(--t3)', arquivada:'var(--t3)',
   quero:'#854f0b', aplicado:'var(--gb-emerald)', recusado:'var(--s-red)'
 };
 var STATUS_BG = {
   quero_aplicar:'#fef9ee', analisada:'var(--bg-sub)', cv_pronto:'#e6f1fb',
   aplicada:'var(--s-grn-bg)', em_processo:'#e6f1fb', entrevista:'#fef9ee',
-  oferta:'#eeedfe', recusada:'var(--s-red-bg)', encerrada:'var(--bg-sub)',
+  oferta:'#eeedfe', recusada:'var(--s-red-bg)', encerrada:'var(--bg-sub)', arquivada:'var(--bg-sub)',
   quero:'#fef9ee', aplicado:'var(--s-grn-bg)', recusado:'var(--s-red-bg)'
 };
 
@@ -3374,12 +3374,17 @@ function openTrackerEditById(id) {
 }
 
 function buildStatusSelect(currentStatus, analysisId, jobId) {
-  var opts = [['','— Status —'],['aplicado','Aplicado'],['em_processo','Em processo'],['entrevista','Entrevista'],['oferta','Oferta'],['recusado','Recusado']];
+  var normalized = normalizeStatus(currentStatus);
+  var opts = [
+    ['','— Status —'],['quero_aplicar','Quero aplicar'],['cv_pronto','CV pronto'],
+    ['aplicada','Aplicada'],['em_processo','Em processo'],['entrevista','Entrevista'],
+    ['oferta','Oferta'],['recusada','Recusada'],['encerrada','Encerrada']
+  ];
   var optsHtml = opts.map(function(o) {
-    return '<option value="' + o[0] + '"' + (currentStatus === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+    return '<option value="' + o[0] + '"' + (normalized === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
   }).join('');
-  var selColor = currentStatus ? (STATUS_COLORS[currentStatus] || 'var(--t2)') : 'var(--t3)';
-  var selBg = currentStatus ? (STATUS_BG[currentStatus] || 'var(--bg-sub)') : 'var(--bg-sub)';
+  var selColor = normalized ? (STATUS_COLORS[normalized] || 'var(--t2)') : 'var(--t3)';
+  var selBg = normalized ? (STATUS_BG[normalized] || 'var(--bg-sub)') : 'var(--bg-sub)';
   var dataAttrs = analysisId ? 'data-aid="' + escAttr(analysisId) + '"' : 'data-jid="' + escAttr(jobId) + '"';
   return '<select onchange="handleSelectChange(this)" ' + dataAttrs + ' style="font-size:11px;font-weight:600;color:' + selColor + ';background:' + selBg + ';border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer;appearance:auto;max-width:130px">' + optsHtml + '</select>';
 }
@@ -3405,7 +3410,7 @@ async function handleStatusChange(analysisId, empresa, cargo, score, newStatus) 
     await handleStatusUpdate(existing.id, newStatus);
   } else if (newStatus) {
     try {
-      var body = { user_id: currentUserId, empresa: empresa, cargo: cargo, score: score, status: newStatus, analysis_id: analysisId };
+      var body = { user_id: currentUserId, empresa: empresa, cargo: cargo, score: score, status: normalizeStatus(newStatus), analysis_id: analysisId };
       var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker', {
         method: 'POST',
         headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=representation' },
@@ -3419,14 +3424,22 @@ async function handleStatusChange(analysisId, empresa, cargo, score, newStatus) 
 
 async function handleStatusUpdate(jobId, newStatus) {
   try {
+    var canonical = normalizeStatus(newStatus);
+    var now = new Date().toISOString();
+    var patch = { status: canonical, stage_moved_at: now, updated_at: now };
+    // Preenche data específica do estágio sem sobrescrever datas históricas
+    if (canonical === 'aplicada') patch.applied_at = now;
+    else if (canonical === 'entrevista') patch.interview_at = now;
+    else if (canonical === 'oferta') patch.offer_at = now;
+    else if (canonical === 'recusada' || canonical === 'encerrada') patch.closed_at = now;
     var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker?id=eq.' + encodeURIComponent(jobId), {
       method: 'PATCH',
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: newStatus })
+      body: JSON.stringify(patch)
     });
     if (res.ok) { await loadKanban(); showToast('Status atualizado!'); }
-    else showToast('Erro ao atualizar', 'error');
-  } catch(e) { showToast('Erro ao atualizar', 'error'); }
+    else showToast('Erro ao atualizar status', 'error');
+  } catch(e) { showToast('Erro ao atualizar status', 'error'); }
 }
 
 function renderTrackedJobs() {
@@ -3435,21 +3448,26 @@ function renderTrackedJobs() {
 
 
 function openTracker(empresa, cargo, score) {
-  openTrackerEdit({ empresa: empresa, cargo: cargo, score: score, status: 'aplicado' });
+  openTrackerEdit({ empresa: empresa, cargo: cargo, score: score, status: 'quero_aplicar' });
 }
 
 function openTrackerEdit(job) {
   var modal = document.createElement('div');
   modal.className = 'modal-overlay';
-  var statusOptions = ['quero', 'aplicado', 'entrevista', 'oferta'];
-  var statusLabels = { quero: 'Quero aplicar', aplicado: 'Aplicado', entrevista: 'Entrevista', oferta: 'Oferta' };
+  var statusOptions = [
+    ['quero_aplicar','Quero aplicar'],['cv_pronto','CV pronto'],['aplicada','Aplicada'],
+    ['em_processo','Em processo'],['entrevista','Entrevista'],['oferta','Oferta'],
+    ['recusada','Recusada'],['encerrada','Encerrada'],['arquivada','Arquivada']
+  ];
+  var currentStatus = normalizeStatus(job.status || 'quero_aplicar');
   var selectOpts = statusOptions.map(function(s) {
-    return '<option value="' + s + '"' + (job.status === s ? ' selected' : '') + '>' + statusLabels[s] + '</option>';
+    return '<option value="' + s[0] + '"' + (currentStatus === s[0] ? ' selected' : '') + '>' + s[1] + '</option>';
   }).join('');
 
   modal.innerHTML = '<div class="modal-box" style="max-width:440px">' +
     '<button class="modal-close">✕</button>' +
     '<div class="modal-title">' + (job.id ? 'Editar candidatura' : 'Rastrear candidatura') + '</div>' +
+    '<input type="hidden" id="tkAnalysisId" value="' + escHtml(job.analysis_id || '') + '">' +
     '<div class="modal-field"><label class="modal-label">Empresa</label><input class="modal-input" id="tkEmpresa" value="' + escHtml(job.empresa || '') + '"></div>' +
     '<div class="modal-field"><label class="modal-label">Cargo</label><input class="modal-input" id="tkCargo" value="' + escHtml(job.cargo || '') + '"></div>' +
     '<div class="modal-field"><label class="modal-label">Score ATS</label><input class="modal-input" type="number" id="tkScore" value="' + (job.score || '') + '"></div>' +
@@ -3541,6 +3559,8 @@ async function saveTrackerModal(modal, editId) {
   if (!editId) {
     body.user_id = currentUserId;
     body.created_at = new Date().toISOString();
+    var aidEl = document.getElementById('tkAnalysisId');
+    if (aidEl && aidEl.value) body.analysis_id = aidEl.value;
   }
 
   var saveBtn = modal.querySelector('.tracker-save-btn');
@@ -4306,7 +4326,7 @@ function setFreq()       {}
 function addToTracker(empresa, cargo, score, analysisId) {
   switchDashTab('vagas');
   setTimeout(function() {
-    openTrackerEdit({ empresa: empresa, cargo: cargo, score: score, status: 'aplicado', analysis_id: analysisId || null });
+    openTrackerEdit({ empresa: empresa, cargo: cargo, score: score, status: 'quero_aplicar', analysis_id: analysisId || null });
   }, 200);
 }
 
@@ -4373,6 +4393,83 @@ function switchDashTab(tab) {
   var bcSub = document.getElementById('bc-sub');
   if (bcSec) bcSec.textContent = labels[tab] || tab;
   if (bcSub) bcSub.textContent = subs[tab] || '';
+  if (tab === 'plano') loadSubscriptionData();
+}
+
+/* ── Stripe helpers ─────────────────────────────────────────────── */
+function openAuthCheckout(baseUrl) {
+  var url = baseUrl;
+  try {
+    if (currentUserId && currentSession && currentSession.user) {
+      var sep = url.includes('?') ? '&' : '?';
+      url += sep + 'client_reference_id=' + encodeURIComponent(currentUserId)
+           + '&prefilled_email=' + encodeURIComponent(currentSession.user.email || '');
+    }
+  } catch(e) {}
+  window.open(url, '_blank');
+}
+
+async function openStripePortal(btn) {
+  var origText = btn ? btn.textContent : '';
+  try {
+    if (btn) { btn.disabled = true; btn.textContent = 'Aguarde...'; }
+    var res = await fetch('/api/stripe-portal', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + (currentSession && currentSession.access_token || '') }
+    });
+    var data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else if (data.error === 'no_subscription') {
+      showToast('Nenhuma assinatura encontrada para gerenciar.', 'error');
+    } else {
+      showToast(data.error || 'Erro ao abrir portal Stripe.', 'error');
+    }
+  } catch(e) {
+    showToast('Erro ao conectar com Stripe. Tente novamente.', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+  }
+}
+
+async function loadSubscriptionData() {
+  try {
+    var res = await fetch('/api/subscription', {
+      headers: { Authorization: 'Bearer ' + (currentSession && currentSession.access_token || '') }
+    });
+    if (!res.ok) return;
+    var sub = await res.json();
+    window._subscriptionData = sub;
+    var planLabels = { pro: 'Pro', starter: 'Starter', free: 'Grátis' };
+    var planLabel = planLabels[sub.plan] || sub.plan || 'Grátis';
+    // Hero metrics
+    var el;
+    el = document.getElementById('planoNome'); if (el) el.textContent = planLabel;
+    var anlabel = sub.plan === 'pro' ? '∞' : sub.plan === 'starter' ? (sub.analyses_used_this_month + '/10') : (sub.analyses_used_this_month || '0');
+    el = document.getElementById('planoAnalises'); if (el) el.textContent = anlabel;
+    el = document.getElementById('planoVagas'); if (el) el.textContent = Array.isArray(_kTracked) ? String(_kTracked.length) : '—';
+    // Sidebar label
+    el = document.getElementById('sbPlanLabel'); if (el) el.textContent = planLabel;
+    // Plan card details
+    var statusMap = { active:'Ativo', trialing:'Trial', past_due:'Pagamento pendente', canceled:'Cancelado', incomplete:'Incompleto' };
+    var statusLabel = statusMap[sub.status] || sub.status || '';
+    var renewEl = document.getElementById('planoRenovacao');
+    if (renewEl && sub.current_period_end) {
+      var d = new Date(sub.current_period_end);
+      var diffDays = Math.ceil((d - Date.now()) / 86400000);
+      renewEl.textContent = diffDays > 0 ? statusLabel + ' · renova em ' + diffDays + ' dias' : statusLabel;
+    }
+    if (sub.cancel_at_period_end) {
+      var cancelEl = document.getElementById('planoCancelInfo');
+      if (cancelEl) {
+        var endDate = sub.current_period_end ? new Date(sub.current_period_end).toLocaleDateString('pt-BR') : '';
+        cancelEl.textContent = 'Cancelamento agendado para ' + endDate;
+        cancelEl.style.display = 'block';
+      }
+    }
+  } catch(e) {
+    console.error('loadSubscriptionData error:', e);
+  }
 }
 
 function toggleTheme() {

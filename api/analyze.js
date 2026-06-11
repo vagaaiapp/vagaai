@@ -325,10 +325,24 @@ export default async function handler(req, res) {
   // ── Modo: criar primeiro currículo ──────────────────────────────────────────
   const { action } = req.body || {};
   if (action === 'create_cv') {
+    // Requer autenticação
+    const cvAuthHeader = req.headers['authorization'] || '';
+    const cvToken = cvAuthHeader.startsWith('Bearer ') ? cvAuthHeader.slice(7).trim() : null;
+    if (!cvToken) return res.status(401).json({ error: 'Autenticação necessária para criar currículo.' });
+    const cvUser = await getUserFromToken(cvToken);
+    if (!cvUser?.id) return res.status(401).json({ error: 'Token inválido. Faça login novamente.' });
+
     const { nome, cargo_objetivo, experiencias, formacao, habilidades, job: jobCtx } = req.body;
     if (!nome || !experiencias) {
       return res.status(400).json({ error: 'Nome e experiência são obrigatórios.' });
     }
+    // Valida tamanho dos campos
+    if (nome.length > 200)            return res.status(400).json({ error: 'Nome muito longo (máx. 200 caracteres).' });
+    if (experiencias.length > 10000)  return res.status(400).json({ error: 'Experiência muito longa (máx. 10.000 caracteres).' });
+    if ((formacao   || '').length > 5000) return res.status(400).json({ error: 'Formação muito longa (máx. 5.000 caracteres).' });
+    if ((habilidades|| '').length > 2000) return res.status(400).json({ error: 'Habilidades muito longas (máx. 2.000 caracteres).' });
+    if ((jobCtx     || '').length > 5000) return res.status(400).json({ error: 'Descrição da vaga muito longa (máx. 5.000 caracteres).' });
+
     if (!process.env.ANTHROPIC_API_KEY) {
       return res.status(500).json({ error: 'Chave de API não configurada.' });
     }

@@ -158,10 +158,8 @@ function remotiveCategory(cargo) {
 // Busca vagas na Jooble API
 async function fetchJoobleJobs(profile) {
   if (!JOOBLE_API_KEY) {
-    return [
-      { title: profile.cargo_desejado + ' Pleno', company: 'Empresa Demo', location: profile.cidade || 'Brasil', snippet: 'Vaga de demonstração. Configure a JOOBLE_API_KEY para ver vagas reais.', link: 'https://vagaai.app.br', salary: '' },
-      { title: profile.cargo_desejado + ' Sênior', company: 'Startup Demo', location: profile.cidade || 'Remoto', snippet: 'Configure a JOOBLE_API_KEY no Vercel para ativar a busca real de vagas.', link: 'https://vagaai.app.br', salary: '' },
-    ];
+    console.log('fetchJoobleJobs: JOOBLE_API_KEY not configured, skipping source');
+    return [];
   }
 
   const cargoEn = normalizeForJooble(profile.cargo_desejado || '');
@@ -986,6 +984,51 @@ async function fetchTalentComJobs(profile) {
   }
 }
 
+// ── PRÓXIMO ENVIO ─────────────────────────────────────────────────────────────
+
+function calculateNextRun(profile, fromDate = new Date()) {
+  const frequencia = profile.frequencia || 'semanal';
+  const diaEnvio = typeof profile.dia_envio === 'number' ? profile.dia_envio : 5; // default sexta
+  const horario = profile.horario_envio || '08:00';
+  const [hh = 8, mm = 0] = horario.split(':').map(Number);
+
+  const next = new Date(fromDate);
+  next.setSeconds(0, 0);
+  next.setHours(hh, mm, 0, 0);
+
+  if (frequencia === 'diario') {
+    if (next <= fromDate) next.setDate(next.getDate() + 1);
+    return next;
+  }
+
+  if (frequencia === 'semanal') {
+    const currentDay = next.getDay();
+    let daysUntil = (diaEnvio - currentDay + 7) % 7;
+    if (daysUntil === 0 && next <= fromDate) daysUntil = 7;
+    next.setDate(next.getDate() + daysUntil);
+    return next;
+  }
+
+  if (frequencia === 'quinzenal') {
+    // Usa ultimo_envio como base; fallback: 14 dias a partir de agora
+    const base = profile.ultimo_envio ? new Date(profile.ultimo_envio) : fromDate;
+    const candidate = new Date(base);
+    candidate.setDate(candidate.getDate() + 14);
+    candidate.setHours(hh, mm, 0, 0);
+    return candidate > fromDate ? candidate : new Date(fromDate.getTime() + 14 * 86400000);
+  }
+
+  if (frequencia === 'mensal') {
+    const candidate = new Date(next);
+    candidate.setMonth(candidate.getMonth() + 1);
+    candidate.setDate(1);
+    candidate.setHours(hh, mm, 0, 0);
+    return candidate;
+  }
+
+  return null;
+}
+
 // ── DEDUPLICAÇÃO ──────────────────────────────────────────────────────────────
 function deduplicateJobs(jobs) {
   const seen = new Set();
@@ -1197,14 +1240,26 @@ async function processUserAlert(profile, isTest = false) {
     throw new Error(`Resend error: ${err}`);
   }
 
-  // Registra vagas enviadas e atualiza último envio
+  // Registra vagas enviadas, atualiza timestamps e grava histórico
   if (!isTest) {
+    const now = new Date();
+    const nextRun = calculateNextRun(profile, now);
     await markJobsSent(userId, jobs);
     await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?user_id=eq.${userId}`, {
       method: 'PATCH',
       headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ ultimo_envio: new Date().toISOString() }),
+      body: JSON.stringify({
+        ultimo_envio: now.toISOString(),
+        last_run_at: now.toISOString(),
+        next_run_at: nextRun ? nextRun.toISOString() : null,
+      }),
     });
+    // Grava no histórico de envios
+    fetch(`${SUPABASE_URL}/rest/v1/job_alert_history`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ user_id: userId, sent_at: now.toISOString(), jobs_count: jobs.length, status: 'sent' }),
+    }).catch(e => console.warn('job_alert_history insert failed:', e.message));
   }
 
   return { sent: true, jobs: jobs.length, email };
@@ -1267,10 +1322,12 @@ export default async function handler(req, res) {
       profiles = await r.json();
       if (!profiles?.length) return res.status(404).json({ error: 'Perfil de alerta não encontrado. Configure o perfil primeiro.' });
     } else {
-      // Cron: todos os usuários ativos
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?ativo=eq.true&select=*`, {
-        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` }
-      });
+      // Cron: usuários ativos cujo next_run_at já passou (ou ainda não foi calculado)
+      const nowIso = new Date().toISOString();
+      const r = await fetch(
+        `${SUPABASE_URL}/rest/v1/job_alert_profiles?ativo=eq.true&or=(next_run_at.is.null,next_run_at.lte.${encodeURIComponent(nowIso)})&select=*`,
+        { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+      );
       profiles = await r.json();
     }
 

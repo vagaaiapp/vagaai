@@ -24,7 +24,10 @@ async function getUserPlan(userId) {
     });
     const rows = await res.json();
     const sub = rows?.[0];
-    if (!sub || sub.status !== 'active') return 'free';
+    if (!sub) return 'free';
+    // active + trialing = paid features; past_due = grace period (still allow)
+    const paidStatuses = ['active', 'trialing', 'past_due'];
+    if (!paidStatuses.includes(sub.status)) return 'free';
     return sub.plan || 'free';
   } catch { return 'free'; }
 }
@@ -158,6 +161,6 @@ export default async function handler(req, res) {
     }
   } catch (err) {
     console.error('interview.js error:', err);
-    return res.status(500).json({ error: 'Erro interno: ' + err.message });
+    return res.status(500).json({ error: 'Erro interno. Tente novamente.' });
   }
 }

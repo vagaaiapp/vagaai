@@ -149,16 +149,16 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Failed to read body' });
   }
 
-  // Verifica assinatura Stripe
+  // Verifica assinatura Stripe — obrigatório em produção
   const signature = req.headers['stripe-signature'];
-  if (STRIPE_WEBHOOK_SECRET) {
-    const valid = verifyStripeSignature(rawBody, signature, STRIPE_WEBHOOK_SECRET);
-    if (!valid) {
-      console.error('Webhook: invalid signature');
-      return res.status(400).json({ error: 'Invalid signature' });
-    }
-  } else {
-    console.warn('Webhook: STRIPE_WEBHOOK_SECRET not set — skipping signature check');
+  if (!STRIPE_WEBHOOK_SECRET) {
+    console.error('Webhook: STRIPE_WEBHOOK_SECRET não configurado — rejeitando requisição');
+    return res.status(500).json({ error: 'Webhook não configurado' });
+  }
+  const valid = verifyStripeSignature(rawBody, signature, STRIPE_WEBHOOK_SECRET);
+  if (!valid) {
+    console.error('Webhook: assinatura inválida');
+    return res.status(400).json({ error: 'Invalid signature' });
   }
 
   let event;
@@ -275,10 +275,10 @@ export default async function handler(req, res) {
     }
     await upsertSubscription(userId, sub.id, customerId, planInfo.plan, sub.status, sub.current_period_end, eventType === 'customer.subscription.created');
     // Email de boas-vindas (apenas na criação)
-    if (eventType === 'customer.subscription.created' && email) {
+    if (eventType === 'customer.subscription.created' && email && process.env.CRON_SECRET) {
       fetch(`https://www.vagaai.app.br/api/onboarding-emails`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${process.env.CRON_SECRET || 'vagaai-cron-secret-2026'}`, 'Content-Type': 'application/json' },
+        headers: { Authorization: `Bearer ${process.env.CRON_SECRET}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, name: '', type: 'welcome' }),
       }).catch(() => {});
     }
