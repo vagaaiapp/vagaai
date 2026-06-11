@@ -1543,8 +1543,8 @@ async function doAnalyze(job, cv) {
     // Marca como usada (anônimos)
     if (!authSession) localStorage.setItem('vagaai_analyzed', JSON.stringify({ts: Date.now()}));
 
-    // Atualiza créditos se retornados pelo servidor
-    if (authSession && data._credits_remaining != null) {
+    // Atualiza créditos legados apenas para plano free (pro/starter mostram ∞ ou contagem mensal)
+    if (authSession && data._credits_remaining != null && (!userPlan || userPlan === 'free')) {
       userCredits = data._credits_remaining;
       document.getElementById('navCreditsNum').textContent = userCredits;
     }
@@ -1707,12 +1707,14 @@ function showResult(d) {
       });
     }
     breakdownRows.forEach(function(row) {
-      var pct = row.pct !== undefined ? row.pct : (fatores[row.key] || 0);
-      var pts = row.pts !== undefined ? row.pts : Math.round(pct * row.peso / 100);
+      var dim  = row.dim   || row.label  || '';
+      var peso = row.peso  !== undefined ? row.peso  : (row.weight          || 0);
+      var pct  = row.pct   !== undefined ? row.pct   : (row.dimension_score !== undefined ? row.dimension_score : (fatores[row.key] || 0));
+      var pts  = row.pts   !== undefined ? row.pts   : (row.points          !== undefined ? row.points          : Math.round(pct * peso / 100));
       sbBody.innerHTML += '<tr>'
-        + '<td class="score-dim-label">' + escHtml(row.dim) + '</td>'
-        + '<td class="sdim-peso">' + row.peso + '%</td>'
-        + '<td class="sdim-pts"><span class="sdim-bar-wrap"><span class="sdim-bar" style="width:0%" data-val="' + pct + '%"></span></span>' + pts + '/' + row.peso + '</td>'
+        + '<td class="score-dim-label">' + escHtml(dim) + '</td>'
+        + '<td class="sdim-peso">' + peso + '%</td>'
+        + '<td class="sdim-pts"><span class="sdim-bar-wrap"><span class="sdim-bar" style="width:0%" data-val="' + pct + '%"></span></span>' + pts + '/' + peso + '</td>'
         + '</tr>';
     });
     sbBody.innerHTML += '<tr class="sdim-total">'
@@ -1735,7 +1737,7 @@ function showResult(d) {
       planItemsEl.innerHTML = plan.slice(0, 3).map(function(item, i) { return renderPlanItem(item, i); }).join('');
       planSection.style.display = 'block';
       if (planExpandCenter) {
-        var hasDetalhes = plan.slice(0, 3).some(function(item) { return item.detalhes && item.detalhes.trim(); });
+        var hasDetalhes = plan.slice(0, 3).some(function(item) { var d = Array.isArray(item.detalhes) ? item.detalhes.join('') : String(item.detalhes || ''); return d.trim().length > 0; });
         planExpandCenter.style.display = hasDetalhes ? '' : 'none';
       }
     } else {
@@ -2004,7 +2006,8 @@ function renderPlanItem(item, index) {
   var statusClass = item.status === 'concluido' ? 'concluido' : 'pendente';
   var statusLabel = item.status === 'concluido' ? 'Concluído' : 'Pendente';
   var detalhesId = 'planDetalhes' + index;
-  var hasDetalhes = item.detalhes && item.detalhes.trim();
+  var detalhesStr = Array.isArray(item.detalhes) ? item.detalhes.join('\n') : String(item.detalhes || '');
+  var hasDetalhes = detalhesStr.trim().length > 0;
   var icon = _PLAN_ICONS[index] || _PLAN_ICONS[0];
   var chevron = hasDetalhes
     ? '<button class="plan-chevron" id="planChevron' + index + '" onclick="togglePlanItem(' + index + ')" aria-label="Expandir detalhes" aria-expanded="false">'
@@ -2020,7 +2023,7 @@ function renderPlanItem(item, index) {
     + chevron
     + '</div>'
     + '<div class="plan-desc">' + escHtml(item.descricao || '') + '</div>'
-    + (hasDetalhes ? '<div class="plan-detalhes" id="' + detalhesId + '" style="display:none" aria-hidden="true">' + escHtml(item.detalhes) + '</div>' : '')
+    + (hasDetalhes ? '<div class="plan-detalhes" id="' + detalhesId + '" style="display:none" aria-hidden="true">' + escHtml(detalhesStr) + '</div>' : '')
     + '</div>'
     + '</div>';
 }
