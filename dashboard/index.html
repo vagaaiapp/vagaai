@@ -2119,8 +2119,8 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         <button id="planBtnPro" style="width:100%;padding:11px;background:var(--gb-emerald);border:none;border-radius:var(--r-sm);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="openAuthCheckout('https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408')">Assinar Pro</button>
       </div>
 
-      <!-- Análises avulsas -->
-      <div class="plan-tile">
+      <!-- Análises avulsas — visível para free/starter -->
+      <div class="plan-tile" id="planTileAvulsas">
         <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:18px;">Análises avulsas</div>
         <div style="display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);">
@@ -2136,6 +2136,30 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
             <div style="display:flex;align-items:center;gap:10px;"><strong>R$97,00</strong><button onclick="openAuthCheckout('https://buy.stripe.com/eVqbJ120S0jf3r16uj9k405')" style="border:none;background:var(--gb-emerald);color:#fff;padding:6px 14px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Comprar</button></div>
           </div>
         </div>
+      </div>
+
+      <!-- Uso do mês — visível apenas para Pro -->
+      <div class="plan-tile" id="planTileUsage" style="display:none;">
+        <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:18px;">Seu uso este mês</div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px;" id="usageStatsList">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:var(--t2);">Análises feitas</span>
+            <strong id="usageStat1" style="font-size:13px;">—</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:var(--t2);">Vagas rastreadas</span>
+            <strong id="usageStat2" style="font-size:13px;">—</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:var(--t2);">CVs otimizados</span>
+            <strong id="usageStat3" style="font-size:13px;">—</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:var(--t2);">Entrevistas treinadas</span>
+            <strong id="usageStat4" style="font-size:13px;">—</strong>
+          </div>
+        </div>
+        <p style="font-size:12px;color:var(--t3);line-height:1.5;margin:0;border-top:1px solid var(--border);padding-top:14px;">Seu plano Pro já cobre análises ilimitadas. Continue analisando novas vagas sem custo adicional.</p>
       </div>
     </div>
   </div>
@@ -4749,7 +4773,23 @@ function renderPlanTiles(sub) {
     badgeP.style.display = '';
     if (lblP) lblP.style.color = 'var(--gb-emerald)';
     if (btnP) { btnP.style.cssText = 'width:100%;padding:11px;background:var(--s-grn-bg);border:none;border-radius:var(--r-sm);color:var(--gb-emerald);font-size:13px;font-weight:700;cursor:default;font-family:inherit;'; btnP.textContent = 'Plano ativo ✓'; btnP.onclick = null; }
-    if (btnS) { btnS.style.cssText = 'width:100%;padding:11px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--bg);color:var(--t1);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;'; btnS.textContent = 'Mudar para Starter'; btnS.onclick = function(){ openStripePortal(btnS); }; }
+    if (btnS) { btnS.style.cssText = 'width:100%;padding:11px;border:1px solid var(--border);border-radius:var(--r-sm);background:transparent;color:var(--t3);font-size:12px;font-weight:400;cursor:pointer;font-family:inherit;'; btnS.textContent = 'Fazer downgrade para Starter'; btnS.onclick = function(){ openStripePortal(btnS); }; }
+    // Tile: oculta avulsas, exibe uso do mês
+    var tileAv = document.getElementById('planTileAvulsas');
+    var tileUs = document.getElementById('planTileUsage');
+    if (tileAv) tileAv.style.display = 'none';
+    if (tileUs) {
+      tileUs.style.display = '';
+      var s1 = document.getElementById('usageStat1');
+      var s2 = document.getElementById('usageStat2');
+      var s3 = document.getElementById('usageStat3');
+      var s4 = document.getElementById('usageStat4');
+      var sub = window._subscriptionData || {};
+      if (s1) s1.textContent = (sub.analyses_used_this_month != null ? sub.analyses_used_this_month : '—') + ' análise' + (sub.analyses_used_this_month !== 1 ? 's' : '');
+      if (s2) s2.textContent = (Array.isArray(_kTracked) ? _kTracked.length : '—') + ' vaga' + (_kTracked.length !== 1 ? 's' : '');
+      if (s3) { var cvCount = Array.isArray(window._analyses) ? window._analyses.filter(function(a){ return a.result && a.result.cv_otimizado && a.result.cv_otimizado.nome; }).length : '—'; s3.textContent = cvCount + (typeof cvCount === 'number' ? ' CV' + (cvCount !== 1 ? 's' : '') : ''); }
+      if (s4) { var intCount = Array.isArray(_kTracked) ? _kTracked.filter(function(t){ var st = (t.status||'').toLowerCase(); return st === 'entrevista' || st === 'entrevista_agendada'; }).length : '—'; s4.textContent = intCount + (typeof intCount === 'number' ? ' entrevista' + (intCount !== 1 ? 's' : '') : ''); }
+    }
   } else {
     // Free: both tiles show subscribe CTAs
     if (btnS) { btnS.style.cssText = 'width:100%;padding:11px;border:1.5px solid var(--gb-emerald);border-radius:var(--r-sm);background:var(--bg);color:var(--gb-emerald);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;'; btnS.textContent = 'Assinar Starter'; btnS.onclick = function(){ openAuthCheckout('https://buy.stripe.com/28E14n0WO2rne5Ff0P9k406'); }; }
