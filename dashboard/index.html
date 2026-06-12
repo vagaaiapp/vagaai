@@ -1109,7 +1109,8 @@ body {
 .psa-badge-amanha { background:#dbeafe; color:#1e40af; }
 .psa-badge-impacto { background:#fee2e2; color:#991b1b; }
 .psa-badge-ok { background:var(--s-grn-bg); color:var(--gb-emerald); }
-.psa-ico { font-size:18px; margin-bottom:8px; }
+.psa-ico { width:20px; height:20px; margin-bottom:8px; display:block; color:var(--text-muted); }
+.psa-ico svg { width:20px; height:20px; }
 .psa-card-title { font-size:13px; font-weight:700; color:var(--t1); margin-bottom:5px; }
 .psa-card-desc { font-size:11.5px; color:var(--t2); line-height:1.45; flex:1; margin-bottom:14px; }
 .psa-cta { font-size:11.5px; font-weight:700; color:var(--gb-emerald); text-decoration:none; background:none; border:none; cursor:pointer; padding:0; text-align:left; }
@@ -2571,7 +2572,7 @@ function buildAttentionCards(analyses, tracked) {
     actionCount++;
     var cargo = interviewJob.cargo || 'essa vaga';
     var emp = interviewJob.empresa ? ' na ' + interviewJob.empresa : '';
-    cards.push('<div class="psa-card"><div class="psa-badge psa-badge-amanha">Entrevista</div><div class="psa-ico">🎯</div>' +
+    cards.push('<div class="psa-card"><div class="psa-badge psa-badge-amanha">Entrevista</div><div class="psa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></div>' +
       '<div class="psa-card-title">Prepare sua entrevista</div>' +
       '<div class="psa-card-desc">' + (interviewJob.interview_at ? 'Entrevista em ' + escHtml(formatInterviewAt(interviewJob.interview_at)) + ' — ' : 'Em processo de entrevista para ') + escHtml(cargo) + escHtml(emp) + '. Use o simulador para chegar preparado.</div>' +
       '<button class="psa-cta" onclick="window.location.href=\'/entrevista' + (interviewJob.analysis_id ? '?analysis_id=' + encodeURIComponent(interviewJob.analysis_id) : '') + '\'">Treinar entrevista →</button></div>');
@@ -2583,7 +2584,7 @@ function buildAttentionCards(analyses, tracked) {
     var ji = r.job_info || {};
     var cargo = ji.cargo || (untrackedAnalysis.job_excerpt ? untrackedAnalysis.job_excerpt.slice(0,40) : 'essa vaga');
     var emp = ji.empresa ? ' na ' + ji.empresa : '';
-    cards.push('<div class="psa-card"><div class="psa-badge psa-badge-impacto">Alto impacto</div><div class="psa-ico">⚡</div>' +
+    cards.push('<div class="psa-card"><div class="psa-badge psa-badge-impacto">Alto impacto</div><div class="psa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>' +
       '<div class="psa-card-title">Complete a candidatura</div>' +
       '<div class="psa-card-desc">Seu CV foi analisado para ' + escHtml(cargo) + escHtml(emp) + ', mas a candidatura ainda não foi enviada.</div>' +
       '<button class="psa-cta" onclick="switchDashTab(\'vagas\')">Continuar candidatura →</button></div>');
@@ -2591,9 +2592,9 @@ function buildAttentionCards(analyses, tracked) {
 
   // Fill remaining slots with tips
   var tips = [
-    '<div class="psa-card"><div class="psa-badge psa-badge-ok">✓ Dica</div><div class="psa-ico">📋</div><div class="psa-card-title">Rastreie suas candidaturas</div><div class="psa-card-desc">Mantenha as candidaturas atualizadas para receber lembretes de follow-up automáticos.</div><button class="psa-cta" onclick="switchDashTab(\'vagas\')">Ver candidaturas →</button></div>',
-    '<div class="psa-card"><div class="psa-badge psa-badge-ok">✓ Dica</div><div class="psa-ico">🔔</div><div class="psa-card-title">Configure alertas de vagas</div><div class="psa-card-desc">Receba vagas compatíveis com seu perfil toda semana diretamente no e-mail.</div><button class="psa-cta" onclick="switchDashTab(\'alertas\')">Configurar alertas →</button></div>',
-    '<div class="psa-card"><div class="psa-badge psa-badge-ok">✓ Dica</div><div class="psa-ico">✍️</div><div class="psa-card-title">Analise mais vagas</div><div class="psa-card-desc">Quanto mais vagas você analisar, mais preciso fica o Insight da VagaAI sobre seu perfil.</div><button class="psa-cta" onclick="window.location.href=\'/app\'">Nova análise →</button></div>'
+    '<div class="psa-card"><div class="psa-badge psa-badge-ok">✓ Dica</div><div class="psa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg></div><div class="psa-card-title">Rastreie suas candidaturas</div><div class="psa-card-desc">Mantenha as candidaturas atualizadas para receber lembretes de follow-up automáticos.</div><button class="psa-cta" onclick="switchDashTab(\'vagas\')">Ver candidaturas →</button></div>',
+    '<div class="psa-card"><div class="psa-badge psa-badge-ok">✓ Dica</div><div class="psa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div><div class="psa-card-title">Configure alertas de vagas</div><div class="psa-card-desc">Receba vagas compatíveis com seu perfil toda semana diretamente no e-mail.</div><button class="psa-cta" onclick="switchDashTab(\'alertas\')">Configurar alertas →</button></div>',
+    '<div class="psa-card"><div class="psa-badge psa-badge-ok">✓ Dica</div><div class="psa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></div><div class="psa-card-title">Analise mais vagas</div><div class="psa-card-desc">Quanto mais vagas você analisar, mais preciso fica o Insight da VagaAI sobre seu perfil.</div><button class="psa-cta" onclick="window.location.href=\'/app\'">Nova análise →</button></div>'
   ];
   var tipIdx = 0;
   while (cards.length < 3) { cards.push(tips[tipIdx++ % tips.length]); }
