@@ -23,7 +23,8 @@ async function getUserPlan(userId) {
     });
     const rows = await res.json();
     const sub = rows?.[0];
-    if (!sub || sub.status !== 'active') return 'free';
+    const paidStatuses = ['active', 'trialing', 'past_due'];
+    if (!sub || !paidStatuses.includes(sub.status)) return 'free';
     return sub.plan || 'free';
   } catch { return 'free'; }
 }

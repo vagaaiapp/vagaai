@@ -884,7 +884,7 @@ function updateCreditsUI() {
   // Atualiza texto do botão de análise
   var btn = document.getElementById('analyzeBtn');
   if (btn) {
-    var btnLabel = userPlan === 'pro' ? 'Analisar agora' : 'Analisar agora — 1 crédito';
+    var btnLabel = (userPlan === 'pro' || userPlan === 'starter') ? 'Analisar agora' : 'Analisar agora — 1 crédito';
     btn.innerHTML = '<span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> ' + btnLabel;
   }
   // Remove aviso "grátis sem cadastro"
