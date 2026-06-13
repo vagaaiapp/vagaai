@@ -1498,6 +1498,12 @@ body {
 .al-freq-row { display:flex; gap:6px; }
 .al-freq-btn { flex:1; padding:8px; border:1px solid var(--border); border-radius:8px; font-size:11px; font-weight:600; font-family:inherit; background:var(--bg-sub); color:var(--t2); cursor:pointer; transition:all .12s; }
 .al-freq-btn.on { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); }
+.al-freq-btn.locked, .al-freq-btn[disabled] { opacity:.42; cursor:not-allowed; }
+.al-lock-hint { display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--gb-emerald); background:var(--s-grn-bg); border:1px solid var(--gb-emerald); border-radius:6px; padding:0 6px; margin-left:6px; vertical-align:middle; line-height:1.5; }
+.al-locked { opacity:.5; pointer-events:none; }
+.al-help { font-size:12px; color:var(--t3); margin-top:10px; line-height:1.55; }
+.al-usage { font-size:12px; font-weight:700; color:var(--t2); background:var(--bg-sub); border:1px solid var(--border); border-radius:20px; padding:5px 13px; white-space:nowrap; }
+.al-modal-body input:disabled, .al-modal-body select:disabled { opacity:.5; cursor:not-allowed; background:var(--bg-sub); }
 .al-conflict-warn { font-size:11px; color:var(--s-amb); background:var(--s-amb-bg); border:1px solid #f1dfb9; border-radius:7px; padding:8px 11px; display:none; }
 .al-conflict-warn.show { display:block; }
 .al-modal-footer { padding:14px 24px 18px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; position:sticky; bottom:0; background:var(--bg-card); }
@@ -1913,6 +1919,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           <p class="al-desc">Configure uma vez e receba vagas compatíveis com seu perfil, salário e momento de carreira.</p>
         </div>
         <div class="al-header-right">
+          <div class="al-usage" id="alUsage" style="display:none"></div>
           <div class="al-status-badge" id="alStatusBadge" role="status">
             <span class="al-status-dot" aria-hidden="true"></span>
             <span id="alStatusText">Carregando…</span>
@@ -3335,7 +3342,7 @@ function renderCalendar(all) {
 function candCalPrev() { _candCalMonth--; if (_candCalMonth<0){_candCalMonth=11;_candCalYear--;} renderCalendar(mergeApplications()); }
 function candCalNext() { _candCalMonth++; if (_candCalMonth>11){_candCalMonth=0;_candCalYear++;} renderCalendar(mergeApplications()); }
 
-function confirmDeleteTracker(id) { if (confirm('Remover esta candidatura do tracker?')) deleteTracker(id); }
+function confirmDeleteTracker(id) { showConfirm('Remover candidatura?', 'Ela sairá do seu rastreador.', function(){ deleteTracker(id); }); }
 
 function toggleVagaDetail(analysisId) {
   var detail = document.getElementById('vd-' + analysisId);
@@ -3782,10 +3789,20 @@ function _alSaveExt() {
 /* ── Load & render ────────────────────────────────────────────── */
 async function loadAlerts() {
   _alLoadExt();
+  var statusText0 = document.getElementById('alStatusText');
+  if (statusText0) statusText0.textContent = 'Carregando…';
+  // Garante entitlements disponíveis na aba de Alertas (a aba Plano pode não ter sido aberta)
+  if (!window._subscriptionData) {
+    try {
+      var sres = await fetch('/api/subscription', { headers: { Authorization: 'Bearer ' + currentSession.access_token } });
+      if (sres.ok) window._subscriptionData = await sres.json();
+    } catch(e) {}
+  }
   try {
     var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?user_id=eq.' + currentUserId, {
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
     });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     var rows = await res.json();
     _alertProfile = (Array.isArray(rows) && rows[0]) ? rows[0] : null;
     if (_alertProfile) {
@@ -3803,13 +3820,37 @@ async function loadAlerts() {
       if (p.dia_envio !== undefined && p.dia_envio !== null) _alertExtended.dia_envio       = p.dia_envio;
       if (p.horario_envio !== undefined && p.horario_envio !== null) _alertExtended.horario_envio = p.horario_envio;
     }
-  } catch(e) { _alertProfile = null; }
+  } catch(e) {
+    _alertProfile = null;
+    showToast('Não foi possível carregar seus alertas. Tente novamente.', 'error');
+  }
   renderAlertPage();
+}
+
+// Entitlements de alertas do plano atual (fonte: /api/subscription). Fallback: free.
+function _alEnt() {
+  var d = window._subscriptionData;
+  if (d && d.entitlements && d.entitlements.allowed_frequencies) return d.entitlements;
+  return { alerts_enabled:true, max_active_alerts:1, allowed_frequencies:['semanal'], max_jobs_per_delivery:5, advanced_filters:false, compatibility_details:'estimated' };
+}
+
+// Matriz de uso "X de N alertas ativos" no cabeçalho
+function renderAlertUsage() {
+  var el = document.getElementById('alUsage');
+  if (!el) return;
+  var ent = _alEnt();
+  var max = ent.max_active_alerts; // null = ilimitado
+  var active = (_alertProfile && _alertProfile.ativo) ? 1 : 0;
+  var maxLabel = (max == null) ? '∞' : String(max);
+  var unit = (max === 1) ? 'alerta ativo' : 'alertas ativos';
+  el.textContent = active + ' de ' + maxLabel + ' ' + unit;
+  el.style.display = '';
 }
 
 function renderAlertPage() {
   var p = _alertProfile;
   var ext = _alertExtended;
+  renderAlertUsage();
   renderAlertStatus(p);
   renderAlertNextSend(p, ext);
   renderAlertMetrics(p);
@@ -3908,8 +3949,7 @@ function renderAlertNextSend(p, ext) {
   if (!next) { dateEl.textContent = '—'; metaEl.textContent = ''; return; }
   var dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
   var meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-  var hStr = String(next.getHours()).padStart(2,'0') + 'h';
-  dateEl.textContent = dias[next.getDay()] + ', ' + next.getDate() + ' de ' + meses[next.getMonth()] + ', às ' + hStr;
+  dateEl.textContent = dias[next.getDay()] + ', ' + next.getDate() + ' de ' + meses[next.getMonth()] + ', pela manhã';
   var q = calculateAlertQuality(p, ext);
   metaEl.textContent = 'Qualidade do alerta: ' + q.score + '%';
   if (testBtn) testBtn.disabled = false;
@@ -3971,7 +4011,7 @@ function renderAlertSummary(p, ext) {
   var freq = p.frequencia || 'semanal';
   var next = calculateNextAlertRun(p, ext);
   var dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-  var nextStr = next ? (dias[next.getDay()] + 's às ' + String(next.getHours()).padStart(2,'0') + 'h') : '—';
+  var nextStr = next ? (dias[next.getDay()] + 's pela manhã') : '—';
   var metaLines = [
     (p.nivel && p.nivel !== 'qualquer' ? escHtml(p.nivel) : '') + (p.nivel && p.nivel !== 'qualquer' && p.cidade ? ' · ' : '') + (p.cidade ? escHtml(p.cidade) : ''),
     (p.salario_min && parseInt(p.salario_min) > 0 ? 'R$ ' + parseInt(p.salario_min).toLocaleString('pt-BR') + '+' : '') + (p.salario_min && ext.contrato_tipos && ext.contrato_tipos.length ? ' · ' : '') + (ext.contrato_tipos && ext.contrato_tipos.length ? escHtml(ext.contrato_tipos.slice(0,2).join(' ou ')) : ''),
@@ -4023,7 +4063,7 @@ function renderAlertEmailPreview(p, ext) {
   var next = calculateNextAlertRun(p, ext);
   var dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
   var meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-  var nextStr = next ? 'Chegará '+dias[next.getDay()]+'feira, '+next.getDate()+' de '+meses[next.getMonth()]+' às '+String(next.getHours()).padStart(2,'0')+'h.' : 'Aguardando configuração.';
+  var nextStr = next ? 'Chegará '+dias[next.getDay()]+', '+next.getDate()+' de '+meses[next.getMonth()]+', pela manhã.' : 'Aguardando configuração.';
   if (whenEl) whenEl.textContent = nextStr;
   var email = (currentSession && currentSession.user) ? escHtml(currentSession.user.email) : 'seu e-mail';
   var cargo = escHtml(p.cargo_desejado || 'suas preferências');
@@ -4045,10 +4085,18 @@ function renderAlertEmailPreview(p, ext) {
 }
 
 /* ── Test send ─────────────────────────────────────────────────── */
-async function sendTestAlert() {
+function sendTestAlert() {
   if (_alTestSending) { showToast('Envio em andamento…'); return; }
   if (!_alertProfile) { showToast('Configure o alerta primeiro.', 'error'); return; }
-  if (!confirm('Enviar e-mail de teste para ' + (currentSession.user.email || 'sua conta') + '? Isso buscará vagas reais e enviará o e-mail agora.')) return;
+  showConfirm(
+    'Enviar e-mail de teste?',
+    'Vamos buscar vagas reais e enviar para ' + (currentSession.user.email || 'sua conta') + '. Não altera sua agenda de envios.',
+    _doSendTestAlert,
+    'Enviar teste',
+    '📨'
+  );
+}
+async function _doSendTestAlert() {
   _alTestSending = true;
   var btns = document.querySelectorAll('#alTestBtn, #alPreviewTestBtn');
   btns.forEach(function(b){ if(b){ b.disabled = true; b.textContent = 'Enviando…'; } });
@@ -4218,8 +4266,7 @@ async function toggleAlertActive() {
 }
 
 function confirmDeleteAlert() {
-  if (!confirm('Excluir o alerta permanentemente? Esta ação não pode ser desfeita.')) return;
-  deleteAlertProfile();
+  showConfirm('Excluir alerta?', 'Esta ação não pode ser desfeita.', deleteAlertProfile, 'Excluir');
 }
 
 async function deleteAlertProfile() {
@@ -4260,6 +4307,19 @@ function openAlertEditModal() {
     var on = arr.includes(val) ? ' on' : '';
     return '<span class="al-check-opt'+(cls?' '+cls:'')+on+'" onclick="_alToggleChk(this,\''+escAttr(val)+'\')" tabindex="0" role="checkbox" aria-checked="'+(on?'true':'false')+'">'+escHtml(val)+'</span>';
   }
+  // ── Plano: limites e gating de UI ──────────────────────────────────────────
+  var _ent       = _alEnt();
+  var adv        = !!_ent.advanced_filters;                                  // free = false
+  var allowedFreq = Array.isArray(_ent.allowed_frequencies) ? _ent.allowed_frequencies : ['semanal'];
+  var curFreq    = allowedFreq.indexOf(p.frequencia) >= 0 ? p.frequencia : allowedFreq[0]; // coage p/ UI
+  var advAttr    = adv ? '' : ' disabled';
+  var advBadge   = adv ? '' : ' <span class="al-lock-hint" title="Disponível no Starter e Pro">Starter+</span>';
+  var advLock    = adv ? '' : ' al-locked';
+  var freqHelp   = (allowedFreq.indexOf('diario') < 0)
+    ? (allowedFreq.indexOf('quinzenal') < 0
+        ? 'No plano gratuito o envio é semanal. Starter adiciona quinzenal; Pro adiciona diário.'
+        : 'Frequência diária é exclusiva do plano Pro.')
+    : '';
   var html =
     '<div class="al-modal-overlay" id="alModal" role="dialog" aria-modal="true" aria-labelledby="alModalTitle">'+
     '<div class="al-modal-box">'+
@@ -4273,7 +4333,7 @@ function openAlertEditModal() {
           '<div class="al-modal-section-title">Cargo e Perfil</div>'+
           '<div class="al-form-row">'+
             '<div class="al-field"><label for="alMCargo">Cargo ou área desejada</label><input id="alMCargo" type="text" value="'+escHtml(p.cargo_desejado||'')+'" placeholder="ex: Marketing Digital" oninput="_alCheckDirty()"></div>'+
-            '<div class="al-field"><label for="alMNivel">Senioridade</label><select id="alMNivel" onchange="_alCheckDirty()">'+
+            '<div class="al-field"><label for="alMNivel">Senioridade'+advBadge+'</label><select id="alMNivel" onchange="_alCheckDirty()"'+advAttr+'>'+
               NIVEIS.map(function(n){ return '<option value="'+n+'"'+(((p.nivel||'qualquer')===n)?' selected':'')+'>'+NÍVEL_LBLS[n]+'</option>'; }).join('')+
             '</select></div>'+
           '</div>'+
@@ -4283,7 +4343,7 @@ function openAlertEditModal() {
           '<div class="al-modal-section-title">Localização e Formato</div>'+
           '<div class="al-form-row">'+
             '<div class="al-field"><label for="alMCidade">Localização base</label><input id="alMCidade" type="text" value="'+escHtml(p.cidade||'')+'" placeholder="ex: São Paulo ou Remoto" oninput="_alCheckDirty()"></div>'+
-            '<div class="al-field"><label for="alMSalario">Salário mínimo (R$)</label><input id="alMSalario" type="number" value="'+(p.salario_min||'')+'" placeholder="ex: 6000" oninput="_alCheckDirty()"></div>'+
+            '<div class="al-field"><label for="alMSalario">Salário mínimo (R$)'+advBadge+'</label><input id="alMSalario" type="number" value="'+(p.salario_min||'')+'" placeholder="ex: 6000" oninput="_alCheckDirty()"'+advAttr+'></div>'+
           '</div>'+
           '<div class="al-field"><label>Formato de trabalho</label><div class="al-checkgroup" id="alMFormato">'+
             FORMATOS.map(function(f){ return chkHtml([formatoPref.includes(f)?f:'x'],f,''); }).join('')+
@@ -4291,57 +4351,61 @@ function openAlertEditModal() {
         '</div>'+
 
         '<div class="al-modal-section">'+
-          '<div class="al-modal-section-title">Tipo de contrato</div>'+
-          '<div class="al-checkgroup" id="alMContrato">'+CONTRATOS.map(function(c){ return chkHtml(contTipos,c,''); }).join('')+'</div>'+
+          '<div class="al-modal-section-title">Tipo de contrato'+advBadge+'</div>'+
+          '<div class="al-checkgroup'+advLock+'" id="alMContrato">'+CONTRATOS.map(function(c){ return chkHtml(contTipos,c,''); }).join('')+'</div>'+
         '</div>'+
 
         '<div class="al-modal-section">'+
-          '<div class="al-modal-section-title">Competências prioritárias</div>'+
-          '<div class="al-tag-wrap" id="alMKwWrap" onclick="_alFocusTagInp(\'alMKwInp\')">'+
+          '<div class="al-modal-section-title">Competências prioritárias'+advBadge+'</div>'+
+          '<div class="al-tag-wrap'+advLock+'" id="alMKwWrap" onclick="_alFocusTagInp(\'alMKwInp\')">'+
             '<span id="alMKwTags"></span>'+
-            '<input class="al-tag-inp" id="alMKwInp" placeholder="Digite e pressione Enter…" onkeydown="_alTagKd(event,\'kw\')" oninput="_alCheckDirty()">'+
+            '<input class="al-tag-inp" id="alMKwInp" placeholder="Digite e pressione Enter…" onkeydown="_alTagKd(event,\'kw\')" oninput="_alCheckDirty()"'+advAttr+'>'+
           '</div>'+
         '</div>'+
 
         '<div class="al-modal-section">'+
-          '<div class="al-modal-section-title">Empresas de interesse</div>'+
-          '<div class="al-tag-wrap" id="alMEmpWrap" onclick="_alFocusTagInp(\'alMEmpInp\')">'+
+          '<div class="al-modal-section-title">Empresas de interesse'+advBadge+'</div>'+
+          '<div class="al-tag-wrap'+advLock+'" id="alMEmpWrap" onclick="_alFocusTagInp(\'alMEmpInp\')">'+
             '<span id="alMEmpTags"></span>'+
-            '<input class="al-tag-inp" id="alMEmpInp" placeholder="ex: Nubank, Mercado Livre…" onkeydown="_alTagKd(event,\'emp\')" oninput="_alCheckDirty()">'+
+            '<input class="al-tag-inp" id="alMEmpInp" placeholder="ex: Nubank, Mercado Livre…" onkeydown="_alTagKd(event,\'emp\')" oninput="_alCheckDirty()"'+advAttr+'>'+
           '</div>'+
         '</div>'+
 
         '<div class="al-modal-section">'+
-          '<div class="al-modal-section-title">Setores preferidos</div>'+
-          '<div class="al-tag-wrap" id="alMSetWrap" onclick="_alFocusTagInp(\'alMSetInp\')">'+
+          '<div class="al-modal-section-title">Setores preferidos'+advBadge+'</div>'+
+          '<div class="al-tag-wrap'+advLock+'" id="alMSetWrap" onclick="_alFocusTagInp(\'alMSetInp\')">'+
             '<span id="alMSetTags"></span>'+
-            '<input class="al-tag-inp" id="alMSetInp" placeholder="ex: Fintech, SaaS, E-commerce…" onkeydown="_alTagKd(event,\'set\')" oninput="_alCheckDirty()">'+
+            '<input class="al-tag-inp" id="alMSetInp" placeholder="ex: Fintech, SaaS, E-commerce…" onkeydown="_alTagKd(event,\'set\')" oninput="_alCheckDirty()"'+advAttr+'>'+
           '</div>'+
         '</div>'+
 
         '<div class="al-modal-section">'+
-          '<div class="al-modal-section-title">Filtros negativos (excluir)</div>'+
-          '<div class="al-checkgroup" id="alMFiltros">'+FILTROS_NEG.map(function(f){ return chkHtml(filtNeg,f,'neg'); }).join('')+'</div>'+
+          '<div class="al-modal-section-title">Filtros negativos (excluir)'+advBadge+'</div>'+
+          '<div class="al-checkgroup'+advLock+'" id="alMFiltros">'+FILTROS_NEG.map(function(f){ return chkHtml(filtNeg,f,'neg'); }).join('')+'</div>'+
           '<div class="al-field" style="margin-top:10px"><label for="alMNegInp">Palavras a excluir (separadas por vírgula)</label>'+
-          '<div class="al-tag-wrap" id="alMNegWrap" onclick="_alFocusTagInp(\'alMNegInp\')">'+
+          '<div class="al-tag-wrap'+advLock+'" id="alMNegWrap" onclick="_alFocusTagInp(\'alMNegInp\')">'+
             '<span id="alMNegTags"></span>'+
-            '<input class="al-tag-inp" id="alMNegInp" placeholder="ex: estágio, telemarketing…" onkeydown="_alTagKd(event,\'neg\')" oninput="_alCheckDirty()">'+
+            '<input class="al-tag-inp" id="alMNegInp" placeholder="ex: estágio, telemarketing…" onkeydown="_alTagKd(event,\'neg\')" oninput="_alCheckDirty()"'+advAttr+'>'+
           '</div></div>'+
           '<div class="al-conflict-warn" id="alConflictWarn">⚠ Atenção: algumas preferências positivas conflitam com filtros negativos.</div>'+
         '</div>'+
 
         '<div class="al-modal-section">'+
-          '<div class="al-modal-section-title">Frequência e horário</div>'+
+          '<div class="al-modal-section-title">Frequência e dia do envio</div>'+
           '<div class="al-field"><label>Frequência</label>'+
           '<div class="al-freq-row" id="alMFreq">'+
-            [['diario','Diário'],['semanal','Semanal'],['quinzenal','Quinzenal'],['mensal','Mensal']].map(function(fv){ var val=fv[0],lbl=fv[1]; return '<button class="al-freq-btn'+(((p.frequencia||'semanal')===val)?' on':'')+'" data-value="'+val+'" onclick="_alSetFreq(\''+val+'\')">' + lbl + '</button>'; }).join('')+
+            [['diario','Diário','Pro'],['semanal','Semanal',''],['quinzenal','Quinzenal','Starter+']].map(function(fv){
+              var val=fv[0],lbl=fv[1],tier=fv[2];
+              var ok = allowedFreq.indexOf(val) >= 0;
+              return '<button class="al-freq-btn'+((curFreq===val)?' on':'')+(ok?'':' locked')+'" data-value="'+val+'"'+(ok?'':' disabled title="Disponível no '+tier+'"')+' onclick="'+(ok?'_alSetFreq(\''+val+'\')':'return false')+'">' + lbl + '</button>';
+            }).join('')+
           '</div></div>'+
-          '<div class="al-form-row" id="alMDiaRow"'+((p.frequencia||'semanal')==='diario'?' style="display:none"':'')+'>'+
+          '<div class="al-form-row" id="alMDiaRow"'+(curFreq==='diario'?' style="display:none"':'')+'>'+
             '<div class="al-field"><label for="alMDia">Dia de envio</label><select id="alMDia" onchange="_alCheckDirty()">'+
               DIAS.map(function(d){ return '<option value="'+d[0]+'"'+(diaEnvio===d[0]?' selected':'')+'>'+d[1]+'</option>'; }).join('')+
             '</select></div>'+
-            '<div class="al-field"><label for="alMHora">Horário</label><input id="alMHora" type="time" value="'+escHtml(horario)+'" oninput="_alCheckDirty()"></div>'+
           '</div>'+
+          '<div class="al-help">'+(freqHelp?escHtml(freqHelp)+'<br>':'')+'Os alertas são processados uma vez ao dia, pela manhã (horário de Brasília). Semanais e quinzenais saem no dia escolhido.</div>'+
         '</div>'+
 
       '</div>'+
@@ -4539,7 +4603,7 @@ function addToTracker(empresa, cargo, score, analysisId) {
 
 async function saveTracker(btn) {
   var empresa = document.getElementById('tkEmpresa').value;
-  if (!empresa) { alert('Digite a empresa'); return; }
+  if (!empresa) { showToast('Digite a empresa.', 'error'); return; }
 
   var body = {
     user_id: currentUserId,
@@ -4569,16 +4633,16 @@ async function saveTracker(btn) {
 
     if (res.ok || res.status === 201) {
       btn.parentElement.parentElement.remove();
-      alert('✓ Candidatura rastreada!');
+      showToast('Candidatura rastreada!');
       if (typeof loadKanban === 'function') await loadKanban();
     } else {
-      alert('Erro ao salvar: ' + resText);
+      showToast('Erro ao salvar a candidatura.', 'error');
       btn.disabled = false;
       btn.textContent = 'Salvar';
     }
   } catch(e) {
     console.error('SaveTracker Error:', e);
-    alert('Erro: ' + e.message);
+    showToast('Erro ao salvar a candidatura.', 'error');
     btn.disabled = false;
     btn.textContent = 'Salvar';
   }
@@ -4914,17 +4978,17 @@ function showToast(msg, type) {
   setTimeout(function() { t.style.opacity = '0'; t.style.transform = 'translateX(30px)'; t.style.transition = 'all .3s'; setTimeout(function() { t.remove(); }, 300); }, 3000);
 }
 
-function showConfirm(title, sub, onConfirm) {
+function showConfirm(title, sub, onConfirm, okLabel, icon) {
   var overlay = document.createElement('div');
   overlay.className = 'confirm-overlay';
   overlay.innerHTML =
     '<div class="confirm-box">' +
-      '<span class="confirm-icon">🗑️</span>' +
+      '<span class="confirm-icon">' + (icon || '🗑️') + '</span>' +
       '<div class="confirm-title">' + escHtml(title) + '</div>' +
       '<div class="confirm-sub">' + escHtml(sub) + '</div>' +
       '<div class="confirm-btns">' +
         '<button class="confirm-btn-cancel">Cancelar</button>' +
-        '<button class="confirm-btn-ok">Remover</button>' +
+        '<button class="confirm-btn-ok">' + escHtml(okLabel || 'Remover') + '</button>' +
       '</div>' +
     '</div>';
   document.body.appendChild(overlay);

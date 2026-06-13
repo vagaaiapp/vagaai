@@ -1,15 +1,13 @@
 // /api/subscription.js — retorna plano atual do usuário autenticado
 // Normaliza planos inválidos/ausentes para 'free'.
 // Retorna entitlements explícitos para facilitar rendering no dashboard.
+// Fonte única de planos/permissões: lib/entitlements.js
+
+import { resolvePlan, planEntitlements } from '../lib/entitlements.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-
-// Planos com assinatura paga válida
-const PAID_PLANS = new Set(['starter', 'pro']);
-// Status que permitem acesso pago
-const ACTIVE_STATUSES = new Set(['active', 'trialing']);
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', 'https://www.vagaai.app.br');
@@ -84,28 +82,37 @@ export default async function handler(req, res) {
     // - Qualquer outro caso → free
     const rawPlan = sub?.plan || 'free';
     const rawStatus = sub?.status || '';
-    const isActiveSub = PAID_PLANS.has(rawPlan) && ACTIVE_STATUSES.has(rawStatus);
-    const effectivePlan = isActiveSub ? rawPlan : 'free';
+    const effectivePlan = resolvePlan(sub);     // free|starter|pro (past_due = graça)
+    const isActiveSub = effectivePlan !== 'free';
 
     // Status normalizado — nunca mostrar "active" para planos cancelados/inválidos
     let effectiveStatus;
     if (!sub) {
       effectiveStatus = 'free';
     } else if (isActiveSub) {
-      effectiveStatus = rawStatus; // 'active' | 'trialing'
+      effectiveStatus = rawStatus; // 'active' | 'trialing' | 'past_due' (graça)
     } else {
-      effectiveStatus = rawStatus || 'inactive'; // 'canceled' | 'past_due' | 'incomplete' etc.
+      effectiveStatus = rawStatus || 'inactive'; // 'canceled' | 'incomplete' etc.
     }
 
     // Entitlements explícitos — frontend não precisa inferir nada
+    const ent = planEntitlements(effectivePlan);
     const entitlements = {
-      can_analyze:       effectivePlan === 'pro' || effectivePlan === 'starter' || credits > 0,
-      unlimited_analyses: effectivePlan === 'pro',
-      analyses_limit:    effectivePlan === 'starter' ? 10 : (effectivePlan === 'pro' ? null : 0),
-      cv_otimizado:      effectivePlan === 'starter' || effectivePlan === 'pro' || credits > 0,
-      simulador_entrevista: effectivePlan === 'pro',
-      rastreador:        true, // disponível para todos
-      alertas:           effectivePlan === 'starter' || effectivePlan === 'pro',
+      // Alertas (novo, estruturado) — fonte: lib/entitlements.js
+      alerts_enabled:        ent.alerts_enabled,
+      max_active_alerts:     ent.max_active_alerts,
+      allowed_frequencies:   ent.allowed_frequencies,
+      max_jobs_per_delivery: ent.max_jobs_per_delivery,
+      advanced_filters:      ent.advanced_filters,
+      compatibility_details: ent.compatibility_details,
+      // Features existentes (mantidas para o dashboard) + créditos avulsos
+      can_analyze:           effectivePlan !== 'free' || credits > 0,
+      unlimited_analyses:    ent.can_analyze_unlimited,
+      analyses_limit:        ent.analyses_limit,
+      cv_otimizado:          ent.cv_otimizado || credits > 0,
+      simulador_entrevista:  ent.simulador_entrevista,
+      rastreador:            true, // disponível para todos
+      alertas:               ent.alerts_enabled, // retrocompat (agora true p/ todos)
     };
 
     // Preço — só para planos pagos ativos

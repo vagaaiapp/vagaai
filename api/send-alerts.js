@@ -4,6 +4,7 @@
 // Também pode ser chamado manualmente com ?test=1
 
 import crypto from 'crypto';
+import { resolvePlan, planEntitlements, coerceFrequency } from '../lib/entitlements.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -1239,8 +1240,10 @@ async function markJobsSent(userId, jobs) {
 }
 
 // Gera HTML do email
-function buildEmailHTML(profile, jobs, userName, userId) {
+function buildEmailHTML(profile, jobs, userName, userId, plan = 'free', ent = null) {
   const name = userName || 'você';
+  // CTA por plano: free conduz à análise ("Analisar esta vaga"); pagos reforçam compatibilidade
+  const ctaLabel = plan === 'free' ? '⚡ Analisar esta vaga →' : '⚡ Analisar compatibilidade →';
   const jobsHTML = jobs.map(j => {
     try {
     const analyzeUrl = `https://www.vagaai.app.br/app?vaga=${encodeURIComponent(String(j.link || 'https://vagaai.app.br'))}`;
@@ -1255,9 +1258,9 @@ function buildEmailHTML(profile, jobs, userName, userId) {
         <div style="flex:1">
           <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:2px">${escEmail(company)}</div>
           <div style="font-size:14px;font-weight:700;color:#1a8f5c;margin-bottom:4px">${escEmail(j.title)}</div>
-          <div style="font-size:11px;color:#888;margin-bottom:6px">📍 ${escEmail(j.location || 'Brasil')}${j.salary ? ' · 💰 ' + escEmail(j.salary) : ''}</div>
-          <div style="font-size:11px;color:#f0a500;margin-bottom:6px">${starsFromScore(j._score)} <span style="color:#888">${compatLabel(j._score)}</span></div>
-          <a href="${analyzeUrl}" style="display:inline-block;background:#1a8f5c;color:#fff;font-size:12px;font-weight:700;padding:6px 14px;border-radius:6px;text-decoration:none">⚡ Analisar essa vaga →</a>
+          <div style="font-size:11px;color:#888;margin-bottom:6px">📍 ${escEmail(j.location || 'Brasil')} · 💰 ${j.salary ? escEmail(j.salary) : 'Salário não informado'}</div>
+          <div style="font-size:11px;color:#f0a500;margin-bottom:6px">${starsFromScore(j._score)} <span style="color:#888">${compatLabel(j._score)} (estimado)</span></div>
+          <a href="${analyzeUrl}" style="display:inline-block;background:#1a8f5c;color:#fff;font-size:12px;font-weight:700;padding:6px 14px;border-radius:6px;text-decoration:none">${ctaLabel}</a>
         </div>
       </div>
     </div>`;
@@ -1274,9 +1277,13 @@ function buildEmailHTML(profile, jobs, userName, userId) {
   <div style="padding:24px">
     <div style="font-size:16px;font-weight:700;color:#111;margin-bottom:6px">Olá, ${escEmail(name)}! 👋</div>
     <div style="font-size:13px;color:#555;line-height:1.6;margin-bottom:20px">
-      Encontramos <strong>${jobs.length} vaga${jobs.length > 1 ? 's novas' : ' nova'}</strong> compatíveis com seu perfil de
-      <strong>${escEmail(profile.cargo_desejado)}</strong>${profile.cidade ? ' em <strong>' + escEmail(profile.cidade) + '</strong>' : ''}.
-      Clique em "Analisar" para ver o score ATS real do seu currículo antes de candidatar.
+      ${plan === 'pro'
+        ? `Suas <strong>${jobs.length} melhores oportunidades</strong> foram priorizadas por aderência ao seu perfil. Veja por que cada vaga combina com você.`
+        : plan === 'starter'
+        ? `Selecionamos <strong>${jobs.length} oportunidade${jobs.length > 1 ? 's' : ''}</strong> com base no seu perfil, senioridade, localização e preferências.`
+        : `Encontramos <strong>${jobs.length} oportunidade${jobs.length > 1 ? 's' : ''}</strong> para você. Veja as vagas gratuitamente e analise a que mais combina com seu perfil.`}
+      <br>Perfil: <strong>${escEmail(profile.cargo_desejado)}</strong>${profile.cidade ? ' · <strong>' + escEmail(profile.cidade) + '</strong>' : ''}.
+      Clique em "Analisar" para ver o score ATS real do seu currículo antes de se candidatar.
     </div>
     ${jobsHTML}
     <div style="border-top:1px solid #eee;margin-top:20px;padding-top:16px;text-align:center;font-size:12px;color:#aaa;line-height:1.8">
@@ -1309,6 +1316,26 @@ async function processUserAlert(profile, isTest = false) {
     console.error('processUserAlert: UNSUBSCRIBE_SECRET não configurado — envio abortado para', userId);
     return { skipped: 'unsubscribe_secret_missing' };
   }
+
+  // ── Revalida o plano NO MOMENTO DO ENVIO ────────────────────────────────────
+  // Trata downgrade / cancelamento / past_due de forma consistente (lib/entitlements).
+  let plan = 'free';
+  try {
+    const sr = await fetch(
+      `${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${userId}&order=created_at.desc&limit=1&select=plan,status`,
+      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+    );
+    const sRows = await sr.json();
+    plan = resolvePlan(Array.isArray(sRows) ? sRows[0] : null);
+  } catch (e) {
+    console.warn('plan lookup failed, defaulting free:', e.message);
+    plan = 'free';
+  }
+  const ent = planEntitlements(plan);
+  // Coage a frequência ao permitido pelo plano (ex.: ex-Pro com 'diario' → 'semanal'),
+  // sem apagar nem sobrescrever a preferência salva (vale de novo se reassinar).
+  const effectiveFreq = coerceFrequency(profile.frequencia || 'semanal', plan);
+  const effectiveProfile = { ...profile, frequencia: effectiveFreq };
 
   // Busca vagas de todas as fontes em paralelo
   const [jooble, indeed, remotive, adzuna, serp, empregos, sine, vagasCom, infojobs, remoteok, arbeitnow, themuse, trampos, monster, glassdoor, bne, catho, jora, talentCom, jsearch] = await Promise.allSettled([
@@ -1367,7 +1394,7 @@ async function processUserAlert(profile, isTest = false) {
     // Mesmo sem vagas, atualizar next_run_at para evitar re-tentativas imediatas
     if (!isTest) {
       const now = new Date();
-      const nextRun = calculateNextRun(profile, now);
+      const nextRun = calculateNextRun(effectiveProfile, now);
       await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?user_id=eq.${userId}`, {
         method: 'PATCH',
         headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
@@ -1392,7 +1419,7 @@ async function processUserAlert(profile, isTest = false) {
   if (!jobs.length) {
     if (!isTest) {
       const now = new Date();
-      const nextRun = calculateNextRun(profile, now);
+      const nextRun = calculateNextRun(effectiveProfile, now);
       await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?user_id=eq.${userId}`, {
         method: 'PATCH',
         headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
@@ -1402,7 +1429,8 @@ async function processUserAlert(profile, isTest = false) {
     return { skipped: 'no jobs after filters' };
   }
 
-  jobs = jobs.slice(0, 8);
+  // Volume por plano: free=5, starter=15, pro=30
+  jobs = jobs.slice(0, ent.max_jobs_per_delivery);
 
   // Busca email atual e nome do usuário diretamente do auth (evita email desatualizado no perfil)
   let userName = email.split('@')[0];
@@ -1416,8 +1444,8 @@ async function processUserAlert(profile, isTest = false) {
     if (ud.user_metadata?.name) userName = ud.user_metadata.name.split(' ')[0];
   } catch(e) {}
 
-  // Envia email
-  const html = buildEmailHTML(profile, jobs, userName, userId);
+  // Envia email (copy e profundidade variam por plano)
+  const html = buildEmailHTML(effectiveProfile, jobs, userName, userId, plan, ent);
   const emailRes = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
@@ -1431,13 +1459,21 @@ async function processUserAlert(profile, isTest = false) {
 
   if (!emailRes.ok) {
     const err = await emailRes.text();
+    // Falha de e-mail NÃO marca como enviado. Registra a falha no histórico.
+    if (!isTest) {
+      fetch(`${SUPABASE_URL}/rest/v1/job_alert_history`, {
+        method: 'POST',
+        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({ user_id: userId, sent_at: new Date().toISOString(), jobs_count: 0, status: 'failed', error: String(err).slice(0, 500) }),
+      }).catch(e => console.warn('job_alert_history (failed) insert failed:', e.message));
+    }
     throw new Error(`Resend error: ${err}`);
   }
 
   // Registra vagas enviadas, atualiza timestamps e grava histórico
   if (!isTest) {
     const now = new Date();
-    const nextRun = calculateNextRun(profile, now);
+    const nextRun = calculateNextRun(effectiveProfile, now);
     await markJobsSent(userId, jobs);
     await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?user_id=eq.${userId}`, {
       method: 'PATCH',
