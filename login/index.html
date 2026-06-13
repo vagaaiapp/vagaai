@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -6,7 +6,8 @@
 <title>VagaAI — Entrar</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -16,7 +17,7 @@
   --green-dim:rgba(62,207,142,0.12);--green-border:rgba(62,207,142,0.25);
   --red:#ff6b6b;--red-dim:rgba(255,107,107,0.12);
 }
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem}
+body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;font-size:15px;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem}
 nav{position:fixed;top:0;left:0;right:0;background:rgba(10,15,13,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between}
 .nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
 .theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;padding:0}
@@ -27,7 +28,7 @@ nav{position:fixed;top:0;left:0;right:0;background:rgba(10,15,13,0.92);backdrop-
 
 /* Tabs */
 .tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1.8rem}
-.tab{flex:1;padding:.65rem;font-size:13px;font-weight:600;background:transparent;border:none;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
+.tab{flex:1;padding:.65rem;font-size:13px;font-weight:600;background:transparent;border:none;color:var(--muted);cursor:pointer;font-family:'Manrope',sans-serif;transition:all .2s}
 .tab.active{background:var(--green);color:#0a0f0d}
 .tab:not(.active):hover{color:var(--text)}
 
@@ -38,16 +39,16 @@ label{font-size:13px;font-weight:600}
 .forgot-link{font-size:12px;color:var(--green);text-decoration:none;transition:opacity .2s}
 .forgot-link:hover{opacity:.75}
 .input-wrap{position:relative}
-input[type="email"],input[type="password"],input[type="text"]{background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:16px;padding:.85rem 1rem;width:100%;transition:border-color .2s}
+input[type="email"],input[type="password"],input[type="text"]{background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Manrope',sans-serif;font-size:16px;padding:.85rem 1rem;width:100%;transition:border-color .2s}
 input:focus{outline:none;border-color:var(--green-border)}
 .toggle-pw{position:absolute;right:.9rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;padding:2px;display:flex;align-items:center;transition:color .2s}
 .toggle-pw:hover{color:var(--text)}
 
 /* Buttons */
-.btn{width:100%;background:var(--green);color:#0a0f0d;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;border:none;border-radius:10px;padding:1rem;cursor:pointer;transition:all .2s;margin-top:.5rem}
+.btn{width:100%;background:var(--green);color:#0a0f0d;font-family:'Manrope',sans-serif;font-size:15px;font-weight:700;border:none;border-radius:10px;padding:1rem;cursor:pointer;transition:all .2s;margin-top:.5rem}
 .btn:hover{background:#4ddb9e}
 .btn:disabled{opacity:.6;cursor:not-allowed}
-.btn-outline{width:100%;background:transparent;color:var(--muted);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;border:1px solid var(--border);border-radius:10px;padding:.85rem;cursor:pointer;transition:all .2s;margin-top:.6rem}
+.btn-outline{width:100%;background:transparent;color:var(--muted);font-family:'Manrope',sans-serif;font-size:14px;font-weight:600;border:1px solid var(--border);border-radius:10px;padding:.85rem;cursor:pointer;transition:all .2s;margin-top:.6rem}
 .btn-outline:hover{border-color:var(--border);color:var(--text)}
 
 /* Alerts */
@@ -63,7 +64,7 @@ input:focus{outline:none;border-color:var(--green-border)}
 
 /* Footer links */
 .foot{text-align:center;margin-top:1.4rem;font-size:13px;color:var(--muted)}
-.foot a,.foot button.link-btn{color:var(--green);text-decoration:none;background:none;border:none;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;padding:0}
+.foot a,.foot button.link-btn{color:var(--green);text-decoration:none;background:none;border:none;font-size:13px;font-family:'Manrope',sans-serif;cursor:pointer;padding:0}
 .foot a:hover,.foot button.link-btn:hover{text-decoration:underline}
 .back{text-align:center;margin-top:1rem;font-size:13px;color:var(--muted)}
 .back a{color:var(--muted);text-decoration:none}
