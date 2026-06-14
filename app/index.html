@@ -1994,7 +1994,20 @@ function showResult(d) {
   var interviewMicrocopy = document.getElementById('interviewMicrocopy');
 
   if (!isAnonymous && d.cv_otimizado && d.cv_otimizado.nome) {
-    try { localStorage.setItem('vagaai_cv', JSON.stringify(d.cv_otimizado)); } catch(e) {}
+    try {
+      localStorage.setItem('vagaai_cv', JSON.stringify(d.cv_otimizado));
+      localStorage.setItem('vagaai_cv_context', JSON.stringify({
+        analysis_id: d._analysis_id || null,
+        score: d.score,
+        nivel: d.nivel,
+        resumo: d.resumo,
+        job_info: d.job_info || {},
+        keywords_encontradas: d.keywords_encontradas || [],
+        keywords_faltando: d.keywords_faltando || [],
+        fatores: d.fatores || {},
+        briefing_empresa: d.briefing_empresa || {}
+      }));
+    } catch(e) {}
     if (cvBtn) cvBtn.style.display = 'flex';
     if (upsellBtn) upsellBtn.style.display = 'none';
     document.getElementById('upsellSection').classList.remove('show');

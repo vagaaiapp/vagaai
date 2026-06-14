@@ -3299,6 +3299,17 @@ function openSavedCv(id) {
   }
   try {
     localStorage.setItem('vagaai_cv', JSON.stringify(cv));
+    localStorage.setItem('vagaai_cv_context', JSON.stringify({
+      analysis_id: analysis.id || null,
+      score: analysis.result.score != null ? analysis.result.score : analysis.score,
+      nivel: analysis.result.nivel || analysis.nivel || '',
+      resumo: analysis.result.resumo || '',
+      job_info: analysis.result.job_info || {},
+      keywords_encontradas: analysis.result.keywords_encontradas || [],
+      keywords_faltando: analysis.result.keywords_faltando || [],
+      fatores: analysis.result.fatores || {},
+      briefing_empresa: analysis.result.briefing_empresa || {}
+    }));
     window.open('/cv', '_blank', 'noopener');
   } catch(e) {
     showToast('Não foi possível abrir o currículo.', 'error');
