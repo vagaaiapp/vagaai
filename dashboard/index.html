@@ -1323,7 +1323,8 @@ body {
 .cd-btn:hover { border-color:var(--gb-emerald); color:var(--gb-emerald); }
 .cd-btn.cd-cta { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); }
 .cd-btn.cd-cta:hover { background:var(--gb-mid); }
-.cd-btn.cd-danger { margin-left:auto; color:var(--s-red); background:var(--s-red-bg); border-color:rgba(217,79,79,.22); }
+.cd-btn.cd-danger { width:34px; height:34px; padding:0; justify-content:center; margin-left:auto; color:var(--s-red); background:var(--s-red-bg); border-color:rgba(217,79,79,.22); }
+.cd-btn.cd-danger svg { width:15px; height:15px; }
 .cd-btn.cd-danger:hover { color:#fff; background:var(--s-red); border-color:var(--s-red); }
 @media(max-width:520px) {
   .cd-meta-grid { grid-template-columns:1fr; }
@@ -3244,8 +3245,9 @@ function renderCandDetail(item) {
   } else if (item.analysisData) {
     acts += '<button class="cd-btn" onclick="addToTracker(\''+escAttr(item.empresa)+'\',\''+escAttr(item.cargo)+'\','+item.score+',\''+escAttr(item.id)+'\')">+ Rastrear</button>';
   }
-  if (item.hasTracker) acts += '<button class="cd-btn cd-danger" onclick="confirmDeleteTracker(\''+escAttr(item.trackerId)+'\')">Remover</button>';
-  else if (item.analysisData) acts += '<button class="cd-btn cd-danger" onclick="confirmDeleteAnalysis(\''+escAttr(item.analysisData.id)+'\')">Remover</button>';
+  var trashIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg>';
+  if (item.hasTracker) acts += '<button class="cd-btn cd-danger" onclick="confirmDeleteTracker(\''+escAttr(item.trackerId)+'\')" aria-label="Remover candidatura" title="Remover candidatura">'+trashIcon+'</button>';
+  else if (item.analysisData) acts += '<button class="cd-btn cd-danger" onclick="confirmDeleteAnalysis(\''+escAttr(item.analysisData.id)+'\')" aria-label="Remover análise" title="Remover análise">'+trashIcon+'</button>';
   return '<div class="cand-detail">'+
     '<div class="cd-top">'+
       '<button class="cd-close" onclick="closeCandDetail()">✕</button>'+
