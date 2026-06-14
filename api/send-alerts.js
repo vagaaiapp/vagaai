@@ -52,7 +52,8 @@ const PT_BR_PATTERN = /\b(vaga|empresa|cargo|área|experiência|conhecimento|ges
 
 // Aplica filtros de preferências estendidas ao array de vagas
 // Retorna array re-ordenado por _score após aplicação de bônus
-function applyExtendedFilters(jobs, profile) {
+function applyExtendedFilters(jobs, profile, options = {}) {
+  const relaxPreferences = options.relaxPreferences === true;
   // filtros_negativos é JSONB — pode chegar como objeto ou string, tratar ambos
   let filtrosNeg = profile.filtros_negativos || {};
   if (typeof filtrosNeg === 'string') {
@@ -112,7 +113,7 @@ function applyExtendedFilters(jobs, profile) {
     if (allNeg.length && allNeg.some(neg => combinedNorm.includes(neg))) return false;
 
     // Filtra por formato(s) preferido(s) — só quando a vaga menciona modalidade explicitamente
-    if (formatos.length > 0) {
+    if (!relaxPreferences && formatos.length > 0) {
       const mentionsAnyMode = /remoto|remote|home.?office|h[ií]brido|presencial|hybrid|on.?site/i.test(combined);
       if (mentionsAnyMode) {
         const matches = formatos.some(fmt => {
@@ -125,7 +126,7 @@ function applyExtendedFilters(jobs, profile) {
     }
 
     // Filtra por tipo de contrato — só quando a vaga menciona contrato explicitamente
-    if (contratos.length > 0) {
+    if (!relaxPreferences && contratos.length > 0) {
       const mentionsContract = /\b(clt|pj|freela|freelance|estagio|estágio|temporario|temporário|contrato|regime|efetivo|autonomo|autônomo)\b/i.test(combinedNorm);
       if (mentionsContract) {
         const matches = contratos.some(ct => {
@@ -226,6 +227,21 @@ function normalizeForJooble(text) {
 function normalizeLocation(cidade) {
   if (!cidade || cidade.toLowerCase().includes('remoto') || cidade.toLowerCase().includes('remote')) return 'Brazil';
   return cidade.normalize('NFD').replace(/[̀-ͯ]/g, '').replace('Sao Paulo', 'Sao Paulo').trim() + ', Brazil';
+}
+
+function broadenJobTitle(title) {
+  const normalized = String(title || '')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/\b(head|gerente|coordenador|coordenadora|especialista|analista|assistente|diretor|diretora|senior|sênior|pleno|junior|júnior|jr|sr|lead)\b/g, ' ')
+    .replace(/\b(de|da|do|das|dos|em|para)\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return normalized || String(title || '').trim();
+}
+
+function uniqueJobs(jobs) {
+  return deduplicateJobs((jobs || []).filter(job => job && (job.title || job.position)));
 }
 
 // ── HELPERS ──────────────────────────────────────────────────────────────────
@@ -370,24 +386,44 @@ async function fetchRemotiveJobs(profile) {
 
 // ── FONTE 4: ADZUNA BR (precisa de chaves gratuitas em developer.adzuna.com) ──
 async function fetchAdzunaJobs(profile) {
-  if (!ADZUNA_APP_ID || !ADZUNA_APP_KEY) return [];
+  if (!ADZUNA_APP_ID || !ADZUNA_APP_KEY) {
+    console.log('fetchAdzunaJobs: credentials not configured, skipping source');
+    return [];
+  }
   try {
-    const cargo = encodeURIComponent(profile.cargo_desejado || '');
+    const exact = String(profile.cargo_desejado || '').trim();
+    const broad = broadenJobTitle(exact);
     const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
-    const where = isRemoto ? '' : `&where=${encodeURIComponent(profile.cidade)}`;
-    const url = `https://api.adzuna.com/v1/api/jobs/br/search/1?app_id=${ADZUNA_APP_ID}&app_key=${ADZUNA_APP_KEY}&what=${cargo}${where}&results_per_page=20&content-type=application/json`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.results || []).map(j => ({
-      title: j.title || 'Vaga',
-      company: j.company?.display_name || 'Empresa',
-      location: j.location?.display_name || profile.cidade || 'Brasil',
-      snippet: (j.description || '').replace(/<[^>]+>/g, ' ').trim().slice(0, 400),
-      salary: j.salary_min ? `R$ ${Math.round(j.salary_min).toLocaleString('pt-BR')}` : '',
-      link: j.redirect_url || '',
-      _source: 'adzuna',
-    }));
+    const attempts = [
+      { what: exact, where: isRemoto ? '' : profile.cidade },
+      { what: exact, where: '' },
+    ];
+    if (broad && broad !== exact.toLowerCase()) attempts.push({ what: broad, where: '' });
+
+    let collected = [];
+    for (const attempt of attempts) {
+      if (!attempt.what) continue;
+      const where = attempt.where ? `&where=${encodeURIComponent(attempt.where)}` : '';
+      const url = `https://api.adzuna.com/v1/api/jobs/br/search/1?app_id=${ADZUNA_APP_ID}&app_key=${ADZUNA_APP_KEY}&what=${encodeURIComponent(attempt.what)}${where}&results_per_page=20&content-type=application/json`;
+      const res = await fetch(url, { signal: AbortSignal.timeout(7000) });
+      if (!res.ok) {
+        console.warn(`fetchAdzunaJobs: HTTP ${res.status} for ${attempt.where ? 'local' : 'Brazil'} query`);
+        continue;
+      }
+      const data = await res.json();
+      collected.push(...(data.results || []).map(j => ({
+        title: j.title || 'Vaga',
+        company: j.company?.display_name || 'Empresa',
+        location: j.location?.display_name || profile.cidade || 'Brasil',
+        snippet: (j.description || '').replace(/<[^>]+>/g, ' ').trim().slice(0, 400),
+        salary: j.salary_min ? `R$ ${Math.round(j.salary_min).toLocaleString('pt-BR')}` : '',
+        link: j.redirect_url || '',
+        _source: 'adzuna',
+      })));
+      collected = uniqueJobs(collected);
+      if (collected.length >= 8) break;
+    }
+    return collected;
   } catch(e) {
     console.warn('fetchAdzunaJobs error:', e.message);
     return [];
@@ -1024,25 +1060,38 @@ async function fetchJoraJobs(profile) {
 
 // ── FONTE 20: JSEARCH / RAPIDAPI (agrega LinkedIn, Indeed, Glassdoor) ────────
 async function fetchJSearchJobs(profile) {
-  if (!JSEARCH_API_KEY) return [];
+  if (!JSEARCH_API_KEY) {
+    console.log('fetchJSearchJobs: JSEARCH_API_KEY not configured, skipping source');
+    return [];
+  }
   try {
-    const cargo = profile.cargo_desejado || '';
+    const cargo = String(profile.cargo_desejado || '').trim();
+    const broad = broadenJobTitle(cargo);
     const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
     const location = isRemoto ? 'Brazil' : `${profile.cidade}, Brazil`;
-    const query = encodeURIComponent(`${cargo} ${location}`);
-    const url = `https://jsearch.p.rapidapi.com/search?query=${query}&country=br&num_pages=1&page=1&date_posted=month`;
-    const res = await fetch(url, {
-      headers: {
-        'X-RapidAPI-Key': JSEARCH_API_KEY,
-        'X-RapidAPI-Host': 'jsearch.p.rapidapi.com',
-        'Accept': 'application/json',
-      },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    const jobs = data.data || [];
-    return jobs.slice(0, 20).map(j => {
+    const attempts = [
+      { query: `${cargo} in ${location}`, date: 'month' },
+      { query: `${cargo} in Brazil`, date: 'month' },
+    ];
+    if (broad && broad !== cargo.toLowerCase()) attempts.push({ query: `${broad} in Brazil`, date: 'month' });
+
+    let collected = [];
+    for (const attempt of attempts) {
+      const url = `https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(attempt.query)}&country=br&num_pages=1&page=1&date_posted=${attempt.date}`;
+      const res = await fetch(url, {
+        headers: {
+          'X-RapidAPI-Key': JSEARCH_API_KEY,
+          'X-RapidAPI-Host': 'jsearch.p.rapidapi.com',
+          'Accept': 'application/json',
+        },
+        signal: AbortSignal.timeout(7000),
+      });
+      if (!res.ok) {
+        console.warn(`fetchJSearchJobs: HTTP ${res.status} for query variant`);
+        continue;
+      }
+      const data = await res.json();
+      collected.push(...(data.data || []).map(j => {
       let salary = '';
       if (j.job_min_salary && j.job_max_salary) {
         const currency = j.job_salary_currency === 'BRL' ? 'R$' : (j.job_salary_currency || 'R$');
@@ -1060,7 +1109,11 @@ async function fetchJSearchJobs(profile) {
         link: j.job_apply_link || j.job_google_link || '',
         _source: 'jsearch',
       };
-    });
+      }));
+      collected = uniqueJobs(collected);
+      if (collected.length >= 8) break;
+    }
+    return collected.slice(0, 30);
   } catch(e) {
     console.warn('fetchJSearchJobs error:', e.message);
     return [];
@@ -1284,6 +1337,9 @@ function buildEmailHTML(profile, jobs, userName, userId, plan = 'free', ent = nu
         : `Encontramos <strong>${jobs.length} oportunidade${jobs.length > 1 ? 's' : ''}</strong> para você. Veja as vagas gratuitamente e analise a que mais combina com seu perfil.`}
       <br>Perfil: <strong>${escEmail(profile.cargo_desejado)}</strong>${profile.cidade ? ' · <strong>' + escEmail(profile.cidade) + '</strong>' : ''}.
       Clique em "Analisar" para ver o score ATS real do seu currículo antes de se candidatar.
+      ${profile._relaxedMatches
+        ? '<br><span style="display:inline-block;margin-top:8px;color:#8a6513;background:#fff8e9;border:1px solid #f0d7a5;border-radius:6px;padding:6px 9px">Algumas oportunidades próximas ao seu perfil foram incluídas porque os filtros exatos não retornaram resultados.</span>'
+        : ''}
     </div>
     ${jobsHTML}
     <div style="border-top:1px solid #eee;margin-top:20px;padding-top:16px;text-align:center;font-size:12px;color:#aaa;line-height:1.8">
@@ -1361,6 +1417,29 @@ async function processUserAlert(profile, isTest = false) {
     fetchJSearchJobs(profile),
   ]);
   const settled = (r) => r.status === 'fulfilled' ? (r.value || []) : [];
+  const sourceCounts = {
+    jsearch: settled(jsearch).length,
+    adzuna: settled(adzuna).length,
+    jooble: settled(jooble).length,
+    indeed: settled(indeed).length,
+    empregos: settled(empregos).length,
+    sine: settled(sine).length,
+    vagasCom: settled(vagasCom).length,
+    infojobs: settled(infojobs).length,
+    trampos: settled(trampos).length,
+    monster: settled(monster).length,
+    glassdoor: settled(glassdoor).length,
+    bne: settled(bne).length,
+    catho: settled(catho).length,
+    jora: settled(jora).length,
+    talentCom: settled(talentCom).length,
+    remoteok: settled(remoteok).length,
+    remotive: settled(remotive).length,
+    arbeitnow: settled(arbeitnow).length,
+    themuse: settled(themuse).length,
+    serp: settled(serp).length,
+  };
+  const rawCount = Object.values(sourceCounts).reduce((sum, count) => sum + count, 0);
   let jobs = deduplicateJobs([
     ...settled(jsearch),  // JSearch primeiro — maior qualidade (LinkedIn/Indeed/Glassdoor)
     ...settled(jooble),
@@ -1383,12 +1462,14 @@ async function processUserAlert(profile, isTest = false) {
     ...settled(jora),
     ...settled(talentCom),
   ]);
+  const dedupCount = jobs.length;
   console.log(`Sources: jsearch=${settled(jsearch).length} jooble=${settled(jooble).length} indeed=${settled(indeed).length} adzuna=${settled(adzuna).length} empregos=${settled(empregos).length} sine=${settled(sine).length} vagasCom=${settled(vagasCom).length} infojobs=${settled(infojobs).length} trampos=${settled(trampos).length} monster=${settled(monster).length} glassdoor=${settled(glassdoor).length} bne=${settled(bne).length} catho=${settled(catho).length} jora=${settled(jora).length} talentCom=${settled(talentCom).length} remoteok=${settled(remoteok).length} remotive=${settled(remotive).length} arbeitnow=${settled(arbeitnow).length} themuse=${settled(themuse).length} → dedup=${jobs.length}`);
 
   // Remove já enviadas (exceto em modo teste)
   if (!isTest) {
     jobs = await filterSentJobs(userId, jobs);
   }
+  const newCount = jobs.length;
 
   if (!jobs.length) {
     // Mesmo sem vagas, atualizar next_run_at para evitar re-tentativas imediatas
@@ -1404,7 +1485,10 @@ async function processUserAlert(profile, isTest = false) {
         }),
       }).catch(e => console.warn('next_run_at update (no jobs) failed:', e.message));
     }
-    return { skipped: 'no new jobs' };
+    return {
+      skipped: rawCount > 0 ? 'no new jobs' : 'sources_empty',
+      diagnostics: { sourceCounts, rawCount, dedupCount, newCount, strictCount: 0, relaxedCount: 0 },
+    };
   }
 
   // Normaliza e calcula scores
@@ -1414,8 +1498,19 @@ async function processUserAlert(profile, isTest = false) {
 
   // Aplica filtros de preferências estendidas (formato, filtros negativos, empresas, setores)
   // applyExtendedFilters já re-ordena por _score após aplicar bônus
-  jobs = applyExtendedFilters(jobs, profile);
+  const scoredJobs = jobs;
+  jobs = applyExtendedFilters(scoredJobs, profile);
+  const strictCount = jobs.length;
+  let relaxedMatches = false;
 
+  if (!jobs.length) {
+    // Mantém palavras negativas como bloqueio absoluto, mas transforma formato e
+    // contrato em preferência quando eles eliminariam 100% das oportunidades.
+    jobs = applyExtendedFilters(scoredJobs, profile, { relaxPreferences: true });
+    relaxedMatches = jobs.length > 0;
+  }
+
+  const relaxedCount = jobs.length;
   if (!jobs.length) {
     if (!isTest) {
       const now = new Date();
@@ -1426,7 +1521,10 @@ async function processUserAlert(profile, isTest = false) {
         body: JSON.stringify({ last_run_at: now.toISOString(), next_run_at: nextRun ? nextRun.toISOString() : null }),
       }).catch(e => console.warn('next_run_at update (no jobs after filters) failed:', e.message));
     }
-    return { skipped: 'no jobs after filters' };
+    return {
+      skipped: 'no jobs after filters',
+      diagnostics: { sourceCounts, rawCount, dedupCount, newCount, strictCount, relaxedCount },
+    };
   }
 
   // Volume por plano: free=5, starter=15, pro=30
@@ -1445,7 +1543,8 @@ async function processUserAlert(profile, isTest = false) {
   } catch(e) {}
 
   // Envia email (copy e profundidade variam por plano)
-  const html = buildEmailHTML(effectiveProfile, jobs, userName, userId, plan, ent);
+  const deliveryProfile = { ...effectiveProfile, _relaxedMatches: relaxedMatches };
+  const html = buildEmailHTML(deliveryProfile, jobs, userName, userId, plan, ent);
   const emailRes = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
@@ -1492,7 +1591,13 @@ async function processUserAlert(profile, isTest = false) {
     }).catch(e => console.warn('job_alert_history insert failed:', e.message));
   }
 
-  return { sent: true, jobs: jobs.length, email };
+  return {
+    sent: true,
+    jobs: jobs.length,
+    email,
+    relaxedMatches,
+    diagnostics: { sourceCounts, rawCount, dedupCount, newCount, strictCount, relaxedCount },
+  };
 }
 
 export default async function handler(req, res) {
@@ -1581,15 +1686,34 @@ export default async function handler(req, res) {
     if (isTest) {
       const r = results[0] || {};
       if (r.sent === true) {
-        return res.status(200).json({ ok: true, sent: true, jobs: r.jobs, email: r.email, results });
+        return res.status(200).json({
+          ok: true,
+          sent: true,
+          jobs: r.jobs,
+          email: r.email,
+          relaxed_matches: r.relaxedMatches === true,
+          diagnostics: r.diagnostics,
+          results,
+        });
       }
       if (r.skipped) {
-        const skipMsg = r.skipped === 'no new jobs' || r.skipped === 'no jobs after filters'
-          ? 'Nenhuma vaga compatível encontrada no momento.'
+        const skipMsg = r.skipped === 'sources_empty'
+          ? 'As fontes de vagas não responderam com oportunidades agora. Tente novamente em alguns minutos.'
+          : r.skipped === 'no new jobs'
+          ? 'As vagas encontradas já apareceram em envios anteriores. Uma nova busca será feita no próximo ciclo.'
+          : r.skipped === 'no jobs after filters'
+          ? 'Encontramos vagas, mas todas foram excluídas pelos filtros negativos configurados.'
           : r.skipped === 'no email'
           ? 'E-mail não encontrado no perfil.'
           : r.skipped;
-        return res.status(200).json({ ok: false, sent: false, skipped: r.skipped, message: skipMsg, results });
+        return res.status(200).json({
+          ok: false,
+          sent: false,
+          skipped: r.skipped,
+          message: skipMsg,
+          diagnostics: r.diagnostics,
+          results,
+        });
       }
       if (r.error) {
         return res.status(200).json({ ok: false, sent: false, error: r.error, results });

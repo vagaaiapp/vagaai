@@ -4394,7 +4394,9 @@ async function _doSendTestAlert() {
     });
     var data = await res.json();
     if (res.ok && data.sent === true) {
-      showToast('E-mail de teste enviado para ' + currentSession.user.email + '!');
+      var sentMsg = 'E-mail de teste enviado para ' + currentSession.user.email + '!';
+      if (data.relaxed_matches) sentMsg += ' Incluímos também oportunidades próximas ao seu perfil.';
+      showToast(sentMsg);
       _alLive('E-mail de teste enviado com sucesso.');
     } else if (res.ok && data.skipped) {
       var skipMsg = data.message || 'Nenhuma vaga compatível encontrada no momento. Ajuste as preferências do alerta e tente novamente.';
