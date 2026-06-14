@@ -1539,6 +1539,132 @@ body {
 @media (max-width:1100px) { .al-main-grid { grid-template-columns:1fr; } }
 @media (max-width:900px) { .al-hero-row { grid-template-columns:1fr 1fr; } .al-bottom-grid { grid-template-columns:1fr; } }
 @media (max-width:768px) { .al-hero-row { grid-template-columns:1fr; } .al-jobs-grid { grid-template-columns:1fr; } }
+
+/* ── Alertas clean: command center + content hierarchy ───────── */
+.al-clean-page { gap:18px; }
+.al-clean-page .al-page-header { margin-bottom:2px; }
+.al-clean-page .al-desc { max-width:660px; }
+.al-command-center {
+  position:relative; overflow:hidden;
+  display:grid; grid-template-columns:minmax(0,1.25fr) minmax(260px,.85fr) minmax(230px,.7fr);
+  align-items:center; gap:24px;
+  padding:22px 24px;
+  border-radius:18px;
+  color:#fff;
+  background:linear-gradient(120deg,#082f1e,#0e6540);
+  box-shadow:0 18px 42px rgba(8,49,31,.15);
+}
+.al-command-center::after {
+  content:""; position:absolute; width:260px; height:260px; right:-105px; top:-165px;
+  border:55px solid rgba(78,206,145,.065); border-radius:50%; pointer-events:none;
+}
+.al-command-center .al-next-card {
+  min-width:0; padding:0; border-radius:0; box-shadow:none; background:none;
+  display:block; position:relative; z-index:1;
+}
+.al-command-center .al-next-label { color:#6de0aa; }
+.al-command-center .al-next-date { font-family:Lora,serif; font-size:19px; }
+.al-command-quality {
+  min-width:0; display:flex; align-items:center; gap:14px;
+  padding:0 24px; border-left:1px solid rgba(255,255,255,.13); border-right:1px solid rgba(255,255,255,.13);
+  position:relative; z-index:1;
+}
+.al-command-ring {
+  --al-quality:0%;
+  width:64px; height:64px; flex:0 0 64px; border-radius:50%;
+  display:grid; place-items:center; position:relative;
+  background:conic-gradient(#4bd895 0 var(--al-quality),rgba(255,255,255,.13) var(--al-quality) 100%);
+}
+.al-command-ring::after { content:""; position:absolute; inset:6px; border-radius:50%; background:#0b432b; }
+.al-command-ring strong { position:relative; z-index:1; color:#fff; font-size:14px; }
+.al-command-quality-title { color:#fff; font-size:12px; font-weight:800; margin-bottom:4px; }
+.al-command-quality-sub { color:#a8cab8; font-size:10.5px; line-height:1.45; }
+.al-command-actions { display:flex; justify-content:flex-end; gap:8px; position:relative; z-index:1; }
+.al-command-actions .al-next-btn { padding:10px 13px; }
+.al-smart-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.al-smart-stats .al-metric {
+  display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:13px; box-shadow:none;
+}
+.al-metric-icon {
+  width:35px; height:35px; flex:0 0 35px; display:grid; place-items:center;
+  border-radius:9px; background:var(--s-grn-bg); color:var(--gb-emerald); font-size:17px;
+}
+.al-smart-stats .al-metric-val { font-family:Lora,serif; font-size:20px; line-height:1; margin-bottom:3px; }
+.al-smart-stats .al-metric-lbl { color:var(--t2); font-weight:600; }
+.al-clean-grid {
+  display:grid; grid-template-columns:minmax(0,1.65fr) minmax(310px,.72fr);
+  gap:18px; align-items:start;
+}
+.al-clean-main,.al-clean-side { min-width:0; }
+.al-clean-side { display:grid; gap:16px; }
+.al-clean-jobs .al-jobs-head { padding:17px 19px 14px; }
+.al-clean-jobs .al-jobs-body { padding:0; }
+.al-clean-jobs .al-quick-filters { padding:13px 18px; margin:0; border-bottom:1px solid var(--border); }
+.al-clean-jobs #alJobsGrid > .al-empty { min-height:260px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.al-clean-jobs .al-jobs-grid { grid-template-columns:1fr; gap:0; }
+.al-clean-jobs .al-job-card {
+  border:0; border-bottom:1px solid var(--border-soft); border-radius:0;
+  padding:16px 18px; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:14px;
+}
+.al-clean-jobs .al-job-card:last-child { border-bottom:0; }
+.al-clean-jobs .al-job-match { position:static; justify-self:end; grid-column:2; grid-row:1; }
+.al-clean-jobs .al-job-company,.al-clean-jobs .al-job-title,.al-clean-jobs .al-job-location,
+.al-clean-jobs .al-job-reason { grid-column:1; }
+.al-clean-jobs .al-job-title { padding-right:0; margin-top:3px; font-size:13px; }
+.al-clean-jobs .al-job-reason { min-height:0; margin-bottom:0; }
+.al-clean-jobs .al-job-actions { grid-column:2; align-self:end; min-width:190px; }
+.al-clean-profile .al-sum-head { padding:17px 18px 13px; }
+.al-clean-profile .al-sum-body { padding:15px 18px 17px; }
+.al-clean-profile .al-sum-name { font-family:Lora,serif; font-size:18px; }
+.al-clean-profile .al-sum-actions { margin:14px 0 0; }
+.al-clean-profile .al-quality-box { padding:14px 18px; }
+.al-clean-profile .al-filters-note { margin:0 18px 16px; }
+.al-clean-profile details { border-top:1px solid var(--border); }
+.al-clean-profile summary {
+  padding:12px 18px; color:var(--gb-emerald); font-size:11px; font-weight:800;
+  cursor:pointer; list-style:none; display:flex; justify-content:space-between;
+}
+.al-clean-profile summary::after { content:"＋"; }
+.al-clean-profile details[open] summary::after { content:"−"; }
+.al-clean-profile .al-clean-detail-body { padding:0 18px 15px; }
+.al-clean-profile .al-clean-danger { margin-top:10px; width:100%; }
+.al-delivery-card {
+  display:grid; grid-template-columns:minmax(0,.9fr) minmax(360px,1.1fr);
+  gap:26px; align-items:center; padding:22px 24px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card);
+}
+.al-delivery-copy { padding:8px 6px; }
+.al-delivery-title { font-family:Lora,serif; font-size:20px; font-weight:700; color:var(--t1); margin-bottom:8px; }
+.al-delivery-copy p { color:var(--t2); font-size:11.5px; line-height:1.6; margin-bottom:10px; max-width:520px; }
+.al-delivery-copy .al-history-sub { margin-bottom:14px; }
+.al-delivery-copy .al-new-btn { display:inline-flex; }
+.al-clean-preview { box-shadow:none; }
+.al-clean-preview .al-preview-body { padding:12px; }
+[data-theme="dark"] .al-command-center { background:linear-gradient(120deg,#071b11,#0b4a2e); }
+[data-theme="dark"] .al-command-ring::after { background:#0a3522; }
+@media (max-width:1180px) {
+  .al-command-center { grid-template-columns:1fr 1fr; }
+  .al-command-actions { grid-column:1/-1; justify-content:flex-start; }
+  .al-command-quality { border-right:0; }
+  .al-clean-grid { grid-template-columns:minmax(0,1.3fr) minmax(290px,.7fr); }
+}
+@media (max-width:980px) {
+  .al-clean-grid { grid-template-columns:1fr; }
+  .al-clean-side { grid-template-columns:1fr 1fr; }
+  .al-delivery-card { grid-template-columns:1fr 1fr; }
+}
+@media (max-width:768px) {
+  .al-clean-page .al-page-header { align-items:flex-start; }
+  .al-clean-page .al-header-right { width:100%; flex-wrap:wrap; }
+  .al-command-center { grid-template-columns:1fr; padding:20px; }
+  .al-command-quality { padding:17px 0 0; border:0; border-top:1px solid rgba(255,255,255,.13); }
+  .al-command-actions { grid-column:auto; justify-content:flex-start; flex-wrap:wrap; }
+  .al-smart-stats,.al-clean-side,.al-delivery-card { grid-template-columns:1fr; }
+  .al-clean-jobs .al-job-card { grid-template-columns:1fr; }
+  .al-clean-jobs .al-job-match,.al-clean-jobs .al-job-actions { grid-column:1; }
+  .al-clean-jobs .al-job-match { justify-self:start; }
+  .al-clean-jobs .al-job-actions { min-width:0; }
+}
 </style>
 <script>
 if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');
@@ -1930,14 +2056,14 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
 
   <!-- ══ ALERTAS ══ -->
   <div id="tab-alertas" class="tab" style="display:none">
-    <div class="al-page">
+    <div class="al-page al-clean-page">
 
       <!-- Header -->
       <div class="al-page-header">
         <div>
-          <div class="al-eyebrow">Seu radar de vagas</div>
-          <h1 class="al-title">Seus alertas de vagas</h1>
-          <p class="al-desc">Configure uma vez e receba vagas compatíveis com seu perfil, salário e momento de carreira.</p>
+          <div class="al-eyebrow">Seu radar de oportunidades</div>
+          <h1 class="al-title">Alertas de vagas</h1>
+          <p class="al-desc">Defina o que procura uma vez. A VagaAI monitora oportunidades, prioriza as mais compatíveis e entrega uma seleção pronta para você avaliar.</p>
         </div>
         <div class="al-header-right">
           <div class="al-usage" id="alUsage" style="display:none"></div>
@@ -1952,68 +2078,72 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         </div>
       </div>
 
-      <!-- Hero row: próximo envio + métricas -->
-      <div class="al-hero-row">
+      <!-- Command center -->
+      <div class="al-command-center">
         <div class="al-next-card" id="alNextCard">
           <div>
-            <div class="al-next-label">Próximo envio</div>
+            <div class="al-next-label">Próxima seleção</div>
             <div class="al-next-date" id="alNextDate">Configure o alerta</div>
             <div class="al-next-meta" id="alNextMeta">Nenhum alerta ativo</div>
           </div>
-          <div class="al-next-actions">
-            <button class="al-next-btn primary" id="alTestBtn" onclick="sendTestAlert()" aria-label="Enviar e-mail de teste agora">Enviar teste agora</button>
-            <button class="al-next-btn secondary" onclick="openAlertEditModal()">Editar alerta</button>
+        </div>
+        <div class="al-command-quality" id="alCommandQuality">
+          <div class="al-command-ring"><strong id="alCommandQualityValue">—</strong></div>
+          <div>
+            <div class="al-command-quality-title">Qualidade do alerta</div>
+            <div class="al-command-quality-sub">Complete suas preferências para melhorar a precisão.</div>
           </div>
         </div>
-        <div class="al-metric">
-          <div class="al-metric-val" id="alMetricVagas">—</div>
-          <div class="al-metric-lbl">vagas encontradas</div>
-          <div class="al-metric-sub" id="alMetricVagasSub">nos últimos 30 dias</div>
-        </div>
-        <div class="al-metric">
-          <div class="al-metric-val">—</div>
-          <div class="al-metric-lbl">vagas visualizadas</div>
-          <div class="al-metric-na">Rastreamento indisponível</div>
-        </div>
-        <div class="al-metric">
-          <div class="al-metric-val" id="alMetricCandidaturas">—</div>
-          <div class="al-metric-lbl">candidaturas dos alertas</div>
-          <div class="al-metric-na" id="alMetricCandSub">Dados insuficientes</div>
+        <div class="al-command-actions">
+          <button class="al-next-btn primary" id="alTestBtn" onclick="sendTestAlert()" aria-label="Enviar e-mail de teste agora">Enviar teste</button>
+          <button class="al-next-btn secondary" onclick="openAlertEditModal()">Editar preferências</button>
         </div>
       </div>
 
-      <!-- Main grid: summary LEFT + content RIGHT -->
-      <div class="al-main-grid">
-
-        <!-- LEFT: Alert summary card -->
-        <div id="alSummaryCard">
-          <div class="al-empty">
-            <div class="al-empty-ico" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="44" height="44"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg>
-            </div>
-            <div class="al-empty-title">Nenhum alerta configurado</div>
-            <div class="al-empty-sub">Crie um alerta para receber vagas compatíveis com seu perfil toda semana.</div>
-            <button class="al-empty-cta" onclick="openAlertEditModal()">Criar primeiro alerta</button>
+      <!-- Smart metrics -->
+      <div class="al-smart-stats">
+        <div class="al-metric">
+          <div class="al-metric-icon" aria-hidden="true">⌕</div>
+          <div>
+          <div class="al-metric-val" id="alMetricVagas">—</div>
+          <div class="al-metric-lbl">oportunidades encontradas</div>
+          <div class="al-metric-sub" id="alMetricVagasSub">nos últimos 30 dias</div>
           </div>
         </div>
+        <div class="al-metric">
+          <div class="al-metric-icon" aria-hidden="true">◎</div>
+          <div>
+          <div class="al-metric-val">—</div>
+          <div class="al-metric-lbl">vagas de alta aderência</div>
+          <div class="al-metric-na">Rastreamento indisponível</div>
+          </div>
+        </div>
+        <div class="al-metric">
+          <div class="al-metric-icon" aria-hidden="true">↗</div>
+          <div>
+          <div class="al-metric-val" id="alMetricCandidaturas">—</div>
+          <div class="al-metric-lbl">adicionadas às candidaturas</div>
+          <div class="al-metric-na" id="alMetricCandSub">Dados insuficientes</div>
+          </div>
+        </div>
+      </div>
 
-        <!-- RIGHT: Jobs + history + email preview -->
-        <div class="al-right-col">
-
-          <!-- Recommended jobs -->
-          <div class="al-jobs-card">
+      <!-- Main grid -->
+      <div class="al-clean-grid">
+        <div class="al-clean-main">
+          <div class="al-jobs-card al-clean-jobs">
             <div class="al-jobs-head">
               <div>
-                <div class="al-jobs-title">Vagas compatíveis encontradas agora</div>
-                <div class="al-jobs-sub">Prévia das vagas que podem chegar no próximo alerta.</div>
+                <div class="al-jobs-title">Oportunidades recomendadas</div>
+                <div class="al-jobs-sub">Uma prévia do que a VagaAI encontrou com base no seu perfil.</div>
               </div>
             </div>
             <div class="al-jobs-body">
               <div class="al-quick-filters" id="alJobFilters" role="group" aria-label="Filtros de vagas">
-                <button class="al-qf on" onclick="setAlJobFilter('todas',this)">Todas</button>
-                <button class="al-qf" onclick="setAlJobFilter('80',this)">80%+</button>
+                <button class="al-qf on" onclick="setAlJobFilter('todas',this)">Mais compatíveis</button>
                 <button class="al-qf" onclick="setAlJobFilter('remoto',this)">Remotas</button>
                 <button class="al-qf" onclick="setAlJobFilter('salario',this)">Salário informado</button>
+                <button class="al-qf" onclick="setAlJobFilter('80',this)">80%+</button>
               </div>
               <div id="alJobsGrid">
                 <div class="al-empty" style="padding:28px">
@@ -2021,45 +2151,60 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="38" height="38"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
                   </div>
                   <div class="al-empty-title">As vagas aparecerão aqui</div>
-                  <div class="al-empty-sub">Configure e ative um alerta para ver as oportunidades encontradas para você. Use "Enviar teste agora" para disparar um envio imediato.</div>
+                  <div class="al-empty-sub">Configure e ative um alerta para ver as oportunidades encontradas para você.</div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Bottom: history + email preview -->
-          <div class="al-bottom-grid">
-
-            <!-- History -->
-            <div class="al-history-card">
-              <div class="al-history-head">
-                <div>
-                  <div class="al-history-title">Histórico de envios</div>
-                  <div class="al-history-sub">Desempenho dos alertas recentes.</div>
-                </div>
+        <aside class="al-clean-side">
+          <div id="alSummaryCard">
+            <div class="al-empty">
+              <div class="al-empty-ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="44" height="44"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg>
               </div>
-              <div id="alHistoryBody">
-                <div style="padding:24px 18px;text-align:center">
-                  <div style="font-size:12px;color:var(--t3)">Nenhum envio ainda.</div>
-                  <div style="font-size:11px;color:var(--t3);margin-top:5px">O histórico aparece após o primeiro envio automático ou teste.</div>
-                </div>
+              <div class="al-empty-title">Nenhum alerta configurado</div>
+              <div class="al-empty-sub">Crie um alerta para receber vagas compatíveis com seu perfil toda semana.</div>
+              <button class="al-empty-cta" onclick="openAlertEditModal()">Criar primeiro alerta</button>
+            </div>
+          </div>
+
+          <div class="al-history-card">
+            <div class="al-history-head">
+              <div>
+                <div class="al-history-title">Atividade recente</div>
+                <div class="al-history-sub">O que aconteceu com seu alerta.</div>
               </div>
             </div>
-
-            <!-- Email preview -->
-            <div class="al-preview-card">
-              <div class="al-preview-head">
-                <div>
-                  <div class="al-history-title">Prévia do e-mail</div>
-                  <div class="al-history-sub" id="alPreviewWhen">Aguardando configuração.</div>
-                </div>
-                <button class="al-link-btn" onclick="sendTestAlert()" id="alPreviewTestBtn">Enviar teste</button>
-              </div>
-              <div class="al-preview-body" id="alEmailPreviewBody">
-                <div style="text-align:center;padding:20px;color:var(--t3);font-size:11px">Configure um alerta para ver a prévia do e-mail.</div>
+            <div id="alHistoryBody">
+              <div style="padding:24px 18px;text-align:center">
+                <div style="font-size:12px;color:var(--t3)">Nenhum envio ainda.</div>
+                <div style="font-size:11px;color:var(--t3);margin-top:5px">A atividade aparece após o primeiro envio automático ou teste.</div>
               </div>
             </div>
+          </div>
+        </aside>
+      </div>
 
+      <!-- Delivery preview -->
+      <div class="al-delivery-card">
+        <div class="al-delivery-copy">
+          <div class="al-eyebrow">Como você recebe</div>
+          <div class="al-delivery-title">Uma seleção curta, não uma lista infinita.</div>
+          <p>O e-mail destaca as vagas com maior aderência, informa salário e modalidade quando disponíveis e leva você direto para a análise completa.</p>
+          <div class="al-history-sub" id="alPreviewWhen">Aguardando configuração.</div>
+          <button class="al-new-btn" onclick="sendTestAlert()" id="alPreviewTestBtn">Enviar prévia para meu e-mail</button>
+        </div>
+        <div class="al-preview-card al-clean-preview">
+          <div class="al-preview-head">
+            <div>
+              <div class="al-history-title">Prévia do e-mail</div>
+              <div class="al-history-sub">Veja como a seleção chega na sua caixa de entrada.</div>
+            </div>
+          </div>
+          <div class="al-preview-body" id="alEmailPreviewBody">
+            <div style="text-align:center;padding:20px;color:var(--t3);font-size:11px">Configure um alerta para ver a prévia do e-mail.</div>
           </div>
         </div>
       </div>
@@ -3976,10 +4121,27 @@ function renderAlertPage() {
   renderAlertUsage();
   renderAlertStatus(p);
   renderAlertNextSend(p, ext);
+  renderAlertCommandQuality(p, ext);
   renderAlertMetrics(p);
   renderAlertSummary(p, ext);
   renderAlertJobsGrid();
   renderAlertEmailPreview(p, ext);
+}
+
+function renderAlertCommandQuality(p, ext) {
+  var valueEl = document.getElementById('alCommandQualityValue');
+  var ringEl = valueEl && valueEl.closest ? valueEl.closest('.al-command-ring') : null;
+  var subEl = document.querySelector('.al-command-quality-sub');
+  var q = calculateAlertQuality(p, ext || {});
+  var score = p ? q.score : 0;
+  if (valueEl) valueEl.textContent = p ? score + '%' : '—';
+  if (ringEl) ringEl.style.setProperty('--al-quality', score + '%');
+  if (subEl) {
+    if (!p) subEl.textContent = 'Crie seu primeiro alerta para começar o monitoramento.';
+    else if (score >= 90) subEl.textContent = 'Seu radar está completo e pronto para encontrar vagas precisas.';
+    else if (q.recommendations.length) subEl.textContent = 'Próximo ajuste: ' + q.recommendations.join(' e ') + '.';
+    else subEl.textContent = 'Complete suas preferências para melhorar a precisão.';
+  }
 }
 
 function renderAlertStatus(p) {
@@ -4146,11 +4308,10 @@ function renderAlertSummary(p, ext) {
     return '<div class="al-check-row"><span class="al-check-lbl">'+escHtml(c.label)+'</span><span class="'+(c.done?'al-check-done':'al-check-pending')+'">'+(c.done?'Completo':'Pendente')+'</span></div>';
   }).join('');
   var improveHtml = q.pending.length ? '<div class="al-improve-box"><strong>Faltam '+q.pending.length+' ajuste'+(q.pending.length>1?'s':'')+':</strong> adicione '+q.recommendations.join(' e ')+' para melhorar a precisão.</div>' : '';
-  var filtersNote = '<div class="al-filters-note"><span class="al-filters-note-lbl">Disponível ao editar</span>Tipo de contrato: CLT, PJ, freela, estágio ou temporário.<br>Filtros negativos: estágio, presencial, banco de talentos, palavras excluídas.</div>';
   container.innerHTML =
-    '<div class="al-summary-card">'+
+    '<div class="al-summary-card al-clean-profile">'+
       '<div class="al-sum-head">'+
-        '<div><div class="al-sum-head-title">Seu alerta principal</div><div class="al-sum-head-sub">Resumo das preferências ativas.</div></div>'+
+        '<div><div class="al-sum-head-title">Perfil monitorado</div><div class="al-sum-head-sub">Preferências usadas para buscar oportunidades.</div></div>'+
         '<span class="al-quality-badge'+qCls+'">'+q.score+'%</span>'+
       '</div>'+
       '<div class="al-sum-body">'+
@@ -4158,19 +4319,21 @@ function renderAlertSummary(p, ext) {
         '<div class="al-sum-meta">'+metaLines+'</div>'+
         (tags ? '<div class="al-sum-tags">'+tags+'</div>' : '')+
         '<div class="al-sum-actions">'+
-          '<button class="al-sum-btn edit" onclick="openAlertEditModal()">Editar alerta</button>'+
-          '<button class="al-sum-btn" onclick="sendTestAlert()">Enviar teste</button>'+
-          '<button class="al-sum-btn full" onclick="toggleAlertActive()">'+escHtml(pauseLbl)+'</button>'+
-          '<button class="al-sum-btn full danger" onclick="confirmDeleteAlert()">Excluir alerta</button>'+
+          '<button class="al-sum-btn edit" onclick="openAlertEditModal()">Editar preferências</button>'+
+          '<button class="al-sum-btn" onclick="toggleAlertActive()">'+escHtml(pauseLbl)+'</button>'+
         '</div>'+
       '</div>'+
       '<div class="al-quality-box">'+
-        '<div class="al-quality-line"><span>Qualidade do alerta</span><span class="al-quality-pct">'+q.score+'%</span></div>'+
+        '<div class="al-quality-line"><span>Precisão do alerta</span><span class="al-quality-pct">'+q.score+'%</span></div>'+
         '<div class="al-quality-track"><div class="al-quality-fill'+qCls+'" style="width:'+q.score+'%"></div></div>'+
-        checksHtml+
         improveHtml+
       '</div>'+
-      filtersNote+
+      '<details>'+
+        '<summary>Ver configuração completa</summary>'+
+        '<div class="al-clean-detail-body">'+checksHtml+
+          '<button class="al-sum-btn danger al-clean-danger" onclick="confirmDeleteAlert()">Excluir alerta</button>'+
+        '</div>'+
+      '</details>'+
     '</div>';
 }
 
