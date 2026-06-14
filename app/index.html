@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
 <head>
 <!-- Google Analytics 4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XCT8K58VWF"></script>
@@ -465,32 +465,197 @@ textarea::placeholder{color:var(--muted)}
 .tracker-add-btn:hover{border-color:var(--green);color:var(--green);background:rgba(62,207,142,.06)}
 .tracker-add-btn.added{border-color:var(--green);color:var(--green);background:rgba(62,207,142,.06);pointer-events:none;cursor:default}
 </style>
-<script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
+<style>
+/* ===== DASHBOARD UI REFRESH ===== */
+:root{
+  --gb-forest:#07170f;--gb-forest-2:#0b2116;--gb-emerald:#1a7a4a;--gb-mid:#2cba74;--gb-bright:#4ece91;
+  --bg:#f5f7f5;--surface:#fff;--surface2:#f0f4f1;--border:#e2eae4;
+  --text:#071209;--muted:#6d8877;--green:#1a7a4a;--green-dim:rgba(78,206,145,.1);
+  --green-border:rgba(26,122,74,.24);--red:#d94f4f;--red-dim:#fef0f0;
+  --yellow:#c47d0a;--yellow-dim:#fef9ee;--app-sidebar:230px;
+  --app-shadow:0 1px 3px rgba(7,18,9,.04),0 10px 32px rgba(7,18,9,.07);
+  color-scheme:light;
+}
+[data-theme="dark"]{
+  --bg:#070d08;--surface:#0d1610;--surface2:#101a12;--border:#1a2b1d;
+  --text:#ddeae0;--muted:#789582;--green:#4ece91;--green-dim:rgba(78,206,145,.11);
+  --green-border:rgba(78,206,145,.23);--red-dim:rgba(217,79,79,.12);--yellow-dim:rgba(196,125,10,.12);
+  --app-shadow:0 2px 8px rgba(0,0,0,.35),0 12px 36px rgba(0,0,0,.22);
+  color-scheme:dark;
+}
+body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
+.app-sidebar{
+  position:fixed;inset:0 auto 0 0;width:var(--app-sidebar);padding:24px 16px 20px;z-index:200;
+  display:flex;flex-direction:column;overflow:hidden;color:#fff;
+  background:linear-gradient(180deg,var(--gb-forest),var(--gb-forest-2));
+}
+.app-sidebar::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 25% 0,rgba(78,206,145,.12),transparent 34%);pointer-events:none}
+.app-brand{position:relative;display:flex;align-items:center;gap:10px;padding:2px 6px 25px;text-decoration:none}
+.app-brand img{width:31px;height:31px;border-radius:8px}.app-brand strong{font:700 18px Lora,serif;color:#fff}.app-brand strong span{color:var(--gb-bright)}
+.app-nav-label{position:relative;padding:0 10px;margin-bottom:7px;color:rgba(255,255,255,.3);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.app-sidebar .app-nav{position:relative;display:grid;gap:3px;height:auto;padding:0;border:0;background:transparent!important;backdrop-filter:none;box-shadow:none;justify-content:initial}
+.app-nav-item{
+  display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;border:0;border-radius:10px;
+  background:transparent;color:rgba(255,255,255,.48);font-size:13px;font-weight:600;text-decoration:none;transition:.18s;
+}
+.app-nav-item svg{width:17px;height:17px;flex:none}.app-nav-item:hover{background:rgba(78,206,145,.08);color:#fff}
+.app-nav-item.active{background:rgba(78,206,145,.14);color:#fff;box-shadow:inset 3px 0 var(--gb-bright)}
+.app-sidebar-bottom{position:relative;margin-top:auto;padding-top:13px;border-top:1px solid rgba(255,255,255,.08)}
+.app-support{padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:11px;background:rgba(255,255,255,.035);color:rgba(255,255,255,.42);font-size:11px;line-height:1.5}
+.app-support strong{display:block;color:rgba(255,255,255,.75);margin-bottom:2px}
+.app-profile{display:flex;align-items:center;gap:9px;margin-top:8px;padding:6px;border-radius:10px}
+.app-avatar{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,var(--gb-emerald),var(--gb-mid));font-size:11px;font-weight:800;color:#fff}
+.app-profile strong{display:block;font-size:11.5px}.app-profile span{color:rgba(255,255,255,.4);font-size:10.5px}
+.app-main{margin-left:var(--app-sidebar);min-width:0;flex:1}
+.app-header{
+  height:64px;padding:0 36px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;
+  background:color-mix(in srgb,var(--surface) 94%,transparent);border-bottom:1px solid var(--border);backdrop-filter:blur(18px);
+}
+.app-breadcrumb{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}.app-breadcrumb strong{color:var(--text);font-weight:700}
+.app-breadcrumb svg{width:12px;opacity:.45}.app-header-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
+.app-header .nav-credits{font-size:12px;padding:6px 11px;border-radius:999px;background:var(--green-dim);color:var(--green)}
+.app-header .theme-btn{width:36px;height:36px;border-radius:10px;background:var(--surface)}
+.container{max-width:1240px;margin:0 auto;padding:32px 36px 56px}
+.app-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:24px}
+.app-eyebrow{display:inline-flex;align-items:center;gap:7px;margin-bottom:9px;color:var(--green);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.app-eyebrow::before{content:"";width:7px;height:7px;border-radius:2px;background:var(--gb-bright)}
+.page-title{font-size:clamp(28px,3vw,38px);line-height:1.12;letter-spacing:-.025em;margin-bottom:0}.page-sub{max-width:630px;margin-top:8px;margin-bottom:0;font-size:14px;line-height:1.7}
+.app-safe-note{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:11.5px;white-space:nowrap}.app-safe-note svg{width:15px;color:var(--green)}
+.steps-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-bottom:24px;padding:5px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--app-shadow)}
+.step{position:relative;display:flex;align-items:center;justify-content:center;min-height:50px;padding:10px 15px;border:0;border-radius:10px;color:var(--muted);font-size:12px}
+.step:not(:last-child)::after{content:"";position:absolute;right:-1px;width:1px;height:22px;background:var(--border)}
+.step.active{background:var(--green-dim);color:var(--green);border:0}.step.done{color:var(--green);border:0}
+.analysis-workspace{display:grid;grid-template-columns:minmax(0,1fr) 365px;gap:22px;align-items:start}
+.analysis-workspace:has(#formSection[style*="display: none"]){display:none}
+.analysis-form-card,.analysis-side-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--app-shadow)}
+.analysis-form-card{overflow:hidden}.analysis-card-head{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 24px;border-bottom:1px solid var(--border)}
+.analysis-card-title{display:flex;align-items:center;gap:12px}.analysis-section-icon{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--green-dim);color:var(--green)}
+.analysis-section-icon svg{width:18px;height:18px}.analysis-card-title h2{font-size:15px;line-height:1.3}.analysis-card-title p{margin-top:3px;color:var(--muted);font-size:11.5px}
+.analysis-status-pill{padding:5px 9px;border-radius:999px;background:var(--surface2);color:var(--muted);font-size:10.5px;font-weight:700}
+.analysis-form-card .free-notice{margin:16px 24px 0;border-radius:10px}
+.form-section{gap:0}.form-section>.welcome-banner{margin:18px 24px 0}.form-section>.field{padding:24px;border-bottom:1px solid var(--border);gap:11px}
+.form-section>.field>label{font-size:12.5px;font-weight:700}.form-section>.field>label span{font-size:11px}
+.url-row{gap:9px}.url-input{height:46px;padding:0 14px;border-radius:11px;background:var(--bg);font-size:13px}.btn-fetch{height:46px;padding:0 17px;border-radius:11px;background:var(--surface);font-size:12px;font-weight:700}
+.or-divider{margin:9px 0 2px;font-size:10px}.form-section textarea{border-radius:11px;background:var(--bg);font-size:13px;line-height:1.6}
+#jobInput{height:112px;min-height:112px;padding:13px 14px}#cvInput{height:118px;min-height:118px;padding:13px 14px}
+.cv-mode-tabs{padding:4px;border-radius:11px;background:var(--surface2);margin-bottom:12px}.cv-mode-tab{height:38px;border:0;border-radius:8px;font-size:12px;font-weight:700}
+.cv-mode-tab.active,[data-theme="light"] .cv-mode-tab.active{background:var(--surface);box-shadow:0 2px 9px rgba(7,18,9,.07)}
+.upload-row{min-height:112px;margin-top:0;padding:20px;border:1px dashed var(--green-border);border-radius:13px;background:rgba(78,206,145,.045);justify-content:center;text-align:center;flex-direction:column}
+.upload-btn{border:0;background:var(--surface);color:var(--green);padding:9px 14px;box-shadow:var(--app-shadow)}.upload-hint{font-size:10.5px}
+.btn-analyze{width:auto;min-width:245px;height:48px;margin:20px 24px 20px auto;padding:0 20px;border-radius:11px;background:var(--gb-emerald);color:#fff;font-size:13px;box-shadow:0 8px 22px rgba(26,122,74,.22)}
+.btn-analyze:hover{background:#176c42}.error-box{margin:0 24px 20px}
+.analysis-side{display:grid;gap:14px;position:sticky;top:88px}.analysis-value-card{overflow:hidden;background:linear-gradient(145deg,#0d3a22,#081c11);border-color:rgba(78,206,145,.16);color:#fff}
+.analysis-value-top{padding:22px 22px 19px;border-bottom:1px solid rgba(255,255,255,.08)}.analysis-value-kicker{color:var(--gb-bright);font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
+.analysis-value-top h3{margin-top:10px;font:700 21px/1.25 Lora,serif}.analysis-value-top p{margin-top:8px;color:rgba(255,255,255,.55);font-size:11.5px;line-height:1.6}
+.analysis-score-preview{display:flex;align-items:center;gap:17px;margin-top:20px;padding:15px;border:1px solid rgba(255,255,255,.08);border-radius:13px;background:rgba(255,255,255,.045)}
+.analysis-preview-ring{width:70px;height:70px;position:relative;flex:none}.analysis-preview-ring svg{width:100%;height:100%;transform:rotate(-90deg)}.analysis-preview-ring circle{fill:none;stroke-width:7}
+.analysis-ring-bg{stroke:rgba(255,255,255,.1)}.analysis-ring-fill{stroke:var(--gb-bright);stroke-linecap:round;stroke-dasharray:176;stroke-dashoffset:45}
+.analysis-ring-label{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-size:18px;font-weight:800}.analysis-ring-label small{display:block;margin-top:-18px;font-size:8px;color:rgba(255,255,255,.4)}
+.analysis-score-copy strong{display:block;font-size:12px}.analysis-score-copy span{display:block;margin-top:4px;color:rgba(255,255,255,.48);font-size:10px;line-height:1.5}
+.analysis-deliverables{padding:17px 22px 21px;display:grid;gap:11px}.analysis-deliverable{display:flex;align-items:flex-start;gap:10px}
+.analysis-check{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;background:rgba(78,206,145,.13);color:var(--gb-bright);font-size:10px;flex:none}
+.analysis-deliverable strong{display:block;font-size:11.5px}.analysis-deliverable span{display:block;margin-top:2px;color:rgba(255,255,255,.42);font-size:10px;line-height:1.4}
+.analysis-tip-card{padding:18px 20px}.analysis-tip-head{display:flex;align-items:center;gap:9px;margin-bottom:8px;font-size:12px;font-weight:800}.analysis-tip-card p{color:var(--muted);font-size:10.5px;line-height:1.6}
+.analysis-tip-card a{display:inline-flex;margin-top:10px;color:var(--green);font-size:10.5px;font-weight:800;text-decoration:none}
+.limit-section,.loading,.result{grid-column:1/-1}.result.show{display:block}.result>*{box-shadow:var(--app-shadow)}
+.loading.show{min-height:370px;justify-content:center;background:var(--surface);border:1px solid var(--border);border-radius:18px}
+@media(max-width:1050px){
+  :root{--app-sidebar:78px}.app-brand strong,.app-nav-label,.app-nav-item span,.app-support,.app-profile-info{display:none}
+  .app-brand{justify-content:center;padding-inline:0}.app-nav-item{justify-content:center;padding:12px}.app-sidebar{padding-inline:12px}.app-profile{justify-content:center;padding-inline:0}
+  .analysis-workspace{grid-template-columns:minmax(0,1fr) 315px}
+}
+@media(max-width:840px){
+  .app-sidebar{display:none}.app-main{margin-left:0}.app-header{padding:0 18px}.app-breadcrumb span{display:none}
+  .container{padding:24px 18px 48px}.app-intro{align-items:flex-start}.app-safe-note{display:none}
+  .analysis-workspace{grid-template-columns:1fr}.analysis-side{position:static;grid-row:1}.analysis-value-card{display:grid;grid-template-columns:1fr 1fr}
+  .analysis-value-top{border-bottom:0;border-right:1px solid rgba(255,255,255,.08)}.analysis-tip-card{display:none}
+}
+@media(max-width:580px){
+  .app-header{height:58px}.app-header .nav-credits{display:none}.container{padding:20px 14px 34px}.page-title{font-size:27px}.page-sub{font-size:13px}
+  .steps-bar{padding:4px}.step{min-height:43px;padding:7px 3px;font-size:11px}.analysis-workspace{gap:14px}
+  .analysis-value-card{display:block}.analysis-value-top{border-right:0;border-bottom:1px solid rgba(255,255,255,.08)}.analysis-deliverables{grid-template-columns:1fr 1fr}
+  .analysis-deliverable span{display:none}.analysis-card-head{padding:18px}.analysis-status-pill{display:none}
+  .analysis-form-card .free-notice{margin:14px 18px 0}.form-section>.field{padding:20px 18px}.url-row{flex-direction:column}.btn-fetch{width:100%}
+  .btn-analyze{width:calc(100% - 36px);margin:16px 18px 18px;min-width:0}.error-box{margin-inline:18px}
+}
+</style>
+<script>
+(function(){
+  var saved=localStorage.getItem('vagaai_theme');
+  document.documentElement.setAttribute('data-theme',saved==='dark'?'dark':'light');
+})();
+</script>
 </head>
 <body>
 
-<nav>
-  <a href="/" class="nav-logo">
-    <img src="/logo.svg" alt="VagaAI" height="38" class="logo-dark" style="display:block;"><img src="/logo-icon.svg" alt="VagaAI" height="38" class="logo-light" style="display:none;">
+<aside class="app-sidebar">
+  <a class="app-brand" href="/dashboard">
+    <img src="/logo-icon.svg" alt="">
+    <strong>Vaga<span>AI</span></strong>
   </a>
-  <div style="display:flex;align-items:center;gap:.8rem">
-    <a href="/dashboard" class="nav-credits" id="navCredits">
-      <span id="navCreditsNum">0</span> créditos
+  <div class="app-nav-label">Seu espaço</div>
+  <nav class="app-nav">
+    <a class="app-nav-item" href="/dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Visão geral</span>
     </a>
-    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
-    <a href="/" class="nav-back" id="navBackBtn">← <span class="nav-back-label">Início</span></a>
+    <a class="app-nav-item active" href="/app">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+      <span>Analisar vaga</span>
+    </a>
+    <a class="app-nav-item" href="/dashboard?tab=vagas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/></svg>
+      <span>Candidaturas</span>
+    </a>
+    <a class="app-nav-item" href="/dashboard?tab=alertas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+      <span>Alertas</span>
+    </a>
+    <a class="app-nav-item" href="/dashboard?tab=plano">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+      <span>Conta e plano</span>
+    </a>
+  </nav>
+  <div class="app-sidebar-bottom">
+    <div class="app-support"><strong>Precisa de ajuda?</strong>Veja dicas para melhorar sua candidatura.</div>
+    <div class="app-profile">
+      <div class="app-avatar">VA</div>
+      <div class="app-profile-info"><strong>Sua conta</strong><span>VagaAI</span></div>
+    </div>
   </div>
-</nav>
+</aside>
+
+<main class="app-main">
+  <header class="app-header">
+    <div class="app-breadcrumb">
+      <strong>Nova análise</strong>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+      <span>Inserir dados</span>
+    </div>
+    <div class="app-header-actions">
+      <a href="/dashboard" class="nav-credits" id="navCredits"><span id="navCreditsNum">0</span> análises disponíveis</a>
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+      <a href="/" id="navBackBtn" style="display:none">Início</a>
+    </div>
+  </header>
 
 <div class="container">
+  <div class="app-intro">
+    <div>
+      <div class="app-eyebrow">Análise inteligente de candidatura</div>
+      <h1 class="page-title" id="pageTitle">Prepare seu currículo para esta vaga.</h1>
+      <p class="page-sub" id="pageSub">Adicione a oportunidade e seu currículo. A VagaAI compara os dois, identifica lacunas e mostra o que priorizar antes de se candidatar.</p>
+    </div>
+    <div class="app-safe-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+      Seus dados permanecem protegidos
+    </div>
+  </div>
   <div class="steps-bar">
     <div class="step active" id="step1">1. Inserir dados</div>
     <div class="step" id="step2">2. Analisando</div>
     <div class="step" id="step3">3. Resultado</div>
   </div>
-
-  <h1 class="page-title" id="pageTitle">Analisar minha vaga</h1>
-  <p class="page-sub" id="pageSub">Cole a descrição da vaga e seu currículo. A análise leva cerca de 15 segundos.</p>
 
   <!-- LIMITE ATINGIDO -->
   <div class="limit-section" id="limitSection">
@@ -508,6 +673,17 @@ textarea::placeholder{color:var(--muted)}
   </div>
 
   <!-- FORM -->
+  <div class="analysis-workspace">
+  <section class="analysis-form-card">
+    <div class="analysis-card-head">
+      <div class="analysis-card-title">
+        <div class="analysis-section-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/></svg>
+        </div>
+        <div><h2>Prepare sua análise</h2><p>Adicione a oportunidade e escolha o currículo que será comparado.</p></div>
+      </div>
+      <span class="analysis-status-pill">Etapa 1 de 3</span>
+    </div>
   <div id="freeNotice" class="free-notice">✓ Diagnóstico gratuito · Sem cadastro · Sem cartão</div>
 
   <div class="form-section" id="formSection">
@@ -619,6 +795,36 @@ textarea::placeholder{color:var(--muted)}
     </button>
 
     <div class="error-box" id="errorBox"></div>
+  </div>
+  </section>
+
+  <aside class="analysis-side">
+    <section class="analysis-side-card analysis-value-card">
+      <div class="analysis-value-top">
+        <div class="analysis-value-kicker">O que você recebe</div>
+        <h3>Clareza antes de enviar seu currículo.</h3>
+        <p>Entenda sua aderência, o que está faltando e quais ajustes podem fortalecer sua candidatura.</p>
+        <div class="analysis-score-preview">
+          <div class="analysis-preview-ring">
+            <svg viewBox="0 0 64 64"><circle class="analysis-ring-bg" cx="32" cy="32" r="28"/><circle class="analysis-ring-fill" cx="32" cy="32" r="28"/></svg>
+            <div class="analysis-ring-label">74<small>/ 100</small></div>
+          </div>
+          <div class="analysis-score-copy"><strong>Score de aderência</strong><span>Requisitos, experiência e palavras-chave comparados em segundos.</span></div>
+        </div>
+      </div>
+      <div class="analysis-deliverables">
+        <div class="analysis-deliverable"><div class="analysis-check">✓</div><div><strong>Diagnóstico da vaga</strong><span>Pontos fortes e lacunas prioritárias.</span></div></div>
+        <div class="analysis-deliverable"><div class="analysis-check">✓</div><div><strong>Currículo otimizado</strong><span>Versão direcionada para a oportunidade.</span></div></div>
+        <div class="analysis-deliverable"><div class="analysis-check">✓</div><div><strong>Keywords para ATS</strong><span>Termos presentes e ausentes no currículo.</span></div></div>
+        <div class="analysis-deliverable"><div class="analysis-check">✓</div><div><strong>Briefing da empresa</strong><span>Contexto para avançar melhor preparado.</span></div></div>
+      </div>
+    </section>
+    <section class="analysis-side-card analysis-tip-card">
+      <div class="analysis-tip-head">Dica para um resultado mais preciso</div>
+      <p>Use a descrição completa da vaga e o currículo que você realmente pretende enviar.</p>
+      <a href="#formSection">Revisar os dados antes da análise →</a>
+    </section>
+  </aside>
   </div>
 
   <!-- LOADING -->
@@ -794,6 +1000,7 @@ textarea::placeholder{color:var(--muted)}
 
   </div>
 </div>
+</main>
 
 <script>
 function track(name,props){
@@ -899,7 +1106,8 @@ function updateCreditsUI() {
 
 function showLimitReachedStarter() {
   // Starter esgotou as 10 análises do mês
-  document.getElementById('inputSection').classList.remove('show');
+  document.getElementById('formSection').style.display = 'none';
+  document.getElementById('freeNotice').style.display = 'none';
   document.getElementById('limitSection').classList.add('show');
   document.getElementById('limitIcon').innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>';
   document.getElementById('limitTitle').textContent = 'Limite mensal atingido';
@@ -1205,19 +1413,23 @@ function setStep(n) {
     if (i < n) el.classList.add('done');
     if (i === n) el.classList.add('active');
   });
+  var crumb = document.querySelector('.app-breadcrumb span');
   // Atualiza header conforme passo
   if (n === 1) {
-    document.getElementById('pageTitle').textContent = 'Analisar minha vaga';
-    document.getElementById('pageSub').textContent = 'Cole a descrição da vaga e seu currículo. A análise leva cerca de 15 segundos.';
+    document.getElementById('pageTitle').textContent = 'Prepare seu currículo para esta vaga.';
+    document.getElementById('pageSub').textContent = 'Adicione a oportunidade e seu currículo. A VagaAI compara os dois, identifica lacunas e mostra o que priorizar antes de se candidatar.';
+    if (crumb) crumb.textContent = 'Inserir dados';
   } else if (n === 2) {
     document.getElementById('pageTitle').textContent = 'Processando sua análise…';
     document.getElementById('pageSub').textContent = 'Estamos avaliando a compatibilidade do seu perfil com a vaga. Aguarde alguns instantes.';
+    if (crumb) crumb.textContent = 'Analisando';
   } else if (n === 3) {
     // Só sobrescreve se showResult ainda não o fez (fallback)
-    if (document.getElementById('pageTitle').textContent === 'Analisar minha vaga') {
+    if (document.getElementById('pageTitle').textContent === 'Prepare seu currículo para esta vaga.') {
       document.getElementById('pageTitle').textContent = 'Sua análise está pronta';
       document.getElementById('pageSub').textContent = 'Confira a compatibilidade com a vaga, os pontos de melhoria e o currículo otimizado.';
     }
+    if (crumb) crumb.textContent = 'Resultado';
   }
 }
 
@@ -2243,7 +2455,7 @@ initAuth().then(function() {
 });
 var ICON_SUN_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
 var ICON_MOON_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
-function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')==='light';if(l){document.documentElement.removeAttribute('data-theme');localStorage.setItem('vagaai_theme','dark')}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('vagaai_theme','light')}var b=document.getElementById('themeBtn');if(b)b.innerHTML=l?ICON_SUN_SVG:ICON_MOON_SVG}
+function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')==='light';var next=l?'dark':'light';document.documentElement.setAttribute('data-theme',next);localStorage.setItem('vagaai_theme',next);var b=document.getElementById('themeBtn');if(b)b.innerHTML=next==='light'?ICON_MOON_SVG:ICON_SUN_SVG}
 ;(function(){var b=document.getElementById('themeBtn');if(b)b.innerHTML=document.documentElement.getAttribute('data-theme')==='light'?ICON_MOON_SVG:ICON_SUN_SVG})();
 
 // ── MODAL: Signup (cadastro para ver resultado completo) ──────────────────────

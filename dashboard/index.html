@@ -2224,6 +2224,7 @@ async function init() {
     return;
   }
   document.getElementById('pageLoading').classList.add('hidden');
+  openRequestedDashboardTab();
 }
 
 function getWeekStart(date, weeksAgo) {
@@ -4665,6 +4666,18 @@ function switchDashTab(tab) {
   if (bcSec) bcSec.textContent = labels[tab] || tab;
   if (bcSub) bcSub.textContent = subs[tab] || '';
   if (tab === 'plano') loadSubscriptionData();
+}
+
+function openRequestedDashboardTab() {
+  var requestedTab = '';
+  try {
+    requestedTab = new URLSearchParams(window.location.search).get('tab') ||
+      window.location.hash.replace(/^#/, '');
+  } catch (e) {}
+
+  if (['painel', 'vagas', 'alertas', 'plano'].indexOf(requestedTab) !== -1) {
+    switchDashTab(requestedTab);
+  }
 }
 
 /* ── Stripe helpers ─────────────────────────────────────────────── */
