@@ -1729,7 +1729,11 @@ async function doAnalyze(job, cv) {
     var res = await fetch('/api/analyze', {
       method: 'POST',
       headers: headers,
-      body: JSON.stringify({ job: job, cv: cv }),
+      body: JSON.stringify({
+        job: job,
+        cv: cv,
+        job_url: (document.getElementById('jobUrl') && document.getElementById('jobUrl').value.trim()) || ''
+      }),
       signal: controller.signal
     });
 

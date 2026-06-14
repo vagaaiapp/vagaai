@@ -57,6 +57,27 @@ function contentHash(cv, job) {
   return createHash('sha256').update(cv.trim() + '\n||||\n' + job.trim()).digest('hex').slice(0, 40);
 }
 
+function normalizeJobUrl(value) {
+  try {
+    const url = new URL(String(value || '').trim());
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
+    return url.href.slice(0, 2000);
+  } catch {
+    return '';
+  }
+}
+
+function attachJobMetadata(result, jobUrl) {
+  const normalizedUrl = normalizeJobUrl(jobUrl);
+  return {
+    ...(result || {}),
+    job_info: {
+      ...((result && result.job_info) || {}),
+      ...(normalizedUrl ? { job_url: normalizedUrl } : {}),
+    },
+  };
+}
+
 // ─── Cache de análise ─────────────────────────────────────────────────────────
 
 async function getCachedResult(hash) {
@@ -699,7 +720,8 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
     }
   }
 
-  const { cv, job } = req.body || {};
+  const { cv, job, job_url: requestedJobUrl } = req.body || {};
+  const jobUrl = normalizeJobUrl(requestedJobUrl);
 
   if (!cv || !job) {
     return res.status(400).json({ error: 'CV e descrição da vaga são obrigatórios.' });
@@ -725,7 +747,7 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
 
   if (cached) {
     console.log('Cache hit:', hash);
-    const cachedResult = { ...cached, _from_cache: true };
+    const cachedResult = { ...attachJobMetadata(cached, jobUrl), _from_cache: true };
 
     if (authenticatedUserId) {
       // Cache hit ainda consome crédito — o resultado foi salvo, mas o limite deve ser respeitado
@@ -742,7 +764,7 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
         return res.status(503).json({ error: 'service_unavailable', message: 'Serviço temporariamente indisponível.' });
       }
       // Salva no histórico sem duplicar (verifica se já existe entrada recente idêntica)
-      const cachedAnalysisId = await saveAnalysis(authenticatedUserId, cached.score, cached.nivel, job, cached, hash);
+      const cachedAnalysisId = await saveAnalysis(authenticatedUserId, cachedResult.score, cachedResult.nivel, job, cachedResult, hash);
       if (cachedAnalysisId) cachedResult._analysis_id = cachedAnalysisId;
       try {
         const credRows = await fetch(
@@ -968,6 +990,12 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
 
     // Armazena no cache (fire-and-forget, não bloqueia resposta)
     setCachedResult(hash, result);
+
+    // O link pertence à oportunidade individual, não ao resultado reutilizável
+    // do cache. Ele segue apenas para a resposta e o histórico desta análise.
+    if (jobUrl) {
+      result.job_info = { ...(result.job_info || {}), job_url: jobUrl };
+    }
 
     // Pós-análise
     if (authenticatedUserId) {

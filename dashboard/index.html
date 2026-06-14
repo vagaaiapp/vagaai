@@ -1298,6 +1298,12 @@ body {
 .cd-body { padding:16px 20px; overflow-y:auto; max-height:500px; display:flex; flex-direction:column; gap:14px; }
 .cd-section { display:flex; flex-direction:column; gap:6px; }
 .cd-section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--t3); }
+.cd-meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.cd-meta-item { min-width:0; padding:10px 11px; border:1px solid var(--border); border-radius:9px; background:var(--bg-sub); }
+.cd-meta-label { display:block; margin-bottom:4px; color:var(--t3); font-size:9.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+.cd-meta-value { display:block; color:var(--t1); font-size:11.5px; font-weight:650; line-height:1.35; overflow-wrap:anywhere; }
+.cd-meta-value a { color:var(--gb-emerald); text-decoration:none; }
+.cd-meta-value a:hover { text-decoration:underline; }
 .cd-timeline { display:flex; flex-direction:column; gap:0; }
 .cdt-item { display:flex; gap:10px; position:relative; padding-bottom:10px; }
 .cdt-item:last-child { padding-bottom:0; }
@@ -1316,6 +1322,12 @@ body {
 .cd-btn:hover { border-color:var(--gb-emerald); color:var(--gb-emerald); }
 .cd-btn.cd-cta { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); }
 .cd-btn.cd-cta:hover { background:var(--gb-mid); }
+.cd-btn.cd-danger { margin-left:auto; color:var(--s-red); background:var(--s-red-bg); border-color:rgba(217,79,79,.22); }
+.cd-btn.cd-danger:hover { color:#fff; background:var(--s-red); border-color:var(--s-red); }
+@media(max-width:520px) {
+  .cd-meta-grid { grid-template-columns:1fr; }
+  .cd-btn.cd-danger { margin-left:0; }
+}
 .cand-kanban { overflow-x:auto; padding-bottom:8px; }
 .kk-board { display:flex; gap:12px; min-width:900px; }
 .kk-col { flex:1; min-width:160px; background:var(--bg-sub); border-radius:12px; padding:12px; }
@@ -2938,6 +2950,15 @@ function escAttr(v) {
   return String(v || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+function safeExternalUrl(value) {
+  try {
+    var url = new URL(String(value || '').trim());
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : '';
+  } catch(e) {
+    return '';
+  }
+}
+
 /* ── Merge analyses + tracker into unified items ── */
 function mergeApplications() {
   var analyses = window._lastAnalysesData || [];
@@ -3191,18 +3212,32 @@ function renderCandDetail(item) {
     '</div></div>' : '';
   var resumo = r.resumo ? escHtml(r.resumo.slice(0,200))+(r.resumo.length>200?'…':'') : '';
   var td = item.trackerData || {};
+  var jobInfo = r.job_info || {};
   var nota = td.nota || '';
-  var jobUrl = td.job_url || '';
+  var salario = td.salario || jobInfo.salario || r.salario || '';
+  var jobUrl = safeExternalUrl(td.job_url || jobInfo.job_url || r.job_url || '');
+  var metaHtml =
+    '<div class="cd-section"><div class="cd-section-title">Informações da oportunidade</div>'+
+      '<div class="cd-meta-grid">'+
+        '<div class="cd-meta-item"><span class="cd-meta-label">Salário</span><span class="cd-meta-value">'+escHtml(salario || 'Não informado')+'</span></div>'+
+        '<div class="cd-meta-item"><span class="cd-meta-label">Link da vaga</span><span class="cd-meta-value">'+
+          (jobUrl ? '<a href="'+escAttr(jobUrl)+'" target="_blank" rel="noopener noreferrer">Abrir anúncio ↗</a>' : 'Não informado')+
+        '</span></div>'+
+      '</div>'+
+    '</div>';
   var selectHtml = item.hasTracker ? buildStatusSelect(item.status, item.analysisData ? item.id : null, item.analysisData ? null : item.trackerId) : '';
   var acts = '';
-  if (item.analysisData) acts += '<button class="cd-btn cd-cta" onclick="window.location.href=\'/app\'">Otimizar CV →</button>';
+  if (item.analysisData) {
+    acts += '<button class="cd-btn cd-cta" onclick="openSavedAnalysis(\''+escAttr(item.analysisData.id)+'\')">Ver análise</button>';
+    if (r.cv_otimizado) acts += '<button class="cd-btn" onclick="openSavedCv(\''+escAttr(item.analysisData.id)+'\')">Abrir currículo</button>';
+  }
   if (item.hasTracker) {
     acts += '<button class="cd-btn" onclick="openTrackerEditById(\''+escAttr(item.trackerId)+'\')">Editar</button>';
-    acts += '<button class="cd-btn" onclick="confirmDeleteTracker(\''+escAttr(item.trackerId)+'\')">Remover</button>';
   } else if (item.analysisData) {
     acts += '<button class="cd-btn" onclick="addToTracker(\''+escAttr(item.empresa)+'\',\''+escAttr(item.cargo)+'\','+item.score+',\''+escAttr(item.id)+'\')">+ Rastrear</button>';
   }
-  if (jobUrl) acts += '<a class="cd-btn" href="'+escAttr(jobUrl)+'" target="_blank" rel="noopener">Ver vaga →</a>';
+  if (item.hasTracker) acts += '<button class="cd-btn cd-danger" onclick="confirmDeleteTracker(\''+escAttr(item.trackerId)+'\')">Remover</button>';
+  else if (item.analysisData) acts += '<button class="cd-btn cd-danger" onclick="confirmDeleteAnalysis(\''+escAttr(item.analysisData.id)+'\')">Remover</button>';
   return '<div class="cand-detail">'+
     '<div class="cd-top">'+
       '<button class="cd-close" onclick="closeCandDetail()">✕</button>'+
@@ -3216,6 +3251,7 @@ function renderCandDetail(item) {
     '</div>'+
     '<div class="cd-body">'+
       (tlHtml ? '<div class="cd-section"><div class="cd-section-title">Histórico</div><div class="cd-timeline">'+tlHtml+'</div></div>' : '')+
+      metaHtml+
       kwHtml+
       (resumo ? '<div class="cd-section"><div class="cd-section-title">Resumo</div><div style="font-size:11.5px;color:var(--t2);line-height:1.5">'+resumo+'</div></div>' : '')+
       (nota ? '<div class="cd-section"><div class="cd-section-title">Notas</div><div style="font-size:11.5px;color:var(--t2);line-height:1.5">'+escHtml(nota)+'</div></div>' : '')+
@@ -3223,6 +3259,40 @@ function renderCandDetail(item) {
     '</div>'+
     (acts ? '<div class="cd-actions">'+acts+'</div>' : '')+
   '</div>';
+}
+
+function findSavedAnalysis(id) {
+  return (window._lastAnalysesData || []).find(function(a) { return String(a.id) === String(id); }) || null;
+}
+
+function openSavedAnalysis(id) {
+  var analysis = findSavedAnalysis(id);
+  if (!analysis || !analysis.result) {
+    showToast('Não foi possível abrir esta análise.', 'error');
+    return;
+  }
+  var result = Object.assign({}, analysis.result, { _analysis_id: analysis.id });
+  try {
+    localStorage.setItem('vagaai_view_analysis', JSON.stringify(result));
+    window.location.href = '/app';
+  } catch(e) {
+    showToast('Não foi possível abrir esta análise.', 'error');
+  }
+}
+
+function openSavedCv(id) {
+  var analysis = findSavedAnalysis(id);
+  var cv = analysis && analysis.result ? analysis.result.cv_otimizado : null;
+  if (!cv) {
+    showToast('Esta análise não possui currículo otimizado.', 'error');
+    return;
+  }
+  try {
+    localStorage.setItem('vagaai_cv', JSON.stringify(cv));
+    window.open('/cv', '_blank', 'noopener');
+  } catch(e) {
+    showToast('Não foi possível abrir o currículo.', 'error');
+  }
 }
 
 function buildTimeline(item) {
@@ -3736,6 +3806,37 @@ async function saveTrackerModal(modal, editId) {
     console.error('SaveTracker Error:', e);
     showToast('Erro: ' + e.message, 'error');
     if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Salvar'; }
+  }
+}
+
+function confirmDeleteAnalysis(id) { showConfirm('Remover análise?', 'Ela será removida do histórico de oportunidades.', function(){ deleteAnalysis(id); }); }
+
+async function deleteAnalysis(id) {
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/analyses?id=eq.' + encodeURIComponent(id) + '&user_id=eq.' + encodeURIComponent(currentUserId), {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': 'Bearer ' + (currentSession?.access_token || ''),
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ archived_at: new Date().toISOString() })
+    });
+    if (res.status === 204 || res.status === 200 || res.ok) {
+      showToast('Análise removida!');
+      closeCandDetail();
+      await loadAnalyses();
+      var all = mergeApplications();
+      renderCandList(filterApplications(all), all);
+    } else {
+      var resText = await res.text();
+      showToast('Erro ao remover: ' + res.status, 'error');
+      console.error('deleteAnalysis failed:', resText);
+    }
+  } catch(e) {
+    console.error('deleteAnalysis error:', e);
+    showToast('Erro: ' + e.message, 'error');
   }
 }
 
