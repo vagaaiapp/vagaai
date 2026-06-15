@@ -43,9 +43,8 @@ function makeUnsubToken(userId) {
 
 // Fontes brasileiras — ganham boost de prioridade no score
 const BR_SOURCES = new Set([
-  'indeed', 'vagas_com', 'infojobs', 'catho', 'empregos_br',
-  'trampos', 'bne', 'monster_br', 'glassdoor', 'jora',
-  'talent_com', 'sine', 'adzuna', 'gupy', 'google',
+  'gupy', 'google', 'greenhouse', 'lever',
+  'vagas_com', 'infojobs', 'catho', 'trampos',
 ]);
 
 // Regex de palavras comuns em PT-BR para detectar idioma
@@ -148,6 +147,16 @@ function applyExtendedFilters(jobs, profile, options = {}) {
     // Vale nos dois passes (estrito e relaxado): idioma não é "preferência", é relevância.
     if (looksForeignLang(job)) return false;
 
+    // Exclui vagas com salário em USD e zero sinal brasileiro — mercado externo irrelevante.
+    const _sal = String(job.salary || '');
+    const _hasUsd = /\$|USD/.test(_sal) && !/R\$|BRL/.test(_sal);
+    if (_hasUsd) {
+      const _text = title + ' ' + desc + ' ' + (job.location || '');
+      const _hasBr = BR_SOURCES.has(job._source) || PT_BR_PATTERN.test(_text) ||
+        /\b(brasil|brazil|são paulo|rio de janeiro|belo horizonte|curitiba|porto alegre|fortaleza|salvador|recife|sp|rj|mg|rs|pr|ba|ce|pe|am|go|sc)\b/i.test(_text);
+      if (!_hasBr) return false;
+    }
+
     // Filtra por formato(s) preferido(s) — só quando a vaga menciona modalidade explicitamente
     if (!relaxPreferences && formatos.length > 0) {
       const mentionsAnyMode = /remoto|remote|home.?office|h[ií]brido|presencial|hybrid|on.?site/i.test(combined);
@@ -241,7 +250,8 @@ function calcScore(job, profile) {
   // Penalidade: salário em dólar sem nenhum sinal BR → vaga claramente de mercado externo
   const sal = String(job.salary || '');
   const hasUsdSalary = /\$|USD/.test(sal) && !/R\$|BRL/.test(sal);
-  if (hasUsdSalary && !isPtBr && !isBrSource) score -= 20;
+  const hasBrSignal = isBrSource || isPtBr || BR_LOC.test(loc) || BR_LOC.test(desc) || BR_LOC.test(title);
+  if (hasUsdSalary && !hasBrSignal) score -= 35;
 
   return Math.min(100, Math.max(0, score));
 }
@@ -1075,7 +1085,7 @@ function buildEmailHTML(profile, jobs, userName, userId, plan = 'free', ent = nu
           <div style="font-size:14px;font-weight:700;color:#1a8f5c;margin-bottom:4px">${escEmail(j.title)}</div>
           <div style="font-size:11px;color:#888;margin-bottom:6px">📍 ${escEmail(j.location || 'Brasil')} · 💰 ${j.salary ? escEmail(j.salary) : 'Salário não informado'}</div>
           <div style="font-size:11px;color:#f0a500;margin-bottom:6px">${starsFromScore(j._score)} <span style="color:#888">${compatLabel(j._score)} (estimado)</span></div>
-          <a href="${analyzeUrl}" style="display:inline-block;background:#1a8f5c;color:#fff;font-size:12px;font-weight:700;padding:6px 14px;border-radius:6px;text-decoration:none">${ctaLabel}</a>
+          <a href="${analyzeUrl}" style="display:inline-block;background:#1a8f5c;color:#fff;font-size:12px;font-weight:700;padding:6px 14px;border-radius:6px;text-decoration:none">${ctaLabel}</a>${j.link ? ` <a href="${escEmail(j.link)}" target="_blank" style="display:inline-block;background:#f4f9f6;color:#1a8f5c;font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;text-decoration:none;border:1.5px solid #1a8f5c;margin-left:6px">🔗 Ver vaga</a>` : ''}
         </div>
       </div>
     </div>`;
