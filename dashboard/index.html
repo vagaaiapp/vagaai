@@ -4679,8 +4679,8 @@ function _esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;
 function _getRateLimitInfo() {
   if (!_alertCache || !_alertCache.last_manual_at) return { blocked: false };
   var elapsed = Date.now() - new Date(_alertCache.last_manual_at).getTime();
-  if (elapsed >= 60 * 60 * 1000) return { blocked: false };
-  return { blocked: true, waitMin: Math.ceil((60 * 60 * 1000 - elapsed) / 60000) };
+  if (elapsed >= 15 * 60 * 1000) return { blocked: false };
+  return { blocked: true, waitMin: Math.ceil((15 * 60 * 1000 - elapsed) / 60000) };
 }
 
 var _dismissTarget = null; // job object being dismissed

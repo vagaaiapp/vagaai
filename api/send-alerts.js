@@ -157,17 +157,26 @@ function applyExtendedFilters(jobs, profile, options = {}) {
       if (!_hasBr) return false;
     }
 
-    // Filtra por formato(s) preferido(s) — só quando a vaga menciona modalidade explicitamente
+    // Filtra por formato(s) preferido(s)
     if (!relaxPreferences && formatos.length > 0) {
+      const wantsOnlyRemote = formatos.length === 1 && (formatos[0] === 'remoto' || formatos[0] === 'remote');
       const mentionsAnyMode = /remoto|remote|home.?office|h[ií]brido|presencial|hybrid|on.?site/i.test(combined);
+
       if (mentionsAnyMode) {
+        // Vaga menciona modalidade → exige compatibilidade
         const matches = formatos.some(fmt => {
           const tokens = fmtMap[fmt] || [fmt];
           return tokens.some(t => combined.includes(t));
         });
         if (!matches) return false;
+      } else if (wantsOnlyRemote) {
+        // Usuário quer só remoto e a vaga não menciona nenhum formato:
+        // se a localização parece ser uma cidade física (não "remoto/brasil/brazil") → exclui
+        const loc = (job.location || '').toLowerCase();
+        const locSeemsPhysical = loc.length > 3
+          && !/remoto|remote|home.?office|brasil|brazil|worldwide|anywhere/i.test(loc);
+        if (locSeemsPhysical) return false;
       }
-      // Se a vaga não menciona modalidade, não exclui (evita over-filtering)
     }
 
     // Filtra por tipo de contrato — só quando a vaga menciona contrato explicitamente
