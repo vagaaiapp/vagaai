@@ -225,11 +225,25 @@ function calcScore(job, profile) {
     if (salNum >= profile.salario_min) score += 10;
   }
 
-  // ── Boost BR: fonte brasileira +10, idioma português +8 ──────────────────
-  if (BR_SOURCES.has(job._source)) score += 10;
-  if (PT_BR_PATTERN.test(title) || PT_BR_PATTERN.test(desc)) score += 8;
+  // ── Sinais de mercado brasileiro ─────────────────────────────────────────
+  const loc = (job.location || '').toLowerCase();
+  const isPtBr = PT_BR_PATTERN.test(title) || PT_BR_PATTERN.test(desc);
+  const isBrSource = BR_SOURCES.has(job._source);
 
-  return Math.min(100, score);
+  // Fonte BR ou conteúdo em PT: forte sinal de relevância local
+  if (isBrSource) score += 20;
+  if (isPtBr) score += 20;
+
+  // Localização explicitamente brasileira: cidade, estado ou país
+  const BR_LOC = /\b(brasil|brazil|são paulo|rio de janeiro|belo horizonte|curitiba|porto alegre|fortaleza|salvador|recife|manaus|belém|goiânia|brasília|florianópolis|campinas|sp|rj|mg|rs|pr|ba|ce|pe|am|go|sc)\b/i;
+  if (BR_LOC.test(loc) || BR_LOC.test(desc) || BR_LOC.test(title)) score += 15;
+
+  // Penalidade: salário em dólar sem nenhum sinal BR → vaga claramente de mercado externo
+  const sal = String(job.salary || '');
+  const hasUsdSalary = /\$|USD/.test(sal) && !/R\$|BRL/.test(sal);
+  if (hasUsdSalary && !isPtBr && !isBrSource) score -= 20;
+
+  return Math.min(100, Math.max(0, score));
 }
 
 function starsFromScore(score) {
