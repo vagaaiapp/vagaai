@@ -2218,6 +2218,19 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
 
     <!-- aria-live region -->
     <div id="alLiveRegion" role="status" aria-live="polite" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"></div>
+
+    <!-- Dismiss modal -->
+    <div id="alDismissOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:900;align-items:center;justify-content:center">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:420px;width:calc(100% - 32px);box-shadow:0 8px 32px rgba(0,0,0,.18)">
+        <div style="font-size:15px;font-weight:700;color:var(--t1);margin-bottom:4px">Por que excluir esta vaga?</div>
+        <div id="alDismissJobLabel" style="font-size:12px;color:var(--t3);margin-bottom:16px"></div>
+        <div id="alDismissReasons" style="display:flex;flex-direction:column;gap:7px;margin-bottom:20px"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button onclick="_closeDismissModal()" style="border:1px solid var(--border);background:var(--bg-card);color:var(--t2);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancelar</button>
+          <button id="alDismissConfirmBtn" onclick="_confirmDismiss()" style="border:none;background:var(--s-red,#e05252);color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit" disabled>Excluir vaga</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ══ PLANO ══ -->
@@ -4667,10 +4680,107 @@ function _getRateLimitInfo() {
   return { blocked: true, waitMin: Math.ceil((60 * 60 * 1000 - elapsed) / 60000) };
 }
 
+var _dismissTarget = null; // job object being dismissed
+var _dismissReason = null; // selected reason
+
+var AL_DISMISS_REASONS = [
+  'Cargo não é relevante',
+  'Empresa não me interessa',
+  'Salário abaixo do esperado',
+  'Localização ou modalidade inadequada',
+  'Senioridade errada',
+  'Vaga duplicada',
+  'Outro motivo',
+];
+
 function _dismissJobFromCache(link) {
   if (!_alertCache || !Array.isArray(_alertCache.jobs)) return;
-  _alertCache.jobs = _alertCache.jobs.filter(function(j) { return j.link !== link; });
-  renderAlertJobsGrid();
+  var job = _alertCache.jobs.find(function(j) { return j.link === link; });
+  if (!job) return;
+  _dismissTarget = job;
+  _dismissReason = null;
+
+  var label = document.getElementById('alDismissJobLabel');
+  if (label) label.textContent = (job.title || '') + (job.company ? ' · ' + job.company : '');
+
+  var reasons = document.getElementById('alDismissReasons');
+  if (reasons) {
+    reasons.innerHTML = AL_DISMISS_REASONS.map(function(r) {
+      return '<button onclick="_selectDismissReason(this,\'' + r.replace(/'/g, "\\'") + '\')" ' +
+        'style="text-align:left;border:1px solid var(--border);background:var(--bg-card);color:var(--t2);' +
+        'border-radius:8px;padding:9px 13px;font-size:13px;cursor:pointer;font-family:inherit;transition:all .12s">' +
+        r + '</button>';
+    }).join('');
+  }
+
+  var confirmBtn = document.getElementById('alDismissConfirmBtn');
+  if (confirmBtn) confirmBtn.disabled = true;
+
+  var overlay = document.getElementById('alDismissOverlay');
+  if (overlay) { overlay.style.display = 'flex'; }
+}
+
+function _selectDismissReason(btn, reason) {
+  _dismissReason = reason;
+  document.querySelectorAll('#alDismissReasons button').forEach(function(b) {
+    b.style.borderColor = 'var(--border)';
+    b.style.background = 'var(--bg-card)';
+    b.style.color = 'var(--t2)';
+    b.style.fontWeight = '400';
+  });
+  btn.style.borderColor = 'var(--s-red,#e05252)';
+  btn.style.background = 'rgba(224,82,82,.08)';
+  btn.style.color = 'var(--s-red,#e05252)';
+  btn.style.fontWeight = '600';
+  var confirmBtn = document.getElementById('alDismissConfirmBtn');
+  if (confirmBtn) confirmBtn.disabled = false;
+}
+
+function _closeDismissModal() {
+  _dismissTarget = null;
+  _dismissReason = null;
+  var overlay = document.getElementById('alDismissOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+async function _confirmDismiss() {
+  if (!_dismissTarget || !_dismissReason) return;
+  var job = _dismissTarget;
+  var reason = _dismissReason;
+
+  var confirmBtn = document.getElementById('alDismissConfirmBtn');
+  if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = 'Excluindo…'; }
+
+  try {
+    var res = await fetch('/api/dismiss-job', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + currentSession.access_token,
+      },
+      body: JSON.stringify({
+        job_link: job.link,
+        job_title: job.title || '',
+        job_company: job.company || '',
+        job_location: job.location || '',
+        reason: reason,
+      }),
+    });
+    if (!res.ok) { showToast('Erro ao excluir vaga.', 'error'); }
+    else {
+      // Remove do cache local
+      if (_alertCache && Array.isArray(_alertCache.jobs)) {
+        _alertCache.jobs = _alertCache.jobs.filter(function(j) { return j.link !== job.link; });
+      }
+      renderAlertJobsGrid();
+      showToast('Vaga excluída. Não aparecerá nos próximos envios.');
+    }
+  } catch(e) {
+    showToast('Erro ao excluir vaga.', 'error');
+  } finally {
+    _closeDismissModal();
+    if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.textContent = 'Excluir vaga'; }
+  }
 }
 
 async function _saveJobFromCache(job) {

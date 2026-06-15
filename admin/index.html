@@ -284,6 +284,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <button class="admin-tab" onclick="switchTab('users')" data-tab="users">👥 Usuários</button>
     <button class="admin-tab" onclick="switchTab('finance')" data-tab="finance">💰 Financeiro</button>
     <button class="admin-tab" onclick="switchTab('traffic')" data-tab="traffic">📈 Tráfego</button>
+    <button class="admin-tab" onclick="switchTab('alerts')" data-tab="alerts">🔔 Alertas</button>
   </div>
 
   <!-- ═══════════════ ABA: VISÃO GERAL ═══════════════ -->
@@ -485,6 +486,72 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   </div>
 
   </div><!-- /panel-finance -->
+
+  <!-- ═══════════════ ABA: ALERTAS ═══════════════ -->
+  <div id="panel-alerts" class="tab-panel" style="display:none">
+
+    <div class="section-header">
+      <div class="section-title">Alertas <span class="section-count" id="alertsProfileCount">—</span></div>
+      <button class="btn-nav ghost" onclick="loadAlertsData()" style="font-size:12px">↻ Atualizar</button>
+    </div>
+
+    <!-- Métricas -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px" id="alertsMetrics">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Perfis ativos</div>
+        <div style="font-size:24px;font-weight:700;color:var(--green)" id="amActive">—</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Envios (últimos 30d)</div>
+        <div style="font-size:24px;font-weight:700;color:var(--text)" id="amSent">—</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Vagas excluídas</div>
+        <div style="font-size:24px;font-weight:700;color:var(--yellow)" id="amDismissed">—</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Taxa de exclusão</div>
+        <div style="font-size:24px;font-weight:700;color:var(--red)" id="amDismissRate">—</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+
+      <!-- Motivos de exclusão -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px">Motivos de exclusão</div>
+        <div id="alertsReasons">
+          <div style="color:var(--muted);font-size:13px">Carregando…</div>
+        </div>
+      </div>
+
+      <!-- Perfis configurados -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px">Perfis configurados</div>
+        <div id="alertsProfiles" style="display:flex;flex-direction:column;gap:8px">
+          <div style="color:var(--muted);font-size:13px">Carregando…</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Exclusões recentes -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px">Exclusões recentes</div>
+      <div id="alertsDismissedList">
+        <div style="color:var(--muted);font-size:13px">Carregando…</div>
+      </div>
+    </div>
+
+    <!-- Histórico de envios -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px">Histórico de envios</div>
+      <div id="alertsHistory">
+        <div style="color:var(--muted);font-size:13px">Carregando…</div>
+      </div>
+    </div>
+
+  </div><!-- /panel-alerts -->
 
 </div><!-- /container -->
 
@@ -807,16 +874,153 @@ function renderGA4(d) {
 
 // ─── Navegação por abas ───────────────────────────────────────────────────────
 
+var _alertsLoaded = false;
+
 function switchTab(tab) {
-  ['overview','users','finance','traffic'].forEach(function(t) {
+  ['overview','users','finance','traffic','alerts'].forEach(function(t) {
     var panel = document.getElementById('panel-' + t);
     var btn   = document.querySelector('.admin-tab[data-tab="' + t + '"]');
     if (panel) panel.style.display = t === tab ? '' : 'none';
     if (btn)   btn.classList.toggle('active', t === tab);
   });
-  // Carrega GA4 ao entrar na aba de tráfego (se ainda não carregado)
   if (tab === 'traffic' && document.getElementById('ga4Content').querySelector('.ga4-loading')) {
     loadGA4(30);
+  }
+  if (tab === 'alerts' && !_alertsLoaded) {
+    loadAlertsData();
+  }
+}
+
+// ─── Aba Alertas ──────────────────────────────────────────────────────────────
+
+async function loadAlertsData() {
+  _alertsLoaded = true;
+  ['alertsReasons','alertsProfiles','alertsDismissedList','alertsHistory'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = '<div style="color:var(--muted);font-size:13px">Carregando…</div>';
+  });
+  try {
+    if (!_ga4Token) {
+      var { data: { session } } = await sb.auth.getSession();
+      if (session) _ga4Token = session.access_token;
+    }
+    var res = await fetch('/api/admin?action=alerts', {
+      headers: { Authorization: 'Bearer ' + _ga4Token }
+    });
+    if (!res.ok) throw new Error(await res.text());
+    var d = await res.json();
+    renderAlertsTab(d);
+  } catch(e) {
+    ['alertsReasons','alertsProfiles','alertsDismissedList','alertsHistory'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.innerHTML = '<div style="color:var(--red);font-size:13px">Erro: ' + e.message + '</div>';
+    });
+  }
+}
+
+function renderAlertsTab(d) {
+  var profiles  = d.profiles  || [];
+  var dismissed = d.dismissed || [];
+  var history   = d.history   || [];
+  var reasons   = d.reason_counts || {};
+
+  // Métricas
+  var active = profiles.filter(function(p){ return p.ativo; }).length;
+  var since30 = new Date(Date.now() - 30*24*60*60*1000).toISOString();
+  var sent30  = history.filter(function(h){ return h.sent_at > since30 && h.status === 'sent'; }).length;
+  var totalJobsSent = history.filter(function(h){ return h.status === 'sent'; })
+    .reduce(function(s,h){ return s + (h.jobs_count||0); }, 0);
+  var dismissRate = totalJobsSent > 0 ? ((dismissed.length / totalJobsSent) * 100).toFixed(1) + '%' : '—';
+
+  document.getElementById('amActive').textContent      = active;
+  document.getElementById('amSent').textContent        = sent30;
+  document.getElementById('amDismissed').textContent   = dismissed.length;
+  document.getElementById('amDismissRate').textContent = dismissRate;
+  document.getElementById('alertsProfileCount').textContent = profiles.length + ' perfis';
+
+  // Motivos
+  var reasonEl = document.getElementById('alertsReasons');
+  var reasonEntries = Object.entries(reasons).sort(function(a,b){ return b[1]-a[1]; });
+  var maxCount = reasonEntries[0] ? reasonEntries[0][1] : 1;
+  if (!reasonEntries.length) {
+    reasonEl.innerHTML = '<div style="color:var(--muted);font-size:13px">Nenhuma exclusão registrada ainda.</div>';
+  } else {
+    reasonEl.innerHTML = reasonEntries.map(function(e) {
+      var pct = Math.round((e[1]/maxCount)*100);
+      return '<div style="margin-bottom:10px">' +
+        '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">' +
+          '<span style="color:var(--text)">' + e[0] + '</span>' +
+          '<span style="color:var(--muted);font-weight:700">' + e[1] + '</span>' +
+        '</div>' +
+        '<div style="height:5px;background:var(--border);border-radius:3px">' +
+          '<div style="height:5px;background:var(--yellow);border-radius:3px;width:' + pct + '%"></div>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  // Perfis
+  var profEl = document.getElementById('alertsProfiles');
+  if (!profiles.length) {
+    profEl.innerHTML = '<div style="color:var(--muted);font-size:13px">Nenhum perfil.</div>';
+  } else {
+    profEl.innerHTML = profiles.map(function(p) {
+      var status = p.ativo ? '<span style="color:var(--green);font-size:10px;font-weight:700">● ATIVO</span>'
+                           : '<span style="color:var(--muted);font-size:10px;font-weight:700">● PAUSADO</span>';
+      var nextRun = p.next_run_at ? new Date(p.next_run_at).toLocaleDateString('pt-BR') : '—';
+      return '<div style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">' +
+          '<strong style="color:var(--text)">' + (p.cargo_desejado || '—') + '</strong>' + status +
+        '</div>' +
+        '<div style="color:var(--muted)">' + (p.cidade || 'Qualquer local') + ' · ' + (p.frequencia || 'semanal') + ' · próx: ' + nextRun + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // Exclusões recentes
+  var dismissEl = document.getElementById('alertsDismissedList');
+  if (!dismissed.length) {
+    dismissEl.innerHTML = '<div style="color:var(--muted);font-size:13px">Nenhuma exclusão ainda.</div>';
+  } else {
+    var rows = dismissed.slice(0, 30).map(function(d) {
+      var at = d.dismissed_at ? new Date(d.dismissed_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+      return '<tr>' +
+        '<td style="padding:7px 10px;color:var(--text);font-size:12px">' + (d.job_title||'—') + '</td>' +
+        '<td style="padding:7px 10px;color:var(--muted);font-size:12px">' + (d.job_company||'—') + '</td>' +
+        '<td style="padding:7px 10px;color:var(--yellow);font-size:12px">' + (d.dismissed_reason||'—') + '</td>' +
+        '<td style="padding:7px 10px;color:var(--muted);font-size:11px">' + at + '</td>' +
+      '</tr>';
+    }).join('');
+    dismissEl.innerHTML = '<table style="width:100%;border-collapse:collapse">' +
+      '<thead><tr style="border-bottom:1px solid var(--border)">' +
+        '<th style="padding:6px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:600">Vaga</th>' +
+        '<th style="padding:6px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:600">Empresa</th>' +
+        '<th style="padding:6px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:600">Motivo</th>' +
+        '<th style="padding:6px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:600">Data</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  // Histórico de envios
+  var histEl = document.getElementById('alertsHistory');
+  if (!history.length) {
+    histEl.innerHTML = '<div style="color:var(--muted);font-size:13px">Nenhum envio ainda.</div>';
+  } else {
+    var hrows = history.slice(0, 20).map(function(h) {
+      var at = new Date(h.sent_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      var statusColor = h.status === 'sent' ? 'var(--green)' : 'var(--red)';
+      return '<tr style="border-bottom:1px solid var(--border)">' +
+        '<td style="padding:7px 10px;color:var(--muted);font-size:11px">' + at + '</td>' +
+        '<td style="padding:7px 10px;font-size:12px;color:' + statusColor + ';font-weight:600">' + (h.status||'—') + '</td>' +
+        '<td style="padding:7px 10px;color:var(--text);font-size:12px">' + (h.jobs_count||0) + ' vagas</td>' +
+        '<td style="padding:7px 10px;color:var(--muted);font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">' + (h.error||'') + '</td>' +
+      '</tr>';
+    }).join('');
+    histEl.innerHTML = '<table style="width:100%;border-collapse:collapse">' +
+      '<thead><tr style="border-bottom:1px solid var(--border)">' +
+        '<th style="padding:6px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:600">Data</th>' +
+        '<th style="padding:6px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:600">Status</th>' +
+        '<th style="padding:6px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:600">Vagas</th>' +
+        '<th style="padding:6px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:600">Erro</th>' +
+      '</tr></thead><tbody>' + hrows + '</tbody></table>';
   }
 }
 

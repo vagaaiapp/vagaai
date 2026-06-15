@@ -340,6 +340,33 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Ação desconhecida' });
   }
 
+  // ── GET: dados de alertas (dismiss feedback + histórico) ─────────────────────
+  if (req.query.action === 'alerts') {
+    try {
+      const sb = (path) => fetch(`${SUPABASE_URL}${path}`, {
+        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
+      });
+      const [dismissedRes, historyRes, profilesRes] = await Promise.all([
+        sb('/rest/v1/job_alert_sent?dismissed_reason=not.is.null&select=user_id,job_title,job_company,dismissed_reason,dismissed_at&order=dismissed_at.desc&limit=200'),
+        sb('/rest/v1/job_alert_history?select=user_id,sent_at,jobs_count,status,error&order=sent_at.desc&limit=100'),
+        sb('/rest/v1/job_alert_profiles?select=user_id,ativo,cargo_desejado,cidade,frequencia,ultimo_envio,next_run_at&order=created_at.desc'),
+      ]);
+      const dismissed = dismissedRes.ok ? await dismissedRes.json() : [];
+      const history   = historyRes.ok   ? await historyRes.json()   : [];
+      const profiles  = profilesRes.ok  ? await profilesRes.json()  : [];
+
+      const reasonCounts = {};
+      dismissed.forEach(d => {
+        const r = d.dismissed_reason || 'Sem motivo';
+        reasonCounts[r] = (reasonCounts[r] || 0) + 1;
+      });
+
+      return res.status(200).json({ ok: true, dismissed, reason_counts: reasonCounts, history, profiles });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
   // ── GET: rota GA4 separada para não atrasar o dashboard principal ─────────────
   if (req.query.action === 'ga4') {
     try {
