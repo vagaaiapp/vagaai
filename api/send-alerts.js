@@ -45,7 +45,7 @@ function makeUnsubToken(userId) {
 const BR_SOURCES = new Set([
   'indeed', 'vagas_com', 'infojobs', 'catho', 'empregos_br',
   'trampos', 'bne', 'monster_br', 'glassdoor', 'jora',
-  'talent_com', 'sine', 'adzuna',
+  'talent_com', 'sine', 'adzuna', 'gupy', 'google',
 ]);
 
 // Regex de palavras comuns em PT-BR para detectar idioma
@@ -483,11 +483,13 @@ async function fetchAdzunaJobs(profile) {
 async function fetchSerpApiJobs(profile) {
   if (!SERPAPI_KEY) return [];
   try {
-    const query = encodeURIComponent((profile.cargo_desejado || '') + ' vagas');
-    const loc = (!profile.cidade || profile.cidade.toLowerCase().includes('remoto'))
-      ? 'Brazil' : encodeURIComponent(profile.cidade + ', Brazil');
+    const cargo = (profile.cargo_desejado || '').trim();
+    const isRemoto = wantsRemote(profile);
+    // Busca em PT-BR focada em vagas brasileiras
+    const query = encodeURIComponent(cargo + ' vaga emprego Brasil');
+    const loc = isRemoto ? 'Brazil' : encodeURIComponent((profile.cidade || '') + ', Brazil');
     const url = `https://serpapi.com/search.json?engine=google_jobs&q=${query}&location=${loc}&hl=pt&gl=br&api_key=${SERPAPI_KEY}&num=20`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
     if (!res.ok) return [];
     const data = await res.json();
     return (data.jobs_results || []).map(j => ({
@@ -501,6 +503,40 @@ async function fetchSerpApiJobs(profile) {
     }));
   } catch(e) {
     console.warn('fetchSerpApiJobs error:', e.message);
+    return [];
+  }
+}
+
+// ── FONTE GUPY (ATS mais usado no Brasil) ────────────────────────────────────
+async function fetchGupyJobs(profile) {
+  try {
+    const cargo = (profile.cargo_desejado || '').trim();
+    const isRemoto = wantsRemote(profile);
+    const params = new URLSearchParams({ jobName: cargo, limit: '40', offset: '0' });
+    if (isRemoto) {
+      params.set('workplaceType', 'remote');
+    } else if (profile.cidade) {
+      params.set('city', profile.cidade);
+    }
+    const url = `https://portal.api.gupy.io/api/v1/jobs?${params}`;
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'VagaAI/1.0 (contato@vagaai.app.br)', Accept: 'application/json' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const jobs = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
+    return jobs.map(j => ({
+      title: j.name || j.title || 'Vaga',
+      company: j.company?.name || j.companyName || 'Empresa',
+      location: [j.city, j.state].filter(Boolean).join(', ') || (j.isRemote ? 'Remoto' : 'Brasil'),
+      snippet: (j.description || j.disabilities || '').replace(/<[^>]+>/g, '').slice(0, 400),
+      salary: '',
+      link: j.jobUrl || `https://portal.gupy.io/job/${j.id}`,
+      _source: 'gupy',
+    }));
+  } catch(e) {
+    console.warn('fetchGupyJobs error:', e.message);
     return [];
   }
 }
@@ -1482,7 +1518,7 @@ async function processUserAlert(profile, options = {}) {
   const effectiveProfile = { ...profile, frequencia: effectiveFreq };
 
   // Busca vagas de todas as fontes em paralelo
-  const [jooble, indeed, remotive, adzuna, serp, empregos, sine, vagasCom, infojobs, remoteok, arbeitnow, themuse, trampos, monster, glassdoor, bne, catho, jora, talentCom, jsearch] = await Promise.allSettled([
+  const [jooble, indeed, remotive, adzuna, serp, empregos, sine, vagasCom, infojobs, remoteok, arbeitnow, themuse, trampos, monster, glassdoor, bne, catho, jora, talentCom, jsearch, gupy] = await Promise.allSettled([
     fetchJoobleJobs(profile),
     fetchIndeedJobs(profile),
     fetchRemotiveJobs(profile),
@@ -1503,10 +1539,13 @@ async function processUserAlert(profile, options = {}) {
     fetchJoraJobs(profile),
     fetchTalentComJobs(profile),
     fetchJSearchJobs(profile),
+    fetchGupyJobs(profile),
   ]);
   const settled = (r) => r.status === 'fulfilled' ? (r.value || []) : [];
   const sourceCounts = {
+    gupy: settled(gupy).length,
     jsearch: settled(jsearch).length,
+    serp: settled(serp).length,
     adzuna: settled(adzuna).length,
     jooble: settled(jooble).length,
     indeed: settled(indeed).length,
@@ -1525,33 +1564,33 @@ async function processUserAlert(profile, options = {}) {
     remotive: settled(remotive).length,
     arbeitnow: settled(arbeitnow).length,
     themuse: settled(themuse).length,
-    serp: settled(serp).length,
   };
   const rawCount = Object.values(sourceCounts).reduce((sum, count) => sum + count, 0);
   let jobs = deduplicateJobs([
-    ...settled(jsearch),  // JSearch primeiro — maior qualidade (LinkedIn/Indeed/Glassdoor)
-    ...settled(jooble),
-    ...settled(indeed),
-    ...settled(remotive),
-    ...settled(adzuna),
-    ...settled(serp),
-    ...settled(empregos),
-    ...settled(sine),
+    ...settled(gupy),     // Gupy primeiro — ATS brasileiro, vagas nacionais confiáveis
+    ...settled(serp),     // Google Jobs em PT-BR
+    ...settled(jsearch),  // LinkedIn/Indeed/Glassdoor via JSearch
     ...settled(vagasCom),
     ...settled(infojobs),
-    ...settled(remoteok),
-    ...settled(arbeitnow),
-    ...settled(themuse),
+    ...settled(catho),
     ...settled(trampos),
+    ...settled(sine),
+    ...settled(empregos),
+    ...settled(jooble),
+    ...settled(indeed),
+    ...settled(adzuna),
     ...settled(monster),
     ...settled(glassdoor),
     ...settled(bne),
-    ...settled(catho),
     ...settled(jora),
     ...settled(talentCom),
+    ...settled(remotive),
+    ...settled(remoteok),
+    ...settled(arbeitnow),
+    ...settled(themuse),
   ]);
   const dedupCount = jobs.length;
-  console.log(`Sources: jsearch=${settled(jsearch).length} jooble=${settled(jooble).length} indeed=${settled(indeed).length} adzuna=${settled(adzuna).length} empregos=${settled(empregos).length} sine=${settled(sine).length} vagasCom=${settled(vagasCom).length} infojobs=${settled(infojobs).length} trampos=${settled(trampos).length} monster=${settled(monster).length} glassdoor=${settled(glassdoor).length} bne=${settled(bne).length} catho=${settled(catho).length} jora=${settled(jora).length} talentCom=${settled(talentCom).length} remoteok=${settled(remoteok).length} remotive=${settled(remotive).length} arbeitnow=${settled(arbeitnow).length} themuse=${settled(themuse).length} → dedup=${jobs.length}`);
+  console.log(`Sources: gupy=${settled(gupy).length} serp=${settled(serp).length} jsearch=${settled(jsearch).length} adzuna=${settled(adzuna).length} vagasCom=${settled(vagasCom).length} infojobs=${settled(infojobs).length} catho=${settled(catho).length} trampos=${settled(trampos).length} sine=${settled(sine).length} empregos=${settled(empregos).length} jooble=${settled(jooble).length} indeed=${settled(indeed).length} monster=${settled(monster).length} bne=${settled(bne).length} jora=${settled(jora).length} talentCom=${settled(talentCom).length} remoteok=${settled(remoteok).length} remotive=${settled(remotive).length} arbeitnow=${settled(arbeitnow).length} themuse=${settled(themuse).length} → dedup=${jobs.length}`);
 
   // Remove já enviadas (exceto em modo teste)
   if (!isTest) {
@@ -1615,8 +1654,8 @@ async function processUserAlert(profile, options = {}) {
     };
   }
 
-  // Volume por plano: free=5, starter=15, pro=30
-  jobs = jobs.slice(0, ent.max_jobs_per_delivery);
+  // Volume máximo: 10 vagas por envio
+  jobs = jobs.slice(0, 10);
 
   // Busca email atual e nome do usuário diretamente do auth (evita email desatualizado no perfil)
   let userName = email.split('@')[0];
