@@ -889,6 +889,220 @@ async function fetchJSearchJobs(profile) {
   }
 }
 
+// ── FONTE: EMPREGOS.COM.BR ───────────────────────────────────────────────────
+async function fetchEmpregosComBrJobs(profile) {
+  try {
+    const cargo = (profile.cargo_desejado || '').trim();
+    const cargoSlug = cargo.toLowerCase().replace(/\s+/g, '-');
+    const isRemoto = !profile.cidade || /remoto|remote/i.test(profile.cidade);
+    const cidadeSlug = isRemoto ? '' : profile.cidade.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const url = cidadeSlug
+      ? `https://www.empregos.com.br/vagas/${cargoSlug}/${cidadeSlug}`
+      : `https://www.empregos.com.br/vagas/${cargoSlug}`;
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      'Accept': 'text/html,application/xhtml+xml',
+      'Accept-Language': 'pt-BR,pt;q=0.9',
+    };
+    const res = await fetch(url, { headers, signal: AbortSignal.timeout(6000) });
+    if (!res.ok) return [];
+    const html = await res.text();
+    // Tenta JSON-LD primeiro
+    const ldBlocks = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi) || [];
+    for (const block of ldBlocks) {
+      try {
+        const json = JSON.parse(block.replace(/<\/?script[^>]*>/gi, ''));
+        const items = json['@graph'] || (Array.isArray(json) ? json : [json]);
+        const jobs = items.filter(i => i['@type'] === 'JobPosting');
+        if (jobs.length) return jobs.slice(0, 15).map(j => ({
+          title: j.title || j.name || 'Vaga',
+          company: j.hiringOrganization?.name || 'Empresa',
+          location: j.jobLocation?.address?.addressLocality || profile.cidade || 'Brasil',
+          snippet: (j.description || '').replace(/<[^>]+>/g, '').slice(0, 400),
+          salary: j.baseSalary?.value?.value ? `R$ ${j.baseSalary.value.value}` : '',
+          link: j.url || j['@id'] || url,
+          _source: 'empregos_com_br',
+        }));
+      } catch(e) {}
+    }
+    // Fallback: extrai cards de vagas do HTML
+    const jobs = [];
+    const cardRe = /href="(https?:\/\/www\.empregos\.com\.br\/vaga[^"]+)"[^>]*>[\s\S]*?<[^>]+class="[^"]*(?:title|cargo|nome)[^"]*"[^>]*>([\s\S]*?)<\/[^>]+>/gi;
+    let m;
+    while ((m = cardRe.exec(html)) !== null && jobs.length < 15) {
+      jobs.push({ title: m[2].replace(/<[^>]+>/g,'').trim(), company: 'Empresa', location: profile.cidade || 'Brasil', snippet: '', salary: '', link: m[1], _source: 'empregos_com_br' });
+    }
+    return jobs;
+  } catch(e) {
+    console.warn('fetchEmpregosComBrJobs error:', e.message);
+    return [];
+  }
+}
+
+// ── FONTE: JOBBOL ─────────────────────────────────────────────────────────────
+async function fetchJobbolJobs(profile) {
+  try {
+    const cargo = encodeURIComponent(profile.cargo_desejado || '');
+    const isRemoto = !profile.cidade || /remoto|remote/i.test(profile.cidade);
+    const cidadeQ = isRemoto ? '' : `&city=${encodeURIComponent(profile.cidade)}`;
+    const url = `https://www.jobbol.com.br/vagas?q=${cargo}${cidadeQ}`;
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      'Accept': 'text/html,application/xhtml+xml',
+      'Accept-Language': 'pt-BR,pt;q=0.9',
+    };
+    const res = await fetch(url, { headers, signal: AbortSignal.timeout(6000) });
+    if (!res.ok) return [];
+    const html = await res.text();
+    // Tenta JSON-LD
+    const ldBlocks = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi) || [];
+    for (const block of ldBlocks) {
+      try {
+        const json = JSON.parse(block.replace(/<\/?script[^>]*>/gi, ''));
+        const items = json['@graph'] || (Array.isArray(json) ? json : [json]);
+        const jobs = items.filter(i => i['@type'] === 'JobPosting');
+        if (jobs.length) return jobs.slice(0, 15).map(j => ({
+          title: j.title || j.name || 'Vaga',
+          company: j.hiringOrganization?.name || 'Empresa',
+          location: j.jobLocation?.address?.addressLocality || profile.cidade || 'Brasil',
+          snippet: (j.description || '').replace(/<[^>]+>/g, '').slice(0, 400),
+          salary: '',
+          link: j.url || j['@id'] || url,
+          _source: 'jobbol',
+        }));
+      } catch(e) {}
+    }
+    return [];
+  } catch(e) {
+    console.warn('fetchJobbolJobs error:', e.message);
+    return [];
+  }
+}
+
+// ── FONTE: SINE ESTADUAL ──────────────────────────────────────────────────────
+// Detecta o estado do usuário pela cidade e consulta o portal SINE correspondente.
+// Só é chamada quando o usuário tem formato presencial ou híbrido + cidade definida.
+const SINE_PORTALS = {
+  AC: { url: 'https://sine.ac.gov.br/vagas?q={cargo}', name: 'SINE Acre' },
+  AL: { url: 'https://online.maceio.al.gov.br/n/talentos?q={cargo}', name: 'SINE Alagoas' },
+  AP: { url: 'https://sine.ap.gov.br/vagas?q={cargo}', name: 'SINE Amapá' },
+  AM: { url: 'https://empregaamazonas.am.gov.br/vagas?cargo={cargo}', name: 'SINE Amazonas' },
+  BA: { url: 'https://empregos.saeb.ba.gov.br/vagas?q={cargo}', name: 'SINE Bahia' },
+  CE: { url: 'https://idt.org.br/empregar?q={cargo}', name: 'IDT/SINE Ceará' },
+  DF: { url: 'https://www.trabalho.df.gov.br/vagas?q={cargo}', name: 'SINE DF' },
+  ES: { url: 'https://maisemprego.es.gov.br/vagas?q={cargo}', name: 'SINE ES' },
+  GO: { url: 'https://segplan.go.gov.br/sine/vagas?q={cargo}', name: 'SINE Goiás' },
+  MA: { url: 'https://trabalho.ma.gov.br/vagas?q={cargo}', name: 'SINE Maranhão' },
+  MT: { url: 'https://emprego.mt.gov.br/vagas?q={cargo}', name: 'SINE MT' },
+  MS: { url: 'https://funtrab.ms.gov.br/vagas?q={cargo}', name: 'FUNTRAB MS' },
+  MG: { url: 'https://mg.gov.br/trabalho?q={cargo}', name: 'SINE MG' },
+  PA: { url: 'https://seaster.pa.gov.br/vagas?q={cargo}', name: 'SINE Pará' },
+  PB: { url: 'https://sedet.pb.gov.br/sine-pb?q={cargo}', name: 'SINE Paraíba' },
+  PR: { url: 'https://trabalho.pr.gov.br/vagas?q={cargo}', name: 'Agência do Trabalhador PR' },
+  PE: { url: 'https://seteq.pe.gov.br/vagas?q={cargo}', name: 'SINE Pernambuco' },
+  PI: { url: 'https://setre.pi.gov.br/vagas?q={cargo}', name: 'SINE Piauí' },
+  RJ: { url: 'https://www.trabalho.rj.gov.br/vagas?q={cargo}', name: 'Emprega Rio' },
+  RN: { url: 'https://sine.rn.gov.br/vagas?q={cargo}', name: 'SINE RN' },
+  RS: { url: 'https://fgtas.rs.gov.br/vagas?q={cargo}', name: 'FGTAS/SINE RS' },
+  RO: { url: 'https://rondonia.ro.gov.br/sine?q={cargo}', name: 'SINE Rondônia' },
+  RR: { url: 'https://roraima.rr.gov.br/sine?q={cargo}', name: 'SINE Roraima' },
+  SC: { url: 'https://sine.sc.gov.br/vagas?q={cargo}', name: 'SINE SC' },
+  SP: { url: 'https://www.empregasaopaulo.sp.gov.br/vagas?cargo={cargo}', name: 'Emprega SP' },
+  SE: { url: 'https://seteem.se.gov.br/vagas?q={cargo}', name: 'SINE Sergipe' },
+  TO: { url: 'https://sine.to.gov.br/vagas?q={cargo}', name: 'SINE Tocantins' },
+};
+
+// Mapa cidade → UF para as principais capitais e cidades
+const CIDADE_UF = {
+  'são paulo': 'SP', 'sao paulo': 'SP', 'guarulhos': 'SP', 'campinas': 'SP', 'santos': 'SP', 'ribeirão preto': 'SP', 'sorocaba': 'SP',
+  'rio de janeiro': 'RJ', 'niterói': 'RJ', 'nova iguaçu': 'RJ', 'duque de caxias': 'RJ',
+  'belo horizonte': 'MG', 'uberlândia': 'MG', 'contagem': 'MG', 'juiz de fora': 'MG',
+  'curitiba': 'PR', 'londrina': 'PR', 'maringá': 'PR',
+  'porto alegre': 'RS', 'caxias do sul': 'RS', 'pelotas': 'RS',
+  'florianópolis': 'SC', 'joinville': 'SC', 'blumenau': 'SC',
+  'salvador': 'BA', 'feira de santana': 'BA',
+  'fortaleza': 'CE', 'caucaia': 'CE',
+  'recife': 'PE', 'caruaru': 'PE', 'olinda': 'PE',
+  'manaus': 'AM', 'belém': 'PA', 'goiânia': 'GO', 'brasília': 'DF',
+  'maceió': 'AL', 'natal': 'RN', 'teresina': 'PI', 'campo grande': 'MS',
+  'cuiabá': 'MT', 'macapá': 'AP', 'porto velho': 'RO', 'boa vista': 'RR',
+  'palmas': 'TO', 'aracaju': 'SE', 'são luís': 'MA', 'vitória': 'ES', 'rio branco': 'AC',
+};
+
+function detectUF(cidade) {
+  const c = (cidade || '').toLowerCase().trim();
+  // Tenta match direto
+  if (CIDADE_UF[c]) return CIDADE_UF[c];
+  // Tenta sigla direta (ex: "SP", "RJ")
+  const upper = c.toUpperCase();
+  if (SINE_PORTALS[upper]) return upper;
+  // Tenta encontrar cidade no texto (ex: "São Paulo, SP")
+  for (const [nome, uf] of Object.entries(CIDADE_UF)) {
+    if (c.includes(nome)) return uf;
+  }
+  // Tenta sigla no final da string (ex: "São Paulo - SP")
+  const siglaMatch = c.match(/\b([a-z]{2})$/);
+  if (siglaMatch && SINE_PORTALS[siglaMatch[1].toUpperCase()]) return siglaMatch[1].toUpperCase();
+  return null;
+}
+
+async function fetchSineJobs(profile) {
+  try {
+    const uf = detectUF(profile.cidade);
+    if (!uf || !SINE_PORTALS[uf]) return [];
+    const portal = SINE_PORTALS[uf];
+    const cargo = encodeURIComponent(profile.cargo_desejado || '');
+    const url = portal.url.replace('{cargo}', cargo);
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/json',
+      'Accept-Language': 'pt-BR,pt;q=0.9',
+    };
+    const res = await fetch(url, { headers, signal: AbortSignal.timeout(6000) });
+    if (!res.ok) return [];
+    const ct = res.headers.get('content-type') || '';
+    // JSON response
+    if (ct.includes('json')) {
+      const data = await res.json();
+      const list = data.vagas || data.jobs || data.results || data.data || [];
+      if (Array.isArray(list) && list.length) {
+        return list.slice(0, 15).map(j => ({
+          title: j.titulo || j.cargo || j.title || j.nome || 'Vaga',
+          company: j.empresa || j.company || j.empregador || portal.name,
+          location: j.cidade || j.municipio || j.location || profile.cidade || 'Brasil',
+          snippet: (j.descricao || j.description || j.requisitos || '').slice(0, 400),
+          salary: j.salario || j.remuneracao || '',
+          link: j.url || j.link || url,
+          _source: 'sine',
+        }));
+      }
+    }
+    // HTML: tenta JSON-LD
+    const html = await res.text().catch(() => '');
+    const ldBlocks = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi) || [];
+    for (const block of ldBlocks) {
+      try {
+        const json = JSON.parse(block.replace(/<\/?script[^>]*>/gi, ''));
+        const items = json['@graph'] || (Array.isArray(json) ? json : [json]);
+        const jobs = items.filter(i => i['@type'] === 'JobPosting');
+        if (jobs.length) return jobs.slice(0, 15).map(j => ({
+          title: j.title || j.name || 'Vaga',
+          company: j.hiringOrganization?.name || portal.name,
+          location: j.jobLocation?.address?.addressLocality || profile.cidade || 'Brasil',
+          snippet: (j.description || '').replace(/<[^>]+>/g, '').slice(0, 400),
+          salary: '',
+          link: j.url || j['@id'] || url,
+          _source: 'sine',
+        }));
+      } catch(e) {}
+    }
+    return [];
+  } catch(e) {
+    console.warn('fetchSineJobs error:', e.message);
+    return [];
+  }
+}
+
 // ── FONTE 19: TALENT.COM BR RSS ───────────────────────────────────────────────
 async function fetchTalentComJobs(profile) {
   try {
@@ -1227,8 +1441,16 @@ async function processUserAlert(profile, options = {}) {
   const effectiveFreq = coerceFrequency(profile.frequencia || 'semanal', plan);
   const effectiveProfile = { ...profile, frequencia: effectiveFreq };
 
+  // SINE só roda quando o usuário tem formato presencial ou híbrido + cidade definida
+  let formatsArr = [];
+  if (Array.isArray(profile.formato)) formatsArr = profile.formato.map(f => String(f).toLowerCase());
+  else if (typeof profile.formato === 'string') formatsArr = profile.formato.split(',').map(f => f.toLowerCase().trim());
+  const hasCidade = profile.cidade && !/remoto|remote/i.test(profile.cidade);
+  const querPresencial = formatsArr.some(f => f.includes('presencial') || f.includes('híbrido') || f.includes('hibrido'));
+  const runSine = hasCidade && (querPresencial || formatsArr.length === 0);
+
   // Busca vagas de todas as fontes em paralelo
-  const [gupy, greenhouse, lever, serp, jsearch, adzuna, jooble, trampos, talentCom, remotive] = await Promise.allSettled([
+  const [gupy, greenhouse, lever, serp, jsearch, adzuna, jooble, trampos, talentCom, remotive, empregos, jobbol, sine] = await Promise.allSettled([
     fetchGupyJobs(profile),
     fetchGreenhouseBRJobs(profile),
     fetchLeverBRJobs(profile),
@@ -1239,6 +1461,9 @@ async function processUserAlert(profile, options = {}) {
     fetchTramposJobs(profile),
     fetchTalentComJobs(profile),
     fetchRemotiveJobs(profile),
+    fetchEmpregosComBrJobs(profile),
+    fetchJobbolJobs(profile),
+    runSine ? fetchSineJobs(profile) : Promise.resolve([]),
   ]);
   const settled = (r) => r.status === 'fulfilled' ? (r.value || []) : [];
   const sourceCounts = {
@@ -1252,6 +1477,9 @@ async function processUserAlert(profile, options = {}) {
     trampos: settled(trampos).length,
     talentCom: settled(talentCom).length,
     remotive: settled(remotive).length,
+    empregos: settled(empregos).length,
+    jobbol: settled(jobbol).length,
+    sine: settled(sine).length,
   };
   const rawCount = Object.values(sourceCounts).reduce((sum, count) => sum + count, 0);
   let jobs = deduplicateJobs([
@@ -1260,6 +1488,9 @@ async function processUserAlert(profile, options = {}) {
     ...settled(lever),      // Lever: Hotmart, Creditas, QuintoAndar
     ...settled(serp),       // Google Jobs em PT-BR
     ...settled(jsearch),    // LinkedIn/Indeed/Glassdoor via JSearch
+    ...settled(sine),       // SINE estadual — vagas locais presenciais
+    ...settled(empregos),   // Empregos.com.br
+    ...settled(jobbol),     // Jobbol
     ...settled(trampos),
     ...settled(adzuna),
     ...settled(jooble),
@@ -1267,7 +1498,7 @@ async function processUserAlert(profile, options = {}) {
     ...settled(remotive),
   ]);
   const dedupCount = jobs.length;
-  console.log(`Sources: gupy=${settled(gupy).length} greenhouse=${settled(greenhouse).length} lever=${settled(lever).length} serp=${settled(serp).length} jsearch=${settled(jsearch).length} adzuna=${settled(adzuna).length} jooble=${settled(jooble).length} trampos=${settled(trampos).length} talentCom=${settled(talentCom).length} remotive=${settled(remotive).length} → dedup=${jobs.length}`);
+  console.log(`Sources: gupy=${sourceCounts.gupy} greenhouse=${sourceCounts.greenhouse} lever=${sourceCounts.lever} serp=${sourceCounts.serp} jsearch=${sourceCounts.jsearch} sine=${sourceCounts.sine}(${runSine ? detectUF(profile.cidade)||'?' : 'skip'}) empregos=${sourceCounts.empregos} jobbol=${sourceCounts.jobbol} trampos=${sourceCounts.trampos} adzuna=${sourceCounts.adzuna} jooble=${sourceCounts.jooble} talentCom=${sourceCounts.talentCom} remotive=${sourceCounts.remotive} → dedup=${jobs.length}`);
 
   // Remove já enviadas (exceto em modo teste)
   if (!isTest) {
