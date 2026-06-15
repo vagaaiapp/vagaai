@@ -376,33 +376,85 @@ async function fetchJoobleJobs(profile) {
   return jobs;
 }
 
-// ── FONTE 2: INDEED BR RSS ────────────────────────────────────────────────────
-async function fetchIndeedJobs(profile) {
+// ── FONTE: GREENHOUSE (ATS usado por Nubank, VTEX, Mercado Livre, iFood) ──────
+const GREENHOUSE_BR_COMPANIES = [
+  'nubank','vtex','ifood','mercadolibre','rappi','loft','quintoandar',
+  'creditas','contabilizei','gympass','nuvemshop','olist','pagseguro',
+  'stone','totvs','zup','avenue','matera','dock','cloudwalk',
+];
+async function fetchGreenhouseBRJobs(profile) {
   try {
-    const cargo = encodeURIComponent(profile.cargo_desejado || '');
-    const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
-    const loc = isRemoto ? 'Brasil' : profile.cidade;
-    const url = `https://br.indeed.com/jobs?q=${cargo}&l=${encodeURIComponent(loc)}&format=rss&sort=date&limit=20`;
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)' },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!res.ok) return [];
-    const xml = await res.text();
-    return parseRSSItems(xml).map(item => {
-      const parsed = splitTitleCompany(item.title);
-      return {
-        title: parsed.title,
-        company: item.company || parsed.company || 'Empresa',
-        location: loc,
-        snippet: item.description,
+    const cargo = (profile.cargo_desejado || '').toLowerCase();
+    const keywords = cargo.split(/\s+/).filter(w => w.length > 3);
+    const results = await Promise.allSettled(
+      GREENHOUSE_BR_COMPANIES.map(slug =>
+        fetch(`https://boards-api.greenhouse.io/v1/boards/${slug}/jobs?content=true`, {
+          headers: { Accept: 'application/json' },
+          signal: AbortSignal.timeout(6000),
+        }).then(r => r.ok ? r.json() : { jobs: [] })
+          .then(d => (d.jobs || []).map(j => ({ ...j, _company_slug: slug })))
+          .catch(() => [])
+      )
+    );
+    const allJobs = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+    return allJobs
+      .filter(j => {
+        const title = (j.title || '').toLowerCase();
+        return keywords.some(w => title.includes(w));
+      })
+      .slice(0, 20)
+      .map(j => ({
+        title: j.title || 'Vaga',
+        company: j.company?.name || j._company_slug || 'Empresa',
+        location: j.location?.name || 'Brasil',
+        snippet: (j.content || '').replace(/<[^>]+>/g, '').slice(0, 400),
         salary: '',
-        link: item.link,
-        _source: 'indeed',
-      };
-    });
+        link: j.absolute_url || `https://boards.greenhouse.io/${j._company_slug}/jobs/${j.id}`,
+        _source: 'greenhouse',
+      }));
   } catch(e) {
-    console.warn('fetchIndeedJobs error:', e.message);
+    console.warn('fetchGreenhouseBRJobs error:', e.message);
+    return [];
+  }
+}
+
+// ── FONTE: LEVER (ATS usado por Hotmart, Creditas, Loft, QuintoAndar) ─────────
+const LEVER_BR_COMPANIES = [
+  'hotmart','creditas','loft-br','quintoandar','cloudwalk','zup',
+  'betrybe','descomplica','neon','unico','buser','warren',
+];
+async function fetchLeverBRJobs(profile) {
+  try {
+    const cargo = (profile.cargo_desejado || '').toLowerCase();
+    const keywords = cargo.split(/\s+/).filter(w => w.length > 3);
+    const results = await Promise.allSettled(
+      LEVER_BR_COMPANIES.map(slug =>
+        fetch(`https://api.lever.co/v0/postings/${slug}?mode=json&limit=50`, {
+          headers: { Accept: 'application/json' },
+          signal: AbortSignal.timeout(6000),
+        }).then(r => r.ok ? r.json() : [])
+          .then(d => (Array.isArray(d) ? d : []).map(j => ({ ...j, _company_slug: slug })))
+          .catch(() => [])
+      )
+    );
+    const allJobs = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+    return allJobs
+      .filter(j => {
+        const title = (j.text || '').toLowerCase();
+        return keywords.some(w => title.includes(w));
+      })
+      .slice(0, 20)
+      .map(j => ({
+        title: j.text || 'Vaga',
+        company: j.company || j._company_slug || 'Empresa',
+        location: j.categories?.location || j.workplaceType || 'Brasil',
+        snippet: (j.descriptionPlain || j.description || '').replace(/<[^>]+>/g, '').slice(0, 400),
+        salary: '',
+        link: j.hostedUrl || j.applyUrl || `https://jobs.lever.co/${j._company_slug}/${j.id}`,
+        _source: 'lever',
+      }));
+  } catch(e) {
+    console.warn('fetchLeverBRJobs error:', e.message);
     return [];
   }
 }
@@ -532,7 +584,7 @@ async function fetchGupyJobs(profile) {
       location: [j.city, j.state].filter(Boolean).join(', ') || (j.isRemote ? 'Remoto' : 'Brasil'),
       snippet: (j.description || j.disabilities || '').replace(/<[^>]+>/g, '').slice(0, 400),
       salary: '',
-      link: j.jobUrl || `https://portal.gupy.io/job/${j.id}`,
+      link: j.jobUrl || (j.company?.slug && j.id ? `https://portal.gupy.io/job/${j.company.slug}/${j.id}` : null) || `https://portal.gupy.io/jobs?jobName=${encodeURIComponent(j.name||'')}`,
       _source: 'gupy',
     }));
   } catch(e) {
@@ -541,95 +593,6 @@ async function fetchGupyJobs(profile) {
   }
 }
 
-// ── FONTE 6: EMPREGOS.COM.BR RSS ─────────────────────────────────────────────
-async function fetchEmpregosBRJobs(profile) {
-  try {
-    const cargo = encodeURIComponent(profile.cargo_desejado || '');
-    const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
-    const cidade = isRemoto ? '' : encodeURIComponent(profile.cidade);
-    // Tenta dois formatos de URL conhecidos
-    const urls = [
-      `https://www.empregos.com.br/vagas/busca.rss?q=${cargo}&onde=${cidade}`,
-      `https://www.empregos.com.br/rss/vagas/?q=${cargo}&l=${cidade}`,
-    ];
-    for (const url of urls) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)', Accept: 'application/rss+xml, application/xml, text/xml' },
-          signal: AbortSignal.timeout(5000),
-        });
-        if (!res.ok) continue;
-        const xml = await res.text();
-        const items = parseRSSItems(xml);
-        if (!items.length) continue;
-        return items.map(item => {
-          const parsed = splitTitleCompany(item.title);
-          return {
-            title: parsed.title,
-            company: item.company || parsed.company || 'Empresa',
-            location: profile.cidade || 'Brasil',
-            snippet: item.description,
-            salary: '',
-            link: item.link,
-            _source: 'empregos_br',
-          };
-        });
-      } catch(e) { continue; }
-    }
-    return [];
-  } catch(e) {
-    console.warn('fetchEmpregosBRJobs error:', e.message);
-    return [];
-  }
-}
-
-// ── FONTE 7: TRABALHA BRASIL / SINE (API pública do governo) ─────────────────
-async function fetchTrabalhaBrasilJobs(profile) {
-  try {
-    const cargo = (profile.cargo_desejado || '').toLowerCase();
-    const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
-
-    // Monta query para o portal SINE (empregabrasil.mte.gov.br)
-    // Endpoint público de busca de vagas
-    const params = new URLSearchParams({
-      descricaoVaga: cargo,
-      tipoDeficiencia: 'N',
-      pagina: '1',
-      quantidade: '20',
-    });
-    if (!isRemoto && profile.cidade) {
-      params.set('municipio', profile.cidade);
-    }
-
-    const url = `https://servicospublicos.empregabrasil.mte.gov.br/sine/vaga/buscaVagasAtivas?${params}`;
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)',
-        Accept: 'application/json',
-      },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-
-    // O SINE retorna { vagas: [...] } ou { content: [...] } dependendo da versão
-    const list = data.vagas || data.content || data.results || data || [];
-    if (!Array.isArray(list)) return [];
-
-    return list.map(v => ({
-      title: v.descricaoVaga || v.titulo || v.cargo || v.nomeVaga || 'Vaga',
-      company: v.nomeEmpresa || v.empresa || v.razaoSocial || 'Empresa',
-      location: v.municipio || v.cidade || v.localidade || profile.cidade || 'Brasil',
-      snippet: v.descricaoAtividades || v.descricao || v.atividades || '',
-      salary: v.salario || v.remuneracao || '',
-      link: v.url || `https://www.empregabrasil.mte.gov.br/vagas/${v.id || ''}`,
-      _source: 'sine',
-    }));
-  } catch(e) {
-    console.warn('fetchTrabalhaBrasilJobs error:', e.message);
-    return [];
-  }
-}
 
 // ── FONTE 8: VAGAS.COM RSS ────────────────────────────────────────────────────
 async function fetchVagasComJobs(profile) {
@@ -695,139 +658,6 @@ async function fetchInfoJobsJobs(profile) {
   }
 }
 
-// ── FONTE 10: REMOTE OK (API pública, sem chave) ──────────────────────────────
-async function fetchRemoteOkJobs(profile) {
-  try {
-    if (!wantsRemote(profile)) return []; // Remote OK só tem vagas remotas
-    const tag = encodeURIComponent((profile.cargo_desejado || '').toLowerCase().replace(/\s+/g, '-'));
-    // Tenta busca com tag específica, fallback para lista geral
-    const urls = [
-      `https://remoteok.com/api?tag=${tag}`,
-      `https://remoteok.com/api`,
-    ];
-    for (const url of urls) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)', Accept: 'application/json' },
-          signal: AbortSignal.timeout(5000),
-        });
-        if (!res.ok) continue;
-        const data = await res.json();
-        // Remote OK retorna array onde primeiro item é metadata — pular
-        const jobs = Array.isArray(data) ? data.filter(j => j && j.id && j.position) : [];
-        if (!jobs.length) continue;
-        const cargo = (profile.cargo_desejado || '').toLowerCase();
-        // Filtra por relevância mínima
-        const filtered = jobs.filter(j => {
-          const pos = (j.position || '').toLowerCase();
-          const tags = (j.tags || []).join(' ').toLowerCase();
-          return cargo.split(/\s+/).some(w => w.length > 3 && (pos.includes(w) || tags.includes(w)));
-        }).slice(0, 15);
-        return (filtered.length ? filtered : jobs.slice(1, 11)).map(j => ({
-          title: j.position || 'Vaga',
-          company: j.company || 'Empresa',
-          location: 'Remoto',
-          snippet: (j.description || '').replace(/<[^>]+>/g, ' ').trim().slice(0, 400),
-          salary: j.salary || '',
-          link: j.url || `https://remoteok.com/remote-jobs/${j.id}`,
-          _source: 'remoteok',
-        }));
-      } catch(e) { continue; }
-    }
-    return [];
-  } catch(e) {
-    console.warn('fetchRemoteOkJobs error:', e.message);
-    return [];
-  }
-}
-
-// ── FONTE 11: ARBEITNOW (API pública, sem chave) ──────────────────────────────
-async function fetchArbeitnowJobs(profile) {
-  try {
-    if (!wantsRemote(profile)) return []; // Arbeitnow foca em vagas remotas/internacionais
-    const search = encodeURIComponent(profile.cargo_desejado || '');
-    const url = `https://www.arbeitnow.com/api/job-board-api?search=${search}`;
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)', Accept: 'application/json' },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    const jobs = data.data || [];
-    const cargo = (profile.cargo_desejado || '').toLowerCase();
-    // Filtra por relevância
-    return jobs.filter(j => {
-      const title = (j.title || '').toLowerCase();
-      const desc = (j.description || '').toLowerCase();
-      return cargo.split(/\s+/).some(w => w.length > 3 && (title.includes(w) || desc.includes(w)));
-    }).slice(0, 10).map(j => ({
-      title: j.title || 'Vaga',
-      company: j.company_name || 'Empresa',
-      location: j.location || 'Remoto',
-      snippet: (j.description || '').replace(/<[^>]+>/g, ' ').trim().slice(0, 400),
-      salary: '',
-      link: j.url || '',
-      _source: 'arbeitnow',
-    }));
-  } catch(e) {
-    console.warn('fetchArbeitnowJobs error:', e.message);
-    return [];
-  }
-}
-
-// ── FONTE 12: THE MUSE (API pública, sem chave) ────────────────────────────────
-// Categorias verificadas da API atual do The Muse (jun/2026). Os nomes antigos
-// ('Marketing and PR', 'Software Engineer', 'Data Science', 'Product', 'Finance',
-// 'Human Resources') foram renomeados e passaram a retornar 0 — atualizado abaixo.
-const MUSE_CATEGORY_MAP = {
-  'marketing': 'Advertising and Marketing', 'growth': 'Advertising and Marketing', 'seo': 'Advertising and Marketing',
-  'design': 'Design and UX', 'ux': 'Design and UX', 'ui': 'Design and UX',
-  'developer': 'Software Engineering', 'desenvolvedor': 'Software Engineering',
-  'engenheiro': 'Software Engineering', 'frontend': 'Software Engineering',
-  'backend': 'Software Engineering', 'fullstack': 'Software Engineering',
-  'dados': 'Data and Analytics', 'data': 'Data and Analytics', 'analytics': 'Data and Analytics',
-  'vendas': 'Sales', 'comercial': 'Sales',
-  'rh': 'Human Resources and Recruitment', 'pessoas': 'Human Resources and Recruitment',
-  'produto': 'Product Management', 'product': 'Product Management',
-  'financeiro': 'Accounting and Finance', 'contab': 'Accounting and Finance',
-  'customer': 'Customer Service', 'suporte': 'Customer Service',
-};
-function museCategoryFromCargo(cargo) {
-  const lower = (cargo || '').toLowerCase();
-  for (const [k, v] of Object.entries(MUSE_CATEGORY_MAP)) {
-    if (lower.includes(k)) return v;
-  }
-  return null;
-}
-async function fetchTheMuseJobs(profile) {
-  try {
-    const cat = museCategoryFromCargo(profile.cargo_desejado);
-    if (!cat) return []; // Só busca quando consegue mapear categoria
-    const catParam = encodeURIComponent(cat);
-    // The Muse tem filtro de "flexible" (remoto) e "all" (presencial+remoto)
-    const location = wantsRemote(profile) ? '&location=Flexible%20%2F%20Remote' : '';
-    const url = `https://www.themuse.com/api/public/jobs?category=${catParam}${location}&page=1&descending=true`;
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)', Accept: 'application/json' },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    const results = data.results || [];
-    return results.slice(0, 12).map(j => ({
-      title: j.name || 'Vaga',
-      company: j.company?.name || 'Empresa',
-      location: (j.locations?.[0]?.name) || 'Remoto',
-      snippet: (j.contents || '').replace(/<[^>]+>/g, ' ').trim().slice(0, 400),
-      salary: '',
-      link: j.refs?.landing_page || '',
-      _source: 'themuse',
-    }));
-  } catch(e) {
-    console.warn('fetchTheMuseJobs error:', e.message);
-    return [];
-  }
-}
 
 // ── FONTE 13: TRAMPOS.CO RSS (digital/startup BR) ────────────────────────────
 async function fetchTramposJobs(profile) {
@@ -873,130 +703,6 @@ async function fetchTramposJobs(profile) {
   }
 }
 
-// ── FONTE 14: MONSTER BRASIL RSS ─────────────────────────────────────────────
-async function fetchMonsterBRJobs(profile) {
-  try {
-    const cargo = encodeURIComponent(profile.cargo_desejado || '');
-    const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
-    const loc = isRemoto ? 'brasil' : encodeURIComponent(profile.cidade);
-    const urls = [
-      `https://www.monster.com.br/jobs/search/?q=${cargo}&where=${loc}&format=rss`,
-      `https://www.monster.com.br/jobs/search/?q=${cargo}&format=rss`,
-    ];
-    for (const url of urls) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)', Accept: 'application/rss+xml, text/xml' },
-          signal: AbortSignal.timeout(5000),
-        });
-        if (!res.ok) continue;
-        const xml = await res.text();
-        const items = parseRSSItems(xml);
-        if (!items.length) continue;
-        return items.slice(0, 15).map(item => {
-          const parsed = splitTitleCompany(item.title);
-          return {
-            title: parsed.title,
-            company: item.company || parsed.company || 'Empresa',
-            location: profile.cidade || 'Brasil',
-            snippet: item.description,
-            salary: '',
-            link: item.link,
-            _source: 'monster_br',
-          };
-        });
-      } catch(e) { continue; }
-    }
-    return [];
-  } catch(e) {
-    console.warn('fetchMonsterBRJobs error:', e.message);
-    return [];
-  }
-}
-
-// ── FONTE 15: GLASSDOOR BR RSS ────────────────────────────────────────────────
-async function fetchGlassdoorBRJobs(profile) {
-  try {
-    const cargo = encodeURIComponent(profile.cargo_desejado || '');
-    const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
-    const loc = isRemoto ? 'Brasil' : encodeURIComponent(profile.cidade);
-    const urls = [
-      `https://www.glassdoor.com.br/Vagas/${loc}-vagas-SRCH_IL.0,${loc.length}_IS_KO${loc.length+1},${loc.length+1+(profile.cargo_desejado||'').length}.htm?format=rss`,
-      `https://www.glassdoor.com.br/Job/jobs.htm?suggestCount=0&suggestChosen=false&clickSource=searchBtn&typedKeyword=${cargo}&locT=N&format=rss`,
-      `https://www.glassdoor.com/Job/jobs.htm?suggestCount=0&suggestChosen=false&typedKeyword=${cargo}&locT=N&locId=178&format=rss`, // Brasil locId=178
-    ];
-    for (const url of urls) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)', Accept: 'application/rss+xml, text/xml' },
-          signal: AbortSignal.timeout(5000),
-        });
-        if (!res.ok) continue;
-        const xml = await res.text();
-        const items = parseRSSItems(xml);
-        if (!items.length) continue;
-        return items.slice(0, 12).map(item => {
-          const parsed = splitTitleCompany(item.title);
-          return {
-            title: parsed.title,
-            company: item.company || parsed.company || 'Empresa',
-            location: profile.cidade || 'Brasil',
-            snippet: item.description,
-            salary: '',
-            link: item.link,
-            _source: 'glassdoor',
-          };
-        });
-      } catch(e) { continue; }
-    }
-    return [];
-  } catch(e) {
-    console.warn('fetchGlassdoorBRJobs error:', e.message);
-    return [];
-  }
-}
-
-// ── FONTE 16: BNE (bne.com.br) ───────────────────────────────────────────────
-async function fetchBNEJobs(profile) {
-  try {
-    const cargo = encodeURIComponent(profile.cargo_desejado || '');
-    const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
-    const cidade = isRemoto ? '' : encodeURIComponent(profile.cidade);
-    const urls = [
-      `https://www.bne.com.br/vagas-de-emprego/${encodeURIComponent((profile.cargo_desejado||'').toLowerCase().replace(/\s+/g,'-'))}.rss`,
-      `https://www.bne.com.br/vagas-de-emprego.rss?q=${cargo}&l=${cidade}`,
-      `https://www.bne.com.br/rss/vagas?q=${cargo}`,
-    ];
-    for (const url of urls) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)', Accept: 'application/rss+xml, text/xml' },
-          signal: AbortSignal.timeout(5000),
-        });
-        if (!res.ok) continue;
-        const xml = await res.text();
-        const items = parseRSSItems(xml);
-        if (!items.length) continue;
-        return items.slice(0, 12).map(item => {
-          const parsed = splitTitleCompany(item.title);
-          return {
-            title: parsed.title,
-            company: item.company || parsed.company || 'Empresa',
-            location: profile.cidade || 'Brasil',
-            snippet: item.description,
-            salary: '',
-            link: item.link,
-            _source: 'bne',
-          };
-        });
-      } catch(e) { continue; }
-    }
-    return [];
-  } catch(e) {
-    console.warn('fetchBNEJobs error:', e.message);
-    return [];
-  }
-}
 
 // ── FONTE 17: CATHO (endpoints internos + RSS) ────────────────────────────────
 async function fetchCathoJobs(profile) {
@@ -1101,47 +807,6 @@ async function fetchCathoJobs(profile) {
   }
 }
 
-// ── FONTE 18: JORA BRASIL RSS ─────────────────────────────────────────────────
-async function fetchJoraJobs(profile) {
-  try {
-    const cargo = encodeURIComponent(profile.cargo_desejado || '');
-    const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
-    const loc = isRemoto ? '' : encodeURIComponent(profile.cidade);
-    const urls = [
-      `https://br.jora.com/jobs?q=${cargo}&l=${loc}&format=rss`,
-      `https://br.jora.com/jobs/rss?q=${cargo}&l=${loc}`,
-      `https://br.jora.com/jobs?q=${cargo}&format=rss`,
-    ];
-    for (const url of urls) {
-      try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)', Accept: 'application/rss+xml, text/xml' },
-          signal: AbortSignal.timeout(5000),
-        });
-        if (!res.ok) continue;
-        const xml = await res.text();
-        const items = parseRSSItems(xml);
-        if (!items.length) continue;
-        return items.slice(0, 15).map(item => {
-          const parsed = splitTitleCompany(item.title);
-          return {
-            title: parsed.title,
-            company: item.company || parsed.company || 'Empresa',
-            location: profile.cidade || 'Brasil',
-            snippet: item.description,
-            salary: '',
-            link: item.link,
-            _source: 'jora',
-          };
-        });
-      } catch(e) { continue; }
-    }
-    return [];
-  } catch(e) {
-    console.warn('fetchJoraJobs error:', e.message);
-    return [];
-  }
-}
 
 // ── FONTE 20: JSEARCH / RAPIDAPI (agrega LinkedIn, Indeed, Glassdoor) ────────
 async function fetchJSearchJobs(profile) {
@@ -1518,79 +1183,55 @@ async function processUserAlert(profile, options = {}) {
   const effectiveProfile = { ...profile, frequencia: effectiveFreq };
 
   // Busca vagas de todas as fontes em paralelo
-  const [jooble, indeed, remotive, adzuna, serp, empregos, sine, vagasCom, infojobs, remoteok, arbeitnow, themuse, trampos, monster, glassdoor, bne, catho, jora, talentCom, jsearch, gupy] = await Promise.allSettled([
-    fetchJoobleJobs(profile),
-    fetchIndeedJobs(profile),
-    fetchRemotiveJobs(profile),
-    fetchAdzunaJobs(profile),
+  const [gupy, greenhouse, lever, serp, jsearch, adzuna, jooble, vagasCom, infojobs, trampos, catho, talentCom, remotive] = await Promise.allSettled([
+    fetchGupyJobs(profile),
+    fetchGreenhouseBRJobs(profile),
+    fetchLeverBRJobs(profile),
     fetchSerpApiJobs(profile),
-    fetchEmpregosBRJobs(profile),
-    fetchTrabalhaBrasilJobs(profile),
+    fetchJSearchJobs(profile),
+    fetchAdzunaJobs(profile),
+    fetchJoobleJobs(profile),
     fetchVagasComJobs(profile),
     fetchInfoJobsJobs(profile),
-    fetchRemoteOkJobs(profile),
-    fetchArbeitnowJobs(profile),
-    fetchTheMuseJobs(profile),
     fetchTramposJobs(profile),
-    fetchMonsterBRJobs(profile),
-    fetchGlassdoorBRJobs(profile),
-    fetchBNEJobs(profile),
     fetchCathoJobs(profile),
-    fetchJoraJobs(profile),
     fetchTalentComJobs(profile),
-    fetchJSearchJobs(profile),
-    fetchGupyJobs(profile),
+    fetchRemotiveJobs(profile),
   ]);
   const settled = (r) => r.status === 'fulfilled' ? (r.value || []) : [];
   const sourceCounts = {
     gupy: settled(gupy).length,
-    jsearch: settled(jsearch).length,
+    greenhouse: settled(greenhouse).length,
+    lever: settled(lever).length,
     serp: settled(serp).length,
+    jsearch: settled(jsearch).length,
     adzuna: settled(adzuna).length,
     jooble: settled(jooble).length,
-    indeed: settled(indeed).length,
-    empregos: settled(empregos).length,
-    sine: settled(sine).length,
     vagasCom: settled(vagasCom).length,
     infojobs: settled(infojobs).length,
     trampos: settled(trampos).length,
-    monster: settled(monster).length,
-    glassdoor: settled(glassdoor).length,
-    bne: settled(bne).length,
     catho: settled(catho).length,
-    jora: settled(jora).length,
     talentCom: settled(talentCom).length,
-    remoteok: settled(remoteok).length,
     remotive: settled(remotive).length,
-    arbeitnow: settled(arbeitnow).length,
-    themuse: settled(themuse).length,
   };
   const rawCount = Object.values(sourceCounts).reduce((sum, count) => sum + count, 0);
   let jobs = deduplicateJobs([
-    ...settled(gupy),     // Gupy primeiro — ATS brasileiro, vagas nacionais confiáveis
-    ...settled(serp),     // Google Jobs em PT-BR
-    ...settled(jsearch),  // LinkedIn/Indeed/Glassdoor via JSearch
+    ...settled(gupy),       // ATS brasileiro — vagas nacionais confiáveis
+    ...settled(greenhouse), // Greenhouse: Nubank, VTEX, iFood, Mercado Livre
+    ...settled(lever),      // Lever: Hotmart, Creditas, QuintoAndar
+    ...settled(serp),       // Google Jobs em PT-BR
+    ...settled(jsearch),    // LinkedIn/Indeed/Glassdoor via JSearch
     ...settled(vagasCom),
     ...settled(infojobs),
     ...settled(catho),
     ...settled(trampos),
-    ...settled(sine),
-    ...settled(empregos),
-    ...settled(jooble),
-    ...settled(indeed),
     ...settled(adzuna),
-    ...settled(monster),
-    ...settled(glassdoor),
-    ...settled(bne),
-    ...settled(jora),
+    ...settled(jooble),
     ...settled(talentCom),
     ...settled(remotive),
-    ...settled(remoteok),
-    ...settled(arbeitnow),
-    ...settled(themuse),
   ]);
   const dedupCount = jobs.length;
-  console.log(`Sources: gupy=${settled(gupy).length} serp=${settled(serp).length} jsearch=${settled(jsearch).length} adzuna=${settled(adzuna).length} vagasCom=${settled(vagasCom).length} infojobs=${settled(infojobs).length} catho=${settled(catho).length} trampos=${settled(trampos).length} sine=${settled(sine).length} empregos=${settled(empregos).length} jooble=${settled(jooble).length} indeed=${settled(indeed).length} monster=${settled(monster).length} bne=${settled(bne).length} jora=${settled(jora).length} talentCom=${settled(talentCom).length} remoteok=${settled(remoteok).length} remotive=${settled(remotive).length} arbeitnow=${settled(arbeitnow).length} themuse=${settled(themuse).length} → dedup=${jobs.length}`);
+  console.log(`Sources: gupy=${settled(gupy).length} greenhouse=${settled(greenhouse).length} lever=${settled(lever).length} serp=${settled(serp).length} jsearch=${settled(jsearch).length} adzuna=${settled(adzuna).length} jooble=${settled(jooble).length} vagasCom=${settled(vagasCom).length} infojobs=${settled(infojobs).length} trampos=${settled(trampos).length} catho=${settled(catho).length} talentCom=${settled(talentCom).length} remotive=${settled(remotive).length} → dedup=${jobs.length}`);
 
   // Remove já enviadas (exceto em modo teste)
   if (!isTest) {
@@ -1654,8 +1295,9 @@ async function processUserAlert(profile, options = {}) {
     };
   }
 
-  // Volume máximo: 10 vagas por envio
-  jobs = jobs.slice(0, 10);
+  // Volume por plano: free=5, starter=15, pro=sem limite
+  const maxJobs = ent.max_jobs_per_delivery ?? jobs.length;
+  jobs = jobs.slice(0, maxJobs);
 
   // Busca email atual e nome do usuário diretamente do auth (evita email desatualizado no perfil)
   let userName = email.split('@')[0];
@@ -1818,8 +1460,8 @@ export default async function handler(req, res) {
         const lastManual = cacheData?.[0]?.last_manual_at;
         if (lastManual) {
           const elapsed = Date.now() - new Date(lastManual).getTime();
-          if (elapsed < 60 * 60 * 1000) {
-            const waitMin = Math.ceil((60 * 60 * 1000 - elapsed) / 60000);
+          if (elapsed < 15 * 60 * 1000) {
+            const waitMin = Math.ceil((15 * 60 * 1000 - elapsed) / 60000);
             return res.status(429).json({ error: 'rate_limit', wait_minutes: waitMin });
           }
         }
