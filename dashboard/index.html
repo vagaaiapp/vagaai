@@ -4037,6 +4037,8 @@ var _alertExtended  = {};     // from localStorage (extended prefs)
 var _alertHistory   = [];     // job_alert_history (envios reais) — alimenta métricas
 var _alertCache     = null;   // job_alert_cache — vagas do último envio para o dashboard
 var _alJobFilter    = 'todas';
+var _alJobPage      = 0;      // página atual da grade (0-based)
+var AL_JOBS_PER_PAGE = 8;
 var _alJobFeedback  = {};     // { hash: 'dismissed'|'saved' }
 var _alDemandSending = false;
 var _alFbTargetHash = null;   // job hash for feedback popup
@@ -4471,9 +4473,17 @@ function _alLive(msg) {
 /* ── Job filter ─────────────────────────────────────────────────── */
 function setAlJobFilter(val, btn) {
   _alJobFilter = val;
+  _alJobPage = 0;
   document.querySelectorAll('.al-qf').forEach(function(b){ b.classList.remove('on'); });
   if (btn) btn.classList.add('on');
   renderAlertJobsGrid();
+}
+
+function setAlJobPage(page) {
+  _alJobPage = page;
+  renderAlertJobsGrid();
+  var grid = document.getElementById('alJobsGrid');
+  if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /* ── Job feedback ───────────────────────────────────────────────── */
@@ -4598,17 +4608,20 @@ function renderAlertJobsGrid() {
   var cachedAt = _alertCache && _alertCache.cached_at ? new Date(_alertCache.cached_at) : null;
   var timeLabel = cachedAt ? ('Atualizado às ' + cachedAt.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})) : '';
 
+  // Paginação
+  var totalPages = Math.ceil(filtered.length / AL_JOBS_PER_PAGE);
+  if (_alJobPage >= totalPages) _alJobPage = Math.max(0, totalPages - 1);
+  var pageStart = _alJobPage * AL_JOBS_PER_PAGE;
+  var pageJobs  = filtered.slice(pageStart, pageStart + AL_JOBS_PER_PAGE);
+
   var html = '<div class="al-jobs-grid">';
-  filtered.forEach(function(j) {
+  pageJobs.forEach(function(j) {
     var company = String(j.company || 'Empresa');
-    var initial = (company[0] || 'E').toUpperCase();
-    var color = colors[Math.abs((company.charCodeAt(0) || 69)) % colors.length];
     var score = j._score || 0;
     var scoreClass = score >= 80 ? '' : 'warn';
-    var scoreLabel = score >= 80 ? score + '%' : score + '%';
     var analyzeUrl = '/app?vaga=' + encodeURIComponent(j.link || '');
     html += '<div class="al-job-card">' +
-      '<div class="al-job-match ' + scoreClass + '">' + scoreLabel + '</div>' +
+      '<div class="al-job-match ' + scoreClass + '">' + score + '%</div>' +
       '<div class="al-job-company">' + _esc(company) + '</div>' +
       '<div class="al-job-title">' + _esc(j.title || '') + '</div>' +
       '<div class="al-job-location">📍 ' + _esc(j.location || 'Brasil') +
@@ -4620,7 +4633,28 @@ function renderAlertJobsGrid() {
     '</div>';
   });
   html += '</div>';
-  if (timeLabel) html += '<div style="padding:8px 18px 12px;font-size:11px;color:var(--t3)">' + timeLabel + ' · ' + allJobs.length + ' vagas encontradas</div>';
+
+  // Rodapé: info + paginação
+  var footer = '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px 14px;flex-wrap:wrap;gap:8px">';
+  footer += '<div style="font-size:11px;color:var(--t3)">' + (timeLabel ? timeLabel + ' · ' : '') + filtered.length + ' vaga' + (filtered.length !== 1 ? 's' : '') + '</div>';
+  if (totalPages > 1) {
+    footer += '<div style="display:flex;align-items:center;gap:4px">';
+    // Anterior
+    footer += '<button onclick="setAlJobPage(' + (_alJobPage - 1) + ')" ' + (_alJobPage === 0 ? 'disabled' : '') +
+      ' style="border:1px solid var(--border);background:var(--bg-card);color:var(--t2);border-radius:7px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit" ' +
+      (_alJobPage === 0 ? 'style="opacity:.4;cursor:default"' : '') + '>‹</button>';
+    // Páginas
+    for (var pi = 0; pi < totalPages; pi++) {
+      var active = pi === _alJobPage;
+      footer += '<button onclick="setAlJobPage(' + pi + ')" style="border:1px solid ' + (active ? 'var(--gb-emerald)' : 'var(--border)') + ';background:' + (active ? 'var(--gb-emerald)' : 'var(--bg-card)') + ';color:' + (active ? '#fff' : 'var(--t2)') + ';border-radius:7px;padding:4px 9px;font-size:12px;font-weight:' + (active ? '700' : '400') + ';cursor:pointer;font-family:inherit">' + (pi + 1) + '</button>';
+    }
+    // Próxima
+    footer += '<button onclick="setAlJobPage(' + (_alJobPage + 1) + ')" ' + (_alJobPage >= totalPages - 1 ? 'disabled' : '') +
+      ' style="border:1px solid var(--border);background:var(--bg-card);color:var(--t2);border-radius:7px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit">›</button>';
+    footer += '</div>';
+  }
+  footer += '</div>';
+  html += footer;
   grid.innerHTML = html;
 }
 
