@@ -1,555 +1,1931 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
-<!-- Google Analytics 4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XCT8K58VWF"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-XCT8K58VWF');</script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VagaAI — Passe pelo filtro. Chegue mais forte na entrevista.</title>
-<meta name="description" content="Cole a vaga e seu currículo. O VagaAI mostra onde você está perdendo pontos, otimiza seu CV para ATS e prepara você para a entrevista com um briefing da empresa. 1 análise grátis, sem cadastro.">
-<meta name="robots" content="index, follow">
-<link rel="canonical" href="https://www.vagaai.app.br/">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<!-- Open Graph -->
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://www.vagaai.app.br/">
-<meta property="og:title" content="VagaAI — Passe pelo filtro. Chegue mais forte na entrevista.">
-<meta property="og:description" content="Análise ATS + briefing da empresa em segundos. Cole a vaga e seu currículo e descubra onde você está perdendo pontos. 1 análise grátis, sem cadastro.">
-<meta property="og:image" content="https://www.vagaai.app.br/og.svg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:locale" content="pt_BR">
-<meta property="og:site_name" content="VagaAI">
-<!-- Twitter/X -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="VagaAI — Passe pelo filtro. Chegue mais forte na entrevista.">
-<meta name="twitter:description" content="Análise ATS + briefing da empresa em segundos. 1 análise grátis, sem cadastro.">
-<meta name="twitter:image" content="https://www.vagaai.app.br/og.svg">
-<!-- Vercel Analytics -->
-<script defer src="/_vercel/insights/script.js"></script>
-<!-- Supabase (para auth check nos planos) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root { --bg: #080808; --surface: #111111; --surface2: #181818; --surface3: #202020; --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.11); --text: #f0ece4; --muted: rgba(240,236,228,0.5); --hint: rgba(240,236,228,0.28); --green: #3ecf8e; --green-dim: rgba(62,207,142,0.1); --green-border: rgba(62,207,142,0.22); --green-glow: rgba(62,207,142,0.15); --amber: #f59e0b; --red: #f87171; --blue: #60a5fa; }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.7; overflow-x: hidden; }
-body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events: none; z-index: 0; opacity: .5; }
-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 58px; background: rgba(8,8,8,0.82); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; }
-.nav-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
-.nav-logo-mark { font-family: 'Lora', serif; font-size: 19px; font-style: italic; color: var(--green); }
-.nav-logo-name { font-size: 15px; font-weight: 700; letter-spacing: -.01em; color: var(--text); }
-.nav-logo-badge { font-size: 9px; background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); padding: 1px 7px; border-radius: 20px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
-.nav-links { display: flex; align-items: center; gap: 28px; }
-.nav-links a { font-size: 13px; font-weight: 500; color: var(--muted); text-decoration: none; transition: color .15s; }
-.nav-links a:hover { color: var(--text); }
-.nav-actions { display: flex; align-items: center; gap: 10px; }
-.btn-ghost { font-size: 13px; font-weight: 600; padding: 7px 16px; background: transparent; border: 1px solid var(--border2); color: var(--muted); border-radius: 8px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .15s; }
-.btn-ghost:hover { border-color: rgba(255,255,255,.2); color: var(--text); }
-.btn-primary { font-size: 13px; font-weight: 700; padding: 8px 20px; background: var(--green); color: #080808; border: none; border-radius: 8px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .15s; letter-spacing: .01em; }
-.btn-primary:hover { opacity: .88; transform: translateY(-1px); }
-@media(max-width:680px) { .nav-links { display: none; } }
-.hero { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 4rem; max-width: 1160px; margin: 0 auto; padding: 8rem 2rem 5rem; position: relative; z-index: 1; }
-@media(max-width:900px) { .hero { grid-template-columns: 1fr; padding: 7rem 1.5rem 4rem; } .hero-visual { display: none; } }
-.hero::before { content: ''; position: absolute; top: 10%; left: -10%; width: 600px; height: 600px; background: radial-gradient(ellipse, rgba(62,207,142,0.07) 0%, transparent 70%); pointer-events: none; }
-.hero-eyebrow { display: inline-flex; align-items: center; gap: 7px; background: var(--surface); border: 1px solid var(--border2); border-radius: 20px; padding: 5px 14px; font-size: 12px; color: var(--muted); margin-bottom: 1.4rem; letter-spacing: .02em; }
-.eyebrow-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.35;} }
-.hero-headline { font-family: 'Lora', serif; font-size: clamp(38px, 5.5vw, 62px); font-weight: 700; line-height: 1.08; letter-spacing: -.02em; margin-bottom: 1.2rem; }
-.hero-headline em { font-style: italic; color: var(--green); }
-.hero-headline span { display: block; }
-.hero-sub { font-size: 17px; color: var(--muted); line-height: 1.75; max-width: 480px; margin-bottom: 2.2rem; }
-.hero-cta-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 2.4rem; }
-.btn-hero { display: inline-flex; align-items: center; gap: 9px; padding: 15px 34px; background: var(--green); color: #080808; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; letter-spacing: .01em; transition: all .18s; box-shadow: 0 0 28px rgba(62,207,142,.18); }
-.btn-hero:hover { opacity: .88; transform: translateY(-2px); box-shadow: 0 0 40px rgba(62,207,142,.26); }
-.btn-hero-ghost { font-size: 14px; font-weight: 600; color: var(--muted); background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 5px; transition: color .15s; }
-.btn-hero-ghost:hover { color: var(--text); }
-.hero-trust { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-.trust-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--hint); }
-.trust-dot { width: 5px; height: 5px; background: var(--green); border-radius: 50%; }
-.stats-bar { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1.8rem 2rem; position: relative; z-index: 1; }
-.stats-bar-inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center; }
-@media(max-width:600px) { .stats-bar-inner { grid-template-columns: repeat(2,1fr); } }
-.stat-n { font-family: 'Lora', serif; font-size: 32px; font-weight: 600; color: var(--text); line-height: 1; }
-.stat-n em { font-style: normal; color: var(--green); }
-.stat-l { font-size: 11px; color: var(--hint); margin-top: 4px; letter-spacing: .04em; }
-section { position: relative; z-index: 1; }
-.container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
-.sec-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--green); margin-bottom: .8rem; }
-.sec-title { font-family: 'Lora', serif; font-size: clamp(30px, 4.5vw, 48px); font-weight: 700; line-height: 1.12; letter-spacing: -.02em; margin-bottom: 1rem; }
-.sec-title em { font-style: italic; color: var(--green); }
-.sec-sub { font-size: 17px; color: var(--muted); line-height: 1.75; max-width: 540px; }
-.sec-center { text-align: center; }
-.sec-center .sec-sub { margin: 0 auto; }
-.pain { padding: 6rem 0; }
-.pain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; margin-top: 3.5rem; }
-@media(max-width:768px) { .pain-grid { grid-template-columns: 1fr; } }
-.pain-callout { background: var(--surface); border: 1px solid var(--border2); border-left: 3px solid var(--green); border-radius: 12px; padding: 1.4rem; margin-bottom: 1.2rem; }
-.pain-callout h4 { font-size: 14px; font-weight: 700; margin-bottom: .5rem; display: flex; align-items: center; gap: 8px; }
-.pain-callout h4 span { font-family: monospace; font-size: 12px; color: var(--green); }
-.pain-callout p { font-size: 14px; color: var(--muted); line-height: 1.7; }
-.pain-callout strong { color: var(--text); }
-.pain-sub-note { font-size: 15px; color: var(--muted); line-height: 1.75; margin-top: 1rem; }
-.pain-cards { display: flex; flex-direction: column; gap: 12px; }
-.pain-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.3rem; display: flex; gap: 1rem; align-items: flex-start; transition: border-color .2s; }
-.pain-card:hover { border-color: var(--border2); }
-.pain-card-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-.pain-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
-.pain-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
-.how { padding: 6rem 0; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 3.5rem; position: relative; }
-@media(max-width:720px) { .steps { grid-template-columns: 1fr; gap: 2rem; } }
-.steps::before { content: ''; position: absolute; top: 26px; left: calc(16.6% + 18px); right: calc(16.6% + 18px); height: 1px; background: linear-gradient(90deg, transparent, var(--border2) 20%, var(--border2) 80%, transparent); }
-@media(max-width:720px) { .steps::before { display: none; } }
-.step { padding: 0 2rem; text-align: center; }
-.step-num { width: 52px; height: 52px; border-radius: 50%; background: var(--bg); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-family: 'Lora', serif; font-size: 18px; font-weight: 600; margin: 0 auto 1.2rem; position: relative; }
-.step:first-child .step-num { background: var(--green); border-color: var(--green); color: #080808; }
-.step h3 { font-size: 15px; font-weight: 700; margin-bottom: .5rem; }
-.step p { font-size: 14px; color: var(--muted); line-height: 1.65; }
-.features { padding: 6rem 0; }
-.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-top: 3.5rem; }
-@media(max-width:768px) { .features-grid { grid-template-columns: 1fr; } }
-.feat-card { background: var(--bg); padding: 1.8rem; transition: background .2s; }
-.feat-card:hover { background: var(--surface); }
-.feat-icon { width: 42px; height: 42px; border-radius: 10px; background: var(--green-dim); border: 1px solid var(--green-border); display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 1rem; }
-.feat-card h3 { font-size: 15px; font-weight: 700; margin-bottom: .5rem; }
-.feat-card p { font-size: 13px; color: var(--muted); line-height: 1.65; }
-.feat-badge { display: inline-block; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; margin-top: 8px; background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); letter-spacing: .04em; text-transform: uppercase; }
-.diff { padding: 6rem 0; }
-.diff-inner { background: var(--surface); border: 1px solid var(--border2); border-radius: 20px; padding: 3.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; position: relative; overflow: hidden; }
-@media(max-width:768px) { .diff-inner { grid-template-columns: 1fr; padding: 2rem; } }
-.diff-inner::before { content: ''; position: absolute; top: -60px; right: -60px; width: 300px; height: 300px; background: radial-gradient(ellipse, rgba(62,207,142,.08) 0%, transparent 70%); pointer-events: none; }
-.diff-label { display: inline-flex; align-items: center; gap: 6px; background: var(--green-dim); border: 1px solid var(--green-border); border-radius: 20px; padding: 4px 12px; font-size: 10px; font-weight: 700; color: var(--green); letter-spacing: .05em; text-transform: uppercase; margin-bottom: 1rem; }
-.diff-title { font-family: 'Lora', serif; font-size: 34px; font-weight: 700; line-height: 1.15; margin-bottom: 1rem; }
-.diff-title em { font-style: italic; color: var(--green); }
-.diff-desc { font-size: 15px; color: var(--muted); line-height: 1.75; margin-bottom: 1.5rem; }
-.diff-checks { display: flex; flex-direction: column; gap: 10px; }
-.diff-check { display: flex; align-items: flex-start; gap: 10px; }
-.diff-check-icon { width: 20px; height: 20px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #080808; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
-.diff-check p { font-size: 14px; color: var(--muted); line-height: 1.6; }
-.diff-check p strong { color: var(--text); }
-.diff-right { display: flex; flex-direction: column; gap: 12px; }
-.diff-tag-row { display: flex; flex-direction: column; gap: 10px; }
-.diff-tag-item { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; }
-.diff-tag-item span { font-size: 12px; color: var(--muted); }
-.diff-tag-badge { font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 20px; }
-.tg { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
-.proof { padding: 6rem 0; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-.proof-counter { display: flex; justify-content: center; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 3rem; }
-.proof-counter-item { text-align: center; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 2rem; }
-.proof-counter-n { font-family: 'Lora', serif; font-size: 28px; font-weight: 600; color: var(--green); }
-.proof-counter-l { font-size: 11px; color: var(--hint); margin-top: 2px; }
-.testimonials { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
-@media(max-width:900px) { .testimonials { grid-template-columns: 1fr; } }
-.testi { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; transition: border-color .2s, transform .2s; }
-.testi:hover { border-color: var(--border2); transform: translateY(-2px); }
-.testi-stars { color: var(--amber); font-size: 12px; margin-bottom: .8rem; letter-spacing: 2px; }
-.testi-text { font-size: 14px; color: var(--muted); line-height: 1.75; margin-bottom: 1.2rem; font-style: italic; }
-.testi-text strong { color: var(--text); font-style: normal; }
-.testi-author { display: flex; align-items: center; gap: 10px; }
-.testi-av { width: 36px; height: 36px; border-radius: 50%; background: var(--green-dim); border: 1px solid var(--green-border); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--green); flex-shrink: 0; }
-.testi-name { font-size: 13px; font-weight: 600; color: var(--text); }
-.testi-role { font-size: 12px; color: var(--hint); }
-.testi-tag { font-size: 10px; font-weight: 700; color: var(--green); margin-top: 1px; }
-.pricing { padding: 6rem 0; }
-.pricing-note-bar { display: flex; justify-content: center; margin-top: 1.5rem; margin-bottom: 3.5rem; }
-.pricing-note-bar-inner { background: var(--surface); border: 1px solid var(--border); border-radius: 30px; padding: 8px 22px; font-size: 12px; color: var(--hint); display: flex; align-items: center; gap: 8px; }
-.pricing-note-bar-inner span { color: var(--green); font-weight: 700; }
-.plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; align-items: start; max-width: 900px; margin-left: auto; margin-right: auto; }
-@media(max-width:860px) { .plans { grid-template-columns: 1fr 1fr; } }
-@media(max-width:580px) { .plans { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; } }
-.plan { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.6rem; position: relative; overflow: hidden; }
-.plan.popular { border: 2px solid var(--green); background: linear-gradient(135deg, rgba(62,207,142,.04) 0%, var(--surface) 60%); }
-.plan-popular-badge { position: absolute; top: -1px; left: 50%; transform: translateX(-50%); background: var(--green); color: #080808; font-size: 9px; font-weight: 800; padding: 3px 14px; letter-spacing: .06em; text-transform: uppercase; border-radius: 0 0 8px 8px; }
-.plan-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--hint); margin-bottom: .4rem; padding-top: .2rem; }
-.plan-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: .4rem; }
-.plan-price { font-family: 'Lora', serif; font-size: 36px; font-weight: 700; line-height: 1; color: var(--text); margin-bottom: .2rem; }
-.plan-price small { font-size: 14px; font-weight: 400; color: var(--hint); font-family: 'Inter', sans-serif; }
-.plan-per-unit { font-size: 12px; color: var(--green); font-weight: 600; margin-bottom: .5rem; }
-.plan-desc { font-size: 13px; color: var(--muted); margin-bottom: 1.2rem; line-height: 1.55; }
-.plan-divider { height: 1px; background: var(--border); margin: 1rem 0; }
-.plan-feats { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.4rem; }
-.pf { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--muted); }
-.pf::before { content: '✓'; color: var(--green); font-weight: 700; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
-.pf.no { color: rgba(240,236,228,.2); }
-.pf.no::before { content: '—'; color: rgba(240,236,228,.15); }
-.plan-cta { width: 100%; padding: 12px; border-radius: 9px; font-size: 14px; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; transition: all .15s; letter-spacing: .01em; }
-.plan-cta-ghost { background: transparent; border: 1px solid var(--border2); color: var(--muted); }
-.plan-cta-ghost:hover { border-color: rgba(255,255,255,.2); color: var(--text); }
-.plan-cta-primary { background: var(--green); border: none; color: #080808; }
-.plan-cta-primary:hover { opacity: .88; }
-.plan-note { font-size: 10px; color: var(--hint); text-align: center; margin-top: .6rem; }
-.pricing-bottom-note { text-align: center; margin-top: 1.8rem; font-size: 12px; color: var(--hint); display: flex; align-items: center; justify-content: center; gap: 10px; }
-.pricing-bottom-note span { color: var(--border2); }
-.faq { padding: 6rem 0; }
-.faq-list { margin-top: 3rem; max-width: 720px; margin-left: auto; margin-right: auto; }
-.faq-item { border-bottom: 1px solid var(--border); }
-.faq-q { width: 100%; text-align: left; background: none; border: none; padding: 1.1rem 0; font-size: 15px; font-weight: 500; color: var(--text); font-family: 'Inter', sans-serif; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 1rem; transition: color .15s; }
-.faq-q:hover { color: var(--green); }
-.faq-icon { width: 20px; height: 20px; border: 1px solid var(--border2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--hint); flex-shrink: 0; transition: transform .2s; }
-.faq-item.open .faq-icon { transform: rotate(45deg); color: var(--green); border-color: var(--green-border); }
-.faq-a { font-size: 15px; color: var(--muted); line-height: 1.8; max-height: 0; overflow: hidden; transition: max-height .3s ease, padding .3s ease; }
-.faq-item.open .faq-a { max-height: 200px; padding-bottom: 1rem; }
-.final-cta { padding: 7rem 0; background: var(--surface); border-top: 1px solid var(--border); text-align: center; position: relative; overflow: hidden; }
-.final-cta::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 600px; height: 300px; background: radial-gradient(ellipse, rgba(62,207,142,.07) 0%, transparent 70%); pointer-events: none; }
-.final-cta-title { font-family: 'Lora', serif; font-size: clamp(32px, 4.5vw, 54px); font-weight: 700; line-height: 1.12; letter-spacing: -.02em; margin-bottom: 1rem; position: relative; }
-.final-cta-title em { font-style: italic; color: var(--green); }
-.final-cta-sub { font-size: 17px; color: var(--muted); margin-bottom: 2.2rem; position: relative; }
-.final-cta-actions { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; position: relative; }
-.final-note { font-size: 11px; color: var(--hint); margin-top: 1.2rem; position: relative; }
-footer { background: var(--bg); border-top: 1px solid var(--border); padding: 3rem 2rem; position: relative; z-index: 1; }
-.footer-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; }
-.footer-brand { display: flex; align-items: center; gap: 8px; }
-.footer-brand-name { font-size: 14px; font-weight: 700; }
-.footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
-.footer-links a { font-size: 12px; color: var(--hint); text-decoration: none; transition: color .15s; }
-.footer-links a:hover { color: var(--muted); }
-.footer-copy { font-size: 11px; color: var(--hint); }
-.reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
-.reveal.visible { opacity: 1; transform: translateY(0); }
-.reveal-delay-1 { transition-delay: .1s; }
-.reveal-delay-2 { transition-delay: .2s; }
-.reveal-delay-3 { transition-delay: .3s; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Receba vagas do seu interesse, adapte seu currículo para cada oportunidade e avance na seleção com mais clareza e preparo.">
+  <title>VagaAI | Encontre vagas. Fortaleça seu currículo. Avance na seleção.</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&display=swap" rel="stylesheet">
+  <script>
+    (function(){
+      var s=localStorage.getItem('vagaai-theme');
+      var p=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';
+      document.documentElement.dataset.theme=s||p;
+    })();
+  </script>
+  <style>
+    /* ===== VARIABLES ===== */
+    :root,[data-theme="dark"]{
+      --bg:#080808;--bg-2:#0c0c0c;--panel:#111;--panel-2:#181818;--panel-3:#222;
+      --line:rgba(255,255,255,.07);--line-2:rgba(255,255,255,.13);--line-green:rgba(62,207,142,.22);
+      --ink:#f0ece4;--copy:rgba(240,236,228,.55);--muted:rgba(240,236,228,.28);
+      --green:#3ecf8e;--green-2:#28b97c;--green-dim:rgba(62,207,142,.09);--green-glow:rgba(62,207,142,.16);
+      --amber:#f59e0b;--red:#f87171;
+      --shadow:0 32px 90px rgba(0,0,0,.45);--shadow-sm:0 6px 28px rgba(0,0,0,.35);
+      --nav-bg:rgba(8,8,8,.84);--hero-bg:#080808;--noise:.018;--max:1180px;
+      --text-xs:clamp(12px,.75vw,13px);
+      --text-sm:clamp(14px,.9vw,15px);
+      --text-base:clamp(16px,1vw,17px);
+      --text-lg:clamp(18px,1.3vw,21px);
+      --title-card:clamp(22px,2vw,28px);
+      --title-section:clamp(30px,3.2vw,46px);
+      --title-hero:clamp(36px,4vw,56px);
+      color-scheme:dark;
+    }
+    [data-theme="light"]{
+      --bg:#f3f8f4;--bg-2:#ebf4ef;--panel:#fff;--panel-2:#f0f8f3;--panel-3:#e4eee9;
+      --line:rgba(6,38,25,.08);--line-2:rgba(6,38,25,.15);--line-green:rgba(20,140,90,.28);
+      --ink:#09201a;--copy:rgba(9,32,26,.6);--muted:rgba(9,32,26,.38);
+      --green:#1a9e6e;--green-2:#138558;--green-dim:rgba(26,158,110,.1);--green-glow:rgba(26,158,110,.12);
+      --amber:#a06a05;--red:#b0281e;
+      --shadow:0 18px 60px rgba(6,38,25,.1);--shadow-sm:0 4px 18px rgba(6,38,25,.08);
+      --nav-bg:rgba(243,248,244,.93);--hero-bg:#eaf3ed;--noise:.01;
+      color-scheme:light;
+    }
 
-/* ===== HERO VISUAL MOCKUP ===== */
-.hero-visual { position: relative; }
-@media(min-width:901px) { .hero-visual { display: flex; align-items: center; justify-content: center; } }
-.hv-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 18px; overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04); animation: hv-float 7s ease-in-out infinite; width: 100%; max-width: 340px; }
-@keyframes hv-float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
-.hv-header { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 11px 16px; display: flex; align-items: center; gap: 10px; }
-.hv-dots { display: flex; gap: 5px; }
-.hv-dots span { width: 9px; height: 9px; border-radius: 50%; display: block; }
-.hv-dots span:nth-child(1) { background: #f87171; }
-.hv-dots span:nth-child(2) { background: #f59e0b; }
-.hv-dots span:nth-child(3) { background: #3ecf8e; }
-.hv-title { font-size: 11px; font-weight: 600; color: var(--hint); letter-spacing: .03em; }
-.hv-body { padding: 22px 20px 18px; }
-.hv-score-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 18px; }
-.hv-ring-wrap { position: relative; width: 96px; height: 96px; margin-bottom: 8px; }
-.hv-ring { width: 100%; height: 100%; }
-.hv-score-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.hv-score-n { font-family: 'Lora', serif; font-size: 26px; font-weight: 600; color: var(--text); line-height: 1; }
-.hv-score-l { font-size: 10px; color: var(--hint); }
-.hv-score-label { font-size: 9.5px; color: var(--hint); letter-spacing: .06em; text-transform: uppercase; font-weight: 700; }
-.hv-factors { display: flex; flex-direction: column; gap: 9px; margin-bottom: 16px; }
-.hv-factor { display: flex; align-items: center; gap: 8px; }
-.hv-fl { font-size: 10.5px; color: var(--muted); min-width: 106px; }
-.hv-bar { flex: 1; height: 4px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
-.hv-bar-fill { height: 100%; width: var(--w, 0%); background: linear-gradient(90deg, var(--green), rgba(62,207,142,.6)); border-radius: 99px; animation: bar-grow 1.4s cubic-bezier(.4,0,.2,1) both; }
-@keyframes bar-grow { from{width:0} to{width:var(--w,0%)} }
-.hv-fv { font-size: 10.5px; color: var(--green); font-weight: 700; min-width: 28px; text-align: right; }
-.hv-footer { display: flex; gap: 6px; flex-wrap: wrap; }
-.hv-tag { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
-.hv-tag-ok { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
-.hv-float { position: absolute; background: var(--surface2); border: 1px solid var(--border2); border-radius: 20px; padding: 7px 13px; font-size: 11px; font-weight: 600; color: var(--text); box-shadow: 0 8px 28px rgba(0,0,0,.35); white-space: nowrap; pointer-events: none; }
-.hv-float-1 { top: 10%; right: -6%; animation: hv-float 5.5s ease-in-out infinite; animation-delay: .8s; }
-.hv-float-2 { bottom: 16%; left: -6%; animation: hv-float 5.5s ease-in-out infinite; animation-delay: 1.6s; }
+    /* ===== BASE ===== */
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{
+      color:var(--ink);background:var(--bg);font-family:"Inter",sans-serif;
+      font-size:var(--text-base);line-height:1.65;overflow-x:hidden;text-rendering:optimizeLegibility;
+      transition:background .3s,color .3s;
+    }
+    body::before{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:100;opacity:var(--noise);
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    a{color:inherit}button{font:inherit;cursor:pointer}img{max-width:100%;display:block}
+    .container{width:min(var(--max),calc(100% - 48px));margin:auto}
+    .section{position:relative;padding:88px 0}
 
-/* ===== MOBILE NAV ===== */
-.nav-hamburger { display: none; flex-direction: column; gap: 4px; background: none; border: 1px solid var(--border2); border-radius: 7px; padding: 8px 9px; cursor: pointer; margin-left: 6px; }
-.nav-hamburger span { width: 18px; height: 2px; background: var(--muted); border-radius: 99px; transition: all .25s; display: block; }
-.nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-.nav-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-.nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
-@media(max-width:680px) { .nav-hamburger { display: flex; } .nav-actions .btn-ghost { display: none; } }
-.mobile-nav { display: none; position: fixed; top: 58px; left: 0; right: 0; background: var(--bg); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 99; padding: 1rem 1.5rem 1.5rem; flex-direction: column; gap: 2px; }
-.mobile-nav.open { display: flex; }
-.mobile-nav a { font-size: 15px; font-weight: 500; color: var(--muted); text-decoration: none; padding: 13px 0; border-bottom: 1px solid var(--border); transition: color .15s, padding-left .15s; display: block; }
-.mobile-nav a:last-of-type { border-bottom: none; }
-.mobile-nav a:hover { color: var(--text); padding-left: 4px; }
-.mobile-nav-cta { margin-top: .9rem; width: 100%; padding: 13px; background: var(--green); color: #080808; border: none; border-radius: 9px; font-size: 14px; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; transition: opacity .15s; }
-.mobile-nav-cta:hover { opacity: .88; }
-.mobile-nav-entrar { margin-top: .6rem; width: 100%; padding: 13px; background: transparent; color: var(--text); border: 1px solid var(--border2); border-radius: 9px; font-size: 14px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; transition: background .15s, border-color .15s; }
-.mobile-nav-entrar:hover { background: var(--surface2); border-color: var(--border2); }
+    /* ===== UTILITIES ===== */
+    .lora{font-family:"Lora",serif}
+    .green{color:var(--green)}.italic{font-style:italic}
+    .eyebrow{
+      display:inline-flex;align-items:center;gap:9px;
+      color:var(--green);font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+    }
+    .eyebrow::before{content:"";width:7px;height:7px;border-radius:2px;background:var(--green);box-shadow:0 0 16px var(--green-glow)}
+    .section-title{
+      max-width:820px;margin:17px auto 0;font-family:"Lora",serif;
+      font-size:var(--title-section);line-height:.98;letter-spacing:-.052em;text-wrap:balance;
+    }
+    .section-copy{max-width:630px;margin:20px auto 0;color:var(--copy);font-size:var(--text-base);line-height:1.72}
+    .center{text-align:center}
+    .icon{width:18px;height:18px;flex:0 0 auto}
 
-/* ===== MICRO-INTERACTIONS ===== */
-.nav-links a { position: relative; }
-.nav-links a::after { content: ''; position: absolute; bottom: -3px; left: 0; width: 0; height: 1px; background: var(--green); transition: width .22s ease; }
-.nav-links a:hover::after { width: 100%; }
-.step { transition: transform .22s ease; }
-.step:hover { transform: translateY(-5px); }
-.step-num { transition: border-color .22s, color .22s, box-shadow .22s; }
-.step:hover .step-num { border-color: var(--green-border); color: var(--green); box-shadow: 0 0 18px var(--green-glow); }
-.step:first-child:hover .step-num { box-shadow: 0 0 22px rgba(62,207,142,.4); }
-.pain-card { transition: border-color .2s, transform .2s, box-shadow .2s; }
-.pain-card:hover { border-color: var(--green-border); transform: translateX(5px); box-shadow: -3px 0 0 var(--green); }
-.feat-card { transition: background .2s; }
-.feat-icon { transition: transform .22s ease; }
-.feat-card:hover .feat-icon { transform: scale(1.1) rotate(-4deg); }
-.plan { transition: transform .2s, box-shadow .2s; }
-.plan:not(.popular):hover { transform: translateY(-5px); box-shadow: 0 20px 50px rgba(0,0,0,.28); }
-.plan.popular:hover { transform: translateY(-5px); box-shadow: 0 20px 50px rgba(62,207,142,.14); }
-.diff-tag-item { transition: background .15s, border-color .15s, transform .15s; }
-.diff-tag-item:hover { background: var(--surface2); border-color: var(--border2); transform: translateX(4px); }
-.testi { transition: border-color .2s, transform .2s, box-shadow .2s; }
-.testi:hover { border-color: var(--border2); transform: translateY(-5px); box-shadow: 0 16px 40px rgba(0,0,0,.22); }
-.btn-ghost { transition: border-color .18s, color .18s, background .18s; }
-.btn-primary { transition: opacity .18s, transform .18s; }
-.btn-hero { transition: opacity .18s, transform .18s, box-shadow .18s; }
-.plan-cta { transition: opacity .18s, background .18s, border-color .18s, color .18s; }
-.pain-card-icon { transition: transform .2s ease; }
-.pain-card:hover .pain-card-icon { transform: scale(1.1); }
+    /* ===== REVEAL ===== */
+    .reveal{opacity:0;transform:translateY(22px);transition:opacity .65s ease,transform .65s ease}
+    .reveal.in{opacity:1;transform:none}
+    .delay-1{transition-delay:.1s}.delay-2{transition-delay:.2s}.delay-3{transition-delay:.3s}
 
-/* ===== MOBILE IMPROVEMENTS ===== */
-html, body { overflow-x: hidden; max-width: 100%; }
+    /* ===== SCROLL PROGRESS ===== */
+    .scroll-progress{
+      position:fixed;left:0;top:0;z-index:200;height:3px;width:0;
+      background:linear-gradient(90deg,var(--green-2),var(--green));
+      box-shadow:0 0 14px var(--green-glow);
+    }
 
-/* Tablet: features 2 colunas */
-@media(min-width:769px) and (max-width:960px) {
-  .features-grid { grid-template-columns: repeat(2, 1fr); }
-}
+    /* ===== CURSOR GLOW ===== */
+    .cursor-glow{
+      position:fixed;pointer-events:none;z-index:1;width:560px;height:560px;
+      border-radius:50%;
+      background:radial-gradient(circle,var(--green-glow),transparent 72%);
+      transform:translate(-50%,-50%);opacity:0;transition:opacity 1.2s;
+    }
+    body.cursor-ready .cursor-glow{opacity:.55}
 
-/* ≤768px: ajustes gerais de seção */
-@media(max-width:768px) {
-  .pain { padding: 3.5rem 0; }
-  .how { padding: 3.5rem 0; }
-  .features { padding: 3.5rem 0; }
-  .diff { padding: 3.5rem 0; }
-  .proof { padding: 3.5rem 0; }
-  .pricing { padding: 3.5rem 0; }
-  .faq { padding: 3.5rem 0; }
-  .final-cta { padding: 4rem 0; }
-  .diff-tag-row .diff-tag-item { flex-wrap: wrap; gap: 4px; }
-  .steps::before { display: none; }
-  .steps { gap: 1.5rem; }
-  .footer-inner { flex-direction: column; align-items: flex-start; gap: 1.2rem; }
-  .footer-links { gap: 16px; }
-  .pain-grid { margin-top: 2rem; }
-  .features-grid { margin-top: 2rem; }
-  .plans { gap: 12px; }
-  .testimonials { gap: 12px; }
-  .proof-counter { margin-bottom: 2rem; }
-  .sec-title { font-size: clamp(24px, 5.5vw, 38px); }
-  .sec-sub { font-size: 14px; }
-}
+    /* ===== NAV ===== */
+    .nav-shell{position:fixed;left:0;right:0;top:14px;z-index:90;pointer-events:none}
+    .nav{
+      width:min(1160px,calc(100% - 28px));height:62px;margin:auto;
+      padding:0 10px 0 18px;border:1px solid var(--line);border-radius:16px;
+      display:flex;align-items:center;justify-content:space-between;
+      background:var(--nav-bg);backdrop-filter:blur(20px);
+      box-shadow:var(--shadow-sm);pointer-events:auto;
+      transition:background .3s,border-color .3s;
+    }
+    .brand{display:inline-flex;align-items:center;gap:9px;text-decoration:none}
+    .brand img{height:36px;width:auto}
+    .brand .logo-light{display:none}
+    .brand .logo-dark{display:block}
+    [data-theme="light"] .brand .logo-dark{display:none}
+    [data-theme="light"] .brand .logo-light{display:block}
+    .brand span{font-family:"Lora",serif;font-size:18px;font-weight:700;letter-spacing:-.04em;color:var(--ink)}
+    .brand i{color:var(--green);font-style:normal}
+    .nav-links{display:flex;align-items:center;gap:27px}
+    .nav-links a{color:var(--copy);font-size:13px;font-weight:600;text-decoration:none;transition:color .2s}
+    .nav-links a:hover{color:var(--ink)}
+    .nav-actions{display:flex;align-items:center;gap:8px}
+    .theme-toggle{
+      width:44px;height:44px;border:1px solid var(--line);border-radius:9px;
+      display:grid;place-items:center;background:transparent;color:var(--copy);
+      transition:border-color .2s,color .2s,background .2s;
+    }
+    .theme-toggle:hover{border-color:var(--line-green);color:var(--green);background:var(--green-dim)}
+    .icon-sun{display:none}.icon-moon{display:block}
+    [data-theme="light"] .icon-sun{display:block}[data-theme="light"] .icon-moon{display:none}
+    .btn{
+      min-height:46px;padding:0 20px;border:1px solid transparent;border-radius:10px;
+      display:inline-flex;align-items:center;justify-content:center;gap:9px;
+      font-size:12px;font-weight:800;text-decoration:none;
+      transition:transform .2s,box-shadow .2s,background .2s,border-color .2s,color .2s;
+    }
+    .btn:hover{transform:translateY(-2px)}
+    .btn-primary{color:#080808;background:var(--green);box-shadow:0 12px 32px var(--green-glow)}
+    [data-theme="light"] .btn-primary{color:#fff}
+    .btn-primary:hover{box-shadow:0 16px 44px var(--green-glow)}
+    .btn-secondary{color:var(--ink);border-color:var(--line);background:transparent}
+    .btn-secondary:hover{border-color:var(--line-green);background:var(--green-dim)}
+    .menu{width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:10px;color:var(--ink);background:var(--panel);display:none}
 
-/* ≤600px: ajustes de stats */
-@media(max-width:600px) {
-  .stats-bar-inner { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
-  .stat-n { font-size: 26px; }
-  .stat-l { font-size: 10px; }
-}
+    /* ===== HERO ===== */
+    .hero{
+      position:relative;min-height:780px;padding:128px 0 72px;
+      display:flex;align-items:center;overflow:hidden;
+      background:
+        radial-gradient(circle at 76% 28%,rgba(62,207,142,.1),transparent 27%),
+        radial-gradient(circle at 12% 72%,rgba(62,207,142,.055),transparent 26%),
+        var(--hero-bg);
+      transition:background .3s;
+    }
+    [data-theme="light"] .hero{
+      background:
+        radial-gradient(circle at 76% 28%,rgba(26,158,110,.09),transparent 27%),
+        radial-gradient(circle at 12% 72%,rgba(26,158,110,.05),transparent 26%),
+        var(--hero-bg);
+    }
+    .hero::before{
+      content:"";position:absolute;inset:0;opacity:.17;
+      background-image:
+        linear-gradient(rgba(62,207,142,.07) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(62,207,142,.07) 1px,transparent 1px);
+      background-size:68px 68px;
+      mask-image:linear-gradient(to bottom,transparent,black 20%,black 70%,transparent);
+    }
+    [data-theme="light"] .hero::before{opacity:.09}
+    .hero-orb{
+      position:absolute;width:700px;height:700px;right:-310px;top:40px;
+      border:1px solid rgba(62,207,142,.09);border-radius:50%;
+      box-shadow:0 0 0 88px rgba(62,207,142,.016),0 0 0 176px rgba(62,207,142,.01);
+    }
+    .hero-grid{
+      position:relative;z-index:2;display:grid;
+      grid-template-columns:.92fr 1.08fr;align-items:center;gap:68px;
+    }
+    .hero-tag{
+      width:max-content;max-width:100%;margin-bottom:24px;
+      padding:8px 12px;border:1px solid var(--line-green);border-radius:999px;
+      color:var(--copy);background:var(--green-dim);font-size:10px;font-weight:700;
+    }
+    .hero-tag strong{color:var(--green)}
+    .hero h1{
+      max-width:650px;font-family:"Lora",serif;
+      font-size:var(--title-hero);line-height:.98;letter-spacing:-.046em;color:var(--ink);
+    }
+    .hero h1 .highlight{display:inline-block;color:var(--green);font-style:italic;font-weight:600}
+    .hero-copy{max-width:570px;margin:25px 0 28px;color:var(--copy);font-size:var(--text-base);line-height:1.7}
+    .hero-copy strong{color:var(--ink)}
+    .hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .hero-actions .btn{min-height:54px;padding:0 24px;font-size:13px}
+    .hero-proof{margin-top:23px;display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:12px;font-weight:600}
+    .hero-proof span{display:inline-flex;align-items:center;gap:6px}
+    .hero-proof svg{color:var(--green)}
 
-/* ≤480px: layout mobile compacto */
-@media(max-width:480px) {
-  /* Nav */
-  .nav-logo-badge { display: none; }
-  .nav-actions .btn-primary { font-size: 11px; padding: 7px 12px; }
+    /* ===== HERO MOCKUP — Dashboard Style ===== */
+    .mockup-stage{
+      position:relative;min-height:540px;perspective:1400px;
+      animation:stageFloat 7s ease-in-out infinite;
+    }
+    @keyframes stageFloat{50%{transform:translateY(-6px)}}
 
-  /* Hero */
-  .hero { padding: 5.5rem 1.2rem 3rem; min-height: auto; }
-  .hero-eyebrow { font-size: 10px; padding: 4px 11px; }
-  .hero-headline { font-size: clamp(28px, 7.5vw, 38px); }
-  .hero-sub { font-size: 13.5px; margin-bottom: 1.8rem; }
-  .hero-cta-row { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 1.8rem; }
-  .btn-hero { width: 100%; justify-content: center; font-size: 14px; padding: 15px 20px; }
-  .btn-hero-ghost { justify-content: center; }
-  .hero-trust { gap: 12px; }
-  .trust-item { font-size: 10.5px; }
+    .mockup-card{
+      position:absolute;inset:18px 0 0 10px;
+      border:1px solid rgba(255,255,255,.1);border-radius:20px;
+      background:#070d08;overflow:hidden;
+      box-shadow:var(--shadow),0 0 60px var(--green-glow);
+      transform:rotateY(-4deg) rotateX(2deg);
+      transition:transform .25s ease,box-shadow .3s;
+    }
+    [data-theme="light"] .mockup-card{background:#ffffff;border-color:rgba(6,38,25,.14);box-shadow:0 18px 60px rgba(6,38,25,.13),0 0 40px rgba(26,158,110,.1)}
 
-  /* Stats */
-  .stats-bar { padding: 1.3rem 1.2rem; }
+    /* Window chrome */
+    .mock-bar{
+      height:38px;padding:0 14px;
+      display:flex;align-items:center;justify-content:space-between;
+      background:#0a1a10;border-bottom:1px solid rgba(255,255,255,.06);
+      flex-shrink:0;
+    }
+    [data-theme="light"] .mock-bar{background:#1c3d28;border-bottom-color:rgba(255,255,255,.1)}
+    .mock-dots{display:flex;gap:5px}
+    .mock-dots i{width:9px;height:9px;border-radius:50%}
+    .mock-dots i:nth-child(1){background:#ff5f57}
+    .mock-dots i:nth-child(2){background:#febc2e}
+    .mock-dots i:nth-child(3){background:#28c840}
+    .mock-chrome-title{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.01em}
+    .mock-chrome-badge{
+      display:inline-flex;align-items:center;gap:5px;
+      padding:3px 9px;border-radius:20px;
+      background:rgba(78,206,145,.14);border:1px solid rgba(78,206,145,.22);
+      font-size:8px;font-weight:700;color:#4ece91;
+    }
+    .mock-chrome-dot{width:5px;height:5px;border-radius:50%;background:#4ece91;animation:livePulse 1.6s infinite}
+    @keyframes livePulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-  /* Pain */
-  .pain { padding: 3.5rem 0; }
-  .pain-callout { padding: 1.1rem 1rem; }
-  .pain-sub-note { font-size: 12.5px; }
+    /* Layout: sidebar + main */
+    .mock-layout{display:flex;height:calc(100% - 38px)}
 
-  /* How */
-  .how { padding: 3.5rem 0; }
-  .step { padding: 0 .5rem; }
-  .step h3 { font-size: 13px; }
+    /* Mini sidebar */
+    .mock-sidebar{
+      width:44px;background:#07170f;
+      border-right:1px solid rgba(255,255,255,.05);
+      display:flex;flex-direction:column;align-items:center;
+      padding:10px 0;gap:4px;flex-shrink:0;
+    }
+    [data-theme="light"] .mock-sidebar{background:#163825;border-right-color:rgba(255,255,255,.08)}
+    .msb-item{
+      width:32px;height:32px;border-radius:9px;
+      display:grid;place-items:center;color:rgba(255,255,255,.25);
+    }
+    .msb-item.active{background:rgba(78,206,145,.18);color:#4ece91}
+    .msb-item svg{width:14px;height:14px}
 
-  /* Features */
-  .features { padding: 3.5rem 0; }
-  .feat-card { padding: 1.4rem; }
+    /* Main content */
+    .mock-main{flex:1;padding:11px 12px;overflow:hidden;position:relative}
+    .mock-breadcrumb{
+      font-size:8px;color:rgba(255,255,255,.28);margin-bottom:9px;
+      display:flex;align-items:center;gap:3px;
+    }
+    [data-theme="light"] .mock-breadcrumb{color:rgba(9,33,26,.32)}
+    .mock-breadcrumb span{color:rgba(255,255,255,.65);font-weight:600}
+    [data-theme="light"] .mock-breadcrumb span{color:rgba(9,33,26,.7)}
 
-  /* Diff */
-  .diff { padding: 3.5rem 0; }
-  .diff-inner { padding: 1.5rem 1.2rem; gap: 1.75rem; }
-  .diff-title { font-size: 22px; }
-  .diff-desc { font-size: 13px; }
-  .diff-check p { font-size: 12.5px; }
+    /* Notification banner */
+    .mock-alert-banner{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:8px 11px;border-radius:10px;margin-bottom:10px;
+      background:linear-gradient(135deg,rgba(10,26,16,.95),rgba(7,23,15,.9));
+      border:1px solid rgba(78,206,145,.24);
+      opacity:0;transform:translateY(-7px);transition:opacity .4s,transform .4s;
+    }
+    [data-theme="light"] .mock-alert-banner{
+      background:linear-gradient(135deg,#e4f5ec,#f2faf6);
+      border-color:rgba(26,158,110,.32);
+    }
+    .mock-alert-banner.on{opacity:1;transform:none}
+    .mock-banner-left{display:flex;align-items:center;gap:7px}
+    .mock-banner-dot{width:7px;height:7px;border-radius:50%;background:#4ece91;flex:0 0 auto;animation:livePulse 1.6s infinite}
+    .mock-banner-text b{display:block;font-size:9px;font-weight:700;color:#d4ead9}
+    [data-theme="light"] .mock-banner-text b{color:#0d3020}
+    .mock-banner-text span{display:block;font-size:7.5px;color:rgba(200,230,210,.48)}
+    [data-theme="light"] .mock-banner-text span{color:rgba(13,48,32,.44)}
+    .mock-banner-time{font-size:8px;font-weight:600;color:rgba(78,206,145,.8);white-space:nowrap}
 
-  /* Proof */
-  .proof { padding: 3.5rem 0; }
-  .proof-counter { gap: .75rem; flex-wrap: wrap; }
-  .proof-counter-item { padding: .75rem 1rem; flex: 1 1 calc(50% - .4rem); min-width: 0; }
-  .proof-counter-n { font-size: 22px; }
-  .proof-counter-l { font-size: 10px; }
-  .testi { padding: 1.2rem; }
-  .testi-text { font-size: 12.5px; }
+    /* Job cards */
+    .mock-cards{display:grid;gap:7px}
+    .mock-jcard{
+      display:flex;align-items:flex-start;gap:9px;
+      padding:9px 10px;border-radius:10px;
+      border:1px solid rgba(255,255,255,.06);
+      background:rgba(13,22,16,.85);
+      opacity:0;transform:translateY(9px) scale(.98);
+      transition:opacity .38s,transform .38s;
+    }
+    [data-theme="light"] .mock-jcard{background:#fff;border-color:rgba(6,38,25,.08)}
+    .mock-jcard.on{opacity:1;transform:none}
+    .mock-jcard.best{border-color:rgba(78,206,145,.3);background:rgba(13,38,20,.9)}
+    [data-theme="light"] .mock-jcard.best{background:#f2faf6;border-color:rgba(26,158,110,.22)}
 
-  /* Pricing */
-  .pricing { padding: 3.5rem 0; }
-  .plans { max-width: 100%; gap: 10px; }
-  .pricing-note-bar { margin-top: 1rem; margin-bottom: 2rem; }
-  .pricing-note-bar-inner { font-size: 11px; flex-wrap: wrap; justify-content: center; gap: 4px; padding: 6px 14px; }
-  .plan { padding: 1.1rem 1rem; }
-  .plan-price { font-size: 26px; }
-  .plan-per-unit { font-size: 10px; margin-bottom: .3rem; }
-  .plan-desc { font-size: 11px; margin-bottom: .9rem; line-height: 1.45; }
-  .plan-name { font-size: 12px; margin-bottom: .3rem; }
-  .plan-tag { font-size: 8.5px; }
-  .plan-divider { margin: .7rem 0; }
-  .plan-feats { gap: 6px; margin-bottom: 1rem; }
-  .pf { font-size: 11px; gap: 6px; }
-  .plan-cta { padding: 10px; font-size: 12px; }
-  .plan-note { font-size: 9.5px; margin-top: .4rem; }
-  .pricing-bottom-note { font-size: 11px; margin-top: 1.2rem; }
+    /* Score badge */
+    .mj-score{
+      width:34px;height:34px;border-radius:8px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:11px;font-weight:800;flex:0 0 auto;
+    }
+    .mj-green{background:rgba(26,122,74,.2);color:#4ece91}
+    .mj-amber{background:rgba(196,125,10,.18);color:#f59e0b}
+    [data-theme="light"] .mj-green{background:#eaf5ef;color:#1a7a4a}
+    [data-theme="light"] .mj-amber{background:#fef3cd;color:#92620a}
 
-  /* FAQ */
-  .faq { padding: 3.5rem 0; }
-  .faq-q { font-size: 13px; }
-  .faq-a { font-size: 12.5px; }
+    .mj-info{flex:1;min-width:0}
+    .mj-row{display:flex;align-items:center;gap:5px}
+    .mj-title{font-size:10px;font-weight:700;color:#d0e8d8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+    [data-theme="light"] .mj-title{color:#09201a}
+    .mj-sub{font-size:8px;color:rgba(200,228,210,.42);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    [data-theme="light"] .mj-sub{color:rgba(9,32,26,.44)}
+    .mj-tags{display:flex;gap:4px;margin-top:5px}
+    .mj-tag{
+      padding:2px 6px;border-radius:4px;font-size:7px;font-weight:700;
+      background:rgba(255,255,255,.06);color:rgba(200,228,210,.5);
+    }
+    [data-theme="light"] .mj-tag{background:rgba(6,38,25,.07);color:rgba(9,32,26,.5)}
 
-  /* Final CTA */
-  .final-cta { padding: 4rem 0; }
-  .final-cta-title { font-size: clamp(24px, 7vw, 38px); }
-  .final-cta-sub { font-size: 14px; }
-  .final-cta-actions { flex-direction: column; align-items: center; }
-  .final-cta-actions .btn-hero { width: 100%; max-width: 320px; justify-content: center; }
+    .mj-btn{
+      padding:5px 9px;border-radius:7px;font-size:8px;font-weight:700;
+      border:1px solid rgba(78,206,145,.26);background:transparent;
+      color:#4ece91;cursor:pointer;white-space:nowrap;flex:0 0 auto;
+    }
+    [data-theme="light"] .mj-btn{border-color:rgba(26,158,110,.3);color:#1a7a4a}
+    .mj-btn.pulse{animation:btnPulse 1.1s ease-in-out 2}
+    @keyframes btnPulse{0%,100%{box-shadow:0 0 0 0 rgba(78,206,145,.5)}50%{box-shadow:0 0 0 5px rgba(78,206,145,0)}}
 
-  /* Footer */
-  .footer-links { gap: 14px; flex-wrap: wrap; }
-  .footer-copy { font-size: 10px; }
+    /* Best chip */
+    .mock-best-chip{
+      display:inline-flex;align-items:center;gap:3px;
+      padding:2px 7px;border-radius:20px;
+      background:rgba(78,206,145,.18);border:1px solid rgba(78,206,145,.26);
+      font-size:7px;font-weight:800;color:#4ece91;white-space:nowrap;
+    }
+    [data-theme="light"] .mock-best-chip{background:#e4f5ea;border-color:rgba(26,158,110,.3);color:#1a7a4a}
 
-  /* Títulos de seção */
-  .sec-title { font-size: clamp(22px, 6vw, 34px); }
-  .sec-sub { font-size: 13.5px; }
-}
+    /* Done toast */
+    .mock-done-toast{
+      position:absolute;bottom:12px;left:50%;
+      transform:translateX(-50%) translateY(10px);
+      padding:8px 14px;border:1px solid rgba(78,206,145,.3);border-radius:10px;
+      background:#0a1a10;box-shadow:0 8px 28px rgba(0,0,0,.55);
+      font-size:9px;font-weight:800;color:#4ece91;
+      display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
+      opacity:0;transition:opacity .35s,transform .35s;z-index:20;
+    }
+    [data-theme="light"] .mock-done-toast{background:#fff;border-color:rgba(26,158,110,.3);color:#1a7a4a;box-shadow:0 6px 20px rgba(6,38,25,.12)}
+    .mock-done-toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ≤360px: telas muito pequenas */
-@media(max-width:360px) {
-  nav { padding: 0 .9rem; }
-  .container { padding: 0 1rem; }
-  .hero { padding: 5rem 1rem 2.5rem; }
-  .hero-headline { font-size: 26px; }
-  .btn-hero { font-size: 13px; padding: 13px 16px; }
-  .plan { padding: 1.1rem; }
-  .diff-inner { padding: 1.2rem 1rem; }
-}
-[data-theme="light"]{--bg:#f2f6f3;--surface:#ffffff;--surface2:#eaf0ec;--surface3:#dde8df;--border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.14);--text:#0d1a11;--muted:rgba(13,26,17,0.6);--hint:#4d6e57;--green:#1a8f5c;--green-dim:rgba(26,143,92,0.1);--green-border:rgba(26,143,92,0.25);--green-glow:rgba(26,143,92,0.12);--red:#c0392b;--red-dim:rgba(192,57,43,0.08);--yellow:#b07d1a;--yellow-dim:rgba(176,125,26,0.08);--amber:#b45309;--blue:#1d4ed8}
-[data-theme="light"] nav{background:rgba(242,246,243,0.95)!important}
-[data-theme="light"] .hv-card{background:#fff;border-color:rgba(0,0,0,0.09)}
-[data-theme="light"] .hv-ring circle:first-child{stroke:rgba(0,0,0,0.06)}
-.logo-light{display:none}
-[data-theme="light"] .logo-dark{display:none!important}
-[data-theme="light"] .logo-light{display:block!important}
-.theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;padding:0;line-height:1}
-.theme-btn:hover{border-color:var(--green-border);color:var(--green)}
-.ic{display:inline-flex;align-items:center;vertical-align:middle;flex-shrink:0}
-</style>
-<script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
+    /* Float badges */
+    .float-badge{
+      position:absolute;z-index:5;
+      padding:10px 13px;border:1px solid var(--line-2);border-radius:13px;
+      background:var(--panel);backdrop-filter:blur(14px);box-shadow:var(--shadow-sm);
+      transition:background .3s,border-color .3s;
+    }
+    .float-badge.one{right:-26px;top:20px;animation:floatA 5s ease-in-out infinite}
+    .float-badge.two{left:-28px;bottom:54px;animation:floatB 6.5s ease-in-out infinite}
+    .float-row{display:flex;align-items:center;gap:9px}
+    .float-icon{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:#080808;background:var(--green)}
+    [data-theme="light"] .float-icon{color:#fff}
+    .float-badge b{display:block;font-size:9px;color:var(--ink)}
+    .float-badge span{display:block;font-size:7px;color:var(--muted)}
+    @keyframes floatA{0%,100%{transform:translateY(0) rotate(.4deg)}50%{transform:translateY(-10px) rotate(-.4deg)}}
+    @keyframes floatB{0%,100%{transform:translateY(0) rotate(-.3deg)}50%{transform:translateY(-8px) rotate(.3deg)}}
+
+    /* ===== HERO SOCIAL PROOF ===== */
+    .hero-social{
+      display:flex;align-items:center;gap:10px;margin-bottom:22px;
+      padding:9px 14px;border:1px solid var(--line-green);border-radius:999px;
+      background:var(--green-dim);width:max-content;max-width:100%;
+    }
+    .hero-stars{color:var(--green);font-size:11px;letter-spacing:2px;line-height:1}
+    .hero-social span{font-size:10px;color:var(--copy)}
+    .hero-social span b{color:var(--ink)}
+    .hero-avatars{display:flex}
+    .hero-avatar{
+      width:24px;height:24px;border-radius:50%;border:2px solid var(--bg);
+      background:var(--green);display:grid;place-items:center;
+      color:#080808;font-size:6px;font-weight:900;margin-left:-7px;
+    }
+    [data-theme="light"] .hero-avatar{color:#fff}
+    .hero-avatar:first-child{margin-left:0}
+
+    /* ===== DEMO CTA SECTION ===== */
+    /* ===== ANIMATED DEMO ===== */
+    .demo-section{background:var(--bg)}
+    .demo-panel{
+      margin-top:46px;border:1px solid rgba(255,255,255,.1);border-radius:20px;
+      background:#070d08;overflow:hidden;
+      box-shadow:var(--shadow),0 0 60px var(--green-glow);
+    }
+    [data-theme="light"] .demo-panel{border-color:rgba(6,38,25,.12);box-shadow:0 24px 80px rgba(6,38,25,.14),0 0 40px rgba(26,158,110,.08)}
+    .dp-bar{
+      height:40px;padding:0 16px;
+      display:flex;align-items:center;justify-content:space-between;
+      background:#0a1a10;border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .dp-title{font-size:11px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.02em}
+    .dp-badge{
+      display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;
+      background:rgba(78,206,145,.14);border:1px solid rgba(78,206,145,.22);
+      font-size:9px;font-weight:700;color:#4ece91;
+    }
+    .dp-dot{width:5px;height:5px;border-radius:50%;background:#4ece91;animation:livePulse 1.6s infinite}
+    .dp-body{position:relative;min-height:340px}
+    .dp-stage{
+      position:absolute;inset:0;padding:22px 26px;
+      opacity:0;pointer-events:none;transition:opacity .4s;
+    }
+    .dp-stage.active{opacity:1;pointer-events:auto}
+    /* S1 */
+    .dp-alert-banner{
+      display:flex;align-items:center;gap:10px;
+      padding:9px 13px;border-radius:10px;margin-bottom:12px;
+      background:rgba(78,206,145,.12);border:1px solid rgba(78,206,145,.3);
+      font-size:12px;color:#4ece91;font-weight:700;
+      opacity:0;transform:translateY(-8px);transition:opacity .4s,transform .4s;
+    }
+    .dp-alert-banner.in{opacity:1;transform:none}
+    .dp-ab-text b{display:block}
+    .dp-ab-text span{font-size:10px;opacity:.7;font-weight:400}
+    .dp-cards{display:grid;gap:8px}
+    .dp-card{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:10px 13px;border-radius:10px;
+      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+      opacity:0;transform:translateX(-12px);transition:opacity .4s,transform .4s;
+    }
+    .dp-card.best{border-color:rgba(78,206,145,.4);background:rgba(78,206,145,.07)}
+    .dp-card.in{opacity:1;transform:none}
+    .dp-card-info b{display:block;font-size:12px;font-weight:700;color:#e8f5ee}
+    .dp-card-info span{font-size:10px;color:rgba(255,255,255,.38)}
+    .dp-card-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+    .dp-score-val{font-size:15px;font-weight:900}
+    .dp-score-val.g{color:#4ece91}.dp-score-val.a{color:#f59e0b}
+    .dp-best-badge{font-size:8px;font-weight:800;color:#4ece91;background:rgba(78,206,145,.15);padding:2px 7px;border-radius:20px}
+    /* S2 */
+    .dp-analysis{display:grid;grid-template-columns:1fr 1.2fr;gap:22px;height:100%;align-items:center}
+    .dp-ring-wrap{display:flex;flex-direction:column;align-items:center;gap:9px}
+    .dp-ring{position:relative;width:106px;height:106px}
+    .dp-ring svg{transform:rotate(-90deg)}
+    .dp-ring-track{fill:none;stroke:rgba(255,255,255,.08);stroke-width:9}
+    .dp-ring-arc{fill:none;stroke:#4ece91;stroke-width:9;stroke-linecap:round;stroke-dasharray:295;stroke-dashoffset:295;transition:stroke-dashoffset 1.4s ease}
+    .dp-ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:900;color:#4ece91;font-family:"Lora",serif}
+    .dp-ring-sub{font-size:10px;color:rgba(255,255,255,.4);text-align:center}
+    .dp-bars{display:flex;flex-direction:column;gap:12px}
+    .dp-bar-row{display:flex;flex-direction:column;gap:4px}
+    .dp-bar-head{display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,.55)}
+    .dp-bar-track{height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+    .dp-bar-fill{height:100%;border-radius:3px;background:#4ece91;width:0%;transition:width 1.2s ease}
+    .dp-bar-fill.am{background:#f59e0b}
+    /* S3 */
+    .dp-results{display:grid;grid-template-columns:1fr 1fr;gap:9px;height:100%;align-content:center}
+    .dp-result{
+      display:flex;align-items:center;gap:9px;
+      padding:12px;border-radius:10px;
+      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+      opacity:0;transform:translateY(8px);transition:opacity .35s,transform .35s;
+    }
+    .dp-result.in{opacity:1;transform:none}
+    .dp-result-icon{width:28px;height:28px;border-radius:7px;background:rgba(78,206,145,.15);display:grid;place-items:center;flex-shrink:0;font-size:12px}
+    .dp-result b{display:block;font-size:11px;font-weight:700;color:#e8f5ee}
+    .dp-result span{font-size:9px;color:rgba(255,255,255,.35);margin-top:2px;display:block}
+    /* S4 */
+    .dp-conclusion{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;height:100%;text-align:center}
+    .dp-check{width:56px;height:56px;border-radius:50%;background:rgba(78,206,145,.15);border:2px solid rgba(78,206,145,.35);display:grid;place-items:center;font-size:24px}
+    .dp-conclusion h4{font-size:var(--title-card);font-weight:700;color:#e8f5ee;font-family:"Lora",serif}
+    .dp-conclusion p{font-size:12px;color:rgba(255,255,255,.45);max-width:260px}
+    .dp-dl-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;background:#4ece91;color:#070d08;font-size:13px;font-weight:800;text-decoration:none}
+    /* Stage indicators */
+    .demo-indicators{margin-top:16px;display:flex;align-items:center;justify-content:center}
+    .di-item{display:flex;flex-direction:column;align-items:center;gap:5px}
+    .di-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.12);transition:background .3s,border-color .3s}
+    .di-item.active .di-dot{background:var(--green);border-color:var(--green)}
+    .di-label{font-size:10px;font-weight:600;color:var(--muted);transition:color .3s;white-space:nowrap}
+    .di-item.active .di-label{color:var(--green)}
+    .di-connector{width:44px;height:2px;background:rgba(255,255,255,.1);margin-bottom:13px;transition:background .3s;flex-shrink:0}
+    .di-connector.lit{background:var(--green)}
+
+    /* ===== PLAN ANCHORS ===== */
+    .plan-anchor{margin-top:8px;padding:7px 11px;border-radius:8px;background:var(--green-dim);border:1px solid var(--line-green);font-size:12px;color:var(--green);font-weight:700;text-align:center}
+    .plan-urgency{margin-top:9px;font-size:12px;color:var(--muted);text-align:center}
+    .plan-urgency b{color:var(--green)}
+
+    /* ===== TRUST STRIP ===== */
+    .trust-strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--panel)}
+    .trust-grid{display:grid;grid-template-columns:repeat(4,1fr)}
+    .trust-item{padding:22px 24px;border-right:1px solid var(--line);text-align:center}
+    .trust-item:last-child{border:0}
+    .trust-item b{display:block;font-family:"Lora",serif;font-size:15px;color:var(--ink)}
+    .trust-item span{display:block;margin-top:3px;color:var(--copy);font-size:12px}
+
+    /* ===== BENEFITS ===== */
+    .benefits{background:var(--bg)}
+    .benefit-grid{margin-top:52px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .benefit-card{
+      position:relative;min-height:240px;padding:26px;
+      border:1px solid var(--line);border-radius:20px;background:var(--panel);overflow:hidden;
+      transition:transform .25s,border-color .25s,box-shadow .25s;
+    }
+    .benefit-card:hover{transform:translateY(-6px);border-color:var(--line-green);box-shadow:0 20px 58px var(--green-glow)}
+    .benefit-card::after{
+      content:"";position:absolute;width:130px;height:130px;right:-70px;bottom:-75px;
+      border-radius:50%;background:var(--green-dim);
+    }
+    .benefit-icon{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;color:var(--green);background:var(--green-dim)}
+    .benefit-card h3{margin-top:28px;font-family:"Lora",serif;font-size:19px;line-height:1.15;letter-spacing:-.02em;color:var(--ink)}
+    .benefit-card p{margin-top:9px;color:var(--copy);font-size:13px;line-height:1.65}
+    .benefit-card strong{display:block;margin-top:16px;color:var(--green);font-size:12px;font-weight:700}
+
+    /* ===== PAIN ===== */
+    .pain{overflow:hidden;background:var(--panel)}
+    .pain-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:70px;align-items:center}
+    .pain-title{margin-top:17px;font-family:"Lora",serif;font-size:clamp(40px,4.8vw,62px);line-height:1.03;letter-spacing:-.04em;color:var(--ink)}
+    .pain-copy{margin-top:20px;color:var(--copy);font-size:15px;line-height:1.75}
+    .pain-list{display:grid;gap:10px}
+    .pain-item{
+      padding:19px;border:1px solid var(--line);border-radius:15px;
+      display:flex;align-items:flex-start;gap:14px;background:var(--bg);
+      transition:transform .25s,border-color .25s,box-shadow .25s;
+    }
+    .pain-item:hover{transform:translateX(7px);border-color:var(--line-green);box-shadow:5px 0 22px var(--green-glow)}
+    .pain-number{
+      width:30px;height:30px;border-radius:8px;flex:0 0 auto;
+      display:grid;place-items:center;color:var(--green);background:var(--green-dim);font-size:11px;font-weight:800;
+    }
+    .pain-item h3{font-size:14px;font-weight:700;color:var(--ink)}
+    .pain-item p{margin-top:4px;color:var(--copy);font-size:13px;line-height:1.6}
+    .truth{margin-top:24px;padding:14px 16px;border-left:3px solid var(--green);color:var(--copy);background:var(--green-dim);font-size:13px;line-height:1.65}
+
+    /* ===== HOW IT WORKS ===== */
+    .steps{background:var(--bg)}
+    .step-tabs{
+      display:flex;gap:5px;margin:0 auto 36px;width:max-content;max-width:100%;
+      padding:5px;border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:auto;
+    }
+    .step-tab{
+      padding:10px 22px;border:1px solid transparent;border-radius:8px;
+      color:var(--muted);background:transparent;font-size:13px;font-weight:700;white-space:nowrap;
+      transition:color .2s,background .2s,border-color .2s;
+    }
+    .step-tab.active{color:var(--ink);background:var(--green-dim);border-color:var(--line-green)}
+    .step-stage{
+      border:1px solid var(--line);border-radius:20px;background:var(--panel);
+      overflow:hidden;min-height:360px;position:relative;
+    }
+    .step-panel{
+      position:absolute;inset:0;padding:36px 40px;
+      display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;
+      opacity:0;visibility:hidden;transform:translateY(8px);
+      transition:opacity .38s,transform .38s,visibility .38s;
+    }
+    .step-panel.active{opacity:1;visibility:visible;transform:none}
+    .step-step{font-family:"Lora",serif;font-size:52px;font-weight:700;color:rgba(62,207,142,.18);line-height:1;margin-bottom:8px}
+    .step-info h3{font-family:"Lora",serif;font-size:22px;line-height:1.1;color:var(--ink)}
+    .step-info p{margin-top:10px;color:var(--copy);font-size:14px;line-height:1.7}
+    .step-visual{
+      border:1px solid var(--line);border-radius:14px;background:var(--bg);
+      padding:18px;min-height:270px;position:relative;overflow:hidden;
+    }
+    .sv-label{font-size:7px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:10px}
+    .sv-line{height:5px;border-radius:3px;background:var(--line-2);margin-bottom:7px}
+    .sv-line.s{width:50%}.sv-line.m{width:72%}.sv-line.f{width:100%}
+    .sv-tag{
+      display:inline-flex;align-items:center;gap:4px;
+      padding:4px 8px;border:1px solid var(--line);border-radius:6px;
+      font-size:7px;font-weight:700;color:var(--copy);background:var(--panel);
+      margin:2px 2px 0 0;
+    }
+    .sv-tag.match{color:var(--green);border-color:var(--line-green);background:var(--green-dim)}
+    .sv-tag.miss{color:var(--red);border-color:rgba(248,113,113,.22);background:rgba(248,113,113,.07)}
+
+    .match-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;height:100%}
+    .match-col{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:12px;position:relative;overflow:hidden}
+    .match-col-label{font-size:7px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:9px}
+    .kw-pill{
+      display:inline-block;padding:3px 7px;border-radius:5px;
+      font-size:7px;font-weight:800;margin:2px;
+    }
+    .kw-found{color:var(--green);background:var(--green-dim);border:1px solid var(--line-green)}
+    .kw-miss{color:var(--red);background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.2)}
+    .col-scanner{
+      position:absolute;top:0;bottom:0;left:-50%;width:40%;
+      background:linear-gradient(90deg,transparent,rgba(62,207,142,.18),transparent);
+    }
+    .step-panel[data-panel="s2"].active .col-scanner{animation:colScan 2.2s ease-in-out infinite 0.5s}
+    @keyframes colScan{0%{left:-50%}100%{left:120%}}
+
+    .mini-ring-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+    .mini-svg{width:56px;height:56px;transform:rotate(-90deg)}
+    .mini-track{fill:none;stroke:var(--line-2);stroke-width:6}
+    .mini-arc{
+      fill:none;stroke:var(--green);stroke-width:6;stroke-linecap:round;
+      stroke-dasharray:125.66;stroke-dashoffset:32.67;
+    }
+    .mini-num{font-size:12px;font-weight:800;color:var(--green)}
+    .mini-info b{display:block;font-size:13px;color:var(--ink)}
+    .mini-info span{display:block;color:var(--copy);font-size:12px;margin-top:2px}
+
+    .act-item{
+      display:flex;align-items:flex-start;gap:8px;padding:8px 10px;
+      border:1px solid var(--line);border-radius:9px;background:var(--panel);
+      margin-bottom:7px;
+      opacity:0;transform:translateX(-8px);
+      transition:opacity .4s,transform .4s;
+    }
+    .act-item.on{opacity:1;transform:none}
+    .act-num{
+      width:18px;height:18px;border-radius:5px;flex:0 0 auto;
+      display:grid;place-items:center;color:#080808;background:var(--green);
+      font-size:7px;font-weight:800;
+    }
+    [data-theme="light"] .act-num{color:#fff}
+    .act-item b{display:block;font-size:12px;color:var(--ink)}
+    .act-item span{display:block;color:var(--copy);font-size:11px;margin-top:2px}
+    .ready-badge{
+      display:inline-flex;align-items:center;gap:6px;margin-top:10px;
+      padding:7px 12px;border:1px solid var(--line-green);border-radius:8px;
+      color:var(--green);background:var(--green-dim);font-size:12px;font-weight:700;
+      opacity:0;transition:opacity .4s .8s;
+    }
+    .ready-badge.on{opacity:1}
+
+    .step-dots{display:flex;justify-content:center;gap:8px;margin-top:18px}
+    .step-dot{
+      width:7px;height:7px;border-radius:50%;padding:0;
+      border:1px solid var(--line-green);background:transparent;
+      transition:background .2s;
+    }
+    .step-dot.active{background:var(--green)}
+
+    /* ===== JOURNEY ===== */
+    .journey{background:var(--panel)}
+    .journey-outer{margin-top:50px;position:relative;padding:0 16px}
+    .journey-track-wrap{display:none}
+    .journey-track-fill{height:100%;background:linear-gradient(90deg,var(--green-2),var(--green));transform-origin:left;transform:scaleX(0);transition:transform .7s cubic-bezier(.4,0,.2,1)}
+    .journey-nodes{display:grid;grid-template-columns:repeat(5,1fr);justify-items:center;position:relative;z-index:2}
+    .journey-node{
+      display:flex;flex-direction:column;align-items:center;gap:12px;
+      cursor:pointer;width:100%;text-align:center;
+      position:relative;z-index:1;
+    }
+    .j-dot{
+      width:64px;height:64px;border-radius:16px;border:2px solid var(--line);background:var(--panel);
+      display:grid;place-items:center;color:var(--muted);
+      transition:border-color .4s,background .4s,color .4s,transform .3s,box-shadow .3s;
+      position:relative;z-index:1;
+    }
+    .journey-node.lit .j-dot{
+      border-color:var(--green);background:var(--green-dim);color:var(--green);
+      transform:translateY(-4px);box-shadow:0 12px 28px var(--green-glow);
+    }
+    .j-label b{display:block;font-size:13px;font-weight:700;color:var(--ink);transition:color .3s;line-height:1.3}
+    .j-label span{display:block;font-size:11px;color:var(--copy);margin-top:3px;line-height:1.4}
+    .journey-node.lit .j-label b{color:var(--green)}
+    .j-tip{
+      position:absolute;top:calc(100% + 12px);left:50%;transform:translateX(-50%);
+      width:170px;padding:11px 13px;border:1px solid var(--line-green);border-radius:11px;
+      background:var(--panel);box-shadow:var(--shadow-sm);
+      font-size:12px;color:var(--copy);line-height:1.6;
+      opacity:0;visibility:hidden;transition:opacity .22s,visibility .22s;
+      z-index:20;pointer-events:none;text-align:left;
+    }
+    .journey-node:hover .j-tip{opacity:1;visibility:visible}
+
+    /* Mobile journey */
+    .journey-mobile{display:none;margin-top:36px}
+    .jm-item{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px}
+    .jm-dot{
+      width:42px;height:42px;border-radius:11px;flex:0 0 auto;
+      border:1px solid var(--line);background:var(--bg);
+      display:grid;place-items:center;color:var(--muted);
+      transition:border-color .4s,background .4s,color .4s;
+    }
+    .jm-line{width:2px;height:24px;background:var(--line-2);margin:0 auto;margin-left:20px}
+    .jm-item.lit .jm-dot{border-color:var(--green);background:var(--green-dim);color:var(--green)}
+    .jm-info b{display:block;font-size:14px;font-weight:700;color:var(--ink)}
+    .jm-info span{display:block;color:var(--copy);font-size:13px;margin-top:3px;line-height:1.4}
+
+    /* ===== PRODUCT ===== */
+    .product{background:var(--bg);overflow:hidden}
+    .product-shell{
+      margin-top:48px;padding:13px;border:1px solid var(--line);border-radius:24px;
+      background:var(--panel);box-shadow:var(--shadow);
+    }
+    .product-tabs{
+      width:max-content;max-width:100%;margin:0 auto 13px;
+      padding:5px;border:1px solid var(--line);border-radius:11px;
+      display:flex;gap:4px;background:var(--bg);overflow:auto;
+    }
+    .product-tab{
+      min-width:130px;padding:10px 15px;border:0;border-radius:8px;
+      color:var(--muted);background:transparent;font-size:9px;font-weight:800;white-space:nowrap;
+      transition:color .2s,background .2s;
+    }
+    .product-tab.active{color:#080808;background:var(--green)}
+    [data-theme="light"] .product-tab.active{color:#fff}
+    .product-window{
+      position:relative;aspect-ratio:16/8.5;min-height:510px;
+      border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--bg-2);
+    }
+    .product-panel{position:absolute;inset:0;opacity:0;visibility:hidden;transform:translateY(10px);transition:.35s}
+    .product-panel.active{opacity:1;visibility:visible;transform:none}
+    .product-panel img{width:100%;height:100%;object-fit:cover;object-position:top}
+    .analysis-product{height:100%;padding:32px;display:grid;grid-template-columns:.72fr 1.28fr;gap:15px;background:var(--bg-2)}
+    .analysis-summary,.analysis-detail{padding:24px;border:1px solid var(--line);border-radius:15px;background:var(--panel)}
+    .analysis-summary h3{margin-top:12px;font-size:24px;line-height:1.1;color:var(--ink)}
+    .analysis-summary p{margin-top:10px;color:var(--copy);font-size:10px}
+    .big-score{
+      width:110px;height:110px;margin-top:28px;border-radius:50%;
+      display:grid;place-items:center;position:relative;
+      background:conic-gradient(var(--green) 0 74%,var(--line-2) 74%);
+    }
+    .big-score::before{content:"";position:absolute;inset:10px;border-radius:50%;background:var(--panel)}
+    .big-score b{position:relative;font-size:24px;font-weight:800;color:var(--ink)}
+    .detail-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+    .detail-head b{font-size:12px;color:var(--ink)}.detail-head span{color:var(--green);font-size:8px}
+    .detail-row{margin-top:16px}
+    .detail-top{display:flex;justify-content:space-between;color:var(--copy);font-size:8px;font-weight:700;margin-bottom:6px}
+    .detail-top b{color:var(--green)}
+    .d-bar{height:5px;border-radius:3px;background:var(--line-2);overflow:hidden}
+    .d-bar i{display:block;height:100%;border-radius:3px;background:var(--green);transform-origin:left}
+    .product-panel.active .d-bar i{animation:barGrow 1s cubic-bezier(.4,0,.2,1) both}
+    @keyframes barGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+    .action-box{margin-top:20px;padding:13px;border:1px solid var(--line-green);border-radius:11px;color:var(--copy);font-size:9px;background:var(--green-dim)}
+    .action-box strong{display:block;color:var(--green);margin-bottom:4px;font-size:10px}
+
+    /* ===== MARKET ===== */
+    .market{background:var(--panel)}
+    .market-grid{margin-top:48px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .market-card{
+      min-height:230px;padding:27px;border:1px solid var(--line);border-radius:18px;background:var(--bg);
+      transition:transform .25s,border-color .25s;
+    }
+    .market-card:hover{transform:translateY(-4px);border-color:var(--line-green)}
+    .market-card .stat{display:block;color:var(--green);font-family:"Lora",serif;font-size:38px;line-height:1;font-weight:700}
+    .market-card h3{margin-top:16px;font-size:13px;color:var(--ink)}
+    .market-card p{margin-top:8px;color:var(--copy);font-size:10px}
+    .source{display:inline-block;margin-top:16px;color:var(--green);font-size:8px;text-decoration:none}
+    .market-note{margin-top:18px;color:var(--muted);font-size:8px;text-align:center}
+
+    /* ===== PRICING ===== */
+    .pricing{background:var(--bg)}
+    .billing{
+      width:max-content;margin:31px auto 40px;padding:5px;
+      border:1px solid var(--line);border-radius:11px;display:flex;gap:4px;background:var(--panel);
+    }
+    .billing button{padding:13px 22px;border:0;border-radius:9px;color:var(--muted);background:transparent;font-size:13px;font-weight:800}
+    .billing button.active{color:#080808;background:var(--green)}
+    [data-theme="light"] .billing button.active{color:#fff}
+    .billing i{color:var(--green);font-style:normal}.billing button.active i{color:#080808}
+    [data-theme="light"] .billing button.active i{color:#fff}
+    .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .plan{position:relative;padding:29px;border:1px solid var(--line);border-radius:20px;background:var(--panel)}
+    .plan.featured{
+      border-color:var(--line-green);
+      background:linear-gradient(160deg,var(--green-dim),var(--panel) 55%);
+      box-shadow:0 0 0 1px var(--green-dim),var(--shadow);
+      transform:translateY(-10px);
+    }
+    .popular{position:absolute;top:-11px;right:19px;padding:5px 9px;border-radius:999px;color:#080808;background:var(--green);font-size:10px;font-weight:800;text-transform:uppercase}
+    [data-theme="light"] .popular{color:#fff}
+    .plan-name{color:var(--green);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em}
+    .plan h3{margin-top:8px;font-family:"Lora",serif;font-size:20px;letter-spacing:-.025em;color:var(--ink)}
+    .plan-desc{min-height:48px;margin-top:7px;color:var(--copy);font-size:13px;line-height:1.6}
+    .price{margin-top:22px;font-family:"Lora",serif;font-size:36px;font-weight:700;letter-spacing:-.04em;color:var(--ink)}
+    .price small{margin-left:4px;color:var(--muted);font-family:"Inter",sans-serif;font-size:13px;font-weight:500}
+    .plan .btn{width:100%;margin:20px 0}
+    .plan-features{padding-top:18px;border-top:1px solid var(--line);display:grid;gap:10px}
+    .plan-feature{display:flex;gap:8px;color:var(--copy);font-size:13px;line-height:1.5}
+    .plan-feature svg{color:var(--green);flex-shrink:0;margin-top:2px}
+    .plan-note{margin-top:16px;color:var(--muted);font-size:12px;text-align:center}
+
+    /* ===== PROOF ===== */
+    .proof{background:var(--panel)}
+    .proof-grid{margin-top:46px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .quote{padding:25px;border:1px solid var(--line);border-radius:18px;background:var(--bg);transition:transform .25s,border-color .25s}
+    .quote:hover{transform:translateY(-4px);border-color:var(--line-green)}
+    .stars{color:var(--green);font-size:9px;letter-spacing:3px}
+    .quote blockquote{min-height:80px;margin:18px 0;color:var(--ink);font-size:11px;line-height:1.75}
+    .person{display:flex;align-items:center;gap:9px}
+    .avatar{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#080808;background:var(--green);font-size:8px;font-weight:900}
+    [data-theme="light"] .avatar{color:#fff}
+    .person b,.person div span{display:block}.person b{font-size:9px;color:var(--ink)}.person div span{color:var(--muted);font-size:7px}
+
+    /* ===== OBJECTIONS ===== */
+    .objections{background:var(--bg)}
+    .objection-layout{display:grid;grid-template-columns:.72fr 1.28fr;gap:70px;align-items:start}
+    .objection-side{position:sticky;top:110px}
+    .objection-list{border-top:1px solid var(--line)}
+    .objection{border-bottom:1px solid var(--line)}
+    .objection button{
+      width:100%;padding:22px 0;border:0;display:flex;align-items:center;justify-content:space-between;gap:15px;
+      color:var(--ink);background:transparent;text-align:left;font-size:13px;font-weight:800;
+    }
+    .plus{width:29px;height:29px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;color:var(--green);transition:.25s;flex:0 0 auto}
+    .objection-answer{max-height:0;overflow:hidden;color:var(--copy);font-size:14px;line-height:1.75;transition:max-height .35s,padding .35s}
+    .objection.open .objection-answer{max-height:180px;padding:0 45px 22px 0}
+    .objection.open .plus{transform:rotate(45deg)}
+
+    /* ===== FINAL ===== */
+    .final{padding:112px 0 34px;background:var(--bg)}
+    .final-card{
+      position:relative;min-height:490px;padding:65px;
+      border:1px solid var(--line-green);border-radius:26px;
+      display:grid;place-items:center;text-align:center;overflow:hidden;
+      background:radial-gradient(circle at 50% 0,rgba(62,207,142,.13),transparent 45%),var(--panel);
+    }
+    .final-card::before{
+      content:"";position:absolute;width:620px;height:620px;left:-310px;top:-310px;
+      border:1px solid var(--line-green);border-radius:50%;box-shadow:0 0 0 90px rgba(62,207,142,.016);
+    }
+    .final-inner{position:relative;z-index:1;max-width:850px}
+    .final h2{font-family:"Lora",serif;font-size:clamp(46px,5.8vw,74px);line-height:1.03;letter-spacing:-.045em;color:var(--ink)}
+    .final h2 em{color:var(--green)}
+    .final p{max-width:610px;margin:20px auto 28px;color:var(--copy);font-size:15px}
+    .final .btn{min-height:55px}
+    .final small{display:block;margin-top:14px;color:var(--muted);font-size:12px}
+    footer{padding:34px 0 40px;border-top:1px solid var(--line);background:var(--bg)}
+    .footer-row{display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .footer-links{display:flex;gap:18px}
+    .footer-links a,.copyright{color:var(--muted);font-size:12px;text-decoration:none}
+
+    /* ===== RESPONSIVE ===== */
+    @media(max-width:1040px){
+      .hero-grid,.pain-grid,.objection-layout{grid-template-columns:1fr}
+      .hero{min-height:auto}
+      .hero h1{max-width:780px}
+      .mockup-stage{width:min(720px,100%);margin:32px auto 0}
+      .pain-grid,.objection-layout{gap:46px}
+      .objection-side{position:static}
+      .journey-nodes,.journey-track-wrap{display:none}
+      .journey-mobile{display:block}
+    }
+    @media(max-width:820px){
+      .dp-analysis{grid-template-columns:1fr;gap:16px}
+      .dp-ring-wrap{flex-direction:row;align-items:center;gap:18px}
+      .dp-results{grid-template-columns:1fr}
+      .dp-body{min-height:400px}
+      .nav-links,.nav .btn-secondary{display:none}
+      .menu{display:grid;place-items:center}
+      .nav.open{height:auto;padding:10px 10px 14px;flex-wrap:wrap}
+      .nav.open .nav-links{order:3;width:100%;margin-top:10px;padding:14px 3px 2px;border-top:1px solid var(--line);display:grid;gap:12px}
+      .trust-grid{grid-template-columns:1fr 1fr}
+      .trust-item{border-right:0;border-bottom:1px solid var(--line)}
+      .trust-item:nth-child(odd){border-right:1px solid var(--line)}
+      .trust-item:last-child{border-bottom:0}
+      .benefit-grid,.market-grid,.plans,.proof-grid{grid-template-columns:1fr}
+      .benefit-grid>*,.market-grid>*,.plans>*,.proof-grid>*{min-width:0}
+      .step-panel{grid-template-columns:1fr}
+      .step-visual{display:none}
+      .analysis-product{grid-template-columns:1fr;height:auto;overflow:visible}
+      .analysis-summary,.analysis-detail{min-width:0}
+      .product-window{aspect-ratio:auto;min-height:0}
+      .product-panel{position:static;opacity:1;visibility:visible;transform:none;display:none;transition:none}
+      .product-panel.active{display:block}
+      .product-panel img{height:auto;object-fit:contain}
+      .plan.featured{transform:none}
+    }
+    @media(max-width:620px){
+      .container{width:calc(100% - 28px)}
+      .section{padding:56px 0}
+      .nav{width:calc(100% - 20px)}
+      .nav .btn-primary{display:none}
+
+      /* Hero: remove flex centering to avoid phantom height */
+      .hero{display:block;padding:104px 0 52px;overflow:hidden}
+      .hero-grid{display:flex;flex-direction:column;gap:32px}
+      .hero h1{font-size:clamp(34px,10vw,40px);line-height:1.07;letter-spacing:-.036em}
+      .hero-copy{font-size:16px;line-height:1.65;overflow-wrap:break-word}
+      .hero-actions{display:grid}
+      .hero-actions .btn{width:100%;min-height:52px}
+      .hero-proof{gap:10px 15px;flex-wrap:wrap}
+
+      /* Hero social proof: allow wrapping, prevent overflow */
+      .hero-social{width:100%;max-width:100%;flex-wrap:wrap;gap:8px}
+      .hero-social span{min-width:0;font-size:12px}
+
+      /* Mockup: width+position explicit */
+      .mockup-stage{width:100%;max-width:100%;min-height:auto;margin:0;animation:none;perspective:none}
+      .mockup-card{position:relative;inset:auto;width:100%;max-width:100%;transform:none;border-radius:12px}
+      .mock-chrome-badge{display:none}
+      .float-badge{display:none}
+
+      /* Section titles */
+      .section-title,.pain-title{font-size:clamp(28px,8vw,34px)!important;letter-spacing:-.03em}
+      .section-copy{font-size:15px}
+
+      /* Step tabs: scroll natural, sem forçar largura igual */
+      .step-tabs{width:100%;max-width:100%;overflow-x:auto;overflow-y:visible;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:2px;justify-content:flex-start}
+      .step-tab{flex:none;min-height:44px;scroll-snap-align:start;font-size:13px;padding:10px 16px;white-space:nowrap}
+
+      /* Product tabs: mesmo padrão */
+      .product-shell{padding:8px}
+      .product-tabs{width:100%;max-width:100%;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;justify-content:flex-start}
+      .product-tab{flex:none;min-height:44px;min-width:auto;scroll-snap-align:start;font-size:13px;padding:10px 16px;white-space:nowrap}
+      .analysis-product{padding:14px}
+
+      /* Billing / plans */
+      .billing{width:100%;justify-content:center}
+      .plans{gap:12px}
+
+      /* Final */
+      .final{padding:72px 0 28px}
+      .final-card{min-height:auto;padding:40px 22px}
+      .final h2{font-size:clamp(32px,9vw,42px)}
+
+      /* Footer */
+      .footer-row{flex-direction:column;text-align:center}
+      .footer-links{flex-wrap:wrap;justify-content:center}
+    }
+    @media(hover:none){
+      .cursor-glow{display:none!important}
+      body.cursor-ready .cursor-glow{opacity:0!important}
+      .benefit-card:hover{transform:none;border-color:var(--line);box-shadow:none}
+      .pain-item:hover{transform:none;border-color:var(--line);box-shadow:none}
+      .market-card:hover{transform:none;border-color:var(--line)}
+      .quote:hover{transform:none;border-color:var(--line)}
+    }
+    @media(prefers-reduced-motion:reduce){
+      *,*::before,*::after{animation:none!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+      .reveal{opacity:1;transform:none}
+    }
+  </style>
 </head>
 <body>
-<nav><a href="/" class="nav-logo" id="navLogoLink"><img src="/logo.svg" alt="VagaAI" height="42" class="logo-dark" style="display:block;"><img src="/logo-icon.svg" alt="VagaAI" height="42" class="logo-light" style="display:none;"></a><div class="nav-links"><a href="#como-funciona">Como funciona</a><a href="#features">Recursos</a><a href="#planos">Planos</a><a href="#faq">FAQ</a></div><div class="nav-actions"><button class="btn-ghost" id="btnEntrar" onclick="window.location.href='/login'">Entrar</button><button class="btn-primary" onclick="irParaProduto('landing')">Começar grátis →</button><button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema"></button><button class="nav-hamburger" id="navHamburger" onclick="toggleMobileNav()" aria-label="Menu"><span></span><span></span><span></span></button></div></nav><div class="mobile-nav" id="mobileNav"><a href="#como-funciona" onclick="closeMobileNav()">Como funciona</a><a href="#features" onclick="closeMobileNav()">Recursos</a><a href="#planos" onclick="closeMobileNav()">Planos</a><a href="#faq" onclick="closeMobileNav()">FAQ</a><button class="mobile-nav-cta" onclick="irParaProduto('landing')">Começar grátis →</button><button class="mobile-nav-entrar" onclick="window.location.href='/login';closeMobileNav()">Entrar na conta</button></div>
-<section><div class="hero"><div class="hero-left"><div class="hero-eyebrow"><span class="eyebrow-dot"></span>Análise ATS + briefing da empresa em um só lugar</div><h1 class="hero-headline"><span>Passe pelo <em>filtro.</em></span><span>Chegue mais forte</span><span>na entrevista.</span></h1><p class="hero-sub">Cole a vaga e seu currículo. O VagaAI mostra onde você está perdendo pontos, otimiza seu CV para ATS e prepara você para a entrevista com um briefing claro da empresa.</p><div class="hero-cta-row"><button class="btn-hero" onclick="irParaProduto('landing')"><svg class="ic" width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg> Analisar minha vaga grátis</button><button class="btn-hero-ghost" onclick="document.getElementById('como-funciona').scrollIntoView({behavior:'smooth'})">Ver como funciona →</button></div><div class="hero-trust"><div class="trust-item"><span class="trust-dot"></span>1 análise grátis</div><div class="trust-item"><span class="trust-dot"></span>Sem cadastro</div><div class="trust-item"><span class="trust-dot"></span>Resultado em segundos</div></div></div><div class="hero-visual" aria-hidden="true"><div class="hv-card"><div class="hv-header"><div class="hv-dots"><span></span><span></span><span></span></div><span class="hv-title">Análise VagaAI</span></div><div class="hv-body"><div class="hv-score-wrap"><div class="hv-ring-wrap"><svg class="hv-ring" viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/><circle cx="60" cy="60" r="50" fill="none" stroke="#3ecf8e" stroke-width="8" stroke-dasharray="314" stroke-dashoffset="79" stroke-linecap="round" transform="rotate(-90 60 60)"/></svg><div class="hv-score-inner"><div class="hv-score-n">75</div><div class="hv-score-l">/ 100</div></div></div><div class="hv-score-label">Índice de Compatibilidade</div></div><div class="hv-factors"><div class="hv-factor"><span class="hv-fl">Compatibilidade</span><div class="hv-bar"><div class="hv-bar-fill" style="--w:82%"></div></div><span class="hv-fv">82%</span></div><div class="hv-factor"><span class="hv-fl">Keywords ATS</span><div class="hv-bar"><div class="hv-bar-fill" style="--w:71%"></div></div><span class="hv-fv">71%</span></div><div class="hv-factor"><span class="hv-fl">Legibilidade</span><div class="hv-bar"><div class="hv-bar-fill" style="--w:90%"></div></div><span class="hv-fv">90%</span></div><div class="hv-factor"><span class="hv-fl">Força dos bullets</span><div class="hv-bar"><div class="hv-bar-fill" style="--w:60%"></div></div><span class="hv-fv">60%</span></div></div><div class="hv-footer"><div class="hv-tag hv-tag-ok">✓ Currículo otimizado</div><div class="hv-tag hv-tag-ok">✓ Briefing gerado</div></div></div></div><div class="hv-float hv-float-1"><svg class="ic" width="12" height="12" viewBox="0 0 20 20" fill="var(--green)"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg> Análise em 15s</div><div class="hv-float hv-float-2"><svg class="ic" width="12" height="12" viewBox="0 0 20 20" fill="var(--green)"><circle cx="10" cy="10" r="2.5"/><circle cx="10" cy="10" r="5" stroke="var(--green)" stroke-width="1.5" fill="none"/><circle cx="10" cy="10" r="8.5" stroke="var(--green)" stroke-width="1.5" fill="none"/></svg> ATS-ready</div></div></div></section>
-<div class="stats-bar reveal"><div class="stats-bar-inner"><div><div class="stat-n"><em>75%</em></div><div class="stat-l">dos currículos são filtrados antes de chegar em um recrutador</div></div><div><div class="stat-n">30<em>s</em></div><div class="stat-l">para gerar sua análise inicial</div></div><div><div class="stat-n"><em>2</em>em1</div><div class="stat-l">currículo otimizado + briefing da empresa</div></div><div><div class="stat-n"><em>4</em></div><div class="stat-l">fatores avaliados no índice de compatibilidade</div></div></div></div>
-<section class="pain"><div class="container"><div class="sec-eyebrow">O problema</div><h2 class="sec-title">O problema não é só seu currículo.<br><em>É o filtro antes da entrevista.</em></h2><div class="pain-grid"><div class="pain-left"><div class="pain-callout reveal"><h4><span>&gt;_</span> O que é ATS?</h4><p>ATS é o sistema que filtra currículos automaticamente antes de um recrutador analisar seu perfil. Se o seu currículo não conversa com a vaga, <strong>você pode ser eliminado antes mesmo de ser visto.</strong></p></div><p class="pain-sub-note reveal reveal-delay-1">Você pode ter experiência. Pode ter repertório. Pode até ser um bom candidato. Mas, sem adaptar o currículo para a vaga certa e sem chegar preparado para a entrevista, suas chances caem muito.</p><br><button class="btn-hero" style="margin-top:1rem;" onclick="irParaProduto('landing')">Ver meu diagnóstico grátis →</button></div><div class="pain-cards"><div class="pain-card reveal reveal-delay-1"><div class="pain-card-icon"><svg width="18" height="18" viewBox="0 0 20 20" fill="var(--muted)" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 2a1 1 0 00-1 1v1H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V6a2 2 0 00-2-2h-3V3a1 1 0 00-1-1zM7 9a1 1 0 100 2 1 1 0 000-2zm6 0a1 1 0 100 2 1 1 0 000-2zM8 13h4v1H8v-1z" clip-rule="evenodd"/><rect x="4" y="3" width="2" height="1" rx="0.5" fill="var(--muted)"/><rect x="14" y="3" width="2" height="1" rx="0.5" fill="var(--muted)"/></svg></div><div><h4>Eliminado sem retorno</h4><p>Seu currículo não conversa com a vaga e o sistema filtra antes de um humano ver.</p></div></div><div class="pain-card reveal reveal-delay-2"><div class="pain-card-icon"><svg width="18" height="18" viewBox="0 0 20 20" fill="var(--muted)" xmlns="http://www.w3.org/2000/svg"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 000-2H7zm3 0a1 1 0 000 2h3a1 1 0 000-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg></div><div><h4>O mesmo CV para tudo</h4><p>Cada vaga pede sinais diferentes. Repetir o mesmo currículo reduz sua competitividade.</p></div></div><div class="pain-card reveal reveal-delay-3"><div class="pain-card-icon"><svg width="18" height="18" viewBox="0 0 20 20" fill="var(--muted)" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg></div><div><h4>Entrevista sem contexto</h4><p>Mesmo quando avança, muita gente chega sem entender a empresa, o momento e o que realmente está sendo avaliado.</p></div></div></div></div></div></section>
-<section class="how" id="como-funciona"><div class="container"><div class="sec-center"><div class="sec-eyebrow">Como funciona</div><h2 class="sec-title reveal">Entenda em <em>3 passos</em></h2><p class="sec-sub reveal reveal-delay-1">Sem cadastro para começar. Sem complicação.</p></div><div class="steps"><div class="step reveal"><div class="step-num">1</div><h3>Cole a vaga</h3><p>Copie a descrição da vaga do Gupy, LinkedIn ou qualquer outra plataforma.</p></div><div class="step reveal reveal-delay-1"><div class="step-num">2</div><h3>Cole seu currículo atual</h3><p>Basta colar o texto do seu currículo para o VagaAI fazer a análise.</p></div><div class="step reveal reveal-delay-2"><div class="step-num">3</div><h3>Receba diagnóstico + versão otimizada</h3><p>Veja seu índice de compatibilidade, os principais ajustes e, se quiser, gere a versão pronta para enviar.</p></div></div></div></section>
-<section class="features" id="features"><div class="container"><div class="sec-center"><div class="sec-eyebrow">Recursos</div><h2 class="sec-title reveal">Mais do que um gerador de currículo.<br><em>Um sistema para candidaturas melhores.</em></h2><p class="sec-sub reveal reveal-delay-1">Feito para ajudar você a passar no filtro inicial e chegar mais preparado na entrevista.</p></div><div class="features-grid"><div class="feat-card reveal"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="3" fill="var(--green)"/><circle cx="10" cy="10" r="5.5" stroke="var(--green)" stroke-width="1.5"/><circle cx="10" cy="10" r="8.5" stroke="var(--green)" stroke-width="1.5"/><line x1="10" y1="1" x2="10" y2="3.5" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/><line x1="10" y1="16.5" x2="10" y2="19" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/><line x1="1" y1="10" x2="3.5" y2="10" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/><line x1="16.5" y1="10" x2="19" y2="10" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/></svg></div><h3>Otimização para ATS</h3><p>Seu currículo é ajustado para se alinhar melhor à vaga e melhorar a leitura pelos sistemas de triagem.</p><span class="feat-badge">Exclusivo BR</span></div><div class="feat-card reveal reveal-delay-1"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="var(--green)" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="10" width="4" height="8" rx="1"/><rect x="8" y="6" width="4" height="12" rx="1"/><rect x="15" y="2" width="4" height="16" rx="1"/></svg></div><h3>Índice de compatibilidade</h3><p>Veja onde seu currículo está forte e onde está perdendo pontos — calculado em 4 fatores com pesos definidos.</p></div><div class="feat-card reveal reveal-delay-2"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="var(--green)" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 2a1 1 0 00-1 1v14a1 1 0 001 1h4v-3h4v3h4a1 1 0 001-1V3a1 1 0 00-1-1H4zm2 3h2v2H6V5zm0 4h2v2H6V9zm0 4h2v2H6v-2zm6-8h2v2h-2V5zm0 4h2v2h-2V9z" clip-rule="evenodd"/></svg></div><h3>Briefing da empresa</h3><p>Entenda o contexto da empresa, sinais da cultura e o que pode ser valorizado na entrevista.</p></div><div class="feat-card reveal"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="var(--green)" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 1.5l7.5 3.1v4.9c0 4.5-3.2 8.7-7.5 9.9C5.7 18.2 2.5 14 2.5 9.5V4.6L10 1.5zm3.7 6.2a1 1 0 00-1.4-1.4L9 9.6 7.7 8.3a1 1 0 00-1.4 1.4l2 2a1 1 0 001.4 0l4-4z" clip-rule="evenodd"/></svg></div><h3>Camadas de confiança</h3><p>Saiba o que veio da vaga, o que foi inferido e o que merece validação. Você sabe em que confiar.</p></div><div class="feat-card reveal reveal-delay-1"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="var(--green)" xmlns="http://www.w3.org/2000/svg"><path d="M5 4a2 2 0 012-2h4.586A2 2 0 0113 2.586L15.414 5A2 2 0 0116 6.414V16a2 2 0 01-2 2H7a2 2 0 01-2-2V4z"/><path fill="rgba(0,0,0,0.25)" d="M10 8a1 1 0 011 1v2.586l.293-.293a1 1 0 011.414 1.414l-2 2a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414l.293.293V9a1 1 0 011-1z"/></svg></div><h3>PDF pronto para envio</h3><p>Baixe uma versão mais organizada e profissional do currículo otimizado. Sem retrabalho.</p></div><div class="feat-card reveal reveal-delay-2"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="var(--green)" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 006 7h2a1 1 0 110 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014 13h-2a1 1 0 110-2h4a1 1 0 011 1v4a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg></div><h3>Consistência de análise</h3><p>O sistema mantém coerência ao reavaliar currículos já trabalhados. Nenhuma inconsistência que tire a credibilidade.</p></div></div><div style="margin-top:3rem;border-top:1px solid var(--border);padding-top:2.5rem" class="reveal"><div class="sec-eyebrow" style="margin-bottom:1rem">Incluídos em todos os planos</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem"><a href="/kanban-preview" target="_blank" style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:1.2rem 1.4rem;text-decoration:none;color:var(--text);display:flex;align-items:center;justify-content:space-between;gap:1rem;transition:border-color .2s" onmouseover="this.style.borderColor='var(--green-border)'" onmouseout="this.style.borderColor='var(--border2)'"><div><div style="font-size:13px;font-weight:700;margin-bottom:.25rem">📋 Rastreador de Candidaturas</div><div style="font-size:12px;color:var(--muted)">Kanban visual para organizar suas vagas do interesse à oferta</div></div><span style="font-size:11px;font-weight:700;color:var(--green);white-space:nowrap;flex-shrink:0">Ver demo →</span></a><a href="/alertas-preview" target="_blank" style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:1.2rem 1.4rem;text-decoration:none;color:var(--text);display:flex;align-items:center;justify-content:space-between;gap:1rem;transition:border-color .2s" onmouseover="this.style.borderColor='var(--green-border)'" onmouseout="this.style.borderColor='var(--border2)'"><div><div style="font-size:13px;font-weight:700;margin-bottom:.25rem">🔔 Alertas de Vaga Compatível</div><div style="font-size:12px;color:var(--muted)">Receba toda semana vagas que combinam com seu perfil por email</div></div><span style="font-size:11px;font-weight:700;color:var(--green);white-space:nowrap;flex-shrink:0">Ver demo →</span></a></div></div></div></div></section>
-<section class="diff"><div class="container"><div class="diff-inner reveal"><div class="diff-left"><div class="diff-label">✦ Nossa abordagem</div><h2 class="diff-title">Você não precisa só de<br>um currículo <em>melhor.</em></h2><p class="diff-desc">A maioria das ferramentas para no currículo. O VagaAI vai além: ajuda você a alinhar seu perfil com a vaga e ainda chegar mais preparado para a entrevista.</p><div class="diff-checks"><div class="diff-check"><div class="diff-check-icon">✓</div><p><strong>Currículo ajustado para a vaga</strong> — melhor alinhamento entre sua experiência e o que a vaga pede</p></div><div class="diff-check"><div class="diff-check-icon">✓</div><p><strong>Briefing para entrevista</strong> — mais clareza sobre empresa, contexto e pontos que vale destacar</p></div><div class="diff-check"><div class="diff-check-icon">✓</div><p><strong>Diagnóstico mais claro</strong> — um índice dividido em fatores, não só um número solto</p></div></div></div><div class="diff-right"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--hint);margin-bottom:10px;">O que o VagaAI cobre</div><div class="diff-tag-row"><div class="diff-tag-item"><span>Otimização para sistemas de triagem (ATS)</span><span class="diff-tag-badge tg">✓ incluído</span></div><div class="diff-tag-item"><span>Briefing completo da empresa</span><span class="diff-tag-badge tg">✓ incluído</span></div><div class="diff-tag-item"><span>Score multidimensional com fórmula pública</span><span class="diff-tag-badge tg">✓ incluído</span></div><div class="diff-tag-item"><span>Camadas de confiança no briefing</span><span class="diff-tag-badge tg">✓ incluído</span></div><div class="diff-tag-item"><span>Específico para mercado brasileiro</span><span class="diff-tag-badge tg">✓ incluído</span></div><div class="diff-tag-item"><span>Análise gratuita sem cadastro</span><span class="diff-tag-badge tg">✓ incluído</span></div></div></div></div></div></section>
-<section class="proof"><div class="container"><div class="sec-center"><div class="sec-eyebrow">Quem testou</div><h2 class="sec-title reveal">Resultados percebidos por <em>quem usou o VagaAI</em></h2><p class="sec-sub reveal reveal-delay-1">O que as pessoas disseram depois de testar durante o beta.</p></div><div class="proof-counter reveal reveal-delay-1"><div class="proof-counter-item"><div class="proof-counter-n">+1.200</div><div class="proof-counter-l">análises realizadas no beta</div></div><div class="proof-counter-item"><div class="proof-counter-n">+900</div><div class="proof-counter-l">currículos otimizados</div></div><div class="proof-counter-item"><div class="proof-counter-n">4.8★</div><div class="proof-counter-l">avaliação média dos usuários</div></div></div><div class="testimonials"><div class="testi reveal"><div class="testi-stars">★★★★★</div><p class="testi-text">"Eu não percebia o quanto meu currículo estava genérico. Depois da análise, ficou <strong>muito mais claro o que ajustar para cada vaga.</strong>"</p><div class="testi-author"><div class="testi-av">AC</div><div><div class="testi-name">Ana Carolina S.</div><div class="testi-role">Desenvolvedora Full Stack</div><div class="testi-tag">Usuária do beta</div></div></div></div><div class="testi reveal reveal-delay-1"><div class="testi-stars">★★★★★</div><p class="testi-text">"O briefing me ajudou a chegar mais preparado para a entrevista. <strong>Eu já sabia o que destacar</strong> e como conectar minha experiência com o que a empresa buscava."</p><div class="testi-author"><div class="testi-av">RO</div><div><div class="testi-name">Ricardo O.</div><div class="testi-role">Gerente de Projetos</div><div class="testi-tag">Usuário do beta</div></div></div></div><div class="testi reveal reveal-delay-2"><div class="testi-stars">★★★★★</div><p class="testi-text">"A maior diferença foi entender <strong>onde eu estava perdendo compatibilidade.</strong> O diagnóstico foi muito mais útil do que só receber um currículo reescrito."</p><div class="testi-author"><div class="testi-av">JS</div><div><div class="testi-name">Juliana S.</div><div class="testi-role">Designer UX/UI</div><div class="testi-tag">Usuária do beta</div></div></div></div></div></div></section>
-<section class="pricing" id="planos"><div class="container"><div class="sec-center"><div class="sec-eyebrow">Planos</div><h2 class="sec-title reveal">Comece grátis. Assine quando<br>quiser <em>ir mais longe.</em></h2><p class="sec-sub reveal reveal-delay-1">Diagnóstico gratuito para começar. Planos de assinatura com análises, simulador de entrevista e muito mais para quem está em busca ativa.</p></div><div class="pricing-note-bar reveal reveal-delay-2"><div class="pricing-note-bar-inner"><span>Cancele quando quiser</span>·<span>Sem fidelidade</span>·<span>Começa grátis</span></div></div><div class="plans"><div class="plan reveal"><div class="plan-tag">Gratuito</div><div class="plan-name">Diagnóstico grátis</div><div class="plan-price">R$0</div><div class="plan-per-unit">&nbsp;</div><div class="plan-desc">Para entender onde seu currículo está perdendo pontos antes de aplicar.</div><div class="plan-divider"></div><div class="plan-feats"><div class="pf">1 análise/mês</div><div class="pf">Score ATS completo</div><div class="pf">Principais falhas identificadas</div><div class="pf">Rastreador de candidaturas</div><div class="pf">Alertas de vagas compatíveis</div><div class="pf no">CV otimizado</div><div class="pf no">Briefing da empresa</div><div class="pf no">Simulador de entrevista</div></div><button class="plan-cta plan-cta-ghost" id="planCta-free" onclick="irParaProduto('landing')">Começar grátis</button><div class="plan-note" id="planNote-free">Sem cadastro · Sem cartão</div></div><div class="plan reveal reveal-delay-1"><div class="plan-tag">Starter</div><div class="plan-name">Para busca ativa</div><div class="plan-price">R$19<small>,90</small></div><div class="plan-per-unit">por mês · cancele quando quiser</div><div class="plan-desc">10 análises mensais com CV otimizado e briefing completo.</div><div class="plan-divider"></div><div class="plan-feats"><div class="pf">10 análises/mês</div><div class="pf">CV otimizado para cada vaga</div><div class="pf">Briefing da empresa</div><div class="pf">Carta de apresentação</div><div class="pf">Rastreador de candidaturas</div><div class="pf">Alertas semanais de vagas</div><div class="pf no">Simulador de entrevista</div><div class="pf no">Análises ilimitadas</div></div><button class="plan-cta plan-cta-ghost" id="planCta-starter" onclick="openPlan(window.STARTER_MENSAL_URL||'','starter-mensal')">Assinar Starter</button><div class="plan-note" id="planNote-starter">Ou <a href="#" onclick="openPlan(window.STARTER_ANUAL_URL||'','starter-anual');return false" style="color:var(--green)">R$179/ano</a> (economize R$60)</div></div><div class="plan popular reveal reveal-delay-2"><div class="plan-popular-badge">Recomendado</div><div class="plan-tag" style="margin-top:.5rem;">Pro</div><div class="plan-name">Para quem leva a sério</div><div class="plan-price">R$39<small>,90</small></div><div class="plan-per-unit">por mês · cancele quando quiser</div><div class="plan-desc">Tudo ilimitado + Simulador de entrevista com IA.</div><div class="plan-divider"></div><div class="plan-feats"><div class="pf">Análises ilimitadas</div><div class="pf">CV otimizado para cada vaga</div><div class="pf">Briefing completo da empresa</div><div class="pf">Simulador de entrevista com IA</div><div class="pf">Carta de apresentação</div><div class="pf">Alertas diários de vagas</div></div><button class="plan-cta plan-cta-primary" id="planCta-pro" onclick="openPlan(window.PRO_MENSAL_URL||'','pro-mensal')">Assinar Pro</button><div class="plan-note" id="planNote-pro">Ou <a href="#" onclick="openPlan(window.PRO_ANUAL_URL||'','pro-anual');return false" style="color:var(--green)">R$299/ano</a> (economize R$180)</div></div></div><div class="pricing-bottom-note">Cancele quando quiser <span>·</span> Sem fidelidade <span>·</span> Plano gratuito sempre disponível</div></div></section>
-<section class="faq" id="faq"><div class="container"><div class="sec-center"><div class="sec-eyebrow">Dúvidas frequentes</div><h2 class="sec-title reveal">Perguntas <em>frequentes</em></h2></div><div class="faq-list reveal reveal-delay-1"><div class="faq-item open"><button class="faq-q" onclick="toggleFaq(this)">Preciso criar conta para usar a análise grátis?<span class="faq-icon">+</span></button><div class="faq-a">Não. Você pode testar a análise inicial sem cadastro. A conta só é necessária quando quiser salvar histórico ou comprar créditos para candidaturas otimizadas.</div></div><div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">O que é ATS e por que ele rejeita meu currículo?<span class="faq-icon">+</span></button><div class="faq-a">ATS (Applicant Tracking System) é o software que a maioria das empresas usa para filtrar currículos automaticamente. O Gupy, principal plataforma de RH do Brasil, é um ATS. Ele procura palavras-chave específicas da vaga — se o seu currículo não tiver essas palavras, você pode ser descartado antes de qualquer humano ver seu perfil.</div></div><div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Como funciona o briefing da empresa?<span class="faq-icon">+</span></button><div class="faq-a">O VagaAI analisa o texto da vaga para montar um briefing estruturado em 3 camadas: dados extraídos diretamente da vaga (confiáveis), informações inferidas pelo contexto (prováveis), e conhecimento geral sobre a empresa (para verificar). Você chega na entrevista sabendo o que a empresa provavelmente valoriza além do técnico.</div></div><div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Como é calculado o Índice de Compatibilidade ATS?<span class="faq-icon">+</span></button><div class="faq-a">O índice é calculado em 4 dimensões com pesos fixos: compatibilidade com a vaga (35%), cobertura de keywords ATS (30%), legibilidade e estrutura (20%) e força dos bullets (15%). Cada fator é exibido individualmente no resultado para que você saiba exatamente onde perder — e onde ganhar — pontos.</div></div><div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">O VagaAI inventa experiências no currículo?<span class="faq-icon">+</span></button><div class="faq-a">Não. O VagaAI reorganiza, reescreve e melhora a apresentação do que você já informou. Ele não cria cargos, experiências ou resultados que não existam no seu currículo original.</div></div><div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Os créditos têm prazo de validade?<span class="faq-icon">+</span></button><div class="faq-a">Não. Todos os créditos comprados são permanentes — você usa no seu ritmo, sem pressão de prazo. Se você está em busca ativa agora ou vai começar daqui a alguns meses, seus créditos estarão lá.</div></div><div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">O VagaAI funciona para qualquer vaga?<span class="faq-icon">+</span></button><div class="faq-a">Sim. Funciona com qualquer vaga de qualquer plataforma — Gupy, LinkedIn, 99Jobs, Vagas.com, Catho, ou qualquer site. Basta copiar o texto da descrição e colar. A otimização é específica para cada vaga individualmente.</div></div></div></div></section>
-<section class="final-cta"><div class="container"><h2 class="final-cta-title">Sua próxima vaga merece uma<br><em>candidatura melhor.</em></h2><p class="final-cta-sub">Faça sua análise grátis e veja onde seu currículo está perdendo força antes de enviar.</p><div class="final-cta-actions"><button class="btn-hero" onclick="irParaProduto('landing')">⚡ Analisar minha vaga grátis</button></div><p class="final-note">Sem cadastro para começar · Resultado em segundos</p></div></section>
-<footer><div class="footer-inner"><div class="footer-brand"><img src="/logo.svg" alt="VagaAI" height="40" class="logo-dark" style="display:block; opacity:.85;"><img src="/logo-icon.svg" alt="VagaAI" height="40" class="logo-light" style="display:none;"></div><div class="footer-links"><a href="/termos">Termos de uso</a><a href="/termos#privacidade">Privacidade</a><a href="/termos#privacidade">LGPD</a><a href="mailto:contato@vagaai.app.br">Suporte</a></div><div class="footer-copy">© 2025 VagaAI · HeapWeb · Todos os direitos reservados</div></div></footer>
-<script>
-// ── URLs dos Payment Links (substituir após criar no Stripe) ──────────────────
-// ⚠️ TEST MODE — substituir pelas URLs live quando ativar live mode no Stripe
-window.STARTER_MENSAL_URL = 'https://buy.stripe.com/28E14n0WO2rne5Ff0P9k406';
-window.STARTER_ANUAL_URL  = 'https://buy.stripe.com/5kQaEXaxo0jfd1B5qf9k407';
-window.PRO_MENSAL_URL     = 'https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408';
-window.PRO_ANUAL_URL      = 'https://buy.stripe.com/bJe5kDgVM0jf8Ll8Cr9k409';
+  <div class="cursor-glow" id="cursorGlow"></div>
+  <div class="scroll-progress" id="scrollProgress"></div>
 
-function track(name,props){try{window.va&&window.va('event',Object.assign({name:name},props||{}))}catch(e){}}
-function irParaProduto(source){track('cta_click',{source:source||'unknown'});window.location.href='/app'}
-var _sb = window.supabase ? window.supabase.createClient('https://kbcjchjepgejdezeuwwh.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA') : null;
-async function openPlan(url,plan){
-  track('plan_click',{plan:plan});
-  if(!url){
-    alert('Link de assinatura sendo configurado. Tente novamente em breve ou entre em contato: contato@vagaai.app.br');
-    return;
-  }
-  try {
-    if(_sb){
-      var r=await _sb.auth.getSession();
-      var s=r.data.session;
-      if(s&&s.user){
-        url+=(url.includes('?')?'&':'?')+'client_reference_id='+s.user.id+'&prefilled_email='+encodeURIComponent(s.user.email);
+  <div class="nav-shell">
+    <nav class="nav" id="nav">
+      <a class="brand" href="#inicio" aria-label="VagaAI — ir para o início">
+        <img src="/logo.svg" alt="VagaAI" class="logo-dark">
+        <img src="/logo-light.svg" alt="VagaAI" class="logo-light">
+      </a>
+      <div class="nav-links">
+        <a href="#beneficios">Benefícios</a>
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#produto">Produto</a>
+        <a href="#planos">Planos</a>
+      </div>
+      <div class="nav-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">
+          <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <a class="btn btn-secondary" href="https://www.vagaai.app.br/login">Entrar</a>
+        <a class="btn btn-primary" href="https://www.vagaai.app.br/app">Começar grátis</a>
+        <button class="menu" aria-label="Abrir menu" onclick="toggleMenu()">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero" id="inicio">
+      <div class="hero-orb"></div>
+      <div class="container hero-grid">
+        <div>
+          <div class="hero-social reveal">
+            <div class="hero-avatars">
+              <span class="hero-avatar">AC</span>
+              <span class="hero-avatar">RO</span>
+              <span class="hero-avatar">JS</span>
+              <span class="hero-avatar">+</span>
+            </div>
+            <div class="hero-stars">★★★★★</div>
+            <span><b>4.8</b> · mais de 1.200 profissionais já usam</span>
+          </div>
+          <div class="hero-tag reveal delay-1"><strong>Para conseguir ou trocar de emprego com mais estratégia</strong></div>
+          <h1 class="reveal delay-1">Encontre vagas certas.<br>Fortaleça seu currículo.<br><span class="highlight">Avance na seleção.</span></h1>
+          <p class="hero-copy reveal delay-2">Receba oportunidades do seu interesse, descubra onde o seu perfil combina e adapte o currículo antes de enviar. <strong>Da busca pela vaga até a preparação para a entrevista, tudo em um só lugar.</strong></p>
+          <div class="hero-actions reveal delay-2">
+            <a class="btn btn-primary" href="https://www.vagaai.app.br/app"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg>Ver quais vagas combinam com você</a>
+            <a class="btn btn-secondary" href="#planos">Receber vagas esta semana</a>
+          </div>
+          <div class="hero-proof reveal delay-3">
+            <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Sem cartão · comece hoje</span>
+            <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Sem inventar experiências</span>
+            <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Resultado em 15 segundos</span>
+          </div>
+        </div>
+
+        <!-- HERO MOCKUP — Dashboard de Alertas -->
+        <div class="mockup-stage reveal delay-1">
+          <div class="mockup-card" id="mockupCard">
+            <!-- Window chrome -->
+            <div class="mock-bar">
+              <div class="mock-dots"><i></i><i></i><i></i></div>
+              <span class="mock-chrome-title">VagaAI — Painel</span>
+              <span class="mock-chrome-badge"><span class="mock-chrome-dot"></span>Alertas ativos</span>
+            </div>
+            <!-- Layout: sidebar + main -->
+            <div class="mock-layout">
+              <!-- Mini sidebar -->
+              <div class="mock-sidebar">
+                <div class="msb-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <div class="msb-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </div>
+                <div class="msb-item active">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                </div>
+                <div class="msb-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg>
+                </div>
+              </div>
+              <!-- Main content -->
+              <div class="mock-main">
+                <div class="mock-breadcrumb">
+                  Painel
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                  <span>Alertas de Vagas</span>
+                </div>
+                <!-- Notification banner -->
+                <div class="mock-alert-banner" id="mockBanner">
+                  <div class="mock-banner-left">
+                    <div class="mock-banner-dot"></div>
+                    <div class="mock-banner-text">
+                      <b>3 novas vagas encontradas</b>
+                      <span>Alerta semanal · Produto &amp; PM</span>
+                    </div>
+                  </div>
+                  <span class="mock-banner-time">Hoje, 08:17</span>
+                </div>
+                <!-- Job cards -->
+                <div class="mock-cards">
+                  <!-- Card 1 -->
+                  <div class="mock-jcard" id="mc1">
+                    <div class="mj-score mj-amber">71</div>
+                    <div class="mj-info">
+                      <div class="mj-row"><div class="mj-title">Gerente de Produto</div></div>
+                      <div class="mj-sub">iFood · Osasco, SP · Híbrido</div>
+                      <div class="mj-tags"><span class="mj-tag">CLT</span><span class="mj-tag">Híbrido</span></div>
+                    </div>
+                    <button class="mj-btn">Analisar</button>
+                  </div>
+                  <!-- Card 2 -->
+                  <div class="mock-jcard" id="mc2">
+                    <div class="mj-score mj-green">82</div>
+                    <div class="mj-info">
+                      <div class="mj-row"><div class="mj-title">Product Manager</div></div>
+                      <div class="mj-sub">Nubank · São Paulo, SP · Remoto</div>
+                      <div class="mj-tags"><span class="mj-tag">PJ</span><span class="mj-tag">Remoto</span></div>
+                    </div>
+                    <button class="mj-btn">Analisar</button>
+                  </div>
+                  <!-- Card 3 — melhor match -->
+                  <div class="mock-jcard best" id="mc3">
+                    <div class="mj-score mj-green">90</div>
+                    <div class="mj-info">
+                      <div class="mj-row">
+                        <div class="mj-title">PM Sênior</div>
+                        <span class="mock-best-chip">
+                          <svg width="7" height="7" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                          Melhor match
+                        </span>
+                      </div>
+                      <div class="mj-sub">Itaú · São Paulo, SP · R$ 15–22k</div>
+                      <div class="mj-tags"><span class="mj-tag">CLT</span><span class="mj-tag">Presencial</span></div>
+                    </div>
+                    <button class="mj-btn" id="mb3">Analisar</button>
+                  </div>
+                </div>
+                <!-- Done toast -->
+                <div class="mock-done-toast" id="mockDone">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 6"/></svg>
+                  Alerta enviado por e-mail
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Float badges -->
+          <div class="float-badge one">
+            <div class="float-row">
+              <span class="float-icon">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </span>
+              <div><b>Alertas semanais</b><span>Hoje, 08:17</span></div>
+            </div>
+          </div>
+          <div class="float-badge two">
+            <div class="float-row">
+              <span class="float-icon">
+                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </span>
+              <div><b>90 de match</b><span>PM Sênior · Itaú</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRUST -->
+    <div class="trust-strip">
+      <div class="container trust-grid">
+        <div class="trust-item"><b>Receba vagas da sua escolha</b><span>Cargo, nível, local e salário</span></div>
+        <div class="trust-item"><b>Entenda suas chances</b><span>Score e lacunas antes de aplicar</span></div>
+        <div class="trust-item"><b>Adapte o seu currículo</b><span>Uma versão para cada oportunidade</span></div>
+        <div class="trust-item"><b>Prepare a entrevista</b><span>Saiba o que a empresa busca</span></div>
+      </div>
+    </div>
+
+    <!-- JOURNEY PIPELINE (antecipada: sistema completo logo de cara) -->
+    <section class="section journey" id="jornada" style="padding:64px 0">
+      <div class="container">
+        <div class="center">
+          <span class="eyebrow">Como o sistema funciona</span>
+          <h2 class="section-title reveal" style="font-size:clamp(30px,3.8vw,52px)">Cinco etapas conectadas.<br><span class="green italic">Tudo em um só lugar.</span></h2>
+          <p class="section-copy reveal delay-1">Da vaga até a entrevista, o VagaAI mantém o contexto de cada candidatura disponível em cada passo.</p>
+        </div>
+        <!-- Desktop -->
+        <div class="journey-outer reveal delay-2" id="journeyOuter">
+          <div class="journey-nodes" id="journeyNodes">
+          <div class="journey-track-wrap"><div class="journey-track-fill" id="journeyFill"></div></div>
+            <div class="journey-node" data-jn="0">
+              <div class="j-dot"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="m4 7 8 6 8-6"/></svg></div>
+              <div class="j-label"><b>Vagas escolhidas</b><span>Alertas personalizados</span></div>
+              <div class="j-tip">Configure cargo, nível, local e salário. O VagaAI monitora 20 fontes e envia só o que é relevante para o seu perfil.</div>
+            </div>
+            <div class="journey-node" data-jn="1">
+              <div class="j-dot"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></div>
+              <div class="j-label"><b>Análise de aderência</b><span>Score e diagnóstico</span></div>
+              <div class="j-tip">Compare seu currículo com a vaga. Veja score, requisitos atendidos, keywords ausentes e o que priorizar antes de aplicar.</div>
+            </div>
+            <div class="journey-node" data-jn="2">
+              <div class="j-dot"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></svg></div>
+              <div class="j-label"><b>Currículo otimizado</b><span>PDF para esta vaga</span></div>
+              <div class="j-tip">Baixe um currículo adaptado ao que esta vaga valoriza, usando suas experiências reais — sem inventar nada.</div>
+            </div>
+            <div class="journey-node" data-jn="3">
+              <div class="j-dot"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6V4h8v2M3 11h18"/></svg></div>
+              <div class="j-label"><b>Candidatura acompanhada</b><span>Rastreador integrado</span></div>
+              <div class="j-tip">Guarde link, salário, currículo enviado, status, prazos e follow-ups. Sem precisar de planilha ou anotações espalhadas.</div>
+            </div>
+            <div class="journey-node" data-jn="4">
+              <div class="j-dot"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></div>
+              <div class="j-label"><b>Preparação para entrevista</b><span>Briefing e simulador</span></div>
+              <div class="j-tip">Entenda a empresa, antecipe perguntas com base na vaga e pratique respostas antes da conversa com o recrutador.</div>
+            </div>
+          </div>
+        </div>
+        <!-- Mobile -->
+        <div class="journey-mobile" id="journeyMobile">
+          <div class="jm-item" data-jn="0"><div><div class="jm-dot"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="m4 7 8 6 8-6"/></svg></div><div class="jm-line"></div></div><div class="jm-info"><b>Vagas escolhidas</b><span>Alertas personalizados com as vagas certas</span></div></div>
+          <div class="jm-item" data-jn="1"><div><div class="jm-dot"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></div><div class="jm-line"></div></div><div class="jm-info"><b>Análise de aderência</b><span>Score, diagnóstico e prioridades</span></div></div>
+          <div class="jm-item" data-jn="2"><div><div class="jm-dot"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></svg></div><div class="jm-line"></div></div><div class="jm-info"><b>Currículo otimizado</b><span>PDF adaptado para esta oportunidade</span></div></div>
+          <div class="jm-item" data-jn="3"><div><div class="jm-dot"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6V4h8v2M3 11h18"/></svg></div><div class="jm-line"></div></div><div class="jm-info"><b>Candidatura acompanhada</b><span>Rastreador com status e prazos</span></div></div>
+          <div class="jm-item" data-jn="4"><div><div class="jm-dot"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></div></div><div class="jm-info"><b>Preparação para entrevista</b><span>Briefing e simulador com IA</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BENEFITS -->
+    <section class="section benefits" id="beneficios">
+      <div class="container">
+        <div class="center">
+          <span class="eyebrow">Toda a sua busca em um só lugar</span>
+          <h2 class="section-title reveal">Tudo o que você precisa para buscar emprego <span class="green italic">com mais direção.</span></h2>
+          <p class="section-copy reveal delay-1">Você deixa de apenas enviar currículos e passa a escolher, adaptar, acompanhar e se preparar para cada oportunidade.</p>
+        </div>
+        <div class="benefit-grid">
+          <article class="benefit-card reveal"><span class="benefit-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="m4 7 8 6 8-6"/></svg></span><h3>Receba vagas<br>da sua escolha</h3><p>Defina cargo, nível, localização, faixa salarial e competências. O VagaAI busca e organiza oportunidades compatíveis.</p><strong>Você escolhe o perfil. O alerta faz a busca.</strong></article>
+          <article class="benefit-card reveal delay-1"><span class="benefit-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/></svg></span><h3>Descubra se a vaga<br>combina com você</h3><p>Veja o score, os requisitos atendidos e as lacunas antes de investir tempo em uma candidatura.</p><strong>Priorize melhor. Aplique com intenção.</strong></article>
+          <article class="benefit-card reveal delay-2"><span class="benefit-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></svg></span><h3>Adapte o currículo<br>para cada vaga</h3><p>Destaque as experiências e palavras certas sem copiar a descrição ou inventar competências.</p><strong>Um CV específico, verdadeiro e pronto para enviar.</strong></article>
+          <article class="benefit-card reveal"><span class="benefit-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6V4h8v2M3 11h18"/></svg></span><h3>Acompanhe todas<br>as candidaturas</h3><p>Guarde vaga, salário, link, currículo enviado, status, retorno e próxima ação no mesmo painel.</p><strong>Sem planilhas. Sem oportunidades esquecidas.</strong></article>
+          <article class="benefit-card reveal delay-1"><span class="benefit-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></span><h3>Prepare-se para<br>a entrevista</h3><p>Entenda a empresa, antecipe perguntas e saiba quais resultados e experiências merecem destaque.</p><strong>Mais contexto. Menos improviso.</strong></article>
+          <article class="benefit-card reveal delay-2"><span class="benefit-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span><h3>Melhore a cada<br>nova tentativa</h3><p>Acompanhe seus scores, identifique padrões e entenda onde sua candidatura ainda perde força.</p><strong>Transforme rejeição em informação útil.</strong></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAIN -->
+    <section class="section pain">
+      <div class="container pain-grid">
+        <div>
+          <span class="eyebrow">Por que bons profissionais não avançam?</span>
+          <h2 class="pain-title reveal">Você tem experiência. O problema é que o currículo <span class="green italic">não mostra isso para a vaga certa.</span></h2>
+          <p class="pain-copy reveal delay-1">Você abre o LinkedIn, vê 40 vagas, não sabe se serve para nenhuma, e manda para todas por via das dúvidas. O resultado: silêncio.</p>
+          <div class="truth reveal delay-2">O VagaAI não promete contratação. Ele elimina os erros evitáveis que impedem seu currículo de chegar até a entrevista.</div>
+        </div>
+        <div class="pain-list">
+          <article class="pain-item reveal"><span class="pain-number">01</span><div><h3>"Mandei mais de 80 currículos. Zero retorno."</h3><p>O VagaAI mostra exatamente onde o problema está — na escolha da vaga, nas palavras, ou em como a experiência aparece — antes de você mandar mais um.</p></div></article>
+          <article class="pain-item reveal delay-1"><span class="pain-number">02</span><div><h3>"Perco horas pesquisando vagas que provavelmente não servem."</h3><p>Compare seu perfil com os requisitos em segundos. Saiba se vale a pena antes de investir tempo e energia numa candidatura que não vai avançar.</p></div></article>
+          <article class="pain-item reveal delay-2"><span class="pain-number">03</span><div><h3>"Meu currículo parece feito para qualquer empresa — e não convence nenhuma."</h3><p>Adapte o foco, o resumo e as realizações para o que cada vaga valoriza, usando sua experiência real. Sem copiar a descrição. Sem inventar nada.</p></div></article>
+          <article class="pain-item reveal delay-3"><span class="pain-number">04</span><div><h3>"Me chamaram para entrevista e não sabia o que destacar."</h3><p>Chegue com o briefing da empresa, as respostas já estruturadas e clareza sobre o que te diferencia para aquela oportunidade específica.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS — ENHANCED -->
+    <section class="section steps" id="como-funciona">
+      <div class="container">
+        <div class="center">
+          <span class="eyebrow">Como funciona</span>
+          <h2 class="section-title reveal">Escolha a vaga. Entenda o que falta. <span class="green italic">Envie uma candidatura melhor.</span></h2>
+        </div>
+        <div class="step-tabs reveal delay-1" id="stepTabs">
+          <button class="step-tab active" data-step="s1">01 — Escolha a vaga</button>
+          <button class="step-tab" data-step="s2">02 — Compare com seu CV</button>
+          <button class="step-tab" data-step="s3">03 — Envie com mais força</button>
+        </div>
+        <div class="step-stage reveal delay-2">
+          <!-- Step 1 -->
+          <div class="step-panel active" data-panel="s1">
+            <div class="step-info">
+              <div class="step-step">01</div>
+              <h3>Escolha uma vaga</h3>
+              <p>Cole a descrição de qualquer site ou receba oportunidades pelos alertas do VagaAI. O sistema detecta automaticamente cargo, empresa, requisitos e palavras-chave relevantes.</p>
+            </div>
+            <div class="step-visual">
+              <div class="sv-label">Vaga detectada</div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                <div style="width:32px;height:32px;border-radius:9px;background:var(--green-dim);border:1px solid var(--line-green);display:grid;place-items:center;color:var(--green)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="m4 7 8 6 8-6"/></svg></div>
+                <div><div style="font-size:11px;font-weight:800;color:var(--ink)">Product Manager · Pleno</div><div style="font-size:8px;color:var(--muted);margin-top:1px">São Paulo · CLT · Remoto</div></div>
+              </div>
+              <div class="sv-line f"></div>
+              <div class="sv-line m"></div>
+              <div class="sv-line s"></div>
+              <div style="margin-top:12px">
+                <div class="sv-label">Requisitos detectados</div>
+                <div style="margin-top:7px">
+                  <span class="sv-tag match">🎯 Product strategy</span>
+                  <span class="sv-tag match">🎯 Roadmap</span>
+                  <span class="sv-tag match">🎯 Stakeholders</span>
+                  <span class="sv-tag">SQL</span>
+                  <span class="sv-tag">Growth</span>
+                  <span class="sv-tag">OKRs</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Step 2 -->
+          <div class="step-panel" data-panel="s2">
+            <div class="step-info">
+              <div class="step-step">02</div>
+              <h3>Compare com seu CV</h3>
+              <p>Veja compatibilidade, palavras-chave, requisitos e pontos que precisam ficar mais claros. O sistema encontra o que está forte e o que pode custar sua candidatura.</p>
+            </div>
+            <div class="step-visual">
+              <div class="match-cols">
+                <div class="match-col">
+                  <div class="col-scanner"></div>
+                  <div class="match-col-label">Vaga</div>
+                  <span class="kw-pill kw-found">React</span>
+                  <span class="kw-pill kw-found">TypeScript</span>
+                  <span class="kw-pill kw-found">Node.js</span>
+                  <span class="kw-pill kw-miss">GraphQL</span>
+                  <span class="kw-pill kw-miss">AWS Lambda</span>
+                  <div style="margin-top:10px"><div class="sv-line f"></div><div class="sv-line m"></div><div class="sv-line s"></div></div>
+                </div>
+                <div class="match-col">
+                  <div class="col-scanner" style="animation-delay:.6s"></div>
+                  <div class="match-col-label">Seu CV</div>
+                  <span class="kw-pill kw-found">✓ React</span>
+                  <span class="kw-pill kw-found">✓ TypeScript</span>
+                  <span class="kw-pill kw-found">✓ Node.js</span>
+                  <span class="kw-pill kw-miss">✗ GraphQL</span>
+                  <span class="kw-pill kw-miss">✗ AWS Lambda</span>
+                  <div style="margin-top:10px"><div class="sv-line m"></div><div class="sv-line f"></div><div class="sv-line s"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Step 3 -->
+          <div class="step-panel" data-panel="s3">
+            <div class="step-info">
+              <div class="step-step">03</div>
+              <h3>Envie com mais força</h3>
+              <p>Baixe o currículo adaptado, acompanhe a candidatura e prepare-se se a entrevista chegar. Tudo conectado, sem precisar gerenciar manualmente.</p>
+            </div>
+            <div class="step-visual" id="step3Visual">
+              <div class="mini-ring-row">
+                <svg class="mini-svg" viewBox="0 0 50 50" aria-hidden="true">
+                  <circle class="mini-track" cx="25" cy="25" r="20"/>
+                  <circle class="mini-arc" cx="25" cy="25" r="20"/>
+                </svg>
+                <div class="mini-num">74%</div>
+                <div class="mini-info"><b>Boa aderência</b><span>3 pontos a fortalecer</span></div>
+              </div>
+              <div class="act-item" id="act1"><span class="act-num">1</span><div><b>Reforce resultados</b><span>Adicione números e impacto mensurável</span></div></div>
+              <div class="act-item" id="act2"><span class="act-num">2</span><div><b>Inclua keywords ausentes</b><span>3 termos relevantes que faltam no ATS</span></div></div>
+              <div class="act-item" id="act3"><span class="act-num">3</span><div><b>Adapte o resumo</b><span>Conecte sua história a esta oportunidade</span></div></div>
+              <div class="ready-badge" id="readyBadge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg>
+                Currículo pronto para baixar
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="step-dots" id="stepDots">
+          <button class="step-dot active" data-step="s1" aria-label="Etapa 1"></button>
+          <button class="step-dot" data-step="s2" aria-label="Etapa 2"></button>
+          <button class="step-dot" data-step="s3" aria-label="Etapa 3"></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- DEMO ANIMADO — 4 estágios -->
+    <section class="section demo-section" id="demo">
+      <div class="container">
+        <div class="center">
+          <span class="eyebrow">Na prática</span>
+          <h2 class="section-title reveal">Do alerta à candidatura <span class="green italic">em 5 minutos.</span></h2>
+          <p class="section-copy reveal delay-1">Veja o fluxo completo: da vaga recebida por alerta até a candidatura preparada e organizada.</p>
+        </div>
+        <div class="demo-panel reveal" id="demoPanel">
+          <div class="dp-bar">
+            <div class="mock-dots"><i></i><i></i><i></i></div>
+            <span class="dp-title">VagaAI — Painel</span>
+            <span class="dp-badge"><span class="dp-dot"></span>Ao vivo</span>
+          </div>
+          <div class="dp-body">
+            <!-- S1: Alert + Job cards -->
+            <div class="dp-stage active" id="dpS1">
+              <div class="dp-alert-banner" id="dpAlertBanner">
+                <span style="font-size:16px">🔔</span>
+                <div class="dp-ab-text"><b>Alerta semanal enviado!</b><span>3 vagas para Product Manager em São Paulo</span></div>
+              </div>
+              <div class="dp-cards">
+                <div class="dp-card" id="dpCard1">
+                  <div class="dp-card-info"><b>PM Pleno — Rappi</b><span>São Paulo · Remoto · CLT</span></div>
+                  <div class="dp-card-right"><span class="dp-score-val a">71</span></div>
+                </div>
+                <div class="dp-card" id="dpCard2">
+                  <div class="dp-card-info"><b>Product Manager — iFood</b><span>São Paulo · Híbrido · CLT</span></div>
+                  <div class="dp-card-right"><span class="dp-score-val g">82</span></div>
+                </div>
+                <div class="dp-card best" id="dpCard3">
+                  <div class="dp-card-info"><b>PM Sênior — Nubank</b><span>São Paulo · Presencial · CLT</span></div>
+                  <div class="dp-card-right">
+                    <span class="dp-score-val g">90</span>
+                    <span class="dp-best-badge">Melhor match</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- S2: Analysis -->
+            <div class="dp-stage" id="dpS2">
+              <div class="dp-analysis">
+                <div class="dp-ring-wrap">
+                  <div class="dp-ring" aria-label="Score de compatibilidade: 82%">
+                    <svg width="106" height="106" viewBox="0 0 106 106">
+                      <circle class="dp-ring-track" cx="53" cy="53" r="47"/>
+                      <circle class="dp-ring-arc" id="dpRingArc" cx="53" cy="53" r="47"/>
+                    </svg>
+                    <div class="dp-ring-num" id="dpRingNum" aria-hidden="true">0</div>
+                  </div>
+                  <div class="dp-ring-sub">Score de compatibilidade</div>
+                </div>
+                <div class="dp-bars">
+                  <div class="dp-bar-row">
+                    <div class="dp-bar-head"><span>Compatibilidade</span><span id="dpBarN1">0%</span></div>
+                    <div class="dp-bar-track"><div class="dp-bar-fill" id="dpBar1"></div></div>
+                  </div>
+                  <div class="dp-bar-row">
+                    <div class="dp-bar-head"><span>Keywords ATS</span><span id="dpBarN2">0%</span></div>
+                    <div class="dp-bar-track"><div class="dp-bar-fill" id="dpBar2"></div></div>
+                  </div>
+                  <div class="dp-bar-row">
+                    <div class="dp-bar-head"><span>Legibilidade</span><span id="dpBarN3">0%</span></div>
+                    <div class="dp-bar-track"><div class="dp-bar-fill" id="dpBar3"></div></div>
+                  </div>
+                  <div class="dp-bar-row">
+                    <div class="dp-bar-head"><span>Força dos bullets</span><span id="dpBarN4">0%</span></div>
+                    <div class="dp-bar-track"><div class="dp-bar-fill am" id="dpBar4"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- S3: Results -->
+            <div class="dp-stage" id="dpS3">
+              <div class="dp-results">
+                <div class="dp-result" id="dpR1">
+                  <div class="dp-result-icon">⚠️</div>
+                  <div><b>2 lacunas identificadas</b><span>Liderança e métricas de produto</span></div>
+                </div>
+                <div class="dp-result" id="dpR2">
+                  <div class="dp-result-icon">✅</div>
+                  <div><b>Currículo otimizado</b><span>Ajustado para ATS e palavras-chave</span></div>
+                </div>
+                <div class="dp-result" id="dpR3">
+                  <div class="dp-result-icon">📋</div>
+                  <div><b>Briefing da empresa</b><span>Cultura, stack e desafios do Nubank</span></div>
+                </div>
+                <div class="dp-result" id="dpR4">
+                  <div class="dp-result-icon">📁</div>
+                  <div><b>Adicionado ao rastreador</b><span>Status: Em candidatura</span></div>
+                </div>
+              </div>
+            </div>
+            <!-- S4: Conclusion -->
+            <div class="dp-stage" id="dpS4">
+              <div class="dp-conclusion">
+                <div class="dp-check">✓</div>
+                <h4>Candidatura preparada</h4>
+                <p>PM Sênior · Nubank · Score 82% · Currículo adaptado e briefing completo gerados</p>
+                <a class="dp-dl-btn" href="https://www.vagaai.app.br/app">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                  Baixar currículo otimizado
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Stage indicators -->
+        <div class="demo-indicators" aria-hidden="true">
+          <div class="di-item active" id="di1"><div class="di-dot"></div><span class="di-label">Alerta</span></div>
+          <div class="di-connector" id="diL1"></div>
+          <div class="di-item" id="di2"><div class="di-dot"></div><span class="di-label">Análise</span></div>
+          <div class="di-connector" id="diL2"></div>
+          <div class="di-item" id="di3"><div class="di-dot"></div><span class="di-label">Currículo</span></div>
+          <div class="di-connector" id="diL3"></div>
+          <div class="di-item" id="di4"><div class="di-dot"></div><span class="di-label">Candidatura</span></div>
+        </div>
+        <div class="center" style="margin-top:34px">
+          <a class="btn btn-primary" href="https://www.vagaai.app.br/app">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg>
+            Experimentar agora, grátis
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCT -->
+    <section class="section product" id="produto">
+      <div class="container">
+        <div class="center">
+          <span class="eyebrow">Muito além de um gerador de currículo</span>
+          <h2 class="section-title reveal">Veja como o VagaAI trabalha em cada etapa da <span class="green italic">sua busca por emprego.</span></h2>
+          <p class="section-copy reveal delay-1">As funcionalidades se conectam: a vaga vira análise, a análise vira currículo e a candidatura continua organizada até o retorno.</p>
+        </div>
+        <div class="product-shell reveal">
+          <div class="product-tabs">
+            <button class="product-tab active" data-product="analysis">Análise da vaga</button>
+            <button class="product-tab" data-product="tracker">Candidaturas</button>
+            <button class="product-tab" data-product="alerts">Alertas de vagas</button>
+          </div>
+          <div class="product-window">
+            <div class="product-panel active" data-panel="analysis">
+              <div class="analysis-product">
+                <div class="analysis-summary"><span class="eyebrow">Resultado da análise</span><h3>Você tem boa aderência para esta vaga.</h3><p>O próximo passo é mostrar liderança e resultados com mais clareza.</p><div class="big-score"><b>74%</b></div></div>
+                <div class="analysis-detail">
+                  <div class="detail-head"><b>Onde sua candidatura ganha ou perde força</b><span>4 fatores</span></div>
+                  <div class="detail-row"><div class="detail-top"><span>Experiência compatível</span><b>86%</b></div><div class="d-bar"><i style="width:86%"></i></div></div>
+                  <div class="detail-row"><div class="detail-top"><span>Palavras-chave relevantes</span><b style="color:var(--amber)">62%</b></div><div class="d-bar"><i style="width:62%;background:var(--amber)"></i></div></div>
+                  <div class="detail-row"><div class="detail-top"><span>Força dos resultados</span><b>71%</b></div><div class="d-bar"><i style="width:71%"></i></div></div>
+                  <div class="detail-row"><div class="detail-top"><span>Legibilidade</span><b>88%</b></div><div class="d-bar"><i style="width:88%"></i></div></div>
+                  <div class="action-box"><strong>Corrija primeiro</strong>Inclua números nos resultados, reforce termos de liderança e adapte o resumo para esta oportunidade.</div>
+                </div>
+              </div>
+            </div>
+            <div class="product-panel" data-panel="tracker"><img src="/mockup-ux-candidaturas/vagaai-candidaturas-desktop.png" alt="Painel de candidaturas VagaAI"></div>
+            <div class="product-panel" data-panel="alerts"><img src="/mockup-ux-alertas/vagaai-alertas-desktop-v2.png" alt="Alertas de vagas VagaAI"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MARKET -->
+    <section class="section market">
+      <div class="container">
+        <div class="center">
+          <span class="eyebrow">Por que se candidatar melhor importa agora</span>
+          <h2 class="section-title reveal">Mais aplicações. Menos tempo de atenção.<br><span class="green italic">Clareza virou vantagem.</span></h2>
+        </div>
+        <div class="market-grid">
+          <article class="market-card reveal"><b class="stat" data-count="3" data-prefix="~" data-suffix="×">~3×</b><h3>mais candidaturas por vaga</h3><p>Recrutadores lidam com quase três vezes mais aplicações por posição do que em 2021.</p><a class="source" href="https://www.greenhouse.com/blog/how-recruiters-can-use-ai-in-hiring" target="_blank" rel="noopener">Greenhouse, 2025 →</a></article>
+          <article class="market-card reveal delay-1"><b class="stat" data-count="26" data-suffix="%">26%</b><h3>dizem que ficou mais difícil se destacar</h3><p>O aumento do uso de IA também elevou o volume e tornou a diferenciação mais desafiadora para candidatos.</p><a class="source" href="https://www.greenhouse.com/blog/greenhouse-2025-workforce-hiring-report" target="_blank" rel="noopener">Greenhouse Workforce Report →</a></article>
+          <article class="market-card reveal delay-2"><b class="stat" data-count="39" data-suffix="%">39%</b><h3>das habilidades devem mudar</h3><p>Empregadores estimam transformação relevante nas habilidades essenciais exigidas até 2030.</p><a class="source" href="https://www.weforum.org/publications/the-future-of-jobs-report-2025/in-full/3-skills-outlook/" target="_blank" rel="noopener">Fórum Econômico Mundial →</a></article>
+        </div>
+        <p class="market-note">Dados usados como contexto de mercado. Nenhuma ferramenta pode garantir entrevista ou contratação.</p>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="section pricing" id="planos">
+      <div class="container">
+        <div class="center">
+          <span class="eyebrow">Escolha o seu ritmo</span>
+          <h2 class="section-title reveal">Comece grátis.<br><span class="green italic">Acelere quando fizer sentido.</span></h2>
+          <p class="section-copy reveal delay-1">Teste a análise sem cartão. Assine quando precisar de mais candidaturas, documentos e preparação.</p>
+        </div>
+        <div class="billing reveal"><button class="active" data-billing="monthly">Mensal</button><button data-billing="annual">Anual <i>economize</i></button></div>
+        <div class="plans">
+          <article class="plan reveal"><span class="plan-name">Gratuito</span><h3>Para começar melhor</h3><p class="plan-desc">Entenda uma oportunidade e receba vagas selecionadas toda semana — sem cartão.</p><div class="price">R$0</div><a class="btn btn-secondary" href="https://www.vagaai.app.br/app">Começar grátis agora</a><div class="plan-features"><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>1 análise gratuita por mês</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Score e principais lacunas</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>1 alerta semanal com até 5 vagas</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Rastreador de candidaturas</div></div><div class="plan-urgency"><b>Próximo envio: sexta-feira pela manhã.</b> Configure agora.</div></article>
+          <article class="plan reveal delay-1"><span class="plan-name">Starter</span><h3>Para buscar ativamente</h3><p class="plan-desc">Adapte candidaturas e mantenha sua busca organizada sem perder oportunidades.</p><div class="price" data-monthly="R$19,90" data-annual="R$14,92">R$19,90<small>/mês</small></div><div class="plan-anchor">Menos do que 1 cafezinho por dia</div><a class="btn btn-secondary plan-link" href="https://buy.stripe.com/28E14n0WO2rne5Ff0P9k406" data-monthly-url="https://buy.stripe.com/28E14n0WO2rne5Ff0P9k406" data-annual-url="https://buy.stripe.com/5kQaEXaxo0jfd1B5qf9k407">Assinar Starter</a><div class="plan-features"><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>10 análises por mês</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Currículo otimizado em PDF</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Carta e briefing da empresa</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Alertas com filtros avançados</div></div><div class="plan-note billing-note">Cobrança mensal · cancele quando quiser</div></article>
+          <article class="plan featured reveal delay-2"><span class="popular">Mais escolhido</span><span class="plan-name">Pro</span><h3>Para acelerar a mudança</h3><p class="plan-desc">Análises ilimitadas e preparação completa para ganhar ritmo na busca.</p><div class="price" data-monthly="R$39,90" data-annual="R$24,92">R$39,90<small>/mês</small></div><div class="plan-anchor">Menos que 1 sessão de coaching de carreira</div><a class="btn btn-primary plan-link" href="https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408" data-monthly-url="https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408" data-annual-url="https://buy.stripe.com/bJe5kDgVM0jf8Ll8Cr9k409">Assinar Pro</a><div class="plan-features"><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Análises ilimitadas</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Todos os recursos do Starter</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Simulador de entrevista com IA</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Alertas prioritários</div></div><div class="plan-note billing-note">Cobrança mensal · cancele quando quiser</div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROOF -->
+    <section class="section proof">
+      <div class="container">
+        <div class="center"><span class="eyebrow">Quem testou</span><h2 class="section-title reveal">Mais clareza para decidir.<br><span class="green italic">Mais força para se apresentar.</span></h2></div>
+        <div class="proof-grid">
+          <article class="quote reveal"><div class="stars">★★★★★</div><blockquote>"Ficou muito mais claro o que ajustar para cada vaga, sem transformar meu currículo em algo que não sou."</blockquote><div class="person"><span class="avatar">AC</span><div><b>Ana Carolina S.</b><span>Desenvolvedora Full Stack</span></div></div></article>
+          <article class="quote reveal delay-1"><div class="stars">★★★★★</div><blockquote>"O briefing me ajudou a chegar mais preparado. Eu já sabia o que destacar e o que perguntar."</blockquote><div class="person"><span class="avatar">RO</span><div><b>Ricardo O.</b><span>Gerente de Projetos</span></div></div></article>
+          <article class="quote reveal delay-2"><div class="stars">★★★★★</div><blockquote>"A maior diferença foi entender onde eu perdia compatibilidade, não apenas receber um currículo reescrito."</blockquote><div class="person"><span class="avatar">JS</span><div><b>Juliana S.</b><span>Designer UX/UI</span></div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- OBJECTIONS -->
+    <section class="section objections">
+      <div class="container objection-layout">
+        <div class="objection-side">
+          <span class="eyebrow">Sem truques e sem promessas vazias</span>
+          <h2 class="pain-title reveal">Uma ferramenta para ajudar. <span class="green italic">Não para inventar quem você é.</span></h2>
+          <p class="pain-copy reveal delay-1">A tecnologia organiza a estratégia. A experiência, as decisões e a candidatura continuam sendo suas.</p>
+        </div>
+        <div class="objection-list reveal">
+          <div class="objection open"><button>"Vai inventar experiências para melhorar meu currículo?"<span class="plus">+</span></button><div class="objection-answer">Não. O VagaAI reorganiza e fortalece o que você realmente informou. Você revisa o documento antes de usar e mantém controle sobre cada frase.</div></div>
+          <div class="objection"><button>"Já uso o ChatGPT. Qual é a diferença?"<span class="plus">+</span></button><div class="objection-answer">O VagaAI conecta vaga, score, currículo adaptado, rastreamento, alertas e preparação para entrevista em uma jornada única. Você não precisa criar prompts diferentes nem organizar tudo manualmente.</div></div>
+          <div class="objection"><button>"Um score alto garante entrevista?"<span class="plus">+</span></button><div class="objection-answer">Não. A decisão depende da empresa e de vários fatores externos. O score funciona como diagnóstico para reduzir desalinhamentos e melhorar a clareza da candidatura, não como garantia.</div></div>
+          <div class="objection"><button>"Não entendo nada de ATS."<span class="plus">+</span></button><div class="objection-answer">Você não precisa entender. A análise traduz compatibilidade, palavras-chave e legibilidade em recomendações simples e ordenadas por prioridade.</div></div>
+          <div class="objection"><button>"Estou mudando de área. Ainda funciona para mim?"<span class="plus">+</span></button><div class="objection-answer">Sim. A comparação ajuda a identificar competências transferíveis e também mostra as lacunas reais da nova função, para você decidir com mais informação onde aplicar.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL -->
+    <section class="final">
+      <div class="container">
+        <div class="final-card reveal">
+          <div class="final-inner">
+            <h2>Você não precisa enviar mais currículos. Precisa enviar <em>candidaturas melhores.</em></h2>
+            <p>Receba vagas do seu interesse, entenda sua compatibilidade e fortaleça o currículo antes do próximo envio.</p>
+            <a class="btn btn-primary" href="https://www.vagaai.app.br/app"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg>Analisar meu currículo grátis</a>
+            <small>Sem cadastro · Sem cartão · Resultado em segundos</small>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-row">
+      <a class="brand" href="#inicio" aria-label="VagaAI">
+        <img src="/logo.svg" alt="VagaAI" class="logo-dark">
+        <img src="/logo-light.svg" alt="VagaAI" class="logo-light">
+      </a>
+      <div class="footer-links"><a href="https://www.vagaai.app.br/termos">Termos</a><a href="https://www.vagaai.app.br/termos">Privacidade</a><a href="https://www.vagaai.app.br/blog">Conteúdos</a><a href="https://www.vagaai.app.br/login">Entrar</a></div>
+      <span class="copyright">© 2026 VagaAI · Candidaturas mais fortes.</span>
+    </div>
+  </footer>
+
+  <script>
+    /* ===== GLOBAL FLAGS ===== */
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ===== THEME ===== */
+    var themeBtn = document.getElementById('themeToggle');
+    themeBtn.addEventListener('click', function() {
+      var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      localStorage.setItem('vagaai-theme', next);
+      themeBtn.setAttribute('aria-label', next === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro');
+    });
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function(e) {
+      if (!localStorage.getItem('vagaai-theme')) {
+        document.documentElement.dataset.theme = e.matches ? 'light' : 'dark';
+      }
+    });
+
+    /* ===== NAV ===== */
+    function toggleMenu() { document.getElementById('nav').classList.toggle('open'); }
+    document.querySelectorAll('.nav-links a').forEach(function(a) {
+      a.addEventListener('click', function() { document.getElementById('nav').classList.remove('open'); });
+    });
+
+    /* ===== SCROLL PROGRESS ===== */
+    var prog = document.getElementById('scrollProgress');
+    function updateProg() {
+      var max = document.documentElement.scrollHeight - innerHeight;
+      prog.style.width = (max > 0 ? scrollY / max * 100 : 0) + '%';
+    }
+    addEventListener('scroll', updateProg, { passive: true });
+    updateProg();
+
+    /* ===== CURSOR GLOW ===== */
+    var glow = document.getElementById('cursorGlow');
+    if (window.matchMedia('(pointer: fine)').matches) {
+      document.addEventListener('mousemove', function(e) {
+        glow.style.left = e.clientX + 'px';
+        glow.style.top = e.clientY + 'px';
+        document.body.classList.add('cursor-ready');
+      });
+    }
+
+    /* ===== REVEAL ===== */
+    var revealObs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); revealObs.unobserve(e.target); }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(function(el) { revealObs.observe(el); });
+
+    /* ===== PARALLAX (subtle hero) ===== */
+    var heroEl = document.querySelector('.hero');
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      addEventListener('scroll', function() {
+        var s = scrollY * 0.04;
+        if (heroEl) heroEl.style.backgroundPositionY = s + 'px';
+      }, { passive: true });
+    }
+
+    /* ===== 3D TILT ON MOCKUP ===== */
+    var stage = document.querySelector('.mockup-stage');
+    var card = document.querySelector('.mockup-card');
+    if (stage && card && window.matchMedia('(pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      stage.addEventListener('mousemove', function(e) {
+        var r = stage.getBoundingClientRect();
+        var x = (e.clientX - r.left) / r.width - 0.5;
+        var y = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = 'rotateY(' + (-4 + x * 7) + 'deg) rotateX(' + (2 - y * 6) + 'deg) translateY(-4px)';
+      });
+      stage.addEventListener('mouseleave', function() {
+        card.style.transform = 'rotateY(-4deg) rotateX(2deg)';
+      });
+    }
+
+    /* ===== HERO MOCKUP ANIMATION — Alert delivery loop ===== */
+    (function() {
+      if (reduced) return;
+      var banner = document.getElementById('mockBanner');
+      var mc1    = document.getElementById('mc1');
+      var mc2    = document.getElementById('mc2');
+      var mc3    = document.getElementById('mc3');
+      var mb3    = document.getElementById('mb3');
+      var done   = document.getElementById('mockDone');
+      if (!banner) return;
+
+      function reset() {
+        banner.classList.remove('on');
+        mc1.classList.remove('on');
+        mc2.classList.remove('on');
+        mc3.classList.remove('on');
+        if (mb3) mb3.classList.remove('pulse');
+        done.classList.remove('on');
+      }
+
+      var timers = [];
+      function after(ms, fn) { timers.push(setTimeout(fn, ms)); }
+
+      function run() {
+        timers.forEach(clearTimeout); timers = [];
+        reset();
+        after(500,  function(){ banner.classList.add('on'); });
+        after(1100, function(){ mc1.classList.add('on'); });
+        after(1700, function(){ mc2.classList.add('on'); });
+        after(2300, function(){ mc3.classList.add('on'); });
+        after(3400, function(){ if (mb3) mb3.classList.add('pulse'); });
+        after(5200, function(){ done.classList.add('on'); });
+        after(8400, function(){ done.classList.remove('on'); after(700, run); });
+      }
+
+      after(900, run);
+    })();
+
+    /* ===== ANIMATED DEMO ===== */
+    (function() {
+      var panel = document.getElementById('demoPanel');
+      if (!panel) return;
+
+      var stages = ['dpS1','dpS2','dpS3','dpS4'].map(function(id){ return document.getElementById(id); });
+      var inds   = ['di1','di2','di3','di4'].map(function(id){ return document.getElementById(id); });
+      var conns  = ['diL1','diL2','diL3'].map(function(id){ return document.getElementById(id); });
+
+      var alertBanner = document.getElementById('dpAlertBanner');
+      var cards       = ['dpCard1','dpCard2','dpCard3'].map(function(id){ return document.getElementById(id); });
+      var ringArc     = document.getElementById('dpRingArc');
+      var ringNum     = document.getElementById('dpRingNum');
+      var bars        = ['dpBar1','dpBar2','dpBar3','dpBar4'].map(function(id){ return document.getElementById(id); });
+      var barNums     = ['dpBarN1','dpBarN2','dpBarN3','dpBarN4'].map(function(id){ return document.getElementById(id); });
+      var barTargets  = [82, 71, 90, 76];
+      var results     = ['dpR1','dpR2','dpR3','dpR4'].map(function(id){ return document.getElementById(id); });
+      var CIRC = 295;
+
+      function showStage(i) {
+        stages.forEach(function(s,j){ s.classList.toggle('active', j===i); });
+        inds.forEach(function(d,j){ d.classList.toggle('active', j<=i); });
+        conns.forEach(function(c,j){ c.classList.toggle('lit', j<i); });
+      }
+
+      function countUp(el, target, dur) {
+        var start = null;
+        function tick(ts) {
+          if (!start) start = ts;
+          var p = Math.min((ts-start)/dur, 1);
+          var v = Math.round((1-Math.pow(1-p,3))*target);
+          el.textContent = v + (el === ringNum ? '' : '%');
+          if (p < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      }
+
+      function resetAnim() {
+        alertBanner.classList.remove('in');
+        cards.forEach(function(c){ c.classList.remove('in'); });
+        results.forEach(function(r){ r.classList.remove('in'); });
+        if (ringArc) { ringArc.style.transition='none'; ringArc.style.strokeDashoffset=CIRC+''; }
+        if (ringNum) ringNum.textContent = '0';
+        bars.forEach(function(b){ if(b){ b.style.transition='none'; b.style.width='0'; } });
+        barNums.forEach(function(n){ if(n) n.textContent='0%'; });
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){
+          if (ringArc) ringArc.style.transition='';
+          bars.forEach(function(b){ if(b) b.style.transition=''; });
+        });});
+      }
+
+      if (reduced) {
+        showStage(3);
+        if (ringArc) ringArc.style.strokeDashoffset = (CIRC - CIRC*0.82)+'';
+        if (ringNum) ringNum.textContent = '82';
+        bars.forEach(function(b,i){ if(b) b.style.width=barTargets[i]+'%'; });
+        barNums.forEach(function(n,i){ if(n) n.textContent=barTargets[i]+'%'; });
+        results.forEach(function(r){ r.classList.add('in'); });
+        return;
+      }
+
+      var timers = [];
+      function after(ms, fn){ timers.push(setTimeout(fn, ms)); }
+      function clearAll(){ timers.forEach(clearTimeout); timers=[]; }
+
+      function runDemo() {
+        clearAll();
+        resetAnim();
+        showStage(0);
+        // S1 — alert + cards
+        after(400,  function(){ alertBanner.classList.add('in'); });
+        after(1000, function(){ cards[0].classList.add('in'); });
+        after(1600, function(){ cards[1].classList.add('in'); });
+        after(2200, function(){ cards[2].classList.add('in'); });
+        // S2 — analysis
+        after(3600, function(){
+          showStage(1);
+          after(300, function(){
+            if (ringArc) ringArc.style.strokeDashoffset = (CIRC - CIRC*0.82)+'';
+            countUp(ringNum, 82, 1400);
+            barTargets.forEach(function(t,i){
+              after(i*220, function(){
+                if (bars[i]) bars[i].style.width = t+'%';
+                countUp(barNums[i], t, 1200);
+              });
+            });
+          });
+        });
+        // S3 — results
+        after(7000, function(){
+          showStage(2);
+          results.forEach(function(r,i){ after(i*300, function(){ r.classList.add('in'); }); });
+        });
+        // S4 — conclusion
+        after(10000, function(){ showStage(3); });
+        // loop
+        after(13500, function(){ runDemo(); });
+      }
+
+      var started = false;
+      var demoObs = new IntersectionObserver(function(entries){
+        if (entries[0].isIntersecting) {
+          if (!started){ started=true; runDemo(); }
+        } else {
+          clearAll(); started=false;
+        }
+      }, { threshold: 0.25 });
+      demoObs.observe(panel);
+    })();
+
+    /* ===== HOW IT WORKS TABS ===== */
+    var stepPanels = Array.from(document.querySelectorAll('.step-panel'));
+    var stepTabBtns = Array.from(document.querySelectorAll('.step-tab'));
+    var stepDotBtns = Array.from(document.querySelectorAll('.step-dot'));
+    var stepIndex = 0;
+    var stepTimer;
+
+    function activateStep(i, fromUser) {
+      stepIndex = i;
+      stepTabBtns.forEach(function(b, j) { b.classList.toggle('active', j === i); });
+      stepDotBtns.forEach(function(b, j) { b.classList.toggle('active', j === i); });
+      stepPanels.forEach(function(p, j) { p.classList.toggle('active', j === i); });
+      // Step 3 action items animation
+      if (i === 2) {
+        var acts = [document.getElementById('act1'), document.getElementById('act2'), document.getElementById('act3')];
+        var rb = document.getElementById('readyBadge');
+        acts.forEach(function(a) { if (a) { a.classList.remove('on'); } });
+        if (rb) rb.classList.remove('on');
+        if (!reduced) {
+          setTimeout(function() { if (acts[0]) acts[0].classList.add('on'); }, 200);
+          setTimeout(function() { if (acts[1]) acts[1].classList.add('on'); }, 500);
+          setTimeout(function() { if (acts[2]) acts[2].classList.add('on'); }, 800);
+          setTimeout(function() { if (rb) rb.classList.add('on'); }, 1200);
+        } else {
+          acts.forEach(function(a) { if (a) a.classList.add('on'); });
+          if (rb) rb.classList.add('on');
+        }
+      }
+      if (fromUser) {
+        clearInterval(stepTimer);
+        stepTimer = setInterval(function() { activateStep((stepIndex + 1) % 3); }, 5500);
       }
     }
-  } catch(e){}
-  window.open(url,'_blank');
-}
-function toggleFaq(e){e.parentElement.classList.toggle('open')}
-function toggleMobileNav(){var h=document.getElementById('navHamburger'),m=document.getElementById('mobileNav');h.classList.toggle('open');m.classList.toggle('open')}
-function closeMobileNav(){document.getElementById('navHamburger').classList.remove('open');document.getElementById('mobileNav').classList.remove('open')}
-var revealObserver=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');revealObserver.unobserve(entry.target)}})},{threshold:.12,rootMargin:'0px 0px -40px 0px'});
-document.querySelectorAll('.reveal').forEach(function(el){revealObserver.observe(el)});
-// Detecta sessão ativa e adapta nav + botões de plano para usuário logado
-(async function(){
-  try {
-    if(!_sb) return;
-    var r = await _sb.auth.getSession();
-    var s = r && r.data && r.data.session;
-    if (!s || !s.user) return;
 
-    // Logo → painel
-    var logo = document.getElementById('navLogoLink');
-    if (logo) logo.href = '/dashboard';
-    // "Entrar" → "Meu painel"
-    var navBtn = document.getElementById('btnEntrar');
-    if (navBtn) { navBtn.textContent = 'Meu painel'; navBtn.onclick = function(){ window.location.href='/dashboard'; }; }
+    stepTabBtns.forEach(function(b, i) {
+      b.addEventListener('click', function() { activateStep(i, true); });
+    });
+    stepDotBtns.forEach(function(b, i) {
+      b.addEventListener('click', function() { activateStep(i, true); });
+    });
+    if (!reduced) stepTimer = setInterval(function() { activateStep((stepIndex + 1) % 3); }, 5500);
 
-    // Busca plano atual
-    var plan = 'free';
-    try {
-      var subRes = await fetch('/api/subscription', { headers: { Authorization: 'Bearer ' + s.access_token } });
-      if (subRes.ok) { var sub = await subRes.json(); plan = sub.plan || 'free'; }
-    } catch(e2) {}
+    /* ===== JOURNEY PIPELINE ===== */
+    var journeyNodes = Array.from(document.querySelectorAll('.journey-node'));
+    var journeyMobileItems = Array.from(document.querySelectorAll('.jm-item'));
+    var journeyFill = document.getElementById('journeyFill');
+    var journeyDone = false;
 
-    // Adapta botões de plano conforme assinatura atual
-    function setActive(id, noteId) {
-      var btn = document.getElementById(id);
-      var note = document.getElementById(noteId);
-      if (!btn) return;
-      btn.textContent = '✓ Plano ativo';
-      btn.disabled = true;
-      btn.style.cssText = 'opacity:.6;cursor:default;background:transparent;border:1px solid currentColor';
-      if (note) note.innerHTML = '<a href="/dashboard" style="color:var(--green);font-size:12px">Gerenciar no painel →</a>';
-    }
-    function setDashboard(id, noteId, label) {
-      var btn = document.getElementById(id);
-      var note = document.getElementById(noteId);
-      if (!btn) return;
-      btn.textContent = label || 'Ir para o painel';
-      btn.onclick = function(){ window.location.href='/dashboard'; };
-      btn.style.cssText = 'opacity:.55;cursor:pointer';
-      if (note) note.innerHTML = '<a href="/dashboard" style="color:var(--green);font-size:12px">Ver meu painel →</a>';
+    function lightJourney() {
+      if (journeyDone || reduced) return;
+      journeyDone = true;
+      var total = journeyNodes.length - 1;
+      journeyNodes.forEach(function(n, i) {
+        setTimeout(function() {
+          n.classList.add('lit');
+          if (journeyFill && i < total) {
+            journeyFill.style.transform = 'scaleX(' + ((i + 1) / total) + ')';
+          }
+        }, i * 350);
+      });
+      journeyMobileItems.forEach(function(n, i) {
+        setTimeout(function() { n.classList.add('lit'); }, i * 350);
+      });
     }
 
-    if (plan === 'pro') {
-      setActive('planCta-pro', 'planNote-pro');
-      setDashboard('planCta-starter', 'planNote-starter', 'Fazer downgrade');
-      setDashboard('planCta-free', 'planNote-free', 'Ir para o painel');
-    } else if (plan === 'starter') {
-      setActive('planCta-starter', 'planNote-starter');
-      setDashboard('planCta-free', 'planNote-free', 'Ir para o painel');
-      // Pro: mantém CTA de upgrade (comportamento padrão)
-    } else {
-      // Free/avulso: "Começar grátis" → vai pro painel pois já está logado
-      var freeBtn = document.getElementById('planCta-free');
-      if (freeBtn) { freeBtn.textContent = 'Ir para o painel'; freeBtn.onclick = function(){ window.location.href='/dashboard'; }; }
+    var journeyObs = new IntersectionObserver(function(entries) {
+      if (entries[0].isIntersecting) { lightJourney(); journeyObs.disconnect(); }
+    }, { threshold: 0.3 });
+    var jOuter = document.getElementById('journeyOuter') || document.getElementById('jornada');
+    if (jOuter) journeyObs.observe(jOuter);
+
+    /* ===== PRODUCT TABS ===== */
+    var ptabs = Array.from(document.querySelectorAll('.product-tab'));
+    var pIndex = 0;
+    var pTimer;
+    function activateProduct(i) {
+      pIndex = i;
+      var id = ptabs[i].dataset.product;
+      ptabs.forEach(function(t) { t.classList.remove('active'); });
+      document.querySelectorAll('.product-panel').forEach(function(p) { p.classList.remove('active'); });
+      ptabs[i].classList.add('active');
+      document.querySelector('[data-panel="' + id + '"]').classList.add('active');
     }
-  } catch(e) {}
-})();
-var _svgSun='<svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/></svg>';
-var _svgMoon='<svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>';
-function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')==='light';if(l){document.documentElement.removeAttribute('data-theme');localStorage.setItem('vagaai_theme','dark')}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('vagaai_theme','light')}var b=document.getElementById('themeBtn');if(b)b.innerHTML=l?_svgSun:_svgMoon}
-;(function(){var b=document.getElementById('themeBtn');if(b)b.innerHTML=document.documentElement.getAttribute('data-theme')==='light'?_svgMoon:_svgSun})();
-</script>
+    function startPRotation() {
+      clearInterval(pTimer);
+      pTimer = setInterval(function() { activateProduct((pIndex + 1) % ptabs.length); }, 5200);
+    }
+    ptabs.forEach(function(t, i) {
+      t.addEventListener('click', function() { activateProduct(i); startPRotation(); });
+    });
+    if (!reduced) startPRotation();
+
+    /* ===== COUNTER ANIMATIONS (market) ===== */
+    var countObs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          var el = e.target;
+          var target = parseInt(el.dataset.count, 10);
+          var prefix = el.dataset.prefix || '';
+          var suffix = el.dataset.suffix || '';
+          if (!isNaN(target) && !reduced) {
+            var start = null;
+            function tick(ts) {
+              if (!start) start = ts;
+              var p = Math.min((ts - start) / 1200, 1);
+              var v = Math.round((1 - Math.pow(1 - p, 3)) * target);
+              el.textContent = prefix + v + suffix;
+              if (p < 1) requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
+          }
+          countObs.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.stat[data-count]').forEach(function(el) { countObs.observe(el); });
+
+    /* ===== OBJECTIONS ACCORDION ===== */
+    document.querySelectorAll('.objection button').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var item = btn.closest('.objection');
+        var open = item.classList.contains('open');
+        document.querySelectorAll('.objection').forEach(function(o) { o.classList.remove('open'); });
+        if (!open) item.classList.add('open');
+      });
+    });
+
+    /* ===== BILLING TOGGLE ===== */
+    document.querySelectorAll('.billing button').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var mode = btn.dataset.billing;
+        document.querySelectorAll('.billing button').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.price[data-monthly]').forEach(function(p) {
+          p.innerHTML = p.dataset[mode] + '<small>/mês</small>';
+        });
+        document.querySelectorAll('.plan-link').forEach(function(l) {
+          l.href = l.dataset[mode + 'Url'];
+        });
+        document.querySelectorAll('.billing-note').forEach(function(n) {
+          n.textContent = mode === 'annual' ? 'Cobrança anual · melhor valor mensal' : 'Cobrança mensal · cancele quando quiser';
+        });
+      });
+    });
+  </script>
 </body>
 </html>

@@ -677,7 +677,7 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
           'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({
-          model: 'claude-haiku-4-5',
+          model: 'claude-haiku-4-5-20251001',
           max_tokens: 2000,
           temperature: 0.3,
           messages: [{ role: 'user', content: cvPrompt }],
@@ -945,8 +945,8 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5',
-        max_tokens: 4500,
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 8000,
         temperature: 0,   // determinístico — mesmo input, mesmo output
         messages: [{ role: 'user', content: prompt }],
       }),
@@ -970,6 +970,11 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
     }
 
     const data = await response.json();
+    if (data.stop_reason === 'max_tokens') {
+      console.error('Anthropic response truncated (max_tokens reached)');
+      if (authenticatedUserId) await refundAnalysisCredit(authenticatedUserId, _deductResult).catch(() => {});
+      return res.status(500).json({ error: 'Resposta da IA incompleta. Tente novamente.' });
+    }
     const text = data.content?.[0]?.text || '';
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
@@ -978,7 +983,14 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
       return res.status(500).json({ error: 'Resposta inválida da IA.' });
     }
 
-    const result = JSON.parse(jsonMatch[0]);
+    let result;
+    try {
+      result = JSON.parse(jsonMatch[0]);
+    } catch (parseErr) {
+      console.error('JSON parse error:', parseErr.message, '| raw:', text.slice(0, 300));
+      if (authenticatedUserId) await refundAnalysisCredit(authenticatedUserId, _deductResult).catch(() => {});
+      return res.status(500).json({ error: 'Resposta inválida da IA. Tente novamente.' });
+    }
 
     // Normaliza keywords (remove duplicatas e garante exclusividade mútua)
     normalizeKeywords(result);

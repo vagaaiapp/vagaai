@@ -503,9 +503,20 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
 .app-sidebar-bottom{position:relative;margin-top:auto;padding-top:13px;border-top:1px solid rgba(255,255,255,.08)}
 .app-support{padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:11px;background:rgba(255,255,255,.035);color:rgba(255,255,255,.42);font-size:11px;line-height:1.5}
 .app-support strong{display:block;color:rgba(255,255,255,.75);margin-bottom:2px}
-.app-profile{display:flex;align-items:center;gap:9px;margin-top:8px;padding:6px;border-radius:10px}
-.app-avatar{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,var(--gb-emerald),var(--gb-mid));font-size:11px;font-weight:800;color:#fff}
+.app-profile{display:flex;align-items:center;gap:9px;margin-top:8px;padding:6px;border-radius:10px;cursor:pointer;transition:background .15s}
+.app-profile:hover{background:rgba(255,255,255,.06)}
+.app-avatar{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,var(--gb-emerald),var(--gb-mid));font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
 .app-profile strong{display:block;font-size:11.5px}.app-profile span{color:rgba(255,255,255,.4);font-size:10.5px}
+.app-user-dropdown{position:fixed;bottom:70px;left:calc(var(--app-sidebar) + 8px);background:#fff;border:1px solid #e5e7eb;border-radius:12px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.13);z-index:500;overflow:hidden;display:none;animation:fadeUp .15s ease both}
+.app-user-dropdown.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.app-dd-header{padding:12px 14px;border-bottom:1px solid #e5e7eb}
+.app-dd-name{font-size:13px;font-weight:600;color:#111;margin-bottom:2px}
+.app-dd-email{font-size:11px;color:#6b7280}
+.app-dd-item{width:100%;background:none;border:none;font-family:inherit;font-size:13px;color:#111;padding:10px 14px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s}
+.app-dd-item:hover{background:#f3f4f6}
+.app-dd-item.danger{color:#dc2626}
+.app-dd-item.danger:hover{background:#fef2f2}
 .app-main{margin-left:var(--app-sidebar);min-width:0;flex:1}
 .app-header{
   height:64px;padding:0 36px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;
@@ -618,9 +629,23 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
   </nav>
   <div class="app-sidebar-bottom">
     <div class="app-support"><strong>Precisa de ajuda?</strong>Veja dicas para melhorar sua candidatura.</div>
-    <div class="app-profile">
-      <div class="app-avatar">VA</div>
-      <div class="app-profile-info"><strong>Sua conta</strong><span>VagaAI</span></div>
+    <div class="app-profile" onclick="toggleAppDropdown()" role="button" aria-haspopup="true" aria-expanded="false" aria-label="Menu da conta">
+      <div class="app-avatar" id="appSbAvatar">VA</div>
+      <div class="app-profile-info"><strong id="appSbName">Sua conta</strong><span id="appSbPlan">VagaAI</span></div>
+    </div>
+    <div class="app-user-dropdown" id="appUserDropdown" role="menu">
+      <div class="app-dd-header">
+        <div class="app-dd-name" id="appDdName">—</div>
+        <div class="app-dd-email" id="appDdEmail">—</div>
+      </div>
+      <button class="app-dd-item" role="menuitem" onclick="closeAppDropdown();window.location.href='/dashboard'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Meu Perfil
+      </button>
+      <button class="app-dd-item danger" role="menuitem" onclick="appLogout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sair
+      </button>
     </div>
   </div>
 </aside>
@@ -1018,6 +1043,26 @@ var userCredits = 0;
 var userPlan = 'free';   // 'free' | 'starter' | 'pro'
 var userPlanSub = null;  // objeto completo da subscription
 
+function toggleAppDropdown() {
+  var dd = document.getElementById('appUserDropdown');
+  if (!dd) return;
+  var open = dd.classList.toggle('active');
+  var trigger = document.querySelector('.app-profile');
+  if (trigger) trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function closeAppDropdown() {
+  var dd = document.getElementById('appUserDropdown');
+  if (dd) dd.classList.remove('active');
+  var trigger = document.querySelector('.app-profile');
+  if (trigger) trigger.setAttribute('aria-expanded', 'false');
+}
+function appLogout() { sb.auth.signOut().then(function(){ window.location.href = '/login'; }); }
+document.addEventListener('click', function(e) {
+  var profile = document.querySelector('.app-profile');
+  var dd = document.getElementById('appUserDropdown');
+  if (dd && dd.classList.contains('active') && profile && !profile.contains(e.target) && !dd.contains(e.target)) closeAppDropdown();
+});
+
 async function initAuth() {
   try {
     var { data: { session } } = await sb.auth.getSession();
@@ -1027,6 +1072,17 @@ async function initAuth() {
       // Redireciona "Início" para o painel quando logado
       var backBtn = document.getElementById('navBackBtn');
       if (backBtn) { backBtn.href = '/dashboard'; backBtn.textContent = '← Painel'; }
+      // Popula sidebar com dados reais do usuário
+      var meta = session.user.user_metadata || {};
+      var displayName = meta.full_name || meta.name || session.user.email.split('@')[0];
+      var initials = displayName.slice(0,2).toUpperCase();
+      var planLabels = { pro: 'Plano Pro', starter: 'Plano Starter', free: 'Plano Grátis' };
+      var planLabel = planLabels[userPlan] || 'VagaAI';
+      var elAvatar = document.getElementById('appSbAvatar'); if (elAvatar) elAvatar.textContent = initials;
+      var elName = document.getElementById('appSbName');   if (elName) elName.textContent = displayName;
+      var elPlan = document.getElementById('appSbPlan');   if (elPlan) elPlan.textContent = planLabel;
+      var elDdName = document.getElementById('appDdName'); if (elDdName) elDdName.textContent = displayName;
+      var elDdEmail = document.getElementById('appDdEmail'); if (elDdEmail) elDdEmail.textContent = session.user.email;
     }
   } catch(e) {}
 }
@@ -2367,6 +2423,9 @@ function animateNumber(id, from, to, duration) {
 async function checkVagaParam() {
   var vagaUrl = new URLSearchParams(window.location.search).get('vaga');
   if (!vagaUrl) return;
+  // Marca que esta sessão de análise veio de um alerta (deep-link do e-mail),
+  // para que a candidatura salva no rastreador receba origem='alerta'.
+  window._fromAlertVaga = true;
   // Mostra banner de alerta
   var notice = document.createElement('div');
   notice.id = 'alertVagaNotice';
@@ -2495,7 +2554,7 @@ async function addResultToTracker() {
   var resetHtml = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg> Adicionar ao rastreador';
 
   try {
-    var body = { user_id: userId, empresa: empresa, cargo: cargo, score: scoreVal, status: 'analisada', job_url: jobUrl || null, analysis_id: analysisId, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+    var body = { user_id: userId, empresa: empresa, cargo: cargo, score: scoreVal, status: 'analisada', job_url: jobUrl || null, analysis_id: analysisId, origem: window._fromAlertVaga ? 'alerta' : 'analise', created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
     var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker', {
       method: 'POST',
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + authSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
