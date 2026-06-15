@@ -143,19 +143,37 @@ function applyExtendedFilters(jobs, profile, options = {}) {
     // Exclui vagas com palavras/filtros negativos
     if (allNeg.length && allNeg.some(neg => combinedNorm.includes(neg))) return false;
 
+    // Exclui dados ruins: empresa com CPF/CNPJ ou placeholder genérico
+    const companyRaw = (job.company || '').trim();
+    if (/^\d[\d.\-\/]+\d$/.test(companyRaw)) return false; // CPF/CNPJ como nome
+    if (/^(empresa|company|empregador|n\/a|confidencial)$/i.test(companyRaw) && !job.title) return false;
+
+    // Exclui vagas claramente internacionais pelo título (menção a país/cidade estrangeira)
+    const INTL_MARKERS = /\b(canada|united states|australia|united kingdom|germany|france|netherlands|spain|portugal(?! -)|ireland|new zealand|singapore|india|mexico|colombia|argentina|remote us|remote uk|remote canada)\b/i;
+    if (INTL_MARKERS.test(title) || INTL_MARKERS.test(job.location || '')) return false;
+
     // Exclui vagas claramente em idioma estrangeiro (não-PT/não-EN) — ruído p/ alerta BR.
     // Vale nos dois passes (estrito e relaxado): idioma não é "preferência", é relevância.
     if (looksForeignLang(job)) return false;
 
     // Exclui vagas com salário em USD e zero sinal brasileiro — mercado externo irrelevante.
     const _sal = String(job.salary || '');
-    const _hasUsd = /\$|USD/.test(_sal) && !/R\$|BRL/.test(_sal);
+    const _hasUsd = /\$|USD|\$/i.test(_sal) && !/R\$|BRL/i.test(_sal);
     if (_hasUsd) {
       const _text = title + ' ' + desc + ' ' + (job.location || '');
       const _hasBr = BR_SOURCES.has(job._source) || PT_BR_PATTERN.test(_text) ||
         /\b(brasil|brazil|são paulo|rio de janeiro|belo horizonte|curitiba|porto alegre|fortaleza|salvador|recife|sp|rj|mg|rs|pr|ba|ce|pe|am|go|sc)\b/i.test(_text);
       if (!_hasBr) return false;
     }
+
+    // Exclui vagas de estágio/júnior quando o usuário é pleno ou sênior
+    const nivelPerfil = (profile.nivel || '').toLowerCase();
+    if (nivelPerfil === 'pleno' || nivelPerfil === 'senior' || nivelPerfil === 'sênior') {
+      if (/\b(estágio|estagio|estagiário|estagiario|trainee|jovem aprendiz|aprendiz|junior|júnior)\b/i.test(title)) return false;
+    }
+
+    // Score mínimo: evita vagas completamente fora do perfil (só no passe estrito)
+    if (!relaxPreferences && (job._score || 0) < 20) return false;
 
     // Filtra por formato(s) preferido(s)
     if (!relaxPreferences && formatos.length > 0) {
