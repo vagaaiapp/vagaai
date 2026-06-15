@@ -1219,7 +1219,7 @@ async function processUserAlert(profile, options = {}) {
   const effectiveProfile = { ...profile, frequencia: effectiveFreq };
 
   // Busca vagas de todas as fontes em paralelo
-  const [gupy, greenhouse, lever, serp, jsearch, adzuna, jooble, vagasCom, infojobs, trampos, catho, talentCom, remotive] = await Promise.allSettled([
+  const [gupy, greenhouse, lever, serp, jsearch, adzuna, jooble, trampos, talentCom, remotive] = await Promise.allSettled([
     fetchGupyJobs(profile),
     fetchGreenhouseBRJobs(profile),
     fetchLeverBRJobs(profile),
@@ -1227,10 +1227,7 @@ async function processUserAlert(profile, options = {}) {
     fetchJSearchJobs(profile),
     fetchAdzunaJobs(profile),
     fetchJoobleJobs(profile),
-    fetchVagasComJobs(profile),
-    fetchInfoJobsJobs(profile),
     fetchTramposJobs(profile),
-    fetchCathoJobs(profile),
     fetchTalentComJobs(profile),
     fetchRemotiveJobs(profile),
   ]);
@@ -1243,10 +1240,7 @@ async function processUserAlert(profile, options = {}) {
     jsearch: settled(jsearch).length,
     adzuna: settled(adzuna).length,
     jooble: settled(jooble).length,
-    vagasCom: settled(vagasCom).length,
-    infojobs: settled(infojobs).length,
     trampos: settled(trampos).length,
-    catho: settled(catho).length,
     talentCom: settled(talentCom).length,
     remotive: settled(remotive).length,
   };
@@ -1257,9 +1251,6 @@ async function processUserAlert(profile, options = {}) {
     ...settled(lever),      // Lever: Hotmart, Creditas, QuintoAndar
     ...settled(serp),       // Google Jobs em PT-BR
     ...settled(jsearch),    // LinkedIn/Indeed/Glassdoor via JSearch
-    ...settled(vagasCom),
-    ...settled(infojobs),
-    ...settled(catho),
     ...settled(trampos),
     ...settled(adzuna),
     ...settled(jooble),
@@ -1267,7 +1258,7 @@ async function processUserAlert(profile, options = {}) {
     ...settled(remotive),
   ]);
   const dedupCount = jobs.length;
-  console.log(`Sources: gupy=${settled(gupy).length} greenhouse=${settled(greenhouse).length} lever=${settled(lever).length} serp=${settled(serp).length} jsearch=${settled(jsearch).length} adzuna=${settled(adzuna).length} jooble=${settled(jooble).length} vagasCom=${settled(vagasCom).length} infojobs=${settled(infojobs).length} trampos=${settled(trampos).length} catho=${settled(catho).length} talentCom=${settled(talentCom).length} remotive=${settled(remotive).length} → dedup=${jobs.length}`);
+  console.log(`Sources: gupy=${settled(gupy).length} greenhouse=${settled(greenhouse).length} lever=${settled(lever).length} serp=${settled(serp).length} jsearch=${settled(jsearch).length} adzuna=${settled(adzuna).length} jooble=${settled(jooble).length} trampos=${settled(trampos).length} talentCom=${settled(talentCom).length} remotive=${settled(remotive).length} → dedup=${jobs.length}`);
 
   // Remove já enviadas (exceto em modo teste)
   if (!isTest) {
