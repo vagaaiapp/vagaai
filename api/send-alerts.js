@@ -1,6 +1,7 @@
 // /api/send-alerts.js
 // Cron job: busca vagas (múltiplas fontes), calcula compatibilidade, envia emails
-// Roda toda sexta às 8h via vercel.json cron
+// Roda 1x/dia às 11:00 UTC (08:00 BRT) via vercel.json cron; cada perfil é enviado
+// conforme sua frequência (diário/semanal/quinzenal) quando next_run_at vence.
 // Também pode ser chamado manualmente com ?test=1
 
 import crypto from 'crypto';
@@ -49,6 +50,37 @@ const BR_SOURCES = new Set([
 
 // Regex de palavras comuns em PT-BR para detectar idioma
 const PT_BR_PATTERN = /\b(vaga|empresa|cargo|área|experiência|conhecimento|gestão|análise|desenvolvimento|requisitos|benefícios|você|para|com|são|ção|ões|remuneração|contratação|oportunidade|atuação|salário|remoto|híbrido|presencial)\b/i;
+
+// Marcadores de idiomas estrangeiros NÃO-PT/NÃO-EN (alemão, francês, holandês, espanhol).
+// Vagas com esses sinais são ruído para um alerta brasileiro (ex.: "Produktmanager (m/w/d) Berlin").
+// Inglês é mantido de propósito — vagas remotas internacionais em EN são relevantes.
+const FOREIGN_LANG_MARKERS = /(\bm\/w\/d\b|\bw\/m\/d\b|\bwir\b|\bsuchen\b|\bmitarbeiter|\bkenntnisse\b|\berfahrung\b|\baufgaben\b|\bunternehmen\b|\bgehalt\b|\bbewerbung\b|\bstelle\b|\bnous\b|\brecherchons\b|\bentreprise\b|\bposte\b|\bsociété\b|\bwij\b|\bzoeken\b|\bmedewerker|\bbuscamos\b|\bempresa busca\b|[äöüßÄÖÜ])/i;
+
+// Vaga claramente em idioma estrangeiro (não-PT, não-EN) → irrelevante p/ alerta BR.
+function looksForeignLang(job) {
+  const text = ((job.title || '') + ' ' + (job.snippet || job.description || ''));
+  if (PT_BR_PATTERN.test(text)) return false;        // tem sinal de português → mantém
+  return FOREIGN_LANG_MARKERS.test(text);            // sinal forte de outro idioma → exclui
+}
+
+// Detecta se o usuário quer vagas remotas — considera cidade E formato.
+// As fontes 100% remotas (Remotive, RemoteOk, Arbeitnow) usam isto para decidir
+// se rodam. Bug histórico: gatear só por `cidade` desligava as fontes remotas
+// para quem preenchia a cidade mas marcava formato "Remoto" — justamente o caso
+// de quem mais precisa delas.
+function wantsRemote(profile) {
+  const cidade = (profile.cidade || '').toLowerCase();
+  if (!profile.cidade || cidade.includes('remoto') || cidade.includes('remote') || cidade.includes('home office')) {
+    return true;
+  }
+  let formatos = [];
+  if (Array.isArray(profile.formato)) formatos = profile.formato;
+  else if (typeof profile.formato === 'string') formatos = profile.formato.split(',');
+  return formatos.some(f => {
+    const v = String(f).toLowerCase().trim();
+    return v.startsWith('remoto') || v.includes('remote') || v.includes('home office');
+  });
+}
 
 // Aplica filtros de preferências estendidas ao array de vagas
 // Retorna array re-ordenado por _score após aplicação de bônus
@@ -111,6 +143,10 @@ function applyExtendedFilters(jobs, profile, options = {}) {
 
     // Exclui vagas com palavras/filtros negativos
     if (allNeg.length && allNeg.some(neg => combinedNorm.includes(neg))) return false;
+
+    // Exclui vagas claramente em idioma estrangeiro (não-PT/não-EN) — ruído p/ alerta BR.
+    // Vale nos dois passes (estrito e relaxado): idioma não é "preferência", é relevância.
+    if (looksForeignLang(job)) return false;
 
     // Filtra por formato(s) preferido(s) — só quando a vaga menciona modalidade explicitamente
     if (!relaxPreferences && formatos.length > 0) {
@@ -360,8 +396,7 @@ async function fetchIndeedJobs(profile) {
 // ── FONTE 3: REMOTIVE (vagas remotas) ────────────────────────────────────────
 async function fetchRemotiveJobs(profile) {
   try {
-    const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
-    if (!isRemoto) return []; // Remotive só faz sentido para vagas remotas
+    if (!wantsRemote(profile)) return []; // Remotive só faz sentido para vagas remotas
     const cat = remotiveCategory(profile.cargo_desejado);
     const search = encodeURIComponent(profile.cargo_desejado || '');
     const catParam = cat ? `&category=${cat}` : '';
@@ -613,8 +648,7 @@ async function fetchInfoJobsJobs(profile) {
 // ── FONTE 10: REMOTE OK (API pública, sem chave) ──────────────────────────────
 async function fetchRemoteOkJobs(profile) {
   try {
-    const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
-    if (!isRemoto) return []; // Remote OK só tem vagas remotas
+    if (!wantsRemote(profile)) return []; // Remote OK só tem vagas remotas
     const tag = encodeURIComponent((profile.cargo_desejado || '').toLowerCase().replace(/\s+/g, '-'));
     // Tenta busca com tag específica, fallback para lista geral
     const urls = [
@@ -660,8 +694,7 @@ async function fetchRemoteOkJobs(profile) {
 // ── FONTE 11: ARBEITNOW (API pública, sem chave) ──────────────────────────────
 async function fetchArbeitnowJobs(profile) {
   try {
-    const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
-    if (!isRemoto) return []; // Arbeitnow foca em vagas remotas/internacionais
+    if (!wantsRemote(profile)) return []; // Arbeitnow foca em vagas remotas/internacionais
     const search = encodeURIComponent(profile.cargo_desejado || '');
     const url = `https://www.arbeitnow.com/api/job-board-api?search=${search}`;
     const res = await fetch(url, {
@@ -693,17 +726,20 @@ async function fetchArbeitnowJobs(profile) {
 }
 
 // ── FONTE 12: THE MUSE (API pública, sem chave) ────────────────────────────────
+// Categorias verificadas da API atual do The Muse (jun/2026). Os nomes antigos
+// ('Marketing and PR', 'Software Engineer', 'Data Science', 'Product', 'Finance',
+// 'Human Resources') foram renomeados e passaram a retornar 0 — atualizado abaixo.
 const MUSE_CATEGORY_MAP = {
-  'marketing': 'Marketing and PR', 'growth': 'Marketing and PR', 'seo': 'Marketing and PR',
+  'marketing': 'Advertising and Marketing', 'growth': 'Advertising and Marketing', 'seo': 'Advertising and Marketing',
   'design': 'Design and UX', 'ux': 'Design and UX', 'ui': 'Design and UX',
-  'developer': 'Software Engineer', 'desenvolvedor': 'Software Engineer',
-  'engenheiro': 'Software Engineer', 'frontend': 'Software Engineer',
-  'backend': 'Software Engineer', 'fullstack': 'Software Engineer',
-  'dados': 'Data Science', 'data': 'Data Science', 'analytics': 'Data Science',
+  'developer': 'Software Engineering', 'desenvolvedor': 'Software Engineering',
+  'engenheiro': 'Software Engineering', 'frontend': 'Software Engineering',
+  'backend': 'Software Engineering', 'fullstack': 'Software Engineering',
+  'dados': 'Data and Analytics', 'data': 'Data and Analytics', 'analytics': 'Data and Analytics',
   'vendas': 'Sales', 'comercial': 'Sales',
-  'rh': 'Human Resources', 'pessoas': 'Human Resources',
-  'produto': 'Product', 'product': 'Product',
-  'financeiro': 'Finance', 'contab': 'Finance',
+  'rh': 'Human Resources and Recruitment', 'pessoas': 'Human Resources and Recruitment',
+  'produto': 'Product Management', 'product': 'Product Management',
+  'financeiro': 'Accounting and Finance', 'contab': 'Accounting and Finance',
   'customer': 'Customer Service', 'suporte': 'Customer Service',
 };
 function museCategoryFromCargo(cargo) {
@@ -715,12 +751,11 @@ function museCategoryFromCargo(cargo) {
 }
 async function fetchTheMuseJobs(profile) {
   try {
-    const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
     const cat = museCategoryFromCargo(profile.cargo_desejado);
     if (!cat) return []; // Só busca quando consegue mapear categoria
     const catParam = encodeURIComponent(cat);
     // The Muse tem filtro de "flexible" (remoto) e "all" (presencial+remoto)
-    const location = isRemoto ? '&location=Flexible%20%2F%20Remote' : '';
+    const location = wantsRemote(profile) ? '&location=Flexible%20%2F%20Remote' : '';
     const url = `https://www.themuse.com/api/public/jobs?category=${catParam}${location}&page=1&descending=true`;
     const res = await fetch(url, {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)', Accept: 'application/json' },
@@ -1190,14 +1225,20 @@ function nextOccurrenceAt(hh, mm, fromDateUTC, dayOfWeek = null) {
   return new Date(candidate.getTime() - BRT_OFFSET_HOURS * 60 * 60 * 1000);
 }
 
+// Hora-âncora (BRT) para o next_run. O cron roda 1x/dia de manhã (11:00 UTC = 08:00 BRT);
+// ancorar o next_run a uma hora <= cron garante que o envio ocorra no DIA correto.
+// Antes, o horário default (08:00 BRT = 11:00 UTC) caía DEPOIS do cron das 08:00 UTC
+// e só era pego no dia seguinte (atraso de ~1 dia). O horário exato não é entregável
+// num cron diário, então o anchor é o teto efetivo do agendamento.
+const ALERT_ANCHOR_HOUR_BRT = 7;
+
 function calculateNextRun(profile, fromDate = new Date()) {
   const frequencia = profile.frequencia || 'semanal';
   const diaEnvio = (profile.dia_envio !== undefined && profile.dia_envio !== null)
     ? parseInt(profile.dia_envio) : 5; // default sexta (5)
-  const horario = profile.horario_envio || '08:00';
-  const parts = horario.split(':');
-  const hh = parseInt(parts[0]) || 8;
-  const mm = parseInt(parts[1]) || 0;
+  const cfgHour = parseInt(String(profile.horario_envio || '08:00').split(':')[0]) || 8;
+  const hh = Math.min(cfgHour, ALERT_ANCHOR_HOUR_BRT);
+  const mm = 0;
 
   if (frequencia === 'diario') {
     return nextOccurrenceAt(hh, mm, fromDate, null);
@@ -1262,11 +1303,17 @@ function normalizeJob(j) {
 }
 
 // Remove vagas já enviadas para este usuário
+// Janela de dedup: uma vaga não enviada nos últimos N dias pode ser reenviada.
+// Sem isso, o conjunto de "já enviadas" cresceria para sempre e o usuário diário
+// passaria a receber "nenhuma vaga nova" cada vez mais cedo.
+const DEDUP_WINDOW_DAYS = 60;
+
 async function filterSentJobs(userId, jobs) {
   if (!jobs.length) return [];
   const hashes = jobs.map(j => jobHash(j.title, j.company, j.location));
+  const sinceIso = new Date(Date.now() - DEDUP_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/job_alert_sent?user_id=eq.${userId}&job_hash=in.(${hashes.join(',')})&select=job_hash`,
+    `${SUPABASE_URL}/rest/v1/job_alert_sent?user_id=eq.${userId}&sent_at=gte.${encodeURIComponent(sinceIso)}&job_hash=in.(${hashes.join(',')})&select=job_hash`,
     { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
   );
   const sent = await res.json();
@@ -1360,8 +1407,35 @@ function escEmail(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+// Salva as vagas do último envio no cache (dashboard lê daqui, sem nova busca às APIs)
+async function upsertAlertCache(userId, jobs, { isDemand = false } = {}) {
+  const row = {
+    user_id: userId,
+    jobs: JSON.stringify(jobs.map(j => ({
+      title: j.title, company: j.company || j.employer || j.companyName || '',
+      location: j.location || '', salary: j.salary || '', link: j.link || '',
+      _score: j._score || 0, source: j.source || '',
+    }))),
+    cached_at: new Date().toISOString(),
+    source: isDemand ? 'demand' : 'cron',
+    ...(isDemand ? { last_manual_at: new Date().toISOString() } : {}),
+  };
+  await fetch(`${SUPABASE_URL}/rest/v1/job_alert_cache`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+      'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal',
+    },
+    body: JSON.stringify(row),
+  }).catch(e => console.warn('job_alert_cache upsert failed:', e.message));
+}
+
 // Processa alertas para um usuário
-async function processUserAlert(profile, isTest = false) {
+// options.skipSideEffects=true → modo teste legado (sem dedup, sem mark sent, sem cache)
+// options.isDemand=true → on-demand real (dedup, mark sent, atualiza next_run, salva cache)
+async function processUserAlert(profile, options = {}) {
+  const isTest = options.skipSideEffects === true;
+  const isDemand = options.isDemand === true;
   const userId = profile.user_id;
   let email = profile.email;
   if (!email) return { skipped: 'no email' };
@@ -1589,43 +1663,68 @@ async function processUserAlert(profile, isTest = false) {
       headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
       body: JSON.stringify({ user_id: userId, sent_at: now.toISOString(), jobs_count: jobs.length, status: 'sent' }),
     }).catch(e => console.warn('job_alert_history insert failed:', e.message));
+    // Atualiza cache do dashboard
+    await upsertAlertCache(userId, jobs, { isDemand });
   }
 
   return {
     sent: true,
     jobs: jobs.length,
+    jobsData: jobs.map(j => ({
+      title: j.title, company: j.company || j.employer || j.companyName || '',
+      location: j.location || '', salary: j.salary || '', link: j.link || '',
+      _score: j._score || 0, source: j.source || '',
+    })),
     email,
     relaxedMatches,
     diagnostics: { sourceCounts, rawCount, dedupCount, newCount, strictCount, relaxedCount },
   };
 }
 
-export default async function handler(req, res) {
-  // Segurança: verifica Authorization ou secret
-  const authHeader = req.headers.authorization || '';
-  const isTest = req.query.test === '1';
-  const testUserId = req.query.user_id;
+// Autentica token JWT do usuário e confirma que pertence ao userId informado
+async function authenticateUserToken(authHeader, userId) {
+  const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+  if (!bearerToken) return { error: 'Token de autenticação obrigatório', status: 401 };
+  const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${bearerToken}` },
+  });
+  if (!userRes.ok) return { error: 'Token inválido ou expirado', status: 401 };
+  const userData = await userRes.json();
+  if (!userData?.id || userData.id !== userId) return { error: 'Acesso negado: token não pertence a este usuário', status: 403 };
+  return { ok: true };
+}
 
-  if (isTest) {
-    // ── FIX CRÍTICO 1: modo teste exige token válido do próprio usuário ──────
-    // Impede que qualquer pessoa dispare alertas para user_ids alheios
-    if (!testUserId) {
-      return res.status(400).json({ error: 'user_id obrigatório no modo teste' });
+export default async function handler(req, res) {
+  const authHeader = req.headers.authorization || '';
+  const isTest    = req.query.test === '1';
+  const isDemand  = req.query.demand === '1';
+  const manualUserId = req.query.user_id;  // test ou demand
+
+  if (isTest || isDemand) {
+    // Ambos os modos manuais exigem JWT válido do próprio usuário
+    if (!manualUserId) {
+      return res.status(400).json({ error: 'user_id obrigatório' });
     }
-    const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
-    if (!bearerToken) {
-      return res.status(401).json({ error: 'Token de autenticação obrigatório' });
-    }
-    // Valida token e confirma que pertence ao testUserId informado
-    const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${bearerToken}` },
-    });
-    if (!userRes.ok) {
-      return res.status(401).json({ error: 'Token inválido ou expirado' });
-    }
-    const userData = await userRes.json();
-    if (!userData?.id || userData.id !== testUserId) {
-      return res.status(403).json({ error: 'Acesso negado: token não pertence a este usuário' });
+    const auth = await authenticateUserToken(authHeader, manualUserId);
+    if (!auth.ok) return res.status(auth.status).json({ error: auth.error });
+
+    // Rate limit: on-demand máximo 1x por hora
+    if (isDemand) {
+      const cacheRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/job_alert_cache?user_id=eq.${manualUserId}&select=last_manual_at`,
+        { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+      ).catch(() => null);
+      if (cacheRes?.ok) {
+        const cacheData = await cacheRes.json().catch(() => []);
+        const lastManual = cacheData?.[0]?.last_manual_at;
+        if (lastManual) {
+          const elapsed = Date.now() - new Date(lastManual).getTime();
+          if (elapsed < 60 * 60 * 1000) {
+            const waitMin = Math.ceil((60 * 60 * 1000 - elapsed) / 60000);
+            return res.status(429).json({ error: 'rate_limit', wait_minutes: waitMin });
+          }
+        }
+      }
     }
   } else {
     // ── FIX CRÍTICO 2: cron sem fallback público ─────────────────────────────
@@ -1652,9 +1751,9 @@ export default async function handler(req, res) {
   try {
     let profiles;
 
-    if (isTest && testUserId) {
-      // Modo teste: só para o usuário autenticado (já validado acima)
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?user_id=eq.${testUserId}&select=*`, {
+    if ((isTest || isDemand) && manualUserId) {
+      // Modo manual: só para o usuário autenticado (já validado acima)
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?user_id=eq.${manualUserId}&select=*`, {
         headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` }
       });
       profiles = await r.json();
@@ -1672,7 +1771,7 @@ export default async function handler(req, res) {
     const results = [];
     for (const profile of profiles) {
       try {
-        const result = await processUserAlert(profile, isTest);
+        const result = await processUserAlert(profile, { skipSideEffects: isTest, isDemand });
         results.push({ user: profile.user_id, ...result });
         if (result.sent) console.log(`Alert sent: user=${profile.user_id} jobs=${result.jobs || 0}`);
         else console.log(`Alert skipped: user=${profile.user_id} reason=${result.skipped}`);
@@ -1682,14 +1781,15 @@ export default async function handler(req, res) {
       }
     }
 
-    // Em modo teste, expõe resultado explícito para o frontend
-    if (isTest) {
+    // Modo manual (test ou demand): resposta explícita para o frontend
+    if (isTest || isDemand) {
       const r = results[0] || {};
       if (r.sent === true) {
         return res.status(200).json({
           ok: true,
           sent: true,
           jobs: r.jobs,
+          jobs_data: r.jobsData || [],
           email: r.email,
           relaxed_matches: r.relaxedMatches === true,
           diagnostics: r.diagnostics,
@@ -1700,7 +1800,7 @@ export default async function handler(req, res) {
         const skipMsg = r.skipped === 'sources_empty'
           ? 'As fontes de vagas não responderam com oportunidades agora. Tente novamente em alguns minutos.'
           : r.skipped === 'no new jobs'
-          ? 'As vagas encontradas já apareceram em envios anteriores. Uma nova busca será feita no próximo ciclo.'
+          ? 'Todas as vagas encontradas já foram enviadas anteriormente. Novas oportunidades aparecerão no próximo ciclo.'
           : r.skipped === 'no jobs after filters'
           ? 'Encontramos vagas, mas todas foram excluídas pelos filtros negativos configurados.'
           : r.skipped === 'no email'
@@ -1726,3 +1826,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: err.message });
   }
 }
+

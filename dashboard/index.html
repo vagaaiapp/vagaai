@@ -2095,7 +2095,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           </div>
         </div>
         <div class="al-command-actions">
-          <button class="al-next-btn primary" id="alTestBtn" onclick="sendTestAlert()" aria-label="Enviar e-mail de teste agora">Enviar teste</button>
+          <button class="al-next-btn primary" id="alTestBtn" onclick="requestJobsNow()" aria-label="Receber vagas agora">Receber vagas agora</button>
           <button class="al-next-btn secondary" onclick="openAlertEditModal()">Editar preferências</button>
         </div>
       </div>
@@ -4035,9 +4035,10 @@ async function deleteTracker(id) {
 var _alertProfile   = null;   // from Supabase
 var _alertExtended  = {};     // from localStorage (extended prefs)
 var _alertHistory   = [];     // job_alert_history (envios reais) — alimenta métricas
+var _alertCache     = null;   // job_alert_cache — vagas do último envio para o dashboard
 var _alJobFilter    = 'todas';
 var _alJobFeedback  = {};     // { hash: 'dismissed'|'saved' }
-var _alTestSending  = false;
+var _alDemandSending = false;
 var _alFbTargetHash = null;   // job hash for feedback popup
 // Modal state
 var _alMKw      = [];  // competências
@@ -4099,6 +4100,17 @@ async function loadAlerts() {
     });
     _alertHistory = hres.ok ? (await hres.json()) : [];
   } catch(e) { _alertHistory = []; }
+  // Cache de vagas do último envio (alimenta a grade do dashboard)
+  try {
+    var cres = await fetch(SUPABASE_URL + '/rest/v1/job_alert_cache?user_id=eq.' + currentUserId + '&select=jobs,cached_at,last_manual_at,source', {
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
+    });
+    var cdata = cres.ok ? (await cres.json()) : [];
+    _alertCache = cdata[0] || null;
+    if (_alertCache && typeof _alertCache.jobs === 'string') {
+      try { _alertCache.jobs = JSON.parse(_alertCache.jobs); } catch(e) { _alertCache.jobs = []; }
+    }
+  } catch(e) { _alertCache = null; }
   renderAlertPage();
 }
 
@@ -4387,57 +4399,67 @@ function renderAlertEmailPreview(p, ext) {
         '<div class="al-email-secondary" onclick="openAlertEditModal()">Editar preferências</div>'+
       '</div>'+
     '</div>'+
-    '<div style="margin-top:10px;font-size:11px;color:var(--t3);text-align:center">Use "Enviar teste" para receber o e-mail real.</div>';
+    '<div style="margin-top:10px;font-size:11px;color:var(--t3);text-align:center">Use "Receber vagas agora" para buscar oportunidades.</div>';
 }
 
-/* ── Test send ─────────────────────────────────────────────────── */
-function sendTestAlert() {
-  if (_alTestSending) { showToast('Envio em andamento…'); return; }
+/* ── On-demand jobs request ────────────────────────────────────── */
+function requestJobsNow() {
+  if (_alDemandSending) { showToast('Busca em andamento…'); return; }
   if (!_alertProfile) { showToast('Configure o alerta primeiro.', 'error'); return; }
+  var rateInfo = _getRateLimitInfo();
+  if (rateInfo.blocked) {
+    showToast('Próxima busca disponível em ' + rateInfo.waitMin + ' min.', 'error');
+    return;
+  }
   showConfirm(
-    'Enviar e-mail de teste?',
-    'Vamos buscar vagas reais e enviar para ' + (currentSession.user.email || 'sua conta') + '. Não altera sua agenda de envios.',
-    _doSendTestAlert,
-    'Enviar teste',
-    '📨'
+    'Buscar vagas agora?',
+    'Vamos buscar oportunidades em tempo real e enviar para ' + (currentSession.user.email || 'sua conta') + '. As vagas também aparecem aqui no dashboard.',
+    _doRequestJobsNow,
+    'Buscar agora',
+    '🔍'
   );
 }
-async function _doSendTestAlert() {
-  _alTestSending = true;
-  var btns = document.querySelectorAll('#alTestBtn, #alPreviewTestBtn');
-  btns.forEach(function(b){ if(b){ b.disabled = true; b.textContent = 'Enviando…'; } });
-  _alLive('Enviando e-mail de teste…');
+async function _doRequestJobsNow() {
+  _alDemandSending = true;
+  var btn = document.getElementById('alTestBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Buscando…'; }
+  _alLive('Buscando vagas…');
   try {
-    var res = await fetch('/api/send-alerts?test=1&user_id=' + encodeURIComponent(currentUserId), {
+    var res = await fetch('/api/send-alerts?demand=1&user_id=' + encodeURIComponent(currentUserId), {
       method: 'GET',
       headers: { Authorization: 'Bearer ' + currentSession.access_token }
     });
     var data = await res.json();
-    if (res.ok && data.sent === true) {
-      var sentMsg = 'E-mail de teste enviado para ' + currentSession.user.email + '!';
+    if (res.status === 429) {
+      var waitMin = data.wait_minutes || '?';
+      showToast('Próxima busca disponível em ' + waitMin + ' min.', 'error');
+      _alLive('Rate limit atingido.');
+    } else if (res.ok && data.sent === true) {
+      // Atualiza cache local com as vagas retornadas para exibir imediatamente
+      if (Array.isArray(data.jobs_data) && data.jobs_data.length) {
+        _alertCache = { jobs: data.jobs_data, cached_at: new Date().toISOString(), last_manual_at: new Date().toISOString(), source: 'demand' };
+        renderAlertJobsGrid();
+      }
+      var sentMsg = data.jobs + ' vaga' + (data.jobs !== 1 ? 's' : '') + ' encontrada' + (data.jobs !== 1 ? 's' : '') + ' e enviada' + (data.jobs !== 1 ? 's' : '') + ' para ' + (currentSession.user.email || 'seu e-mail') + '!';
       if (data.relaxed_matches) sentMsg += ' Incluímos também oportunidades próximas ao seu perfil.';
       showToast(sentMsg);
-      _alLive('E-mail de teste enviado com sucesso.');
+      _alLive('Vagas recebidas com sucesso.');
     } else if (res.ok && data.skipped) {
-      var skipMsg = data.message || 'Nenhuma vaga compatível encontrada no momento. Ajuste as preferências do alerta e tente novamente.';
+      var skipMsg = data.message || 'Nenhuma vaga nova encontrada no momento. Tente novamente mais tarde.';
       showToast(skipMsg, 'error');
       _alLive(skipMsg);
     } else {
-      var msg = (data && (data.error || data.message)) ? (data.error || data.message) : 'Erro ao enviar teste.';
-      showToast(msg, 'error');
-      _alLive(msg);
+      var errMsg = (data && (data.error || data.message)) ? (data.error || data.message) : 'Erro ao buscar vagas.';
+      showToast(errMsg, 'error');
+      _alLive(errMsg);
     }
   } catch(e) {
     showToast('Falha ao conectar. Tente novamente.', 'error');
-    _alLive('Falha ao enviar e-mail de teste.');
+    _alLive('Falha na busca de vagas.');
   } finally {
-    _alTestSending = false;
-    btns.forEach(function(b){
-      if (!b) return;
-      b.disabled = false;
-      if (b.id === 'alTestBtn') b.textContent = 'Enviar teste agora';
-      else b.textContent = 'Enviar teste';
-    });
+    _alDemandSending = false;
+    var btn = document.getElementById('alTestBtn');
+    if (btn) { btn.disabled = false; btn.textContent = 'Receber vagas agora'; }
   }
 }
 
@@ -4538,14 +4560,91 @@ function openJobAnalysis(job, hash) {
 }
 
 function renderAlertJobsGrid() {
-  // Jobs preview requires server-side fetch — show instructional empty state
   var grid = document.getElementById('alJobsGrid');
   if (!grid) return;
+
   if (!_alertProfile) {
     grid.innerHTML = '<div class="al-empty" style="padding:28px"><div class="al-empty-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="38" height="38"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div><div class="al-empty-title">As vagas aparecerão aqui</div><div class="al-empty-sub">Configure e ative um alerta para ver as oportunidades encontradas para você.</div></div>';
     return;
   }
-  grid.innerHTML = '<div class="al-empty" style="padding:28px"><div class="al-empty-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="38" height="38"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg></div><div class="al-empty-title">A prévia chega no seu e-mail</div><div class="al-empty-sub">Clique em <strong>Enviar teste agora</strong> para receber as vagas do momento direto na sua caixa de entrada. As oportunidades são buscadas em tempo real.</div><button class="al-empty-cta" onclick="sendTestAlert()" style="margin-top:12px">Enviar teste agora</button></div>';
+
+  var allJobs = (_alertCache && Array.isArray(_alertCache.jobs)) ? _alertCache.jobs : [];
+
+  // Aplica filtro ativo
+  var filtered = allJobs.filter(function(j) {
+    if (_alJobFilter === 'remoto') {
+      return /remoto|remote|home.?office/i.test((j.location || '') + ' ' + (j.title || ''));
+    }
+    if (_alJobFilter === 'salario') return j.salary && j.salary.trim() !== '';
+    if (_alJobFilter === '80') return (j._score || 0) >= 80;
+    return true; // 'todas'
+  });
+
+  if (!allJobs.length) {
+    // Cache existe mas vazio — nunca houve envio
+    var rateInfo = _getRateLimitInfo();
+    var btnLabel = rateInfo.blocked ? ('Disponível em ' + rateInfo.waitMin + 'min') : 'Receber vagas agora';
+    var btnDisabled = rateInfo.blocked ? 'disabled' : '';
+    grid.innerHTML = '<div class="al-empty" style="padding:28px"><div class="al-empty-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="38" height="38"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg></div><div class="al-empty-title">Nenhuma vaga no cache ainda</div><div class="al-empty-sub">Clique em <strong>Receber vagas agora</strong> para buscar oportunidades em tempo real.</div><button class="al-empty-cta" onclick="requestJobsNow()" style="margin-top:12px" ' + btnDisabled + '>' + btnLabel + '</button></div>';
+    return;
+  }
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="al-empty" style="padding:28px"><div class="al-empty-title">Nenhuma vaga com esse filtro</div><div class="al-empty-sub">Tente outro filtro ou clique em "Mais compatíveis".</div></div>';
+    return;
+  }
+
+  var colors = ['#820AD1','#EA1D2C','#21C25E','#F04E23','#003D7B','#FF6B00','#0061FF'];
+  var cachedAt = _alertCache && _alertCache.cached_at ? new Date(_alertCache.cached_at) : null;
+  var timeLabel = cachedAt ? ('Atualizado às ' + cachedAt.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})) : '';
+
+  var html = '<div class="al-jobs-grid">';
+  filtered.forEach(function(j) {
+    var company = String(j.company || 'Empresa');
+    var initial = (company[0] || 'E').toUpperCase();
+    var color = colors[Math.abs((company.charCodeAt(0) || 69)) % colors.length];
+    var score = j._score || 0;
+    var scoreClass = score >= 80 ? '' : 'warn';
+    var scoreLabel = score >= 80 ? score + '%' : score + '%';
+    var analyzeUrl = '/app?vaga=' + encodeURIComponent(j.link || '');
+    html += '<div class="al-job-card">' +
+      '<div class="al-job-match ' + scoreClass + '">' + scoreLabel + '</div>' +
+      '<div class="al-job-company">' + _esc(company) + '</div>' +
+      '<div class="al-job-title">' + _esc(j.title || '') + '</div>' +
+      '<div class="al-job-location">📍 ' + _esc(j.location || 'Brasil') +
+        (j.salary ? ' · 💰 ' + _esc(j.salary) : '') + '</div>' +
+      '<div class="al-job-actions">' +
+        '<button class="al-jact-btn" onclick="window.open(\'' + analyzeUrl + '\',\'_blank\')">⚡ Analisar</button>' +
+        '<button class="al-jact-btn" onclick="_saveJobFromCache(' + JSON.stringify(j).replace(/"/g,'&quot;') + ')">Salvar</button>' +
+      '</div>' +
+    '</div>';
+  });
+  html += '</div>';
+  if (timeLabel) html += '<div style="padding:8px 18px 12px;font-size:11px;color:var(--t3)">' + timeLabel + ' · ' + allJobs.length + ' vagas encontradas</div>';
+  grid.innerHTML = html;
+}
+
+function _esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function _getRateLimitInfo() {
+  if (!_alertCache || !_alertCache.last_manual_at) return { blocked: false };
+  var elapsed = Date.now() - new Date(_alertCache.last_manual_at).getTime();
+  if (elapsed >= 60 * 60 * 1000) return { blocked: false };
+  return { blocked: true, waitMin: Math.ceil((60 * 60 * 1000 - elapsed) / 60000) };
+}
+
+async function _saveJobFromCache(job) {
+  if (!job || !job.link) { showToast('Vaga sem link para salvar.', 'error'); return; }
+  try {
+    var body = { user_id: currentUserId, job_url: job.link, job_title: job.title || '', company: job.company || '', status: 'interesse', origem: 'alerta', created_at: new Date().toISOString() };
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker', {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify(body)
+    });
+    if (res.ok || res.status === 201) showToast('Vaga salva no rastreador!');
+    else showToast('Erro ao salvar vaga.', 'error');
+  } catch(e) { showToast('Erro ao salvar vaga.', 'error'); }
 }
 
 /* ── Toggle active / Delete ─────────────────────────────────────── */
