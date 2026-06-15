@@ -1323,7 +1323,7 @@ body {
 .cd-btn:hover { border-color:var(--gb-emerald); color:var(--gb-emerald); }
 .cd-btn.cd-cta { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); }
 .cd-btn.cd-cta:hover { background:var(--gb-mid); }
-.cd-btn.cd-danger { width:34px; height:34px; padding:0; justify-content:center; margin-left:auto; color:var(--s-red); background:var(--s-red-bg); border-color:rgba(217,79,79,.22); }
+.cd-btn.cd-danger { width:34px; height:34px; padding:0; justify-content:center; margin:0 auto; color:var(--s-red); background:var(--s-red-bg); border-color:rgba(217,79,79,.22); }
 .cd-btn.cd-danger svg { width:15px; height:15px; }
 .cd-btn.cd-danger:hover { color:#fff; background:var(--s-red); border-color:var(--s-red); }
 @media(max-width:520px) {
@@ -2113,9 +2113,9 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         <div class="al-metric">
           <div class="al-metric-icon" aria-hidden="true">◎</div>
           <div>
-          <div class="al-metric-val">—</div>
-          <div class="al-metric-lbl">vagas de alta aderência</div>
-          <div class="al-metric-na">Rastreamento indisponível</div>
+          <div class="al-metric-val" id="alMetricEnvios">—</div>
+          <div class="al-metric-lbl">alertas enviados</div>
+          <div class="al-metric-sub" id="alMetricEnviosSub">nos últimos 30 dias</div>
           </div>
         </div>
         <div class="al-metric">
@@ -2194,7 +2194,6 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           <div class="al-delivery-title">Uma seleção curta, não uma lista infinita.</div>
           <p>O e-mail destaca as vagas com maior aderência, informa salário e modalidade quando disponíveis e leva você direto para a análise completa.</p>
           <div class="al-history-sub" id="alPreviewWhen">Aguardando configuração.</div>
-          <button class="al-new-btn" onclick="sendTestAlert()" id="alPreviewTestBtn">Enviar prévia para meu e-mail</button>
         </div>
         <div class="al-preview-card al-clean-preview">
           <div class="al-preview-head">
@@ -4035,6 +4034,7 @@ async function deleteTracker(id) {
 /* ── Alert state ─────────────────────────────────────────────── */
 var _alertProfile   = null;   // from Supabase
 var _alertExtended  = {};     // from localStorage (extended prefs)
+var _alertHistory   = [];     // job_alert_history (envios reais) — alimenta métricas
 var _alJobFilter    = 'todas';
 var _alJobFeedback  = {};     // { hash: 'dismissed'|'saved' }
 var _alTestSending  = false;
@@ -4092,6 +4092,13 @@ async function loadAlerts() {
     _alertProfile = null;
     showToast('Não foi possível carregar seus alertas. Tente novamente.', 'error');
   }
+  // Histórico de envios reais (RLS: dono lê o próprio) — alimenta as métricas
+  try {
+    var hres = await fetch(SUPABASE_URL + '/rest/v1/job_alert_history?user_id=eq.' + currentUserId + '&order=sent_at.desc&limit=200', {
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
+    });
+    _alertHistory = hres.ok ? (await hres.json()) : [];
+  } catch(e) { _alertHistory = []; }
   renderAlertPage();
 }
 
@@ -4163,13 +4170,15 @@ function renderAlertStatus(p) {
   }
 }
 
+// Mesma hora-âncora do backend (send-alerts.js): o cron diário entrega de manhã,
+// então o next_run é ancorado a no máximo 07h para cair no dia correto.
+var ALERT_ANCHOR_HOUR_BRT = 7;
 function calculateNextAlertRun(p, ext) {
   if (!p || !p.ativo) return null;
   var freq     = p.frequencia || 'semanal';
   var dayEnvio = (ext && ext.dia_envio !== undefined && ext.dia_envio !== '') ? parseInt(ext.dia_envio) : 5;
-  var hora     = (ext && ext.horario_envio) || '08:00';
-  var parts    = hora.split(':');
-  var hh = parseInt(parts[0]) || 8, mm = parseInt(parts[1]) || 0;
+  var cfgHour  = parseInt(String((ext && ext.horario_envio) || '08:00').split(':')[0]) || 8;
+  var hh = Math.min(cfgHour, ALERT_ANCHOR_HOUR_BRT), mm = 0;
   var now = new Date();
 
   if (freq === 'diario') {
@@ -4230,8 +4239,10 @@ function renderAlertNextSend(p, ext) {
     if (testBtn) testBtn.disabled = true;
     return;
   }
-  var next = calculateNextAlertRun(p, ext);
-  if (!next) { dateEl.textContent = '—'; metaEl.textContent = ''; return; }
+  // Prefere o next_run_at autoritativo salvo no banco (o backend recalcula a cada envio);
+  // só cai no cálculo local quando ainda não há valor persistido.
+  var next = (p.next_run_at ? new Date(p.next_run_at) : null) || calculateNextAlertRun(p, ext);
+  if (!next || isNaN(next.getTime())) { dateEl.textContent = '—'; metaEl.textContent = ''; return; }
   var dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
   var meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
   dateEl.textContent = dias[next.getDay()] + ', ' + next.getDate() + ' de ' + meses[next.getMonth()] + ', pela manhã';
@@ -4241,18 +4252,27 @@ function renderAlertNextSend(p, ext) {
 }
 
 function renderAlertMetrics(p) {
-  var vagasEl = document.getElementById('alMetricVagas');
-  var candEl  = document.getElementById('alMetricCandidaturas');
-  var subEl   = document.getElementById('alMetricCandSub');
+  var vagasEl  = document.getElementById('alMetricVagas');
+  var enviosEl = document.getElementById('alMetricEnvios');
+  var candEl   = document.getElementById('alMetricCandidaturas');
+  var subEl    = document.getElementById('alMetricCandSub');
   if (!p) {
-    if (vagasEl) vagasEl.textContent = '—';
-    if (candEl)  candEl.textContent  = '—';
+    if (vagasEl)  vagasEl.textContent  = '—';
+    if (enviosEl) enviosEl.textContent = '—';
+    if (candEl)   candEl.textContent   = '—';
     return;
   }
-  // Calcular candidaturas originadas de alertas (job_tracker vinculado a análise que veio de alerta)
+  // Envios reais dos últimos 30 dias (job_alert_history, status 'sent')
+  var cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  var recentes = (_alertHistory || []).filter(function(h){
+    return h.status === 'sent' && h.sent_at && new Date(h.sent_at).getTime() >= cutoff;
+  });
+  var vagasEncontradas = recentes.reduce(function(s, h){ return s + (parseInt(h.jobs_count) || 0); }, 0);
+  if (vagasEl)  vagasEl.textContent  = recentes.length ? vagasEncontradas : '—';
+  if (enviosEl) enviosEl.textContent = recentes.length ? recentes.length : '—';
+  // Candidaturas originadas de alertas (job_tracker com origem='alerta')
   var tracked = _kTracked || [];
-  var fromAlert = tracked.filter(function(t){ return t.origem === 'alerta' || t.source === 'alerta'; }).length;
-  if (vagasEl) vagasEl.textContent = '—';  // sem tabela de alert_runs ainda
+  var fromAlert = tracked.filter(function(t){ return t.origem === 'alerta'; }).length;
   if (candEl)  candEl.textContent  = fromAlert > 0 ? fromAlert : '—';
   if (subEl)   subEl.textContent   = fromAlert > 0 ? fromAlert + ' rastreadas' : 'Dados insuficientes';
 }
@@ -4953,6 +4973,7 @@ function switchDashTab(tab) {
   if (bcSec) bcSec.textContent = labels[tab] || tab;
   if (bcSub) bcSub.textContent = subs[tab] || '';
   if (tab === 'plano') loadSubscriptionData();
+  try { history.replaceState(null, '', '#' + tab); } catch(e) {}
 }
 
 function openRequestedDashboardTab() {
