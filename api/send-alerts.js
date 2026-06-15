@@ -1132,15 +1132,41 @@ function escEmail(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// Salva as vagas do último envio no cache (dashboard lê daqui, sem nova busca às APIs)
+// Salva as vagas do último envio no cache (dashboard lê daqui, sem nova busca às APIs).
+// On-demand: mescla com o cache existente para não apagar vagas de envios anteriores.
 async function upsertAlertCache(userId, jobs, { isDemand = false } = {}) {
+  const normalize = j => ({
+    title: j.title, company: j.company || j.employer || j.companyName || '',
+    location: j.location || '', salary: j.salary || '', link: j.link || '',
+    _score: j._score || 0, source: j.source || '',
+  });
+
+  let mergedJobs = jobs.map(normalize);
+
+  if (isDemand) {
+    // Busca cache existente para mesclar — preserva vagas de envios anteriores
+    try {
+      const existing = await fetch(
+        `${SUPABASE_URL}/rest/v1/job_alert_cache?user_id=eq.${userId}&select=jobs`,
+        { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+      );
+      if (existing.ok) {
+        const rows = await existing.json();
+        if (rows[0]?.jobs) {
+          const prev = typeof rows[0].jobs === 'string' ? JSON.parse(rows[0].jobs) : rows[0].jobs;
+          // Novas vagas primeiro; remove duplicatas por link
+          const seenLinks = new Set(mergedJobs.map(j => j.link).filter(Boolean));
+          for (const p of prev) {
+            if (!p.link || !seenLinks.has(p.link)) mergedJobs.push(p);
+          }
+        }
+      }
+    } catch (e) { console.warn('job_alert_cache merge fetch failed:', e.message); }
+  }
+
   const row = {
     user_id: userId,
-    jobs: JSON.stringify(jobs.map(j => ({
-      title: j.title, company: j.company || j.employer || j.companyName || '',
-      location: j.location || '', salary: j.salary || '', link: j.link || '',
-      _score: j._score || 0, source: j.source || '',
-    }))),
+    jobs: JSON.stringify(mergedJobs),
     cached_at: new Date().toISOString(),
     source: isDemand ? 'demand' : 'cron',
     ...(isDemand ? { last_manual_at: new Date().toISOString() } : {}),
