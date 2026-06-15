@@ -4681,7 +4681,7 @@ function _getRateLimitInfo() {
 }
 
 var _dismissTarget = null; // job object being dismissed
-var _dismissReason = null; // selected reason
+var _dismissReasons = new Set(); // selected reasons (multi)
 
 var AL_DISMISS_REASONS = [
   'Cargo não é relevante',
@@ -4698,7 +4698,7 @@ function _dismissJobFromCache(link) {
   var job = _alertCache.jobs.find(function(j) { return j.link === link; });
   if (!job) return;
   _dismissTarget = job;
-  _dismissReason = null;
+  _dismissReasons = new Set();
 
   var label = document.getElementById('alDismissJobLabel');
   if (label) label.textContent = (job.title || '') + (job.company ? ' · ' + job.company : '');
@@ -4721,32 +4721,34 @@ function _dismissJobFromCache(link) {
 }
 
 function _selectDismissReason(btn, reason) {
-  _dismissReason = reason;
-  document.querySelectorAll('#alDismissReasons button').forEach(function(b) {
-    b.style.borderColor = 'var(--border)';
-    b.style.background = 'var(--bg-card)';
-    b.style.color = 'var(--t2)';
-    b.style.fontWeight = '400';
-  });
-  btn.style.borderColor = 'var(--s-red,#e05252)';
-  btn.style.background = 'rgba(224,82,82,.08)';
-  btn.style.color = 'var(--s-red,#e05252)';
-  btn.style.fontWeight = '600';
+  if (_dismissReasons.has(reason)) {
+    _dismissReasons.delete(reason);
+    btn.style.borderColor = 'var(--border)';
+    btn.style.background = 'var(--bg-card)';
+    btn.style.color = 'var(--t2)';
+    btn.style.fontWeight = '400';
+  } else {
+    _dismissReasons.add(reason);
+    btn.style.borderColor = 'var(--s-red,#e05252)';
+    btn.style.background = 'rgba(224,82,82,.08)';
+    btn.style.color = 'var(--s-red,#e05252)';
+    btn.style.fontWeight = '600';
+  }
   var confirmBtn = document.getElementById('alDismissConfirmBtn');
-  if (confirmBtn) confirmBtn.disabled = false;
+  if (confirmBtn) confirmBtn.disabled = _dismissReasons.size === 0;
 }
 
 function _closeDismissModal() {
   _dismissTarget = null;
-  _dismissReason = null;
+  _dismissReasons = new Set();
   var overlay = document.getElementById('alDismissOverlay');
   if (overlay) overlay.style.display = 'none';
 }
 
 async function _confirmDismiss() {
-  if (!_dismissTarget || !_dismissReason) return;
+  if (!_dismissTarget || _dismissReasons.size === 0) return;
   var job = _dismissTarget;
-  var reason = _dismissReason;
+  var reason = Array.from(_dismissReasons).join(', ');
 
   var confirmBtn = document.getElementById('alDismissConfirmBtn');
   if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = 'Excluindo…'; }
