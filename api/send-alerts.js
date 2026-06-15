@@ -1715,7 +1715,7 @@ export default async function handler(req, res) {
     if (!job_link) return res.status(400).json({ error: 'job_link obrigatório' });
     const hash = jobHash(job_title || '', job_company || '', job_location || '');
     const now = new Date().toISOString();
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/job_alert_sent`, {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/job_alert_sent?on_conflict=user_id,job_hash`, {
       method: 'POST',
       headers: {
         apikey: SUPABASE_SERVICE_KEY,
