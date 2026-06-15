@@ -4628,7 +4628,7 @@ function renderAlertJobsGrid() {
         (j.salary ? ' · 💰 ' + _esc(j.salary) : '') + '</div>' +
       '<div class="al-job-actions">' +
         '<button class="al-jact-btn" onclick="window.open(\'' + analyzeUrl + '\',\'_blank\')">⚡ Analisar</button>' +
-        '<button class="al-jact-btn" onclick="_saveJobFromCache(' + JSON.stringify(j).replace(/"/g,'&quot;') + ')">Salvar</button>' +
+        '<button class="al-jact-btn" onclick="_dismissJobFromCache(\'' + _esc(j.link || '') + '\')">Excluir</button>' +
       '</div>' +
     '</div>';
   });
@@ -4665,6 +4665,12 @@ function _getRateLimitInfo() {
   var elapsed = Date.now() - new Date(_alertCache.last_manual_at).getTime();
   if (elapsed >= 60 * 60 * 1000) return { blocked: false };
   return { blocked: true, waitMin: Math.ceil((60 * 60 * 1000 - elapsed) / 60000) };
+}
+
+function _dismissJobFromCache(link) {
+  if (!_alertCache || !Array.isArray(_alertCache.jobs)) return;
+  _alertCache.jobs = _alertCache.jobs.filter(function(j) { return j.link !== link; });
+  renderAlertJobsGrid();
 }
 
 async function _saveJobFromCache(job) {
