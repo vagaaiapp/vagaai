@@ -1696,6 +1696,52 @@ async function authenticateUserToken(authHeader, userId) {
 
 export default async function handler(req, res) {
   const authHeader = req.headers.authorization || '';
+
+  // ── POST ?action=dismiss — registra exclusão de vaga com motivo ──────────
+  if (req.method === 'POST' && req.query.action === 'dismiss') {
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+      return res.status(500).json({ error: 'Supabase não configurado' });
+    }
+    const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+    if (!bearerToken) return res.status(401).json({ error: 'Token obrigatório' });
+    const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${bearerToken}` },
+    });
+    if (!userRes.ok) return res.status(401).json({ error: 'Token inválido ou expirado' });
+    const userData = await userRes.json();
+    const userId = userData?.id;
+    if (!userId) return res.status(401).json({ error: 'Usuário não identificado' });
+    const { job_link, job_title, job_company, job_location, reason } = req.body || {};
+    if (!job_link) return res.status(400).json({ error: 'job_link obrigatório' });
+    const hash = jobHash(job_title || '', job_company || '', job_location || '');
+    const now = new Date().toISOString();
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/job_alert_sent`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=minimal',
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        job_hash: hash,
+        job_title: (job_title || '').slice(0, 255),
+        job_company: (job_company || '').slice(0, 255),
+        job_url: (job_link || '').slice(0, 1000),
+        sent_at: now,
+        dismissed_reason: reason || null,
+        dismissed_at: reason ? now : null,
+      }),
+    });
+    if (!r.ok) {
+      const err = await r.text();
+      console.error('dismiss upsert failed:', err);
+      return res.status(500).json({ error: 'Erro ao registrar exclusão' });
+    }
+    return res.status(200).json({ ok: true, hash });
+  }
+
   const isTest    = req.query.test === '1';
   const isDemand  = req.query.demand === '1';
   const manualUserId = req.query.user_id;  // test ou demand

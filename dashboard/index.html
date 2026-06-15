@@ -4752,7 +4752,7 @@ async function _confirmDismiss() {
   if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = 'Excluindo…'; }
 
   try {
-    var res = await fetch('/api/dismiss-job', {
+    var res = await fetch('/api/send-alerts?action=dismiss', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
