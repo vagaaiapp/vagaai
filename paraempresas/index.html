@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VagaAI Hire — Conecte-se com candidatos triados por IA</title>
+  <meta name="description" content="Suas vagas chegam diretamente para candidatos qualificados, com perfil compatível — antes mesmo de eles buscarem no Google.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --green:#1a9e6e;--green-dark:#0f6e56;--green-light:#5dcaa5;
+      --bg:#0a0f0d;--bg2:#0f1612;--bg3:#141f18;--bg4:#1a2820;
+      --border:rgba(26,158,110,.18);--border2:rgba(26,158,110,.32);
+      --t1:#e8f5ef;--t2:#9fcfb8;--t3:#5a8a72;
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--t1);line-height:1.6;font-size:15px}
+    a{color:var(--green-light);text-decoration:none}
+    .page{max-width:900px;margin:0 auto;padding:0 24px}
+
+    nav{display:flex;align-items:center;justify-content:space-between;padding:20px 0;border-bottom:0.5px solid var(--border)}
+    .nav-logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:500;color:var(--t1)}
+    .nav-logo-dot{width:28px;height:28px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff}
+    .nav-cta{background:var(--green);color:#fff;font-size:13px;font-weight:500;padding:8px 18px;border-radius:8px;border:none;cursor:pointer}
+
+    .hero{padding:80px 0 64px;text-align:center}
+    .hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(26,158,110,.1);color:var(--green-light);font-size:12px;font-weight:500;padding:5px 14px;border-radius:20px;border:0.5px solid var(--border2);margin-bottom:28px}
+    .hero-tag i{font-size:14px}
+    .hero h1{font-size:46px;font-weight:600;line-height:1.12;color:var(--t1);margin-bottom:20px;letter-spacing:-1px}
+    .hero h1 span{color:var(--green-light)}
+    .hero p{font-size:17px;color:var(--t2);max-width:560px;margin:0 auto 40px;line-height:1.65}
+    .hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+    .btn-primary{background:var(--green);color:#fff;font-size:14px;font-weight:500;padding:13px 28px;border-radius:10px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+    .btn-secondary{background:transparent;color:var(--t2);font-size:14px;padding:13px 24px;border-radius:10px;border:0.5px solid var(--border2);cursor:pointer;font-family:inherit}
+    .hero-stat-row{display:flex;justify-content:center;gap:40px;margin-top:52px;padding-top:36px;border-top:0.5px solid var(--border);flex-wrap:wrap}
+    .hero-stat span{display:block;font-size:26px;font-weight:600;color:var(--t1)}
+    .hero-stat p{font-size:12px;color:var(--t3);margin-top:2px}
+
+    .section{padding:64px 0}
+    .section-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--green-light);margin-bottom:12px}
+    .section h2{font-size:30px;font-weight:600;color:var(--t1);margin-bottom:8px;letter-spacing:-.5px}
+    .section-sub{font-size:15px;color:var(--t2);margin-bottom:44px}
+    .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+    .step-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:14px;padding:24px}
+    .step-num{width:32px;height:32px;background:rgba(26,158,110,.12);border:0.5px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--green-light);margin-bottom:16px}
+    .step-card h3{font-size:15px;font-weight:500;color:var(--t1);margin-bottom:6px}
+    .step-card p{font-size:13px;color:var(--t3);line-height:1.55}
+
+    .diff-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+    .diff-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:14px;padding:22px;display:flex;gap:16px;align-items:flex-start}
+    .diff-icon{width:38px;height:38px;background:rgba(26,158,110,.1);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .diff-icon i{font-size:18px;color:var(--green-light)}
+    .diff-card h3{font-size:14px;font-weight:500;color:var(--t1);margin-bottom:5px}
+    .diff-card p{font-size:13px;color:var(--t3);line-height:1.5}
+
+    .compare-wrap{background:var(--bg3);border:0.5px solid var(--border);border-radius:14px;overflow:hidden}
+    .compare-table{width:100%;border-collapse:collapse;font-size:13px}
+    .compare-table th{text-align:left;padding:12px 16px;color:var(--t3);font-weight:500;font-size:12px;border-bottom:0.5px solid var(--border)}
+    .compare-table td{padding:12px 16px;border-bottom:0.5px solid rgba(26,158,110,.08);color:var(--t2)}
+    .compare-table .col-yes{color:var(--green-light);font-weight:500}
+    .compare-table .col-no{color:var(--t3)}
+    .compare-table .col-vagaai{background:rgba(26,158,110,.06)}
+    .compare-table tr:last-child td{border-bottom:none}
+
+    .plan-card{background:var(--bg3);border:1.5px solid var(--green);border-radius:16px;padding:32px;max-width:440px;margin:0 auto;text-align:center}
+    .plan-price{font-size:48px;font-weight:700;color:var(--t1);margin-bottom:4px;letter-spacing:-2px}
+    .plan-price sub{font-size:16px;font-weight:400;color:var(--t2);letter-spacing:0}
+    .plan-desc{font-size:14px;color:var(--t3);margin-bottom:28px}
+    .plan-features{list-style:none;text-align:left;margin-bottom:28px;display:flex;flex-direction:column;gap:10px}
+    .plan-features li{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--t2)}
+    .plan-features li i{font-size:15px;color:var(--green-light);flex-shrink:0}
+
+    .form-section{background:var(--bg3);border:0.5px solid var(--border);border-radius:20px;padding:48px;text-align:center}
+    .form-section h2{font-size:26px;font-weight:600;color:var(--t1);margin-bottom:8px}
+    .form-section > p{font-size:14px;color:var(--t2);margin-bottom:32px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;text-align:left;margin-bottom:14px}
+    .form-group{display:flex;flex-direction:column;gap:6px}
+    .form-group label{font-size:12px;font-weight:500;color:var(--t3)}
+    .form-input{background:var(--bg4);border:0.5px solid var(--border2);border-radius:8px;color:var(--t1);font-size:14px;padding:10px 14px;outline:none;font-family:inherit;width:100%;transition:border-color .15s}
+    .form-input::placeholder{color:var(--t3)}
+    .form-input:focus{border-color:var(--green)}
+    .form-select{background:var(--bg4);border:0.5px solid var(--border2);border-radius:8px;color:var(--t1);font-size:14px;padding:10px 14px;outline:none;font-family:inherit;width:100%;appearance:none;cursor:pointer}
+    .form-select:focus{border-color:var(--green)}
+    .form-full{grid-column:1/-1}
+    .submit-btn{width:100%;background:var(--green);color:#fff;font-size:15px;font-weight:500;padding:14px;border-radius:10px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;font-family:inherit;transition:opacity .15s}
+    .submit-btn:hover{opacity:.9}
+    .submit-btn:disabled{opacity:.6;cursor:not-allowed}
+    .form-note{font-size:11px;color:var(--t3);margin-top:12px}
+
+    footer{border-top:0.5px solid var(--border);padding:28px 0;display:flex;justify-content:space-between;align-items:center;margin-top:48px}
+    footer p{font-size:12px;color:var(--t3)}
+    .footer-logo{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t2)}
+
+    #success-msg{display:none;background:rgba(26,158,110,.12);border:0.5px solid var(--border2);border-radius:12px;padding:24px;margin-top:16px;color:var(--t2);font-size:14px;line-height:1.6}
+    #success-msg strong{color:var(--green-light)}
+
+    @media(max-width:640px){
+      .hero h1{font-size:30px}
+      .steps{grid-template-columns:1fr}
+      .diff-grid{grid-template-columns:1fr}
+      .form-grid{grid-template-columns:1fr}
+      .form-full{grid-column:1}
+      .form-section{padding:28px 20px}
+      .hero-stat-row{gap:24px}
+      nav{flex-wrap:wrap;gap:12px}
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-logo-dot">V</div>
+      VagaAI <span style="color:var(--green-light);margin-left:2px">Hire</span>
+    </div>
+    <button class="nav-cta" onclick="document.getElementById('form-section').scrollIntoView({behavior:'smooth'})">
+      Cadastrar empresa
+    </button>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-tag"><i class="ti ti-sparkles" aria-hidden="true"></i> Candidatos triados por IA, não currículos aleatórios</div>
+    <h1>Contrate mais rápido.<br><span>Candidatos certos,</span> desde o alerta.</h1>
+    <p>Suas vagas chegam diretamente para candidatos qualificados, com perfil compatível — antes mesmo de eles buscarem no Google.</p>
+    <div class="hero-ctas">
+      <button class="btn-primary" onclick="document.getElementById('form-section').scrollIntoView({behavior:'smooth'})">
+        <i class="ti ti-building" aria-hidden="true"></i> Cadastrar minha empresa
+      </button>
+      <button class="btn-secondary" onclick="document.getElementById('como-funciona').scrollIntoView({behavior:'smooth'})">
+        Ver como funciona
+      </button>
+    </div>
+    <div class="hero-stat-row">
+      <div class="hero-stat"><span>IA</span><p>triagem por compatibilidade</p></div>
+      <div class="hero-stat"><span>0 spam</span><p>candidato já filtrado por cargo</p></div>
+      <div class="hero-stat"><span>Grátis</span><p>cadastro sem cartão de crédito</p></div>
+    </div>
+  </section>
+
+  <section class="section" id="como-funciona">
+    <div class="section-label">Como funciona</div>
+    <h2>Do cadastro à candidatura em 3 passos</h2>
+    <p class="section-sub">Sem burocracia. Você cadastra a vaga, a IA encontra quem combina.</p>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3>Cadastre sua vaga</h3>
+        <p>Preencha cargo, nível, localização e descrição. Leva menos de 5 minutos.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3>A IA encontra os perfis</h3>
+        <p>Nosso algoritmo identifica usuários com experiência e cargo compatíveis com a vaga.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3>Candidato aplica diretamente</h3>
+        <p>Sua vaga aparece no alerta e no painel do candidato com destaque "Parceira VagaAI".</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">Por que o VagaAI Hire</div>
+    <h2>Diferente dos portais tradicionais</h2>
+    <p class="section-sub">Você não paga para aparecer. Você aparece para quem importa.</p>
+    <div class="diff-grid">
+      <div class="diff-card">
+        <div class="diff-icon"><i class="ti ti-target-arrow" aria-hidden="true"></i></div>
+        <div>
+          <h3>Candidato já filtrado por IA</h3>
+          <p>Só recebe o alerta quem tem perfil compatível com a vaga. Sem currículo fora do contexto.</p>
+        </div>
+      </div>
+      <div class="diff-card">
+        <div class="diff-icon"><i class="ti ti-badge" aria-hidden="true"></i></div>
+        <div>
+          <h3>Badge "Parceira VagaAI"</h3>
+          <p>Sua empresa aparece com destaque no painel e no e-mail de alertas. Mais visibilidade, mais atenção.</p>
+        </div>
+      </div>
+      <div class="diff-card">
+        <div class="diff-icon"><i class="ti ti-star" aria-hidden="true"></i></div>
+        <div>
+          <h3>Prioridade no ranqueamento</h3>
+          <p>Vagas de empresas parceiras recebem pontuação máxima e aparecem primeiro na listagem do candidato.</p>
+        </div>
+      </div>
+      <div class="diff-card">
+        <div class="diff-icon"><i class="ti ti-chart-line" aria-hidden="true"></i></div>
+        <div>
+          <h3>Candidato engajado</h3>
+          <p>Usuários do VagaAI são ativos na busca — preparam currículo, fazem análises e acompanham o mercado.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">Comparação</div>
+    <h2>VagaAI Hire vs. portais tradicionais</h2>
+    <p class="section-sub">Sem custos por vaga, sem taxa por candidato.</p>
+    <div class="compare-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th style="width:40%">Critério</th>
+            <th class="col-vagaai" style="color:var(--green-light);width:30%"><i class="ti ti-leaf" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> VagaAI Hire</th>
+            <th style="width:30%">Portais tradicionais</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Custo para postar vaga</td>
+            <td class="col-vagaai col-yes">Gratuito</td>
+            <td class="col-no">R$199–R$1.200/vaga</td>
+          </tr>
+          <tr>
+            <td>Triagem por IA</td>
+            <td class="col-vagaai col-yes">Sim, automática</td>
+            <td class="col-no">Não</td>
+          </tr>
+          <tr>
+            <td>Candidato ativo na busca</td>
+            <td class="col-vagaai col-yes">Sempre</td>
+            <td class="col-no">Às vezes</td>
+          </tr>
+          <tr>
+            <td>Vaga entregue por e-mail</td>
+            <td class="col-vagaai col-yes">Sim, via alerta</td>
+            <td class="col-no">Não (candidato busca)</td>
+          </tr>
+          <tr>
+            <td>Destaque de parceira</td>
+            <td class="col-vagaai col-yes">Badge no painel</td>
+            <td class="col-no">Sem diferenciação</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">Plano</div>
+    <h2 style="text-align:center;margin-bottom:32px">Simples. Gratuito. Sem surpresas.</h2>
+    <div class="plan-card">
+      <div class="plan-price">R$0<sub>/mês</sub></div>
+      <p class="plan-desc">Sem cartão de crédito. Comece agora.</p>
+      <ul class="plan-features">
+        <li><i class="ti ti-check" aria-hidden="true"></i> Até 5 vagas ativas simultaneamente</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i> Vaga entregue por alerta de e-mail</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i> Badge "Parceira VagaAI" no painel</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i> Prioridade máxima no ranqueamento</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i> Painel com candidatos interessados (em breve)</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i> Suporte por e-mail</li>
+      </ul>
+      <button class="btn-primary" style="width:100%;justify-content:center" onclick="document.getElementById('form-section').scrollIntoView({behavior:'smooth'})">
+        Cadastrar minha empresa <i class="ti ti-arrow-right" aria-hidden="true"></i>
+      </button>
+    </div>
+  </section>
+
+  <section class="section" id="form-section">
+    <div class="form-section">
+      <h2>Cadastre sua empresa</h2>
+      <p>Preencha os dados abaixo e entraremos em contato para ativar sua conta em até 48h.</p>
+      <form id="lead-form" onsubmit="submitForm(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="f-empresa">Nome da empresa *</label>
+            <input class="form-input" id="f-empresa" name="empresa" type="text" placeholder="Ex: Acme Tecnologia" required>
+          </div>
+          <div class="form-group">
+            <label for="f-site">Site ou LinkedIn da empresa</label>
+            <input class="form-input" id="f-site" name="site" type="text" placeholder="acme.com.br">
+          </div>
+          <div class="form-group">
+            <label for="f-nome">Seu nome *</label>
+            <input class="form-input" id="f-nome" name="nome" type="text" placeholder="Nome completo" required>
+          </div>
+          <div class="form-group">
+            <label for="f-cargo">Seu cargo *</label>
+            <input class="form-input" id="f-cargo" name="cargo" type="text" placeholder="Ex: Head de RH" required>
+          </div>
+          <div class="form-group form-full">
+            <label for="f-email">E-mail profissional *</label>
+            <input class="form-input" id="f-email" name="email" type="email" placeholder="voce@empresa.com.br" required>
+          </div>
+          <div class="form-group">
+            <label for="f-vagas">Quantas vagas/mês vocês abrem?</label>
+            <select class="form-select" id="f-vagas" name="vagas_mes">
+              <option value="">Selecione...</option>
+              <option>1–5 vagas</option>
+              <option>6–20 vagas</option>
+              <option>21–50 vagas</option>
+              <option>Mais de 50 vagas</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="f-area">Área principal de contratação</label>
+            <select class="form-select" id="f-area" name="area">
+              <option value="">Selecione...</option>
+              <option>Tecnologia</option>
+              <option>Marketing e Crescimento</option>
+              <option>Vendas</option>
+              <option>Produto</option>
+              <option>Operações</option>
+              <option>RH e Pessoas</option>
+              <option>Financeiro</option>
+              <option>Outra</option>
+            </select>
+          </div>
+        </div>
+        <button class="submit-btn" id="submit-btn" type="submit">
+          <i class="ti ti-send" aria-hidden="true"></i> Quero ser parceira VagaAI
+        </button>
+        <p class="form-note">Ao enviar, você concorda com os <a href="/termos">termos de uso</a> do VagaAI. Nenhum cartão de crédito necessário.</p>
+      </form>
+      <div id="success-msg">
+        <strong>Recebemos seu cadastro!</strong><br>
+        Nossa equipe entrará em contato em até 48h no e-mail informado para ativar sua conta. Obrigado pelo interesse no VagaAI Hire.
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-logo">
+      <div class="nav-logo-dot" style="width:22px;height:22px;font-size:11px">V</div>
+      VagaAI Hire
+    </div>
+    <p>© 2026 VagaAI · <a href="/paraempresas">Para empresas</a> · <a href="/">Para candidatos</a></p>
+  </footer>
+
+</div>
+
+<script>
+async function submitForm(e) {
+  e.preventDefault();
+  var btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2" aria-hidden="true"></i> Enviando...';
+
+  var data = {
+    empresa: document.getElementById('f-empresa').value,
+    site: document.getElementById('f-site').value,
+    nome: document.getElementById('f-nome').value,
+    cargo: document.getElementById('f-cargo').value,
+    email: document.getElementById('f-email').value,
+    vagas_mes: document.getElementById('f-vagas').value,
+    area: document.getElementById('f-area').value,
+  };
+
+  try {
+    var res = await fetch('/api/company-lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Erro ' + res.status);
+    document.getElementById('lead-form').style.display = 'none';
+    document.getElementById('success-msg').style.display = 'block';
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-send" aria-hidden="true"></i> Quero ser parceira VagaAI';
+    alert('Erro ao enviar. Tente novamente ou escreva para contato@vagaai.com.br');
+  }
+}
+</script>
+</body>
+</html>
