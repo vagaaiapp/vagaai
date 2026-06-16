@@ -19,9 +19,16 @@ const CRON_SECRET = process.env.CRON_SECRET;
 // UNSUBSCRIBE_SECRET é separado do CRON_SECRET para isolamento de comprometimento
 const UNSUBSCRIBE_SECRET = process.env.UNSUBSCRIBE_SECRET;
 
-function jobHash(title, company, location) {
+// Hash de identidade da vaga: título + empresa normalizados (sem localização).
+// Localização varia entre fontes ("São Paulo, SP" vs "São Paulo, Estado de São Paulo")
+// e quebrava o dedup, reenviando a mesma vaga. O 3º argumento é aceito por
+// compatibilidade com os call-sites antigos, mas ignorado de propósito.
+function jobHash(title, company, _location) {
+  const norm = s => String(s || '').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ').trim();
   return crypto.createHash('md5')
-    .update((title + company + location).toLowerCase())
+    .update(norm(title) + '|' + norm(company))
     .digest('hex').slice(0, 16);
 }
 
@@ -44,7 +51,7 @@ function makeUnsubToken(userId) {
 // Fontes brasileiras — ganham boost de prioridade no score
 const BR_SOURCES = new Set([
   'gupy', 'google', 'greenhouse', 'lever',
-  'vagas_com', 'infojobs', 'catho', 'trampos',
+  'trampos', 'sine', 'empregos_com_br', 'jobbol',
 ]);
 
 // Regex de palavras comuns em PT-BR para detectar idioma
@@ -60,6 +67,68 @@ function looksForeignLang(job) {
   const text = ((job.title || '') + ' ' + (job.snippet || job.description || ''));
   if (PT_BR_PATTERN.test(text)) return false;        // tem sinal de português → mantém
   return FOREIGN_LANG_MARKERS.test(text);            // sinal forte de outro idioma → exclui
+}
+
+// ── RELEVÂNCIA DE CARGO ──────────────────────────────────────────────────────
+// Normaliza texto: minúsculas, sem acentos.
+function _norm(s) {
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+// Grupos de sinônimos por domínio de cargo (valores sem acento).
+// Se o cargo do usuário contém uma palavra de um grupo, todo o grupo vira sinal válido.
+const CARGO_SYNONYM_GROUPS = [
+  ['marketing','growth','branding','conteudo','midia','performance','seo','sem','ads','publicidade','comunicacao','crm','inbound','social','trafego'],
+  ['produto','product','pm','po'],
+  ['projetos','project','scrum','agile','pmo'],
+  ['vendas','sales','comercial','account','sdr','closer','hunter','prevendas','farmer','representante'],
+  ['dados','data','analytics','bi','cientista','estatistica'],
+  ['design','designer','ux','ui'],
+  ['desenvolvedor','developer','engenheiro','engineer','programador','dev','software','fullstack','frontend','backend','mobile'],
+  ['rh','recrutamento','recruiter','people','talent','gente'],
+  ['financeiro','finance','contabil','controladoria','tesouraria','fpa','fiscal'],
+  ['suporte','support','atendimento','customer','sucesso','success','cs'],
+  ['juridico','legal','advogado','compliance'],
+  ['logistica','supply','operacoes','operations','pcp'],
+  ['enfermagem','enfermeiro','tecnico de enfermagem','saude'],
+];
+
+// Palavras genéricas de função/senioridade que NÃO devem ancorar o match (são ruído).
+const ROLE_STOPWORDS = new Set([
+  'gerente','coordenador','coordenadora','analista','assistente','auxiliar','especialista',
+  'diretor','diretora','head','lead','supervisor','supervisora','consultor','consultora',
+  'tecnico','operador','operadora','estagiario','trainee','vaga','para','com','de','da','do',
+  'das','dos','em','e','jr','sr','junior','pleno','senior','profissional','i','ii','iii',
+]);
+
+// Tokens que o título da vaga precisa conter para ser considerada relevante ao cargo.
+function cargoGateTokens(profile) {
+  const cargo = _norm(profile.cargo_desejado);
+  let words = cargo.split(/\s+/).map(w => w.trim()).filter(w => w.length > 2 && !ROLE_STOPWORDS.has(w));
+  // Cargo era só palavra-função (ex.: "Analista") → usa as palavras cruas para não over-filtrar
+  if (!words.length) words = cargo.split(/\s+/).filter(w => w.length > 2);
+  const kw = (Array.isArray(profile.keywords) ? profile.keywords : [])
+    .map(_norm).filter(w => w && w.length > 2);
+  const tokens = new Set();
+  for (const w of [...words, ...kw]) {
+    tokens.add(w);
+    for (const g of CARGO_SYNONYM_GROUPS) { if (g.includes(w)) g.forEach(x => tokens.add(x)); }
+  }
+  return tokens;
+}
+
+// Gate: o TÍTULO da vaga precisa conter ao menos um token de cargo/sinônimo,
+// casando por limite de palavra (evita "bi" casar dentro de "bibliotecário").
+// Se não há cargo configurado (tokens vazio), não filtra.
+function jobMatchesCargo(job, tokens) {
+  if (!tokens || !tokens.size) return true;
+  const title = ' ' + _norm(job.title).replace(/[^a-z0-9]+/g, ' ').trim() + ' ';
+  for (const t of tokens) {
+    if (!t || t.length < 2) continue;
+    if (title.includes(' ' + t + ' ')) return true;            // palavra isolada
+    if (t.length >= 5 && title.includes(t)) return true;       // raiz longa (ex.: "market" em "marketing")
+  }
+  return false;
 }
 
 // Detecta se o usuário quer vagas remotas — considera cidade E formato.
@@ -133,6 +202,9 @@ function applyExtendedFilters(jobs, profile, options = {}) {
     temporario:['temporario', 'temporário', 'contrato temporario', 'trabalho temporario', 'temp'],
   };
 
+  // Tokens de cargo para o gate de relevância (calculado uma vez, fora do loop).
+  const cargoTokens = cargoGateTokens(profile);
+
   const filtered = jobs.filter(job => {
     const title = (job.title || '').toLowerCase();
     const desc = (job.snippet || job.description || '').toLowerCase();
@@ -143,28 +215,33 @@ function applyExtendedFilters(jobs, profile, options = {}) {
     // Exclui vagas com palavras/filtros negativos
     if (allNeg.length && allNeg.some(neg => combinedNorm.includes(neg))) return false;
 
+    // GATE DE CARGO: o título precisa ter relação real com o cargo desejado.
+    // Vale nos DOIS passes (estrito e relaxado) — relevância de cargo não é "preferência".
+    // É o que impede "Auxiliar de Account Payable" / "Data Analyst" num alerta de Marketing.
+    if (!jobMatchesCargo(job, cargoTokens)) return false;
+
     // Exclui dados ruins: empresa com CPF/CNPJ ou placeholder genérico
     const companyRaw = (job.company || '').trim();
     if (/^\d[\d.\-\/]+\d$/.test(companyRaw)) return false; // CPF/CNPJ como nome
     if (/^(empresa|company|empregador|n\/a|confidencial)$/i.test(companyRaw) && !job.title) return false;
 
-    // Exclui vagas claramente internacionais pelo título (menção a país/cidade estrangeira)
-    const INTL_MARKERS = /\b(canada|united states|australia|united kingdom|germany|france|netherlands|spain|portugal(?! -)|ireland|new zealand|singapore|india|mexico|colombia|argentina|remote us|remote uk|remote canada)\b/i;
-    if (INTL_MARKERS.test(title) || INTL_MARKERS.test(job.location || '')) return false;
+    // Sinal brasileiro da vaga (fonte BR, texto PT-BR ou localização BR)
+    const _brText = title + ' ' + desc + ' ' + (job.location || '');
+    const _hasBr = BR_SOURCES.has(job._source) || PT_BR_PATTERN.test(_brText) ||
+      /\b(brasil|brazil|são paulo|rio de janeiro|belo horizonte|curitiba|porto alegre|fortaleza|salvador|recife|sp|rj|mg|rs|pr|ba|ce|pe|am|go|sc)\b/i.test(_brText);
+
+    // Exclui vagas claramente internacionais — só quando NÃO há sinal brasileiro
+    // (evita cortar vaga BR legítima que cita "LATAM: Brasil, México, Colômbia").
+    const INTL_MARKERS = /\b(canada|united states|australia|united kingdom|germany|france|netherlands|ireland|new zealand|singapore|remote us|remote uk|remote canada)\b/i;
+    if (!_hasBr && (INTL_MARKERS.test(title) || INTL_MARKERS.test(job.location || ''))) return false;
 
     // Exclui vagas claramente em idioma estrangeiro (não-PT/não-EN) — ruído p/ alerta BR.
-    // Vale nos dois passes (estrito e relaxado): idioma não é "preferência", é relevância.
     if (looksForeignLang(job)) return false;
 
     // Exclui vagas com salário em USD e zero sinal brasileiro — mercado externo irrelevante.
     const _sal = String(job.salary || '');
-    const _hasUsd = /\$|USD|\$/i.test(_sal) && !/R\$|BRL/i.test(_sal);
-    if (_hasUsd) {
-      const _text = title + ' ' + desc + ' ' + (job.location || '');
-      const _hasBr = BR_SOURCES.has(job._source) || PT_BR_PATTERN.test(_text) ||
-        /\b(brasil|brazil|são paulo|rio de janeiro|belo horizonte|curitiba|porto alegre|fortaleza|salvador|recife|sp|rj|mg|rs|pr|ba|ce|pe|am|go|sc)\b/i.test(_text);
-      if (!_hasBr) return false;
-    }
+    const _hasUsd = /\$|usd/i.test(_sal) && !/r\$|brl/i.test(_sal);
+    if (_hasUsd && !_hasBr) return false;
 
     // Exclui vagas de estágio/júnior quando o usuário é pleno ou sênior
     const nivelPerfil = (profile.nivel || '').toLowerCase();
@@ -1278,12 +1355,14 @@ async function filterSentJobs(userId, jobs) {
   if (!jobs.length) return [];
   const hashes = jobs.map(j => jobHash(j.title, j.company, j.location));
   const sinceIso = new Date(Date.now() - DEDUP_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  // Exclui se: enviada dentro da janela de dedup OU dispensada (permanente, sem janela).
+  // Uma vaga que o usuário excluiu NUNCA deve voltar, mesmo após 60 dias.
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/job_alert_sent?user_id=eq.${userId}&sent_at=gte.${encodeURIComponent(sinceIso)}&job_hash=in.(${hashes.join(',')})&select=job_hash`,
+    `${SUPABASE_URL}/rest/v1/job_alert_sent?user_id=eq.${userId}&job_hash=in.(${hashes.join(',')})&or=(sent_at.gte.${encodeURIComponent(sinceIso)},dismissed_reason.not.is.null)&select=job_hash`,
     { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
   );
   const sent = await res.json();
-  const sentSet = new Set((sent || []).map(s => s.job_hash));
+  const sentSet = new Set((Array.isArray(sent) ? sent : []).map(s => s.job_hash));
   return jobs.filter(j => !sentSet.has(jobHash(j.title, j.company, j.location)));
 }
 
@@ -1467,13 +1546,13 @@ async function processUserAlert(profile, options = {}) {
   const querPresencial = formatsArr.some(f => f.includes('presencial') || f.includes('híbrido') || f.includes('hibrido'));
   const runSine = hasCidade && (querPresencial || formatsArr.length === 0);
 
-  // Busca vagas de todas as fontes em paralelo
-  const [gupy, greenhouse, lever, serp, jsearch, adzuna, jooble, trampos, talentCom, remotive, empregos, jobbol, sine] = await Promise.allSettled([
+  const settled = (r) => r && r.status === 'fulfilled' ? (r.value || []) : [];
+
+  // FASE 1 — fontes gratuitas (ATS BR + agregadores sem custo por chamada).
+  const [gupy, greenhouse, lever, adzuna, jooble, trampos, talentCom, remotive, empregos, jobbol, sine] = await Promise.allSettled([
     fetchGupyJobs(profile),
     fetchGreenhouseBRJobs(profile),
     fetchLeverBRJobs(profile),
-    fetchSerpApiJobs(profile),
-    fetchJSearchJobs(profile),
     fetchAdzunaJobs(profile),
     fetchJoobleJobs(profile),
     fetchTramposJobs(profile),
@@ -1483,7 +1562,29 @@ async function processUserAlert(profile, options = {}) {
     fetchJobbolJobs(profile),
     runSine ? fetchSineJobs(profile) : Promise.resolve([]),
   ]);
-  const settled = (r) => r.status === 'fulfilled' ? (r.value || []) : [];
+
+  const freeJobs = deduplicateJobs([
+    ...settled(gupy), ...settled(greenhouse), ...settled(lever),
+    ...settled(sine), ...settled(empregos), ...settled(jobbol),
+    ...settled(trampos), ...settled(adzuna), ...settled(jooble),
+    ...settled(talentCom), ...settled(remotive),
+  ]);
+
+  // FASE 2 — APIs PAGAS (SerpApi/JSearch) com orçamento de quota:
+  // planos pagos sempre recebem; no plano grátis só chamamos quando as fontes
+  // gratuitas vieram fracas (< PAID_TOPUP_THRESHOLD). Conserva SerpApi (250/mês)
+  // e JSearch (200/mês) sem prejudicar quem paga.
+  const PAID_TOPUP_THRESHOLD = 12;
+  const callPaid = (plan !== 'free') || (freeJobs.length < PAID_TOPUP_THRESHOLD);
+  let serp = { status: 'fulfilled', value: [] };
+  let jsearch = { status: 'fulfilled', value: [] };
+  if (callPaid) {
+    [serp, jsearch] = await Promise.allSettled([
+      fetchSerpApiJobs(profile),
+      fetchJSearchJobs(profile),
+    ]);
+  }
+
   const sourceCounts = {
     gupy: settled(gupy).length,
     greenhouse: settled(greenhouse).length,
@@ -1516,7 +1617,7 @@ async function processUserAlert(profile, options = {}) {
     ...settled(remotive),
   ]);
   const dedupCount = jobs.length;
-  console.log(`Sources: gupy=${sourceCounts.gupy} greenhouse=${sourceCounts.greenhouse} lever=${sourceCounts.lever} serp=${sourceCounts.serp} jsearch=${sourceCounts.jsearch} sine=${sourceCounts.sine}(${runSine ? detectUF(profile.cidade)||'?' : 'skip'}) empregos=${sourceCounts.empregos} jobbol=${sourceCounts.jobbol} trampos=${sourceCounts.trampos} adzuna=${sourceCounts.adzuna} jooble=${sourceCounts.jooble} talentCom=${sourceCounts.talentCom} remotive=${sourceCounts.remotive} → dedup=${jobs.length}`);
+  console.log(`Sources: gupy=${sourceCounts.gupy} greenhouse=${sourceCounts.greenhouse} lever=${sourceCounts.lever} serp=${sourceCounts.serp} jsearch=${sourceCounts.jsearch} sine=${sourceCounts.sine}(${runSine ? detectUF(profile.cidade)||'?' : 'skip'}) empregos=${sourceCounts.empregos} jobbol=${sourceCounts.jobbol} trampos=${sourceCounts.trampos} adzuna=${sourceCounts.adzuna} jooble=${sourceCounts.jooble} talentCom=${sourceCounts.talentCom} remotive=${sourceCounts.remotive} paid=${callPaid ? 'yes' : 'skip'} → dedup=${jobs.length}`);
 
   // Remove já enviadas (exceto em modo teste)
   if (!isTest) {
@@ -1734,7 +1835,7 @@ export default async function handler(req, res) {
     const auth = await authenticateUserToken(authHeader, manualUserId);
     if (!auth.ok) return res.status(auth.status).json({ error: auth.error });
 
-    // Rate limit: on-demand máximo 1x por hora
+    // Rate limit: on-demand máximo 1x a cada 15 minutos
     if (isDemand) {
       const cacheRes = await fetch(
         `${SUPABASE_URL}/rest/v1/job_alert_cache?user_id=eq.${manualUserId}&select=last_manual_at`,
@@ -1794,17 +1895,29 @@ export default async function handler(req, res) {
       profiles = await r.json();
     }
 
+    // Processa em lotes paralelos para caber no maxDuration do cron.
+    // Sequencial (1 por vez) estourava o timeout além de ~1-2 usuários e a maioria
+    // ficava sem alerta. Lotes de 5 mantêm o tempo total sob controle conforme a base cresce.
     const results = [];
-    for (const profile of profiles) {
-      try {
-        const result = await processUserAlert(profile, { skipSideEffects: isTest, isDemand });
-        results.push({ user: profile.user_id, ...result });
-        if (result.sent) console.log(`Alert sent: user=${profile.user_id} jobs=${result.jobs || 0}`);
-        else console.log(`Alert skipped: user=${profile.user_id} reason=${result.skipped}`);
-      } catch (e) {
-        console.error(`Alert error for ${profile.user_id}:`, e.message);
-        results.push({ user: profile.user_id, error: e.message, sent: false });
-      }
+    const BATCH_SIZE = 5;
+    for (let i = 0; i < profiles.length; i += BATCH_SIZE) {
+      const slice = profiles.slice(i, i + BATCH_SIZE);
+      const settledBatch = await Promise.allSettled(
+        slice.map(p => processUserAlert(p, { skipSideEffects: isTest, isDemand }))
+      );
+      settledBatch.forEach((s, idx) => {
+        const profile = slice[idx];
+        if (s.status === 'fulfilled') {
+          const result = s.value || {};
+          results.push({ user: profile.user_id, ...result });
+          if (result.sent) console.log(`Alert sent: user=${profile.user_id} jobs=${result.jobs || 0}`);
+          else console.log(`Alert skipped: user=${profile.user_id} reason=${result.skipped}`);
+        } else {
+          const msg = s.reason?.message || String(s.reason);
+          console.error(`Alert error for ${profile.user_id}:`, msg);
+          results.push({ user: profile.user_id, error: msg, sent: false });
+        }
+      });
     }
 
     // Modo manual (test ou demand): resposta explícita para o frontend

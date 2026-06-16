@@ -4452,9 +4452,15 @@ async function _doRequestJobsNow() {
       showToast('Próxima busca disponível em ' + waitMin + ' min.', 'error');
       _alLive('Rate limit atingido.');
     } else if (res.ok && data.sent === true) {
-      // Atualiza cache local com as vagas retornadas para exibir imediatamente
+      // Mescla as novas vagas com as já em cache (novas primeiro, sem duplicar por link)
+      // — espelha o merge feito no backend, para a tela não "perder" o histórico.
       if (Array.isArray(data.jobs_data) && data.jobs_data.length) {
-        _alertCache = { jobs: data.jobs_data, cached_at: new Date().toISOString(), last_manual_at: new Date().toISOString(), source: 'demand' };
+        var prev = (_alertCache && Array.isArray(_alertCache.jobs)) ? _alertCache.jobs : [];
+        var seen = {};
+        data.jobs_data.forEach(function(j){ if (j && j.link) seen[j.link] = true; });
+        var merged = data.jobs_data.concat(prev.filter(function(j){ return !j.link || !seen[j.link]; }));
+        _alertCache = { jobs: merged, cached_at: new Date().toISOString(), last_manual_at: new Date().toISOString(), source: 'demand' };
+        _alJobPage = 0;
         renderAlertJobsGrid();
       }
       var sentMsg = data.jobs + ' vaga' + (data.jobs !== 1 ? 's' : '') + ' encontrada' + (data.jobs !== 1 ? 's' : '') + ' e enviada' + (data.jobs !== 1 ? 's' : '') + ' para ' + (currentSession.user.email || 'seu e-mail') + '!';
@@ -4501,45 +4507,11 @@ function setAlJobPage(page) {
   if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-/* ── Job feedback ───────────────────────────────────────────────── */
-function recordJobFeedback(hash, reason) {
-  _alJobFeedback[hash] = { type:'dismissed', reason:reason, at: new Date().toISOString() };
-  localStorage.setItem('vagaai_job_fb', JSON.stringify(_alJobFeedback));
-  var card = document.getElementById('aljob-' + hash);
-  if (card) card.style.opacity = '0.35';
-  var panel = document.getElementById('alFbPanel');
-  if (panel) { panel.classList.remove('open'); _alFbTargetHash = null; }
-  showToast('Feedback registrado. Não aparecerá mais.');
-  _alLive('Feedback registrado.');
-}
-
-function undoJobFeedback(hash) {
-  delete _alJobFeedback[hash];
-  localStorage.setItem('vagaai_job_fb', JSON.stringify(_alJobFeedback));
-  var card = document.getElementById('aljob-' + hash);
-  if (card) card.style.opacity = '';
-  showToast('Feedback desfeito.');
-}
-
-function openJobFeedback(hash, x, y) {
-  _alFbTargetHash = hash;
-  var reasons = ['Cargo não é relevante','Empresa não interessa','Salário inadequado','Localização inadequada','Modalidade inadequada','Senioridade errada','Tipo de contrato inadequado','Vaga duplicada','Outro motivo'];
-  var panel = document.getElementById('alFbPanel');
-  var optsEl = document.getElementById('alFbOpts');
-  if (!panel || !optsEl) return;
-  optsEl.innerHTML = reasons.map(function(r){
-    return '<button class="al-fb-opt" onclick="recordJobFeedback(\''+escAttr(hash)+'\',\''+escAttr(r)+'\')">'+escHtml(r)+'</button>';
-  }).join('');
-  panel.classList.add('open');
-  // position near click
-  panel.style.bottom = '96px';
-  panel.style.right  = '24px';
-  // close on outside click
-  setTimeout(function(){
-    function closeOnOutside(e){ if (!panel.contains(e.target)){ panel.classList.remove('open'); document.removeEventListener('click', closeOnOutside); } }
-    document.addEventListener('click', closeOnOutside);
-  }, 10);
-}
+/* ── Job feedback ───────────────────────────────────────────────────
+   O dismiss de vagas é feito 100% pelo backend (ícone de lixeira →
+   _dismissJobFromCache → /api/send-alerts?action=dismiss), persistente e
+   sincronizado entre dispositivos. O antigo feedback via localStorage foi
+   removido para não haver dois sistemas paralelos de "excluir". */
 
 async function saveRecommendedJob(job, hash) {
   if (_alJobFeedback[hash] === 'saved') { showToast('Já salva!'); return; }
@@ -4791,13 +4763,25 @@ async function _confirmDismiss() {
 async function _saveJobFromCache(job) {
   if (!job || !job.link) { showToast('Vaga sem link para salvar.', 'error'); return; }
   try {
-    var body = { user_id: currentUserId, job_url: job.link, job_title: job.title || '', company: job.company || '', status: 'interesse', origem: 'alerta', created_at: new Date().toISOString() };
+    // Colunas reais do job_tracker: empresa, cargo, score, status, job_url, salario, origem.
+    var body = {
+      user_id: currentUserId,
+      empresa: job.company || '—',
+      cargo: job.title || '—',
+      score: job._score || job.score || 0,
+      job_url: job.link,
+      salario: job.salary || null,
+      status: 'quero_aplicar',
+      origem: 'alerta',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
     var res = await fetch(SUPABASE_URL + '/rest/v1/job_tracker', {
       method: 'POST',
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
       body: JSON.stringify(body)
     });
-    if (res.ok || res.status === 201) showToast('Vaga salva no rastreador!');
+    if (res.ok || res.status === 201 || res.status === 204) showToast('Vaga salva em Candidaturas!');
     else showToast('Erro ao salvar vaga.', 'error');
   } catch(e) { showToast('Erro ao salvar vaga.', 'error'); }
 }
