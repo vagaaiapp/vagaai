@@ -4099,9 +4099,11 @@ async function loadAlerts() {
       if (p.empresas_interesse !== undefined) _alertExtended.empresas      = p.empresas_interesse || _alertExtended.empresas      || [];
       if (p.setores_preferidos !== undefined) _alertExtended.setores       = p.setores_preferidos || _alertExtended.setores       || [];
       if (p.filtros_negativos !== undefined) {
-        var fn = typeof p.filtros_negativos === 'string' ? JSON.parse(p.filtros_negativos) : (p.filtros_negativos || {});
-        if (fn.filtros_neg !== undefined)   _alertExtended.filtros_neg     = fn.filtros_neg    || _alertExtended.filtros_neg    || [];
-        if (fn.neg_palavras !== undefined)  _alertExtended.neg_palavras    = fn.neg_palavras   || _alertExtended.neg_palavras   || [];
+        try {
+          var fn = typeof p.filtros_negativos === 'string' ? JSON.parse(p.filtros_negativos) : (p.filtros_negativos || {});
+          if (fn.filtros_neg !== undefined)   _alertExtended.filtros_neg     = fn.filtros_neg    || _alertExtended.filtros_neg    || [];
+          if (fn.neg_palavras !== undefined)  _alertExtended.neg_palavras    = fn.neg_palavras   || _alertExtended.neg_palavras   || [];
+        } catch(e) { /* campo corrompido no banco — ignora, usa localStorage ou vazio */ }
       }
       if (p.dia_envio !== undefined && p.dia_envio !== null) _alertExtended.dia_envio       = p.dia_envio;
       if (p.horario_envio !== undefined && p.horario_envio !== null) _alertExtended.horario_envio = p.horario_envio;
@@ -4446,7 +4448,7 @@ async function _doRequestJobsNow() {
       method: 'GET',
       headers: { Authorization: 'Bearer ' + currentSession.access_token }
     });
-    var data = await res.json();
+    var data = await res.json().catch(function() { return { error: 'Resposta inválida do servidor (HTTP ' + res.status + ')' }; });
     if (res.status === 429) {
       var waitMin = data.wait_minutes || '?';
       showToast('Próxima busca disponível em ' + waitMin + ' min.', 'error');
@@ -4614,9 +4616,9 @@ function renderAlertJobsGrid() {
       '<div class="al-job-location">📍 ' + _esc(j.location || 'Brasil') +
         (j.salary ? ' · 💰 ' + _esc(j.salary) : '') + '</div>' +
       '<div class="al-job-actions">' +
-        '<button class="al-jact-btn" onclick="window.open(\'' + analyzeUrl + '\',\'_blank\')">⚡ Analisar</button>' +
+        '<button class="al-jact-btn" onclick="window.open(this.dataset.url,\'_blank\')" data-url="' + _esc(analyzeUrl) + '">⚡ Analisar</button>' +
         (j.link ? '<a class="al-jact-btn" href="' + _esc(j.link) + '" target="_blank" rel="noopener" style="text-decoration:none">🔗 Ver vaga</a>' : '') +
-        '<button class="al-jact-btn al-jact-icon" title="Excluir vaga" onclick="_dismissJobFromCache(\'' + _esc(j.link || '') + '\')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>' +
+        '<button class="al-jact-btn al-jact-icon" title="Excluir vaga" data-link="' + _esc(j.link || '') + '" onclick="_dismissJobFromCache(this.dataset.link)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>' +
       '</div>' +
     '</div>';
   });
@@ -4889,7 +4891,7 @@ function openAlertEditModal() {
           '<div class="al-modal-section-title">Localização e Formato</div>'+
           '<div class="al-form-row">'+
             '<div class="al-field"><label for="alMCidade">Localização base</label><input id="alMCidade" type="text" value="'+escHtml(p.cidade||'')+'" placeholder="ex: São Paulo ou Remoto" oninput="_alCheckDirty()"></div>'+
-            '<div class="al-field"><label for="alMSalario">Salário mínimo (R$)'+advBadge+'</label><input id="alMSalario" type="number" value="'+(p.salario_min||'')+'" placeholder="ex: 6000" oninput="_alCheckDirty()"'+advAttr+'></div>'+
+            '<div class="al-field"><label for="alMSalario">Salário mínimo (R$)'+advBadge+'</label><input id="alMSalario" type="number" min="0" value="'+(p.salario_min||'')+'" placeholder="ex: 6000" oninput="_alCheckDirty()"'+advAttr+'></div>'+
           '</div>'+
           '<div class="al-field"><label>Formato de trabalho</label><div class="al-checkgroup" id="alMFormato">'+
             FORMATOS.map(function(f){ return chkHtml([formatoPref.includes(f)?f:'x'],f,''); }).join('')+

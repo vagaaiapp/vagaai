@@ -495,6 +495,11 @@ const GREENHOUSE_BR_COMPANIES = [
   'nubank','vtex','ifood','mercadolibre','rappi','loft','quintoandar',
   'creditas','contabilizei','gympass','nuvemshop','olist','pagseguro',
   'stone','totvs','zup','avenue','matera','dock','cloudwalk',
+  // expansão
+  'magalu','picpay','xpinc','inter','99taxi','movile',
+  'resultadosdigitais','pismo','softplan','enjoei','vindi',
+  'oixtelecom','neon','madeiramadeira','americanas','viavarejo',
+  'localfrio','linx','stefanini','ci&t','daitan',
 ];
 async function fetchGreenhouseBRJobs(profile) {
   try {
@@ -536,6 +541,10 @@ async function fetchGreenhouseBRJobs(profile) {
 const LEVER_BR_COMPANIES = [
   'hotmart','creditas','loft-br','quintoandar','cloudwalk','zup',
   'betrybe','descomplica','neon','unico','buser','warren',
+  // expansão
+  'gympass','pismo','cafedu','maxmilhas','vindi',
+  'resultadosdigitais','rdstation','olist','enjoei','contaazul',
+  'labenu','trybe','revelo','squadco','softplan',
 ];
 async function fetchLeverBRJobs(profile) {
   try {
@@ -569,6 +578,147 @@ async function fetchLeverBRJobs(profile) {
       }));
   } catch(e) {
     console.warn('fetchLeverBRJobs error:', e.message);
+    return [];
+  }
+}
+
+// ── FONTE: WORKDAY ATS (Ambev, Vale, Embraer, Natura, Bosch, Santander…) ─────
+// Cada empresa Workday tem um slug e um board próprio. Tentamos o board explícito
+// primeiro; se falhar, tentamos variantes comuns ('External', slug). Falhas são
+// silenciosas — sem impacto no fluxo principal.
+const WORKDAY_BR_COMPANIES = [
+  { slug: 'ambev',            board: 'AMBEV_VAGAS'       },
+  { slug: 'vale',             board: 'vale_vagas'         },
+  { slug: 'embraer',          board: 'Embraer'            },
+  { slug: 'naturacosmeticos', board: 'External'           },
+  { slug: 'boticario',        board: 'GrupoBoticario'     },
+  { slug: 'santanderbr',      board: 'External'           },
+  { slug: 'boschgroup',       board: 'ExternalBR'         },
+  { slug: 'volkswagen',       board: 'External'           },
+  { slug: 'renault',          board: 'External'           },
+  { slug: 'vivo',             board: 'Vivo'               },
+  { slug: 'nestle',           board: 'External'           },
+  { slug: 'unilever',         board: 'External'           },
+  { slug: 'philips',          board: 'External'           },
+  { slug: '3m',               board: 'External'           },
+  { slug: 'emersonbr',        board: 'External'           },
+];
+
+async function fetchWorkdayCompany(slug, board, cargo) {
+  const boards = [board, slug, 'External', 'external'];
+  const keywords = cargo.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+  for (const b of boards) {
+    try {
+      const res = await fetch(
+        `https://${slug}.wd3.myworkdayjobs.com/wday/cxs/${slug}/${b}/jobs`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ limit: 20, offset: 0, searchText: cargo, appliedFacets: {} }),
+          signal: AbortSignal.timeout(6000),
+        }
+      );
+      if (!res.ok) continue;
+      const data = await res.json();
+      const postings = data.jobPostings || [];
+      if (!postings.length) continue;
+      return postings
+        .filter(j => !keywords.length || keywords.some(w => (j.title || '').toLowerCase().includes(w)))
+        .slice(0, 10)
+        .map(j => ({
+          title: j.title || 'Vaga',
+          company: slug,
+          location: j.locationsText || 'Brasil',
+          snippet: '',
+          salary: '',
+          link: `https://${slug}.wd3.myworkdayjobs.com/pt-BR/${b}/job/${j.externalPath || ''}`,
+          _source: 'workday',
+        }));
+    } catch (e) { continue; }
+  }
+  return [];
+}
+
+async function fetchWorkdayJobs(profile) {
+  try {
+    const cargo = (profile.cargo_desejado || '').trim();
+    const results = await Promise.allSettled(
+      WORKDAY_BR_COMPANIES.map(({ slug, board }) => fetchWorkdayCompany(slug, board, cargo))
+    );
+    return results.flatMap(r => r.status === 'fulfilled' ? r.value : []).slice(0, 30);
+  } catch (e) {
+    console.warn('fetchWorkdayJobs error:', e.message);
+    return [];
+  }
+}
+
+// ── FONTE: GEEKHUNTER (tech jobs BR qualificados) ─────────────────────────────
+async function fetchGeekHunterJobs(profile) {
+  try {
+    const cargo = encodeURIComponent(profile.cargo_desejado || '');
+    // GeekHunter é relevante apenas para perfis tech
+    const techKeywords = /dev|software|engineer|dados|data|design|produto|product|ux|ui|mobile|frontend|backend|fullstack|cloud|devops|qa|test|segurança|security/i;
+    if (!techKeywords.test(profile.cargo_desejado || '')) return [];
+    const res = await fetch(
+      `https://www.geekhunter.com.br/api/v3/jobs?term=${cargo}&per_page=20`,
+      { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(6000) }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    const jobs = data.jobs || data.data || data.results || [];
+    return jobs.slice(0, 20).map(j => ({
+      title: j.title || j.role || j.position || 'Vaga',
+      company: j.company?.name || j.company_name || j.companyName || 'Empresa',
+      location: j.remote || j.is_remote ? 'Remoto' : (j.city || j.location || 'Brasil'),
+      snippet: (j.description || j.summary || '').replace(/<[^>]+>/g, '').slice(0, 400),
+      salary: j.salary_range || j.salary || '',
+      link: j.url || j.apply_url || `https://www.geekhunter.com.br/vagas`,
+      _source: 'geekhunter',
+    }));
+  } catch (e) {
+    console.warn('fetchGeekHunterJobs error:', e.message);
+    return [];
+  }
+}
+
+// ── FONTE: BNE (Banco Nacional de Empregos — vagas regionais presenciais) ─────
+async function fetchBNEJobs(profile) {
+  try {
+    const cargoSlug = encodeURIComponent(
+      (profile.cargo_desejado || '').toLowerCase().replace(/\s+/g, '-')
+    );
+    const url = `https://www.bne.com.br/vagas-de-emprego/${cargoSlug}`;
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        Accept: 'text/html,application/xhtml+xml',
+        'Accept-Language': 'pt-BR,pt;q=0.9',
+      },
+      signal: AbortSignal.timeout(7000),
+    });
+    if (!res.ok) return [];
+    const html = await res.text();
+    // JSON-LD (structured data)
+    const ldBlocks = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi) || [];
+    for (const block of ldBlocks) {
+      try {
+        const json = JSON.parse(block.replace(/<\/?script[^>]*>/gi, ''));
+        const items = json['@graph'] || (Array.isArray(json) ? json : [json]);
+        const jobs = items.filter(i => i['@type'] === 'JobPosting');
+        if (jobs.length) return jobs.slice(0, 15).map(j => ({
+          title: j.title || j.name || 'Vaga',
+          company: j.hiringOrganization?.name || 'Empresa',
+          location: j.jobLocation?.address?.addressLocality || profile.cidade || 'Brasil',
+          snippet: (j.description || '').replace(/<[^>]+>/g, '').slice(0, 400),
+          salary: j.baseSalary?.value?.value ? `R$ ${j.baseSalary.value.value}` : '',
+          link: j.url || j['@id'] || url,
+          _source: 'bne',
+        }));
+      } catch (e) {}
+    }
+    return [];
+  } catch (e) {
+    console.warn('fetchBNEJobs error:', e.message);
     return [];
   }
 }
@@ -1449,7 +1599,7 @@ function buildEmailHTML(profile, jobs, userName, userId, plan = 'free', ent = nu
 }
 
 function escEmail(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // Salva as vagas do último envio no cache (dashboard lê daqui, sem nova busca às APIs).
@@ -1549,10 +1699,13 @@ async function processUserAlert(profile, options = {}) {
   const settled = (r) => r && r.status === 'fulfilled' ? (r.value || []) : [];
 
   // FASE 1 — fontes gratuitas (ATS BR + agregadores sem custo por chamada).
-  const [gupy, greenhouse, lever, adzuna, jooble, trampos, talentCom, remotive, empregos, jobbol, sine] = await Promise.allSettled([
+  const [gupy, greenhouse, lever, workday, geekhunter, bne, adzuna, jooble, trampos, talentCom, remotive, empregos, jobbol, sine] = await Promise.allSettled([
     fetchGupyJobs(profile),
     fetchGreenhouseBRJobs(profile),
     fetchLeverBRJobs(profile),
+    fetchWorkdayJobs(profile),
+    fetchGeekHunterJobs(profile),
+    fetchBNEJobs(profile),
     fetchAdzunaJobs(profile),
     fetchJoobleJobs(profile),
     fetchTramposJobs(profile),
@@ -1565,6 +1718,7 @@ async function processUserAlert(profile, options = {}) {
 
   const freeJobs = deduplicateJobs([
     ...settled(gupy), ...settled(greenhouse), ...settled(lever),
+    ...settled(workday), ...settled(geekhunter), ...settled(bne),
     ...settled(sine), ...settled(empregos), ...settled(jobbol),
     ...settled(trampos), ...settled(adzuna), ...settled(jooble),
     ...settled(talentCom), ...settled(remotive),
@@ -1574,7 +1728,7 @@ async function processUserAlert(profile, options = {}) {
   // planos pagos sempre recebem; no plano grátis só chamamos quando as fontes
   // gratuitas vieram fracas (< PAID_TOPUP_THRESHOLD). Conserva SerpApi (250/mês)
   // e JSearch (200/mês) sem prejudicar quem paga.
-  const PAID_TOPUP_THRESHOLD = 12;
+  const PAID_TOPUP_THRESHOLD = 20; // ajustado: +3 fontes gratuitas aumentam o baseline
   const callPaid = (plan !== 'free') || (freeJobs.length < PAID_TOPUP_THRESHOLD);
   let serp = { status: 'fulfilled', value: [] };
   let jsearch = { status: 'fulfilled', value: [] };
@@ -1589,6 +1743,9 @@ async function processUserAlert(profile, options = {}) {
     gupy: settled(gupy).length,
     greenhouse: settled(greenhouse).length,
     lever: settled(lever).length,
+    workday: settled(workday).length,
+    geekhunter: settled(geekhunter).length,
+    bne: settled(bne).length,
     serp: settled(serp).length,
     jsearch: settled(jsearch).length,
     adzuna: settled(adzuna).length,
@@ -1605,6 +1762,9 @@ async function processUserAlert(profile, options = {}) {
     ...settled(gupy),       // ATS brasileiro — vagas nacionais confiáveis
     ...settled(greenhouse), // Greenhouse: Nubank, VTEX, iFood, Mercado Livre
     ...settled(lever),      // Lever: Hotmart, Creditas, QuintoAndar
+    ...settled(workday),    // Workday: Ambev, Vale, Embraer, Natura, Bosch
+    ...settled(geekhunter), // GeekHunter: tech jobs qualificados
+    ...settled(bne),        // BNE: vagas regionais presenciais
     ...settled(serp),       // Google Jobs em PT-BR
     ...settled(jsearch),    // LinkedIn/Indeed/Glassdoor via JSearch
     ...settled(sine),       // SINE estadual — vagas locais presenciais
@@ -1617,7 +1777,7 @@ async function processUserAlert(profile, options = {}) {
     ...settled(remotive),
   ]);
   const dedupCount = jobs.length;
-  console.log(`Sources: gupy=${sourceCounts.gupy} greenhouse=${sourceCounts.greenhouse} lever=${sourceCounts.lever} serp=${sourceCounts.serp} jsearch=${sourceCounts.jsearch} sine=${sourceCounts.sine}(${runSine ? detectUF(profile.cidade)||'?' : 'skip'}) empregos=${sourceCounts.empregos} jobbol=${sourceCounts.jobbol} trampos=${sourceCounts.trampos} adzuna=${sourceCounts.adzuna} jooble=${sourceCounts.jooble} talentCom=${sourceCounts.talentCom} remotive=${sourceCounts.remotive} paid=${callPaid ? 'yes' : 'skip'} → dedup=${jobs.length}`);
+  console.log(`Sources: gupy=${sourceCounts.gupy} greenhouse=${sourceCounts.greenhouse} lever=${sourceCounts.lever} workday=${sourceCounts.workday} geekhunter=${sourceCounts.geekhunter} bne=${sourceCounts.bne} serp=${sourceCounts.serp} jsearch=${sourceCounts.jsearch} sine=${sourceCounts.sine}(${runSine ? detectUF(profile.cidade)||'?' : 'skip'}) empregos=${sourceCounts.empregos} jobbol=${sourceCounts.jobbol} trampos=${sourceCounts.trampos} adzuna=${sourceCounts.adzuna} jooble=${sourceCounts.jooble} talentCom=${sourceCounts.talentCom} remotive=${sourceCounts.remotive} paid=${callPaid ? 'yes' : 'skip'} → dedup=${jobs.length}`);
 
   // Remove já enviadas (exceto em modo teste)
   if (!isTest) {
@@ -1837,11 +1997,17 @@ export default async function handler(req, res) {
 
     // Rate limit: on-demand máximo 1x a cada 15 minutos
     if (isDemand) {
-      const cacheRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/job_alert_cache?user_id=eq.${manualUserId}&select=last_manual_at`,
-        { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
-      ).catch(() => null);
-      if (cacheRes?.ok) {
+      let cacheRes = null;
+      try {
+        cacheRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/job_alert_cache?user_id=eq.${manualUserId}&select=last_manual_at`,
+          { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+        );
+      } catch (e) {
+        // Falha ao buscar cache → bloqueia por segurança (evita bypass por indisponibilidade)
+        return res.status(429).json({ error: 'rate_limit', wait_minutes: 15 });
+      }
+      if (cacheRes.ok) {
         const cacheData = await cacheRes.json().catch(() => []);
         const lastManual = cacheData?.[0]?.last_manual_at;
         if (lastManual) {
