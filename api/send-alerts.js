@@ -131,6 +131,35 @@ function jobMatchesCargo(job, tokens) {
   return false;
 }
 
+// ── SENIORIDADE ──────────────────────────────────────────────────────────────
+// Compara o nível-alvo do usuário com o nível inferido do título da vaga.
+// Mismatch grande (analista júnior recebendo vaga de diretor, ou um sênior
+// recebendo estágio) é ruído. Escala: estágio=0, júnior=1, pleno=2, sênior=3,
+// gestão=4, executivo=5.
+function userLevelRank(profile) {
+  const n = _norm(profile && profile.nivel);
+  if (!n || n === 'qualquer') return null;          // sem preferência → não restringe
+  if (/estag/.test(n)) return 0;
+  if (/junior|\bjr\b|trainee|aprendiz/.test(n)) return 1;
+  if (/pleno|\bmid\b|\bpl\b/.test(n)) return 2;
+  if (/senior|\bsr\b/.test(n)) return 3;
+  if (/coorden|gerent|gestao|\blead\b|\bhead\b|supervis/.test(n)) return 4;
+  if (/diretor|\bvp\b|chief|executiv|c-level/.test(n)) return 5;
+  return null;
+}
+
+function jobLevelRank(job) {
+  const t = ' ' + _norm(job && job.title).replace(/[^a-z0-9]+/g, ' ').trim() + ' ';
+  // Do mais sênior ao menos sênior — primeira correspondência vence.
+  if (/\b(diretor|director|vp|chief|ceo|cfo|cto|cmo|coo|head|presidente)\b/.test(t)) return 5;
+  if (/\b(gerente|gerencia|manager|coordenador|coordenacao|supervisor|lider|lead|principal|staff)\b/.test(t)) return 4;
+  if (/\b(senior|sr|especialista|expert)\b/.test(t)) return 3;
+  if (/\b(pleno|mid|pl)\b/.test(t)) return 2;
+  if (/\b(junior|jr|trainee|entry)\b/.test(t)) return 1;
+  if (/\b(estagio|estagiario|intern|aprendiz)\b/.test(t)) return 0;
+  return null;   // título sem marcador de nível → neutro (não penaliza)
+}
+
 // Detecta se o usuário quer vagas remotas — considera cidade E formato.
 // As fontes 100% remotas (Remotive, RemoteOk, Arbeitnow) usam isto para decidir
 // se rodam. Bug histórico: gatear só por `cidade` desligava as fontes remotas
@@ -249,6 +278,31 @@ function applyExtendedFilters(jobs, profile, options = {}) {
       if (/\b(estágio|estagio|estagiário|estagiario|trainee|jovem aprendiz|aprendiz|junior|júnior)\b/i.test(title)) return false;
     }
 
+    // Senioridade bidirecional: descarta vagas 3+ níveis distantes do alvo (só estrito).
+    // Pega o caso oposto ao filtro acima: júnior/pleno recebendo diretoria/C-level.
+    // Mantém a vaga quando o nível não pôde ser inferido do título (neutro).
+    if (!relaxPreferences) {
+      const _uRank = userLevelRank(profile);
+      const _jRank = jobLevelRank(job);
+      if (_uRank !== null && _jRank !== null && Math.abs(_jRank - _uRank) >= 3) return false;
+    }
+
+    // Piso salarial: se a vaga informa salário em R$ abaixo de 70% do mínimo, descarta
+    // (só estrito). Dispara apenas com salário explícito em BRL — a maioria das vagas
+    // não informa, então não reduz volume injustamente. Usa o TETO da faixa para não
+    // cortar uma faixa ampla legítima (ex.: "R$ 5k–12k" para quem pediu R$ 8k).
+    if (!relaxPreferences && profile.salario_min) {
+      const floor = parseInt(profile.salario_min);
+      const salStr = String(job.salary || '');
+      if (floor > 0 && /r\$|brl/i.test(salStr)) {
+        const nums = (salStr.replace(/\./g, '').match(/\d{4,}/g) || []).map(Number);
+        if (nums.length) {
+          const topo = Math.max(...nums);
+          if (topo > 0 && topo < floor * 0.7) return false;
+        }
+      }
+    }
+
     // Score mínimo: evita vagas completamente fora do perfil (só no passe estrito)
     if (!relaxPreferences && (job._score || 0) < 20) return false;
 
@@ -319,6 +373,11 @@ function calcScore(job, profile) {
   const cargoWords = cargo.split(/\s+/).filter(w => w.length > 3);
   cargoWords.forEach(w => { if (title.includes(w)) score += 15; });
 
+  // Aderência forte: cargo completo (sem conectivos) presente no título.
+  // "Analista de Marketing" cheio no título vale mais que só "marketing" solto.
+  const cargoCore = cargo.replace(/\b(de|da|do|para|com|e|em)\b/g, ' ').replace(/\s+/g, ' ').trim();
+  if (cargoCore.length > 4 && title.includes(cargoCore)) score += 18;
+
   // Keywords no título ou descrição
   keywords.forEach(kw => {
     const k = kw.toLowerCase();
@@ -326,10 +385,17 @@ function calcScore(job, profile) {
     else if (desc.includes(k)) score += 8;
   });
 
-  // Nível
-  const nivelMap = { junior: ['júnior','junior','jr','entry'], pleno: ['pleno','mid','pl'], senior: ['sênior','senior','sr','lead'] };
-  if (nivel && nivelMap[nivel]) {
-    nivelMap[nivel].forEach(n => { if (title.includes(n) || desc.includes(n)) score += 20; });
+  // Nível: bônus por aderência, penalidade graduada por distância de senioridade.
+  // Antes só somava +20 no match exato e ignorava mismatches — um júnior recebia
+  // vaga de diretor sem qualquer penalização.
+  const uRank = userLevelRank(profile);
+  const jRank = jobLevelRank(job);
+  if (uRank !== null && jRank !== null) {
+    const dist = Math.abs(jRank - uRank);
+    if (dist === 0) score += 22;
+    else if (dist === 1) score += 6;
+    else if (dist === 2) score -= 12;
+    else score -= 30;            // 3+ níveis de distância → quase certamente ruído
   }
 
   // Salário (se disponível)
@@ -350,6 +416,13 @@ function calcScore(job, profile) {
   // Localização explicitamente brasileira: cidade, estado ou país
   const BR_LOC = /\b(brasil|brazil|são paulo|rio de janeiro|belo horizonte|curitiba|porto alegre|fortaleza|salvador|recife|manaus|belém|goiânia|brasília|florianópolis|campinas|sp|rj|mg|rs|pr|ba|ce|pe|am|go|sc)\b/i;
   if (BR_LOC.test(loc) || BR_LOC.test(desc) || BR_LOC.test(title)) score += 15;
+
+  // Proximidade: para quem NÃO quer remoto, vaga na própria cidade é mais relevante
+  // que outra a milhares de km. Antes toda vaga BR pontuava igual no eixo localização.
+  if (profile.cidade && !wantsRemote(profile)) {
+    const cidadeNorm = _norm(profile.cidade).replace(/[^a-z0-9]+/g, ' ').trim();
+    if (cidadeNorm.length > 2 && _norm(loc).includes(cidadeNorm)) score += 14;
+  }
 
   // Penalidade: salário em dólar sem nenhum sinal BR → vaga claramente de mercado externo
   const sal = String(job.salary || '');
@@ -2131,4 +2204,8 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: err.message });
   }
 }
+
+// Exports nomeados das funções puras de matching — para testes de unidade.
+// O Vercel usa apenas o `export default handler`; estes não afetam o runtime.
+export { calcScore, applyExtendedFilters, userLevelRank, jobLevelRank, jobMatchesCargo, cargoGateTokens };
 
