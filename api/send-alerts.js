@@ -160,6 +160,87 @@ function jobLevelRank(job) {
   return null;   // título sem marcador de nível → neutro (não penaliza)
 }
 
+// ── ENRIQUECIMENTO DE BUSCA (keywords + sinônimos) ───────────────────────────
+// Principal keyword do perfil — usada para enriquecer as queries das fontes.
+function primaryKeyword(profile) {
+  const kws = Array.isArray(profile && profile.keywords) ? profile.keywords : [];
+  return (kws.map(x => String(x).trim()).filter(Boolean)[0] || '');
+}
+
+// Gera uma variante de query trocando uma palavra do cargo por um sinônimo do
+// mesmo grupo de domínio (ex.: "desenvolvedor" → "developer"). Amplia cobertura
+// sem mudar a intenção. Retorna '' quando não há sinônimo aplicável.
+function cargoSynonymQuery(cargo) {
+  const raw = String(cargo || '');
+  const words = _norm(raw).split(/\s+/).filter(w => w.length > 2 && !ROLE_STOPWORDS.has(w));
+  for (const w of words) {
+    for (const g of CARGO_SYNONYM_GROUPS) {
+      if (g.includes(w)) {
+        const alt = g.find(x => x !== w && x.length > 3);
+        if (alt) return _norm(raw).replace(w, alt).replace(/\s+/g, ' ').trim();
+      }
+    }
+  }
+  return '';
+}
+
+// Variantes de busca em ordem de prioridade: cargo exato, cargo+keyword,
+// cargo amplo (sem senioridade) e sinônimo de domínio. As fontes com loop de
+// tentativas (Adzuna/JSearch) param assim que juntam vagas suficientes, então
+// as variantes extras só rodam quando realmente necessárias (sem custo à toa).
+function cargoQueryVariants(profile) {
+  const exact = String(profile.cargo_desejado || '').trim();
+  const kw = primaryKeyword(profile);
+  const broad = broadenJobTitle(exact);
+  const syn = cargoSynonymQuery(exact);
+  const variants = [];
+  if (exact) variants.push(exact);
+  if (exact && kw) variants.push(`${exact} ${kw}`);
+  if (broad && broad !== exact.toLowerCase()) variants.push(broad);
+  if (syn && syn !== exact.toLowerCase()) variants.push(syn);
+  return [...new Set(variants.filter(Boolean))];
+}
+
+// ── RECÊNCIA ─────────────────────────────────────────────────────────────────
+// Normaliza qualquer formato de data de publicação para epoch ms (ou null).
+// Aceita ISO string, epoch em segundos e epoch em ms.
+function _postedAtMs(val) {
+  if (val === null || val === undefined || val === '') return null;
+  if (typeof val === 'number') return val < 1e12 ? val * 1000 : val; // segundos → ms
+  const t = Date.parse(val);
+  return Number.isNaN(t) ? null : t;
+}
+
+// Bônus de recência: vaga recém-publicada é mais valiosa (ainda aceita candidatos).
+function recencyBonus(job) {
+  const ms = _postedAtMs(job && job._posted_at);
+  if (!ms) return 0;                       // sem data → neutro
+  const days = (Date.now() - ms) / 86400000;
+  if (days < 0) return 0;
+  if (days <= 3) return 14;
+  if (days <= 7) return 10;
+  if (days <= 14) return 6;
+  if (days <= 30) return 2;
+  return -4;                               // mais de 30 dias → leve penalização
+}
+
+// ── RE-RANKING POR IA (Claude Haiku) — apenas planos pagos ───────────────────
+// Extrai o array JSON [{i, score}] da resposta do modelo de forma robusta.
+// Pura e testável; retorna null se não conseguir parsear.
+function parseAiScores(text) {
+  if (!text) return null;
+  const m = String(text).match(/\[[\s\S]*\]/);
+  if (!m) return null;
+  try {
+    const arr = JSON.parse(m[0]);
+    if (!Array.isArray(arr)) return null;
+    const out = arr
+      .filter(o => o && typeof o.i === 'number' && typeof o.score === 'number')
+      .map(o => ({ i: o.i, score: Math.max(0, Math.min(100, Math.round(o.score))) }));
+    return out.length ? out : null;
+  } catch { return null; }
+}
+
 // Detecta se o usuário quer vagas remotas — considera cidade E formato.
 // As fontes 100% remotas (Remotive, RemoteOk, Arbeitnow) usam isto para decidir
 // se rodam. Bug histórico: gatear só por `cidade` desligava as fontes remotas
@@ -430,6 +511,9 @@ function calcScore(job, profile) {
   const hasBrSignal = isBrSource || isPtBr || BR_LOC.test(loc) || BR_LOC.test(desc) || BR_LOC.test(title);
   if (hasUsdSalary && !hasBrSignal) score -= 35;
 
+  // Recência: vagas recém-publicadas valem mais (quando a fonte informa a data)
+  score += recencyBonus(job);
+
   return Math.min(100, Math.max(0, score));
 }
 
@@ -603,6 +687,7 @@ async function fetchGreenhouseBRJobs(profile) {
         salary: '',
         link: j.absolute_url || `https://boards.greenhouse.io/${j._company_slug}/jobs/${j.id}`,
         _source: 'greenhouse',
+        _posted_at: _postedAtMs(j.updated_at || j.first_published),
       }));
   } catch(e) {
     console.warn('fetchGreenhouseBRJobs error:', e.message);
@@ -648,6 +733,7 @@ async function fetchLeverBRJobs(profile) {
         salary: '',
         link: j.hostedUrl || j.applyUrl || `https://jobs.lever.co/${j._company_slug}/${j.id}`,
         _source: 'lever',
+        _posted_at: _postedAtMs(j.createdAt),
       }));
   } catch(e) {
     console.warn('fetchLeverBRJobs error:', e.message);
@@ -815,6 +901,7 @@ async function fetchRemotiveJobs(profile) {
       salary: j.salary || '',
       link: j.url || '',
       _source: 'remotive',
+      _posted_at: _postedAtMs(j.publication_date),
     }));
   } catch(e) {
     console.warn('fetchRemotiveJobs error:', e.message);
@@ -831,12 +918,14 @@ async function fetchAdzunaJobs(profile) {
   try {
     const exact = String(profile.cargo_desejado || '').trim();
     const broad = broadenJobTitle(exact);
+    const syn = cargoSynonymQuery(exact);   // sinônimo de domínio amplia a cobertura
     const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
     const attempts = [
       { what: exact, where: isRemoto ? '' : profile.cidade },
       { what: exact, where: '' },
     ];
     if (broad && broad !== exact.toLowerCase()) attempts.push({ what: broad, where: '' });
+    if (syn && syn !== exact.toLowerCase() && syn !== broad) attempts.push({ what: syn, where: '' });
 
     let collected = [];
     for (const attempt of attempts) {
@@ -857,6 +946,7 @@ async function fetchAdzunaJobs(profile) {
         salary: j.salary_min ? `R$ ${Math.round(j.salary_min).toLocaleString('pt-BR')}` : '',
         link: j.redirect_url || '',
         _source: 'adzuna',
+        _posted_at: _postedAtMs(j.created),
       })));
       collected = uniqueJobs(collected);
       if (collected.length >= 8) break;
@@ -874,8 +964,9 @@ async function fetchSerpApiJobs(profile) {
   try {
     const cargo = (profile.cargo_desejado || '').trim();
     const isRemoto = wantsRemote(profile);
+    const kw = primaryKeyword(profile);   // termo extra refina relevância no Google Jobs
     // Busca em PT-BR focada em vagas brasileiras
-    const query = encodeURIComponent(cargo + ' vaga emprego Brasil');
+    const query = encodeURIComponent(cargo + (kw ? ' ' + kw : '') + ' vaga emprego Brasil');
     const loc = isRemoto ? 'Brazil' : encodeURIComponent((profile.cidade || '') + ', Brazil');
     const url = `https://serpapi.com/search.json?engine=google_jobs&q=${query}&location=${loc}&hl=pt&gl=br&api_key=${SERPAPI_KEY}&num=20`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
@@ -923,6 +1014,7 @@ async function fetchGupyJobs(profile) {
       salary: '',
       link: j.jobUrl || (j.company?.slug && j.id ? `https://portal.gupy.io/job/${j.company.slug}/${j.id}` : null) || `https://portal.gupy.io/jobs?jobName=${encodeURIComponent(j.name||'')}`,
       _source: 'gupy',
+      _posted_at: _postedAtMs(j.publishedDate || j.createdDate),
     }));
   } catch(e) {
     console.warn('fetchGupyJobs error:', e.message);
@@ -1154,13 +1246,17 @@ async function fetchJSearchJobs(profile) {
   try {
     const cargo = String(profile.cargo_desejado || '').trim();
     const broad = broadenJobTitle(cargo);
+    const kw = primaryKeyword(profile);       // Google for Jobs trata termos extras como sinal suave
+    const syn = cargoSynonymQuery(cargo);
     const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
     const location = isRemoto ? 'Brazil' : `${profile.cidade}, Brazil`;
     const attempts = [
       { query: `${cargo} in ${location}`, date: 'month' },
       { query: `${cargo} in Brazil`, date: 'month' },
     ];
+    if (kw) attempts.push({ query: `${cargo} ${kw} in Brazil`, date: 'month' });
     if (broad && broad !== cargo.toLowerCase()) attempts.push({ query: `${broad} in Brazil`, date: 'month' });
+    if (syn && syn !== cargo.toLowerCase() && syn !== broad) attempts.push({ query: `${syn} in Brazil`, date: 'month' });
 
     let collected = [];
     for (const attempt of attempts) {
@@ -1195,6 +1291,7 @@ async function fetchJSearchJobs(profile) {
         salary,
         link: j.job_apply_link || j.job_google_link || '',
         _source: 'jsearch',
+        _posted_at: _postedAtMs(j.job_posted_at_timestamp || j.job_posted_at_datetime_utc),
       };
       }));
       collected = uniqueJobs(collected);
@@ -1565,6 +1662,9 @@ function normalizeJob(j) {
     salary: j.salary || '',
     link: j.link || j.url || 'https://vagaai.app.br',
     _score: j._score || 0,
+    _source: j._source || '',          // preserva a fonte p/ o filtro (BR_SOURCES)
+    // preserva a data de publicação; Jooble entrega raw com `updated`
+    _posted_at: j._posted_at || _postedAtMs(j.updated || j.date),
   };
 }
 
@@ -1724,9 +1824,65 @@ async function upsertAlertCache(userId, jobs, { isDemand = false } = {}) {
   }).catch(e => console.warn('job_alert_cache upsert failed:', e.message));
 }
 
+// Re-ranqueia as melhores vagas com Claude Haiku para compatibilidade real (não
+// estimada) — apenas planos pagos. Timeout curto + fallback ao score heurístico:
+// se a IA falhar ou demorar, devolve as vagas como estavam (nunca bloqueia o envio).
+async function aiRescoreJobs(jobs, profile) {
+  if (!process.env.ANTHROPIC_API_KEY || !Array.isArray(jobs) || jobs.length < 2) return jobs;
+  const top = jobs.slice(0, 20);
+  const compact = top.map((j, i) =>
+    `${i}. ${String(j.title || '').slice(0, 90)} | ${String(j.company || '').slice(0, 40)} | ${String(j.location || '').slice(0, 40)}`
+  ).join('\n');
+  const prompt = `Você avalia a compatibilidade de vagas com o perfil de um candidato brasileiro.
+
+PERFIL:
+- Cargo desejado: ${profile.cargo_desejado || 'não informado'}
+- Senioridade: ${profile.nivel || 'qualquer'}
+- Cidade/Modalidade: ${profile.cidade || 'não informada'}
+- Competências: ${(Array.isArray(profile.keywords) ? profile.keywords.join(', ') : '') || 'não informadas'}
+${profile.salario_min ? `- Salário mínimo desejado: R$ ${profile.salario_min}` : ''}
+
+VAGAS (índice. título | empresa | local):
+${compact}
+
+Para cada vaga dê um score de 0 a 100 de compatibilidade com o perfil, pesando aderência de cargo, senioridade e localização. Responda APENAS com um array JSON, sem nenhum texto extra, no formato:
+[{"i":0,"score":87},{"i":1,"score":42}]`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        temperature: 0,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+      signal: AbortSignal.timeout(7000),
+    });
+    if (!resp.ok) { console.warn('aiRescoreJobs: HTTP', resp.status); return jobs; }
+    const data = await resp.json();
+    const scores = parseAiScores(data.content?.[0]?.text || '');
+    if (!scores) return jobs;
+    const map = new Map(scores.map(s => [s.i, s.score]));
+    const rescoredTop = top.map((j, idx) =>
+      map.has(idx) ? { ...j, _score: map.get(idx), _ai_scored: true } : j
+    );
+    return [...rescoredTop, ...jobs.slice(20)].sort((a, b) => (b._score || 0) - (a._score || 0));
+  } catch (e) {
+    console.warn('aiRescoreJobs failed, heurística mantida:', e.message);
+    return jobs;
+  }
+}
+
 // Processa alertas para um usuário
 // options.skipSideEffects=true → modo teste legado (sem dedup, sem mark sent, sem cache)
 // options.isDemand=true → on-demand real (dedup, mark sent, atualiza next_run, salva cache)
+// options.deadline=ms → guarda de tempo p/ pular a IA e não estourar o maxDuration
 async function processUserAlert(profile, options = {}) {
   const isTest = options.skipSideEffects === true;
   const isDemand = options.isDemand === true;
@@ -1912,6 +2068,14 @@ async function processUserAlert(profile, options = {}) {
       skipped: 'no jobs after filters',
       diagnostics: { sourceCounts, rawCount, dedupCount, newCount, strictCount, relaxedCount },
     };
+  }
+
+  // Re-ranking por IA (planos pagos): compatibilidade real via Claude Haiku.
+  // Guarda de deadline reserva tempo do maxDuration p/ não derrubar o lote inteiro
+  // conforme a base cresce. Em modo teste legado não roda (sem efeitos colaterais).
+  const deadline = options.deadline || (Date.now() + 50000);
+  if (!isTest && plan !== 'free' && jobs.length > 1 && Date.now() < deadline - 12000) {
+    jobs = await aiRescoreJobs(jobs, profile);
   }
 
   // Volume por plano: free=5, starter=15, pro=sem limite
@@ -2139,10 +2303,13 @@ export default async function handler(req, res) {
     // ficava sem alerta. Lotes de 5 mantêm o tempo total sob controle conforme a base cresce.
     const results = [];
     const BATCH_SIZE = 5;
+    // Deadline global do invocation: reserva ~10s dos 60s de maxDuration para o
+    // re-ranking por IA não arriscar estourar o tempo e derrubar lotes seguintes.
+    const runDeadline = Date.now() + 50000;
     for (let i = 0; i < profiles.length; i += BATCH_SIZE) {
       const slice = profiles.slice(i, i + BATCH_SIZE);
       const settledBatch = await Promise.allSettled(
-        slice.map(p => processUserAlert(p, { skipSideEffects: isTest, isDemand }))
+        slice.map(p => processUserAlert(p, { skipSideEffects: isTest, isDemand, deadline: runDeadline }))
       );
       settledBatch.forEach((s, idx) => {
         const profile = slice[idx];
@@ -2207,5 +2374,8 @@ export default async function handler(req, res) {
 
 // Exports nomeados das funções puras de matching — para testes de unidade.
 // O Vercel usa apenas o `export default handler`; estes não afetam o runtime.
-export { calcScore, applyExtendedFilters, userLevelRank, jobLevelRank, jobMatchesCargo, cargoGateTokens };
+export {
+  calcScore, applyExtendedFilters, userLevelRank, jobLevelRank, jobMatchesCargo, cargoGateTokens,
+  primaryKeyword, cargoSynonymQuery, cargoQueryVariants, _postedAtMs, recencyBonus, parseAiScores,
+};
 
