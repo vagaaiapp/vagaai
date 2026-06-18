@@ -2587,7 +2587,7 @@ function updateMinhasVagas(analyses) {
     var isTracked = Array.isArray(_kTracked) && _kTracked.some(function(t){ return t.analysis_id === a.id; });
     var trackBtn = isTracked
       ? '<span class="mv-tracking">✓ Rastreando</span>'
-      : '<button class="mv-track-btn" onclick="addToTracker(' + JSON.stringify(empresa) + ',' + JSON.stringify(cargo) + ',' + s + ',' + JSON.stringify(a.id) + ')">Rastrear</button>';
+      : '<button class="mv-track-btn" onclick="trackAnalysis(\'' + escAttr(a.id) + '\')">Rastrear</button>';
     html += '<div class="mv-item"><div><div class="mv-score" style="background:' + bg + ';color:' + clr + '">' + s + '%</div></div><div class="mv-body"><div class="mv-cargo">' + escHtml(cargo) + '</div><div class="mv-emp">' + escHtml(empresa) + '</div><div class="mv-bars">' + barsHtml + '</div><div class="mv-tags">' + atsLabel + '</div></div><div class="mv-right">' + trackBtn + '</div></div>';
   });
   body.innerHTML = html;
@@ -3185,22 +3185,37 @@ function calcNextAction(item) {
 
 function calcPriorityAction(items) {
   var interview = items.find(function(i){ return i.status === 'entrevista'; });
-  if (interview) return { title:'Entrevista pendente', sub:interview.cargo+' — '+interview.empresa, cta:'Abrir detalhes', id:interview.id };
+  if (interview) return { title:'Entrevista pendente', sub:interview.cargo+' — '+interview.empresa, cta:'Abrir detalhes', action:'detail', id:interview.id };
 
   var overdue = items.filter(function(i){ return i.status === 'aplicada' && i.daysSince >= 14; });
-  if (overdue.length) return { title:overdue.length+' candidatura'+(overdue.length>1?'s':'')+' sem resposta há +14 dias', sub:'Envie follow-up para manter visibilidade', cta:'Ver candidaturas', id:null };
+  if (overdue.length) return { title:overdue.length+' candidatura'+(overdue.length>1?'s':'')+' sem resposta há +14 dias', sub:'Envie follow-up para manter visibilidade', cta:'Ver candidaturas', action:'filter', chip:'aplicada' };
 
   var fu = items.find(function(i){ return i.status === 'aplicada' && i.daysSince >= 7; });
-  if (fu) return { title:'Follow-up recomendado', sub:fu.cargo+' — '+fu.daysSince+' dias sem retorno', cta:'Ver candidatura', id:fu.id };
+  if (fu) return { title:'Follow-up recomendado', sub:fu.cargo+' — '+fu.daysSince+' dias sem retorno', cta:'Ver candidatura', action:'detail', id:fu.id };
 
   var cvp = items.filter(function(i){ return i.status === 'cv_pronto' || i.status === 'quero_aplicar'; });
-  if (cvp.length) return { title:cvp.length+' vaga'+(cvp.length>1?'s':'')+' com CV pronto', sub:'Candidaturas prontas para enviar', cta:'Enviar agora', id:null };
+  if (cvp.length) return { title:cvp.length+' vaga'+(cvp.length>1?'s':'')+' com CV pronto', sub:'Candidaturas prontas para enviar', cta:'Enviar agora', action:'detail', id:cvp[0].id };
 
   var untr = items.filter(function(i){ return !i.hasTracker; });
-  if (untr.length) return { title:untr.length+' análise'+(untr.length>1?'s':'')+' não rastreada'+(untr.length>1?'s':''), sub:'Adicione ao tracker para não perder o prazo', cta:'Rastrear', id:null };
+  if (untr.length) {
+    // 1 análise → abre o modal de rastreio direto; várias → filtra a lista p/ "Só análise"
+    var one = untr.length === 1 ? untr[0] : null;
+    return { title:untr.length+' análise'+(untr.length>1?'s':'')+' não rastreada'+(untr.length>1?'s':''), sub:'Adicione ao tracker para não perder o prazo', cta:'Rastrear', action: one ? 'track' : 'filter', chip:'so_analise', id: one ? one.id : null };
+  }
 
-  if (!items.length) return { title:'Comece sua busca', sub:'Analise sua primeira vaga para ver insights aqui', cta:'Ir para análise', id:null };
-  return { title:'Tudo em dia!', sub:'Nenhuma ação urgente no momento', cta:'Ver todas', id:null };
+  if (!items.length) return { title:'Comece sua busca', sub:'Analise sua primeira vaga para ver insights aqui', cta:'Ir para análise', action:'analyze' };
+  return { title:'Tudo em dia!', sub:'Nenhuma ação urgente no momento', cta:'Ver todas', action:'filter', chip:'todas' };
+}
+
+// Despacha a ação prioritária conforme seu tipo. Antes, qualquer ação sem `id`
+// caía em switchDashTab('vagas') — que é a própria aba Candidaturas, então o
+// botão (ex.: "Rastrear") não fazia nada visível.
+function runPriorityAction(pa) {
+  if (!pa || !pa.action) return;
+  if (pa.action === 'detail')  { if (pa.id) openCandDetail(pa.id); return; }
+  if (pa.action === 'track')   { if (pa.id) trackAnalysis(pa.id); else setCandFilter('so_analise'); return; }
+  if (pa.action === 'filter')  { setCandFilter(pa.chip || 'todas'); return; }
+  if (pa.action === 'analyze') { window.location.href = '/app'; return; }
 }
 
 function calcCandMetrics(items) {
@@ -3249,7 +3264,7 @@ function renderCandMetrics(all) {
   var ctaEl = document.getElementById('cpCta');
   if (titleEl) titleEl.textContent = pa.title;
   if (subEl) subEl.textContent = pa.sub;
-  if (ctaEl) { ctaEl.textContent = pa.cta; ctaEl.onclick = pa.id ? function(){ openCandDetail(pa.id); } : function(){ switchDashTab('vagas'); }; }
+  if (ctaEl) { ctaEl.textContent = pa.cta; ctaEl.onclick = function(){ runPriorityAction(pa); }; }
   var el = function(id, val) { var e = document.getElementById(id); if (e) e.textContent = val; };
   el('cmAtivas', m.ativas);
   el('cmEntrevistas', m.entrevistas);
@@ -3402,7 +3417,7 @@ function renderCandDetail(item) {
   if (item.hasTracker) {
     acts += '<button class="cd-btn" onclick="openTrackerEditById(\''+escAttr(item.trackerId)+'\')">Editar</button>';
   } else if (item.analysisData) {
-    acts += '<button class="cd-btn" onclick="addToTracker(\''+escAttr(item.empresa)+'\',\''+escAttr(item.cargo)+'\','+item.score+',\''+escAttr(item.id)+'\')">+ Rastrear</button>';
+    acts += '<button class="cd-btn" onclick="trackAnalysis(\''+escAttr(item.id)+'\')">+ Rastrear</button>';
   }
   var trashIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg>';
   if (item.hasTracker) acts += '<button class="cd-btn cd-danger" onclick="confirmDeleteTracker(\''+escAttr(item.trackerId)+'\')" aria-label="Remover candidatura" title="Remover candidatura">'+trashIcon+'</button>';
@@ -5147,6 +5162,18 @@ function addToTracker(empresa, cargo, score, analysisId) {
   setTimeout(function() {
     openTrackerEdit({ empresa: empresa, cargo: cargo, score: score, status: 'quero_aplicar', analysis_id: analysisId || null });
   }, 200);
+}
+
+// Rastreia uma análise a partir do seu id (UUID seguro em atributo HTML).
+// Os botões "Rastrear" passam só o id e os dados (empresa/cargo, que vêm de
+// fontes externas) são resolvidos aqui em JS — sem interpolar texto não confiável
+// dentro de onclick.
+function trackAnalysis(analysisId) {
+  if (!analysisId) return;
+  var item = mergeApplications().find(function(i){ return i.id === analysisId; });
+  if (!item) { showToast('Análise não encontrada.', 'error'); return; }
+  if (item.hasTracker) { openTrackerEditById(item.trackerId); return; }
+  addToTracker(item.empresa, item.cargo, item.score, item.id);
 }
 
 async function saveTracker(btn) {
