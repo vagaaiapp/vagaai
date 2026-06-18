@@ -118,12 +118,14 @@ async function setCachedResult(hash, result) {
 const IP_FREE_LIMIT = 1; // 1 análise gratuita por IP a cada 30 dias
 
 async function checkRateLimit(ip) {
-  if (!SUPABASE_URL || !SUPABASE_KEY) return { allowed: true };
+  // Usa a SERVICE key: a tabela ip_rate_limits tem RLS habilitada e nega anon,
+  // impedindo que o usuário zere o próprio contador via PostgREST (anon key é pública).
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return { allowed: true };
   try {
     const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/ip_rate_limits?ip=eq.${encodeURIComponent(ip)}&last_seen=gte.${encodeURIComponent(cutoff)}&select=count`,
-      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
     );
     const rows = await res.json();
     // Bloqueado apenas se atingiu o limite nos últimos 30 dias
@@ -136,21 +138,21 @@ async function checkRateLimit(ip) {
 }
 
 async function recordIpUsage(ip) {
-  if (!SUPABASE_URL || !SUPABASE_KEY) return;
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return;
   try {
     // Verifica se já existe registro recente (últimos 30 dias) para incrementar
     const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const existing = await fetch(
       `${SUPABASE_URL}/rest/v1/ip_rate_limits?ip=eq.${encodeURIComponent(ip)}&last_seen=gte.${encodeURIComponent(cutoff)}&select=count`,
-      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
     ).then(r => r.json()).catch(() => []);
 
     const newCount = existing.length > 0 ? (existing[0].count || 1) + 1 : 1;
     await fetch(`${SUPABASE_URL}/rest/v1/ip_rate_limits`, {
       method: 'POST',
       headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
         'Content-Type': 'application/json',
         Prefer: 'resolution=merge-duplicates',
       },
@@ -165,6 +167,17 @@ async function recordIpUsage(ip) {
     method: 'DELETE',
     headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
   }).catch(() => {});
+}
+
+// IP do cliente para rate-limit. Prefere x-real-ip (definido pela Vercel, não
+// spoofável pelo cliente) em vez do 1º item de x-forwarded-for, que o cliente
+// pode forjar enviando o próprio header.
+function clientIp(req) {
+  const realIp = (req.headers['x-real-ip'] || '').trim();
+  if (realIp) return realIp;
+  const xff = (req.headers['x-forwarded-for'] || '').split(',').map(s => s.trim()).filter(Boolean);
+  // Sem x-real-ip: usa o ÚLTIMO salto do XFF (o mais próximo do proxy confiável).
+  return xff.length ? xff[xff.length - 1] : 'unknown';
 }
 
 // ─── Créditos (usuários autenticados) ────────────────────────────────────────
@@ -775,9 +788,7 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
       } catch (_) {}
     } else {
       // Anônimo: aplica rate limit mesmo em cache hit
-      const _ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
-        || req.headers['x-real-ip']
-        || 'unknown';
+      const _ip = clientIp(req);
       const { allowed } = await checkRateLimit(_ip);
       if (!allowed) {
         return res.status(429).json({ error: 'limite_atingido' });
@@ -805,9 +816,7 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
       return res.status(503).json({ error: 'service_unavailable', message: 'Serviço temporariamente indisponível. Tente novamente em instantes.' });
     }
   } else {
-    _ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
-      || req.headers['x-real-ip']
-      || 'unknown';
+    _ip = clientIp(req);
     const { allowed } = await checkRateLimit(_ip);
     if (!allowed) {
       return res.status(429).json({ error: 'limite_atingido' });

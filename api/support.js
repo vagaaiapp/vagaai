@@ -12,9 +12,36 @@ async function getUserFromToken(token) {
   } catch { return null; }
 }
 
+// Escapa texto para uso seguro em HTML (evita injeção no e-mail de suporte)
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+// Rate limit por IP em memória — anti email-bombing do inbox de suporte.
+const _ipHits = new Map();
+const SUPPORT_LIMIT = 5;            // máx 5 mensagens
+const SUPPORT_WINDOW_MS = 60 * 60 * 1000; // por hora
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const entry = _ipHits.get(ip) || { count: 0, resetAt: now + SUPPORT_WINDOW_MS };
+  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + SUPPORT_WINDOW_MS; }
+  entry.count++;
+  _ipHits.set(ip, entry);
+  return entry.count <= SUPPORT_LIMIT;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const clientIp = (req.headers['x-real-ip'] || '').trim()
+    || (req.headers['x-forwarded-for'] || '').split(',').map(s => s.trim()).filter(Boolean).pop()
+    || 'unknown';
+  if (!checkRateLimit(clientIp)) {
+    return res.status(429).json({ error: 'Muitas mensagens. Tente novamente mais tarde.' });
   }
 
   const { email, motivo, mensagem } = req.body || {};
@@ -22,8 +49,14 @@ export default async function handler(req, res) {
   if (!email || !motivo || !mensagem) {
     return res.status(400).json({ error: 'Preencha todos os campos.' });
   }
-  if (mensagem.trim().length < 10) {
-    return res.status(400).json({ error: 'Mensagem muito curta.' });
+  if (typeof email !== 'string' || email.length > 254 || !EMAIL_RE.test(email)) {
+    return res.status(400).json({ error: 'E-mail inválido.' });
+  }
+  if (typeof mensagem !== 'string' || mensagem.trim().length < 10 || mensagem.length > 5000) {
+    return res.status(400).json({ error: 'Mensagem inválida.' });
+  }
+  if (typeof motivo !== 'string' || motivo.length > 50) {
+    return res.status(400).json({ error: 'Motivo inválido.' });
   }
 
   if (!RESEND_API_KEY) {
@@ -57,12 +90,12 @@ export default async function handler(req, res) {
       <div style="background:#ffffff;padding:28px;border:1px solid #e5e5e5;border-top:none;border-radius:0 0 12px 12px">
         <h2 style="margin:0 0 20px;font-size:18px;color:#0a0f0d">Nova mensagem de suporte</h2>
         <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
-          <tr><td style="padding:8px 0;font-size:13px;color:#666;width:130px">De</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#0a0f0d">${email}</td></tr>
-          <tr><td style="padding:8px 0;font-size:13px;color:#666">Motivo</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#0a0f0d">${motivoLabel}</td></tr>
-          ${userId ? `<tr><td style="padding:8px 0;font-size:13px;color:#666">User ID</td><td style="padding:8px 0;font-size:13px;color:#888;font-family:monospace">${userId}</td></tr>` : ''}
+          <tr><td style="padding:8px 0;font-size:13px;color:#666;width:130px">De</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#0a0f0d">${esc(email)}</td></tr>
+          <tr><td style="padding:8px 0;font-size:13px;color:#666">Motivo</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#0a0f0d">${esc(motivoLabel)}</td></tr>
+          ${userId ? `<tr><td style="padding:8px 0;font-size:13px;color:#666">User ID</td><td style="padding:8px 0;font-size:13px;color:#888;font-family:monospace">${esc(userId)}</td></tr>` : ''}
         </table>
-        <div style="background:#f5f5f5;border-radius:8px;padding:16px;font-size:14px;color:#333;line-height:1.6;white-space:pre-wrap">${mensagem.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
-        <p style="margin:20px 0 0;font-size:12px;color:#999">Responda diretamente para este e-mail: ${email}</p>
+        <div style="background:#f5f5f5;border-radius:8px;padding:16px;font-size:14px;color:#333;line-height:1.6;white-space:pre-wrap">${esc(mensagem)}</div>
+        <p style="margin:20px 0 0;font-size:12px;color:#999">Responda diretamente para este e-mail: ${esc(email)}</p>
       </div>
     </div>`;
 

@@ -16,6 +16,19 @@ async function getUserFromToken(token) {
   } catch { return null; }
 }
 
+// Rate limit por usuário (em memória) — limita custo de IA por conta paga.
+const _userHits = new Map();
+const USER_LIMIT = 20;                 // máx 20 cartas/hora por usuário
+const USER_WINDOW_MS = 60 * 60 * 1000;
+function checkUserRateLimit(userId) {
+  const now = Date.now();
+  const entry = _userHits.get(userId) || { count: 0, resetAt: now + USER_WINDOW_MS };
+  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + USER_WINDOW_MS; }
+  entry.count++;
+  _userHits.set(userId, entry);
+  return entry.count <= USER_LIMIT;
+}
+
 async function getUserPlan(userId) {
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${userId}&select=plan,status`, {
@@ -45,6 +58,10 @@ export default async function handler(req, res) {
       message: 'Carta de apresentação disponível a partir do plano Starter.',
       plan
     });
+  }
+
+  if (!checkUserRateLimit(user.id)) {
+    return res.status(429).json({ error: 'Limite de uso atingido. Tente novamente mais tarde.' });
   }
 
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
