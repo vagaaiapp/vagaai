@@ -14,7 +14,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
-const GROQ_KEY = process.env.GROQ_API_KEY;
+const ASSEMBLYAI_KEY = process.env.ASSEMBLYAI_API_KEY;
 
 async function getUserFromToken(token) {
   try {
@@ -154,8 +154,8 @@ function decodeBase64Audio(audioBase64) {
 }
 
 async function transcribeAudio(audioBase64, mimeType) {
-  if (!GROQ_KEY) {
-    const err = new Error('GROQ_API_KEY not configured');
+  if (!ASSEMBLYAI_KEY) {
+    const err = new Error('ASSEMBLYAI_API_KEY not configured');
     err.statusCode = 500;
     err.publicMessage = 'Servico de transcricao nao configurado';
     throw err;
@@ -175,28 +175,56 @@ async function transcribeAudio(audioBase64, mimeType) {
     throw err;
   }
 
-  const type = /^audio\//.test(mimeType || '') ? mimeType : 'audio/webm';
-  const ext = type.includes('mp4') ? 'mp4' : type.includes('mpeg') || type.includes('mp3') ? 'mp3' : type.includes('ogg') ? 'ogg' : 'webm';
-  const form = new FormData();
-  form.append('model', 'whisper-large-v3');
-  form.append('language', 'pt');
-  form.append('response_format', 'json');
-  form.append('file', new Blob([buffer], { type }), `resposta.${ext}`);
-
-  const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+  // 1. Upload do áudio
+  const uploadRes = await fetch('https://api.assemblyai.com/v2/upload', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${GROQ_KEY}` },
-    body: form
+    headers: { 'Authorization': ASSEMBLYAI_KEY, 'Content-Type': 'application/octet-stream' },
+    body: buffer,
   });
-  const data = await response.json();
-  if (!response.ok) {
-    console.error('interview transcribe Groq error:', response.status, data);
-    const err = new Error('Groq transcription failed');
+  if (!uploadRes.ok) {
+    console.error('AssemblyAI upload error:', uploadRes.status);
+    const err = new Error('Upload failed');
     err.statusCode = 502;
-    err.publicMessage = 'Falha ao transcrever o audio';
+    err.publicMessage = 'Falha ao enviar audio para transcricao';
     throw err;
   }
-  return (data.text || '').trim();
+  const { upload_url } = await uploadRes.json();
+
+  // 2. Submete transcrição
+  const transcriptRes = await fetch('https://api.assemblyai.com/v2/transcript', {
+    method: 'POST',
+    headers: { 'Authorization': ASSEMBLYAI_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ audio_url: upload_url, language_code: 'pt', speech_model: 'nano' }),
+  });
+  if (!transcriptRes.ok) {
+    console.error('AssemblyAI transcript request error:', transcriptRes.status);
+    const err = new Error('Transcription request failed');
+    err.statusCode = 502;
+    err.publicMessage = 'Falha ao iniciar transcricao';
+    throw err;
+  }
+  const { id } = await transcriptRes.json();
+
+  // 3. Polling até concluir (max ~7s)
+  const pollingUrl = `https://api.assemblyai.com/v2/transcript/${id}`;
+  for (let i = 0; i < 14; i++) {
+    await new Promise(r => setTimeout(r, 500));
+    const pollRes = await fetch(pollingUrl, { headers: { 'Authorization': ASSEMBLYAI_KEY } });
+    const result = await pollRes.json();
+    if (result.status === 'completed') return (result.text || '').trim();
+    if (result.status === 'error') {
+      console.error('AssemblyAI transcription error:', result.error);
+      const err = new Error('Transcription error');
+      err.statusCode = 502;
+      err.publicMessage = 'Falha ao transcrever o audio';
+      throw err;
+    }
+  }
+
+  const err = new Error('Transcription timeout');
+  err.statusCode = 504;
+  err.publicMessage = 'Transcricao demorou demais. Tente novamente com uma resposta mais curta.';
+  throw err;
 }
 
 export default async function handler(req, res) {
