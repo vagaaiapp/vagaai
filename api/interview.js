@@ -14,7 +14,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
-const OPENAI_KEY = process.env.OPENAI_API_KEY;
+const GROQ_KEY = process.env.GROQ_API_KEY;
 
 async function getUserFromToken(token) {
   try {
@@ -154,10 +154,10 @@ function decodeBase64Audio(audioBase64) {
 }
 
 async function transcribeAudio(audioBase64, mimeType) {
-  if (!OPENAI_KEY) {
-    const err = new Error('OPENAI_API_KEY not configured');
+  if (!GROQ_KEY) {
+    const err = new Error('GROQ_API_KEY not configured');
     err.statusCode = 500;
-    err.publicMessage = 'OPENAI_API_KEY nao configurada';
+    err.publicMessage = 'Servico de transcricao nao configurado';
     throw err;
   }
 
@@ -178,20 +178,20 @@ async function transcribeAudio(audioBase64, mimeType) {
   const type = /^audio\//.test(mimeType || '') ? mimeType : 'audio/webm';
   const ext = type.includes('mp4') ? 'mp4' : type.includes('mpeg') || type.includes('mp3') ? 'mp3' : type.includes('ogg') ? 'ogg' : 'webm';
   const form = new FormData();
-  form.append('model', process.env.OPENAI_TRANSCRIBE_MODEL || 'whisper-1');
+  form.append('model', 'whisper-large-v3');
   form.append('language', 'pt');
   form.append('response_format', 'json');
   form.append('file', new Blob([buffer], { type }), `resposta.${ext}`);
 
-  const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+  const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${OPENAI_KEY}` },
+    headers: { Authorization: `Bearer ${GROQ_KEY}` },
     body: form
   });
   const data = await response.json();
   if (!response.ok) {
-    console.error('interview transcribe OpenAI error:', response.status, data);
-    const err = new Error('OpenAI transcription failed');
+    console.error('interview transcribe Groq error:', response.status, data);
+    const err = new Error('Groq transcription failed');
     err.statusCode = 502;
     err.publicMessage = 'Falha ao transcrever o audio';
     throw err;

@@ -308,13 +308,13 @@ var _answers = [];
 var _jobText = '';
 var _cvText = '';
 var _autoStartedFromAnalysis = false;
-var _mediaRecorder = null;
-var _audioChunks = [];
-var _audioStream = null;
 var _audioTimer = null;
 var _audioStartedAt = 0;
-var _audioMimeType = '';
 var _audioMode = '';
+var _speechRecognition = null;
+var _speechFinal = '';
+var _speechInterim = '';
+var _transcriptionDone = false;
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 (async function() {
@@ -657,14 +657,14 @@ function fillAnswerFromTranscript(text) {
 
 function resetAudioRecorder(silent) {
   if (_audioTimer) { clearInterval(_audioTimer); _audioTimer = null; }
-  if (_audioStream) {
-    _audioStream.getTracks().forEach(function(track){ track.stop(); });
-    _audioStream = null;
+  if (_speechRecognition) {
+    try { _speechRecognition.stop(); } catch(e) {}
+    _speechRecognition = null;
   }
-  _mediaRecorder = null;
-  _audioChunks = [];
+  _speechFinal = '';
+  _speechInterim = '';
+  _transcriptionDone = false;
   _audioStartedAt = 0;
-  _audioMimeType = '';
   _audioMode = '';
   setAudioTimer(0);
   var recBtn = document.getElementById('audioRecordBtn');
@@ -674,107 +674,97 @@ function resetAudioRecorder(silent) {
   if (!silent) setAudioStatus('');
 }
 
-async function startAudioAnswer() {
+function startAudioAnswer() {
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   var recBtn = document.getElementById('audioRecordBtn');
   var stopBtn = document.getElementById('audioStopBtn');
 
+  if (!SpeechRecognition) {
+    setAudioStatus('Gravação por voz não suportada neste navegador. Use a resposta por texto.', 'err');
+    return;
+  }
+
   try {
-    setAudioStatus('Solicitando acesso ao microfone...');
-
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
-      setAudioStatus('Seu navegador não suporta gravação de áudio. Use a resposta por texto.', 'err');
-      return;
-    }
-
+    _speechFinal = '';
+    _speechInterim = '';
+    _transcriptionDone = false;
     _audioMode = 'record';
-    _audioMimeType = pickAudioMimeType();
-    _audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    _audioChunks = [];
-    _mediaRecorder = _audioMimeType ? new MediaRecorder(_audioStream, { mimeType: _audioMimeType }) : new MediaRecorder(_audioStream);
-    _audioMimeType = _mediaRecorder.mimeType || _audioMimeType || 'audio/webm';
 
-    _mediaRecorder.ondataavailable = function(e) {
-      if (e.data && e.data.size > 0) _audioChunks.push(e.data);
+    _speechRecognition = new SpeechRecognition();
+    _speechRecognition.lang = 'pt-BR';
+    _speechRecognition.continuous = true;
+    _speechRecognition.interimResults = true;
+
+    _speechRecognition.onresult = function(event) {
+      var final = '';
+      var interim = '';
+      for (var i = 0; i < event.results.length; i++) {
+        var t = event.results[i][0] ? event.results[i][0].transcript : '';
+        if (event.results[i].isFinal) final += t + ' ';
+        else interim += t;
+      }
+      _speechFinal = final;
+      _speechInterim = interim;
+      var input = document.getElementById('answerInput');
+      if (input) { input.value = (_speechFinal + _speechInterim).trim(); updateCharHint(); }
     };
-    _mediaRecorder.onstop = transcribeRecordedAudio;
-    _mediaRecorder.start();
 
+    _speechRecognition.onerror = function(event) {
+      var code = event && event.error ? event.error : '';
+      if (code === 'no-speech') return;
+      if (code === 'not-allowed' || code === 'service-not-allowed') {
+        setAudioStatus('Permissão do microfone bloqueada no navegador.', 'err');
+      } else {
+        setAudioStatus('Erro na gravação. Tente novamente.', 'err');
+      }
+      resetAudioRecorder(true);
+    };
+
+    _speechRecognition.onend = function() {
+      _completeTranscription();
+    };
+
+    _speechRecognition.start();
     _audioStartedAt = Date.now();
     _audioTimer = setInterval(function() {
       var seconds = Math.floor((Date.now() - _audioStartedAt) / 1000);
       setAudioTimer(seconds);
-      if (seconds >= 120 && _mediaRecorder && _mediaRecorder.state === 'recording') stopAudioAnswer();
+      if (seconds >= 120) stopAudioAnswer();
     }, 250);
 
     if (recBtn) recBtn.style.display = 'none';
     if (stopBtn) { stopBtn.style.display = ''; stopBtn.disabled = false; stopBtn.textContent = 'Parar'; }
-    setAudioStatus('Gravando... responda em até 2 minutos.');
+    setAudioStatus('Ouvindo... fale sua resposta.');
   } catch(e) {
     resetAudioRecorder(true);
-    setAudioStatus('Não foi possível acessar o microfone. Verifique a permissão do navegador.', 'err');
+    setAudioStatus('Não foi possível iniciar a gravação. Verifique a permissão do microfone.', 'err');
   }
 }
 
 function stopAudioAnswer() {
-  if (!_mediaRecorder || _mediaRecorder.state !== 'recording') return;
+  if (!_speechRecognition || _audioMode !== 'record') return;
   var stopBtn = document.getElementById('audioStopBtn');
   if (stopBtn) { stopBtn.disabled = true; stopBtn.textContent = 'Processando...'; }
-  setAudioStatus('Preparando transcrição via IA...');
-  _mediaRecorder.stop();
-}
-
-function blobToBase64(blob) {
-  return new Promise(function(resolve, reject) {
-    var reader = new FileReader();
-    reader.onloadend = function() {
-      var result = String(reader.result || '');
-      resolve(result.split(',')[1] || '');
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
-async function transcribeRecordedAudio() {
   if (_audioTimer) { clearInterval(_audioTimer); _audioTimer = null; }
-  if (_audioStream) {
-    _audioStream.getTracks().forEach(function(track){ track.stop(); });
-    _audioStream = null;
-  }
+  _audioMode = 'stopping';
+  // Safety: complete after 1.5s in case onend doesn't fire
+  setTimeout(function() { _completeTranscription(); }, 1500);
+  try { _speechRecognition.stop(); } catch(e) { _completeTranscription(); }
+}
 
+function _completeTranscription() {
+  if (_transcriptionDone) return;
+  _transcriptionDone = true;
+  if (_audioTimer) { clearInterval(_audioTimer); _audioTimer = null; }
+  _speechRecognition = null;
+  _audioMode = '';
   var recBtn = document.getElementById('audioRecordBtn');
   var stopBtn = document.getElementById('audioStopBtn');
-  if (recBtn) { recBtn.style.display = ''; recBtn.disabled = true; recBtn.textContent = 'Transcrevendo...'; }
+  if (recBtn) { recBtn.style.display = ''; recBtn.disabled = false; recBtn.textContent = 'Gravar novamente'; }
   if (stopBtn) stopBtn.style.display = 'none';
-
-  try {
-    var blob = new Blob(_audioChunks, { type: _audioMimeType || 'audio/webm' });
-    if (blob.size < 1000) throw new Error('Áudio muito curto');
-    if (_speechSupported && fillAnswerFromTranscript(_speechTranscript)) return;
-    setAudioStatus('Transcrevendo sua resposta...');
-    var audioBase64 = await blobToBase64(blob);
-    var res = await fetch('/api/interview', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _session.access_token },
-      body: JSON.stringify({ action: 'transcribe', audioBase64: audioBase64, mimeType: blob.type })
-    });
-    var data = await res.json();
-    if (res.status === 403) { showScreen('screenGate'); return; }
-    if (!res.ok || data.error) throw new Error(data.error || 'Falha ao transcrever');
-
-    var input = document.getElementById('answerInput');
-    if (input) {
-      input.value = (data.text || '').trim();
-      input.focus();
-      updateCharHint();
-    }
-    setAudioStatus('Transcrição pronta. Revise se quiser e clique em “Avaliar minha resposta”.', 'ok');
-  } catch(e) {
-    setAudioStatus(e.message === 'Áudio muito curto' ? 'A gravação ficou muito curta. Grave uma resposta um pouco maior.' : 'Não foi possível transcrever o áudio. Você ainda pode responder por texto.', 'err');
-  } finally {
-    _audioChunks = [];
-    _mediaRecorder = null;
-    if (recBtn) { recBtn.disabled = false; recBtn.textContent = 'Gravar novamente'; }
+  var text = (_speechFinal + ' ' + _speechInterim).replace(/\s+/g, ' ').trim();
+  if (!fillAnswerFromTranscript(text)) {
+    setAudioStatus('Não consegui captar fala. Fale mais alto ou mais perto do microfone, ou responda por texto.', 'err');
   }
 }
 
