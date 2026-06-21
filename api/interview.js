@@ -194,7 +194,7 @@ async function transcribeAudio(audioBase64, mimeType) {
   const transcriptRes = await fetch('https://api.assemblyai.com/v2/transcript', {
     method: 'POST',
     headers: { 'Authorization': ASSEMBLYAI_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ audio_url: upload_url, language_code: 'pt', speech_model: 'nano' }),
+    body: JSON.stringify({ audio_url: upload_url, language_code: 'pt' }),
   });
   if (!transcriptRes.ok) {
     console.error('AssemblyAI transcript request error:', transcriptRes.status);
