@@ -113,9 +113,13 @@ function calculateNextAlertRun(p, ext) {
   if (!p || !p.ativo) return null;
   const freq = p.frequencia || 'semanal';
   const dayEnvio = (ext && ext.dia_envio !== undefined && ext.dia_envio !== '') ? parseInt(ext.dia_envio) : 5;
-  const hora = (ext && ext.horario_envio) || '08:00';
-  const parts = hora.split(':');
-  const hh = parseInt(parts[0]) || 8, mm = parseInt(parts[1]) || 0;
+  // Espelha dashboard/backend: hora-âncora ≤ 7h BRT. O cron diário da Vercel entrega
+  // de manhã, então a hora exata escolhida não é honrada — o next_run é ancorado a no
+  // máximo 7h para cair no DIA correto. (Mantenha em sincronia com calculateNextAlertRun
+  // do dashboard e calculateNextRun de api/send-alerts.js.)
+  const ALERT_ANCHOR_HOUR_BRT = 7;
+  const cfgHour = parseInt(String((ext && ext.horario_envio) || '08:00').split(':')[0]) || 8;
+  const hh = Math.min(cfgHour, ALERT_ANCHOR_HOUR_BRT), mm = 0;
   const now = new Date();
 
   if (freq === 'diario') {
@@ -281,12 +285,18 @@ describe('Item 5 — calculateNextAlertRun (frontend)', () => {
     const next = calculateNextAlertRun({ ativo: true, frequencia: 'diario' }, ext);
     assert.ok(next instanceof Date && next > new Date());
   });
-  it('diário: retorna amanhã se horário já passou hoje', () => {
-    const extPast = { dia_envio: 5, horario_envio: '00:00' };
-    const next = calculateNextAlertRun({ ativo: true, frequencia: 'diario' }, extPast);
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    assert.strictEqual(next.toDateString(), tomorrow.toDateString());
+  it('diário: ancorado em ≤7h (cron diário), hoje ou amanhã, sempre no futuro', () => {
+    // A hora exata não é honrada (cron diário) — o envio é ancorado a ≤7h BRT.
+    // Asserção determinística: hora = âncora; é hoje se a âncora ainda não passou,
+    // senão amanhã; e nunca no passado.
+    const next = calculateNextAlertRun({ ativo: true, frequencia: 'diario' }, { dia_envio: 5, horario_envio: '08:00' });
+    const now = new Date();
+    const anchor = 7; // min(8, ALERT_ANCHOR_HOUR_BRT)
+    assert.strictEqual(next.getHours(), anchor, 'envio diário usa a hora-âncora ≤7h');
+    assert.ok(next > now, 'próximo envio é sempre no futuro');
+    const ref = new Date();
+    if (now.getHours() >= anchor) ref.setDate(ref.getDate() + 1);
+    assert.strictEqual(next.toDateString(), ref.toDateString());
   });
   it('semanal: retorna data no futuro', () => {
     const next = calculateNextAlertRun({ ativo: true, frequencia: 'semanal' }, ext);

@@ -1333,9 +1333,9 @@ async function gerarCV() {
       headers: { 'Content-Type': 'application/json', ...authHeader },
       body: JSON.stringify({ action: 'create_cv', nome, cargo_objetivo: cargo, experiencias, formacao, habilidades, job: jobCtx || undefined })
     });
-    var data = await res.json();
+    var data = await res.json().catch(function(){ return {}; });
     if (!res.ok || !data.cv_text) {
-      alert(data.error || 'Erro ao gerar currículo. Tente novamente.');
+      appToast(data.error || 'Erro ao gerar currículo. Tente novamente.', 'error');
       return;
     }
     // Coloca o CV gerado no campo de texto e muda para a aba "Tenho CV"
@@ -1344,11 +1344,26 @@ async function gerarCV() {
     document.getElementById('cvBuilderSuccess').classList.add('show');
     setTimeout(function() { switchCvMode('tenho'); }, 1200);
   } catch(e) {
-    alert('Erro de conexão. Tente novamente.');
+    appToast('Erro de conexão. Tente novamente.', 'error');
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Gerar CV com IA';
   }
+}
+
+// Toast leve do /app (substitui alert() nativo em telas do cliente)
+function appToast(msg, type) {
+  try {
+    var t = document.createElement('div');
+    t.setAttribute('role', 'status');
+    t.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:2147483000;max-width:90vw;background:' +
+      (type === 'error' ? '#3a1414' : '#0a1a10') + ';color:#fff;border:1px solid ' +
+      (type === 'error' ? 'rgba(255,120,120,.4)' : 'rgba(62,207,142,.35)') +
+      ';border-radius:12px;padding:12px 18px;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.3)';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(function () { t.remove(); }, 300); }, 3500);
+  } catch (e) { console.error(msg); }
 }
 
 function removeCvFile() {
