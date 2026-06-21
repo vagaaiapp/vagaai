@@ -3410,8 +3410,14 @@ function renderCandDetail(item) {
     '</div>';
   var selectHtml = item.hasTracker ? buildStatusSelect(item.status, item.analysisData ? item.id : null, item.analysisData ? null : item.trackerId) : '';
   var acts = '';
+  // Vaga em entrevista → ação principal é treinar a entrevista (simulador /entrevista, Pro)
+  if (item.status === 'entrevista') {
+    var _entUrl = '/entrevista' + (item.analysisData ? '?analysis_id=' + encodeURIComponent(item.analysisData.id) : '');
+    acts += '<button class="cd-btn cd-cta" data-url="'+escAttr(_entUrl)+'" onclick="window.location.href=this.dataset.url">Treinar entrevista →</button>';
+  }
   if (item.analysisData) {
-    acts += '<button class="cd-btn cd-cta" onclick="openSavedAnalysis(\''+escAttr(item.analysisData.id)+'\')">Ver análise</button>';
+    // Quando em entrevista, "Treinar" é o primário; "Ver análise" vira secundário
+    acts += '<button class="cd-btn ' + (item.status === 'entrevista' ? '' : 'cd-cta') + '" onclick="openSavedAnalysis(\''+escAttr(item.analysisData.id)+'\')">Ver análise</button>';
     if (r.cv_otimizado) acts += '<button class="cd-btn" onclick="openSavedCv(\''+escAttr(item.analysisData.id)+'\')">Abrir currículo</button>';
   }
   if (item.hasTracker) {
