@@ -491,7 +491,7 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
 }
 .app-sidebar::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 25% 0,rgba(78,206,145,.12),transparent 34%);pointer-events:none}
 .app-brand{position:relative;display:flex;align-items:center;gap:10px;padding:2px 6px 25px;text-decoration:none}
-.app-brand img{width:31px;height:31px;border-radius:8px}.app-brand strong{font:700 18px Lora,serif;color:#fff}.app-brand strong span{color:var(--gb-bright)}
+.app-brand-icon{width:30px;height:30px;border-radius:8px;object-fit:cover;flex-shrink:0}.app-brand-wordmark{height:36px;width:auto;display:block}
 .app-nav-label{position:relative;padding:0 10px;margin-bottom:7px;color:rgba(255,255,255,.3);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
 .app-sidebar .app-nav{position:relative;display:grid;gap:3px;height:auto;padding:0;border:0;background:transparent!important;backdrop-filter:none;box-shadow:none;justify-content:initial}
 .app-nav-item{
@@ -571,7 +571,7 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
 .limit-section,.loading,.result{grid-column:1/-1}.result.show{display:block}.result>*{box-shadow:var(--app-shadow)}
 .loading.show{min-height:370px;justify-content:center;background:var(--surface);border:1px solid var(--border);border-radius:18px}
 @media(max-width:1050px){
-  :root{--app-sidebar:78px}.app-brand strong,.app-nav-label,.app-nav-item span,.app-support,.app-profile-info{display:none}
+  :root{--app-sidebar:78px}.app-brand-wordmark,.app-nav-label,.app-nav-item span,.app-support,.app-profile-info{display:none}
   .app-brand{justify-content:center;padding-inline:0}.app-nav-item{justify-content:center;padding:12px}.app-sidebar{padding-inline:12px}.app-profile{justify-content:center;padding-inline:0}
   .analysis-workspace{grid-template-columns:minmax(0,1fr) 315px}
 }
@@ -601,8 +601,8 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
 
 <aside class="app-sidebar">
   <a class="app-brand" href="/dashboard">
-    <img src="/logo-icon.svg" alt="">
-    <strong>Vaga<span>AI</span></strong>
+    <img src="/logo-icon.svg" alt="" class="app-brand-icon">
+    <img src="/logo.svg" alt="VagaAI" class="app-brand-wordmark">
   </a>
   <div class="app-nav-label">Seu espaço</div>
   <nav class="app-nav">
