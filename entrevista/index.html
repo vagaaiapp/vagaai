@@ -284,6 +284,7 @@ var _currentQ = 0;
 var _answers = [];
 var _jobText = '';
 var _cvText = '';
+var _autoStartedFromAnalysis = false;
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 (async function() {
@@ -297,7 +298,7 @@ var _cvText = '';
     var canUse = sub.plan === 'pro' || (sub.entitlements && sub.entitlements.simulador_entrevista);
     if (!canUse) { showScreen('screenGate'); return; }
 
-    // Tenta carregar contexto da análise via analysis_id da URL (Item 3)
+    // Tenta carregar contexto da análise via analysis_id da URL.
     var urlParams = new URLSearchParams(window.location.search);
     var analysisId = (urlParams.get('analysis_id') || '').trim();
 
@@ -305,7 +306,7 @@ var _cvText = '';
       // Busca análise verificando ownership pelo user_id do token
       try {
         var aRes = await fetch(
-          _SUPA_URL + '/rest/v1/analyses?id=eq.' + encodeURIComponent(analysisId) + '&user_id=eq.' + encodeURIComponent(_session.user.id) + '&select=result,job_excerpt&limit=1',
+          _SUPA_URL + '/rest/v1/analyses?id=eq.' + encodeURIComponent(analysisId) + '&user_id=eq.' + encodeURIComponent(_session.user.id) + '&select=id,score,nivel,result,job_excerpt,created_at&limit=1',
           { headers: { apikey: _SUPA_ANON, Authorization: 'Bearer ' + _session.access_token } }
         );
         if (!aRes.ok) throw new Error('HTTP ' + aRes.status);
@@ -315,13 +316,18 @@ var _cvText = '';
           showScreen('screenSetup');
         } else {
           var analysis = rows[0];
-          var jobCtx = _jobInfoToText(analysis.result);
-          var cvCtx = _cvToText(analysis.result && analysis.result.cv_otimizado);
-          // Se resultado da IA não tiver contexto suficiente, usa job_excerpt como fallback
-          if (!jobCtx && analysis.job_excerpt) jobCtx = analysis.job_excerpt;
+          var jobCtx = _analysisToJobText(analysis);
+          var cvCtx = _analysisToCvText(analysis);
           document.getElementById('jobInput').value = jobCtx;
           document.getElementById('cvInput').value = cvCtx;
-          showScreen('screenSetup');
+          if (jobCtx.length >= 50 && cvCtx.length >= 50) {
+            _autoStartedFromAnalysis = true;
+            showScreen('screenLoading');
+            setTimeout(function(){ generateInterview({ source: 'analysis' }); }, 120);
+          } else {
+            showScreen('screenSetup');
+            showError('setupError', 'Carregamos os dados disponíveis da análise. Complete os campos faltantes para gerar as perguntas.');
+          }
         }
       } catch(aErr) {
         console.warn('Falha ao carregar análise:', aErr.message);
@@ -343,45 +349,120 @@ var _cvText = '';
   }
 })();
 
-// Converte job_info do resultado da análise para texto legível
-function _jobInfoToText(result) {
-  if (!result) return '';
-  var ji = result.job_info || {};
-  var parts = [];
-  if (ji.empresa) parts.push('Empresa: ' + ji.empresa);
-  if (ji.cargo) parts.push('Cargo: ' + ji.cargo);
-  if (ji.local) parts.push('Local: ' + ji.local);
-  if (ji.tipo_contrato) parts.push('Tipo de contrato: ' + ji.tipo_contrato);
-  if (Array.isArray(ji.requisitos) && ji.requisitos.length) parts.push('Requisitos:\n- ' + ji.requisitos.join('\n- '));
-  if (Array.isArray(ji.beneficios) && ji.beneficios.length) parts.push('Benefícios: ' + ji.beneficios.join(', '));
-  if (Array.isArray(result.palavras_chave) && result.palavras_chave.length) parts.push('Palavras-chave: ' + result.palavras_chave.join(', '));
-  return parts.join('\n');
+function _pushLine(parts, label, value) {
+  if (value === null || value === undefined) return;
+  if (Array.isArray(value)) {
+    var arr = value.filter(function(v){ return v !== null && v !== undefined && String(v).trim(); });
+    if (arr.length) parts.push(label + ': ' + arr.map(function(v){ return _plainText(v); }).join(', '));
+    return;
+  }
+  var text = _plainText(value);
+  if (text) parts.push(label + ': ' + text);
 }
 
-// Converte cv_otimizado (objeto ou string) para texto legível
+function _plainText(value) {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value).trim();
+  if (Array.isArray(value)) return value.map(_plainText).filter(Boolean).join(', ');
+  if (typeof value === 'object') {
+    var preferred = ['nome','titulo','cargo','empresa','valor','descricao','texto','resumo','periodo','instituicao','curso'];
+    var out = [];
+    preferred.forEach(function(k){ if (value[k]) out.push(_plainText(value[k])); });
+    if (out.length) return out.join(' - ');
+    try { return JSON.stringify(value); } catch(e) { return ''; }
+  }
+  return String(value).trim();
+}
+
+// Monta contexto robusto da vaga/análise para o simulador.
+function _analysisToJobText(analysis) {
+  analysis = analysis || {};
+  var result = analysis.result || {};
+  var ji = result.job_info || {};
+  var parts = [];
+  _pushLine(parts, 'Empresa', ji.empresa || result.empresa);
+  _pushLine(parts, 'Cargo', ji.cargo || result.cargo);
+  _pushLine(parts, 'Local', ji.local || ji.localizacao || result.local);
+  _pushLine(parts, 'Tipo de contrato', ji.tipo_contrato || result.tipo_contrato);
+  _pushLine(parts, 'Score ATS da análise', (result.score || analysis.score) ? (result.score || analysis.score) + '%' : '');
+  _pushLine(parts, 'Nível de aderência', result.nivel || analysis.nivel);
+  _pushLine(parts, 'Resumo da análise', result.resumo);
+  _pushLine(parts, 'Descrição da vaga', analysis.job_excerpt || result.job_excerpt || result.descricao_vaga);
+  _pushLine(parts, 'Requisitos da vaga', ji.requisitos || result.requisitos);
+  _pushLine(parts, 'Responsabilidades', ji.responsabilidades || result.responsabilidades);
+  _pushLine(parts, 'Benefícios', ji.beneficios || result.beneficios);
+  _pushLine(parts, 'Palavras-chave encontradas no CV', result.keywords_encontradas || result.palavras_chave_encontradas);
+  _pushLine(parts, 'Palavras-chave faltando no CV', result.keywords_faltando || result.palavras_chave_faltando);
+  _pushLine(parts, 'Falhas apontadas pela análise', result.falhas);
+  _pushLine(parts, 'Sugestões da análise', result.sugestoes || result.recomendacoes);
+  _pushLine(parts, 'Briefing da empresa', result.briefing_empresa);
+
+  if (Array.isArray(result.fatores) && result.fatores.length) {
+    parts.push('Fatores avaliados:\n' + result.fatores.map(function(f) {
+      return '- ' + _plainText(f.nome || f.titulo || 'Fator') + ': ' + _plainText(f.valor || f.score || f.descricao || f);
+    }).join('\n'));
+  }
+
+  return parts.join('\n\n');
+}
+
+// Compatibilidade com chamadas antigas.
+function _jobInfoToText(result) {
+  return _analysisToJobText({ result: result || {} });
+}
+
+// Monta contexto robusto do CV otimizado para o simulador.
+function _analysisToCvText(analysis) {
+  analysis = analysis || {};
+  var result = analysis.result || {};
+  var cv = result.cv_otimizado || result.curriculo_otimizado || result.cv || result.curriculo || '';
+  var text = _cvToText(cv);
+  if (text.length >= 50) return text;
+
+  var fallback = [];
+  _pushLine(fallback, 'Resumo profissional identificado', result.resumo_profissional || result.resumo_candidato);
+  _pushLine(fallback, 'Pontos fortes do candidato', result.pontos_fortes || result.keywords_encontradas);
+  _pushLine(fallback, 'Competências presentes', result.competencias || result.habilidades);
+  _pushLine(fallback, 'Experiências mencionadas', result.experiencias);
+  return [text, fallback.join('\n\n')].filter(Boolean).join('\n\n');
+}
+
+// Converte cv_otimizado (objeto ou string) para texto legível.
 function _cvToText(cv) {
   if (!cv) return '';
   if (typeof cv === 'string') return cv;
   var parts = [];
   if (cv.nome) parts.push('Nome: ' + cv.nome);
-  if (cv.objetivo || cv.resumo) parts.push('Objetivo: ' + (cv.objetivo || cv.resumo));
+  _pushLine(parts, 'Título profissional', cv.titulo_profissional || cv.cargo_objetivo || cv.titulo);
+  if (cv.objetivo || cv.resumo || cv.resumo_profissional) parts.push('Resumo profissional: ' + (cv.resumo_profissional || cv.objetivo || cv.resumo));
   if (Array.isArray(cv.experiencias) && cv.experiencias.length) {
     parts.push('Experiências:');
     cv.experiencias.forEach(function(e) {
       if (typeof e === 'string') parts.push('- ' + e);
-      else parts.push('- ' + (e.cargo||'') + (e.empresa ? ' na ' + e.empresa : '') + (e.periodo ? ' (' + e.periodo + ')' : ''));
+      else {
+        var row = '- ' + (e.cargo || e.titulo || '') + (e.empresa ? ' na ' + e.empresa : '') + (e.periodo ? ' (' + e.periodo + ')' : '');
+        var desc = e.descricao || e.resumo || e.atividades || '';
+        var conquistas = e.conquistas || e.resultados || e.bullets || [];
+        parts.push(row.trim());
+        if (desc) parts.push('  ' + _plainText(desc));
+        if (Array.isArray(conquistas) && conquistas.length) parts.push('  Resultados: ' + conquistas.map(_plainText).filter(Boolean).join('; '));
+      }
     });
+  } else if (cv.experiencia || cv.experiencias_profissionais) {
+    _pushLine(parts, 'Experiências', cv.experiencia || cv.experiencias_profissionais);
   }
   if (Array.isArray(cv.formacao) && cv.formacao.length) {
     parts.push('Formação:');
     cv.formacao.forEach(function(f) {
       if (typeof f === 'string') parts.push('- ' + f);
-      else parts.push('- ' + (f.curso || f.instituicao || JSON.stringify(f)));
+      else parts.push('- ' + _plainText(f.curso || f.nome || '') + (f.instituicao ? ' - ' + f.instituicao : '') + (f.periodo || f.ano ? ' (' + (f.periodo || f.ano) + ')' : ''));
     });
+  } else if (cv.educacao) {
+    _pushLine(parts, 'Formação', cv.educacao);
   }
-  if (cv.habilidades) {
-    parts.push('Habilidades: ' + (Array.isArray(cv.habilidades) ? cv.habilidades.join(', ') : String(cv.habilidades)));
-  }
+  _pushLine(parts, 'Habilidades', cv.habilidades || cv.skills || cv.competencias);
+  _pushLine(parts, 'Cursos e certificações', cv.cursos || cv.certificacoes);
+  _pushLine(parts, 'Idiomas', cv.idiomas);
   return parts.join('\n');
 }
 
@@ -413,14 +494,23 @@ async function fetchJobUrl() {
 }
 
 // ── Gerar perguntas ───────────────────────────────────────────────────────────
-async function generateInterview() {
+async function generateInterview(options) {
+  options = options || {};
   var job = document.getElementById('jobInput').value.trim();
   var cv = document.getElementById('cvInput').value.trim();
   var errEl = document.getElementById('setupError');
   errEl.classList.remove('show');
 
-  if (!job || job.length < 50) { showError('setupError', 'Cole a descrição completa da vaga.'); return; }
-  if (!cv || cv.length < 50) { showError('setupError', 'Cole o conteúdo do seu currículo.'); return; }
+  if (!job || job.length < 50) {
+    showScreen('screenSetup');
+    showError('setupError', options.source === 'analysis' ? 'A análise não trouxe descrição suficiente da vaga. Complete o campo para gerar perguntas melhores.' : 'Cole a descrição completa da vaga.');
+    return;
+  }
+  if (!cv || cv.length < 50) {
+    showScreen('screenSetup');
+    showError('setupError', options.source === 'analysis' ? 'A análise não trouxe dados suficientes do currículo. Complete o campo para gerar perguntas melhores.' : 'Cole o conteúdo do seu currículo.');
+    return;
+  }
 
   _jobText = job; _cvText = cv;
   showScreen('screenLoading');
