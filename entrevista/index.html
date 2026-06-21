@@ -314,12 +314,7 @@ var _audioStream = null;
 var _audioTimer = null;
 var _audioStartedAt = 0;
 var _audioMimeType = '';
-var _speechRecognition = null;
-var _speechTranscript = '';
-var _speechFinalTranscript = '';
-var _speechSupported = false;
 var _audioMode = '';
-var _speechEndTimer = null;
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 (async function() {
@@ -660,89 +655,8 @@ function fillAnswerFromTranscript(text) {
   return true;
 }
 
-function startSpeechRecognition() {
-  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  _speechTranscript = '';
-  _speechFinalTranscript = '';
-  _speechSupported = !!SpeechRecognition;
-  if (!SpeechRecognition) return false;
-
-  try {
-    _speechRecognition = new SpeechRecognition();
-    _speechRecognition.lang = 'pt-BR';
-    _speechRecognition.continuous = true;
-    _speechRecognition.interimResults = true;
-    _speechRecognition.onresult = function(event) {
-      var finalText = '';
-      var interimText = '';
-      for (var i = 0; i < event.results.length; i++) {
-        var piece = event.results[i][0] && event.results[i][0].transcript ? event.results[i][0].transcript : '';
-        if (event.results[i].isFinal) finalText += piece + ' ';
-        else interimText += piece + ' ';
-      }
-      _speechFinalTranscript = finalText.trim();
-      _speechTranscript = (finalText + ' ' + interimText).trim();
-      var input = document.getElementById('answerInput');
-      if (input && _speechTranscript) {
-        input.value = _speechTranscript;
-        updateCharHint();
-      }
-    };
-    _speechRecognition.onerror = function(event) {
-      var code = event && event.error ? event.error : '';
-      if (code === 'no-speech') setAudioStatus('Ainda não captei fala. Continue falando ou tente novamente mais perto do microfone.', 'err');
-      else if (code === 'not-allowed' || code === 'service-not-allowed') setAudioStatus('Permissão do microfone bloqueada no navegador.', 'err');
-    };
-    _speechRecognition.onend = function() {
-      if (_audioMode === 'speech-ending') completeNativeSpeechAnswer();
-    };
-    _speechRecognition.start();
-    return true;
-  } catch(e) {
-    _speechRecognition = null;
-    return false;
-  }
-}
-
-function supportsSpeechRecognition() {
-  return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
-}
-
-function finishNativeSpeechAnswer() {
-  if (_audioTimer) { clearInterval(_audioTimer); _audioTimer = null; }
-  var recBtn = document.getElementById('audioRecordBtn');
-  var stopBtn = document.getElementById('audioStopBtn');
-  if (stopBtn) stopBtn.style.display = 'none';
-  setAudioStatus('Finalizando transcrição...');
-  _audioMode = 'speech-ending';
-  if (_speechEndTimer) clearTimeout(_speechEndTimer);
-  _speechEndTimer = setTimeout(completeNativeSpeechAnswer, 1600);
-  stopSpeechRecognition();
-}
-
-function completeNativeSpeechAnswer() {
-  if (_speechEndTimer) { clearTimeout(_speechEndTimer); _speechEndTimer = null; }
-  var recBtn = document.getElementById('audioRecordBtn');
-  if (recBtn) { recBtn.style.display = ''; recBtn.disabled = false; recBtn.textContent = 'Gravar novamente'; }
-  var text = (_speechFinalTranscript || _speechTranscript || '').trim();
-  if (!fillAnswerFromTranscript(text)) {
-    setAudioStatus('Não consegui captar sua fala. Tente gravar de novo falando mais perto do microfone, ou responda por texto.', 'err');
-  }
-  _audioMode = '';
-}
-
-function stopSpeechRecognition() {
-  if (!_speechRecognition) return;
-  try { _speechRecognition.stop(); } catch(e) {}
-  _speechRecognition = null;
-}
-
 function resetAudioRecorder(silent) {
   if (_audioTimer) { clearInterval(_audioTimer); _audioTimer = null; }
-  if (_speechEndTimer) { clearTimeout(_speechEndTimer); _speechEndTimer = null; }
-  stopSpeechRecognition();
-  _speechTranscript = '';
-  _speechFinalTranscript = '';
   if (_audioStream) {
     _audioStream.getTracks().forEach(function(track){ track.stop(); });
     _audioStream = null;
@@ -766,21 +680,6 @@ async function startAudioAnswer() {
 
   try {
     setAudioStatus('Solicitando acesso ao microfone...');
-    _speechTranscript = '';
-
-    if (supportsSpeechRecognition() && startSpeechRecognition()) {
-      _audioMode = 'speech';
-      _audioStartedAt = Date.now();
-      _audioTimer = setInterval(function() {
-        var seconds = Math.floor((Date.now() - _audioStartedAt) / 1000);
-        setAudioTimer(seconds);
-        if (seconds >= 120) stopAudioAnswer();
-      }, 250);
-      if (recBtn) recBtn.style.display = 'none';
-      if (stopBtn) { stopBtn.style.display = ''; stopBtn.disabled = false; stopBtn.textContent = 'Parar'; }
-      setAudioStatus('Ouvindo... fale sua resposta em voz alta. Clique em Parar ao finalizar.');
-      return;
-    }
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
       setAudioStatus('Seu navegador não suporta gravação de áudio. Use a resposta por texto.', 'err');
@@ -808,7 +707,7 @@ async function startAudioAnswer() {
     }, 250);
 
     if (recBtn) recBtn.style.display = 'none';
-    if (stopBtn) stopBtn.style.display = '';
+    if (stopBtn) { stopBtn.style.display = ''; stopBtn.disabled = false; stopBtn.textContent = 'Parar'; }
     setAudioStatus('Gravando... responda em até 2 minutos.');
   } catch(e) {
     resetAudioRecorder(true);
@@ -817,18 +716,10 @@ async function startAudioAnswer() {
 }
 
 function stopAudioAnswer() {
-  if (_audioMode === 'speech') {
-    var speechStopBtn = document.getElementById('audioStopBtn');
-    if (speechStopBtn) { speechStopBtn.disabled = true; speechStopBtn.textContent = 'Processando...'; }
-    finishNativeSpeechAnswer();
-    return;
-  }
-
   if (!_mediaRecorder || _mediaRecorder.state !== 'recording') return;
   var stopBtn = document.getElementById('audioStopBtn');
   if (stopBtn) { stopBtn.disabled = true; stopBtn.textContent = 'Processando...'; }
-  setAudioStatus('Preparando transcrição...');
-  stopSpeechRecognition();
+  setAudioStatus('Preparando transcrição via IA...');
   _mediaRecorder.stop();
 }
 
