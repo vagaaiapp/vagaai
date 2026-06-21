@@ -1,11 +1,20 @@
 // /api/interview.js
-// Simulador de entrevista com IA — exclusivo plano Pro
-// action=generate: gera perguntas | action=evaluate: avalia resposta
+// Simulador de entrevista com IA. Requer plano Pro.
+// action=generate: gera perguntas | action=evaluate: avalia resposta | action=transcribe: transcreve audio
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '8mb'
+    }
+  }
+};
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
+const OPENAI_KEY = process.env.OPENAI_API_KEY;
 
 async function getUserFromToken(token) {
   try {
@@ -14,17 +23,22 @@ async function getUserFromToken(token) {
     });
     if (!res.ok) return null;
     return await res.json();
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
-// Rate limit por usuário (em memória) — limita custo de IA por conta Pro.
 const _userHits = new Map();
-const USER_LIMIT = 40;                 // máx 40 chamadas/hora (gera + avalia)
+const USER_LIMIT = 40;
 const USER_WINDOW_MS = 60 * 60 * 1000;
+
 function checkUserRateLimit(userId) {
   const now = Date.now();
   const entry = _userHits.get(userId) || { count: 0, resetAt: now + USER_WINDOW_MS };
-  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + USER_WINDOW_MS; }
+  if (now > entry.resetAt) {
+    entry.count = 0;
+    entry.resetAt = now + USER_WINDOW_MS;
+  }
   entry.count++;
   _userHits.set(userId, entry);
   return entry.count <= USER_LIMIT;
@@ -38,11 +52,12 @@ async function getUserPlan(userId) {
     const rows = await res.json();
     const sub = rows?.[0];
     if (!sub) return 'free';
-    // active + trialing = paid features; past_due = grace period (still allow)
     const paidStatuses = ['active', 'trialing', 'past_due'];
     if (!paidStatuses.includes(sub.status)) return 'free';
     return sub.plan || 'free';
-  } catch { return 'free'; }
+  } catch {
+    return 'free';
+  }
 }
 
 async function callClaude(prompt, maxTokens = 2000) {
@@ -65,47 +80,48 @@ async function callClaude(prompt, maxTokens = 2000) {
   return data.content?.[0]?.text || '';
 }
 
-// ── Gerar perguntas de entrevista ─────────────────────────────────────────────
+function cleanJsonText(text) {
+  return String(text || '').replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+}
+
 async function generateQuestions(job, cv) {
-  const prompt = `Você é um especialista em processos seletivos no Brasil. Analise a vaga e o currículo abaixo e gere 8 perguntas de entrevista personalizadas.
+  const prompt = `Voce e um especialista em processos seletivos no Brasil. Analise a vaga e o curriculo abaixo e gere 8 perguntas de entrevista personalizadas.
 
 VAGA:
 ${job.slice(0, 3000)}
 
-CURRÍCULO:
+CURRICULO:
 ${cv.slice(0, 3000)}
 
 Gere exatamente 8 perguntas no seguinte formato JSON:
 {
-  "empresa": "nome da empresa se identificável, senão null",
-  "cargo": "título do cargo",
+  "empresa": "nome da empresa se identificavel, senao null",
+  "cargo": "titulo do cargo",
   "perguntas": [
     {
       "id": 1,
-      "categoria": "Comportamental|Técnica|Situacional|Motivacional",
+      "categoria": "Comportamental|Tecnica|Situacional|Motivacional",
       "pergunta": "texto da pergunta",
       "dica": "o que o entrevistador quer avaliar com essa pergunta (1 frase curta)",
-      "nivel": "fácil|médio|difícil"
+      "nivel": "facil|medio|dificil"
     }
   ]
 }
 
 Misture os tipos:
-- 2-3 perguntas comportamentais (baseadas no CV)
-- 2-3 perguntas técnicas (baseadas nos requisitos da vaga)
-- 1-2 situacionais (cenários hipotéticos da vaga)
-- 1 motivacional (por que essa empresa/vaga)
+- 2-3 perguntas comportamentais baseadas no CV
+- 2-3 perguntas tecnicas baseadas nos requisitos da vaga
+- 1-2 situacionais com cenarios hipoteticos da vaga
+- 1 motivacional sobre a empresa ou vaga
 
 Responda APENAS com o JSON, sem markdown.`;
 
   const text = await callClaude(prompt, 2000);
-  const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-  return JSON.parse(clean);
+  return JSON.parse(cleanJsonText(text));
 }
 
-// ── Avaliar resposta ──────────────────────────────────────────────────────────
 async function evaluateAnswer(question, answer, job, cv) {
-  const prompt = `Você é um recrutador sênior experiente no mercado brasileiro. Avalie a resposta do candidato para a pergunta de entrevista.
+  const prompt = `Voce e um recrutador senior experiente no mercado brasileiro. Avalie a resposta do candidato para a pergunta de entrevista.
 
 CONTEXTO DA VAGA:
 ${job.slice(0, 1500)}
@@ -115,24 +131,74 @@ PERGUNTA: "${question}"
 RESPOSTA DO CANDIDATO:
 "${answer}"
 
-Avalie e retorne APENAS este JSON (sem markdown):
+Avalie e retorne APENAS este JSON, sem markdown:
 {
-  "nota": <número de 1 a 5>,
-  "resumo": "<avaliação em 1 frase — direto, honesto, construtivo>",
+  "nota": <numero de 1 a 5>,
+  "resumo": "<avaliacao em 1 frase, direta, honesta e construtiva>",
   "pontos_fortes": ["<ponto forte 1>", "<ponto forte 2>"],
   "melhorar": ["<o que melhorar 1>", "<o que melhorar 2>"],
-  "resposta_modelo": "<como o candidato ideal responderia — 2-3 frases>",
-  "dica_final": "<1 dica prática e específica para melhorar essa resposta>"
+  "resposta_modelo": "<como o candidato ideal responderia, em 2-3 frases>",
+  "dica_final": "<1 dica pratica e especifica para melhorar essa resposta>"
 }
 
-Seja direto e honesto. Nota 5 = resposta excelente, 3 = aceitável mas pode melhorar, 1 = resposta fraca.`;
+Seja direto e honesto. Nota 5 = resposta excelente, 3 = aceitavel mas pode melhorar, 1 = resposta fraca.`;
 
   const text = await callClaude(prompt, 1500);
-  const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-  return JSON.parse(clean);
+  return JSON.parse(cleanJsonText(text));
 }
 
-// ── Handler ───────────────────────────────────────────────────────────────────
+function decodeBase64Audio(audioBase64) {
+  const clean = String(audioBase64 || '').replace(/^data:audio\/[a-z0-9.+-]+;base64,/i, '');
+  if (!clean) return null;
+  return Buffer.from(clean, 'base64');
+}
+
+async function transcribeAudio(audioBase64, mimeType) {
+  if (!OPENAI_KEY) {
+    const err = new Error('OPENAI_API_KEY not configured');
+    err.statusCode = 500;
+    err.publicMessage = 'OPENAI_API_KEY nao configurada';
+    throw err;
+  }
+
+  const buffer = decodeBase64Audio(audioBase64);
+  if (!buffer || buffer.length < 1000) {
+    const err = new Error('Audio invalid');
+    err.statusCode = 400;
+    err.publicMessage = 'Audio invalido ou vazio';
+    throw err;
+  }
+  if (buffer.length > 7 * 1024 * 1024) {
+    const err = new Error('Audio too large');
+    err.statusCode = 413;
+    err.publicMessage = 'Audio muito grande. Grave uma resposta mais curta.';
+    throw err;
+  }
+
+  const type = /^audio\//.test(mimeType || '') ? mimeType : 'audio/webm';
+  const ext = type.includes('mp4') ? 'mp4' : type.includes('mpeg') || type.includes('mp3') ? 'mp3' : type.includes('ogg') ? 'ogg' : 'webm';
+  const form = new FormData();
+  form.append('model', process.env.OPENAI_TRANSCRIBE_MODEL || 'whisper-1');
+  form.append('language', 'pt');
+  form.append('response_format', 'json');
+  form.append('file', new Blob([buffer], { type }), `resposta.${ext}`);
+
+  const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${OPENAI_KEY}` },
+    body: form
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    console.error('interview transcribe OpenAI error:', response.status, data);
+    const err = new Error('OpenAI transcription failed');
+    err.statusCode = 502;
+    err.publicMessage = 'Falha ao transcrever o audio';
+    throw err;
+  }
+  return (data.text || '').trim();
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -142,12 +208,11 @@ export default async function handler(req, res) {
   const user = await getUserFromToken(token);
   if (!user) return res.status(401).json({ error: 'Invalid token' });
 
-  // Verifica plano — Pro obrigatório para simulador
   const plan = await getUserPlan(user.id);
   if (plan !== 'pro') {
     return res.status(403).json({
       error: 'plano_insuficiente',
-      message: 'O Simulador de Entrevista é exclusivo do plano Pro.',
+      message: 'O Simulador de Entrevista e exclusivo do plano Pro.',
       plan
     });
   }
@@ -156,28 +221,33 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Limite de uso atingido. Tente novamente mais tarde.' });
   }
 
-  if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
-
-  const { action, job, cv, question, answer } = req.body || {};
+  const { action, job, cv, question, answer, audioBase64, mimeType } = req.body || {};
 
   try {
     if (action === 'generate') {
+      if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
       if (!job || job.length < 50) return res.status(400).json({ error: 'Vaga muito curta' });
       if (!cv || cv.length < 50) return res.status(400).json({ error: 'CV muito curto' });
       const result = await generateQuestions(job, cv);
       return res.status(200).json(result);
+    }
 
-    } else if (action === 'evaluate') {
-      if (!question) return res.status(400).json({ error: 'Pergunta obrigatória' });
+    if (action === 'evaluate') {
+      if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
+      if (!question) return res.status(400).json({ error: 'Pergunta obrigatoria' });
       if (!answer || answer.trim().length < 10) return res.status(400).json({ error: 'Resposta muito curta' });
       const result = await evaluateAnswer(question, answer, job || '', cv || '');
       return res.status(200).json(result);
-
-    } else {
-      return res.status(400).json({ error: 'action inválida. Use generate ou evaluate' });
     }
+
+    if (action === 'transcribe') {
+      const text = await transcribeAudio(audioBase64, mimeType);
+      return res.status(200).json({ text });
+    }
+
+    return res.status(400).json({ error: 'action invalida. Use generate, evaluate ou transcribe' });
   } catch (err) {
     console.error('interview.js error:', err);
-    return res.status(500).json({ error: 'Erro interno. Tente novamente.' });
+    return res.status(err.statusCode || 500).json({ error: err.publicMessage || 'Erro interno. Tente novamente.' });
   }
 }

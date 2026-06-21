@@ -735,10 +735,10 @@ async function transcribeRecordedAudio() {
     if (blob.size < 1000) throw new Error('Áudio muito curto');
     setAudioStatus('Transcrevendo sua resposta...');
     var audioBase64 = await blobToBase64(blob);
-    var res = await fetch('/api/transcribe', {
+    var res = await fetch('/api/interview', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _session.access_token },
-      body: JSON.stringify({ audioBase64: audioBase64, mimeType: blob.type })
+      body: JSON.stringify({ action: 'transcribe', audioBase64: audioBase64, mimeType: blob.type })
     });
     var data = await res.json();
     if (res.status === 403) { showScreen('screenGate'); return; }
