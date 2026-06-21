@@ -317,6 +317,7 @@ var _audioMimeType = '';
 var _speechRecognition = null;
 var _speechTranscript = '';
 var _speechSupported = false;
+var _audioMode = '';
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 (async function() {
@@ -687,6 +688,26 @@ function startSpeechRecognition() {
   }
 }
 
+function supportsSpeechRecognition() {
+  return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+}
+
+function finishNativeSpeechAnswer() {
+  if (_audioTimer) { clearInterval(_audioTimer); _audioTimer = null; }
+  stopSpeechRecognition();
+  var recBtn = document.getElementById('audioRecordBtn');
+  var stopBtn = document.getElementById('audioStopBtn');
+  if (stopBtn) stopBtn.style.display = 'none';
+  setAudioStatus('Finalizando transcrição...');
+  setTimeout(function() {
+    if (recBtn) { recBtn.style.display = ''; recBtn.disabled = false; recBtn.textContent = 'Gravar novamente'; }
+    if (!fillAnswerFromTranscript(_speechTranscript)) {
+      setAudioStatus('Não consegui captar sua fala. Tente gravar de novo falando mais perto do microfone, ou responda por texto.', 'err');
+    }
+    _audioMode = '';
+  }, 450);
+}
+
 function stopSpeechRecognition() {
   if (!_speechRecognition) return;
   try { _speechRecognition.stop(); } catch(e) {}
@@ -705,6 +726,7 @@ function resetAudioRecorder(silent) {
   _audioChunks = [];
   _audioStartedAt = 0;
   _audioMimeType = '';
+  _audioMode = '';
   setAudioTimer(0);
   var recBtn = document.getElementById('audioRecordBtn');
   var stopBtn = document.getElementById('audioStopBtn');
@@ -716,17 +738,34 @@ function resetAudioRecorder(silent) {
 async function startAudioAnswer() {
   var recBtn = document.getElementById('audioRecordBtn');
   var stopBtn = document.getElementById('audioStopBtn');
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
-    setAudioStatus('Seu navegador não suporta gravação de áudio. Use a resposta por texto.', 'err');
-    return;
-  }
 
   try {
     setAudioStatus('Solicitando acesso ao microfone...');
+    _speechTranscript = '';
+
+    if (supportsSpeechRecognition() && startSpeechRecognition()) {
+      _audioMode = 'speech';
+      _audioStartedAt = Date.now();
+      _audioTimer = setInterval(function() {
+        var seconds = Math.floor((Date.now() - _audioStartedAt) / 1000);
+        setAudioTimer(seconds);
+        if (seconds >= 120) stopAudioAnswer();
+      }, 250);
+      if (recBtn) recBtn.style.display = 'none';
+      if (stopBtn) { stopBtn.style.display = ''; stopBtn.disabled = false; stopBtn.textContent = 'Parar'; }
+      setAudioStatus('Ouvindo... fale sua resposta em voz alta. Clique em Parar ao finalizar.');
+      return;
+    }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+      setAudioStatus('Seu navegador não suporta gravação de áudio. Use a resposta por texto.', 'err');
+      return;
+    }
+
+    _audioMode = 'record';
     _audioMimeType = pickAudioMimeType();
     _audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     _audioChunks = [];
-    startSpeechRecognition();
     _mediaRecorder = _audioMimeType ? new MediaRecorder(_audioStream, { mimeType: _audioMimeType }) : new MediaRecorder(_audioStream);
     _audioMimeType = _mediaRecorder.mimeType || _audioMimeType || 'audio/webm';
 
@@ -753,6 +792,13 @@ async function startAudioAnswer() {
 }
 
 function stopAudioAnswer() {
+  if (_audioMode === 'speech') {
+    var speechStopBtn = document.getElementById('audioStopBtn');
+    if (speechStopBtn) { speechStopBtn.disabled = true; speechStopBtn.textContent = 'Processando...'; }
+    finishNativeSpeechAnswer();
+    return;
+  }
+
   if (!_mediaRecorder || _mediaRecorder.state !== 'recording') return;
   var stopBtn = document.getElementById('audioStopBtn');
   if (stopBtn) { stopBtn.disabled = true; stopBtn.textContent = 'Processando...'; }
