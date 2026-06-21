@@ -882,6 +882,93 @@ body {
 
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 28px; }
 
+/* ── Entrevistas ─────────────────────────────────────────────── */
+.interview-page { display:flex; flex-direction:column; gap:20px; }
+.interview-hero {
+  background:linear-gradient(125deg,#07170f 0%,#0f3b25 60%,#155a37 100%);
+  border-radius:var(--r); padding:42px 48px; color:#fff;
+  display:grid; grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);
+  gap:40px; align-items:center; position:relative; overflow:hidden;
+  box-shadow:0 18px 45px rgba(7,32,19,.18);
+}
+.interview-hero::before {
+  content:''; position:absolute; right:-120px; top:-130px; width:360px; height:360px;
+  border-radius:50%; background:radial-gradient(circle,rgba(78,206,145,.24),transparent 68%);
+}
+.interview-hero-copy, .interview-preview { position:relative; z-index:1; }
+.interview-eyebrow {
+  display:inline-flex; align-items:center; gap:7px; font-size:11px; font-weight:800;
+  letter-spacing:.09em; text-transform:uppercase; color:#7ff0b7;
+  margin-bottom:14px;
+}
+.interview-eyebrow::before { content:''; width:7px; height:7px; border-radius:50%; background:#4ece91; }
+.interview-title {
+  font-family:Lora,Georgia,serif; font-size:34px; line-height:1.12; letter-spacing:-.5px;
+  margin-bottom:12px; max-width:520px;
+}
+.interview-sub { font-size:14px; line-height:1.75; color:rgba(230,247,236,.72); max-width:560px; margin-bottom:28px; }
+.interview-metrics { display:flex; gap:28px; flex-wrap:wrap; }
+.interview-metrics div { min-width:92px; }
+.interview-metrics strong { display:block; font-size:30px; line-height:1; font-weight:800; color:#fff; letter-spacing:-1px; }
+.interview-metrics span { display:block; margin-top:5px; font-size:11.5px; color:rgba(230,247,236,.58); }
+.interview-preview {
+  background:rgba(255,255,255,.96); color:var(--t1); border-radius:16px;
+  padding:22px 24px; box-shadow:0 24px 70px rgba(0,0,0,.28);
+}
+[data-theme="dark"] .interview-preview { background:rgba(13,22,16,.96); border:1px solid rgba(78,206,145,.16); }
+.int-browser-dots { display:flex; align-items:center; gap:6px; margin-bottom:18px; }
+.int-browser-dots span { width:8px; height:8px; border-radius:50%; display:block; }
+.int-browser-dots span:nth-child(1){background:#ff5f57}.int-browser-dots span:nth-child(2){background:#febc2e}.int-browser-dots span:nth-child(3){background:#28c840}
+.int-browser-dots em { font-style:normal; font-size:11px; color:var(--t3); margin-left:6px; font-weight:600; }
+.int-preview-question { font-family:Lora,Georgia,serif; font-size:18px; font-weight:700; line-height:1.38; margin-bottom:18px; }
+.int-preview-row { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 0; border-top:1px solid var(--border); }
+.int-preview-row span { font-size:11px; color:var(--t3); text-transform:uppercase; letter-spacing:.05em; font-weight:700; }
+.int-preview-row strong { font-size:12.5px; color:var(--t1); text-align:right; }
+.int-preview-pill { margin-top:14px; background:var(--s-grn-bg); border:1px solid rgba(26,122,74,.16); color:var(--gb-emerald); padding:9px 12px; border-radius:10px; font-size:12px; font-weight:700; text-align:center; }
+.interview-gate {
+  background:#fffbf2; border:1px solid rgba(196,125,10,.22); border-radius:var(--r);
+  padding:22px 24px; display:flex; align-items:center; justify-content:space-between; gap:20px;
+  box-shadow:var(--sh-card);
+}
+[data-theme="dark"] .interview-gate { background:rgba(196,125,10,.1); }
+.interview-gate-kicker { font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#9a640d; margin-bottom:6px; }
+.interview-gate h2 { font-size:17px; margin-bottom:5px; }
+.interview-gate p { color:var(--t2); font-size:13px; line-height:1.55; max-width:680px; }
+.interview-gate-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+.int-secondary-btn {
+  border:1px solid var(--border); background:var(--bg-card); color:var(--t2); border-radius:var(--r-sm);
+  font-size:13px; font-weight:700; padding:10px 16px; font-family:inherit; cursor:pointer;
+}
+.int-secondary-btn:hover { border-color:var(--gb-emerald); color:var(--gb-emerald); }
+.interview-list-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); overflow:hidden; }
+.interview-list-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; padding:20px 24px 16px; border-bottom:1px solid var(--border); }
+.interview-list-head h3 { font-size:16px; margin-bottom:4px; }
+.interview-list-head p { font-size:12px; color:var(--t3); }
+.interview-filters { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+.int-filter { border:1px solid var(--border); background:var(--bg-card); color:var(--t2); border-radius:20px; font-size:11.5px; font-weight:700; padding:6px 12px; cursor:pointer; font-family:inherit; }
+.int-filter.active { background:var(--gb-emerald); border-color:var(--gb-emerald); color:#fff; }
+.int-row { display:grid; grid-template-columns:54px minmax(0,1fr) 150px 150px; gap:16px; align-items:center; padding:18px 24px; border-bottom:1px solid var(--border-soft); }
+.int-row:last-child { border-bottom:none; }
+.int-score { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; }
+.int-job { min-width:0; }
+.int-cargo { font-size:14px; font-weight:800; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.int-empresa { font-size:12px; color:var(--t3); margin-top:2px; }
+.int-meta-tags { display:flex; gap:6px; flex-wrap:wrap; margin-top:9px; }
+.int-tag { font-size:11px; font-weight:700; padding:3px 8px; border-radius:20px; background:var(--bg-sub); color:var(--t2); }
+.int-tag.hot { background:var(--s-amb-bg); color:var(--s-amb); }
+.int-tag.cv { background:var(--s-grn-bg); color:var(--gb-emerald); }
+.int-status { font-size:12px; color:var(--t2); }
+.int-status strong { display:block; color:var(--t1); font-size:12.5px; margin-bottom:2px; }
+.int-actions { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+.int-train-btn {
+  border:none; background:var(--gb-emerald); color:#fff; border-radius:9px; padding:10px 14px;
+  font-size:12px; font-weight:800; cursor:pointer; font-family:inherit; white-space:nowrap;
+}
+.int-train-btn:hover { background:var(--gb-mid); box-shadow:var(--sh-btn); }
+.int-train-btn.locked { background:var(--bg-sub); color:var(--t2); border:1px solid var(--border); box-shadow:none; }
+.int-empty { padding:46px 24px; text-align:center; color:var(--t3); }
+.int-empty strong { display:block; color:var(--t1); font-size:15px; margin-bottom:6px; }
+
 /* Modals */
 .modal-overlay {
   position: fixed; inset: 0;
@@ -1197,6 +1284,9 @@ body {
   .psa-grid { grid-template-columns: repeat(2, 1fr); }
   .opp-cols { grid-template-columns: 1fr; }
   .funil-card { display: none; }
+  .interview-hero { grid-template-columns:1fr; padding:34px 32px; }
+  .int-row { grid-template-columns:54px minmax(0,1fr); }
+  .int-status, .int-actions { grid-column:2; justify-content:flex-start; }
   .pba-card { grid-template-columns: 1fr; gap: 20px; }
   .pba-right { align-self: auto; }
   .content { padding: 28px 24px 48px; }
@@ -1212,6 +1302,11 @@ body {
   .pg-title { font-size: 27px; }
   .al-title { font-size: 27px; }
   .cand-title { font-size: 27px; }
+  .interview-title { font-size:29px; }
+  .interview-hero { padding:28px 22px; }
+  .interview-list-head, .interview-gate { flex-direction:column; align-items:stretch; }
+  .interview-gate-actions { justify-content:flex-start; }
+  .int-row { padding:16px; gap:12px; }
   .pba-card { padding: 24px 20px; border-radius: 14px; }
   .opp-item-action { display: none; }
   .funil-card { display: none; }
@@ -1758,6 +1853,14 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       </svg>
       <span>Candidaturas</span>
     </button>
+    <button class="sb-btn" data-tab="entrevistas" onclick="switchDashTab('entrevistas')" aria-label="Entrevistas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="22"/>
+      </svg>
+      <span>Entrevistas</span>
+    </button>
     <button class="sb-btn" data-tab="alertas" onclick="switchDashTab('alertas')" aria-label="Alertas">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
@@ -2053,6 +2156,60 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         <div id="candCalendarBoard"></div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- ══ ENTREVISTAS ══ -->
+  <div id="tab-entrevistas" class="tab" style="display:none">
+    <div class="interview-page">
+      <div class="interview-hero">
+        <div class="interview-hero-copy">
+          <div class="interview-eyebrow">Simulador com IA</div>
+          <h1 class="interview-title">Treine antes da entrevista real.</h1>
+          <p class="interview-sub">Toda vaga analisada com CV otimizado aparece aqui pronta para gerar perguntas personalizadas. Você treina com base no cargo, empresa, score e pontos fracos da análise.</p>
+          <div class="interview-metrics">
+            <div><strong id="intReadyCount">—</strong><span>prontas para treino</span></div>
+            <div><strong id="intPriorityCount">—</strong><span>em entrevista</span></div>
+            <div><strong id="intCvCount">—</strong><span>com CV otimizado</span></div>
+          </div>
+        </div>
+        <div class="interview-preview">
+          <div class="int-browser-dots"><span></span><span></span><span></span><em>Treino VagaAI</em></div>
+          <div class="int-preview-question">“Conte sobre uma experiência diretamente ligada aos requisitos desta vaga.”</div>
+          <div class="int-preview-row"><span>Contexto da vaga</span><strong id="intPreviewJob">Carregando…</strong></div>
+          <div class="int-preview-row"><span>Feedback esperado</span><strong>Nota, melhoria e resposta modelo</strong></div>
+          <div class="int-preview-pill">Perguntas geradas com base no seu CV + análise</div>
+        </div>
+      </div>
+
+      <div class="interview-gate" id="interviewUpsell" style="display:none">
+        <div>
+          <div class="interview-gate-kicker">Recurso Pro</div>
+          <h2>Você já tem vagas prontas para treinar.</h2>
+          <p>Desbloqueie o simulador para gerar perguntas personalizadas, avaliar suas respostas e chegar mais preparado na entrevista.</p>
+        </div>
+        <div class="interview-gate-actions">
+          <button class="btn-cta" onclick="switchDashTab('plano')">Desbloquear simulador</button>
+          <button class="int-secondary-btn" onclick="window.location.href='/app'">Analisar nova vaga</button>
+        </div>
+      </div>
+
+      <div class="interview-list-card">
+        <div class="interview-list-head">
+          <div>
+            <h3>Vagas prontas para simular</h3>
+            <p>Priorize entrevistas marcadas e oportunidades com maior potencial.</p>
+          </div>
+          <div class="interview-filters">
+            <button class="int-filter active" data-filter="todas" onclick="setInterviewFilter('todas')">Todas</button>
+            <button class="int-filter" data-filter="entrevista" onclick="setInterviewFilter('entrevista')">Em entrevista</button>
+            <button class="int-filter" data-filter="cv" onclick="setInterviewFilter('cv')">Com CV</button>
+          </div>
+        </div>
+        <div id="interviewListBody">
+          <div style="padding:36px;text-align:center;color:var(--t3);font-size:13px">Carregando…</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2376,6 +2533,7 @@ var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 var currentSession = null, currentUserId = null;
 var _kTracked = [];
 var _alertKeywords = [];
+var _interviewFilter = 'todas';
 
 async function init() {
   try {
@@ -2396,7 +2554,7 @@ async function init() {
     window._perfilData = { email, displayName };
     window._userName = displayName;
 
-    await Promise.all([loadAnalyses(), loadKanban(), loadAlerts()]);
+    await Promise.all([loadSubscriptionData(), loadAnalyses(), loadKanban(), loadAlerts()]);
   } catch(e) {
     console.error('init error:', e);
     var loadEl = document.getElementById('pageLoading');
@@ -2974,6 +3132,7 @@ async function loadAnalyses() {
       window._lastAnalysesData = data;
       buildPainelV2(data, _kTracked || []);
       renderVagasPage();
+      renderInterviewHub();
     }
   } catch(e) { console.error('loadAnalyses error:', e); }
 }
@@ -3078,6 +3237,7 @@ async function loadKanban() {
 
     renderTrackedJobs();
     if (window._lastAnalysesData) buildPainelV2(window._lastAnalysesData, _kTracked || []);
+    renderInterviewHub();
   } catch(e) {
     console.error('loadKanban error:', e);
   }
@@ -3226,6 +3386,94 @@ function calcCandMetrics(items) {
     pendentes: items.filter(function(i){ return calcNextAction(i).urgency >= 3; }).length,
     total: items.length
   };
+}
+
+function canUseInterviewSimulator() {
+  var sub = window._subscriptionData || {};
+  var ent = sub.entitlements || {};
+  return sub.plan === 'pro' || !!ent.simulador_entrevista;
+}
+
+function setInterviewFilter(filter) {
+  _interviewFilter = filter || 'todas';
+  document.querySelectorAll('.int-filter').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.filter === _interviewFilter);
+  });
+  renderInterviewHub();
+}
+
+function getInterviewItems() {
+  return mergeApplications().filter(function(item) {
+    return !!item.analysisData;
+  }).sort(function(a, b) {
+    var ap = a.status === 'entrevista' ? 1 : 0;
+    var bp = b.status === 'entrevista' ? 1 : 0;
+    if (ap !== bp) return bp - ap;
+    return (b.score || 0) - (a.score || 0);
+  });
+}
+
+function renderInterviewHub() {
+  var body = document.getElementById('interviewListBody');
+  if (!body) return;
+  var all = getInterviewItems();
+  var hasAccess = canUseInterviewSimulator();
+  var withCv = all.filter(function(i) { return i.result && i.result.cv_otimizado; });
+  var priorities = all.filter(function(i) { return i.status === 'entrevista'; });
+
+  var readyEl = document.getElementById('intReadyCount');
+  var prioEl = document.getElementById('intPriorityCount');
+  var cvEl = document.getElementById('intCvCount');
+  if (readyEl) readyEl.textContent = all.length;
+  if (prioEl) prioEl.textContent = priorities.length;
+  if (cvEl) cvEl.textContent = withCv.length;
+
+  var preview = document.getElementById('intPreviewJob');
+  if (preview) {
+    var first = priorities[0] || all[0];
+    preview.textContent = first ? first.cargo + (first.empresa ? ' · ' + first.empresa : '') : 'Analise uma vaga para começar';
+  }
+
+  var upsell = document.getElementById('interviewUpsell');
+  if (upsell) upsell.style.display = hasAccess ? 'none' : 'flex';
+
+  var filtered = all.filter(function(item) {
+    if (_interviewFilter === 'entrevista') return item.status === 'entrevista';
+    if (_interviewFilter === 'cv') return item.result && item.result.cv_otimizado;
+    return true;
+  });
+
+  if (!filtered.length) {
+    body.innerHTML = '<div class="int-empty"><strong>Nenhuma vaga pronta para treino ainda.</strong><span>Analise uma vaga com seu currículo para gerar perguntas personalizadas de entrevista.</span><div style="margin-top:16px"><button class="btn-cta" style="display:inline-flex" onclick="window.location.href=\'/app\'">Analisar vaga</button></div></div>';
+    return;
+  }
+
+  body.innerHTML = filtered.map(function(item) {
+    var score = item.score || 0;
+    var sbg = score >= 70 ? 'var(--s-grn-bg)' : score >= 40 ? 'var(--s-amb-bg)' : 'var(--s-red-bg)';
+    var sclr = score >= 70 ? 'var(--s-grn)' : score >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
+    var statusLabel = STATUS_LABELS[item.status] || 'Analisada';
+    var kwMissing = Array.isArray(item.result && item.result.keywords_faltando) ? item.result.keywords_faltando.length : 0;
+    var hasCv = item.result && item.result.cv_otimizado;
+    var url = '/entrevista?analysis_id=' + encodeURIComponent(item.analysisData.id);
+    var action = hasAccess
+      ? '<button class="int-train-btn" onclick="window.location.href=\'' + escAttr(url) + '\'">Treinar agora →</button>'
+      : '<button class="int-train-btn locked" onclick="switchDashTab(\'plano\')">Desbloquear</button>';
+    return '<div class="int-row">' +
+      '<div class="int-score" style="background:' + sbg + ';color:' + sclr + '">' + score + '%</div>' +
+      '<div class="int-job">' +
+        '<div class="int-cargo">' + escHtml(item.cargo) + '</div>' +
+        '<div class="int-empresa">' + escHtml(item.empresa || 'Empresa') + '</div>' +
+        '<div class="int-meta-tags">' +
+          '<span class="int-tag ' + (item.status === 'entrevista' ? 'hot' : '') + '">' + escHtml(statusLabel) + '</span>' +
+          (hasCv ? '<span class="int-tag cv">CV otimizado</span>' : '<span class="int-tag">Sem CV otimizado</span>') +
+          (kwMissing ? '<span class="int-tag">' + kwMissing + ' gaps para defender</span>' : '<span class="int-tag cv">Boa aderência</span>') +
+        '</div>' +
+      '</div>' +
+      '<div class="int-status"><strong>' + (item.status === 'entrevista' ? 'Alta prioridade' : 'Pronta para treino') + '</strong><span>' + (item.status === 'entrevista' ? 'Use antes da conversa real' : 'Perguntas baseadas na análise') + '</span></div>' +
+      '<div class="int-actions">' + action + '</div>' +
+    '</div>';
+  }).join('');
 }
 
 function filterApplications(items) {
@@ -5230,7 +5478,7 @@ async function saveTracker(btn) {
 }
 
 function switchDashTab(tab) {
-  ['painel','vagas','alertas','plano'].forEach(function(t) {
+  ['painel','vagas','entrevistas','alertas','plano'].forEach(function(t) {
     var el = document.getElementById('tab-'+t);
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
@@ -5239,13 +5487,14 @@ function switchDashTab(tab) {
     el.classList.toggle('active', isActive);
     el.setAttribute('aria-current', isActive ? 'page' : 'false');
   });
-  var labels = { painel:'Visão geral', vagas:'Candidaturas', alertas:'Alertas', plano:'Conta e Plano' };
-  var subs   = { painel:'Sua busca de emprego', vagas:'Rastreamento de candidaturas', alertas:'Configurações de alertas', plano:'Assinatura e conta' };
+  var labels = { painel:'Visão geral', vagas:'Candidaturas', entrevistas:'Entrevistas', alertas:'Alertas', plano:'Conta e Plano' };
+  var subs   = { painel:'Sua busca de emprego', vagas:'Rastreamento de candidaturas', entrevistas:'Simulação e preparo', alertas:'Configurações de alertas', plano:'Assinatura e conta' };
   var bcSec = document.getElementById('bc-sec');
   var bcSub = document.getElementById('bc-sub');
   if (bcSec) bcSec.textContent = labels[tab] || tab;
   if (bcSub) bcSub.textContent = subs[tab] || '';
   if (tab === 'plano') loadSubscriptionData();
+  if (tab === 'entrevistas') renderInterviewHub();
   try { history.replaceState(null, '', '#' + tab); } catch(e) {}
 }
 
@@ -5256,7 +5505,7 @@ function openRequestedDashboardTab() {
       window.location.hash.replace(/^#/, '');
   } catch (e) {}
 
-  if (['painel', 'vagas', 'alertas', 'plano'].indexOf(requestedTab) !== -1) {
+  if (['painel', 'vagas', 'entrevistas', 'alertas', 'plano'].indexOf(requestedTab) !== -1) {
     switchDashTab(requestedTab);
   }
 }
@@ -5410,6 +5659,7 @@ async function loadSubscriptionData() {
       }
     }
     renderPlanTiles(sub);
+    renderInterviewHub();
   } catch(e) {
     console.error('loadSubscriptionData error:', e);
   }
