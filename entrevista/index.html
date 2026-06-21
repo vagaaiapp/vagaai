@@ -314,6 +314,9 @@ var _audioStream = null;
 var _audioTimer = null;
 var _audioStartedAt = 0;
 var _audioMimeType = '';
+var _speechRecognition = null;
+var _speechTranscript = '';
+var _speechSupported = false;
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 (async function() {
@@ -642,8 +645,58 @@ function pickAudioMimeType() {
   return '';
 }
 
+function fillAnswerFromTranscript(text) {
+  var clean = String(text || '').trim();
+  if (!clean) return false;
+  var input = document.getElementById('answerInput');
+  if (!input) return false;
+  input.value = clean;
+  input.focus();
+  updateCharHint();
+  setAudioStatus('Transcrição pronta. Revise se quiser e clique em “Avaliar minha resposta”.', 'ok');
+  return true;
+}
+
+function startSpeechRecognition() {
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  _speechTranscript = '';
+  _speechSupported = !!SpeechRecognition;
+  if (!SpeechRecognition) return false;
+
+  try {
+    _speechRecognition = new SpeechRecognition();
+    _speechRecognition.lang = 'pt-BR';
+    _speechRecognition.continuous = true;
+    _speechRecognition.interimResults = true;
+    _speechRecognition.onresult = function(event) {
+      var finalText = '';
+      var interimText = '';
+      for (var i = 0; i < event.results.length; i++) {
+        var piece = event.results[i][0] && event.results[i][0].transcript ? event.results[i][0].transcript : '';
+        if (event.results[i].isFinal) finalText += piece + ' ';
+        else interimText += piece + ' ';
+      }
+      _speechTranscript = (finalText || interimText).trim();
+    };
+    _speechRecognition.onerror = function() {};
+    _speechRecognition.start();
+    return true;
+  } catch(e) {
+    _speechRecognition = null;
+    return false;
+  }
+}
+
+function stopSpeechRecognition() {
+  if (!_speechRecognition) return;
+  try { _speechRecognition.stop(); } catch(e) {}
+  _speechRecognition = null;
+}
+
 function resetAudioRecorder(silent) {
   if (_audioTimer) { clearInterval(_audioTimer); _audioTimer = null; }
+  stopSpeechRecognition();
+  _speechTranscript = '';
   if (_audioStream) {
     _audioStream.getTracks().forEach(function(track){ track.stop(); });
     _audioStream = null;
@@ -673,6 +726,7 @@ async function startAudioAnswer() {
     _audioMimeType = pickAudioMimeType();
     _audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     _audioChunks = [];
+    startSpeechRecognition();
     _mediaRecorder = _audioMimeType ? new MediaRecorder(_audioStream, { mimeType: _audioMimeType }) : new MediaRecorder(_audioStream);
     _audioMimeType = _mediaRecorder.mimeType || _audioMimeType || 'audio/webm';
 
@@ -703,6 +757,7 @@ function stopAudioAnswer() {
   var stopBtn = document.getElementById('audioStopBtn');
   if (stopBtn) { stopBtn.disabled = true; stopBtn.textContent = 'Processando...'; }
   setAudioStatus('Preparando transcrição...');
+  stopSpeechRecognition();
   _mediaRecorder.stop();
 }
 
@@ -733,6 +788,7 @@ async function transcribeRecordedAudio() {
   try {
     var blob = new Blob(_audioChunks, { type: _audioMimeType || 'audio/webm' });
     if (blob.size < 1000) throw new Error('Áudio muito curto');
+    if (_speechSupported && fillAnswerFromTranscript(_speechTranscript)) return;
     setAudioStatus('Transcrevendo sua resposta...');
     var audioBase64 = await blobToBase64(blob);
     var res = await fetch('/api/interview', {
