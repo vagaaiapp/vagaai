@@ -761,13 +761,9 @@ async function transcribeRecordedAudio() {
     if (res.status === 403) { showScreen('screenGate'); return; }
     if (!res.ok || data.error) throw new Error(data.error || 'Falha ao transcrever');
 
-    var input = document.getElementById('answerInput');
-    if (input) {
-      input.value = (data.text || '').trim();
-      input.focus();
-      updateCharHint();
+    if (!fillAnswerFromTranscript(data.text)) {
+      setAudioStatus('Transcrição retornou vazia. Grave novamente ou responda por texto.', 'err');
     }
-    setAudioStatus('Transcrição pronta. Revise se quiser e clique em "Avaliar minha resposta".', 'ok');
   } catch(e) {
     setAudioStatus(e.message === 'Áudio muito curto' ? 'A gravação ficou muito curta. Grave uma resposta um pouco maior.' : 'Não foi possível transcrever o áudio. Você ainda pode responder por texto.', 'err');
   } finally {
