@@ -29,6 +29,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
 nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between}
 [data-theme="dark"] nav{background:rgba(7,13,8,.9)}
 .nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-logo-img{height:38px;width:auto;display:block}
+.nav-logo-dark{display:none}
+[data-theme="dark"] .nav-logo-light{display:none}
+[data-theme="dark"] .nav-logo-dark{display:block}
 .nav-badge{font-size:11px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
 .nav-right{display:flex;align-items:center;gap:.75rem}
 .theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .2s}
@@ -156,7 +160,8 @@ textarea::placeholder{color:var(--muted)}
 
 <nav>
   <a href="/" class="nav-logo">
-    <img src="/logo.svg" alt="VagaAI" height="38" onerror="this.style.display='none'">
+    <img src="/logo-light.svg" alt="VagaAI" class="nav-logo-img nav-logo-light" onerror="this.style.display='none'">
+    <img src="/logo.svg" alt="VagaAI" class="nav-logo-img nav-logo-dark" onerror="this.style.display='none'">
     <span class="nav-badge">Entrevista</span>
   </a>
   <div class="nav-right">
