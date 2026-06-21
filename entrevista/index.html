@@ -711,17 +711,20 @@ function startAudioAnswer() {
 
     _speechRecognition.onerror = function(event) {
       var code = event && event.error ? event.error : '';
-      if (code === 'no-speech') return;
+      if (code === 'no-speech' || code === 'audio-capture') return; // onend vai reiniciar
       if (code === 'not-allowed' || code === 'service-not-allowed') {
         setAudioStatus('Permissão do microfone bloqueada no navegador.', 'err');
-      } else {
-        setAudioStatus('Erro na gravação. Tente novamente.', 'err');
+        resetAudioRecorder(true);
       }
-      resetAudioRecorder(true);
     };
 
     _speechRecognition.onend = function() {
-      _completeTranscription();
+      if (_audioMode === 'stopping') {
+        _completeTranscription();
+      } else if (_audioMode === 'record' && _speechRecognition) {
+        // reinicia automaticamente se parou por no-speech durante gravação
+        try { _speechRecognition.start(); } catch(e) {}
+      }
     };
 
     _speechRecognition.start();
