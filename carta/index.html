@@ -15,10 +15,33 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#0a0f0d;--surface:#111814;--surface2:#161d19;--border:rgba(255,255,255,0.07);--text:#e8ede9;--muted:#8a9e90;--green:#3ecf8e;--green-dim:rgba(62,207,142,0.12);--green-border:rgba(62,207,142,0.25);--red:#ff6b6b;--red-dim:rgba(255,107,107,0.12);--red-border:rgba(255,107,107,0.25);--yellow:#ffd166;--yellow-dim:rgba(255,209,102,0.12);--yellow-border:rgba(255,209,102,0.3)}
 [data-theme="light"]{--bg:#f2f6f3;--surface:#fff;--surface2:#eaf0ec;--border:rgba(0,0,0,.09);--text:#0d1a11;--muted:#4d6e57;--green:#1a8f5c;--green-dim:rgba(26,143,92,.1);--green-border:rgba(26,143,92,.25);--red:#c0392b;--red-dim:rgba(192,57,43,.08);--red-border:rgba(192,57,43,.25);--yellow:#b07d1a;--yellow-dim:rgba(176,125,26,.08);--yellow-border:rgba(176,125,26,.25)}
-[data-theme="light"] nav{background:rgba(242,246,243,0.95)!important}
+[data-theme="light"] .top-nav{background:rgba(242,246,243,0.95)!important}
 body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
-nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between}
+.app-sidebar{position:fixed;inset:0 auto 0 0;width:230px;padding:24px 16px 20px;z-index:200;display:flex;flex-direction:column;overflow:hidden;color:#fff;background:linear-gradient(180deg,#07170f,#0b2116)}
+.app-sidebar::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 25% 0,rgba(78,206,145,.12),transparent 34%);pointer-events:none}
+.app-brand{position:relative;display:flex;align-items:center;gap:10px;padding:2px 6px 25px;text-decoration:none}
+.app-brand-icon{width:30px;height:30px;border-radius:8px;object-fit:cover;flex-shrink:0}
+.app-brand-wordmark{height:36px;width:auto;display:block}
+.app-nav-label{position:relative;padding:0 10px;margin-bottom:7px;color:rgba(255,255,255,.3);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.app-nav{position:relative;display:grid;gap:3px}
+.app-nav-item{display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;border:0;border-radius:10px;background:transparent;color:rgba(255,255,255,.48);font-size:13px;font-weight:600;text-decoration:none;transition:.18s}
+.app-nav-item svg{width:17px;height:17px;flex:none}
+.app-nav-item:hover{background:rgba(78,206,145,.08);color:#fff}
+.app-nav-item.active{background:rgba(78,206,145,.14);color:#fff;box-shadow:inset 3px 0 #4ece91}
+.app-sidebar-bottom{position:relative;margin-top:auto;padding-top:13px;border-top:1px solid rgba(255,255,255,.08)}
+.app-support{padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:11px;background:rgba(255,255,255,.035);color:rgba(255,255,255,.42);font-size:11px;line-height:1.5}
+.app-support strong{display:block;color:rgba(255,255,255,.75);margin-bottom:2px}
+.app-profile{display:flex;align-items:center;gap:9px;margin-top:8px;padding:6px;border-radius:10px}
+.app-avatar{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,#1a7a4a,#2cba74);font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+.app-profile strong{display:block;font-size:11.5px;color:#fff}
+.app-profile span{color:rgba(255,255,255,.4);font-size:10.5px}
+.main-shell{margin-left:230px;min-width:0;flex:1;min-height:100vh}
+.top-nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between}
 .nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-logo-img{height:38px;width:auto;display:block}
+.nav-logo-dark{display:none}
+[data-theme="dark"] .nav-logo-light{display:none}
+[data-theme="dark"] .nav-logo-dark{display:block}
 .nav-badge{font-size:11px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
 .nav-right{display:flex;align-items:center;gap:.75rem}
 .theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .2s}
@@ -77,14 +100,71 @@ textarea::placeholder,input::placeholder{color:var(--muted)}
 .pro-gate-btn{display:inline-block;background:var(--green);color:#0a0f0d;font-family:'Manrope',sans-serif;font-size:14px;font-weight:700;padding:.85rem 1.8rem;border-radius:10px;text-decoration:none}
 .copied-toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--green);color:#0a0f0d;font-size:13px;font-weight:700;padding:.65rem 1.3rem;border-radius:8px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none}
 .copied-toast.show{opacity:1}
+@media(max-width:1050px){
+  .app-sidebar{width:78px;padding-inline:12px}.main-shell{margin-left:78px}
+  .app-brand{justify-content:center;padding-inline:0}.app-brand-wordmark,.app-nav-label,.app-nav-item span,.app-support,.app-profile-info{display:none}
+  .app-nav-item{justify-content:center;padding:12px}
+  .app-profile{justify-content:center;padding-inline:0}
+}
+@media(max-width:760px){
+  .app-sidebar{display:none}.main-shell{margin-left:0}
+  .container{padding:1.5rem 1rem 3rem}
+}
 </style>
-<script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
+<script>(function(){var t=localStorage.getItem('vagaai_theme');document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light')})()</script>
 </head>
 <body>
 
-<nav>
+<aside class="app-sidebar" aria-label="Menu principal">
+  <a class="app-brand" href="/dashboard">
+    <img src="/logo-icon.svg" alt="" class="app-brand-icon">
+    <img src="/logo.svg" alt="VagaAI" class="app-brand-wordmark">
+  </a>
+  <div class="app-nav-label">Seu espaço</div>
+  <nav class="app-nav" aria-label="Navegação principal">
+    <a class="app-nav-item" href="/dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      <span>Visão geral</span>
+    </a>
+    <a class="app-nav-item" href="/app">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+      <span>Analisar vaga</span>
+    </a>
+    <a class="app-nav-item" href="/dashboard?tab=vagas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+      <span>Candidaturas</span>
+    </a>
+    <a class="app-nav-item" href="/dashboard?tab=entrevistas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+      <span>Entrevistas</span>
+    </a>
+    <a class="app-nav-item active" href="/carta" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/></svg>
+      <span>Carta para vaga</span>
+    </a>
+    <a class="app-nav-item" href="/dashboard?tab=alertas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <span>Alertas</span>
+    </a>
+    <a class="app-nav-item" href="/dashboard?tab=plano">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span>Conta e plano</span>
+    </a>
+  </nav>
+  <div class="app-sidebar-bottom">
+    <div class="app-support"><strong>Precisa de ajuda?</strong>Use a carta para personalizar sua candidatura.</div>
+    <div class="app-profile">
+      <div class="app-avatar">VA</div>
+      <div class="app-profile-info"><strong>Sua carta</strong><span>Pronta para enviar</span></div>
+    </div>
+  </div>
+</aside>
+
+<main class="main-shell">
+<nav class="top-nav">
   <a href="/" class="nav-logo">
-    <img src="/logo.svg" alt="VagaAI" height="38" onerror="this.style.display='none'">
+    <img src="/logo-light.svg" alt="VagaAI" class="nav-logo-img nav-logo-light" onerror="this.style.display='none'">
+    <img src="/logo.svg" alt="VagaAI" class="nav-logo-img nav-logo-dark" onerror="this.style.display='none'">
     <span class="nav-badge">Carta</span>
   </a>
   <div class="nav-right">
@@ -179,6 +259,7 @@ textarea::placeholder,input::placeholder{color:var(--muted)}
   </div>
 
 </div>
+</main>
 
 <div class="copied-toast" id="copiedToast">✓ Copiado para a área de transferência!</div>
 
