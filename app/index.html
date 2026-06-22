@@ -585,10 +585,13 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
   .analysis-workspace{grid-template-columns:minmax(0,1fr) 315px}
 }
 @media(max-width:840px){
-  .app-sidebar{display:none}.app-main{margin-left:0}.app-header{padding:0 18px}.app-breadcrumb span{display:none}
+  .app-header{padding:0 18px}.app-breadcrumb span{display:none}
   .container{padding:24px 18px 48px}.app-intro{align-items:flex-start}.app-safe-note{display:none}
   .analysis-workspace{grid-template-columns:1fr}.analysis-side{position:static;grid-row:1}.analysis-value-card{display:grid;grid-template-columns:1fr 1fr}
   .analysis-value-top{border-bottom:0;border-right:1px solid rgba(255,255,255,.08)}.analysis-tip-card{display:none}
+}
+@media(max-width:760px){
+  .app-main{margin-left:0}
 }
 @media(max-width:580px){
   .app-header{height:58px}.app-header .nav-credits{display:none}.container{padding:20px 14px 34px}.page-title{font-size:27px}.page-sub{font-size:13px}
@@ -1629,6 +1632,10 @@ async function fetchJobUrl() {
       // Extrai preview e exibe card (passa URL para extração via slug)
       var preview = extractJobPreview(data.text, url);
       showJobPreview(preview, data.text.length);
+    } else if (data.error === 'scraping_blocked' || res.status === 422) {
+      st.innerHTML = '⚠ Esta plataforma bloqueia leitura automática. <strong>Cole o texto da vaga</strong> manualmente no campo abaixo.';
+      st.style.color = 'var(--yellow)';
+      document.getElementById('jobInput').focus();
     } else {
       st.textContent = 'Não foi possível extrair o texto. Cole a descrição manualmente abaixo.';
       st.style.color = 'var(--yellow)';
@@ -2424,13 +2431,21 @@ async function checkVagaParam() {
   try {
     var res = await fetch('/api/fetch-job?url=' + encodeURIComponent(vagaUrl));
     var data = await res.json();
-    if (data.text) {
+    if (data.text && data.text.length >= 50) {
       document.getElementById('jobInput').value = data.text;
       document.getElementById('jobCount').textContent = data.text.length + ' caracteres';
+      // Mostra preview card igual ao fluxo direto
+      var preview = extractJobPreview(data.text, vagaUrl);
+      showJobPreview(preview, data.text.length);
       notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Vaga do alerta carregada! Cole seu currículo abaixo e analise.';
+    } else if (data.error === 'scraping_blocked' || res.status === 422) {
+      // Plataforma bloqueia scraping — pede texto manual com UX clara
+      notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Esta plataforma bloqueia leitura automática. Cole o texto da vaga manualmente abaixo para continuar.';
+      notice.style.background = 'var(--yellow-dim)'; notice.style.borderColor = 'var(--yellow-border,#c47d0a44)'; notice.style.color = 'var(--yellow)';
+      document.getElementById('jobInput').focus();
     } else {
       notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Não foi possível carregar a vaga automaticamente. Cole o texto manualmente.';
-      notice.style.background = 'var(--yellow-dim)'; notice.style.borderColor = 'var(--yellow-border)'; notice.style.color = 'var(--yellow)';
+      notice.style.background = 'var(--yellow-dim)'; notice.style.borderColor = 'var(--yellow-border,#c47d0a44)'; notice.style.color = 'var(--yellow)';
     }
   } catch(e) {
     notice.style.display = 'none';

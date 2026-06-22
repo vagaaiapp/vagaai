@@ -212,7 +212,7 @@ export default async function handler(req, res) {
   const dnsCheck = await resolveDnsAndValidate(initialCheck.parsed.hostname);
   if (!dnsCheck.ok) return res.status(400).json({ error: 'URL não permitida' });
 
-  // ── Estratégia 1: Jina AI Reader ─────────────────────────────────────────────
+    // ── Estratégia 1: Jina AI Reader ─────────────────────────────────────────────
   try {
     const jinaUrl = 'https://r.jina.ai/' + decoded;
     const jinaRes = await safeFetch(jinaUrl, {
@@ -228,9 +228,10 @@ export default async function handler(req, res) {
       }
       const raw = await readBodyLimited(jinaRes);
       const text = cleanText(raw, 8000);
-      if (text.length >= 80) {
+      if (text.length >= 300 && isJobContent(text)) {
         return res.status(200).json({ text, length: text.length, source: 'jina' });
       }
+      console.warn('Jina returned boilerplate or short content:', text.length, 'chars');
     }
   } catch (e) {
     console.warn('Jina fetch failed:', e.message);
@@ -252,15 +253,19 @@ export default async function handler(req, res) {
 
     const html = await readBodyLimited(directRes);
     const text = htmlToText(html, 8000);
-    if (text.length >= 80) {
+    if (text.length >= 300 && isJobContent(text)) {
       return res.status(200).json({ text, length: text.length, source: 'direct' });
     }
-    throw new Error('Conteúdo muito curto');
+    throw new Error('Conteúdo muito curto ou boilerplate');
   } catch (e) {
     console.warn('Direct fetch failed:', e.message);
   }
 
-  return res.status(400).json({ error: 'Não foi possível extrair o texto da vaga.' });
+  // ── Nenhuma estratégia funcionou: plataforma bloqueia scraping ────────────────
+  return res.status(422).json({
+    error: 'scraping_blocked',
+    message: 'Não foi possível ler o conteúdo desta vaga automaticamente. Cole o texto da descrição manualmente.'
+  });
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -296,4 +301,41 @@ function htmlToText(html, maxLen) {
 
 function cleanText(text, maxLen) {
   return text.replace(/\s{3,}/g, '\n\n').trim().slice(0, maxLen);
+}
+
+// Detecta se o texto é conteúdo real de vaga ou boilerplate de navegação.
+// Plataformas como Indeed bloqueiam scraping e retornam nav/login pages.
+function isJobContent(text) {
+  const lower = text.toLowerCase();
+
+  // Sinais de bloqueio/navegação: se 2+ presentes, é boilerplate
+  const navSignals = [
+    'ir para o conteúdo principal',
+    'ajuda sobre acessibilidade',
+    'fazer login',
+    'sign in to',
+    'enable javascript',
+    'please enable',
+    'javascript is required',
+    'cookies required',
+    'your browser does not',
+    'access denied',
+    'robot check',
+    'são necessários cookies',
+    'verificação de segurança',
+  ];
+  const navHits = navSignals.filter(s => lower.includes(s)).length;
+  if (navHits >= 2) return false;
+
+  // Sinais de conteúdo de vaga: precisa de pelo menos 1 para validar
+  const jobSignals = [
+    'requisitos', 'responsabilidades', 'benefícios', 'qualificações',
+    'experiência', 'salário', 'contrato', 'vaga', 'empresa', 'cargo',
+    'requirements', 'responsibilities', 'benefits', 'qualifications',
+    'experience', 'salary', 'job description', 'we are looking',
+    'você irá', 'você vai', 'o candidato', 'perfil desejado',
+    'sobre a vaga', 'sobre a empresa', 'o que buscamos',
+  ];
+  const hasJobContent = jobSignals.some(s => lower.includes(s));
+  return hasJobContent;
 }
