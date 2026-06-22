@@ -173,6 +173,9 @@ html{font-size:14px}
   display:flex;align-items:center;justify-content:center;gap:.45rem;
 }
 .sp-print:hover{opacity:.85}
+.sp-print-trust{display:flex;flex-direction:column;gap:.4rem;margin-top:.85rem}
+.sp-print-trust span{display:flex;align-items:center;gap:.45rem;font-size:11px;font-weight:600;color:rgba(255,255,255,.42);line-height:1.35}
+.sp-print-trust span svg{color:#3ecf8e;flex-shrink:0}
 
 /* ─── Body ────────────────────────────────────────────────── */
 body{background:var(--page-bg);font-family:'Manrope',sans-serif;padding-left:220px;padding-bottom:3rem;padding-top:1rem}
@@ -493,6 +496,7 @@ body{background:var(--app-bg);padding-left:var(--editor-panel);padding-top:80px;
 .sp-bottom{padding:16px 18px;border-top:1px solid var(--app-border);background:var(--app-card)}
 .sp-print{background:var(--app-emerald);color:#fff;border-radius:10px}
 .sp-bottom > div{color:var(--app-t3)!important}.sp-bottom strong{color:var(--app-t2)!important}
+.sp-print-trust span{color:var(--app-t3)}.sp-print-trust span svg{color:var(--app-emerald)}
 .page{box-shadow:0 24px 70px rgba(7,18,9,.16)}.page-wrap{min-width:210mm}
 
 .cv-quality-box{padding:12px;border-radius:11px;background:var(--app-sub);border:1px solid var(--app-border)}
@@ -526,17 +530,36 @@ body{background:var(--app-bg);padding-left:var(--editor-panel);padding-top:80px;
 .pdf-status-copy{font-size:9.5px;color:var(--app-t3);line-height:1.45;margin-top:6px}
 .pdf-status-foot{margin-top:8px;padding-top:8px;border-top:1px dashed var(--app-border);font-size:9px;color:var(--app-t3);line-height:1.45}
 
-.preflight-overlay{position:fixed;inset:0;background:rgba(7,18,9,.62);backdrop-filter:blur(8px);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px}
+.preflight-overlay{position:fixed;inset:0;background:rgba(7,18,9,.66);backdrop-filter:blur(10px);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px}
 .preflight-overlay.hidden{display:none}
-.preflight-box{width:min(520px,100%);background:var(--app-card);border:1px solid var(--app-border);border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,.28);font-family:'Manrope',sans-serif;color:var(--app-t1);overflow:hidden}
-.preflight-head{padding:20px 22px;border-bottom:1px solid var(--app-border);display:flex;justify-content:space-between;gap:16px}
-.preflight-kicker{font-size:10px;color:var(--app-emerald);font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
-.preflight-title{font-family:'Lora',serif;font-size:21px;font-weight:700;line-height:1.2}.preflight-x{border:0;background:transparent;color:var(--app-t3);font-size:20px;cursor:pointer}
-.preflight-body{padding:18px 22px}.preflight-score{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
-.pf-stat{background:var(--app-sub);border:1px solid var(--app-border);border-radius:12px;padding:11px}.pf-stat b{display:block;font-size:18px;color:var(--app-t1);line-height:1}.pf-stat span{display:block;font-size:9px;color:var(--app-t3);font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-top:5px}
-.pf-list{display:flex;flex-direction:column;gap:8px}.pf-row{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--app-t2);line-height:1.45}.pf-row i{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-style:normal;font-weight:900;flex-shrink:0}.pf-row.ok i{background:rgba(78,206,145,.16);color:var(--app-emerald)}.pf-row.warn i{background:rgba(196,125,10,.14);color:#b87813}
-.preflight-actions{padding:16px 22px 20px;border-top:1px solid var(--app-border);display:grid;grid-template-columns:1fr 1fr;gap:9px}.pf-btn{border-radius:11px;font-family:'Manrope',sans-serif;font-size:12px;font-weight:900;padding:12px;border:1px solid var(--app-border);cursor:pointer}.pf-btn.primary{background:var(--app-emerald);color:#fff;border-color:var(--app-emerald)}.pf-btn.secondary{background:var(--app-sub);color:var(--app-t2)}.pf-btn.ghost{grid-column:1/-1;background:transparent;color:var(--app-t3)}
-@media(max-width:560px){.preflight-score{grid-template-columns:1fr 1fr}.preflight-actions{grid-template-columns:1fr}.pf-btn.ghost{grid-column:auto}}
+.preflight-box{width:min(760px,100%);max-height:calc(100vh - 40px);overflow:auto;background:var(--app-card);border:1px solid var(--app-border);border-radius:20px;box-shadow:0 40px 110px rgba(0,0,0,.42);font-family:'Manrope',sans-serif;color:var(--app-t1);animation:pfRise .26s cubic-bezier(.22,1,.36,1)}
+@keyframes pfRise{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.preflight-head{padding:22px 24px 18px;border-bottom:1px solid var(--app-border);display:flex;justify-content:space-between;gap:16px;align-items:flex-start;background:linear-gradient(180deg,rgba(78,206,145,.07),transparent)}
+.preflight-kicker{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--app-emerald);font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px}
+.preflight-kicker::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--app-emerald);box-shadow:0 0 0 3px rgba(78,206,145,.18)}
+.preflight-title{font-family:'Lora',serif;font-size:22px;font-weight:700;line-height:1.2;letter-spacing:-.01em}
+.preflight-sub{font-size:12.5px;color:var(--app-t3);margin-top:5px;line-height:1.5;max-width:42ch}
+.preflight-x{border:0;background:var(--app-sub);width:30px;height:30px;border-radius:9px;color:var(--app-t3);font-size:18px;cursor:pointer;flex-shrink:0;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.preflight-x:hover{background:var(--app-border);color:var(--app-t1)}
+.preflight-body{padding:20px 24px;display:grid;grid-template-columns:208px 1fr;gap:22px;align-items:start}
+/* Live A4 preview */
+.pf-preview-col{display:flex;flex-direction:column;gap:10px}
+.pf-preview-frame{position:relative;width:208px;height:294px;border-radius:10px;overflow:hidden;background:#fff;border:1px solid var(--app-border);box-shadow:0 14px 40px rgba(7,18,9,.18);flex-shrink:0}
+.pf-preview-frame .page{position:absolute!important;top:0;left:0;margin:0!important;box-shadow:none!important;transform-origin:top left;display:flex!important}
+.pf-preview-badge{position:absolute;left:8px;bottom:8px;z-index:3;background:rgba(7,18,9,.82);color:#eafff4;font-size:9.5px;font-weight:800;letter-spacing:.03em;padding:4px 9px;border-radius:20px;backdrop-filter:blur(4px);display:flex;align-items:center;gap:5px}
+.pf-preview-badge i{width:5px;height:5px;border-radius:50%;background:var(--app-bright);display:inline-block}
+.pf-preview-fade{position:absolute;left:0;right:0;bottom:0;height:42px;background:linear-gradient(transparent,rgba(255,255,255,.0));z-index:2;pointer-events:none}
+.pf-preview-cap{font-size:11px;color:var(--app-t3);text-align:center;line-height:1.45;font-weight:600}
+.pf-preview-cap b{color:var(--app-t2)}
+.pf-info-col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.preflight-score{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pf-stat{background:var(--app-sub);border:1px solid var(--app-border);border-radius:12px;padding:11px 10px;text-align:center}.pf-stat b{display:block;font-size:19px;font-weight:800;color:var(--app-t1);line-height:1}.pf-stat span{display:block;font-size:8.5px;color:var(--app-t3);font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-top:6px}
+.pf-list{display:flex;flex-direction:column;gap:9px}.pf-row{display:flex;gap:9px;align-items:flex-start;font-size:12px;color:var(--app-t2);line-height:1.45}.pf-row i{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-style:normal;font-weight:900;flex-shrink:0;margin-top:1px}.pf-row.ok i{background:rgba(78,206,145,.16);color:var(--app-emerald)}.pf-row.warn i{background:rgba(196,125,10,.14);color:#b87813}
+.pf-tip{display:flex;gap:10px;align-items:flex-start;background:var(--app-sub);border:1px solid var(--app-border);border-radius:12px;padding:11px 13px;font-size:11.5px;color:var(--app-t2);line-height:1.5}
+.pf-tip svg{flex-shrink:0;color:var(--app-emerald);margin-top:1px}
+.pf-tip b{color:var(--app-t1);font-weight:800}
+.preflight-actions{padding:16px 24px 22px;border-top:1px solid var(--app-border);display:grid;grid-template-columns:1fr 1.3fr;gap:9px}.pf-btn{border-radius:11px;font-family:'Manrope',sans-serif;font-size:12.5px;font-weight:800;padding:13px;border:1px solid var(--app-border);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px}.pf-btn.primary{background:var(--app-emerald);color:#fff;border-color:var(--app-emerald);box-shadow:0 8px 22px rgba(26,122,74,.26)}.pf-btn.primary:hover{background:var(--app-green);box-shadow:0 10px 28px rgba(26,122,74,.34)}.pf-btn.secondary{background:var(--app-sub);color:var(--app-t2)}.pf-btn.secondary:hover{border-color:var(--app-t3)}.pf-btn.ghost{grid-column:1/-1;background:transparent;color:var(--app-t3);font-weight:700;padding:8px}.pf-btn.ghost:hover{color:var(--app-t1)}
+@media(max-width:680px){.preflight-body{grid-template-columns:1fr}.pf-preview-col{display:none}.preflight-score{grid-template-columns:1fr 1fr}.preflight-actions{grid-template-columns:1fr}.pf-btn.ghost{grid-column:auto}}
 
 body.fit-one-page .page.active{transform-origin:top center}
 body.fit-one-page .cv-resumo-txt,body.fit-one-page .mod-resumo,body.fit-one-page .exec-resumo,body.fit-one-page .compact-resumo,body.fit-one-page .minimal-resumo{font-size:9.2pt;line-height:1.45}
@@ -845,12 +868,10 @@ html.no-photo .mod-header{display:block}
     <button class="sp-print" onclick="mobPrint()">
       <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span> Revisar e baixar PDF
     </button>
-    <div style="font-size:11px;color:rgba(255,255,255,.28);margin-top:.6rem;line-height:1.5;text-align:center">
-      No diálogo: desmarque<br><strong style="color:rgba(255,255,255,.45)">Cabeçalhos e rodapés</strong>
-    </div>
-    <div style="font-size:11px;color:rgba(255,255,255,.2);margin-top:.7rem;line-height:1.5;text-align:center;border-top:1px solid rgba(255,255,255,.05);padding-top:.6rem">
-      Para CV de <strong style="color:rgba(255,255,255,.32)">2 páginas</strong>, prefira<br>
-      <strong style="color:rgba(255,255,255,.32)">Moderno, Executivo ou Minimalista</strong>
+    <div class="sp-print-trust">
+      <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> A4 pronto para impressão</span>
+      <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Otimizado para leitura por ATS</span>
+      <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Revisão automática antes de baixar</span>
     </div>
   </div>
 
@@ -1077,23 +1098,40 @@ html.no-photo .mod-header{display:block}
   <div class="preflight-box">
     <div class="preflight-head">
       <div>
-        <div class="preflight-kicker">Revisão antes do download</div>
-        <div class="preflight-title">Seu currículo está pronto para enviar?</div>
+        <div class="preflight-kicker">Exportar currículo</div>
+        <div class="preflight-title">Pronto para baixar em PDF</div>
+        <div class="preflight-sub">Revisamos páginas, margens e leitura por ATS. Confira a prévia e baixe o arquivo final.</div>
       </div>
       <button class="preflight-x" type="button" onclick="closePdfPreflight()" aria-label="Fechar">×</button>
     </div>
     <div class="preflight-body">
-      <div class="preflight-score">
-        <div class="pf-stat"><b id="pfPages">—</b><span>páginas</span></div>
-        <div class="pf-stat"><b id="pfFormat">A4</b><span>formato</span></div>
-        <div class="pf-stat"><b id="pfScore">—</b><span>score ATS</span></div>
-        <div class="pf-stat"><b id="pfKeywords">—</b><span>keywords</span></div>
+      <div class="pf-preview-col">
+        <div class="pf-preview-frame" id="pfPreviewFrame">
+          <div class="pf-preview-fade"></div>
+          <div class="pf-preview-badge"><i></i><span id="pfPreviewBadge">A4 · 1 página</span></div>
+        </div>
+        <div class="pf-preview-cap">Prévia real · modelo <b id="pfPreviewModel">Profissional</b></div>
       </div>
-      <div class="pf-list" id="pfList"></div>
+      <div class="pf-info-col">
+        <div class="preflight-score">
+          <div class="pf-stat"><b id="pfPages">—</b><span>páginas</span></div>
+          <div class="pf-stat"><b id="pfFormat">A4</b><span>formato</span></div>
+          <div class="pf-stat"><b id="pfScore">—</b><span>score ATS</span></div>
+          <div class="pf-stat"><b id="pfKeywords">—</b><span>keywords</span></div>
+        </div>
+        <div class="pf-list" id="pfList"></div>
+        <div class="pf-tip">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span>Na janela de impressão, escolha <b>Salvar como PDF</b> e desmarque <b>Cabeçalhos e rodapés</b> para um arquivo limpo.</span>
+        </div>
+      </div>
     </div>
     <div class="preflight-actions">
-      <button class="pf-btn secondary" type="button" onclick="compactCurrentTemplate()">Compactar modelo</button>
-      <button class="pf-btn primary" type="button" onclick="printAfterPreflight()">Baixar PDF</button>
+      <button class="pf-btn secondary" type="button" id="pfCompactBtn" onclick="compactCurrentTemplate()">Ajustar em 1 página</button>
+      <button class="pf-btn primary" type="button" onclick="printAfterPreflight()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Baixar PDF
+      </button>
       <button class="pf-btn ghost" type="button" onclick="closePdfPreflight()">Voltar para editar</button>
     </div>
   </div>
@@ -1350,6 +1388,29 @@ function getPreflightRows() {
   };
 }
 
+function buildPreflightPreview() {
+  var frame = document.getElementById('pfPreviewFrame');
+  var active = getActiveCvPage();
+  if (!frame || !active) return;
+  // Drop any previous clone (keep fade + badge overlays)
+  var oldClone = frame.querySelector('.page');
+  if (oldClone) oldClone.remove();
+
+  var clone = active.cloneNode(true);
+  clone.removeAttribute('id');
+  clone.querySelectorAll('[id]').forEach(function(el){ el.removeAttribute('id'); });
+  clone.querySelectorAll('.pg-break,.sb-ph-hover').forEach(function(el){ el.remove(); });
+  clone.querySelectorAll('[contenteditable]').forEach(function(el){ el.removeAttribute('contenteditable'); });
+  clone.classList.add('active');
+  clone.removeAttribute('style');
+
+  var pageW = active.offsetWidth || 794;
+  var scale = (frame.clientWidth || 208) / pageW;
+  clone.style.transform = 'scale(' + scale + ')';
+  clone.style.width = pageW + 'px';
+  frame.insertBefore(clone, frame.firstChild);
+}
+
 function openPdfPreflight() {
   updateCvQualityDashboard();
   var data = getPreflightRows();
@@ -1363,7 +1424,17 @@ function openPdfPreflight() {
   document.getElementById('pfList').innerHTML = data.rows.map(function(row) {
     return '<div class="pf-row ' + (row.ok ? 'ok' : 'warn') + '"><i>' + (row.ok ? '✓' : '!') + '</i><span>' + _esc(row.text) + '</span></div>';
   }).join('');
+
+  // Premium touches: live preview, model label, page badge, contextual compact button
+  var model = document.getElementById('pfPreviewModel');
+  if (model) model.textContent = getTemplateLabel();
+  var badge = document.getElementById('pfPreviewBadge');
+  if (badge) badge.textContent = 'A4 · ' + (data.pages || 1) + (Number(data.pages) > 1 ? ' páginas' : ' página');
+  var compactBtn = document.getElementById('pfCompactBtn');
+  if (compactBtn) compactBtn.style.display = (Number(data.pages) > 1) ? '' : 'none';
+
   modal.classList.remove('hidden');
+  buildPreflightPreview();
 }
 
 function closePdfPreflight() {
@@ -1415,7 +1486,8 @@ function printIsolatedA4() {
   document.body.appendChild(frame);
 
   var doc = frame.contentDocument || frame.contentWindow.document;
-  var title = ((_cvData && _cvData.nome) ? _cvData.nome : 'curriculo-vagaai') + ' - Curriculo';
+  var nome = (_cvData && _cvData.nome) ? String(_cvData.nome).trim() : '';
+  var title = nome ? ('Currículo - ' + nome) : 'Currículo VagaAI';
   doc.open();
   doc.write('<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><title>' + _esc(title) + '</title>');
   doc.write('<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">');
