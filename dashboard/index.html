@@ -3736,6 +3736,8 @@ function openSavedAnalysis(id) {
   var result = Object.assign({}, analysis.result, { _analysis_id: analysis.id });
   try {
     localStorage.setItem('vagaai_view_analysis', JSON.stringify(result));
+    var frame = document.getElementById('shellFrame');
+    if (frame) frame.removeAttribute('data-src');
     switchDashTab('app');
   } catch(e) {
     showToast('Não foi possível abrir esta análise.', 'error');
