@@ -508,6 +508,40 @@ body{background:var(--app-bg);padding-left:var(--editor-panel);padding-top:80px;
 .job-summary-link{display:inline-flex;align-items:center;gap:4px;margin-top:9px;color:var(--app-emerald);font-size:9.5px;font-weight:800;text-decoration:none}.job-summary-link:hover{text-decoration:underline}
 [data-theme="dark"] .sp-editor-kicker,[data-theme="dark"] .job-summary-score,[data-theme="dark"] .job-summary-link,[data-theme="dark"] .cv-quality-score{color:var(--app-bright)}
 
+.cv-smart-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.cv-smart-pill{background:var(--app-bg);border:1px solid var(--app-border);border-radius:10px;padding:8px}
+.cv-smart-pill b{display:block;color:var(--app-t1);font-size:13px;line-height:1}.cv-smart-pill span{display:block;color:var(--app-t3);font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
+.cv-checklist{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.cv-check{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:9.7px;color:var(--app-t2);line-height:1.35}
+.cv-check i{width:14px;height:14px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:9px;font-weight:900;flex-shrink:0;background:var(--app-border);color:var(--app-t3)}
+.cv-check.ok i{background:rgba(78,206,145,.18);color:var(--app-emerald)}.cv-check.warn i{background:rgba(196,125,10,.14);color:#b87813}
+.smart-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.smart-action{border:1px solid var(--app-border);background:var(--app-bg);color:var(--app-t2);border-radius:9px;padding:8px;font-family:'Manrope',sans-serif;font-size:9.5px;font-weight:800;cursor:pointer}
+.smart-action:hover{background:var(--app-sub);border-color:rgba(26,122,74,.28);color:var(--app-emerald)}
+.pdf-status{margin-top:9px;border-radius:11px;border:1px solid var(--app-border);background:var(--app-bg);padding:10px}
+.pdf-status-top{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;font-weight:800;color:var(--app-t2)}
+.pdf-status-badge{border-radius:999px;padding:3px 7px;background:rgba(78,206,145,.12);color:var(--app-emerald);font-size:9px}
+.pdf-status-badge.warn{background:rgba(196,125,10,.12);color:#b87813}
+.pdf-status-copy{font-size:9.5px;color:var(--app-t3);line-height:1.45;margin-top:6px}
+
+.preflight-overlay{position:fixed;inset:0;background:rgba(7,18,9,.62);backdrop-filter:blur(8px);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px}
+.preflight-overlay.hidden{display:none}
+.preflight-box{width:min(520px,100%);background:var(--app-card);border:1px solid var(--app-border);border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,.28);font-family:'Manrope',sans-serif;color:var(--app-t1);overflow:hidden}
+.preflight-head{padding:20px 22px;border-bottom:1px solid var(--app-border);display:flex;justify-content:space-between;gap:16px}
+.preflight-kicker{font-size:10px;color:var(--app-emerald);font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.preflight-title{font-family:'Lora',serif;font-size:21px;font-weight:700;line-height:1.2}.preflight-x{border:0;background:transparent;color:var(--app-t3);font-size:20px;cursor:pointer}
+.preflight-body{padding:18px 22px}.preflight-score{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.pf-stat{background:var(--app-sub);border:1px solid var(--app-border);border-radius:12px;padding:11px}.pf-stat b{display:block;font-size:18px;color:var(--app-t1);line-height:1}.pf-stat span{display:block;font-size:9px;color:var(--app-t3);font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-top:5px}
+.pf-list{display:flex;flex-direction:column;gap:8px}.pf-row{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--app-t2);line-height:1.45}.pf-row i{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-style:normal;font-weight:900;flex-shrink:0}.pf-row.ok i{background:rgba(78,206,145,.16);color:var(--app-emerald)}.pf-row.warn i{background:rgba(196,125,10,.14);color:#b87813}
+.preflight-actions{padding:16px 22px 20px;border-top:1px solid var(--app-border);display:grid;grid-template-columns:1fr 1fr;gap:9px}.pf-btn{border-radius:11px;font-family:'Manrope',sans-serif;font-size:12px;font-weight:900;padding:12px;border:1px solid var(--app-border);cursor:pointer}.pf-btn.primary{background:var(--app-emerald);color:#fff;border-color:var(--app-emerald)}.pf-btn.secondary{background:var(--app-sub);color:var(--app-t2)}.pf-btn.ghost{grid-column:1/-1;background:transparent;color:var(--app-t3)}
+
+body.fit-one-page .page.active{transform-origin:top center}
+body.fit-one-page .cv-resumo-txt,body.fit-one-page .mod-resumo,body.fit-one-page .exec-resumo,body.fit-one-page .compact-resumo,body.fit-one-page .minimal-resumo{font-size:9.2pt;line-height:1.45}
+body.fit-one-page .exp-ul li,body.fit-one-page .minimal-exp-ul li{font-size:9.2pt;line-height:1.38}
+body.fit-one-page .page-classic .content,body.fit-one-page .mod-body,body.fit-one-page .exec-body,body.fit-one-page .minimal-body{gap:.55rem}
+body.fit-one-page .exp-item{margin-bottom:.58rem}
+body.fit-one-page .mod-tag,body.fit-one-page .exec-tag,body.fit-one-page .minimal-tag,body.fit-one-page .sb-tag,body.fit-one-page .compact-tag{font-size:7.7pt;padding:.12rem .35rem}
+
 /* ─── Mobile top bar ──────────────────────────────────────── */
 .mob-bar{
   display:none;position:fixed;top:0;left:0;right:0;height:48px;z-index:500;
@@ -757,6 +791,26 @@ html.no-photo .mod-header{display:block}
       <div class="cv-quality-track"><span class="cv-quality-fill" id="cvQualityFill"></span></div>
       <p class="cv-quality-copy" id="cvQualityCopy">Currículo estruturado para leitura por sistemas de recrutamento.</p>
     </div>
+    <div class="cv-smart-grid">
+      <div class="cv-smart-pill"><b id="cvPageCount">—</b><span>páginas</span></div>
+      <div class="cv-smart-pill"><b id="cvKeywordCount">—</b><span>keywords</span></div>
+    </div>
+    <div class="pdf-status" id="pdfStatusBox">
+      <div class="pdf-status-top"><span>Pronto para PDF</span><span class="pdf-status-badge" id="pdfStatusBadge">verificando</span></div>
+      <div class="pdf-status-copy" id="pdfStatusCopy">A VagaAI vai revisar páginas, margens e conteúdo antes do download.</div>
+    </div>
+    <div class="cv-checklist" id="cvChecklist">
+      <div class="cv-check warn"><span>Resumo alinhado à vaga</span><i>·</i></div>
+      <div class="cv-check warn"><span>Experiências com métricas</span><i>·</i></div>
+      <div class="cv-check warn"><span>Keywords principais</span><i>·</i></div>
+      <div class="cv-check warn"><span>Formatação ATS</span><i>·</i></div>
+    </div>
+    <div class="smart-actions">
+      <button class="smart-action" type="button" onclick="applySmartFix('keywords')">Adicionar keywords</button>
+      <button class="smart-action" type="button" onclick="applySmartFix('metrics')">Reforçar métricas</button>
+      <button class="smart-action" type="button" onclick="applySmartFix('shorten')">Encurtar resumo</button>
+      <button class="smart-action" type="button" onclick="fitToOnePage()">Ajustar 1 página</button>
+    </div>
     <article class="job-summary" id="jobSummaryCard" hidden>
       <div class="job-summary-head"><span class="job-summary-label">Resumo da vaga</span><span class="job-summary-score" id="jobSummaryScore"></span></div>
       <div class="job-summary-role" id="jobSummaryRole"></div>
@@ -770,7 +824,7 @@ html.no-photo .mod-header{display:block}
   <!-- Imprimir -->
   <div class="sp-bottom">
     <button class="sp-print" onclick="mobPrint()">
-      <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span> Imprimir / PDF
+      <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span> Revisar e baixar PDF
     </button>
     <div style="font-size:11px;color:rgba(255,255,255,.28);margin-top:.6rem;line-height:1.5;text-align:center">
       No diálogo: desmarque<br><strong style="color:rgba(255,255,255,.45)">Cabeçalhos e rodapés</strong>
@@ -999,6 +1053,32 @@ html.no-photo .mod-header{display:block}
   </div>
 </div>
 
+<!-- ─── Pré-download inteligente ─────────────────────────── -->
+<div class="preflight-overlay hidden" id="pdfPreflight">
+  <div class="preflight-box">
+    <div class="preflight-head">
+      <div>
+        <div class="preflight-kicker">Revisão antes do download</div>
+        <div class="preflight-title">Seu currículo está pronto para enviar?</div>
+      </div>
+      <button class="preflight-x" type="button" onclick="closePdfPreflight()" aria-label="Fechar">×</button>
+    </div>
+    <div class="preflight-body">
+      <div class="preflight-score">
+        <div class="pf-stat"><b id="pfPages">—</b><span>páginas</span></div>
+        <div class="pf-stat"><b id="pfScore">—</b><span>score ATS</span></div>
+        <div class="pf-stat"><b id="pfKeywords">—</b><span>keywords</span></div>
+      </div>
+      <div class="pf-list" id="pfList"></div>
+    </div>
+    <div class="preflight-actions">
+      <button class="pf-btn secondary" type="button" onclick="fitToOnePage()">Ajustar 1 página</button>
+      <button class="pf-btn primary" type="button" onclick="printAfterPreflight()">Baixar PDF</button>
+      <button class="pf-btn ghost" type="button" onclick="closePdfPreflight()">Voltar para editar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ── Global utilities ───────────────────────────────────────── */
 var _cvData = null;
@@ -1107,6 +1187,168 @@ function renderCvContext(context) {
   if (validUrl) link.href = url;
   else link.removeAttribute('href');
   card.hidden = false;
+}
+
+function getActiveCvPage() {
+  return document.querySelector('.page.active');
+}
+
+function getPageEstimate() {
+  var page = getActiveCvPage();
+  if (!page) return 0;
+  var PX_PER_MM = 96 / 25.4;
+  var pagePx = Math.round(297 * PX_PER_MM);
+  return Math.max(1, Math.ceil((page.scrollHeight || page.offsetHeight || pagePx) / pagePx));
+}
+
+function getContextKeywords() {
+  var c = _cvContext || {};
+  var found = Array.isArray(c.keywords_encontradas) ? c.keywords_encontradas : [];
+  var missing = Array.isArray(c.keywords_faltando) ? c.keywords_faltando : [];
+  var fromSkills = Array.isArray(_cvData && _cvData.habilidades) ? _cvData.habilidades : [];
+  return {
+    found: found.filter(Boolean),
+    missing: missing.filter(Boolean),
+    total: found.length || fromSkills.length || 0
+  };
+}
+
+function hasMetricText() {
+  var exps = (_cvData && Array.isArray(_cvData.experiencias)) ? _cvData.experiencias : [];
+  return exps.some(function(e) {
+    return (e.bullets || []).some(function(b) { return /\d|%|R\$|milh|k\b/i.test(String(b || '')); });
+  });
+}
+
+function updateCvQualityDashboard() {
+  if (!_cvData) return;
+  var pages = getPageEstimate();
+  var kws = getContextKeywords();
+  var score = Number(_cvContext && _cvContext.score);
+  var safeScore = Number.isFinite(score) ? Math.max(0, Math.min(100, Math.round(score))) : null;
+  var summaryOk = String(_cvData.resumo_profissional || '').trim().length > 120;
+  var metricsOk = hasMetricText();
+  var keywordsOk = kws.missing.length === 0 || kws.total >= 4;
+  var atsOk = safeScore == null ? true : safeScore >= 50;
+
+  var pageEl = document.getElementById('cvPageCount');
+  var kwEl = document.getElementById('cvKeywordCount');
+  if (pageEl) pageEl.textContent = pages || '—';
+  if (kwEl) kwEl.textContent = kws.total || '—';
+
+  var badge = document.getElementById('pdfStatusBadge');
+  var copy = document.getElementById('pdfStatusCopy');
+  if (badge && copy) {
+    badge.classList.toggle('warn', pages > 1);
+    badge.textContent = pages > 1 ? pages + ' páginas' : 'ok';
+    copy.textContent = pages > 1
+      ? 'O currículo está em ' + pages + ' páginas. Use "Ajustar 1 página" se quiser uma versão mais enxuta.'
+      : 'Formato enxuto detectado. Revise as informações e baixe com segurança.';
+  }
+
+  var list = document.getElementById('cvChecklist');
+  if (list) {
+    var items = [
+      ['Resumo alinhado à vaga', summaryOk],
+      ['Experiências com métricas', metricsOk],
+      ['Keywords principais', keywordsOk],
+      ['Formatação ATS', atsOk],
+      ['PDF sem corte visível', pages <= 1]
+    ];
+    list.innerHTML = items.map(function(item) {
+      return '<div class="cv-check ' + (item[1] ? 'ok' : 'warn') + '"><span>' + item[0] + '</span><i>' + (item[1] ? '✓' : '!') + '</i></div>';
+    }).join('');
+  }
+}
+
+function getPreflightRows() {
+  var pages = getPageEstimate();
+  var kws = getContextKeywords();
+  var score = Number(_cvContext && _cvContext.score);
+  var safeScore = Number.isFinite(score) ? Math.round(score) + '%' : '—';
+  return {
+    pages: pages,
+    score: safeScore,
+    keywords: kws.total || '—',
+    rows: [
+      { ok: pages <= 1, text: pages <= 1 ? 'O currículo cabe em 1 página.' : 'O currículo está em ' + pages + ' páginas. Considere ajustar para uma versão mais objetiva.' },
+      { ok: hasMetricText(), text: hasMetricText() ? 'Há métricas nas experiências.' : 'Ainda faltam métricas/resultados nos bullets principais.' },
+      { ok: kws.missing.length === 0, text: kws.missing.length === 0 ? 'Sem keywords críticas pendentes.' : 'Keywords ausentes: ' + kws.missing.slice(0, 4).join(', ') + '.' },
+      { ok: true, text: 'Use "Salvar como PDF" no destino de impressão para preservar o layout.' }
+    ]
+  };
+}
+
+function openPdfPreflight() {
+  updateCvQualityDashboard();
+  var data = getPreflightRows();
+  var modal = document.getElementById('pdfPreflight');
+  if (!modal) return directPrint();
+  document.getElementById('pfPages').textContent = data.pages || '—';
+  document.getElementById('pfScore').textContent = data.score || '—';
+  document.getElementById('pfKeywords').textContent = data.keywords || '—';
+  document.getElementById('pfList').innerHTML = data.rows.map(function(row) {
+    return '<div class="pf-row ' + (row.ok ? 'ok' : 'warn') + '"><i>' + (row.ok ? '✓' : '!') + '</i><span>' + _esc(row.text) + '</span></div>';
+  }).join('');
+  modal.classList.remove('hidden');
+}
+
+function closePdfPreflight() {
+  var modal = document.getElementById('pdfPreflight');
+  if (modal) modal.classList.add('hidden');
+}
+
+function directPrint() {
+  window.print();
+}
+
+function printAfterPreflight() {
+  closePdfPreflight();
+  setTimeout(directPrint, 120);
+}
+
+function fitToOnePage() {
+  document.body.classList.add('fit-one-page');
+  applyTemplate('minimal', true);
+  setTimeout(function() {
+    scaleCvPages();
+    addPageBreakIndicator();
+    updateCvQualityDashboard();
+    var modal = document.getElementById('pdfPreflight');
+    if (modal && !modal.classList.contains('hidden')) openPdfPreflight();
+  }, 180);
+}
+
+function getMissingKeywordsForInsert() {
+  return getContextKeywords().missing.slice(0, 6).filter(function(kw) {
+    return (_cvData.habilidades || []).indexOf(kw) === -1;
+  });
+}
+
+function applySmartFix(type) {
+  if (!_cvData) return;
+  if (type === 'keywords') {
+    var kws = getMissingKeywordsForInsert();
+    if (kws.length) {
+      _cvData.habilidades = (_cvData.habilidades || []).concat(kws).filter(function(v, i, arr) { return arr.indexOf(v) === i; });
+      reRenderSkills(_cvData.habilidades);
+    }
+  } else if (type === 'metrics') {
+    var exps = _cvData.experiencias || [];
+    if (exps[0]) {
+      exps[0].bullets = exps[0].bullets || [];
+      if (!hasMetricText()) exps[0].bullets.unshift('Contribuiu para melhorias mensuráveis em performance, organização e execução de iniciativas estratégicas.');
+      reRenderExp(exps);
+    }
+  } else if (type === 'shorten') {
+    var r = String(_cvData.resumo_profissional || '').trim();
+    if (r.length > 420) {
+      _cvData.resumo_profissional = r.slice(0, 390).replace(/\s+\S*$/, '') + '.';
+      reRenderResumo(_cvData.resumo_profissional);
+    }
+  }
+  saveCvData();
+  setTimeout(function(){ addPageBreakIndicator(); updateCvQualityDashboard(); }, 120);
 }
 
 (function () {
@@ -1288,6 +1530,8 @@ function renderCvContext(context) {
   // Page-break indicator
   setTimeout(addPageBreakIndicator, 500);
   setTimeout(addPageBreakIndicator, 900);
+  setTimeout(updateCvQualityDashboard, 650);
+  setTimeout(updateCvQualityDashboard, 1100);
   // Setup inline editing
   setTimeout(setupInlineEditing, 150);
 
@@ -1374,6 +1618,7 @@ function applyTemplate(tpl, save) {
   }
 }
 function setTemplate(t) {
+  document.body.classList.remove('fit-one-page');
   applyTemplate(t, true);
   // Save inside _cvData (most reliable — bundled with CV JSON)
   if (_cvData) { _cvData.template = t; saveCvData(); }
@@ -1382,6 +1627,7 @@ function setTemplate(t) {
   // Re-scale after template switch (slight delay for layout to settle)
   setTimeout(scaleCvPages, 80);
   setTimeout(addPageBreakIndicator, 300);
+  setTimeout(updateCvQualityDashboard, 360);
 }
 
 /* ── Mobile: panel toggle ───────────────────────────────── */
@@ -1472,20 +1718,24 @@ function addPageBreakIndicator() {
   }
 }
 window.addEventListener('resize', function() { setTimeout(addPageBreakIndicator, 100); });
+window.addEventListener('resize', function() { setTimeout(updateCvQualityDashboard, 160); });
 
 /* ── Mobile: print with warning ─────────────────────────── */
 function mobPrint() {
   var isMob = window.innerWidth <= 900;
   if (isMob) {
     var toast = document.getElementById('mobPrintToast');
-    if (toast) { toast.classList.add('vis'); }
-    setTimeout(function() {
-      if (toast) toast.classList.remove('vis');
-      window.print();
-    }, 2000);
-  } else {
-    window.print();
+    if (toast) {
+      toast.innerHTML = 'Vamos revisar seu currículo antes do PDF.<br><span style="font-size:11px;color:rgba(255,255,255,.45)">Confira páginas, margens e conteúdo.</span>';
+      toast.classList.add('vis');
+      setTimeout(function() {
+        toast.classList.remove('vis');
+        openPdfPreflight();
+      }, 900);
+      return;
+    }
   }
+  openPdfPreflight();
 }
 
 /* ── Save cv to localStorage ────────────────────────────── */
@@ -1706,6 +1956,7 @@ function saveEdit() {
   closeEdit();
   // Update page-break indicator after content changes
   setTimeout(addPageBreakIndicator, 200);
+  setTimeout(updateCvQualityDashboard, 260);
 }
 
 /* ── Tag editor helpers ─────────────────────────────────── */
