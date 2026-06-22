@@ -577,6 +577,24 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 .csv-add-btn{display:flex;align-items:center;gap:.4rem;padding:.5rem .85rem;border-radius:9px;border:1px dashed var(--app-border);background:transparent;color:var(--app-t3);font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;width:100%;justify-content:center}
 .csv-add-btn:hover{border-color:var(--app-emerald);color:var(--app-emerald);background:rgba(78,206,145,.04)}
 .csv-metric-warn{display:flex;align-items:flex-start;gap:.5rem;padding:.5rem .75rem;border-radius:8px;background:rgba(196,125,10,.08);border:1px solid rgba(196,125,10,.2);font-size:11px;color:#b87813;line-height:1.4;margin-top:.3rem}
+.csv-ats-note{display:flex;align-items:flex-start;gap:.5rem;padding:.65rem .85rem;border-radius:10px;background:rgba(78,206,145,.06);border:1px solid rgba(78,206,145,.15);font-size:11.5px;color:var(--app-t2);line-height:1.5;margin-top:1.1rem}
+.csv-ats-note svg{flex-shrink:0;margin-top:1px;color:var(--app-emerald)}
+.csv-inline-fb{min-height:1.2rem;margin-top:.25rem;font-size:11.5px;line-height:1.4}
+.csv-fb-warn{color:#b87813}
+.csv-fb-ok{color:var(--app-emerald)}
+.csv-fb-tip{color:var(--app-t3)}
+.csv-smart-warns{display:flex;flex-direction:column;gap:.3rem;margin:.4rem 0}
+.csv-smart-warn{font-size:11.5px;color:#b87813;padding:.35rem .6rem;border-radius:6px;background:rgba(196,125,10,.07);border:1px solid rgba(196,125,10,.18)}
+.csv-ai-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem .9rem;border-radius:9px;border:1px solid rgba(78,206,145,.35);background:rgba(78,206,145,.08);color:var(--app-emerald);font-size:12px;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif;transition:all .15s}
+.csv-ai-btn:hover{background:rgba(78,206,145,.15);border-color:var(--app-emerald)}
+.csv-dl-btn.small{padding:.4rem .8rem;font-size:12px}
+.s4-pdf-loading{display:flex;align-items:center;gap:.75rem;padding:.9rem 1rem;border-radius:10px;background:rgba(78,206,145,.06);border:1px solid rgba(78,206,145,.15);margin-top:.6rem;font-size:13px;color:var(--app-t2)}
+.s4-pdf-spinner{font-size:18px;color:var(--app-emerald);animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.s4-pdf-success{display:flex;align-items:flex-start;gap:.75rem;padding:.9rem 1rem;border-radius:10px;background:rgba(78,206,145,.07);border:1px solid rgba(78,206,145,.25);margin-top:.6rem}
+.s4-pdf-success-icon{width:32px;height:32px;border-radius:50%;background:rgba(78,206,145,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--app-emerald)}
+.s4-pdf-success-title{font-size:13px;font-weight:700;color:var(--app-t1);margin-bottom:.5rem}
+.s4-pdf-success-actions{display:flex;gap:.5rem;flex-wrap:wrap}
 .csv-skill-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem}
 .csv-skill-tag{padding:.25rem .65rem;border-radius:999px;background:rgba(78,206,145,.1);border:1px solid rgba(78,206,145,.2);color:var(--app-emerald);font-size:11px;font-weight:700}
 
@@ -977,34 +995,27 @@ html.no-photo .mod-header{display:block}
       <div class="cn-step-badge">1</div>
       <div class="cn-step-info">
         <div class="cn-step-name">Modelo</div>
-        <div class="cn-step-sub">Escolha o template e foto</div>
+        <div class="cn-step-sub">Escolha o template</div>
       </div>
     </div>
     <div class="cn-step" id="cnsi2" onclick="goToStep(2)">
       <div class="cn-step-badge">2</div>
       <div class="cn-step-info">
         <div class="cn-step-name">Informações</div>
-        <div class="cn-step-sub">Nome, contato e resumo</div>
+        <div class="cn-step-sub">Nome, contato e foto</div>
       </div>
     </div>
     <div class="cn-step" id="cnsi3" onclick="goToStep(3)">
       <div class="cn-step-badge">3</div>
       <div class="cn-step-info">
         <div class="cn-step-name">Experiência</div>
-        <div class="cn-step-sub">Histórico profissional</div>
+        <div class="cn-step-sub">Histórico, formação e skills</div>
       </div>
     </div>
     <div class="cn-step" id="cnsi4" onclick="goToStep(4)">
       <div class="cn-step-badge">4</div>
       <div class="cn-step-info">
-        <div class="cn-step-name">Formação</div>
-        <div class="cn-step-sub">Educação e habilidades</div>
-      </div>
-    </div>
-    <div class="cn-step" id="cnsi5" onclick="goToStep(5)">
-      <div class="cn-step-badge">5</div>
-      <div class="cn-step-info">
-        <div class="cn-step-name">Finalizar</div>
+        <div class="cn-step-name">Exportar</div>
         <div class="cn-step-sub">Score ATS e download</div>
       </div>
     </div>
@@ -1022,12 +1033,12 @@ html.no-photo .mod-header{display:block}
 <!-- CENTER: STEPS -->
 <main class="cv-main">
 
-  <!-- ── STEP 1: Modelo + Foto ─────────────────────────────── -->
+  <!-- ── STEP 1: Modelo ───────────────────────────────────── -->
   <div class="cv-step active" id="csStep1">
     <div class="csv-header">
-      <div class="csv-kicker">Passo 1 de 5</div>
+      <div class="csv-kicker">Passo 1 de 4</div>
       <h1 class="csv-title">Escolha o modelo do currículo</h1>
-      <p class="csv-sub">Selecione o template que melhor representa seu perfil. Templates ATS ✓ são lidos corretamente por sistemas de triagem automática.</p>
+      <p class="csv-sub">Selecione o template que melhor representa seu perfil.</p>
     </div>
     <div class="csv-body">
       <div class="tpl-card-grid">
@@ -1052,7 +1063,58 @@ html.no-photo .mod-header{display:block}
           <div class="tpl-card-info"><div class="tpl-card-name">Minimalista</div><div class="tpl-card-badge ats">ATS ✓</div></div>
         </div>
       </div>
+      <div class="csv-ats-note">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        <span><strong>Moderno</strong> e <strong>Minimalista</strong> são lidos corretamente por sistemas de recrutamento automático (ATS). Os modelos com Sidebar podem ter parsing reduzido em alguns sistemas.</span>
+      </div>
+    </div>
+    <div class="csv-footer">
+      <button class="csv-btn-next" onclick="goToStep(2)">Próximo: Informações →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: Informações ───────────────────────────────── -->
+  <div class="cv-step" id="csStep2">
+    <div class="csv-header">
+      <div class="csv-kicker">Passo 2 de 4</div>
+      <h1 class="csv-title">Suas informações</h1>
+      <p class="csv-sub">Preencha seus dados. O currículo atualiza em tempo real na pré-visualização ao lado.</p>
+    </div>
+    <div class="csv-body">
+      <div class="csv-form-grid">
+        <div class="csv-field">
+          <label class="csv-label" for="sf_nome">Nome completo</label>
+          <input class="csv-input" id="sf_nome" oninput="sfOnChange()" placeholder="Nome Sobrenome">
+        </div>
+        <div class="csv-field">
+          <label class="csv-label" for="sf_titulo">Cargo / Título</label>
+          <input class="csv-input" id="sf_titulo" oninput="sfOnChange()" placeholder="Ex: Analista de Marketing">
+        </div>
+        <div class="csv-field" style="grid-column:1/-1">
+          <label class="csv-label" for="sf_resumo">Resumo profissional</label>
+          <textarea class="csv-input csv-textarea" id="sf_resumo" oninput="sfOnChange();s2CheckResumo()" rows="5" placeholder="Descreva sua trajetória, principais competências e o que você busca. Seja objetivo e use palavras-chave da área."></textarea>
+          <div class="csv-inline-fb" id="s2ResumoFb"></div>
+        </div>
+        <div class="csv-field">
+          <label class="csv-label" for="sf_email">E-mail</label>
+          <input class="csv-input" id="sf_email" type="email" oninput="sfOnChange()">
+        </div>
+        <div class="csv-field">
+          <label class="csv-label" for="sf_tel">Telefone</label>
+          <input class="csv-input" id="sf_tel" oninput="sfOnChange()">
+        </div>
+        <div class="csv-field">
+          <label class="csv-label" for="sf_cidade">Cidade</label>
+          <input class="csv-input" id="sf_cidade" oninput="sfOnChange()">
+        </div>
+        <div class="csv-field">
+          <label class="csv-label" for="sf_li">LinkedIn</label>
+          <input class="csv-input" id="sf_li" oninput="sfOnChange();s2CheckLinkedIn()" placeholder="linkedin.com/in/...">
+          <div class="csv-inline-fb" id="s2LinkedInFb"></div>
+        </div>
+      </div>
       <!-- Foto -->
+      <div class="csv-section-label" style="margin-top:1.2rem">Foto (opcional)</div>
       <div class="csv-photo-section">
         <div class="csv-photo-circle" id="spPhotoCircle" onclick="document.getElementById('photoFileInput').click()">
           <img id="spPhotoThumb" alt="">
@@ -1072,92 +1134,37 @@ html.no-photo .mod-header{display:block}
       <input type="file" id="photoFileInput" accept="image/*" style="display:none">
     </div>
     <div class="csv-footer">
-      <button class="csv-btn-next" onclick="goToStep(2)">Próximo: Informações →</button>
-    </div>
-  </div>
-
-  <!-- ── STEP 2: Informações ───────────────────────────────── -->
-  <div class="cv-step" id="csStep2">
-    <div class="csv-header">
-      <div class="csv-kicker">Passo 2 de 5</div>
-      <h1 class="csv-title">Suas informações</h1>
-      <p class="csv-sub">Preencha seus dados. O currículo atualiza em tempo real na pré-visualização ao lado.</p>
-    </div>
-    <div class="csv-body">
-      <div class="csv-form-grid">
-        <div class="csv-field">
-          <label class="csv-label" for="sf_nome">Nome completo</label>
-          <input class="csv-input" id="sf_nome" oninput="sfOnChange()" placeholder="Nome Sobrenome">
-        </div>
-        <div class="csv-field">
-          <label class="csv-label" for="sf_titulo">Cargo / Título</label>
-          <input class="csv-input" id="sf_titulo" oninput="sfOnChange()" placeholder="Ex: Analista de Marketing">
-        </div>
-        <div class="csv-field" style="grid-column:1/-1">
-          <label class="csv-label" for="sf_resumo">Resumo profissional</label>
-          <textarea class="csv-input csv-textarea" id="sf_resumo" oninput="sfOnChange()" rows="5"></textarea>
-          <div class="csv-char-count" id="sf_resumo_count">0 caracteres</div>
-        </div>
-        <div class="csv-field">
-          <label class="csv-label" for="sf_email">E-mail</label>
-          <input class="csv-input" id="sf_email" type="email" oninput="sfOnChange()">
-        </div>
-        <div class="csv-field">
-          <label class="csv-label" for="sf_tel">Telefone</label>
-          <input class="csv-input" id="sf_tel" oninput="sfOnChange()">
-        </div>
-        <div class="csv-field">
-          <label class="csv-label" for="sf_cidade">Cidade</label>
-          <input class="csv-input" id="sf_cidade" oninput="sfOnChange()">
-        </div>
-        <div class="csv-field">
-          <label class="csv-label" for="sf_li">LinkedIn</label>
-          <input class="csv-input" id="sf_li" oninput="sfOnChange()" placeholder="linkedin.com/in/...">
-        </div>
-      </div>
-    </div>
-    <div class="csv-footer">
       <button class="csv-btn-next" onclick="goToStep(3)">Próximo: Experiência →</button>
-      <button class="csv-btn-prev" onclick="goToStep(1)">← Voltar</button>
+      <button class="csv-btn-prev" onclick="goToStep(1)">← Modelo</button>
     </div>
   </div>
 
-  <!-- ── STEP 3: Experiência ───────────────────────────────── -->
+  <!-- ── STEP 3: Experiência + Formação + Habilidades ─────── -->
   <div class="cv-step" id="csStep3">
     <div class="csv-header">
-      <div class="csv-kicker">Passo 3 de 5</div>
-      <h1 class="csv-title">Experiência profissional</h1>
-      <p class="csv-sub">Adicione suas experiências. Inclua métricas e resultados concretos para melhorar seu score ATS.</p>
+      <div class="csv-kicker">Passo 3 de 4</div>
+      <h1 class="csv-title">Experiência e formação</h1>
+      <p class="csv-sub">Adicione suas experiências, formação e habilidades. Use métricas e resultados para aumentar seu score ATS.</p>
     </div>
     <div class="csv-body">
+      <!-- Experiências -->
       <div>
-        <div class="csv-section-label">Suas experiências</div>
+        <div class="csv-section-label">Experiência profissional</div>
         <div class="csv-card-list" id="s3ExpList"></div>
-        <div class="csv-metric-warn" id="s3ExpWarn" style="display:none">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          <span id="s3WarnText">Sem métricas nas experiências</span>
-        </div>
+        <div class="csv-smart-warns" id="s3SmartWarns"></div>
         <button class="csv-add-btn" onclick="openEdit('exp')">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Adicionar / editar experiência
         </button>
+        <div id="s3AiRow" style="display:none;margin-top:.6rem">
+          <button class="csv-ai-btn" onclick="s3ReforcarIA()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/></svg>
+            Reforçar com IA
+          </button>
+        </div>
       </div>
-    </div>
-    <div class="csv-footer">
-      <button class="csv-btn-next" onclick="goToStep(4)">Próximo: Formação →</button>
-      <button class="csv-btn-prev" onclick="goToStep(2)">← Voltar</button>
-    </div>
-  </div>
-
-  <!-- ── STEP 4: Formação + Habilidades ───────────────────── -->
-  <div class="cv-step" id="csStep4">
-    <div class="csv-header">
-      <div class="csv-kicker">Passo 4 de 5</div>
-      <h1 class="csv-title">Formação e habilidades</h1>
-      <p class="csv-sub">Adicione sua formação acadêmica e liste as habilidades mais relevantes para a vaga.</p>
-    </div>
-    <div class="csv-body">
-      <div>
+      <!-- Formação -->
+      <div style="margin-top:1.4rem">
         <div class="csv-section-label">Formação acadêmica</div>
         <div class="csv-card-list" id="s3EduList"></div>
         <button class="csv-add-btn" onclick="openEdit('edu')">
@@ -1165,7 +1172,8 @@ html.no-photo .mod-header{display:block}
           Adicionar / editar formação
         </button>
       </div>
-      <div>
+      <!-- Habilidades -->
+      <div style="margin-top:1.4rem">
         <div class="csv-section-label">Habilidades</div>
         <div class="csv-skill-tags" id="s3SkillsList"></div>
         <button class="csv-add-btn" onclick="openEdit('skills')">
@@ -1175,33 +1183,22 @@ html.no-photo .mod-header{display:block}
       </div>
     </div>
     <div class="csv-footer">
-      <button class="csv-btn-next" onclick="goToStep(5)">Próximo: Finalizar →</button>
-      <button class="csv-btn-prev" onclick="goToStep(3)">← Voltar</button>
+      <button class="csv-btn-next" onclick="goToStep(4)">Próximo: Exportar →</button>
+      <button class="csv-btn-prev" onclick="goToStep(2)">← Informações</button>
     </div>
   </div>
 
-  <!-- ── STEP 5: Finalizar ─────────────────────────────────── -->
-  <div class="cv-step" id="csStep5">
+  <!-- ── STEP 4: Exportar ──────────────────────────────────── -->
+  <div class="cv-step" id="csStep4">
     <div class="csv-header">
       <div class="csv-done-badge">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         Currículo pronto
       </div>
       <h1 class="csv-title">Baixe e envie para a vaga</h1>
-      <p class="csv-sub">Seu currículo está otimizado. Baixe em PDF, confira o score ATS e marque a vaga nas suas candidaturas.</p>
+      <p class="csv-sub">Seu currículo está otimizado. Confira o score ATS, baixe e marque a candidatura.</p>
     </div>
     <div class="csv-body">
-      <!-- Download -->
-      <div class="csv-download-row">
-        <button class="csv-dl-btn primary" onclick="openPdfPreflight()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Baixar PDF
-        </button>
-        <button class="csv-dl-btn secondary" onclick="exportDocx ? exportDocx() : showToast('Em breve','info')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Baixar .doc
-        </button>
-      </div>
       <!-- ATS Score -->
       <div class="csv-ats-section">
         <div class="csv-ats-header">
@@ -1226,6 +1223,39 @@ html.no-photo .mod-header{display:block}
           <button class="smart-action" type="button" onclick="compactCurrentTemplate()">Compactar</button>
         </div>
       </div>
+      <!-- Download -->
+      <div class="csv-download-row" id="s4DownloadRow">
+        <button class="csv-dl-btn primary" id="s4PdfBtn" onclick="s4StartPdfDownload()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Baixar PDF
+        </button>
+        <button class="csv-dl-btn secondary" onclick="exportDocx ? exportDocx() : showToast('Em breve','info')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Baixar .doc
+        </button>
+        <button class="csv-dl-btn secondary" onclick="cvSaveToCloud()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+          Salvar na nuvem
+        </button>
+      </div>
+      <!-- PDF loading state -->
+      <div class="s4-pdf-loading" id="s4PdfLoading" style="display:none">
+        <div class="s4-pdf-spinner">⠋</div>
+        <span>Gerando seu PDF...</span>
+      </div>
+      <!-- PDF success state -->
+      <div class="s4-pdf-success" id="s4PdfSuccess" style="display:none">
+        <div class="s4-pdf-success-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div>
+          <div class="s4-pdf-success-title">Arquivo gerado com sucesso</div>
+          <div class="s4-pdf-success-actions">
+            <button class="csv-dl-btn secondary small" onclick="s4StartPdfDownload()">Baixar novamente</button>
+            <a class="csv-dl-btn secondary small" href="/app">Adaptar para outra vaga →</a>
+          </div>
+        </div>
+      </div>
       <!-- Tracker card -->
       <div class="csv-tracker-card">
         <div class="csv-tracker-title">Marcar candidatura</div>
@@ -1238,12 +1268,8 @@ html.no-photo .mod-header{display:block}
           Marcar como "Currículo enviado"
         </button>
       </div>
-      <!-- Cloud save -->
-      <div class="csv-cloud-section">
-        <button class="sp-cloud-btn" id="spCloudSaveBtn" onclick="cvSaveToCloud()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          <span id="spCloudSaveLbl">Salvar currículo</span>
-        </button>
+      <!-- Cloud list & login -->
+      <div style="display:none">
         <div class="sp-cloud-list" id="spCloudList"></div>
         <p class="sp-cloud-login hidden" id="spCloudLoginMsg">Faça <a href="/login">login</a> para salvar na nuvem.</p>
       </div>
@@ -1262,16 +1288,16 @@ html.no-photo .mod-header{display:block}
         <span id="cvPageCount"></span><span id="cvKeywordCount"></span>
         <span id="pdfStatusBadge"></span><span id="pdfStatusCopy"></span><span id="pdfStatusFoot"></span>
         <div id="cvChecklist"></div><span id="appSidebarScore"></span><span id="appSidebarScoreFill"></span><span id="appSidebarScoreCopy"></span>
-        <!-- Legacy tplBtn IDs for setTemplate() compatibility -->
         <button id="tplBtnClassic" style="display:none"></button>
         <button id="tplBtnModern" style="display:none"></button>
         <button id="tplBtnExec" style="display:none"></button>
         <button id="tplBtnCompact" style="display:none"></button>
         <button id="tplBtnMinimal" style="display:none"></button>
+        <button id="spCloudSaveBtn"></button><span id="spCloudSaveLbl"></span>
       </div>
     </div>
     <div class="csv-footer">
-      <button class="csv-btn-prev" onclick="goToStep(4)">← Voltar e editar</button>
+      <button class="csv-btn-prev" onclick="goToStep(3)">← Voltar e editar</button>
     </div>
   </div>
 
@@ -2804,7 +2830,7 @@ var _sfDebTimer = null;
 
 function goToStep(n) {
   _cvStep = n;
-  var total = 5;
+  var total = 4;
   for (var i = 1; i <= total; i++) {
     var si = document.getElementById('cnsi' + i);
     var pn = document.getElementById('csStep' + i);
@@ -2818,8 +2844,83 @@ function goToStep(n) {
   if (pb) pb.style.width = Math.round((n / total) * 100) + '%';
   if (n === 2) syncStep2Form();
   if (n === 3) renderStep3();
-  if (n === 4) renderStep3();
-  if (n === 5) { renderStep4(); initTrackerCard(); }
+  if (n === 4) { renderStep4(); initTrackerCard(); }
+  // scroll step panel to top
+  var main = document.querySelector('.cv-main');
+  if (main) main.scrollTop = 0;
+}
+
+function s2CheckResumo() {
+  var el = document.getElementById('sf_resumo');
+  var fb = document.getElementById('s2ResumoFb');
+  if (!el || !fb) return;
+  var len = (el.value || '').trim().length;
+  if (len === 0) { fb.innerHTML = ''; return; }
+  if (len < 80) {
+    fb.innerHTML = '<span class="csv-fb-warn">⚠ Resumo muito curto (' + len + ' caracteres). Recrutatores esperam pelo menos 80.</span>';
+  } else {
+    fb.innerHTML = '<span class="csv-fb-ok">✓ Bom comprimento (' + len + ' caracteres).</span>';
+  }
+}
+
+function s2CheckLinkedIn() {
+  var el = document.getElementById('sf_li');
+  var fb = document.getElementById('s2LinkedInFb');
+  if (!el || !fb) return;
+  var val = (el.value || '').trim();
+  if (val.length === 0) {
+    fb.innerHTML = '<span class="csv-fb-tip">💡 Perfis com LinkedIn têm até 40% mais taxa de resposta.</span>';
+  } else {
+    fb.innerHTML = '';
+  }
+}
+
+function s3RenderSmartWarns() {
+  var container = document.getElementById('s3SmartWarns');
+  if (!container || !_cvData) return;
+  var warns = [];
+  var exps = _cvData.experiencias || [];
+  var noMetrics = exps.filter(function(e) { return e.descricao && !/\d/.test(e.descricao); });
+  if (noMetrics.length > 0) warns.push('⚠ ' + noMetrics.length + ' experiência' + (noMetrics.length > 1 ? 's' : '') + ' sem métricas');
+  var noPeriod = exps.filter(function(e) { return !e.periodo && !e.dataInicio; });
+  if (noPeriod.length > 0) warns.push('⚠ ' + noPeriod.length + ' experiência' + (noPeriod.length > 1 ? 's' : '') + ' sem período definido');
+  var skills = _cvData.habilidades || [];
+  if (skills.length === 0) warns.push('⚠ Nenhuma habilidade adicionada');
+  container.innerHTML = warns.map(function(w) {
+    return '<div class="csv-smart-warn">' + w + '</div>';
+  }).join('');
+  var aiRow = document.getElementById('s3AiRow');
+  if (aiRow) aiRow.style.display = noMetrics.length > 0 ? 'block' : 'none';
+}
+
+function s3ReforcarIA() {
+  showToast('Reforço com IA em breve', 'info');
+}
+
+function s4StartPdfDownload() {
+  var loading = document.getElementById('s4PdfLoading');
+  var success = document.getElementById('s4PdfSuccess');
+  var dlRow = document.getElementById('s4DownloadRow');
+  if (loading) loading.style.display = 'flex';
+  if (dlRow) dlRow.style.display = 'none';
+  if (success) success.style.display = 'none';
+  // spinner animation
+  var frames = ['⠋','⠙','⠸','⠴','⠦','⠇'];
+  var fi = 0;
+  var spinEl = loading ? loading.querySelector('.s4-pdf-spinner') : null;
+  var spinTimer = spinEl ? setInterval(function() { fi = (fi+1)%frames.length; spinEl.textContent = frames[fi]; }, 120) : null;
+  openPdfPreflight();
+  // watch for preflight close to show success
+  var checkTimer = setInterval(function() {
+    var overlay = document.getElementById('pdfPreflightOverlay') || document.querySelector('.pdf-preflight-overlay');
+    var closed = !overlay || overlay.style.display === 'none' || !overlay.classList.contains('open');
+    if (closed) {
+      clearInterval(checkTimer);
+      if (spinTimer) clearInterval(spinTimer);
+      if (loading) loading.style.display = 'none';
+      if (success) success.style.display = 'flex';
+    }
+  }, 400);
 }
 
 function syncStep2Form() {
@@ -2863,6 +2964,7 @@ function sfOnChange() {
 
 function renderStep3() {
   if (!_cvData) return;
+  s3RenderSmartWarns();
   var exp = _cvData.experiencias || [];
   var edu = _cvData.formacao || [];
   var skl = _cvData.habilidades || [];
