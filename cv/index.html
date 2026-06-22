@@ -180,7 +180,7 @@ body{background:var(--page-bg);font-family:'Manrope',sans-serif;padding-left:220
 /* ─── A4 Page ─────────────────────────────────────────────── */
 .page{
   box-sizing:border-box;
-  width:210mm;height:297mm;min-height:297mm;background:#fff;
+  width:210mm;min-height:297mm;background:#fff;
   margin:1rem auto;
   box-shadow:0 6px 40px rgba(0,0,0,.22);
   display:none;overflow:visible;
@@ -605,7 +605,7 @@ body.fit-one-page .mod-tag,body.fit-one-page .exec-tag,body.fit-one-page .minima
 }
 
 /* ─── No data ─────────────────────────────────────────────── */
-.no-data-page{box-sizing:border-box;width:210mm;height:297mm;min-height:297mm;background:#fff;margin:1rem auto;box-shadow:0 6px 40px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center}
+.no-data-page{box-sizing:border-box;width:210mm;min-height:297mm;background:#fff;margin:1rem auto;box-shadow:0 6px 40px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center}
 .no-data{text-align:center;padding:4rem 2rem;font-family:'Manrope',sans-serif;color:#555}
 .no-data h2{font-size:20px;margin-bottom:.5rem;color:#111}
 .no-data p{font-size:13px;margin-bottom:1.5rem}
@@ -1372,7 +1372,81 @@ function closePdfPreflight() {
 }
 
 function directPrint() {
-  window.print();
+  printIsolatedA4();
+}
+
+function getPrintStylesForIframe() {
+  var styles = [];
+  document.querySelectorAll('style').forEach(function(style) {
+    styles.push(style.textContent || '');
+  });
+  styles.push([
+    '@page{size:210mm 297mm;margin:0}',
+    'html,body{width:210mm!important;min-width:210mm!important;margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important}',
+    '*{box-sizing:border-box!important}',
+    '.page-wrap{display:block!important;width:210mm!important;min-width:210mm!important;margin:0!important;padding:0!important;overflow:visible!important}',
+    '.page{display:none!important}',
+    '.page.active{display:flex!important;width:210mm!important;min-width:210mm!important;max-width:210mm!important;min-height:297mm!important;height:auto!important;margin:0!important;padding:0!important;box-shadow:none!important;overflow:visible!important;zoom:1!important;transform:none!important;transform-origin:top left!important;background:#fff!important}',
+    '.page:not(.active){display:none!important}',
+    '.pg-break,.sb-ph-hover,.editable::after,.editable-block::after{display:none!important}',
+    '.app-header,.side-panel,.modal-overlay,.mob-bar,.panel-overlay,.edit-modal,.mob-print-toast,.preflight-overlay{display:none!important}'
+  ].join('\n'));
+  return styles.join('\n');
+}
+
+function printIsolatedA4() {
+  var active = getActiveCvPage();
+  if (!active) return window.print();
+
+  var clone = active.cloneNode(true);
+  clone.querySelectorAll('.pg-break,.sb-ph-hover').forEach(function(el){ el.remove(); });
+  clone.classList.add('active');
+  clone.removeAttribute('style');
+
+  var frame = document.createElement('iframe');
+  frame.setAttribute('aria-hidden', 'true');
+  frame.style.position = 'fixed';
+  frame.style.right = '0';
+  frame.style.bottom = '0';
+  frame.style.width = '0';
+  frame.style.height = '0';
+  frame.style.border = '0';
+  frame.style.opacity = '0';
+  document.body.appendChild(frame);
+
+  var doc = frame.contentDocument || frame.contentWindow.document;
+  var title = ((_cvData && _cvData.nome) ? _cvData.nome : 'curriculo-vagaai') + ' - Curriculo';
+  doc.open();
+  doc.write('<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><title>' + _esc(title) + '</title>');
+  doc.write('<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">');
+  doc.write('<style>' + getPrintStylesForIframe() + '</style></head><body><div class="page-wrap">' + clone.outerHTML + '</div></body></html>');
+  doc.close();
+
+  var cleanup = function() {
+    setTimeout(function() {
+      if (frame && frame.parentNode) frame.parentNode.removeChild(frame);
+    }, 1200);
+  };
+
+  var printed = false;
+  var runPrint = function() {
+    if (printed) return;
+    printed = true;
+    try {
+      frame.contentWindow.focus();
+      frame.contentWindow.print();
+    } catch(e) {
+      window.print();
+    }
+    cleanup();
+  };
+
+  frame.onload = function() {
+    setTimeout(function() {
+      runPrint();
+    }, 300);
+  };
+  setTimeout(runPrint, 800);
 }
 
 function printAfterPreflight() {
