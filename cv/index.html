@@ -591,6 +591,69 @@ body.fit-one-page .sb-sec{padding-top:.6rem}
 body.fit-one-page .exp-emp{margin:.05rem 0 .2rem}
 
 /* ─── Mobile top bar ──────────────────────────────────────── */
+/* ─── Step indicator ─────────────────────────────────────── */
+.sp-steps{padding:.85rem 1rem .7rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;flex-shrink:0}
+.sp-step-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;flex:1;transition:opacity .15s}
+.sp-step-item:hover{opacity:.85}
+.sp-step-dot{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.13);display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:rgba(255,255,255,.28);transition:all .2s;font-family:'Manrope',sans-serif}
+.sp-step-item.active .sp-step-dot{background:var(--app-emerald,#3ecf8e);border-color:var(--app-emerald,#3ecf8e);color:#0a0f0d}
+.sp-step-item.done .sp-step-dot{background:rgba(78,206,145,.18);border-color:rgba(78,206,145,.35);color:var(--app-emerald,#3ecf8e)}
+.sp-step-lbl{font-size:8px;font-weight:800;color:rgba(255,255,255,.22);letter-spacing:.04em;text-transform:uppercase;text-align:center}
+.sp-step-item.active .sp-step-lbl{color:rgba(255,255,255,.65)}
+.sp-step-item.done .sp-step-lbl{color:rgba(78,206,145,.6)}
+.sp-step-line{flex:0 0 12px;height:1px;background:rgba(255,255,255,.1);margin-bottom:11px}
+
+/* ─── Step panels ─────────────────────────────────────────── */
+.sp-step-panel{display:none;flex-direction:column;flex:1;overflow:hidden}
+.sp-step-panel.active{display:flex}
+.sp-step-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.55rem;padding:1rem 1.1rem}
+.sp-step-hint{font-size:10px;color:rgba(255,255,255,.28);line-height:1.5}
+
+/* ─── Step nav buttons ────────────────────────────────────── */
+.sp-step-nav{padding:.7rem 1.1rem;border-top:1px solid rgba(255,255,255,.06);display:flex;gap:.4rem;flex-shrink:0}
+.sp-nav-next{flex:1;font-family:'Manrope',sans-serif;font-size:12.5px;font-weight:700;padding:.6rem;border-radius:9px;background:var(--app-emerald,#3ecf8e);color:#0a0f0d;border:none;cursor:pointer;transition:opacity .15s}
+.sp-nav-next:hover{opacity:.85}
+.sp-nav-prev{font-family:'Manrope',sans-serif;font-size:13px;font-weight:600;padding:.6rem .8rem;border-radius:9px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.38);border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:all .15s}
+.sp-nav-prev:hover{color:#fff;background:rgba(255,255,255,.1)}
+
+/* ─── Step 2 inline form ──────────────────────────────────── */
+.sf-group{display:flex;flex-direction:column;gap:.2rem}
+.sf-lbl{font-size:9.5px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.06em}
+.sf-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:#e8ede9;font-family:'Manrope',sans-serif;font-size:12px;padding:.42rem .6rem;transition:border-color .15s;resize:none}
+.sf-input:focus{outline:none;border-color:rgba(62,207,142,.4)}
+.sf-row{display:flex;gap:.35rem}
+.sf-row .sf-group{flex:1;min-width:0}
+.sf-count{font-size:9px;text-align:right;color:rgba(255,255,255,.25);margin-top:.1rem}
+.sf-count.ok{color:rgba(78,206,145,.65)}
+
+/* ─── Step 3 experience mini-cards ───────────────────────── */
+.se-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:8px;display:flex;align-items:center;padding:.42rem .6rem;gap:.4rem}
+.se-card-name{flex:1;font-size:11px;font-weight:600;color:rgba(255,255,255,.52);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.se-card-sub{font-size:9.5px;color:rgba(255,255,255,.25);white-space:nowrap}
+.se-add{width:100%;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.12);color:rgba(255,255,255,.32);font-family:'Manrope',sans-serif;font-size:11px;font-weight:600;padding:.45rem;border-radius:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.3rem}
+.se-add:hover{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.25)}
+.se-warn{font-size:10px;color:rgba(220,150,40,.85);display:flex;align-items:center;gap:.35rem;background:rgba(196,125,10,.08);border:1px solid rgba(196,125,10,.15);border-radius:7px;padding:.38rem .55rem;line-height:1.4}
+.se-skill-tag{font-size:9.5px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.45);border-radius:4px;padding:.15rem .4rem}
+
+/* ─── Step 4 score + checklist ───────────────────────────── */
+.s4-score-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.3rem}
+.s4-score-num{font-size:15px;font-weight:800;color:var(--app-emerald,#3ecf8e)}
+.s4-bar{height:5px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;margin-bottom:.7rem}
+.s4-bar-fill{height:100%;background:var(--app-emerald,#3ecf8e);border-radius:99px;transition:width .5s ease}
+.s4-pillars{display:flex;flex-direction:column;gap:5px;margin-bottom:.6rem}
+.s4-pillar{display:flex;align-items:center;gap:7px}
+.s4-pillar-lbl{font-size:9.5px;font-weight:700;color:rgba(255,255,255,.35);width:56px;flex-shrink:0}
+.s4-pillar-bar{flex:1;height:3px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}
+.s4-pillar-fill{height:100%;border-radius:99px;transition:width .5s ease}
+.s4-pillar-pct{font-size:9px;font-weight:800;color:rgba(255,255,255,.28);width:24px;text-align:right;flex-shrink:0}
+.s4-check{display:flex;align-items:center;gap:.4rem;font-size:10.5px;font-weight:600;padding:.18rem 0}
+.s4-check.ok{color:rgba(78,206,145,.8)}
+.s4-check.warn{color:rgba(255,255,255,.35)}
+.s4-check i{width:14px;height:14px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:8.5px;font-style:normal;font-weight:900;flex-shrink:0}
+.s4-check.ok i{background:rgba(78,206,145,.15);color:var(--app-emerald,#3ecf8e)}
+.s4-check.warn i{background:rgba(255,255,255,.06);color:rgba(255,255,255,.22)}
+.s4-section-lbl{font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:.3rem}
+
 /* ─── Cloud save section ──────────────────────────────────── */
 .sp-cloud-btn{width:100%;font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;padding:.6rem .8rem;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:rgba(255,255,255,.65);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.45rem}
 .sp-cloud-btn:hover{background:rgba(255,255,255,.12);color:#fff}
@@ -810,122 +873,225 @@ html.no-photo .mod-header{display:block}
     <div class="sp-editor-sub">Escolha o visual e ajuste as informações antes de baixar.</div>
   </div>
 
-  <!-- Modelo -->
-  <div class="sp-section">
-    <div class="sp-label">Modelo</div>
-    <div class="tpl-toggle">
-      <button class="tpl-btn active" id="tplBtnClassic" onclick="setTemplate('classic')">
-        <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></span> Profissional <span class="tpl-ats-badge sidebar">Sidebar</span><span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-      </button>
-      <button class="tpl-btn" id="tplBtnModern" onclick="setTemplate('modern')">
-        <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></span> Moderno <span class="tpl-ats-badge ats">ATS ✓</span><span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-      </button>
-      <button class="tpl-btn" id="tplBtnExec" onclick="setTemplate('exec')">
-        <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"/></svg></span> Executivo <span class="tpl-ats-badge sidebar">Sidebar</span><span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-      </button>
-      <button class="tpl-btn" id="tplBtnCompact" onclick="setTemplate('compact')">
-        <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg></span> Compacto <span class="tpl-ats-badge sidebar">Sidebar</span><span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-      </button>
-      <button class="tpl-btn" id="tplBtnMinimal" onclick="setTemplate('minimal')">
-        <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span> Minimalista <span class="tpl-ats-badge ats">ATS ✓</span><span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-      </button>
+  <!-- ── Step indicator ─────────────────────────────── -->
+  <div class="sp-steps">
+    <div class="sp-step-item active" id="spsi1" onclick="goToStep(1)">
+      <div class="sp-step-dot">1</div><div class="sp-step-lbl">Modelo</div>
+    </div>
+    <div class="sp-step-line"></div>
+    <div class="sp-step-item" id="spsi2" onclick="goToStep(2)">
+      <div class="sp-step-dot">2</div><div class="sp-step-lbl">Dados</div>
+    </div>
+    <div class="sp-step-line"></div>
+    <div class="sp-step-item" id="spsi3" onclick="goToStep(3)">
+      <div class="sp-step-dot">3</div><div class="sp-step-lbl">Exp.</div>
+    </div>
+    <div class="sp-step-line"></div>
+    <div class="sp-step-item" id="spsi4" onclick="goToStep(4)">
+      <div class="sp-step-dot">4</div><div class="sp-step-lbl">Exportar</div>
     </div>
   </div>
 
-  <!-- Foto -->
-  <div class="sp-section">
-    <div class="sp-label">Foto</div>
-    <div class="sp-photo-preview">
-      <div class="sp-photo-circle" id="spPhotoCircle">
-        <img id="spPhotoThumb" alt="">
-        <span id="spPhotoIcon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+  <!-- ── STEP 1: Modelo + Foto ───────────────────────── -->
+  <div class="sp-step-panel active" id="spPanel1">
+    <div class="sp-step-scroll">
+      <div>
+        <div class="sp-label">Escolha o modelo</div>
+        <p class="sp-step-hint" style="margin-bottom:.6rem">ATS ✓ = coluna única, lida na ordem correta por sistemas de recrutamento automático.</p>
+        <div class="tpl-toggle">
+          <button class="tpl-btn active" id="tplBtnClassic" onclick="setTemplate('classic')">
+            <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></span> Profissional <span class="tpl-ats-badge sidebar">Sidebar</span><span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          </button>
+          <button class="tpl-btn" id="tplBtnModern" onclick="setTemplate('modern')">
+            <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></span> Moderno <span class="tpl-ats-badge ats">ATS ✓</span><span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          </button>
+          <button class="tpl-btn" id="tplBtnExec" onclick="setTemplate('exec')">
+            <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"/></svg></span> Executivo <span class="tpl-ats-badge sidebar">Sidebar</span><span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          </button>
+          <button class="tpl-btn" id="tplBtnCompact" onclick="setTemplate('compact')">
+            <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg></span> Compacto <span class="tpl-ats-badge sidebar">Sidebar</span><span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          </button>
+          <button class="tpl-btn" id="tplBtnMinimal" onclick="setTemplate('minimal')">
+            <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span> Minimalista <span class="tpl-ats-badge ats">ATS ✓</span><span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          </button>
+        </div>
       </div>
-      <div class="sp-photo-status">
-        <strong id="spPhotoStatusTitle">Sem foto</strong>
-        <span id="spPhotoStatusSub">Aparência neutra</span>
+      <!-- Foto -->
+      <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:.8rem">
+        <div class="sp-label">Foto</div>
+        <div class="sp-photo-preview">
+          <div class="sp-photo-circle" id="spPhotoCircle">
+            <img id="spPhotoThumb" alt="">
+            <span id="spPhotoIcon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+          </div>
+          <div class="sp-photo-status">
+            <strong id="spPhotoStatusTitle">Sem foto</strong>
+            <span id="spPhotoStatusSub">Aparência neutra</span>
+          </div>
+        </div>
+        <div class="sp-photo-btns">
+          <button class="sp-ph-btn" onclick="document.getElementById('photoFileInput').click()">
+            <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span> <span id="spPhotoBtnLabel">Adicionar foto</span>
+          </button>
+          <button class="sp-ph-btn danger" id="spRemoveBtn" style="display:none" onclick="removePhoto()">
+            <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span> Remover foto
+          </button>
+        </div>
+        <input type="file" id="photoFileInput" accept="image/*">
+        <p class="sp-photo-tip">ATS não lê fotos. Inclua se enviar direto ao recrutador; omita em plataformas ou vagas internacionais.</p>
       </div>
     </div>
-    <div class="sp-photo-btns">
-      <button class="sp-ph-btn" onclick="document.getElementById('photoFileInput').click()">
-        <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span> <span id="spPhotoBtnLabel">Adicionar foto</span>
+    <div class="sp-step-nav">
+      <button class="sp-nav-next" onclick="goToStep(2)">Próximo: Informações →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: Informações inline ─────────────────── -->
+  <div class="sp-step-panel" id="spPanel2">
+    <div class="sp-step-scroll">
+      <div>
+        <div class="sp-label">Suas informações</div>
+        <p class="sp-step-hint">Campos preenchidos com seu perfil. Edite aqui — o currículo atualiza em tempo real ao lado.</p>
+      </div>
+      <div class="sf-group">
+        <div class="sf-lbl">Nome completo</div>
+        <input class="sf-input" id="sf_nome" oninput="sfOnChange()" placeholder="Nome Sobrenome">
+      </div>
+      <div class="sf-group">
+        <div class="sf-lbl">Cargo / Título</div>
+        <input class="sf-input" id="sf_titulo" oninput="sfOnChange()" placeholder="Ex: Analista de Marketing">
+      </div>
+      <div class="sf-group">
+        <div class="sf-lbl">Resumo profissional</div>
+        <textarea class="sf-input" id="sf_resumo" oninput="sfOnChange()" rows="5" style="resize:none"></textarea>
+        <div class="sf-count" id="sf_resumo_count">0 caracteres</div>
+      </div>
+      <div class="sf-group">
+        <div class="sf-lbl">E-mail</div>
+        <input class="sf-input" id="sf_email" type="email" oninput="sfOnChange()">
+      </div>
+      <div class="sf-row">
+        <div class="sf-group">
+          <div class="sf-lbl">Telefone</div>
+          <input class="sf-input" id="sf_tel" oninput="sfOnChange()">
+        </div>
+        <div class="sf-group">
+          <div class="sf-lbl">Cidade</div>
+          <input class="sf-input" id="sf_cidade" oninput="sfOnChange()">
+        </div>
+      </div>
+      <div class="sf-group">
+        <div class="sf-lbl">LinkedIn</div>
+        <input class="sf-input" id="sf_li" oninput="sfOnChange()" placeholder="linkedin.com/in/...">
+      </div>
+    </div>
+    <div class="sp-step-nav">
+      <button class="sp-nav-prev" onclick="goToStep(1)">←</button>
+      <button class="sp-nav-next" onclick="goToStep(3)">Próximo: Experiência →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: Experiência + Formação + Skills ─────── -->
+  <div class="sp-step-panel" id="spPanel3">
+    <div class="sp-step-scroll">
+      <div>
+        <div class="sp-label">Experiências</div>
+        <div id="s3ExpList" style="display:flex;flex-direction:column;gap:.28rem;margin-bottom:.4rem"></div>
+        <button class="se-add" onclick="openEdit('exp')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Editar / Adicionar experiência
+        </button>
+        <div class="se-warn" id="s3ExpWarn" style="display:none;margin-top:.35rem">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span id="s3WarnText">Sem métricas nas experiências</span>
+        </div>
+      </div>
+      <div>
+        <div class="sp-label">Formação</div>
+        <div id="s3EduList" style="display:flex;flex-direction:column;gap:.28rem;margin-bottom:.4rem"></div>
+        <button class="se-add" onclick="openEdit('edu')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Editar / Adicionar formação
+        </button>
+      </div>
+      <div>
+        <div class="sp-label">Habilidades</div>
+        <div id="s3SkillsList" style="display:flex;flex-wrap:wrap;gap:.28rem;margin-bottom:.4rem"></div>
+        <button class="se-add" onclick="openEdit('skills')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Editar habilidades
+        </button>
+      </div>
+    </div>
+    <div class="sp-step-nav">
+      <button class="sp-nav-prev" onclick="goToStep(2)">←</button>
+      <button class="sp-nav-next" onclick="goToStep(4)">Próximo: Exportar →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 4: Exportar ────────────────────────────── -->
+  <div class="sp-step-panel" id="spPanel4">
+    <div class="sp-step-scroll">
+      <!-- ATS score -->
+      <div>
+        <div class="s4-score-row">
+          <div class="s4-section-lbl">Compatibilidade ATS</div>
+          <span class="s4-score-num" id="s4ScoreVal">—</span>
+        </div>
+        <div class="s4-bar"><div class="s4-bar-fill" id="s4ScoreFill" style="width:0%"></div></div>
+        <div class="s4-pillars">
+          <div class="s4-pillar"><span class="s4-pillar-lbl">Contato</span><div class="s4-pillar-bar"><div class="s4-pillar-fill" id="s4p1"></div></div><span class="s4-pillar-pct" id="s4p1pct">—</span></div>
+          <div class="s4-pillar"><span class="s4-pillar-lbl">Resumo</span><div class="s4-pillar-bar"><div class="s4-pillar-fill" id="s4p2"></div></div><span class="s4-pillar-pct" id="s4p2pct">—</span></div>
+          <div class="s4-pillar"><span class="s4-pillar-lbl">Métricas</span><div class="s4-pillar-bar"><div class="s4-pillar-fill" id="s4p3"></div></div><span class="s4-pillar-pct" id="s4p3pct">—</span></div>
+          <div class="s4-pillar"><span class="s4-pillar-lbl">Keywords</span><div class="s4-pillar-bar"><div class="s4-pillar-fill" id="s4p4"></div></div><span class="s4-pillar-pct" id="s4p4pct">—</span></div>
+        </div>
+      </div>
+      <!-- Checklist -->
+      <div>
+        <div class="s4-section-lbl">Checklist</div>
+        <div id="s4Checklist" style="display:flex;flex-direction:column;gap:.08rem"></div>
+      </div>
+      <!-- Smart fixes -->
+      <div class="smart-actions" id="s4SmartActions">
+        <button class="smart-action" type="button" onclick="applySmartFix('keywords')">+ Keywords</button>
+        <button class="smart-action" type="button" onclick="applySmartFix('metrics')">+ Métricas</button>
+        <button class="smart-action" type="button" onclick="compactCurrentTemplate()">Compactar</button>
+      </div>
+      <!-- Salvar na nuvem -->
+      <div>
+        <div class="s4-section-lbl">Salvar na nuvem</div>
+        <button class="sp-cloud-btn" id="spCloudSaveBtn" onclick="cvSaveToCloud()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span id="spCloudSaveLbl">Salvar currículo</span>
+        </button>
+        <div class="sp-cloud-list" id="spCloudList"></div>
+        <p class="sp-cloud-login hidden" id="spCloudLoginMsg">Faça <a href="/login">login</a> para salvar na nuvem e acessar de qualquer dispositivo.</p>
+      </div>
+      <!-- Job summary (populated by JS when available) -->
+      <article class="job-summary" id="jobSummaryCard" hidden>
+        <div class="job-summary-head"><span class="job-summary-label">Resumo da vaga</span><span class="job-summary-score" id="jobSummaryScore"></span></div>
+        <div class="job-summary-role" id="jobSummaryRole"></div>
+        <div class="job-summary-company" id="jobSummaryCompany"></div>
+        <div class="job-summary-chips" id="jobSummaryChips"></div>
+        <p class="job-summary-text" id="jobSummaryText"></p>
+        <a class="job-summary-link" id="jobSummaryLink" href="#" target="_blank" rel="noopener noreferrer">Ver vaga original <span aria-hidden="true">↗</span></a>
+      </article>
+      <!-- Legacy quality IDs (used by existing JS functions) — kept hidden -->
+      <div style="display:none" aria-hidden="true">
+        <span id="cvQualityScore"></span><span id="cvQualityFill"></span><span id="cvQualityCopy"></span>
+        <span id="cvPageCount"></span><span id="cvKeywordCount"></span>
+        <span id="pdfStatusBadge"></span><span id="pdfStatusCopy"></span><span id="pdfStatusFoot"></span>
+        <div id="cvChecklist"></div><span id="appSidebarScore"></span><span id="appSidebarScoreFill"></span><span id="appSidebarScoreCopy"></span>
+      </div>
+    </div>
+    <!-- Export buttons -->
+    <div class="sp-bottom" style="padding-top:.7rem">
+      <button class="sp-print" onclick="openPdfPreflight()">
+        <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Baixar PDF
       </button>
-      <button class="sp-ph-btn danger" id="spRemoveBtn" style="display:none" onclick="removePhoto()">
-        <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span> Remover foto
-      </button>
-    </div>
-    <input type="file" id="photoFileInput" accept="image/*">
-    <p class="sp-photo-tip">ATS não lê fotos. Inclua se enviar o PDF direto ao recrutador; omita em candidaturas por plataforma ou vagas internacionais.</p>
-  </div>
-
-  <!-- Editar conteúdo -->
-  <div class="sp-section">
-    <div class="sp-label">Editar conteúdo</div>
-    <div style="display:flex;flex-direction:column;gap:.35rem">
-      <button class="sp-edit-btn" onclick="openEdit('contact')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Dados pessoais</button>
-      <button class="sp-edit-btn" onclick="openEdit('skills')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Habilidades</button>
-      <button class="sp-edit-btn" onclick="openEdit('exp')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> Experiências</button>
-      <button class="sp-edit-btn" onclick="openEdit('edu')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> Formação</button>
-    </div>
-  </div>
-
-  <!-- Salvar na nuvem -->
-  <div class="sp-section" id="spCloudSection">
-    <div class="sp-label">Salvar na nuvem</div>
-    <button class="sp-cloud-btn" id="spCloudSaveBtn" onclick="cvSaveToCloud()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-      <span id="spCloudSaveLbl">Salvar currículo</span>
-    </button>
-    <div class="sp-cloud-list" id="spCloudList"></div>
-    <p class="sp-cloud-login hidden" id="spCloudLoginMsg">Faça <a href="/login">login</a> para salvar na nuvem e acessar de qualquer dispositivo.</p>
-  </div>
-
-  <div class="sp-section" id="cvQualitySection">
-    <div class="sp-label">Qualidade do currículo</div>
-    <div class="cv-quality-box">
-      <div class="cv-quality-top"><strong>Compatibilidade ATS</strong><span class="cv-quality-score" id="cvQualityScore">—</span></div>
-      <div class="cv-quality-track"><span class="cv-quality-fill" id="cvQualityFill"></span></div>
-      <p class="cv-quality-copy" id="cvQualityCopy">Currículo estruturado para leitura por sistemas de recrutamento.</p>
-    </div>
-    <div class="cv-smart-grid">
-      <div class="cv-smart-pill"><b id="cvPageCount">—</b><span>páginas</span></div>
-      <div class="cv-smart-pill"><b id="cvKeywordCount">—</b><span>keywords</span></div>
-    </div>
-    <div class="pdf-status" id="pdfStatusBox">
-      <div class="pdf-status-top"><span>Pronto para PDF</span><span class="pdf-status-badge" id="pdfStatusBadge">verificando</span></div>
-      <div class="pdf-status-copy" id="pdfStatusCopy">A VagaAI vai revisar páginas, margens e conteúdo antes do download.</div>
-      <div class="pdf-status-foot" id="pdfStatusFoot">Formato de exportação: A4 vertical, com área segura interna por modelo.</div>
-    </div>
-    <div class="cv-checklist" id="cvChecklist">
-      <div class="cv-check warn"><span>Resumo alinhado à vaga</span><i>·</i></div>
-      <div class="cv-check warn"><span>Experiências com métricas</span><i>·</i></div>
-      <div class="cv-check warn"><span>Keywords principais</span><i>·</i></div>
-      <div class="cv-check warn"><span>Formatação ATS</span><i>·</i></div>
-    </div>
-    <div class="smart-actions">
-      <button class="smart-action" type="button" onclick="applySmartFix('keywords')">Adicionar keywords</button>
-      <button class="smart-action" type="button" onclick="applySmartFix('metrics')">Reforçar métricas</button>
-      <button class="smart-action" type="button" onclick="applySmartFix('shorten')">Encurtar resumo</button>
-      <button class="smart-action" type="button" onclick="compactCurrentTemplate()">Compactar modelo</button>
-    </div>
-    <article class="job-summary" id="jobSummaryCard" hidden>
-      <div class="job-summary-head"><span class="job-summary-label">Resumo da vaga</span><span class="job-summary-score" id="jobSummaryScore"></span></div>
-      <div class="job-summary-role" id="jobSummaryRole"></div>
-      <div class="job-summary-company" id="jobSummaryCompany"></div>
-      <div class="job-summary-chips" id="jobSummaryChips"></div>
-      <p class="job-summary-text" id="jobSummaryText"></p>
-      <a class="job-summary-link" id="jobSummaryLink" href="#" target="_blank" rel="noopener noreferrer">Ver vaga original <span aria-hidden="true">↗</span></a>
-    </article>
-  </div>
-
-  <!-- Imprimir -->
-  <div class="sp-bottom">
-    <button class="sp-print" onclick="mobPrint()">
-      <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span> Revisar e baixar PDF
-    </button>
-    <div class="sp-print-trust">
-      <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> A4 pronto para impressão</span>
-      <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Otimizado para leitura por ATS</span>
-      <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Revisão automática antes de baixar</span>
+      <div class="sp-print-trust">
+        <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> A4 pronto para impressão</span>
+        <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Texto legível por ATS</span>
+        <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Revisão automática incluída</span>
+      </div>
+      <button class="sp-nav-prev" style="width:100%;margin-top:.45rem;text-align:center" onclick="goToStep(3)">← Voltar e editar</button>
     </div>
   </div>
 
@@ -2365,6 +2531,163 @@ function saveCvData() {
   if (!_cvData) return;
   pushHistory();
   try { localStorage.setItem('vagaai_cv', JSON.stringify(_cvData)); } catch(e) {}
+}
+
+/* ── Steps ──────────────────────────────────────────────── */
+var _cvStep = 1;
+var _sfDebTimer = null;
+
+function goToStep(n) {
+  _cvStep = n;
+  for (var i = 1; i <= 4; i++) {
+    var si = document.getElementById('spsi' + i);
+    var pn = document.getElementById('spPanel' + i);
+    if (si) {
+      si.classList.toggle('active', i <= n);
+      si.classList.toggle('done',   i < n);
+    }
+    if (pn) pn.classList.toggle('active', i === n);
+  }
+  if (n === 2) syncStep2Form();
+  if (n === 3) renderStep3();
+  if (n === 4) renderStep4();
+}
+
+function syncStep2Form() {
+  if (!_cvData) return;
+  var c = _cvData.contato || {};
+  var set = function(id, val) { var el = document.getElementById(id); if (el) el.value = val || ''; };
+  set('sf_nome',   _cvData.nome);
+  set('sf_titulo', _cvData.titulo_profissional);
+  set('sf_resumo', _cvData.resumo_profissional);
+  set('sf_email',  c.email);
+  set('sf_tel',    c.telefone);
+  set('sf_cidade', c.cidade);
+  set('sf_li',     c.linkedin);
+  var cnt = document.getElementById('sf_resumo_count');
+  if (cnt) cnt.textContent = String(_cvData.resumo_profissional || '').length + ' caracteres';
+}
+
+function sfOnChange() {
+  if (!_cvData) return;
+  var g = function(id) { var el = document.getElementById(id); return el ? el.value : ''; };
+  _cvData.nome                 = g('sf_nome');
+  _cvData.titulo_profissional  = g('sf_titulo');
+  _cvData.resumo_profissional  = g('sf_resumo');
+  _cvData.contato              = _cvData.contato || {};
+  _cvData.contato.email        = g('sf_email');
+  _cvData.contato.telefone     = g('sf_tel');
+  _cvData.contato.cidade       = g('sf_cidade');
+  _cvData.contato.linkedin     = g('sf_li');
+
+  reRenderNome(_cvData.nome);
+  reRenderRole(_cvData.titulo_profissional);
+  reRenderResumo(_cvData.resumo_profissional);
+  reRenderContact(_cvData.contato);
+
+  var cnt = document.getElementById('sf_resumo_count');
+  if (cnt) cnt.textContent = String(_cvData.resumo_profissional || '').length + ' caracteres';
+
+  clearTimeout(_sfDebTimer);
+  _sfDebTimer = setTimeout(saveCvData, 800);
+}
+
+function renderStep3() {
+  if (!_cvData) return;
+  var exp = _cvData.experiencias || [];
+  var edu = _cvData.formacao || [];
+  var skl = _cvData.habilidades || [];
+
+  var expEl = document.getElementById('s3ExpList');
+  if (expEl) {
+    if (!exp.length) {
+      expEl.innerHTML = '<div class="se-warn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> <span>Nenhuma experiência ainda</span></div>';
+    } else {
+      var hasM = exp.some(function(e) { return hasMetricText && (e.bullets || []).some(function(b){ return /\d/.test(b); }); });
+      expEl.innerHTML = exp.map(function(e) {
+        return '<div class="se-card"><div class="se-card-name">' + _esc(e.cargo || '—') + '</div><div class="se-card-sub">' + _esc(e.empresa || '') + (e.periodo_inicio ? ' · ' + _esc(e.periodo_inicio) : '') + '</div></div>';
+      }).join('');
+      var warn = document.getElementById('s3ExpWarn');
+      var warnTxt = document.getElementById('s3WarnText');
+      if (warn && warnTxt) {
+        var noMetrics = exp.some(function(e){ return !(e.bullets || []).some(function(b){ return /\d/.test(b); }); });
+        warn.style.display = noMetrics ? '' : 'none';
+        warnTxt.textContent = 'Adicione métricas (ex: "aumentei 30%") para melhorar o ATS';
+      }
+    }
+  }
+
+  var eduEl = document.getElementById('s3EduList');
+  if (eduEl) {
+    if (!edu.length) {
+      eduEl.innerHTML = '<div class="se-warn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> <span>Nenhuma formação ainda</span></div>';
+    } else {
+      eduEl.innerHTML = edu.map(function(e) {
+        return '<div class="se-card"><div class="se-card-name">' + _esc(e.curso || '—') + '</div><div class="se-card-sub">' + _esc(e.instituicao || '') + '</div></div>';
+      }).join('');
+    }
+  }
+
+  var sklEl = document.getElementById('s3SkillsList');
+  if (sklEl) {
+    if (!skl.length) {
+      sklEl.innerHTML = '<div class="se-warn" style="width:100%"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> <span>Sem habilidades</span></div>';
+    } else {
+      sklEl.innerHTML = skl.map(function(s) {
+        return '<span class="se-skill-tag">' + _esc(typeof s === 'string' ? s : s.nome || s) + '</span>';
+      }).join('');
+    }
+  }
+}
+
+function renderStep4() {
+  if (!_cvData) return;
+  var kws      = getContextKeywords ? getContextKeywords() : { total: 0, missing: [] };
+  var c        = _cvData.contato || {};
+  var hasContact  = Boolean((c.email || '').trim() || (c.telefone || '').trim());
+  var summaryLen  = String(_cvData.resumo_profissional || '').trim().length;
+  var hasSummary  = summaryLen > 80;
+  var hasMetrics  = typeof hasMetricText === 'function' ? hasMetricText() : false;
+  var kwScore     = kws.total + kws.missing.length > 0
+    ? Math.min(100, Math.round(kws.total / (kws.total + kws.missing.length) * 100))
+    : 50;
+
+  var pillars = [
+    { id: 's4p1', pct: hasContact  ? 100 : 20 },
+    { id: 's4p2', pct: hasSummary  ? 90  : (summaryLen > 30 ? 40 : 10) },
+    { id: 's4p3', pct: hasMetrics  ? 95  : 0 },
+    { id: 's4p4', pct: kwScore }
+  ];
+
+  pillars.forEach(function(p, i) {
+    var fill = document.getElementById(p.id);
+    var pct  = document.getElementById(p.id + 'pct');
+    if (fill) fill.style.width = p.pct + '%';
+    if (pct)  pct.textContent  = p.pct + '%';
+  });
+
+  var overall = Math.round(pillars.reduce(function(s, p){ return s + p.pct; }, 0) / pillars.length);
+  var scoreVal  = document.getElementById('s4ScoreVal');
+  var scoreFill = document.getElementById('s4ScoreFill');
+  if (scoreVal)  scoreVal.textContent = overall + '%';
+  if (scoreFill) scoreFill.style.width = overall + '%';
+
+  var diag = typeof getPrintDiagnostics === 'function' ? getPrintDiagnostics() : { sidebarRisk: false, longTextRisk: false };
+  var pages = typeof getPageEstimate === 'function' ? getPageEstimate() : 1;
+  var cl = document.getElementById('s4Checklist');
+  if (cl) {
+    var items = [
+      ['Nome e contato',          hasContact],
+      ['Resumo com +80 caracteres', hasSummary],
+      ['Métricas nas experiências', hasMetrics],
+      ['Keywords identificadas',    kws.total >= 3],
+      ['Cabe em 1 página',          pages <= 1],
+      ['Margem segura',             !(diag.sidebarRisk || diag.longTextRisk)]
+    ];
+    cl.innerHTML = items.map(function(it) {
+      return '<div class="s4-check ' + (it[1] ? 'ok' : 'warn') + '"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' + (it[1] ? '<polyline points="20 6 9 17 4 12"/>' : '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>') + '</svg><span>' + it[0] + '</span></div>';
+    }).join('');
+  }
 }
 
 /* ── Re-render helpers ──────────────────────────────────── */
