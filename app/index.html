@@ -2187,11 +2187,16 @@ function openCV() {
 
 function openInterview() {
   track('interview_click');
+  var analysisId = _lastResultData && (
+    _lastResultData._analysis_id ||
+    _lastResultData.analysis_id ||
+    (_lastResultData.result && (_lastResultData.result._analysis_id || _lastResultData.result.analysis_id))
+  );
   try {
     localStorage.setItem('vagaai_last_job', jobEl.value.trim());
     localStorage.setItem('vagaai_last_cv', cvEl.value.trim());
   } catch(e) {}
-  window.open('/entrevista', '_blank');
+  window.open('/entrevista' + (analysisId ? '?analysis_id=' + encodeURIComponent(analysisId) : ''), '_blank');
 }
 
 function openCarta() {

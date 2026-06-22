@@ -3287,6 +3287,15 @@ function safeExternalUrl(value) {
   }
 }
 
+function getApplicationAnalysisId(item) {
+  item = item || {};
+  return (item.analysisData && item.analysisData.id) ||
+    item.analysis_id ||
+    (item.trackerData && item.trackerData.analysis_id) ||
+    (item.result && item.result._analysis_id) ||
+    '';
+}
+
 /* ── Merge analyses + tracker into unified items ── */
 function mergeApplications() {
   var analyses = window._lastAnalysesData || [];
@@ -3660,7 +3669,8 @@ function renderCandDetail(item) {
   var acts = '';
   // Vaga em entrevista → ação principal é treinar a entrevista (simulador /entrevista, Pro)
   if (item.status === 'entrevista') {
-    var _entUrl = '/entrevista' + (item.analysisData ? '?analysis_id=' + encodeURIComponent(item.analysisData.id) : '');
+    var _analysisId = getApplicationAnalysisId(item);
+    var _entUrl = '/entrevista' + (_analysisId ? '?analysis_id=' + encodeURIComponent(_analysisId) : '');
     acts += '<button class="cd-btn cd-cta" data-url="'+escAttr(_entUrl)+'" onclick="window.location.href=this.dataset.url">Treinar entrevista →</button>';
   }
   if (item.analysisData) {
