@@ -591,10 +591,25 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 .s4-pdf-loading{display:flex;align-items:center;gap:.75rem;padding:.9rem 1rem;border-radius:10px;background:rgba(78,206,145,.06);border:1px solid rgba(78,206,145,.15);margin-top:.6rem;font-size:13px;color:var(--app-t2)}
 .s4-pdf-spinner{font-size:18px;color:var(--app-emerald);animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .s4-pdf-success{display:flex;align-items:flex-start;gap:.75rem;padding:.9rem 1rem;border-radius:10px;background:rgba(78,206,145,.07);border:1px solid rgba(78,206,145,.25);margin-top:.6rem}
 .s4-pdf-success-icon{width:32px;height:32px;border-radius:50%;background:rgba(78,206,145,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--app-emerald)}
 .s4-pdf-success-title{font-size:13px;font-weight:700;color:var(--app-t1);margin-bottom:.5rem}
 .s4-pdf-success-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+/* Nav ATS widget */
+.cn-ats-widget{padding:.7rem 1rem;border-radius:10px;background:rgba(78,206,145,.07);border:1px solid rgba(78,206,145,.14);margin-bottom:.1rem}
+.cn-ats-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem}
+.cn-ats-label{font-size:10.5px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:.04em;text-transform:uppercase}
+.cn-ats-val{font-size:15px;font-weight:800;color:var(--app-emerald)}
+.cn-ats-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
+.cn-ats-bar-fill{height:100%;border-radius:999px;background:var(--app-emerald);transition:width .4s ease}
+/* Accordion */
+.csv-accordion{border:1px solid var(--app-border);border-radius:10px;overflow:hidden}
+.csv-accordion-hd{width:100%;display:flex;align-items:center;justify-content:space-between;padding:.65rem .9rem;background:transparent;border:none;cursor:pointer;font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;color:var(--app-t2);text-align:left;transition:background .15s}
+.csv-accordion-hd:hover{background:rgba(255,255,255,.03)}
+.csv-acc-chevron{transition:transform .2s;flex-shrink:0;color:var(--app-t3)}
+.csv-acc-chevron.open{transform:rotate(180deg)}
+.csv-accordion-body{padding:.1rem .9rem .9rem}
 .csv-skill-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem}
 .csv-skill-tag{padding:.25rem .65rem;border-radius:999px;background:rgba(78,206,145,.1);border:1px solid rgba(78,206,145,.2);color:var(--app-emerald);font-size:11px;font-weight:700}
 
@@ -1022,6 +1037,14 @@ html.no-photo .mod-header{display:block}
   </div>
   <!-- Bottom -->
   <div class="cn-bottom">
+    <!-- Live ATS score -->
+    <div class="cn-ats-widget" id="cnAtsWidget">
+      <div class="cn-ats-top">
+        <span class="cn-ats-label">Score ATS</span>
+        <span class="cn-ats-val" id="cnAtsVal">—</span>
+      </div>
+      <div class="cn-ats-bar"><div class="cn-ats-bar-fill" id="cnAtsBarFill" style="width:0%"></div></div>
+    </div>
     <div class="cn-saved-indicator" id="cnSavedIndicator" style="display:none"><i></i> Alterações salvas</div>
     <button class="cn-theme-btn" onclick="typeof toggleAppTheme==='function'?toggleAppTheme():toggleTheme()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
@@ -1134,7 +1157,7 @@ html.no-photo .mod-header{display:block}
       <input type="file" id="photoFileInput" accept="image/*" style="display:none">
     </div>
     <div class="csv-footer">
-      <button class="csv-btn-next" onclick="goToStep(3)">Próximo: Experiência →</button>
+      <button class="csv-btn-next" onclick="goToStepValidated(3)">Próximo: Experiência →</button>
       <button class="csv-btn-prev" onclick="goToStep(1)">← Modelo</button>
     </div>
   </div>
@@ -1156,34 +1179,44 @@ html.no-photo .mod-header{display:block}
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Adicionar / editar experiência
         </button>
-        <div id="s3AiRow" style="display:none;margin-top:.6rem">
-          <button class="csv-ai-btn" onclick="s3ReforcarIA()">
+        <div style="margin-top:.6rem">
+          <button class="csv-ai-btn" id="s3AiBtn" onclick="s3ReforcarIA()">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/></svg>
-            Reforçar com IA
+            <span id="s3AiBtnLabel">Melhorar com IA</span>
           </button>
         </div>
       </div>
-      <!-- Formação -->
-      <div style="margin-top:1.4rem">
-        <div class="csv-section-label">Formação acadêmica</div>
-        <div class="csv-card-list" id="s3EduList"></div>
-        <button class="csv-add-btn" onclick="openEdit('edu')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Adicionar / editar formação
+      <!-- Formação (accordion) -->
+      <div class="csv-accordion" style="margin-top:1rem">
+        <button class="csv-accordion-hd" onclick="s3ToggleAccordion('s3EduBody',this)">
+          <span>Formação acadêmica</span>
+          <svg class="csv-acc-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
+        <div class="csv-accordion-body" id="s3EduBody" style="display:none">
+          <div class="csv-card-list" id="s3EduList"></div>
+          <button class="csv-add-btn" onclick="openEdit('edu')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Adicionar / editar formação
+          </button>
+        </div>
       </div>
-      <!-- Habilidades -->
-      <div style="margin-top:1.4rem">
-        <div class="csv-section-label">Habilidades</div>
-        <div class="csv-skill-tags" id="s3SkillsList"></div>
-        <button class="csv-add-btn" onclick="openEdit('skills')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Editar habilidades
+      <!-- Habilidades (accordion) -->
+      <div class="csv-accordion" style="margin-top:.5rem">
+        <button class="csv-accordion-hd" onclick="s3ToggleAccordion('s3SkillsBody',this)">
+          <span>Habilidades</span>
+          <svg class="csv-acc-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
+        <div class="csv-accordion-body" id="s3SkillsBody" style="display:none">
+          <div class="csv-skill-tags" id="s3SkillsList"></div>
+          <button class="csv-add-btn" onclick="openEdit('skills')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Editar habilidades
+          </button>
+        </div>
       </div>
     </div>
     <div class="csv-footer">
-      <button class="csv-btn-next" onclick="goToStep(4)">Próximo: Exportar →</button>
+      <button class="csv-btn-next" onclick="goToStepValidated(4)">Próximo: Exportar →</button>
       <button class="csv-btn-prev" onclick="goToStep(2)">← Informações</button>
     </div>
   </div>
@@ -1256,10 +1289,10 @@ html.no-photo .mod-header{display:block}
           </div>
         </div>
       </div>
-      <!-- Tracker card -->
-      <div class="csv-tracker-card">
-        <div class="csv-tracker-title">Marcar candidatura</div>
-        <div class="csv-tracker-sub">Registre que você vai enviar este currículo para acompanhar nas Candidaturas.</div>
+      <!-- Tracker card — aparece após PDF gerado -->
+      <div class="csv-tracker-card" id="s4TrackerCard" style="display:none">
+        <div class="csv-tracker-title">Próximo passo: marcar candidatura</div>
+        <div class="csv-tracker-sub">Registre que você enviou este currículo para acompanhar nas Candidaturas.</div>
         <select class="csv-tracker-select" id="csTrackerJobSelect">
           <option value="">Selecionar vaga...</option>
         </select>
@@ -2337,6 +2370,7 @@ function applySmartFix(type) {
 
   if (cv.nome) document.title = cv.nome + ' — Currículo';
   _cvData = cv;
+  setTimeout(updateNavAtsScore, 0);
   try {
     var contextRaw = localStorage.getItem('vagaai_cv_context');
     _cvContext = contextRaw ? JSON.parse(contextRaw) : null;
@@ -2881,20 +2915,64 @@ function s3RenderSmartWarns() {
   var warns = [];
   var exps = _cvData.experiencias || [];
   var noMetrics = exps.filter(function(e) { return e.descricao && !/\d/.test(e.descricao); });
-  if (noMetrics.length > 0) warns.push('⚠ ' + noMetrics.length + ' experiência' + (noMetrics.length > 1 ? 's' : '') + ' sem métricas');
+  if (noMetrics.length > 0) warns.push('⚠ ' + noMetrics.length + ' experiência' + (noMetrics.length > 1 ? 's' : '') + ' sem métricas — adicione números e resultados');
   var noPeriod = exps.filter(function(e) { return !e.periodo && !e.dataInicio; });
   if (noPeriod.length > 0) warns.push('⚠ ' + noPeriod.length + ' experiência' + (noPeriod.length > 1 ? 's' : '') + ' sem período definido');
   var skills = _cvData.habilidades || [];
-  if (skills.length === 0) warns.push('⚠ Nenhuma habilidade adicionada');
+  if (skills.length === 0) warns.push('⚠ Nenhuma habilidade adicionada — impacta o score de keywords');
   container.innerHTML = warns.map(function(w) {
     return '<div class="csv-smart-warn">' + w + '</div>';
   }).join('');
-  var aiRow = document.getElementById('s3AiRow');
-  if (aiRow) aiRow.style.display = noMetrics.length > 0 ? 'block' : 'none';
+  // Update AI button label
+  var aiLabel = document.getElementById('s3AiBtnLabel');
+  if (aiLabel) aiLabel.textContent = noMetrics.length > 0 ? 'Reforçar com IA' : 'Melhorar com IA';
+  // Update accordion header counts
+  var edu = _cvData.formacao || [];
+  var eduHd = document.querySelector('#s3EduBody')?.closest('.csv-accordion')?.querySelector('.csv-accordion-hd span');
+  if (eduHd) eduHd.textContent = 'Formação acadêmica' + (edu.length > 0 ? ' (' + edu.length + ')' : '');
+  var sklHd = document.querySelector('#s3SkillsBody')?.closest('.csv-accordion')?.querySelector('.csv-accordion-hd span');
+  if (sklHd) sklHd.textContent = 'Habilidades' + (skills.length > 0 ? ' (' + skills.length + ')' : '');
+}
+
+function s3ToggleAccordion(bodyId, btn) {
+  var body = document.getElementById(bodyId);
+  if (!body) return;
+  var open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  var chevron = btn.querySelector('.csv-acc-chevron');
+  if (chevron) chevron.classList.toggle('open', !open);
 }
 
 function s3ReforcarIA() {
-  showToast('Reforço com IA em breve', 'info');
+  showToast('Melhoria com IA em breve', 'info');
+}
+
+function goToStepValidated(n) {
+  var current = _cvStep;
+  if (current === 2 && n > 2) {
+    var nome = (document.getElementById('sf_nome')?.value || '').trim();
+    if (!nome) {
+      showToast('Preencha seu nome antes de continuar', 'warn');
+      document.getElementById('sf_nome')?.focus();
+      return;
+    }
+  }
+  if (current === 3 && n > 3) {
+    var exps = (_cvData && _cvData.experiencias) || [];
+    if (exps.length === 0) {
+      showToast('Adicione ao menos uma experiência antes de continuar', 'warn');
+      return;
+    }
+  }
+  goToStep(n);
+}
+
+function s4ShowTrackerCard() {
+  var card = document.getElementById('s4TrackerCard');
+  if (card) {
+    card.style.display = 'block';
+    card.style.animation = 'fadeInUp .35s ease';
+  }
 }
 
 function s4StartPdfDownload() {
@@ -2904,13 +2982,11 @@ function s4StartPdfDownload() {
   if (loading) loading.style.display = 'flex';
   if (dlRow) dlRow.style.display = 'none';
   if (success) success.style.display = 'none';
-  // spinner animation
   var frames = ['⠋','⠙','⠸','⠴','⠦','⠇'];
   var fi = 0;
   var spinEl = loading ? loading.querySelector('.s4-pdf-spinner') : null;
   var spinTimer = spinEl ? setInterval(function() { fi = (fi+1)%frames.length; spinEl.textContent = frames[fi]; }, 120) : null;
   openPdfPreflight();
-  // watch for preflight close to show success
   var checkTimer = setInterval(function() {
     var overlay = document.getElementById('pdfPreflightOverlay') || document.querySelector('.pdf-preflight-overlay');
     var closed = !overlay || overlay.style.display === 'none' || !overlay.classList.contains('open');
@@ -2919,8 +2995,36 @@ function s4StartPdfDownload() {
       if (spinTimer) clearInterval(spinTimer);
       if (loading) loading.style.display = 'none';
       if (success) success.style.display = 'flex';
+      s4ShowTrackerCard();
+      initTrackerCard();
     }
   }, 400);
+}
+
+function updateNavAtsScore() {
+  if (!_cvData) return;
+  // reuse renderStep4 score logic if available, else compute inline
+  var score = 0;
+  var d = _cvData;
+  var hasEmail = !!(d.email || '').trim();
+  var hasTel = !!(d.telefone || '').trim();
+  var hasCidade = !!(d.cidade || '').trim();
+  var hasLi = !!(d.linkedin || '').trim();
+  var contactScore = Math.round(((hasEmail?1:0)+(hasTel?1:0)+(hasCidade?1:0)+(hasLi?1:0))/4*100);
+  var resumo = (d.resumo || '').trim();
+  var resumoScore = resumo.length >= 80 ? 100 : resumo.length > 0 ? Math.round(resumo.length/80*100) : 0;
+  var exps = d.experiencias || [];
+  var withMetrics = exps.filter(function(e){ return e.descricao && /\d/.test(e.descricao); });
+  var metricsScore = exps.length > 0 ? Math.round(withMetrics.length/exps.length*100) : 0;
+  var skills = d.habilidades || [];
+  var kwScore = Math.min(100, skills.length * 10);
+  score = Math.round((contactScore + resumoScore + metricsScore + kwScore) / 4);
+  var valEl = document.getElementById('cnAtsVal');
+  var fillEl = document.getElementById('cnAtsBarFill');
+  if (valEl) valEl.textContent = score + '%';
+  if (fillEl) fillEl.style.width = score + '%';
+  // color feedback
+  if (valEl) valEl.style.color = score >= 70 ? 'var(--app-emerald)' : score >= 40 ? '#e5a93a' : '#e05a5a';
 }
 
 function syncStep2Form() {
@@ -2958,6 +3062,8 @@ function sfOnChange() {
   var cnt = document.getElementById('sf_resumo_count');
   if (cnt) cnt.textContent = String(_cvData.resumo_profissional || '').length + ' caracteres';
 
+  updateNavAtsScore();
+
   clearTimeout(_sfDebTimer);
   _sfDebTimer = setTimeout(saveCvData, 800);
 }
@@ -2965,6 +3071,7 @@ function sfOnChange() {
 function renderStep3() {
   if (!_cvData) return;
   s3RenderSmartWarns();
+  updateNavAtsScore();
   var exp = _cvData.experiencias || [];
   var edu = _cvData.formacao || [];
   var skl = _cvData.habilidades || [];
