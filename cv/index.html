@@ -179,7 +179,8 @@ body{background:var(--page-bg);font-family:'Manrope',sans-serif;padding-left:220
 
 /* ─── A4 Page ─────────────────────────────────────────────── */
 .page{
-  width:210mm;min-height:297mm;background:#fff;
+  box-sizing:border-box;
+  width:210mm;height:297mm;min-height:297mm;background:#fff;
   margin:1rem auto;
   box-shadow:0 6px 40px rgba(0,0,0,.22);
   display:none;overflow:visible;
@@ -604,7 +605,7 @@ body.fit-one-page .mod-tag,body.fit-one-page .exec-tag,body.fit-one-page .minima
 }
 
 /* ─── No data ─────────────────────────────────────────────── */
-.no-data-page{width:210mm;min-height:297mm;background:#fff;margin:1rem auto;box-shadow:0 6px 40px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center}
+.no-data-page{box-sizing:border-box;width:210mm;height:297mm;min-height:297mm;background:#fff;margin:1rem auto;box-shadow:0 6px 40px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center}
 .no-data{text-align:center;padding:4rem 2rem;font-family:'Manrope',sans-serif;color:#555}
 .no-data h2{font-size:20px;margin-bottom:.5rem;color:#111}
 .no-data p{font-size:13px;margin-bottom:1.5rem}
@@ -618,27 +619,39 @@ html.no-photo .mod-header{display:block}
 
 /* ─── Print ───────────────────────────────────────────────── */
 @media print{
-  /* margin:0 suprime cabeçalho/rodapé do browser (URL, título, data) */
-  @page{size:A4 portrait;margin:0}
+  @page{size:210mm 297mm;margin:0}
 
-  html,body{background:#fff!important;padding:0!important;margin:0!important;overflow:visible!important}
+  *{box-sizing:border-box!important}
+  html,body{width:210mm!important;min-width:210mm!important;background:#fff!important;padding:0!important;margin:0!important;overflow:visible!important}
   .app-header,.side-panel,.modal-overlay,.mob-bar,.panel-overlay,.edit-modal,.mob-print-toast,.preflight-overlay{display:none!important}
-  .page-wrap{display:contents!important}
+  .page-wrap{
+    display:block!important;
+    width:210mm!important;
+    min-width:210mm!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+  }
   .pg-break{display:none!important}
 
   .page.active{
     display:flex!important;
     margin:0!important;
+    padding:0!important;
     box-shadow:none!important;
     width:210mm!important;
+    max-width:210mm!important;
     min-height:297mm!important;
     height:auto!important;
+    min-width:210mm!important;
     overflow:visible!important;
     zoom:1!important;
     transform:none!important;
+    transform-origin:top left!important;
     break-after:auto;
     page-break-after:auto;
   }
+  .page:not(.active){display:none!important}
 
   /* ── Quebras de página ── */
   /* Experiências: nunca quebrar no meio de um item */
