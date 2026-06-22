@@ -523,6 +523,7 @@ body{background:var(--app-bg);padding-left:var(--editor-panel);padding-top:80px;
 .pdf-status-badge{border-radius:999px;padding:3px 7px;background:rgba(78,206,145,.12);color:var(--app-emerald);font-size:9px}
 .pdf-status-badge.warn{background:rgba(196,125,10,.12);color:#b87813}
 .pdf-status-copy{font-size:9.5px;color:var(--app-t3);line-height:1.45;margin-top:6px}
+.pdf-status-foot{margin-top:8px;padding-top:8px;border-top:1px dashed var(--app-border);font-size:9px;color:var(--app-t3);line-height:1.45}
 
 .preflight-overlay{position:fixed;inset:0;background:rgba(7,18,9,.62);backdrop-filter:blur(8px);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px}
 .preflight-overlay.hidden{display:none}
@@ -530,10 +531,11 @@ body{background:var(--app-bg);padding-left:var(--editor-panel);padding-top:80px;
 .preflight-head{padding:20px 22px;border-bottom:1px solid var(--app-border);display:flex;justify-content:space-between;gap:16px}
 .preflight-kicker{font-size:10px;color:var(--app-emerald);font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
 .preflight-title{font-family:'Lora',serif;font-size:21px;font-weight:700;line-height:1.2}.preflight-x{border:0;background:transparent;color:var(--app-t3);font-size:20px;cursor:pointer}
-.preflight-body{padding:18px 22px}.preflight-score{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.preflight-body{padding:18px 22px}.preflight-score{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
 .pf-stat{background:var(--app-sub);border:1px solid var(--app-border);border-radius:12px;padding:11px}.pf-stat b{display:block;font-size:18px;color:var(--app-t1);line-height:1}.pf-stat span{display:block;font-size:9px;color:var(--app-t3);font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-top:5px}
 .pf-list{display:flex;flex-direction:column;gap:8px}.pf-row{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--app-t2);line-height:1.45}.pf-row i{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-style:normal;font-weight:900;flex-shrink:0}.pf-row.ok i{background:rgba(78,206,145,.16);color:var(--app-emerald)}.pf-row.warn i{background:rgba(196,125,10,.14);color:#b87813}
 .preflight-actions{padding:16px 22px 20px;border-top:1px solid var(--app-border);display:grid;grid-template-columns:1fr 1fr;gap:9px}.pf-btn{border-radius:11px;font-family:'Manrope',sans-serif;font-size:12px;font-weight:900;padding:12px;border:1px solid var(--app-border);cursor:pointer}.pf-btn.primary{background:var(--app-emerald);color:#fff;border-color:var(--app-emerald)}.pf-btn.secondary{background:var(--app-sub);color:var(--app-t2)}.pf-btn.ghost{grid-column:1/-1;background:transparent;color:var(--app-t3)}
+@media(max-width:560px){.preflight-score{grid-template-columns:1fr 1fr}.preflight-actions{grid-template-columns:1fr}.pf-btn.ghost{grid-column:auto}}
 
 body.fit-one-page .page.active{transform-origin:top center}
 body.fit-one-page .cv-resumo-txt,body.fit-one-page .mod-resumo,body.fit-one-page .exec-resumo,body.fit-one-page .compact-resumo,body.fit-one-page .minimal-resumo{font-size:9.2pt;line-height:1.45}
@@ -620,7 +622,7 @@ html.no-photo .mod-header{display:block}
   @page{size:A4 portrait;margin:0}
 
   html,body{background:#fff!important;padding:0!important;margin:0!important;overflow:visible!important}
-  .app-header,.side-panel,.modal-overlay,.mob-bar,.panel-overlay,.edit-modal,.mob-print-toast{display:none!important}
+  .app-header,.side-panel,.modal-overlay,.mob-bar,.panel-overlay,.edit-modal,.mob-print-toast,.preflight-overlay{display:none!important}
   .page-wrap{display:contents!important}
   .pg-break{display:none!important}
 
@@ -629,10 +631,13 @@ html.no-photo .mod-header{display:block}
     margin:0!important;
     box-shadow:none!important;
     width:210mm!important;
-    min-height:0!important;
+    min-height:297mm!important;
+    height:auto!important;
     overflow:visible!important;
     zoom:1!important;
     transform:none!important;
+    break-after:auto;
+    page-break-after:auto;
   }
 
   /* ── Quebras de página ── */
@@ -650,19 +655,19 @@ html.no-photo .mod-header{display:block}
   .mod-bottom-row,.exec-bottom,.minimal-bottom{break-inside:auto;page-break-inside:auto}
 
   /* Sidebars (Profissional / Compacto):
-     Limita a altura na 1ª página para evitar coluna vazia na 2ª.
-     Conteúdo excedente fica oculto — prefira templates de coluna única para CVs longos. */
+     Mantem a folha A4 sem esconder conteudo. O preflight avisa quando
+     uma sidebar longa pede modelo de coluna unica ou compactacao. */
   .page-classic .sidebar{
-    overflow:hidden!important;
-    max-height:296mm!important;
+    overflow:visible!important;
+    max-height:none!important;
     align-self:flex-start!important;
-    min-height:296mm!important;
+    min-height:297mm!important;
   }
   .compact-sidebar{
-    overflow:hidden!important;
-    max-height:296mm!important;
+    overflow:visible!important;
+    max-height:none!important;
     align-self:flex-start!important;
-    min-height:296mm!important;
+    min-height:297mm!important;
   }
 
   .sb-ph-hover{display:none!important}
@@ -798,6 +803,7 @@ html.no-photo .mod-header{display:block}
     <div class="pdf-status" id="pdfStatusBox">
       <div class="pdf-status-top"><span>Pronto para PDF</span><span class="pdf-status-badge" id="pdfStatusBadge">verificando</span></div>
       <div class="pdf-status-copy" id="pdfStatusCopy">A VagaAI vai revisar páginas, margens e conteúdo antes do download.</div>
+      <div class="pdf-status-foot" id="pdfStatusFoot">Formato de exportação: A4 vertical, com área segura interna por modelo.</div>
     </div>
     <div class="cv-checklist" id="cvChecklist">
       <div class="cv-check warn"><span>Resumo alinhado à vaga</span><i>·</i></div>
@@ -809,7 +815,7 @@ html.no-photo .mod-header{display:block}
       <button class="smart-action" type="button" onclick="applySmartFix('keywords')">Adicionar keywords</button>
       <button class="smart-action" type="button" onclick="applySmartFix('metrics')">Reforçar métricas</button>
       <button class="smart-action" type="button" onclick="applySmartFix('shorten')">Encurtar resumo</button>
-      <button class="smart-action" type="button" onclick="fitToOnePage()">Ajustar 1 página</button>
+      <button class="smart-action" type="button" onclick="compactCurrentTemplate()">Compactar modelo</button>
     </div>
     <article class="job-summary" id="jobSummaryCard" hidden>
       <div class="job-summary-head"><span class="job-summary-label">Resumo da vaga</span><span class="job-summary-score" id="jobSummaryScore"></span></div>
@@ -1066,13 +1072,14 @@ html.no-photo .mod-header{display:block}
     <div class="preflight-body">
       <div class="preflight-score">
         <div class="pf-stat"><b id="pfPages">—</b><span>páginas</span></div>
+        <div class="pf-stat"><b id="pfFormat">A4</b><span>formato</span></div>
         <div class="pf-stat"><b id="pfScore">—</b><span>score ATS</span></div>
         <div class="pf-stat"><b id="pfKeywords">—</b><span>keywords</span></div>
       </div>
       <div class="pf-list" id="pfList"></div>
     </div>
     <div class="preflight-actions">
-      <button class="pf-btn secondary" type="button" onclick="fitToOnePage()">Ajustar 1 página</button>
+      <button class="pf-btn secondary" type="button" onclick="compactCurrentTemplate()">Compactar modelo</button>
       <button class="pf-btn primary" type="button" onclick="printAfterPreflight()">Baixar PDF</button>
       <button class="pf-btn ghost" type="button" onclick="closePdfPreflight()">Voltar para editar</button>
     </div>
@@ -1193,12 +1200,51 @@ function getActiveCvPage() {
   return document.querySelector('.page.active');
 }
 
+function getActiveTemplateKey() {
+  var page = getActiveCvPage();
+  if (!page) return 'classic';
+  if (page.id === 'pageModern') return 'modern';
+  if (page.id === 'pageExec') return 'exec';
+  if (page.id === 'pageCompact') return 'compact';
+  if (page.id === 'pageMinimal') return 'minimal';
+  return 'classic';
+}
+
+function getTemplateLabel(key) {
+  return ({classic:'Profissional', modern:'Moderno', exec:'Executivo', compact:'Compacto', minimal:'Minimalista'})[key || getActiveTemplateKey()] || 'Profissional';
+}
+
 function getPageEstimate() {
   var page = getActiveCvPage();
   if (!page) return 0;
   var PX_PER_MM = 96 / 25.4;
   var pagePx = Math.round(297 * PX_PER_MM);
   return Math.max(1, Math.ceil((page.scrollHeight || page.offsetHeight || pagePx) / pagePx));
+}
+
+function getPrintDiagnostics() {
+  var page = getActiveCvPage();
+  var tpl = getActiveTemplateKey();
+  var pages = getPageEstimate();
+  var PX_PER_MM = 96 / 25.4;
+  var a4Px = Math.round(297 * PX_PER_MM);
+  var sidebar = null;
+  if (page) sidebar = page.querySelector('.sidebar, .compact-sidebar');
+  var sidebarRatio = sidebar ? ((sidebar.scrollHeight || 0) / a4Px) : 0;
+  var sidebarRisk = sidebarRatio > .96;
+  var longTextRisk = pages > 1 && (tpl === 'classic' || tpl === 'compact');
+  var compressed = document.body.classList.contains('fit-one-page');
+  return {
+    template: tpl,
+    templateLabel: getTemplateLabel(tpl),
+    pages: pages,
+    isA4: true,
+    sidebarRisk: sidebarRisk,
+    longTextRisk: longTextRisk,
+    compressed: compressed,
+    riskLevel: (sidebarRisk || longTextRisk) ? 'médio' : 'baixo',
+    recommendedTemplate: (sidebarRisk || longTextRisk) ? 'minimal' : tpl
+  };
 }
 
 function getContextKeywords() {
@@ -1223,6 +1269,7 @@ function hasMetricText() {
 function updateCvQualityDashboard() {
   if (!_cvData) return;
   var pages = getPageEstimate();
+  var diag = getPrintDiagnostics();
   var kws = getContextKeywords();
   var score = Number(_cvContext && _cvContext.score);
   var safeScore = Number.isFinite(score) ? Math.max(0, Math.min(100, Math.round(score))) : null;
@@ -1238,12 +1285,17 @@ function updateCvQualityDashboard() {
 
   var badge = document.getElementById('pdfStatusBadge');
   var copy = document.getElementById('pdfStatusCopy');
+  var foot = document.getElementById('pdfStatusFoot');
   if (badge && copy) {
-    badge.classList.toggle('warn', pages > 1);
-    badge.textContent = pages > 1 ? pages + ' páginas' : 'ok';
-    copy.textContent = pages > 1
-      ? 'O currículo está em ' + pages + ' páginas. Use "Ajustar 1 página" se quiser uma versão mais enxuta.'
-      : 'Formato enxuto detectado. Revise as informações e baixe com segurança.';
+    var warn = pages > 1 || diag.sidebarRisk || diag.longTextRisk;
+    badge.classList.toggle('warn', warn);
+    badge.textContent = warn ? 'revisar' : 'ok';
+    copy.textContent = warn
+      ? 'Detectei possível risco de quebra/corte no modelo ' + diag.templateLabel + '. Use a revisão antes do PDF para compactar ou exportar assim.'
+      : 'A4 vertical com margem interna segura. Revise as informações e baixe com segurança.';
+  }
+  if (foot) {
+    foot.textContent = 'Formato: A4 vertical · Modelo: ' + diag.templateLabel + ' · Risco de corte: ' + diag.riskLevel + (diag.compressed ? ' · Compactado' : '');
   }
 
   var list = document.getElementById('cvChecklist');
@@ -1253,7 +1305,8 @@ function updateCvQualityDashboard() {
       ['Experiências com métricas', metricsOk],
       ['Keywords principais', keywordsOk],
       ['Formatação ATS', atsOk],
-      ['PDF sem corte visível', pages <= 1]
+      ['A4 com margem segura', true],
+      ['PDF sem corte visível', !(diag.sidebarRisk || diag.longTextRisk)]
     ];
     list.innerHTML = items.map(function(item) {
       return '<div class="cv-check ' + (item[1] ? 'ok' : 'warn') + '"><span>' + item[0] + '</span><i>' + (item[1] ? '✓' : '!') + '</i></div>';
@@ -1262,16 +1315,21 @@ function updateCvQualityDashboard() {
 }
 
 function getPreflightRows() {
-  var pages = getPageEstimate();
+  var diag = getPrintDiagnostics();
+  var pages = diag.pages;
   var kws = getContextKeywords();
   var score = Number(_cvContext && _cvContext.score);
   var safeScore = Number.isFinite(score) ? Math.round(score) + '%' : '—';
   return {
     pages: pages,
+    format: 'A4',
     score: safeScore,
     keywords: kws.total || '—',
     rows: [
-      { ok: pages <= 1, text: pages <= 1 ? 'O currículo cabe em 1 página.' : 'O currículo está em ' + pages + ' páginas. Considere ajustar para uma versão mais objetiva.' },
+      { ok: true, text: 'Exportação configurada em A4 vertical (210 × 297 mm), sem zoom ou escala artificial no print.' },
+      { ok: pages <= 1, text: pages <= 1 ? 'O currículo cabe em 1 página.' : 'O currículo está em ' + pages + ' páginas. Se quiser uma versão mais objetiva, use compactar modelo.' },
+      { ok: !diag.sidebarRisk, text: diag.sidebarRisk ? 'A sidebar do modelo ' + diag.templateLabel + ' está muito cheia e pode ficar próxima da margem inferior.' : 'A margem interna do modelo atual está dentro da área segura.' },
+      { ok: !diag.longTextRisk, text: diag.longTextRisk ? 'Para CV longo, modelos de coluna única costumam exportar melhor que modelos com sidebar.' : 'O modelo atual está adequado para o volume de conteúdo.' },
       { ok: hasMetricText(), text: hasMetricText() ? 'Há métricas nas experiências.' : 'Ainda faltam métricas/resultados nos bullets principais.' },
       { ok: kws.missing.length === 0, text: kws.missing.length === 0 ? 'Sem keywords críticas pendentes.' : 'Keywords ausentes: ' + kws.missing.slice(0, 4).join(', ') + '.' },
       { ok: true, text: 'Use "Salvar como PDF" no destino de impressão para preservar o layout.' }
@@ -1285,6 +1343,8 @@ function openPdfPreflight() {
   var modal = document.getElementById('pdfPreflight');
   if (!modal) return directPrint();
   document.getElementById('pfPages').textContent = data.pages || '—';
+  var fmt = document.getElementById('pfFormat');
+  if (fmt) fmt.textContent = data.format || 'A4';
   document.getElementById('pfScore').textContent = data.score || '—';
   document.getElementById('pfKeywords').textContent = data.keywords || '—';
   document.getElementById('pfList').innerHTML = data.rows.map(function(row) {
@@ -1304,12 +1364,15 @@ function directPrint() {
 
 function printAfterPreflight() {
   closePdfPreflight();
-  setTimeout(directPrint, 120);
+  document.body.classList.add('print-prepared');
+  setTimeout(function() {
+    directPrint();
+    setTimeout(function(){ document.body.classList.remove('print-prepared'); }, 800);
+  }, 120);
 }
 
-function fitToOnePage() {
+function compactCurrentTemplate() {
   document.body.classList.add('fit-one-page');
-  applyTemplate('minimal', true);
   setTimeout(function() {
     scaleCvPages();
     addPageBreakIndicator();
@@ -1317,6 +1380,10 @@ function fitToOnePage() {
     var modal = document.getElementById('pdfPreflight');
     if (modal && !modal.classList.contains('hidden')) openPdfPreflight();
   }, 180);
+}
+
+function fitToOnePage() {
+  compactCurrentTemplate();
 }
 
 function getMissingKeywordsForInsert() {
