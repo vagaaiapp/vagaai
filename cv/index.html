@@ -596,6 +596,36 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 .s4-pdf-success-icon{width:32px;height:32px;border-radius:50%;background:rgba(78,206,145,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--app-emerald)}
 .s4-pdf-success-title{font-size:13px;font-weight:700;color:var(--app-t1);margin-bottom:.5rem}
 .s4-pdf-success-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+/* ── Optimized loading overlay ───────────────────────────── */
+#cvOptLoadOverlay{position:fixed;inset:0;z-index:9999;background:var(--app-bg);display:flex;align-items:center;justify-content:center;transition:opacity .38s,transform .38s}
+#cvOptLoadOverlay.cvol-out{opacity:0;transform:scale(.97);pointer-events:none}
+.cvol-box{display:flex;flex-direction:column;align-items:center;gap:1.5rem;max-width:380px;padding:2.5rem 2rem;text-align:center}
+.cvol-icon{width:56px;height:56px;border-radius:50%;background:rgba(78,206,145,.12);border:1px solid rgba(78,206,145,.25);display:flex;align-items:center;justify-content:center;color:var(--app-emerald);animation:cvol-pulse 1.6s ease-in-out infinite}
+@keyframes cvol-pulse{0%,100%{box-shadow:0 0 0 0 rgba(78,206,145,.25)}50%{box-shadow:0 0 0 10px rgba(78,206,145,0)}}
+.cvol-title{font-size:17px;font-weight:800;color:var(--app-t1);line-height:1.3}
+.cvol-steps{display:flex;flex-direction:column;gap:.55rem;width:100%;text-align:left}
+.cvol-step{display:flex;align-items:center;gap:.65rem;font-size:12.5px;color:var(--app-t3);opacity:.3;transition:opacity .3s,color .3s;padding:.3rem .5rem;border-radius:8px}
+.cvol-step.active{opacity:1;color:var(--app-t2)}
+.cvol-step.active .cvol-dot{background:var(--app-emerald);box-shadow:0 0 6px rgba(78,206,145,.5)}
+.cvol-dot{width:7px;height:7px;border-radius:50%;background:var(--app-border);flex-shrink:0;transition:all .3s}
+/* ── Review banner (Step 4 from analysis) ─────────────────── */
+.s4rb-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;margin-bottom:.9rem}
+.s4rb-badge{display:inline-flex;align-items:center;gap:.45rem;background:rgba(78,206,145,.12);border:1px solid rgba(78,206,145,.28);color:var(--app-emerald);border-radius:999px;font-size:11.5px;font-weight:800;padding:.3rem .9rem;letter-spacing:.02em}
+.s4rb-scores{display:flex;align-items:center;gap:.6rem}
+.s4rb-score-before,.s4rb-score-after{display:flex;flex-direction:column;align-items:center}
+.s4rb-score-n{font-size:18px;font-weight:800;line-height:1}
+.s4rb-score-before .s4rb-score-n{color:var(--app-t3);text-decoration:line-through}
+.s4rb-score-after .s4rb-score-n{color:var(--app-emerald)}
+.s4rb-score-lbl{font-size:10px;color:var(--app-t3);font-weight:600;margin-top:2px}
+.s4rb-arrow{font-size:15px;color:var(--app-emerald);font-weight:700}
+.s4rb-changes{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.85rem}
+.s4rb-change{display:flex;align-items:flex-start;gap:.5rem;font-size:12.5px;color:var(--app-t2);line-height:1.4}
+.s4rb-change svg{flex-shrink:0;margin-top:2px;color:var(--app-emerald)}
+.s4rb-sub{font-size:12px;color:var(--app-t3);line-height:1.5;margin:0 0 1rem}
+.s4rb-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.3rem}
+.s4rb-review-btn{display:inline-flex;align-items:center;gap:.45rem;padding:.7rem 1.1rem;border-radius:11px;border:1px solid var(--app-border);background:transparent;color:var(--app-t2);font-family:'Manrope',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.s4rb-review-btn:hover{border-color:var(--app-emerald);color:var(--app-emerald)}
+#s4ReviewBanner{border:1px solid rgba(78,206,145,.2);border-radius:14px;padding:1.1rem 1.25rem;background:rgba(78,206,145,.04);margin-bottom:1.2rem}
 /* Nav ATS widget */
 .cn-ats-widget{padding:.7rem 1rem;border-radius:10px;background:rgba(78,206,145,.07);border:1px solid rgba(78,206,145,.14);margin-bottom:.1rem}
 .cn-ats-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem}
@@ -1232,6 +1262,8 @@ html.no-photo .mod-header{display:block}
       <p class="csv-sub">Seu currículo está otimizado. Confira o score ATS, baixe e marque a candidatura.</p>
     </div>
     <div class="csv-body">
+      <!-- Review banner — shown only when coming from analysis -->
+      <div id="s4ReviewBanner" style="display:none"></div>
       <!-- ATS Score -->
       <div class="csv-ats-section">
         <div class="csv-ats-header">
@@ -3538,6 +3570,117 @@ function closeModal() {
   document.documentElement.classList.add('no-photo');
   updatePhotoUI(false);
   try { localStorage.setItem('vagaai_cv_photo', 'none'); } catch(e) {}
+}
+
+/* ── Optimized-from-analysis mode ───────────────────────── */
+(function initOptimizedMode() {
+  var flag;
+  try { flag = localStorage.getItem('vagaai_cv_from_analysis'); } catch(e) {}
+  if (!flag) return;
+  try { localStorage.removeItem('vagaai_cv_from_analysis'); } catch(e) {}
+
+  var ctx;
+  try { ctx = JSON.parse(localStorage.getItem('vagaai_cv_context') || 'null'); } catch(e) {}
+
+  // Build and show loading overlay
+  var overlay = document.createElement('div');
+  overlay.id = 'cvOptLoadOverlay';
+  overlay.innerHTML = [
+    '<div class="cvol-box">',
+    '  <div class="cvol-icon">',
+    '    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/></svg>',
+    '  </div>',
+    '  <div class="cvol-title">Aplicando otimizações ao seu currículo…</div>',
+    '  <div class="cvol-steps" id="cvolSteps">',
+    '    <div class="cvol-step" id="cvolS1"><span class="cvol-dot"></span>Reescrevendo resumo profissional</div>',
+    '    <div class="cvol-step" id="cvolS2"><span class="cvol-dot"></span>Priorizando palavras-chave da vaga</div>',
+    '    <div class="cvol-step" id="cvolS3"><span class="cvol-dot"></span>Reorganizando experiências relevantes</div>',
+    '    <div class="cvol-step" id="cvolS4"><span class="cvol-dot"></span>Preparando versão para download</div>',
+    '  </div>',
+    '</div>'
+  ].join('');
+  document.body.appendChild(overlay);
+
+  // Animate steps in sequence
+  var delays = [200, 650, 1100, 1550];
+  [1,2,3,4].forEach(function(i) {
+    setTimeout(function() {
+      var el = document.getElementById('cvolS' + i);
+      if (el) el.classList.add('active');
+    }, delays[i-1]);
+  });
+
+  // After 2.4s dismiss overlay and enter review mode
+  setTimeout(function() {
+    overlay.classList.add('cvol-out');
+    setTimeout(function() {
+      overlay.remove();
+      _enterReviewMode(ctx);
+    }, 380);
+  }, 2400);
+})();
+
+function _enterReviewMode(ctx) {
+  // Navigate to step 4 directly
+  goToStep(4);
+
+  // Build review banner
+  var banner = document.getElementById('s4ReviewBanner');
+  if (!banner) return;
+
+  var origScore = ctx && ctx.score ? ctx.score : null;
+  var jobTitle = ctx && ctx.job_info && ctx.job_info.titulo ? ctx.job_info.titulo : null;
+  var kwMissing = (ctx && ctx.keywords_faltando) ? ctx.keywords_faltando.slice(0, 4) : [];
+
+  // Compute projected score from current CV data
+  var projScore = null;
+  if (typeof updateNavAtsScore === 'function' && _cvData) {
+    var d = _cvData;
+    var hasEmail = !!(d.email || (d.contato && d.contato.email) || '').trim ? ((d.contato&&d.contato.email)||d.email||'').trim().length > 0 : false;
+    var hasTel = !!((d.contato&&d.contato.telefone)||d.telefone||'').trim ? ((d.contato&&d.contato.telefone)||d.telefone||'').trim().length > 0 : false;
+    var hasCidade = !!((d.contato&&d.contato.cidade)||d.cidade||'').trim ? ((d.contato&&d.contato.cidade)||d.cidade||'').trim().length > 0 : false;
+    var hasLi = !!((d.contato&&d.contato.linkedin)||d.linkedin||'').trim ? ((d.contato&&d.contato.linkedin)||d.linkedin||'').trim().length > 0 : false;
+    var contactScore = Math.round(((hasEmail?1:0)+(hasTel?1:0)+(hasCidade?1:0)+(hasLi?1:0))/4*100);
+    var resumo = (d.resumo_profissional || d.resumo || '').trim();
+    var resumoScore = resumo.length >= 80 ? 100 : resumo.length > 0 ? Math.round(resumo.length/80*100) : 0;
+    var exps = d.experiencias || [];
+    var withMetrics = exps.filter(function(e){ return e.descricao && /\d/.test(e.descricao); });
+    var metricsScore = exps.length > 0 ? Math.round(withMetrics.length/exps.length*100) : 0;
+    var skills = d.habilidades || [];
+    var kwScore = Math.min(100, skills.length * 10);
+    projScore = Math.round((contactScore + resumoScore + metricsScore + kwScore) / 4);
+  }
+
+  var changes = [];
+  if (resumo && resumo.length > 40) changes.push('Resumo profissional reescrito para a vaga');
+  if (kwMissing.length > 0) changes.push('Keywords adicionadas: ' + kwMissing.map(function(k){ return '<strong>' + k + '</strong>'; }).join(', '));
+  var exps = _cvData && _cvData.experiencias ? _cvData.experiencias : [];
+  if (exps.length > 0) changes.push('Experiências reorganizadas por relevância');
+  var skls = _cvData && _cvData.habilidades ? _cvData.habilidades : [];
+  if (skls.length > 0) changes.push('Habilidades alinhadas com requisitos da vaga');
+
+  var scoreHtml = '';
+  if (origScore !== null && projScore !== null) {
+    scoreHtml = '<div class="s4rb-scores"><div class="s4rb-score-before"><span class="s4rb-score-n">' + origScore + '%</span><span class="s4rb-score-lbl">Antes</span></div><div class="s4rb-arrow">→</div><div class="s4rb-score-after"><span class="s4rb-score-n">' + projScore + '%</span><span class="s4rb-score-lbl">Agora</span></div></div>';
+  }
+
+  banner.innerHTML = [
+    '<div class="s4rb-top">',
+    '  <div class="s4rb-badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Currículo otimizado' + (jobTitle ? ' para ' + jobTitle : '') + '</div>',
+    scoreHtml,
+    '</div>',
+    '<div class="s4rb-changes">',
+    changes.map(function(c) { return '<div class="s4rb-change"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>' + c + '</span></div>'; }).join(''),
+    '</div>',
+    '<p class="s4rb-sub">A VagaAI adaptou seu currículo com base na análise. Baixe agora ou revise os detalhes antes de enviar.</p>',
+    '<div class="s4rb-actions">',
+    '  <button class="csv-dl-btn primary" onclick="s4StartPdfDownload()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Baixar versão otimizada</button>',
+    '  <button class="s4rb-review-btn" onclick="goToStep(2)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Revisar alterações</button>',
+    '</div>'
+  ].join('');
+
+  banner.style.display = 'block';
+  banner.style.animation = 'fadeInUp .4s ease';
 }
 </script>
 </body>
