@@ -477,26 +477,129 @@ html.no-photo .compact-photo{display:none}
 .app-primary-btn{padding:0 17px;border:0;background:var(--app-emerald);color:#fff;font-size:12px;box-shadow:0 8px 20px rgba(26,122,74,.2)}
 .app-primary-btn:hover{background:#176d42;transform:translateY(-1px)}
 
-/* Editor panel inherits the dashboard visual language */
-body{background:var(--app-bg);padding-left:var(--editor-panel);padding-top:80px;color:var(--app-t1);transition:background .2s}
-.side-panel{
-  top:64px;left:0;width:var(--editor-panel);z-index:300;
-  background:var(--app-card);border-right:1px solid var(--app-border);color:var(--app-t1);
-}
-.sp-section{padding:17px 18px;border-bottom:1px solid var(--app-border)}
-.sp-label{font-size:10px;color:var(--app-t3);margin-bottom:10px}
-.tpl-toggle{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.tpl-btn{min-height:45px;padding:.55rem .65rem;background:var(--app-bg);border:1px solid var(--app-border);color:var(--app-t2);border-radius:10px;font-size:10.5px}
-.tpl-btn:hover{background:var(--app-sub);color:var(--app-t1);border-color:rgba(26,122,74,.3)}
-.tpl-btn.active{background:rgba(78,206,145,.08);border-color:var(--app-emerald);color:var(--app-emerald);box-shadow:0 0 0 2px rgba(78,206,145,.08)}
-.sp-photo-circle{background:var(--app-forest);border-color:var(--app-border)}.sp-photo-status{color:var(--app-t3)}.sp-photo-status strong{color:var(--app-t1)}
-.sp-ph-btn,.sp-edit-btn{background:var(--app-bg);border:1px solid var(--app-border);color:var(--app-t2);border-radius:9px}
-.sp-ph-btn:hover,.sp-edit-btn:hover{background:var(--app-sub);color:var(--app-emerald);border-color:rgba(26,122,74,.3)}
-.sp-bottom{padding:16px 18px;border-top:1px solid var(--app-border);background:var(--app-card)}
-.sp-print{background:var(--app-emerald);color:#fff;border-radius:10px}
-.sp-bottom > div{color:var(--app-t3)!important}.sp-bottom strong{color:var(--app-t2)!important}
-.sp-print-trust span{color:var(--app-t3)}.sp-print-trust span svg{color:var(--app-emerald)}
-.page{box-shadow:0 24px 70px rgba(7,18,9,.16)}.page-wrap{min-width:210mm}
+/* ── 3-column editor layout ──────────────────────────────── */
+body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;margin:0;overflow:hidden}
+.cv-shell{display:flex;height:100vh;overflow:hidden}
+
+/* ── Left nav ─────────────────────────────────────────────── */
+.cv-nav{width:220px;flex-shrink:0;background:#0c1610;border-right:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;overflow-y:auto}
+.cn-top{padding:1.1rem 1.1rem .9rem;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.cn-logo{font-size:13px;font-weight:700;color:#fff;opacity:.6;letter-spacing:-.01em}
+.cn-back{font-size:11px;color:rgba(255,255,255,.38);text-decoration:none;display:flex;align-items:center;gap:.3rem;transition:color .15s}
+.cn-back:hover{color:rgba(255,255,255,.75)}
+.cn-progress-wrap{height:3px;background:rgba(255,255,255,.08);flex-shrink:0}
+.cn-progress-bar{height:100%;background:var(--app-emerald);transition:width .4s ease;width:20%}
+.cn-steps{padding:.7rem 0;display:flex;flex-direction:column;gap:1px;flex:1}
+.cn-step{display:flex;align-items:center;gap:.75rem;padding:.65rem 1.1rem;cursor:pointer;transition:background .15s;border-left:2px solid transparent}
+.cn-step:hover{background:rgba(255,255,255,.04)}
+.cn-step.active{background:rgba(78,206,145,.08);border-left-color:var(--app-emerald)}
+.cn-step-num{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,.3);flex-shrink:0;transition:all .2s;font-family:'Manrope',sans-serif}
+.cn-step.active .cn-step-num{background:var(--app-emerald);border-color:var(--app-emerald);color:#0a0f0d}
+.cn-step.done .cn-step-num{background:rgba(78,206,145,.18);border-color:rgba(78,206,145,.35);color:var(--app-emerald)}
+.cn-step-info{display:flex;flex-direction:column;gap:1px;min-width:0}
+.cn-step-name{font-size:12px;font-weight:700;color:rgba(255,255,255,.35);transition:color .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cn-step.active .cn-step-name{color:#fff}
+.cn-step.done .cn-step-name{color:rgba(78,206,145,.65)}
+.cn-step-sub{font-size:9.5px;color:rgba(255,255,255,.18)}
+.cn-step.active .cn-step-sub{color:rgba(255,255,255,.38)}
+.cn-bottom{padding:.75rem 1.1rem;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0;display:flex;flex-direction:column;gap:.5rem}
+.cn-saved-indicator{display:flex;align-items:center;gap:.4rem;font-size:10.5px;color:rgba(78,206,145,.65);font-weight:700}
+.cn-saved-indicator i{width:6px;height:6px;border-radius:50%;background:var(--app-bright);flex-shrink:0}
+.cn-theme-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.45);border-radius:7px;padding:.35rem .65rem;font-size:10px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:.4rem;font-family:'Manrope',sans-serif}
+.cn-theme-btn:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.75)}
+
+/* ── Center: step content ─────────────────────────────────── */
+.cv-main{flex:1;overflow-y:auto;background:var(--app-bg);display:flex;flex-direction:column;min-width:0}
+.cv-step{display:none;flex-direction:column;flex:1;padding:2.5rem 3rem 2rem;max-width:700px;width:100%}
+.cv-step.active{display:flex}
+.csv-header{margin-bottom:2rem}
+.csv-kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--app-emerald);display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem}
+.csv-kicker::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--app-emerald);display:inline-block}
+.csv-title{font-family:'Lora',serif;font-size:26px;font-weight:700;color:var(--app-t1);line-height:1.2;margin-bottom:.35rem;letter-spacing:-.02em}
+.csv-sub{font-size:13px;color:var(--app-t3);line-height:1.5}
+.csv-body{flex:1;display:flex;flex-direction:column;gap:1.5rem}
+.csv-footer{display:flex;align-items:center;gap:.8rem;padding-top:2rem;margin-top:2rem;border-top:1px solid var(--app-border);flex-shrink:0}
+.csv-btn-next{background:var(--app-emerald);color:#fff;border:none;border-radius:10px;padding:.75rem 1.4rem;font-family:'Manrope',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;box-shadow:0 4px 14px rgba(26,122,74,.28)}
+.csv-btn-next:hover{background:var(--app-green);transform:translateY(-1px)}
+.csv-btn-prev{background:transparent;color:var(--app-t3);border:1px solid var(--app-border);border-radius:10px;padding:.75rem 1.2rem;font-family:'Manrope',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.csv-btn-prev:hover{color:var(--app-t1);border-color:var(--app-t3)}
+
+/* Template cards */
+.tpl-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.75rem}
+.tpl-card{padding:1rem 1.1rem;background:var(--app-card);border:1.5px solid var(--app-border);border-radius:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.75rem}
+.tpl-card:hover{border-color:rgba(26,122,74,.35);background:var(--app-sub)}
+.tpl-card.active{border-color:var(--app-emerald);background:rgba(78,206,145,.06);box-shadow:0 0 0 3px rgba(78,206,145,.1)}
+.tpl-card-icon{width:32px;height:32px;border-radius:8px;background:var(--app-sub);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--app-t3)}
+.tpl-card.active .tpl-card-icon{background:rgba(78,206,145,.12);color:var(--app-emerald)}
+.tpl-card-info{display:flex;flex-direction:column;gap:3px;min-width:0}
+.tpl-card-name{font-size:13px;font-weight:700;color:var(--app-t1)}
+.tpl-card.active .tpl-card-name{color:var(--app-emerald)}
+.tpl-card-badge{font-size:9px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--app-t3);padding:2px 6px;border-radius:4px;background:var(--app-border);display:inline-flex;width:fit-content}
+.tpl-card-badge.ats{color:var(--app-emerald);background:rgba(78,206,145,.12)}
+
+/* Photo row step 1 */
+.csv-photo-section{display:flex;align-items:center;gap:1.2rem;padding:1.1rem 1.25rem;background:var(--app-card);border:1px solid var(--app-border);border-radius:12px}
+.csv-photo-circle{width:54px;height:54px;border-radius:50%;background:var(--app-sub);border:2px solid var(--app-border);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;cursor:pointer;color:var(--app-t3)}
+.csv-photo-circle img{width:100%;height:100%;object-fit:cover;display:none}
+.csv-photo-circle img.has-photo{display:block}
+.csv-photo-info{flex:1;min-width:0}
+.csv-photo-label{font-size:12px;font-weight:700;color:var(--app-t1);margin-bottom:2px}
+.csv-photo-sub{font-size:11px;color:var(--app-t3);line-height:1.4}
+.csv-photo-btns{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem}
+.csv-photo-btn{padding:.3rem .7rem;border-radius:7px;font-size:11px;font-weight:700;font-family:'Manrope',sans-serif;cursor:pointer;transition:all .15s;border:1px solid var(--app-border);background:var(--app-bg);color:var(--app-t2)}
+.csv-photo-btn:hover{background:var(--app-sub);color:var(--app-emerald);border-color:rgba(26,122,74,.3)}
+.csv-photo-btn.danger:hover{background:rgba(192,57,43,.06);border-color:rgba(192,57,43,.3);color:#c0392b}
+
+/* Form fields step 2 */
+.csv-form-grid{display:grid;gap:1rem}
+.csv-form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.csv-field{display:flex;flex-direction:column;gap:.35rem}
+.csv-label{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--app-t3)}
+.csv-input{padding:.65rem .85rem;background:var(--app-card);border:1px solid var(--app-border);border-radius:9px;font-family:'Manrope',sans-serif;font-size:13px;color:var(--app-t1);transition:border-color .15s;outline:none;width:100%}
+.csv-input:focus{border-color:var(--app-emerald);box-shadow:0 0 0 3px rgba(26,122,74,.08)}
+.csv-textarea{resize:vertical;min-height:100px}
+.csv-char-count{font-size:10.5px;color:var(--app-t3);margin-top:.2rem}
+
+/* Steps 3-4 experience/edu cards */
+.csv-section-label{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--app-t3);margin-bottom:.6rem}
+.csv-card-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:.6rem}
+.csv-item-card{display:flex;align-items:center;gap:.75rem;padding:.65rem .85rem;background:var(--app-card);border:1px solid var(--app-border);border-radius:10px}
+.csv-item-name{font-size:12.5px;font-weight:700;color:var(--app-t1)}
+.csv-item-sub{font-size:11px;color:var(--app-t3);margin-top:1px}
+.csv-add-btn{display:flex;align-items:center;gap:.4rem;padding:.5rem .85rem;border-radius:9px;border:1px dashed var(--app-border);background:transparent;color:var(--app-t3);font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;width:100%;justify-content:center}
+.csv-add-btn:hover{border-color:var(--app-emerald);color:var(--app-emerald);background:rgba(78,206,145,.04)}
+.csv-metric-warn{display:flex;align-items:flex-start;gap:.5rem;padding:.5rem .75rem;border-radius:8px;background:rgba(196,125,10,.08);border:1px solid rgba(196,125,10,.2);font-size:11px;color:#b87813;line-height:1.4;margin-top:.3rem}
+.csv-skill-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem}
+.csv-skill-tag{padding:.25rem .65rem;border-radius:999px;background:rgba(78,206,145,.1);border:1px solid rgba(78,206,145,.2);color:var(--app-emerald);font-size:11px;font-weight:700}
+
+/* Step 5: finalizar */
+.csv-done-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(78,206,145,.12);color:var(--app-emerald);border:1px solid rgba(78,206,145,.25);border-radius:999px;font-size:11px;font-weight:800;padding:.3rem .85rem;letter-spacing:.04em;margin-bottom:.6rem}
+.csv-download-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.1rem}
+.csv-dl-btn{display:flex;align-items:center;justify-content:center;gap:.6rem;padding:.9rem 1rem;border-radius:11px;font-family:'Manrope',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;border:1px solid}
+.csv-dl-btn.primary{background:var(--app-emerald);color:#fff;border-color:var(--app-emerald);box-shadow:0 6px 18px rgba(26,122,74,.28)}
+.csv-dl-btn.primary:hover{background:var(--app-green);transform:translateY(-1px)}
+.csv-dl-btn.secondary{background:var(--app-sub);color:var(--app-t2);border-color:var(--app-border)}
+.csv-dl-btn.secondary:hover{border-color:var(--app-t3);color:var(--app-t1)}
+.csv-ats-section{background:var(--app-card);border:1px solid var(--app-border);border-radius:12px;padding:1.1rem 1.25rem}
+.csv-ats-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:.7rem}
+.csv-ats-score-big{font-size:28px;font-weight:800;color:var(--app-emerald);line-height:1}
+.csv-ats-label{font-size:11px;font-weight:700;color:var(--app-t3)}
+.csv-tracker-card{background:var(--app-card);border:1px solid var(--app-border);border-radius:12px;padding:1.1rem 1.25rem}
+.csv-tracker-title{font-size:13px;font-weight:800;color:var(--app-t1);margin-bottom:.35rem}
+.csv-tracker-sub{font-size:11.5px;color:var(--app-t3);margin-bottom:.9rem;line-height:1.5}
+.csv-tracker-select{width:100%;padding:.55rem .8rem;background:var(--app-bg);border:1px solid var(--app-border);border-radius:9px;font-family:'Manrope',sans-serif;font-size:12.5px;color:var(--app-t1);outline:none;margin-bottom:.65rem}
+.csv-tracker-mark-btn{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;padding:.65rem;border-radius:9px;background:var(--app-emerald);color:#fff;border:none;font-family:'Manrope',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s}
+.csv-tracker-mark-btn:hover:not(:disabled){background:var(--app-green)}
+.csv-tracker-mark-btn:disabled{background:var(--app-border);color:var(--app-t3);cursor:not-allowed}
+.csv-cloud-section{display:flex;flex-direction:column;gap:.5rem}
+
+/* ── Right preview column ─────────────────────────────────── */
+.cv-preview{width:300px;flex-shrink:0;background:#cfd5d0;border-left:1px solid rgba(0,0,0,.1);overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:16px 14px;gap:10px}
+.cvp-label{font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(0,0,0,.3);align-self:flex-start}
+.cvp-scale-outer{position:relative;width:100%;overflow:hidden;border-radius:4px;box-shadow:0 4px 24px rgba(0,0,0,.22);flex-shrink:0}
+#pageWrap{position:absolute;top:0;left:0;transform-origin:top left;width:210mm!important;min-width:210mm!important;pointer-events:none}
+
+.page{box-shadow:0 24px 70px rgba(7,18,9,.16)}
 
 .cv-quality-box{padding:12px;border-radius:11px;background:var(--app-sub);border:1px solid var(--app-border)}
 .cv-quality-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.cv-quality-top strong{font-size:11px;color:var(--app-t1)}.cv-quality-score{font-size:11px;color:var(--app-emerald);font-weight:800}
@@ -584,31 +687,7 @@ body.fit-one-page .cv-sec-h,body.fit-one-page .mod-sec-h,body.fit-one-page .exec
 body.fit-one-page .sb-sec{padding-top:.6rem}
 body.fit-one-page .exp-emp{margin:.05rem 0 .2rem}
 
-/* ─── Mobile top bar ──────────────────────────────────────── */
-/* ─── Step indicator ─────────────────────────────────────── */
-.sp-steps{padding:.85rem 1rem .7rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;flex-shrink:0}
-.sp-step-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;flex:1;transition:opacity .15s}
-.sp-step-item:hover{opacity:.85}
-.sp-step-dot{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.13);display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:rgba(255,255,255,.28);transition:all .2s;font-family:'Manrope',sans-serif}
-.sp-step-item.active .sp-step-dot{background:var(--app-emerald,#3ecf8e);border-color:var(--app-emerald,#3ecf8e);color:#0a0f0d}
-.sp-step-item.done .sp-step-dot{background:rgba(78,206,145,.18);border-color:rgba(78,206,145,.35);color:var(--app-emerald,#3ecf8e)}
-.sp-step-lbl{font-size:8px;font-weight:800;color:rgba(255,255,255,.22);letter-spacing:.04em;text-transform:uppercase;text-align:center}
-.sp-step-item.active .sp-step-lbl{color:rgba(255,255,255,.65)}
-.sp-step-item.done .sp-step-lbl{color:rgba(78,206,145,.6)}
-.sp-step-line{flex:0 0 12px;height:1px;background:rgba(255,255,255,.1);margin-bottom:11px}
-
-/* ─── Step panels ─────────────────────────────────────────── */
-.sp-step-panel{display:none;flex-direction:column;flex:1;overflow:hidden}
-.sp-step-panel.active{display:flex}
-.sp-step-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.55rem;padding:1rem 1.1rem}
-.sp-step-hint{font-size:10px;color:rgba(255,255,255,.28);line-height:1.5}
-
-/* ─── Step nav buttons ────────────────────────────────────── */
-.sp-step-nav{padding:.7rem 1.1rem;border-top:1px solid rgba(255,255,255,.06);display:flex;gap:.4rem;flex-shrink:0}
-.sp-nav-next{flex:1;font-family:'Manrope',sans-serif;font-size:12.5px;font-weight:700;padding:.6rem;border-radius:9px;background:var(--app-emerald,#3ecf8e);color:#0a0f0d;border:none;cursor:pointer;transition:opacity .15s}
-.sp-nav-next:hover{opacity:.85}
-.sp-nav-prev{font-family:'Manrope',sans-serif;font-size:13px;font-weight:600;padding:.6rem .8rem;border-radius:9px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.38);border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:all .15s}
-.sp-nav-prev:hover{color:#fff;background:rgba(255,255,255,.1)}
+/* ─── Step 2 sf-* form inputs (legacy IDs preserved) ─────── */
 
 /* ─── Step 2 inline form ──────────────────────────────────── */
 .sf-group{display:flex;flex-direction:column;gap:.2rem}
@@ -744,7 +823,7 @@ html.no-photo .mod-header{display:block}
 
   *{box-sizing:border-box!important}
   html,body{width:210mm!important;min-width:210mm!important;background:#fff!important;padding:0!important;margin:0!important;overflow:visible!important}
-  .app-header,.side-panel,.modal-overlay,.mob-bar,.panel-overlay,.edit-modal,.mob-print-toast,.preflight-overlay{display:none!important}
+  .cv-nav,.cv-main,.cv-preview,.modal-overlay,.mob-bar,.panel-overlay,.edit-modal,.mob-print-toast,.preflight-overlay,.app-header,.side-panel{display:none!important}
   .page-wrap{
     display:block!important;
     width:210mm!important;
@@ -855,238 +934,310 @@ html.no-photo .mod-header{display:block}
   </div>
 </div>
 
-<!-- ─── Side Panel ────────────────────────────────────────── -->
-<div class="side-panel" id="sidePanel">
+<!-- ─── CV Shell ─────────────────────────────────────────── -->
+<div class="cv-shell">
 
-  <!-- Logo + Voltar -->
-  <div class="sp-top">
-    <span class="sp-logo">VagaAI</span>
-    <a href="/app" class="sp-back"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span> Voltar</a>
+<!-- LEFT NAV -->
+<nav class="cv-nav">
+  <div class="cn-top">
+    <span class="cn-logo">VagaAI</span>
+    <a href="/app" class="cn-back"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Voltar</a>
   </div>
-
-  <!-- ── Step indicator ─────────────────────────────── -->
-  <div class="sp-steps">
-    <div class="sp-step-item active" id="spsi1" onclick="goToStep(1)">
-      <div class="sp-step-dot">1</div><div class="sp-step-lbl">Modelo</div>
+  <div class="cn-progress-wrap"><div class="cn-progress-bar" id="cnProgressBar" style="width:20%"></div></div>
+  <div class="cn-steps">
+    <div class="cn-step active" id="cnsi1" onclick="goToStep(1)">
+      <div class="cn-step-num">1</div>
+      <div class="cn-step-info"><div class="cn-step-name">Modelo</div><div class="cn-step-sub">Template e foto</div></div>
     </div>
-    <div class="sp-step-line"></div>
-    <div class="sp-step-item" id="spsi2" onclick="goToStep(2)">
-      <div class="sp-step-dot">2</div><div class="sp-step-lbl">Dados</div>
+    <div class="cn-step" id="cnsi2" onclick="goToStep(2)">
+      <div class="cn-step-num">2</div>
+      <div class="cn-step-info"><div class="cn-step-name">Informações</div><div class="cn-step-sub">Dados pessoais</div></div>
     </div>
-    <div class="sp-step-line"></div>
-    <div class="sp-step-item" id="spsi3" onclick="goToStep(3)">
-      <div class="sp-step-dot">3</div><div class="sp-step-lbl">Exp.</div>
+    <div class="cn-step" id="cnsi3" onclick="goToStep(3)">
+      <div class="cn-step-num">3</div>
+      <div class="cn-step-info"><div class="cn-step-name">Experiência</div><div class="cn-step-sub">Histórico profissional</div></div>
     </div>
-    <div class="sp-step-line"></div>
-    <div class="sp-step-item" id="spsi4" onclick="goToStep(4)">
-      <div class="sp-step-dot">4</div><div class="sp-step-lbl">Exportar</div>
+    <div class="cn-step" id="cnsi4" onclick="goToStep(4)">
+      <div class="cn-step-num">4</div>
+      <div class="cn-step-info"><div class="cn-step-name">Formação</div><div class="cn-step-sub">Edu. e habilidades</div></div>
+    </div>
+    <div class="cn-step" id="cnsi5" onclick="goToStep(5)">
+      <div class="cn-step-num">5</div>
+      <div class="cn-step-info"><div class="cn-step-name">Finalizar</div><div class="cn-step-sub">Score e download</div></div>
     </div>
   </div>
+  <div class="cn-bottom">
+    <div class="cn-saved-indicator" id="cnSavedIndicator" style="display:none"><i></i> Salvo</div>
+    <button class="cn-theme-btn" onclick="toggleTheme()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      Tema
+    </button>
+  </div>
+</nav>
 
-  <!-- ── STEP 1: Modelo + Foto ───────────────────────── -->
-  <div class="sp-step-panel active" id="spPanel1">
-    <div class="sp-step-scroll">
-      <div>
-        <div class="sp-label">Escolha o modelo</div>
-        <p class="sp-step-hint" style="margin-bottom:.6rem">ATS ✓ = coluna única, lida na ordem correta por sistemas de recrutamento automático.</p>
-        <div class="tpl-toggle">
-          <button class="tpl-btn active" id="tplBtnClassic" onclick="setTemplate('classic')">
-            <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></span> Profissional <span class="tpl-ats-badge sidebar">Sidebar</span><span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          </button>
-          <button class="tpl-btn" id="tplBtnModern" onclick="setTemplate('modern')">
-            <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></span> Moderno <span class="tpl-ats-badge ats">ATS ✓</span><span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          </button>
-          <button class="tpl-btn" id="tplBtnExec" onclick="setTemplate('exec')">
-            <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"/></svg></span> Executivo <span class="tpl-ats-badge sidebar">Sidebar</span><span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          </button>
-          <button class="tpl-btn" id="tplBtnCompact" onclick="setTemplate('compact')">
-            <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg></span> Compacto <span class="tpl-ats-badge sidebar">Sidebar</span><span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          </button>
-          <button class="tpl-btn" id="tplBtnMinimal" onclick="setTemplate('minimal')">
-            <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span> Minimalista <span class="tpl-ats-badge ats">ATS ✓</span><span class="tpl-check ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          </button>
+<!-- CENTER: STEPS -->
+<main class="cv-main">
+
+  <!-- ── STEP 1: Modelo + Foto ─────────────────────────────── -->
+  <div class="cv-step active" id="csStep1">
+    <div class="csv-header">
+      <div class="csv-kicker">Passo 1 de 5</div>
+      <h1 class="csv-title">Escolha o modelo do currículo</h1>
+      <p class="csv-sub">Selecione o template que melhor representa seu perfil. Templates ATS ✓ são lidos corretamente por sistemas de triagem automática.</p>
+    </div>
+    <div class="csv-body">
+      <div class="tpl-card-grid">
+        <div class="tpl-card active" id="tplCardClassic" onclick="setTemplate('classic')">
+          <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></div>
+          <div class="tpl-card-info"><div class="tpl-card-name">Profissional</div><div class="tpl-card-badge">Sidebar</div></div>
+        </div>
+        <div class="tpl-card" id="tplCardModern" onclick="setTemplate('modern')">
+          <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></div>
+          <div class="tpl-card-info"><div class="tpl-card-name">Moderno</div><div class="tpl-card-badge ats">ATS ✓</div></div>
+        </div>
+        <div class="tpl-card" id="tplCardExec" onclick="setTemplate('exec')">
+          <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"/></svg></div>
+          <div class="tpl-card-info"><div class="tpl-card-name">Executivo</div><div class="tpl-card-badge">Sidebar</div></div>
+        </div>
+        <div class="tpl-card" id="tplCardCompact" onclick="setTemplate('compact')">
+          <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg></div>
+          <div class="tpl-card-info"><div class="tpl-card-name">Compacto</div><div class="tpl-card-badge">Sidebar</div></div>
+        </div>
+        <div class="tpl-card" id="tplCardMinimal" onclick="setTemplate('minimal')">
+          <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+          <div class="tpl-card-info"><div class="tpl-card-name">Minimalista</div><div class="tpl-card-badge ats">ATS ✓</div></div>
         </div>
       </div>
       <!-- Foto -->
-      <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:.8rem">
-        <div class="sp-label">Foto</div>
-        <div class="sp-photo-preview">
-          <div class="sp-photo-circle" id="spPhotoCircle">
-            <img id="spPhotoThumb" alt="">
-            <span id="spPhotoIcon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-          </div>
-          <div class="sp-photo-status">
-            <strong id="spPhotoStatusTitle">Sem foto</strong>
-            <span id="spPhotoStatusSub">Aparência neutra</span>
+      <div class="csv-photo-section">
+        <div class="csv-photo-circle" id="spPhotoCircle" onclick="document.getElementById('photoFileInput').click()">
+          <img id="spPhotoThumb" alt="">
+          <span id="spPhotoIcon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+        </div>
+        <div style="flex:1">
+          <div class="csv-photo-label"><strong id="spPhotoStatusTitle">Sem foto</strong></div>
+          <div class="csv-photo-sub" id="spPhotoStatusSub">ATS não lê fotos. Inclua apenas se enviar direto ao recrutador.</div>
+          <div class="csv-photo-btns">
+            <button class="csv-photo-btn" onclick="document.getElementById('photoFileInput').click()">
+              <span id="spPhotoBtnLabel">Adicionar foto</span>
+            </button>
+            <button class="csv-photo-btn danger" id="spRemoveBtn" style="display:none" onclick="removePhoto()">Remover</button>
           </div>
         </div>
-        <div class="sp-photo-btns">
-          <button class="sp-ph-btn" onclick="document.getElementById('photoFileInput').click()">
-            <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span> <span id="spPhotoBtnLabel">Adicionar foto</span>
-          </button>
-          <button class="sp-ph-btn danger" id="spRemoveBtn" style="display:none" onclick="removePhoto()">
-            <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span> Remover foto
-          </button>
-        </div>
-        <input type="file" id="photoFileInput" accept="image/*">
-        <p class="sp-photo-tip">ATS não lê fotos. Inclua se enviar direto ao recrutador; omita em plataformas ou vagas internacionais.</p>
       </div>
+      <input type="file" id="photoFileInput" accept="image/*" style="display:none">
     </div>
-    <div class="sp-step-nav">
-      <button class="sp-nav-next" onclick="goToStep(2)">Próximo: Informações →</button>
+    <div class="csv-footer">
+      <button class="csv-btn-next" onclick="goToStep(2)">Próximo: Informações →</button>
     </div>
   </div>
 
-  <!-- ── STEP 2: Informações inline ─────────────────── -->
-  <div class="sp-step-panel" id="spPanel2">
-    <div class="sp-step-scroll">
-      <div>
-        <div class="sp-label">Suas informações</div>
-        <p class="sp-step-hint">Campos preenchidos com seu perfil. Edite aqui — o currículo atualiza em tempo real ao lado.</p>
-      </div>
-      <div class="sf-group">
-        <div class="sf-lbl">Nome completo</div>
-        <input class="sf-input" id="sf_nome" oninput="sfOnChange()" placeholder="Nome Sobrenome">
-      </div>
-      <div class="sf-group">
-        <div class="sf-lbl">Cargo / Título</div>
-        <input class="sf-input" id="sf_titulo" oninput="sfOnChange()" placeholder="Ex: Analista de Marketing">
-      </div>
-      <div class="sf-group">
-        <div class="sf-lbl">Resumo profissional</div>
-        <textarea class="sf-input" id="sf_resumo" oninput="sfOnChange()" rows="5" style="resize:none"></textarea>
-        <div class="sf-count" id="sf_resumo_count">0 caracteres</div>
-      </div>
-      <div class="sf-group">
-        <div class="sf-lbl">E-mail</div>
-        <input class="sf-input" id="sf_email" type="email" oninput="sfOnChange()">
-      </div>
-      <div class="sf-row">
-        <div class="sf-group">
-          <div class="sf-lbl">Telefone</div>
-          <input class="sf-input" id="sf_tel" oninput="sfOnChange()">
+  <!-- ── STEP 2: Informações ───────────────────────────────── -->
+  <div class="cv-step" id="csStep2">
+    <div class="csv-header">
+      <div class="csv-kicker">Passo 2 de 5</div>
+      <h1 class="csv-title">Suas informações</h1>
+      <p class="csv-sub">Preencha seus dados. O currículo atualiza em tempo real na pré-visualização ao lado.</p>
+    </div>
+    <div class="csv-body">
+      <div class="csv-form-grid">
+        <div class="csv-field">
+          <label class="csv-label" for="sf_nome">Nome completo</label>
+          <input class="csv-input" id="sf_nome" oninput="sfOnChange()" placeholder="Nome Sobrenome">
         </div>
-        <div class="sf-group">
-          <div class="sf-lbl">Cidade</div>
-          <input class="sf-input" id="sf_cidade" oninput="sfOnChange()">
+        <div class="csv-field">
+          <label class="csv-label" for="sf_titulo">Cargo / Título</label>
+          <input class="csv-input" id="sf_titulo" oninput="sfOnChange()" placeholder="Ex: Analista de Marketing">
         </div>
-      </div>
-      <div class="sf-group">
-        <div class="sf-lbl">LinkedIn</div>
-        <input class="sf-input" id="sf_li" oninput="sfOnChange()" placeholder="linkedin.com/in/...">
+        <div class="csv-field" style="grid-column:1/-1">
+          <label class="csv-label" for="sf_resumo">Resumo profissional</label>
+          <textarea class="csv-input csv-textarea" id="sf_resumo" oninput="sfOnChange()" rows="5"></textarea>
+          <div class="csv-char-count" id="sf_resumo_count">0 caracteres</div>
+        </div>
+        <div class="csv-field">
+          <label class="csv-label" for="sf_email">E-mail</label>
+          <input class="csv-input" id="sf_email" type="email" oninput="sfOnChange()">
+        </div>
+        <div class="csv-field">
+          <label class="csv-label" for="sf_tel">Telefone</label>
+          <input class="csv-input" id="sf_tel" oninput="sfOnChange()">
+        </div>
+        <div class="csv-field">
+          <label class="csv-label" for="sf_cidade">Cidade</label>
+          <input class="csv-input" id="sf_cidade" oninput="sfOnChange()">
+        </div>
+        <div class="csv-field">
+          <label class="csv-label" for="sf_li">LinkedIn</label>
+          <input class="csv-input" id="sf_li" oninput="sfOnChange()" placeholder="linkedin.com/in/...">
+        </div>
       </div>
     </div>
-    <div class="sp-step-nav">
-      <button class="sp-nav-prev" onclick="goToStep(1)">←</button>
-      <button class="sp-nav-next" onclick="goToStep(3)">Próximo: Experiência →</button>
+    <div class="csv-footer">
+      <button class="csv-btn-next" onclick="goToStep(3)">Próximo: Experiência →</button>
+      <button class="csv-btn-prev" onclick="goToStep(1)">← Voltar</button>
     </div>
   </div>
 
-  <!-- ── STEP 3: Experiência + Formação + Skills ─────── -->
-  <div class="sp-step-panel" id="spPanel3">
-    <div class="sp-step-scroll">
+  <!-- ── STEP 3: Experiência ───────────────────────────────── -->
+  <div class="cv-step" id="csStep3">
+    <div class="csv-header">
+      <div class="csv-kicker">Passo 3 de 5</div>
+      <h1 class="csv-title">Experiência profissional</h1>
+      <p class="csv-sub">Adicione suas experiências. Inclua métricas e resultados concretos para melhorar seu score ATS.</p>
+    </div>
+    <div class="csv-body">
       <div>
-        <div class="sp-label">Experiências</div>
-        <div id="s3ExpList" style="display:flex;flex-direction:column;gap:.28rem;margin-bottom:.4rem"></div>
-        <button class="se-add" onclick="openEdit('exp')">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Editar / Adicionar experiência
-        </button>
-        <div class="se-warn" id="s3ExpWarn" style="display:none;margin-top:.35rem">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div class="csv-section-label">Suas experiências</div>
+        <div class="csv-card-list" id="s3ExpList"></div>
+        <div class="csv-metric-warn" id="s3ExpWarn" style="display:none">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           <span id="s3WarnText">Sem métricas nas experiências</span>
         </div>
-      </div>
-      <div>
-        <div class="sp-label">Formação</div>
-        <div id="s3EduList" style="display:flex;flex-direction:column;gap:.28rem;margin-bottom:.4rem"></div>
-        <button class="se-add" onclick="openEdit('edu')">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Editar / Adicionar formação
-        </button>
-      </div>
-      <div>
-        <div class="sp-label">Habilidades</div>
-        <div id="s3SkillsList" style="display:flex;flex-wrap:wrap;gap:.28rem;margin-bottom:.4rem"></div>
-        <button class="se-add" onclick="openEdit('skills')">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Editar habilidades
+        <button class="csv-add-btn" onclick="openEdit('exp')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Adicionar / editar experiência
         </button>
       </div>
     </div>
-    <div class="sp-step-nav">
-      <button class="sp-nav-prev" onclick="goToStep(2)">←</button>
-      <button class="sp-nav-next" onclick="goToStep(4)">Próximo: Exportar →</button>
+    <div class="csv-footer">
+      <button class="csv-btn-next" onclick="goToStep(4)">Próximo: Formação →</button>
+      <button class="csv-btn-prev" onclick="goToStep(2)">← Voltar</button>
     </div>
   </div>
 
-  <!-- ── STEP 4: Exportar ────────────────────────────── -->
-  <div class="sp-step-panel" id="spPanel4">
-    <div class="sp-step-scroll">
-      <!-- ATS score -->
+  <!-- ── STEP 4: Formação + Habilidades ───────────────────── -->
+  <div class="cv-step" id="csStep4">
+    <div class="csv-header">
+      <div class="csv-kicker">Passo 4 de 5</div>
+      <h1 class="csv-title">Formação e habilidades</h1>
+      <p class="csv-sub">Adicione sua formação acadêmica e liste as habilidades mais relevantes para a vaga.</p>
+    </div>
+    <div class="csv-body">
       <div>
-        <div class="s4-score-row">
-          <div class="s4-section-lbl">Compatibilidade ATS</div>
-          <span class="s4-score-num" id="s4ScoreVal">—</span>
+        <div class="csv-section-label">Formação acadêmica</div>
+        <div class="csv-card-list" id="s3EduList"></div>
+        <button class="csv-add-btn" onclick="openEdit('edu')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Adicionar / editar formação
+        </button>
+      </div>
+      <div>
+        <div class="csv-section-label">Habilidades</div>
+        <div class="csv-skill-tags" id="s3SkillsList"></div>
+        <button class="csv-add-btn" onclick="openEdit('skills')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Editar habilidades
+        </button>
+      </div>
+    </div>
+    <div class="csv-footer">
+      <button class="csv-btn-next" onclick="goToStep(5)">Próximo: Finalizar →</button>
+      <button class="csv-btn-prev" onclick="goToStep(3)">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 5: Finalizar ─────────────────────────────────── -->
+  <div class="cv-step" id="csStep5">
+    <div class="csv-header">
+      <div class="csv-done-badge">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Currículo pronto
+      </div>
+      <h1 class="csv-title">Baixe e envie para a vaga</h1>
+      <p class="csv-sub">Seu currículo está otimizado. Baixe em PDF, confira o score ATS e marque a vaga nas suas candidaturas.</p>
+    </div>
+    <div class="csv-body">
+      <!-- Download -->
+      <div class="csv-download-row">
+        <button class="csv-dl-btn primary" onclick="openPdfPreflight()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Baixar PDF
+        </button>
+        <button class="csv-dl-btn secondary" onclick="exportDocx ? exportDocx() : showToast('Em breve','info')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Baixar .doc
+        </button>
+      </div>
+      <!-- ATS Score -->
+      <div class="csv-ats-section">
+        <div class="csv-ats-header">
+          <div>
+            <div class="csv-ats-label">Score ATS</div>
+            <div class="csv-ats-score-big" id="s4ScoreVal">—</div>
+          </div>
+          <div style="flex:1;margin-left:1rem">
+            <div class="s4-bar" style="margin-bottom:.5rem"><div class="s4-bar-fill" id="s4ScoreFill" style="width:0%"></div></div>
+            <div class="s4-pillars">
+              <div class="s4-pillar"><span class="s4-pillar-lbl">Contato</span><div class="s4-pillar-bar"><div class="s4-pillar-fill" id="s4p1"></div></div><span class="s4-pillar-pct" id="s4p1pct">—</span></div>
+              <div class="s4-pillar"><span class="s4-pillar-lbl">Resumo</span><div class="s4-pillar-bar"><div class="s4-pillar-fill" id="s4p2"></div></div><span class="s4-pillar-pct" id="s4p2pct">—</span></div>
+              <div class="s4-pillar"><span class="s4-pillar-lbl">Métricas</span><div class="s4-pillar-bar"><div class="s4-pillar-fill" id="s4p3"></div></div><span class="s4-pillar-pct" id="s4p3pct">—</span></div>
+              <div class="s4-pillar"><span class="s4-pillar-lbl">Keywords</span><div class="s4-pillar-bar"><div class="s4-pillar-fill" id="s4p4"></div></div><span class="s4-pillar-pct" id="s4p4pct">—</span></div>
+            </div>
+          </div>
         </div>
-        <div class="s4-bar"><div class="s4-bar-fill" id="s4ScoreFill" style="width:0%"></div></div>
-        <div class="s4-pillars">
-          <div class="s4-pillar"><span class="s4-pillar-lbl">Contato</span><div class="s4-pillar-bar"><div class="s4-pillar-fill" id="s4p1"></div></div><span class="s4-pillar-pct" id="s4p1pct">—</span></div>
-          <div class="s4-pillar"><span class="s4-pillar-lbl">Resumo</span><div class="s4-pillar-bar"><div class="s4-pillar-fill" id="s4p2"></div></div><span class="s4-pillar-pct" id="s4p2pct">—</span></div>
-          <div class="s4-pillar"><span class="s4-pillar-lbl">Métricas</span><div class="s4-pillar-bar"><div class="s4-pillar-fill" id="s4p3"></div></div><span class="s4-pillar-pct" id="s4p3pct">—</span></div>
-          <div class="s4-pillar"><span class="s4-pillar-lbl">Keywords</span><div class="s4-pillar-bar"><div class="s4-pillar-fill" id="s4p4"></div></div><span class="s4-pillar-pct" id="s4p4pct">—</span></div>
+        <div id="s4Checklist" style="display:flex;flex-direction:column;gap:.3rem;margin-top:.5rem"></div>
+        <div class="smart-actions" id="s4SmartActions" style="margin-top:.7rem">
+          <button class="smart-action" type="button" onclick="applySmartFix('keywords')">+ Keywords</button>
+          <button class="smart-action" type="button" onclick="applySmartFix('metrics')">+ Métricas</button>
+          <button class="smart-action" type="button" onclick="compactCurrentTemplate()">Compactar</button>
         </div>
       </div>
-      <!-- Checklist -->
-      <div>
-        <div class="s4-section-lbl">Checklist</div>
-        <div id="s4Checklist" style="display:flex;flex-direction:column;gap:.08rem"></div>
+      <!-- Tracker card -->
+      <div class="csv-tracker-card">
+        <div class="csv-tracker-title">Marcar candidatura</div>
+        <div class="csv-tracker-sub">Registre que você vai enviar este currículo para acompanhar nas Candidaturas.</div>
+        <select class="csv-tracker-select" id="csTrackerJobSelect">
+          <option value="">Selecionar vaga...</option>
+        </select>
+        <button class="csv-tracker-mark-btn" id="csTrackerMarkBtn" onclick="markCvApplied()" disabled>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Marcar como "Currículo enviado"
+        </button>
       </div>
-      <!-- Smart fixes -->
-      <div class="smart-actions" id="s4SmartActions">
-        <button class="smart-action" type="button" onclick="applySmartFix('keywords')">+ Keywords</button>
-        <button class="smart-action" type="button" onclick="applySmartFix('metrics')">+ Métricas</button>
-        <button class="smart-action" type="button" onclick="compactCurrentTemplate()">Compactar</button>
-      </div>
-      <!-- Salvar na nuvem -->
-      <div>
-        <div class="s4-section-lbl">Salvar na nuvem</div>
+      <!-- Cloud save -->
+      <div class="csv-cloud-section">
         <button class="sp-cloud-btn" id="spCloudSaveBtn" onclick="cvSaveToCloud()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
           <span id="spCloudSaveLbl">Salvar currículo</span>
         </button>
         <div class="sp-cloud-list" id="spCloudList"></div>
-        <p class="sp-cloud-login hidden" id="spCloudLoginMsg">Faça <a href="/login">login</a> para salvar na nuvem e acessar de qualquer dispositivo.</p>
+        <p class="sp-cloud-login hidden" id="spCloudLoginMsg">Faça <a href="/login">login</a> para salvar na nuvem.</p>
       </div>
-      <!-- Job summary (populated by JS when available) -->
+      <!-- Job summary -->
       <article class="job-summary" id="jobSummaryCard" hidden>
         <div class="job-summary-head"><span class="job-summary-label">Resumo da vaga</span><span class="job-summary-score" id="jobSummaryScore"></span></div>
         <div class="job-summary-role" id="jobSummaryRole"></div>
         <div class="job-summary-company" id="jobSummaryCompany"></div>
         <div class="job-summary-chips" id="jobSummaryChips"></div>
         <p class="job-summary-text" id="jobSummaryText"></p>
-        <a class="job-summary-link" id="jobSummaryLink" href="#" target="_blank" rel="noopener noreferrer">Ver vaga original <span aria-hidden="true">↗</span></a>
+        <a class="job-summary-link" id="jobSummaryLink" href="#" target="_blank" rel="noopener noreferrer">Ver vaga original ↗</a>
       </article>
-      <!-- Legacy quality IDs (used by existing JS functions) — kept hidden -->
+      <!-- Legacy hidden IDs -->
       <div style="display:none" aria-hidden="true">
         <span id="cvQualityScore"></span><span id="cvQualityFill"></span><span id="cvQualityCopy"></span>
         <span id="cvPageCount"></span><span id="cvKeywordCount"></span>
         <span id="pdfStatusBadge"></span><span id="pdfStatusCopy"></span><span id="pdfStatusFoot"></span>
         <div id="cvChecklist"></div><span id="appSidebarScore"></span><span id="appSidebarScoreFill"></span><span id="appSidebarScoreCopy"></span>
+        <!-- Legacy tplBtn IDs for setTemplate() compatibility -->
+        <button id="tplBtnClassic" style="display:none"></button>
+        <button id="tplBtnModern" style="display:none"></button>
+        <button id="tplBtnExec" style="display:none"></button>
+        <button id="tplBtnCompact" style="display:none"></button>
+        <button id="tplBtnMinimal" style="display:none"></button>
       </div>
     </div>
-    <!-- Export buttons -->
-    <div class="sp-bottom" style="padding-top:.7rem">
-      <button class="sp-print" onclick="openPdfPreflight()">
-        <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Baixar PDF
-      </button>
-      <div class="sp-print-trust">
-        <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> A4 pronto para impressão</span>
-        <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Texto legível por ATS</span>
-        <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Revisão automática incluída</span>
-      </div>
-      <button class="sp-nav-prev" style="width:100%;margin-top:.45rem;text-align:center" onclick="goToStep(3)">← Voltar e editar</button>
+    <div class="csv-footer">
+      <button class="csv-btn-prev" onclick="goToStep(4)">← Voltar e editar</button>
     </div>
   </div>
 
-</div>
+</main><!-- /cv-main -->
+
+<!-- RIGHT: PREVIEW -->
+<div class="cv-preview">
+  <span class="cvp-label">Pré-visualização</span>
+  <div class="cvp-scale-outer" id="cvpScaleOuter">
+
 
 <div class="page-wrap" id="pageWrap">
 <!-- ─── Template: Profissional ───────────────────────────── -->
@@ -1281,6 +1432,9 @@ html.no-photo .mod-header{display:block}
 
 <!-- No data fallback -->
 </div><!-- /page-wrap -->
+</div><!-- /cvp-scale-outer -->
+</div><!-- /cv-preview -->
+</div><!-- /cv-shell -->
 <div class="no-data-page" id="noDataPage" style="display:none">
   <div class="no-data">
     <h2>Nenhum currículo encontrado</h2>
@@ -1894,7 +2048,7 @@ function getPrintStylesForIframe() {
     '.page.active{display:flex!important;width:210mm!important;min-width:210mm!important;max-width:210mm!important;min-height:297mm!important;height:auto!important;margin:0!important;padding:0!important;box-shadow:none!important;overflow:visible!important;zoom:1!important;transform:none!important;transform-origin:top left!important;background:#fff!important}',
     '.page:not(.active){display:none!important}',
     '.pg-break,.sb-ph-hover,.editable::after,.editable-block::after{display:none!important}',
-    '.app-header,.side-panel,.modal-overlay,.mob-bar,.panel-overlay,.edit-modal,.mob-print-toast,.preflight-overlay{display:none!important}'
+    '.cv-nav,.cv-main,.cv-preview,.modal-overlay,.mob-bar,.panel-overlay,.edit-modal,.mob-print-toast,.preflight-overlay,.app-header,.side-panel{display:none!important}'
   ].join('\n'));
   return styles.join('\n');
 }
@@ -2361,14 +2515,57 @@ function setTemplate(t) {
   document.body.classList.remove('fit-one-page');
   _fitScale = 1;
   applyTemplate(t, true);
-  // Save inside _cvData (most reliable — bundled with CV JSON)
   if (_cvData) { _cvData.template = t; saveCvData(); }
-  // Also save separately as belt-and-suspenders fallback
   try { localStorage.setItem('vagaai_cv_tpl', t); } catch(e) {}
-  // Re-scale after template switch (slight delay for layout to settle)
+  // Update new card UI
+  var map = {classic:'tplCardClassic',modern:'tplCardModern',exec:'tplCardExec',compact:'tplCardCompact',minimal:'tplCardMinimal'};
+  Object.keys(map).forEach(function(k) {
+    var el = document.getElementById(map[k]);
+    if (el) el.classList.toggle('active', k === t);
+  });
   setTimeout(scaleCvPages, 80);
   setTimeout(addPageBreakIndicator, 300);
   setTimeout(updateCvQualityDashboard, 360);
+}
+
+function initTrackerCard() {
+  var sel = document.getElementById('csTrackerJobSelect');
+  var btn = document.getElementById('csTrackerMarkBtn');
+  if (!sel || !btn) return;
+  try {
+    var raw = localStorage.getItem('vagaai_saved_analyses');
+    var analyses = raw ? JSON.parse(raw) : [];
+    sel.innerHTML = '<option value="">Selecionar vaga...</option>';
+    analyses.forEach(function(a) {
+      if (!a || !a.id) return;
+      var opt = document.createElement('option');
+      opt.value = a.id;
+      opt.textContent = (a.result && (a.result.cargo || a.result.empresa)) ? ((a.result.cargo || '') + (a.result.empresa ? ' — ' + a.result.empresa : '')) : ('Análise ' + a.id.slice(0,8));
+      sel.appendChild(opt);
+    });
+  } catch(e) {}
+  sel.onchange = function() { btn.disabled = !sel.value; };
+  btn.disabled = !sel.value;
+}
+
+function markCvApplied() {
+  var sel = document.getElementById('csTrackerJobSelect');
+  var btn = document.getElementById('csTrackerMarkBtn');
+  if (!sel || !sel.value) return;
+  try {
+    var raw = localStorage.getItem('vagaai_saved_analyses');
+    var analyses = raw ? JSON.parse(raw) : [];
+    var found = false;
+    analyses = analyses.map(function(a) {
+      if (a.id === sel.value) { found = true; return Object.assign({}, a, {status: 'curriculo_enviado', updatedAt: new Date().toISOString()}); }
+      return a;
+    });
+    if (found) {
+      localStorage.setItem('vagaai_saved_analyses', JSON.stringify(analyses));
+      if (btn) { btn.textContent = '✓ Candidatura marcada!'; btn.disabled = true; }
+      showToast('Candidatura atualizada nas Candidaturas.', 'success');
+    }
+  } catch(e) { showToast('Não foi possível atualizar.', 'error'); }
 }
 
 /* ── Mobile: panel toggle ───────────────────────────────── */
@@ -2387,7 +2584,7 @@ function scaleCvPages() {
   var vw = window.innerWidth;
   var isMobile = vw <= 900;
 
-  // Reset all pages first
+  // Reset pages
   wrap.querySelectorAll('.page').forEach(function(p) {
     p.style.zoom = '';
     p.style.transform = '';
@@ -2397,40 +2594,40 @@ function scaleCvPages() {
   });
 
   if (!isMobile) {
+    // Desktop: scale pageWrap to fit the cv-preview column
+    var outer = document.getElementById('cvpScaleOuter');
+    if (outer) {
+      var containerW = outer.clientWidth || 268;
+      var scale = containerW / 794; // 794px = 210mm at 96dpi
+      var scaledH = Math.round(1123 * scale); // 297mm ≈ 1123px
+      outer.style.height = scaledH + 'px';
+      wrap.style.transform = 'scale(' + scale.toFixed(4) + ')';
+      wrap.style.transformOrigin = 'top left';
+    }
     wrap.style.overflowX = '';
     return;
   }
 
+  // Mobile: scale to viewport width
   var scale = Math.min(1, Math.max(0.25, vw / 794));
   var useTransform = false;
-
-  // Probe zoom support on the active page
   var activePage = wrap.querySelector('.page.active');
   if (activePage) {
     activePage.style.zoom = scale.toFixed(4);
-    // Force layout read — if offsetWidth is still >= 780px, zoom had no effect
-    if (activePage.offsetWidth >= 780) {
-      useTransform = true;
-    }
+    if (activePage.offsetWidth >= 780) useTransform = true;
     activePage.style.zoom = '';
   }
-
   wrap.querySelectorAll('.page').forEach(function(p) {
     if (useTransform) {
-      // transform: scale() — not layout-aware; compensate height & expand width
       var pH = p.scrollHeight || 1123;
       p.style.transformOrigin = 'top left';
       p.style.transform = 'scale(' + scale.toFixed(4) + ')';
       p.style.marginBottom = '-' + Math.round(pH * (1 - scale)) + 'px';
-      // Expand logical width so scaled content fills viewport cleanly
       p.style.width = Math.round(vw / scale) + 'px';
     } else {
-      // zoom — layout-aware, preferred
       p.style.zoom = scale.toFixed(4);
     }
   });
-
-  // Clip to prevent horizontal scroll regardless of method
   wrap.style.overflowX = 'hidden';
 }
 window.addEventListener('resize', scaleCvPages);
@@ -2530,18 +2727,22 @@ var _sfDebTimer = null;
 
 function goToStep(n) {
   _cvStep = n;
-  for (var i = 1; i <= 4; i++) {
-    var si = document.getElementById('spsi' + i);
-    var pn = document.getElementById('spPanel' + i);
+  var total = 5;
+  for (var i = 1; i <= total; i++) {
+    var si = document.getElementById('cnsi' + i);
+    var pn = document.getElementById('csStep' + i);
     if (si) {
-      si.classList.toggle('active', i <= n);
-      si.classList.toggle('done',   i < n);
+      si.classList.toggle('active', i === n);
+      si.classList.toggle('done', i < n);
     }
     if (pn) pn.classList.toggle('active', i === n);
   }
+  var pb = document.getElementById('cnProgressBar');
+  if (pb) pb.style.width = Math.round((n / total) * 100) + '%';
   if (n === 2) syncStep2Form();
   if (n === 3) renderStep3();
-  if (n === 4) renderStep4();
+  if (n === 4) renderStep3();
+  if (n === 5) { renderStep4(); initTrackerCard(); }
 }
 
 function syncStep2Form() {
