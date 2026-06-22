@@ -562,11 +562,19 @@ body{background:var(--app-bg);padding-left:var(--editor-panel);padding-top:80px;
 @media(max-width:680px){.preflight-body{grid-template-columns:1fr}.pf-preview-col{display:none}.preflight-score{grid-template-columns:1fr 1fr}.preflight-actions{grid-template-columns:1fr}.pf-btn.ghost{grid-column:auto}}
 
 body.fit-one-page .page.active{transform-origin:top center}
-body.fit-one-page .cv-resumo-txt,body.fit-one-page .mod-resumo,body.fit-one-page .exec-resumo,body.fit-one-page .compact-resumo,body.fit-one-page .minimal-resumo{font-size:9.2pt;line-height:1.45}
-body.fit-one-page .exp-ul li,body.fit-one-page .minimal-exp-ul li{font-size:9.2pt;line-height:1.38}
-body.fit-one-page .page-classic .content,body.fit-one-page .mod-body,body.fit-one-page .exec-body,body.fit-one-page .minimal-body{gap:.55rem}
-body.fit-one-page .exp-item{margin-bottom:.58rem}
+body.fit-one-page .cv-resumo-txt,body.fit-one-page .mod-resumo,body.fit-one-page .exec-resumo,body.fit-one-page .compact-resumo,body.fit-one-page .minimal-resumo{font-size:9.2pt;line-height:1.42}
+body.fit-one-page .exp-ul li,body.fit-one-page .minimal-exp-ul li{font-size:9.2pt;line-height:1.34}
+body.fit-one-page .page-classic .content,body.fit-one-page .mod-body,body.fit-one-page .exec-body,body.fit-one-page .minimal-body{gap:.5rem}
+body.fit-one-page .exp-item{margin-bottom:.5rem}
+body.fit-one-page .exp-ul{gap:.18rem}
 body.fit-one-page .mod-tag,body.fit-one-page .exec-tag,body.fit-one-page .minimal-tag,body.fit-one-page .sb-tag,body.fit-one-page .compact-tag{font-size:7.7pt;padding:.12rem .35rem}
+/* Tighter paddings/gaps so genuine compaction needs less downscaling */
+body.fit-one-page .page-classic .sidebar,body.fit-one-page .page-classic .content{padding-top:9mm;padding-bottom:9mm}
+body.fit-one-page .mod-header,body.fit-one-page .exec-header{padding-top:6mm;padding-bottom:5mm}
+body.fit-one-page .mod-body,body.fit-one-page .exec-body{padding-top:6mm}
+body.fit-one-page .cv-sec-h,body.fit-one-page .mod-sec-h,body.fit-one-page .exec-sec-h,body.fit-one-page .compact-cv-sec-h,body.fit-one-page .minimal-sec-h{margin-bottom:.45rem}
+body.fit-one-page .sb-sec{padding-top:.6rem}
+body.fit-one-page .exp-emp{margin:.05rem 0 .2rem}
 
 /* ─── Mobile top bar ──────────────────────────────────────── */
 .mob-bar{
@@ -1265,12 +1273,28 @@ function getTemplateLabel(key) {
   return ({classic:'Profissional', modern:'Moderno', exec:'Executivo', compact:'Compacto', minimal:'Minimalista'})[key || getActiveTemplateKey()] || 'Profissional';
 }
 
+var _fitScale = 1;
+
 function getPageEstimate() {
   var page = getActiveCvPage();
   if (!page) return 0;
   var PX_PER_MM = 96 / 25.4;
   var pagePx = Math.round(297 * PX_PER_MM);
-  return Math.max(1, Math.ceil((page.scrollHeight || page.offsetHeight || pagePx) / pagePx));
+  var h = page.scrollHeight || page.offsetHeight || pagePx;
+  // When "fit to one page" is on, content is downscaled on export — reflect that.
+  if (document.body.classList.contains('fit-one-page') && _fitScale < 1) h = h * _fitScale;
+  return Math.max(1, Math.ceil((h - 6) / pagePx));
+}
+
+// Downscale factor needed to fit the current content onto a single A4 page.
+function computeFitScale() {
+  var page = getActiveCvPage();
+  if (!page) return 1;
+  var PX_PER_MM = 96 / 25.4;
+  var a4 = 297 * PX_PER_MM; // ~1122.5px
+  var h = page.scrollHeight || a4;
+  if (h <= a4 + 8) return 1;
+  return Math.max(0.6, (a4 - 2) / h);
 }
 
 function getPrintDiagnostics() {
@@ -1390,11 +1414,13 @@ function getPreflightRows() {
 
 function buildPreflightPreview() {
   var frame = document.getElementById('pfPreviewFrame');
-  var active = getActiveCvPage();
-  if (!frame || !active) return;
+  if (!frame) return;
+  // Fallback to first page if no active page is resolvable (keeps preview from going blank)
+  var active = getActiveCvPage() || document.querySelector('.page');
   // Drop any previous clone (keep fade + badge overlays)
   var oldClone = frame.querySelector('.page');
   if (oldClone) oldClone.remove();
+  if (!active) return;
 
   var clone = active.cloneNode(true);
   clone.removeAttribute('id');
@@ -1404,8 +1430,14 @@ function buildPreflightPreview() {
   clone.classList.add('active');
   clone.removeAttribute('style');
 
-  var pageW = active.offsetWidth || 794;
-  var scale = (frame.clientWidth || 208) / pageW;
+  // A4 page is always 210mm wide (~794px). Use the live width, but guard against
+  // a momentarily-unlaid-out element (0 width) which would scale the clone to nothing.
+  var PX_PER_MM = 96 / 25.4;
+  var pageW = active.offsetWidth;
+  if (!pageW || pageW < 200) pageW = Math.round(210 * PX_PER_MM);
+  var frameW = frame.clientWidth || 206;
+  var scale = frameW / pageW;
+  clone.style.transformOrigin = 'top left';
   clone.style.transform = 'scale(' + scale + ')';
   clone.style.width = pageW + 'px';
   frame.insertBefore(clone, frame.firstChild);
@@ -1434,7 +1466,8 @@ function openPdfPreflight() {
   if (compactBtn) compactBtn.style.display = (Number(data.pages) > 1) ? '' : 'none';
 
   modal.classList.remove('hidden');
-  buildPreflightPreview();
+  // Wait for the modal layout to settle so the preview frame has a real width.
+  requestAnimationFrame(function(){ requestAnimationFrame(buildPreflightPreview); });
 }
 
 function closePdfPreflight() {
@@ -1474,6 +1507,21 @@ function printIsolatedA4() {
   clone.classList.add('active');
   clone.removeAttribute('style');
 
+  // "Ajustar em 1 página": genuinely collapse the layout height so the PDF prints
+  // on a single A4. A wrapper of fixed (scaled) height clips the freed space,
+  // while the inner transform keeps the text vectorial (ATS-readable).
+  var fitting = document.body.classList.contains('fit-one-page') && _fitScale < 0.999;
+  var fitCss = '';
+  var pageHtml = clone.outerHTML;
+  if (fitting) {
+    var natH = active.scrollHeight || 1123;
+    var shellH = Math.ceil(natH * _fitScale);
+    fitCss = '.fit-shell{width:210mm!important;height:' + shellH + 'px!important;overflow:hidden!important;margin:0 auto!important}'
+           + '.fit-inner{width:210mm!important;transform:scale(' + _fitScale + ')!important;transform-origin:top center!important}'
+           + '.fit-inner .page.active{min-height:auto!important}';
+    pageHtml = '<div class="fit-shell"><div class="fit-inner">' + clone.outerHTML + '</div></div>';
+  }
+
   var frame = document.createElement('iframe');
   frame.setAttribute('aria-hidden', 'true');
   frame.style.position = 'fixed';
@@ -1491,7 +1539,7 @@ function printIsolatedA4() {
   doc.open();
   doc.write('<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><title>' + _esc(title) + '</title>');
   doc.write('<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">');
-  doc.write('<style>' + getPrintStylesForIframe() + '</style></head><body><div class="page-wrap">' + clone.outerHTML + '</div></body></html>');
+  doc.write('<style>' + getPrintStylesForIframe() + fitCss + '</style></head><body><div class="page-wrap">' + pageHtml + '</div></body></html>');
   doc.close();
 
   var cleanup = function() {
@@ -1532,13 +1580,15 @@ function printAfterPreflight() {
 
 function compactCurrentTemplate() {
   document.body.classList.add('fit-one-page');
+  // Let the compaction CSS apply, then measure how much extra downscale is needed.
   setTimeout(function() {
+    _fitScale = computeFitScale();
     scaleCvPages();
     addPageBreakIndicator();
     updateCvQualityDashboard();
     var modal = document.getElementById('pdfPreflight');
     if (modal && !modal.classList.contains('hidden')) openPdfPreflight();
-  }, 180);
+  }, 120);
 }
 
 function fitToOnePage() {
@@ -1845,6 +1895,7 @@ function applyTemplate(tpl, save) {
 }
 function setTemplate(t) {
   document.body.classList.remove('fit-one-page');
+  _fitScale = 1;
   applyTemplate(t, true);
   // Save inside _cvData (most reliable — bundled with CV JSON)
   if (_cvData) { _cvData.template = t; saveCvData(); }
