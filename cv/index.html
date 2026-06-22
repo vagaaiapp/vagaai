@@ -183,7 +183,7 @@ html{font-size:14px}
 .sp-print-trust span svg{color:#3ecf8e;flex-shrink:0}
 
 /* ─── Body ────────────────────────────────────────────────── */
-body{background:var(--page-bg);font-family:'Manrope',sans-serif;padding-left:220px;padding-bottom:3rem;padding-top:1rem}
+body{background:var(--page-bg);font-family:'Manrope',sans-serif;padding:0}
 
 /* ─── A4 Page ─────────────────────────────────────────────── */
 .page{
@@ -479,6 +479,7 @@ html.no-photo .compact-photo{display:none}
 
 /* ── 3-column editor layout ──────────────────────────────── */
 body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;margin:0;overflow:hidden}
+.app-header,.mob-bar,.panel-overlay{display:none!important}
 .cv-shell{display:flex;height:100vh;overflow:hidden}
 
 /* ── Left nav ─────────────────────────────────────────────── */
@@ -509,8 +510,8 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 .cn-theme-btn:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.75)}
 
 /* ── Center: step content ─────────────────────────────────── */
-.cv-main{flex:1;overflow-y:auto;background:var(--app-bg);display:flex;flex-direction:column;min-width:0}
-.cv-step{display:none;flex-direction:column;flex:1;padding:2.5rem 3rem 2rem;max-width:700px;width:100%}
+.cv-main{flex:1;overflow-y:auto;background:var(--app-bg);display:flex;flex-direction:column;align-items:center;min-width:0}
+.cv-step{display:none;flex-direction:column;width:100%;max-width:660px;padding:2.5rem 2rem 2.5rem;box-sizing:border-box}
 .cv-step.active{display:flex}
 .csv-header{margin-bottom:2rem}
 .csv-kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--app-emerald);display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem}
@@ -2793,11 +2794,11 @@ function renderStep3() {
   var expEl = document.getElementById('s3ExpList');
   if (expEl) {
     if (!exp.length) {
-      expEl.innerHTML = '<div class="se-warn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> <span>Nenhuma experiência ainda</span></div>';
+      expEl.innerHTML = '<div class="csv-metric-warn">Nenhuma experiência ainda. Clique em "Adicionar" abaixo.</div>';
     } else {
       var hasM = exp.some(function(e) { return hasMetricText && (e.bullets || []).some(function(b){ return /\d/.test(b); }); });
       expEl.innerHTML = exp.map(function(e) {
-        return '<div class="se-card"><div class="se-card-name">' + _esc(e.cargo || '—') + '</div><div class="se-card-sub">' + _esc(e.empresa || '') + (e.periodo_inicio ? ' · ' + _esc(e.periodo_inicio) : '') + '</div></div>';
+        return '<div class="csv-item-card"><div style="flex:1;min-width:0"><div class="csv-item-name">' + _esc(e.cargo || '—') + '</div><div class="csv-item-sub">' + _esc(e.empresa || '') + (e.periodo_inicio ? ' · ' + _esc(e.periodo_inicio) : '') + '</div></div></div>';
       }).join('');
       var warn = document.getElementById('s3ExpWarn');
       var warnTxt = document.getElementById('s3WarnText');
@@ -2812,10 +2813,10 @@ function renderStep3() {
   var eduEl = document.getElementById('s3EduList');
   if (eduEl) {
     if (!edu.length) {
-      eduEl.innerHTML = '<div class="se-warn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> <span>Nenhuma formação ainda</span></div>';
+      eduEl.innerHTML = '<div class="csv-metric-warn">Nenhuma formação ainda. Clique em "Adicionar" abaixo.</div>';
     } else {
       eduEl.innerHTML = edu.map(function(e) {
-        return '<div class="se-card"><div class="se-card-name">' + _esc(e.curso || '—') + '</div><div class="se-card-sub">' + _esc(e.instituicao || '') + '</div></div>';
+        return '<div class="csv-item-card"><div style="flex:1;min-width:0"><div class="csv-item-name">' + _esc(e.curso || '—') + '</div><div class="csv-item-sub">' + _esc(e.instituicao || '') + '</div></div></div>';
       }).join('');
     }
   }
@@ -2826,7 +2827,7 @@ function renderStep3() {
       sklEl.innerHTML = '<div class="se-warn" style="width:100%"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> <span>Sem habilidades</span></div>';
     } else {
       sklEl.innerHTML = skl.map(function(s) {
-        return '<span class="se-skill-tag">' + _esc(typeof s === 'string' ? s : s.nome || s) + '</span>';
+        return '<span class="csv-skill-tag">' + _esc(typeof s === 'string' ? s : s.nome || s) + '</span>';
       }).join('');
     }
   }
