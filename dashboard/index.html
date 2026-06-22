@@ -1861,6 +1861,13 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       </svg>
       <span>Entrevistas</span>
     </button>
+    <a class="sb-btn" href="/carta" aria-label="Carta para vaga">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M4 4h16v16H4z"/>
+        <path d="m22 6-10 7L2 6"/>
+      </svg>
+      <span>Carta para vaga</span>
+    </a>
     <button class="sb-btn" data-tab="alertas" onclick="switchDashTab('alertas')" aria-label="Alertas">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
@@ -3676,6 +3683,7 @@ function renderCandDetail(item) {
   if (item.analysisData) {
     // Quando em entrevista, "Treinar" é o primário; "Ver análise" vira secundário
     acts += '<button class="cd-btn ' + (item.status === 'entrevista' ? '' : 'cd-cta') + '" onclick="openSavedAnalysis(\''+escAttr(item.analysisData.id)+'\')">Ver análise</button>';
+    acts += '<button class="cd-btn" data-url="/carta?analysis_id='+encodeURIComponent(item.analysisData.id)+'" onclick="window.location.href=this.dataset.url">Carta para vaga</button>';
     if (r.cv_otimizado) acts += '<button class="cd-btn" onclick="openSavedCv(\''+escAttr(item.analysisData.id)+'\')">Abrir currículo</button>';
   }
   if (item.hasTracker) {

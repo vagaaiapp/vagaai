@@ -2201,11 +2201,16 @@ function openInterview() {
 
 function openCarta() {
   track('carta_click');
+  var analysisId = _lastResultData && (
+    _lastResultData._analysis_id ||
+    _lastResultData.analysis_id ||
+    (_lastResultData.result && (_lastResultData.result._analysis_id || _lastResultData.result.analysis_id))
+  );
   try {
     localStorage.setItem('vagaai_last_job', jobEl.value.trim());
     localStorage.setItem('vagaai_last_cv', cvEl.value.trim());
   } catch(e) {}
-  window.open('/carta', '_blank');
+  window.open('/carta' + (analysisId ? '?analysis_id=' + encodeURIComponent(analysisId) : ''), '_blank');
 }
 
 function renderList(id, items) {

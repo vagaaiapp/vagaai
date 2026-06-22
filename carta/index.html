@@ -191,6 +191,7 @@ var _session = null;
 var _tom = 'direto';
 var _cartaTexto = '';
 var _cartaAssunto = '';
+var _autoGenerateFromAnalysis = false;
 
 (async function() {
   var r = await sb.auth.getSession();
@@ -204,18 +205,123 @@ var _cartaAssunto = '';
       document.getElementById('gateSection').style.display = 'block';
     } else {
       document.getElementById('mainSection').style.display = 'block';
-      // Pré-carrega se vier do /app
-      try {
-        var j = localStorage.getItem('vagaai_last_job') || '';
-        var c = localStorage.getItem('vagaai_last_cv') || '';
-        if (j) document.getElementById('jobInput').value = j;
-        if (c) document.getElementById('cvInput').value = c;
-      } catch(e) {}
+      await loadCartaContext();
     }
   } catch(e) {
     document.getElementById('gateSection').style.display = 'block';
   }
 })();
+
+function _plainText(value) {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value).trim();
+  if (Array.isArray(value)) return value.map(_plainText).filter(Boolean).join(', ');
+  if (typeof value === 'object') {
+    var preferred = ['nome','titulo','cargo','empresa','valor','descricao','texto','resumo','periodo','instituicao','curso'];
+    var out = [];
+    preferred.forEach(function(k){ if (value[k]) out.push(_plainText(value[k])); });
+    if (out.length) return out.join(' - ');
+    try { return JSON.stringify(value); } catch(e) { return ''; }
+  }
+  return String(value).trim();
+}
+
+function _pushLine(parts, label, value) {
+  var text = _plainText(value);
+  if (text) parts.push(label + ': ' + text);
+}
+
+function _analysisToJobText(analysis) {
+  analysis = analysis || {};
+  var result = analysis.result || {};
+  var ji = result.job_info || {};
+  var parts = [];
+  _pushLine(parts, 'Empresa', ji.empresa || result.empresa);
+  _pushLine(parts, 'Cargo', ji.cargo || result.cargo);
+  _pushLine(parts, 'Local', ji.local || ji.localizacao || result.local);
+  _pushLine(parts, 'Tipo de contrato', ji.tipo_contrato || result.tipo_contrato);
+  _pushLine(parts, 'Score ATS da analise', (result.score || analysis.score) ? (result.score || analysis.score) + '%' : '');
+  _pushLine(parts, 'Nivel de aderencia', result.nivel || analysis.nivel);
+  _pushLine(parts, 'Resumo da analise', result.resumo);
+  _pushLine(parts, 'Descricao da vaga', analysis.job_excerpt || result.job_excerpt || result.descricao_vaga);
+  _pushLine(parts, 'Requisitos da vaga', ji.requisitos || result.requisitos);
+  _pushLine(parts, 'Responsabilidades', ji.responsabilidades || result.responsabilidades);
+  _pushLine(parts, 'Palavras-chave encontradas no CV', result.keywords_encontradas || result.palavras_chave_encontradas);
+  _pushLine(parts, 'Palavras-chave faltando no CV', result.keywords_faltando || result.palavras_chave_faltando);
+  _pushLine(parts, 'Briefing da empresa', result.briefing_empresa);
+  return parts.join('\n\n');
+}
+
+function _cvToText(cv) {
+  if (!cv) return '';
+  if (typeof cv === 'string') return cv;
+  var parts = [];
+  if (cv.nome) parts.push('Nome: ' + cv.nome);
+  _pushLine(parts, 'Titulo profissional', cv.titulo_profissional || cv.cargo_objetivo || cv.titulo);
+  _pushLine(parts, 'Resumo profissional', cv.resumo_profissional || cv.objetivo || cv.resumo);
+  _pushLine(parts, 'Experiencias', cv.experiencias || cv.experiencia || cv.experiencias_profissionais);
+  _pushLine(parts, 'Formacao', cv.formacao || cv.educacao);
+  _pushLine(parts, 'Habilidades', cv.habilidades || cv.skills || cv.competencias);
+  _pushLine(parts, 'Cursos e certificacoes', cv.cursos || cv.certificacoes);
+  _pushLine(parts, 'Idiomas', cv.idiomas);
+  return parts.join('\n');
+}
+
+function _analysisToCvText(analysis) {
+  analysis = analysis || {};
+  var result = analysis.result || {};
+  var text = _cvToText(result.cv_otimizado || result.curriculo_otimizado || result.cv || result.curriculo || '');
+  if (text.length >= 50) return text;
+  var fallback = [];
+  _pushLine(fallback, 'Resumo profissional identificado', result.resumo_profissional || result.resumo_candidato);
+  _pushLine(fallback, 'Pontos fortes do candidato', result.pontos_fortes || result.keywords_encontradas);
+  _pushLine(fallback, 'Competencias presentes', result.competencias || result.habilidades);
+  _pushLine(fallback, 'Experiencias mencionadas', result.experiencias);
+  return [text, fallback.join('\n\n')].filter(Boolean).join('\n\n');
+}
+
+async function loadCartaContext() {
+  var params = new URLSearchParams(window.location.search);
+  var analysisId = (params.get('analysis_id') || '').trim();
+  if (analysisId) {
+    try {
+      var res = await fetch(
+        'https://kbcjchjepgejdezeuwwh.supabase.co/rest/v1/analyses?id=eq.' + encodeURIComponent(analysisId) +
+          '&user_id=eq.' + encodeURIComponent(_session.user.id) +
+          '&select=id,score,nivel,result,job_excerpt,created_at&limit=1',
+        {
+          headers: {
+            apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA',
+            Authorization: 'Bearer ' + _session.access_token
+          }
+        }
+      );
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var rows = await res.json();
+      if (Array.isArray(rows) && rows.length) {
+        var analysis = rows[0];
+        var jobText = _analysisToJobText(analysis);
+        var cvText = _analysisToCvText(analysis);
+        if (jobText) document.getElementById('jobInput').value = jobText;
+        if (cvText) document.getElementById('cvInput').value = cvText;
+        if (jobText.length >= 50 && cvText.length >= 50) {
+          _autoGenerateFromAnalysis = true;
+          setTimeout(function(){ generate(); }, 180);
+          return;
+        }
+      }
+    } catch(e) {
+      console.warn('Falha ao carregar analise para carta:', e.message);
+    }
+  }
+
+  try {
+    var j = localStorage.getItem('vagaai_last_job') || '';
+    var c = localStorage.getItem('vagaai_last_cv') || '';
+    if (j) document.getElementById('jobInput').value = j;
+    if (c) document.getElementById('cvInput').value = c;
+  } catch(e) {}
+}
 
 function setTom(t) {
   _tom = t;
