@@ -5535,7 +5535,8 @@ async function _showShellFrame(href, activeId) {
     var res = await fetch(embeddedUrl, { credentials: 'same-origin' });
     var html = await res.text();
     // Inject base tag so relative URLs resolve correctly
-    html = html.replace(/(<head[^>]*>)/i, '$1<base href="' + location.origin + '">');
+    var embedScript = '<script>window.__VAGAAI_EMBEDDED__=true;<\/script>';
+    html = html.replace(/(<head[^>]*>)/i, '$1<base href="' + location.origin + '">' + embedScript);
     var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
     if (doc) { doc.open(); doc.write(html); doc.close(); }
   } catch(e) {
