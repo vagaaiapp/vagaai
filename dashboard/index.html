@@ -5521,6 +5521,9 @@ async function _showShellFrame(href, activeId) {
     if (el) el.style.display = 'none';
   });
   if (hdr) hdr.style.display = 'none';
+  // Posiciona shellFrame após o sidebar (respeita breakpoints responsivos)
+  var sbWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sb')) || 0;
+  wrap.style.left = sbWidth + 'px';
   wrap.style.display = 'block';
   // Highlight active sidebar button
   document.querySelectorAll('.sb-btn[data-tab]').forEach(function(el) {
