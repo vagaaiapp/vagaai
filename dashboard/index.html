@@ -5551,8 +5551,11 @@ async function _showShellFrame(href, activeId) {
   try {
     var res = await fetch(embeddedUrl, { credentials: 'same-origin' });
     var html = await res.text();
-    // Inject base tag so relative URLs resolve correctly
-    var embedScript = '<script>window.__VAGAAI_EMBEDDED__=true;<\/script>';
+    // Inject base tag so relative URLs resolve correctly. Because this HTML is
+    // written into an about:blank iframe, also expose the intended URL so the
+    // embedded app can read query params such as ?vaga=...
+    var embeddedHref = location.origin + embeddedUrl;
+    var embedScript = '<script>window.__VAGAAI_EMBEDDED__=true;window.__VAGAAI_EMBEDDED_URL__=' + JSON.stringify(embeddedHref) + ';try{history.replaceState(null,"",' + JSON.stringify(embeddedHref) + ')}catch(e){}<\/script>';
     html = html.replace(/(<head[^>]*>)/i, '$1<base href="' + location.origin + '">' + embedScript);
     var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
     if (doc) { doc.open(); doc.write(html); doc.close(); }

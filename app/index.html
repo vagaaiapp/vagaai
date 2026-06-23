@@ -2414,13 +2414,25 @@ function animateNumber(id, from, to, duration) {
   requestAnimationFrame(step);
 }
 
+function getRuntimeSearchParams() {
+  try {
+    if (window.__VAGAAI_EMBEDDED_URL__) {
+      return new URL(window.__VAGAAI_EMBEDDED_URL__, location.origin).searchParams;
+    }
+  } catch(e) {}
+  return new URLSearchParams(window.location.search);
+}
+
 // ── PRÉ-PREENCHIMENTO VIA URL (?vaga=URL) ────────────────────────────────────
 async function checkVagaParam() {
-  var vagaUrl = new URLSearchParams(window.location.search).get('vaga');
+  var params = getRuntimeSearchParams();
+  var vagaUrl = params.get('vaga') || params.get('prefill_url');
   if (!vagaUrl) return;
   // Marca que esta sessão de análise veio de um alerta (deep-link do e-mail),
   // para que a candidatura salva no rastreador receba origem='alerta'.
   window._fromAlertVaga = true;
+  var jobUrlEl = document.getElementById('jobUrl');
+  if (jobUrlEl) jobUrlEl.value = vagaUrl;
   // Mostra banner de alerta
   var notice = document.createElement('div');
   notice.id = 'alertVagaNotice';
