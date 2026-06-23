@@ -1911,13 +1911,13 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
   </div>
 </aside>
 
-<!-- MAIN -->
-<main class="main">
-
-<!-- SHELL FRAME (para seções externas sem reload) -->
-<div id="shellFrameWrap" style="display:none;position:fixed;left:0;top:0;right:0;bottom:0;z-index:50;background:var(--bg)">
+<!-- SHELL FRAME — fora do main para não criar stacking context aninhado -->
+<div id="shellFrameWrap" style="display:none;position:fixed;left:var(--sb);top:0;right:0;bottom:0;z-index:100;background:var(--bg)">
   <iframe id="shellFrame" style="width:100%;height:100%;border:none" src="about:blank" title="Conteúdo VagaAI"></iframe>
 </div>
+
+<!-- MAIN -->
+<main class="main">
 
   <!-- HEADER -->
   <header class="header">
@@ -5521,6 +5521,8 @@ async function _showShellFrame(href, activeId) {
     if (el) el.style.display = 'none';
   });
   if (hdr) hdr.style.display = 'none';
+  var sbW = getComputedStyle(document.documentElement).getPropertyValue('--sb').trim();
+  wrap.style.left = sbW || '0px';
   wrap.style.display = 'block';
   // Highlight active sidebar button
   document.querySelectorAll('.sb-btn[data-tab]').forEach(function(el) {
