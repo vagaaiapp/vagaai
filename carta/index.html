@@ -509,12 +509,14 @@ async function loadCartaContext() {
     }
   }
 
-  try {
-    var j = localStorage.getItem('vagaai_last_job') || '';
-    var c = localStorage.getItem('vagaai_last_cv') || '';
-    if (j) document.getElementById('jobInput').value = j;
-    if (c) document.getElementById('cvInput').value = c;
-  } catch(e) {}
+  if ((params.get('prefill') || '').trim() === 'last') {
+    try {
+      var j = localStorage.getItem('vagaai_last_job') || '';
+      var c = localStorage.getItem('vagaai_last_cv') || '';
+      if (j) document.getElementById('jobInput').value = j;
+      if (c) document.getElementById('cvInput').value = c;
+    } catch(e) {}
+  }
 }
 
 function extractJobPreview(text, url) {

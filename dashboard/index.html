@@ -3689,7 +3689,7 @@ function renderCandDetail(item) {
   if (item.analysisData) {
     // Quando em entrevista, "Treinar" é o primário; "Ver análise" vira secundário
     acts += '<button class="cd-btn ' + (item.status === 'entrevista' ? '' : 'cd-cta') + '" onclick="openSavedAnalysis(\''+escAttr(item.analysisData.id)+'\')">Ver análise</button>';
-    acts += '<button class="cd-btn" data-url="/carta?analysis_id='+encodeURIComponent(item.analysisData.id)+'" onclick="window.location.href=this.dataset.url">Carta para vaga</button>';
+    acts += '<button class="cd-btn" data-url="/carta?analysis_id='+encodeURIComponent(item.analysisData.id)+'" onclick="switchDashTab(\'carta\',this.dataset.url)">Carta para vaga</button>';
     if (r.cv_otimizado) acts += '<button class="cd-btn" onclick="openSavedCv(\''+escAttr(item.analysisData.id)+'\')">Abrir currículo</button>';
   }
   if (item.hasTracker) {
