@@ -488,6 +488,7 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 .cn-brand-row{display:flex;align-items:center;gap:9px}
 .cn-brand-icon{width:30px;height:30px;border-radius:8px;overflow:hidden;flex-shrink:0}
 .cn-brand-icon img{width:100%;height:100%;object-fit:cover}
+.cn-brand-logo{height:23px;width:auto;max-width:132px;display:block;object-fit:contain}
 .cn-brand-name{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.02em}
 .cn-back{display:inline-flex;align-items:center;gap:.45rem;font-size:11.5px;color:rgba(255,255,255,.32);text-decoration:none;transition:color .15s;font-weight:600}
 .cn-back:hover{color:rgba(255,255,255,.65)}
@@ -627,12 +628,15 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 .s4rb-review-btn:hover{border-color:var(--app-emerald);color:var(--app-emerald)}
 #s4ReviewBanner{border:1px solid rgba(78,206,145,.2);border-radius:14px;padding:1.1rem 1.25rem;background:rgba(78,206,145,.04);margin-bottom:1.2rem}
 /* Nav ATS widget */
-.cn-ats-widget{padding:.7rem 1rem;border-radius:10px;background:rgba(78,206,145,.07);border:1px solid rgba(78,206,145,.14);margin-bottom:.1rem}
+.cn-ats-widget{padding:.85rem 1rem;border-radius:12px;background:rgba(78,206,145,.07);border:1px solid rgba(78,206,145,.14);margin-bottom:.1rem}
 .cn-ats-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem}
 .cn-ats-label{font-size:10.5px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:.04em;text-transform:uppercase}
 .cn-ats-val{font-size:15px;font-weight:800;color:var(--app-emerald)}
 .cn-ats-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
 .cn-ats-bar-fill{height:100%;border-radius:999px;background:var(--app-emerald);transition:width .4s ease}
+.cn-job-title{font-size:12px;font-weight:800;color:#fff;line-height:1.3;margin-top:.65rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cn-job-company{font-size:10px;color:rgba(255,255,255,.38);margin-top:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cn-job-tip{font-size:9.5px;color:rgba(255,255,255,.32);line-height:1.45;margin-top:.55rem;padding-top:.55rem;border-top:1px solid rgba(255,255,255,.07)}
 /* Accordion */
 .csv-accordion{border:1px solid var(--app-border);border-radius:10px;overflow:hidden}
 .csv-accordion-hd{width:100%;display:flex;align-items:center;justify-content:space-between;padding:.65rem .9rem;background:transparent;border:none;cursor:pointer;font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;color:var(--app-t2);text-align:left;transition:background .15s}
@@ -655,6 +659,10 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 .csv-ats-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:.7rem}
 .csv-ats-score-big{font-size:28px;font-weight:800;color:var(--app-emerald);line-height:1}
 .csv-ats-label{font-size:11px;font-weight:700;color:var(--app-t3)}
+.s4-score-note{margin-top:.85rem;padding:.9rem 1rem;border-radius:12px;background:var(--app-sub);border:1px solid var(--app-border);font-size:12px;color:var(--app-t2);line-height:1.5}
+.s4-score-note b{color:var(--app-t1)}
+.s4-score-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.s4-score-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:rgba(78,206,145,.1);border:1px solid rgba(78,206,145,.18);color:var(--app-emerald);font-size:10px;font-weight:800}
 .csv-tracker-card{background:var(--app-card);border:1px solid var(--app-border);border-radius:12px;padding:1.1rem 1.25rem}
 .csv-tracker-title{font-size:13px;font-weight:800;color:var(--app-t1);margin-bottom:.35rem}
 .csv-tracker-sub{font-size:11.5px;color:var(--app-t3);margin-bottom:.9rem;line-height:1.5}
@@ -1024,7 +1032,7 @@ html.no-photo .mod-header{display:block}
   <div class="cn-brand">
     <div class="cn-brand-row">
       <div class="cn-brand-icon"><img src="/logo-icon.svg" alt="VagaAI" width="30" height="30"></div>
-      <span class="cn-brand-name">VagaAI</span>
+      <img src="/logo.svg" alt="VagaAI" class="cn-brand-logo">
     </div>
     <a href="/app" class="cn-back">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
@@ -1070,10 +1078,13 @@ html.no-photo .mod-header{display:block}
     <!-- Live ATS score -->
     <div class="cn-ats-widget" id="cnAtsWidget">
       <div class="cn-ats-top">
-        <span class="cn-ats-label">Score ATS</span>
+        <span class="cn-ats-label">Vaga alvo</span>
         <span class="cn-ats-val" id="cnAtsVal">—</span>
       </div>
       <div class="cn-ats-bar"><div class="cn-ats-bar-fill" id="cnAtsBarFill" style="width:0%"></div></div>
+      <div class="cn-job-title" id="cnJobTitle">—</div>
+      <div class="cn-job-company" id="cnJobCompany">—</div>
+      <div class="cn-job-tip" id="cnJobTip">Currículo conectado à análise atual.</div>
     </div>
     <div class="cn-saved-indicator" id="cnSavedIndicator" style="display:none"><i></i> Alterações salvas</div>
     <button class="cn-theme-btn" onclick="typeof toggleAppTheme==='function'?toggleAppTheme():toggleTheme()">
@@ -1282,10 +1293,8 @@ html.no-photo .mod-header{display:block}
           </div>
         </div>
         <div id="s4Checklist" style="display:flex;flex-direction:column;gap:.3rem;margin-top:.5rem"></div>
-        <div class="smart-actions" id="s4SmartActions" style="margin-top:.7rem">
-          <button class="smart-action" type="button" onclick="applySmartFix('keywords')">+ Keywords</button>
-          <button class="smart-action" type="button" onclick="applySmartFix('metrics')">+ Métricas</button>
-          <button class="smart-action" type="button" onclick="compactCurrentTemplate()">Compactar</button>
+        <div class="s4-score-note" id="s4ScoreNote">
+          O score mede se o currículo está completo, legível e alinhado à vaga. Use a prévia antes de baixar para confirmar que o PDF está limpo.
         </div>
       </div>
       <!-- Download -->
@@ -1330,7 +1339,7 @@ html.no-photo .mod-header{display:block}
         </select>
         <button class="csv-tracker-mark-btn" id="csTrackerMarkBtn" onclick="markCvApplied()" disabled>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Marcar como "Currículo enviado"
+          Marcar como candidatura enviada
         </button>
       </div>
       <!-- Cloud list & login -->
@@ -1789,6 +1798,40 @@ function toggleAppTheme() {
 function _esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+var __cvToastTimer = null;
+function showToast(message, type) {
+  var toast = document.getElementById('undoToast');
+  if (!toast) return;
+  var prefix = type === 'error' ? '⚠ ' : type === 'success' ? '✓ ' : type === 'warn' ? '⚠ ' : '';
+  toast.textContent = prefix + String(message || '');
+  toast.classList.add('vis');
+  clearTimeout(__cvToastTimer);
+  __cvToastTimer = setTimeout(function() {
+    toast.classList.remove('vis');
+    toast.textContent = '↩ Alteração desfeita';
+  }, 2600);
+}
+
+function getCvContextIdentity() {
+  var ctx = _cvContext || {};
+  var info = ctx.job_info && typeof ctx.job_info === 'object' ? ctx.job_info : {};
+  var role = String(info.cargo || ctx.cargo || (_cvData && _cvData.titulo_profissional) || 'Vaga analisada').trim();
+  var company = String(info.empresa || ctx.empresa || 'Empresa não informada').trim();
+  var score = Number(ctx.score);
+  var url = String(info.job_url || info.url || ctx.job_url || '').trim();
+  var salary = String(info.salario || ctx.salario || '').trim();
+  var analysisId = String(ctx.analysis_id || ctx.id || ctx._analysis_id || '').trim();
+  return {
+    analysisId: analysisId,
+    empresa: company,
+    cargo: role,
+    score: Number.isFinite(score) ? Math.round(score) : null,
+    job_url: /^https?:\/\//i.test(url) ? url : '',
+    salario: salary && !/^n[aã]o informado$/i.test(salary) ? salary : ''
+  };
+}
+
 function _periodo(p) {
   // Blank out placeholder texts the AI sometimes inserts
   if (!p) return '';
@@ -1828,6 +1871,7 @@ function renderCvContext(context) {
         : 'Aderência baixa. Priorize os requisitos e palavras-chave ausentes.';
   if (qualityCopy) qualityCopy.textContent = copy;
   if (sidebarCopy) sidebarCopy.textContent = copy;
+  updateNavAtsScore();
 
   var card = document.getElementById('jobSummaryCard');
   if (!card) return;
@@ -1844,6 +1888,7 @@ function renderCvContext(context) {
   var validUrl = /^https?:\/\//i.test(url);
   if (!role && !company && !summary) {
     card.hidden = true;
+    updateNavAtsScore();
     return;
   }
 
@@ -2676,44 +2721,113 @@ function setTemplate(t) {
   setTimeout(updateCvQualityDashboard, 360);
 }
 
-function initTrackerCard() {
+async function initTrackerCard() {
   var sel = document.getElementById('csTrackerJobSelect');
   var btn = document.getElementById('csTrackerMarkBtn');
   if (!sel || !btn) return;
+  sel.innerHTML = '<option value="">Carregando candidaturas...</option>';
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Marcar como candidatura enviada';
+  if (!_sb) {
+    sel.innerHTML = '<option value="">Login indisponível nesta sessão</option>';
+    return;
+  }
+  if (!_sbSession) await _initSbSession();
+  if (!_sbSession) {
+    sel.innerHTML = '<option value="">Faça login para marcar candidatura</option>';
+    return;
+  }
+  var identity = getCvContextIdentity();
+  sel.dataset.currentJobId = '';
   try {
-    var raw = localStorage.getItem('vagaai_saved_analyses');
-    var analyses = raw ? JSON.parse(raw) : [];
+    var resp = await _sb.from('job_tracker')
+      .select('id,empresa,cargo,status,analysis_id,job_url,salario')
+      .eq('user_id', _sbSession.user.id)
+      .order('updated_at', { ascending: false })
+      .limit(60);
+    var jobs = (resp && resp.data) ? resp.data : [];
+    var currentJob = identity.analysisId
+      ? jobs.find(function(j){ return String(j.analysis_id || '') === identity.analysisId; })
+      : null;
     sel.innerHTML = '<option value="">Selecionar vaga...</option>';
-    analyses.forEach(function(a) {
-      if (!a || !a.id) return;
+    if (identity.analysisId && !currentJob) {
+      var curOpt = document.createElement('option');
+      curOpt.value = '__current';
+      curOpt.textContent = (identity.cargo || 'Vaga atual') + ' — ' + (identity.empresa || 'Empresa não informada') + ' (vaga atual)';
+      sel.appendChild(curOpt);
+    }
+    jobs.forEach(function(job) {
+      if (!job || !job.id) return;
       var opt = document.createElement('option');
-      opt.value = a.id;
-      opt.textContent = (a.result && (a.result.cargo || a.result.empresa)) ? ((a.result.cargo || '') + (a.result.empresa ? ' — ' + a.result.empresa : '')) : ('Análise ' + a.id.slice(0,8));
+      opt.value = String(job.id);
+      opt.textContent = (job.cargo || 'Vaga') + (job.empresa ? ' — ' + job.empresa : '') + (job.status ? ' · ' + job.status.replace(/_/g, ' ') : '');
       sel.appendChild(opt);
     });
-  } catch(e) {}
+    if (currentJob) {
+      sel.value = String(currentJob.id);
+      sel.dataset.currentJobId = String(currentJob.id);
+    }
+    else if (identity.analysisId) sel.value = '__current';
+  } catch(e) {
+    sel.innerHTML = '<option value="">Não foi possível carregar candidaturas</option>';
+    showToast('Erro ao carregar candidaturas.', 'error');
+  }
   sel.onchange = function() { btn.disabled = !sel.value; };
   btn.disabled = !sel.value;
 }
 
-function markCvApplied() {
+async function markCvApplied() {
   var sel = document.getElementById('csTrackerJobSelect');
   var btn = document.getElementById('csTrackerMarkBtn');
   if (!sel || !sel.value) return;
+  if (!_sb) { showToast('Login indisponível nesta sessão.', 'error'); return; }
+  if (!_sbSession) await _initSbSession();
+  if (!_sbSession) { showToast('Faça login para marcar a candidatura.', 'warn'); return; }
+  var prevHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
   try {
-    var raw = localStorage.getItem('vagaai_saved_analyses');
-    var analyses = raw ? JSON.parse(raw) : [];
-    var found = false;
-    analyses = analyses.map(function(a) {
-      if (a.id === sel.value) { found = true; return Object.assign({}, a, {status: 'curriculo_enviado', updatedAt: new Date().toISOString()}); }
-      return a;
-    });
-    if (found) {
-      localStorage.setItem('vagaai_saved_analyses', JSON.stringify(analyses));
-      if (btn) { btn.textContent = '✓ Candidatura marcada!'; btn.disabled = true; }
+    var now = new Date().toISOString();
+    if (sel.value === '__current') {
+      var identity = getCvContextIdentity();
+      var payload = {
+        user_id: _sbSession.user.id,
+        empresa: identity.empresa || 'Empresa não informada',
+        cargo: identity.cargo || 'Vaga analisada',
+        score: identity.score,
+        status: 'aplicada',
+        nota: 'Candidatura marcada como enviada pela página de CV.',
+        analysis_id: identity.analysisId || null,
+        job_url: identity.job_url || null,
+        salario: identity.salario || null,
+        origem: 'cv',
+        updated_at: now
+      };
+      var ins = await _sb.from('job_tracker').insert([payload]).select('id').single();
+      if (ins.error) throw ins.error;
+      showToast('Candidatura criada e marcada como currículo enviado.', 'success');
+    } else {
+      var patch = { status: 'aplicada', updated_at: now };
+      var currentIdentity = getCvContextIdentity();
+      if (sel.dataset.currentJobId && sel.value === sel.dataset.currentJobId) {
+        if (currentIdentity.job_url) patch.job_url = currentIdentity.job_url;
+        if (currentIdentity.salario) patch.salario = currentIdentity.salario;
+      }
+      var upd = await _sb.from('job_tracker')
+        .update(patch)
+        .eq('id', sel.value)
+        .eq('user_id', _sbSession.user.id);
+      if (upd.error) throw upd.error;
       showToast('Candidatura atualizada nas Candidaturas.', 'success');
     }
-  } catch(e) { showToast('Não foi possível atualizar.', 'error'); }
+    btn.textContent = '✓ Candidatura marcada!';
+    setTimeout(initTrackerCard, 900);
+  } catch(e) {
+    console.error('markCvApplied failed', e);
+    btn.innerHTML = prevHtml;
+    btn.disabled = false;
+    showToast('Não foi possível atualizar a candidatura.', 'error');
+  }
 }
 
 /* ── CV Zoom lightbox ───────────────────────────────────── */
@@ -2976,7 +3090,59 @@ function s3ToggleAccordion(bodyId, btn) {
 }
 
 function s3ReforcarIA() {
-  showToast('Melhoria com IA em breve', 'info');
+  if (!_cvData) return;
+  var btn = document.getElementById('s3AiBtn');
+  var lbl = document.getElementById('s3AiBtnLabel');
+  var oldText = lbl ? lbl.textContent : '';
+  if (btn) btn.disabled = true;
+  if (lbl) lbl.textContent = 'Aplicando...';
+  try {
+    pushHistory();
+    var changes = [];
+    var missing = getMissingKeywordsForInsert();
+    if (missing.length) {
+      _cvData.habilidades = (_cvData.habilidades || []).concat(missing).filter(function(v, i, arr) {
+        return v && arr.indexOf(v) === i;
+      });
+      reRenderSkills(_cvData.habilidades);
+      changes.push(missing.length + ' keyword' + (missing.length > 1 ? 's' : '') + ' adicionada' + (missing.length > 1 ? 's' : ''));
+    }
+
+    var exps = _cvData.experiencias || [];
+    var exp = exps.find(function(item) {
+      return item && !(item.bullets || []).some(function(b){ return /\d|%|R\$|milh|k\b/i.test(String(b || '')); });
+    });
+    if (exp) {
+      exp.bullets = exp.bullets || [];
+      var role = getCvContextIdentity().cargo;
+      exp.bullets.unshift('Reforçou entregas ligadas a ' + (role || 'esta oportunidade') + ', priorizando impacto mensurável, organização e clareza de execução.');
+      reRenderExp(exps);
+      changes.push('experiência reforçada com foco na vaga');
+    }
+
+    var kws = getContextKeywords();
+    var summary = String(_cvData.resumo_profissional || '').trim();
+    var add = kws.missing.slice(0, 3).filter(function(kw){ return kw && summary.toLowerCase().indexOf(String(kw).toLowerCase()) === -1; });
+    if (add.length && summary) {
+      _cvData.resumo_profissional = summary.replace(/\s*\.$/, '') + '. Perfil alinhado a ' + add.join(', ') + ', com foco em requisitos críticos da vaga.';
+      reRenderResumo(_cvData.resumo_profissional);
+      changes.push('resumo alinhado à oportunidade');
+    }
+
+    saveCvData();
+    renderStep3();
+    renderStep4();
+    updateNavAtsScore();
+    updateCvQualityDashboard();
+    setTimeout(function(){ addPageBreakIndicator(); scaleCvPages(); }, 120);
+    showToast(changes.length ? 'IA aplicada: ' + changes.join(', ') + '.' : 'Currículo já estava bem alinhado.', 'success');
+  } catch(e) {
+    console.error('s3ReforcarIA failed', e);
+    showToast('Não foi possível aplicar a melhoria agora.', 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+    if (lbl) lbl.textContent = oldText || 'Melhorar com IA';
+  }
 }
 
 function goToStepValidated(n) {
@@ -3034,29 +3200,35 @@ function s4StartPdfDownload() {
 }
 
 function updateNavAtsScore() {
-  if (!_cvData) return;
-  // reuse renderStep4 score logic if available, else compute inline
-  var score = 0;
-  var d = _cvData;
-  var hasEmail = !!(d.email || '').trim();
-  var hasTel = !!(d.telefone || '').trim();
-  var hasCidade = !!(d.cidade || '').trim();
-  var hasLi = !!(d.linkedin || '').trim();
-  var contactScore = Math.round(((hasEmail?1:0)+(hasTel?1:0)+(hasCidade?1:0)+(hasLi?1:0))/4*100);
-  var resumo = (d.resumo || '').trim();
-  var resumoScore = resumo.length >= 80 ? 100 : resumo.length > 0 ? Math.round(resumo.length/80*100) : 0;
-  var exps = d.experiencias || [];
-  var withMetrics = exps.filter(function(e){ return e.descricao && /\d/.test(e.descricao); });
-  var metricsScore = exps.length > 0 ? Math.round(withMetrics.length/exps.length*100) : 0;
-  var skills = d.habilidades || [];
-  var kwScore = Math.min(100, skills.length * 10);
-  score = Math.round((contactScore + resumoScore + metricsScore + kwScore) / 4);
+  var widget = document.getElementById('cnAtsWidget');
+  if (!widget) return;
+  var identity = getCvContextIdentity();
+  var ctx = _cvContext || {};
+  var info = ctx.job_info && typeof ctx.job_info === 'object' ? ctx.job_info : {};
+  var score = Number(identity.score);
+  var hasScore = Number.isFinite(score);
+  var hasContext = hasScore || String(info.cargo || ctx.cargo || '').trim() || String(info.empresa || ctx.empresa || '').trim() || String(ctx.resumo || '').trim();
+  if (!hasContext) {
+    widget.style.display = 'none';
+    return;
+  }
+  widget.style.display = '';
   var valEl = document.getElementById('cnAtsVal');
   var fillEl = document.getElementById('cnAtsBarFill');
-  if (valEl) valEl.textContent = score + '%';
-  if (fillEl) fillEl.style.width = score + '%';
-  // color feedback
-  if (valEl) valEl.style.color = score >= 70 ? 'var(--app-emerald)' : score >= 40 ? '#e5a93a' : '#e05a5a';
+  var titleEl = document.getElementById('cnJobTitle');
+  var companyEl = document.getElementById('cnJobCompany');
+  var tipEl = document.getElementById('cnJobTip');
+  if (valEl) valEl.textContent = hasScore ? Math.max(0, Math.min(100, Math.round(score))) + '%' : 'ativa';
+  if (fillEl) fillEl.style.width = (hasScore ? Math.max(8, Math.min(100, Math.round(score))) : 18) + '%';
+  if (titleEl) titleEl.textContent = identity.cargo || 'Vaga analisada';
+  if (companyEl) companyEl.textContent = identity.empresa || 'Empresa não informada';
+  var missing = getContextKeywords().missing || [];
+  if (tipEl) {
+    tipEl.textContent = missing.length
+      ? 'Priorize: ' + missing.slice(0, 3).join(', ')
+      : 'Currículo conectado à análise atual.';
+  }
+  if (valEl) valEl.style.color = !hasScore ? 'var(--app-emerald)' : score >= 70 ? 'var(--app-emerald)' : score >= 40 ? '#e5a93a' : '#e05a5a';
 }
 
 function syncStep2Form() {
@@ -3197,6 +3369,18 @@ function renderStep4() {
     cl.innerHTML = items.map(function(it) {
       return '<div class="s4-check ' + (it[1] ? 'ok' : 'warn') + '"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' + (it[1] ? '<polyline points="20 6 9 17 4 12"/>' : '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>') + '</svg><span>' + it[0] + '</span></div>';
     }).join('');
+  }
+  var note = document.getElementById('s4ScoreNote');
+  if (note) {
+    var missing = (kws.missing || []).slice(0, 4);
+    var noteTitle = overall >= 75 ? 'Currículo pronto para envio.' : overall >= 55 ? 'Currículo bom, com ajustes finos recomendados.' : 'Currículo precisa de reforço antes do envio.';
+    note.innerHTML =
+      '<b>' + noteTitle + '</b> Este score combina estrutura do currículo, contato, resumo, métricas e aderência às palavras-chave da vaga.' +
+      '<div class="s4-score-tags">' +
+        '<span class="s4-score-tag">A4 seguro</span>' +
+        '<span class="s4-score-tag">' + (hasMetrics ? 'Métricas presentes' : 'Métricas pendentes') + '</span>' +
+        '<span class="s4-score-tag">' + (missing.length ? 'Ajustar: ' + _esc(missing.join(', ')) : 'Keywords alinhadas') + '</span>' +
+      '</div>';
   }
 }
 
