@@ -4911,7 +4911,7 @@ function renderAlertJobsGrid() {
       '<div class="al-job-location">📍 ' + _esc(j.location || 'Brasil') +
         (j.salary ? ' · 💰 ' + _esc(j.salary) : '') + '</div>' +
       '<div class="al-job-actions">' +
-        '<button class="al-jact-btn" onclick="window.open(this.dataset.url,\'_blank\')" data-url="' + _esc(analyzeUrl) + '">⚡ Analisar</button>' +
+        '<button class="al-jact-btn" onclick="shellNavigate({href:this.dataset.url,frame:true,id:\'app\'})" data-url="' + _esc(analyzeUrl) + '">⚡ Analisar</button>' +
         (j.link ? '<a class="al-jact-btn" href="' + _esc(j.link) + '" target="_blank" rel="noopener" style="text-decoration:none">🔗 Ver vaga</a>' : '') +
         '<button class="al-jact-btn al-jact-icon" title="Excluir vaga" data-link="' + _esc(j.link || '') + '" onclick="_dismissJobFromCache(this.dataset.link)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>' +
       '</div>' +
