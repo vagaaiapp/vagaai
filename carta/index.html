@@ -205,7 +205,7 @@ textarea::placeholder,input::placeholder{color:var(--muted)}
   <div class="nav-right">
     <span class="nav-badge-pro" id="planBadge" style="display:none">Pro</span>
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
-    <a href="/app" class="btn-analisar-top">+ Analisar vaga</a>
+    <a href="/dashboard#app" class="btn-analisar-top" onclick="return goToDashboardApp(event)">+ Analisar vaga</a>
   </div>
 </nav>
 
@@ -827,6 +827,19 @@ function downloadCarta() {
   var a = document.createElement('a');
   a.href = url; a.download = 'carta-apresentacao.txt';
   a.click(); URL.revokeObjectURL(url);
+}
+
+function goToDashboardApp(event) {
+  if (event) event.preventDefault();
+  try {
+    var embedded = window.__VAGAAI_EMBEDDED__ || window.self !== window.top || new URLSearchParams(location.search).get('embedded') === '1';
+    if (embedded && window.parent) {
+      window.parent.postMessage({ type: 'vagaai-nav', frame: true, id: 'app', href: '/app' }, window.location.origin);
+      return false;
+    }
+  } catch(e) {}
+  window.location.href = '/dashboard#app';
+  return false;
 }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

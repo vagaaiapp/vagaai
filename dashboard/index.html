@@ -5556,7 +5556,8 @@ async function _showShellFrame(href, activeId) {
     // embedded app can read query params such as ?vaga=...
     var embeddedHref = location.origin + embeddedUrl;
     var embedScript = '<script>window.__VAGAAI_EMBEDDED__=true;window.__VAGAAI_EMBEDDED_URL__=' + JSON.stringify(embeddedHref) + ';try{history.replaceState(null,"",' + JSON.stringify(embeddedHref) + ')}catch(e){}<\/script>';
-    html = html.replace(/(<head[^>]*>)/i, '$1<base href="' + location.origin + '">' + embedScript);
+    var shellNavGuard = '<script>(function(){document.addEventListener("click",function(ev){var a=ev.target&&ev.target.closest?ev.target.closest("a[href]"):null;if(!a)return;var raw=a.getAttribute("href")||"";if(!raw||raw.charAt(0)==="#")return;var url;try{url=new URL(raw,location.origin)}catch(e){return}if(url.origin!==location.origin)return;var id=null;var href=null;if(url.pathname==="/app"||(url.pathname==="/dashboard"&&url.hash==="#app")){id="app";href="/app"+url.search}else if(url.pathname==="/carta"||(url.pathname==="/dashboard"&&url.hash==="#carta")){id="carta";href="/carta"+url.search}else if(url.pathname==="/entrevista"||(url.pathname==="/dashboard"&&url.hash==="#entrevista")){id="entrevistas";href="/entrevista"+url.search}if(!id)return;ev.preventDefault();parent.postMessage({type:"vagaai-nav",frame:true,id:id,href:href},location.origin)},true)})();<\/script>';
+    html = html.replace(/(<head[^>]*>)/i, '$1<base href="' + location.origin + '">' + embedScript + shellNavGuard);
     var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
     if (doc) { doc.open(); doc.write(html); doc.close(); }
   } catch(e) {
