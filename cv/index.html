@@ -1034,7 +1034,7 @@ html.no-photo .mod-header{display:block}
       <div class="cn-brand-icon"><img src="/logo-icon.svg" alt="VagaAI" width="30" height="30"></div>
       <img src="/logo.svg" alt="VagaAI" class="cn-brand-logo">
     </div>
-    <a href="/app" class="cn-back">
+    <a href="/dashboard#app" class="cn-back" onclick="return goBackToDashboardApp(event)">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
       Voltar ao app
     </a>
@@ -1326,7 +1326,7 @@ html.no-photo .mod-header{display:block}
           <div class="s4-pdf-success-title">Arquivo gerado com sucesso</div>
           <div class="s4-pdf-success-actions">
             <button class="csv-dl-btn secondary small" onclick="s4StartPdfDownload()">Baixar novamente</button>
-            <a class="csv-dl-btn secondary small" href="/app">Adaptar para outra vaga →</a>
+            <a class="csv-dl-btn secondary small" href="/dashboard#app" onclick="return goBackToDashboardApp(event)">Adaptar para outra vaga →</a>
           </div>
         </div>
       </div>
@@ -1793,6 +1793,19 @@ function toggleAppTheme() {
   var next = isDark ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
   try { localStorage.setItem('vagaai_theme', next); } catch(e) {}
+}
+
+function goBackToDashboardApp(event) {
+  if (event) event.preventDefault();
+  try {
+    var embedded = window.__VAGAAI_EMBEDDED__ || window.self !== window.top || new URLSearchParams(location.search).get('embedded') === '1';
+    if (embedded && window.parent) {
+      window.parent.postMessage({ type: 'vagaai-nav', frame: true, id: 'app', href: '/app' }, window.location.origin);
+      return false;
+    }
+  } catch(e) {}
+  window.location.href = '/dashboard#app';
+  return false;
 }
 
 function _esc(s) {
