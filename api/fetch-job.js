@@ -308,21 +308,23 @@ function cleanText(text, maxLen) {
 function isJobContent(text) {
   const lower = text.toLowerCase();
 
-  // Sinais de bloqueio/navegação: se 2+ presentes, é boilerplate
+  // Sinais fortes de bloqueio: 1 hit já é suficiente para rejeitar
+  const hardBlockSignals = [
+    'tráfego incomum', 'trafego incomum', 'não é um robô', 'nao e um robo',
+    'sistemas detectaram', 'captcha', 'recaptcha', 'not a robot',
+    'prove you are human', 'unusual traffic', 'automated requests',
+    'i am not a robot', 'por que isso aconteceu', 'esta página verifica',
+    'cloudflare', 'checking your browser', 'ddos protection', 'one more step',
+    'your connection', 'ray id', 'attention required',
+  ];
+  if (hardBlockSignals.some(s => lower.includes(s))) return false;
+
+  // Sinais leves de navegação/bloqueio: se 2+ presentes, é boilerplate
   const navSignals = [
-    'ir para o conteúdo principal',
-    'ajuda sobre acessibilidade',
-    'fazer login',
-    'sign in to',
-    'enable javascript',
-    'please enable',
-    'javascript is required',
-    'cookies required',
-    'your browser does not',
-    'access denied',
-    'robot check',
-    'são necessários cookies',
-    'verificação de segurança',
+    'ir para o conteúdo principal', 'ajuda sobre acessibilidade', 'fazer login',
+    'sign in to', 'enable javascript', 'please enable', 'javascript is required',
+    'cookies required', 'your browser does not', 'access denied', 'robot check',
+    'são necessários cookies', 'verificação de segurança',
   ];
   const navHits = navSignals.filter(s => lower.includes(s)).length;
   if (navHits >= 2) return false;
