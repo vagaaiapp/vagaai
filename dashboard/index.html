@@ -1915,7 +1915,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
 <main class="main">
 
 <!-- SHELL FRAME (para seções externas sem reload) -->
-<div id="shellFrameWrap" style="display:none;position:fixed;left:var(--sb);top:0;right:0;bottom:0;z-index:50;background:var(--bg)">
+<div id="shellFrameWrap" style="display:none;position:fixed;left:0;top:0;right:0;bottom:0;z-index:50;background:var(--bg)">
   <iframe id="shellFrame" style="width:100%;height:100%;border:none" src="about:blank" title="Conteúdo VagaAI"></iframe>
 </div>
 
@@ -5521,9 +5521,6 @@ async function _showShellFrame(href, activeId) {
     if (el) el.style.display = 'none';
   });
   if (hdr) hdr.style.display = 'none';
-  // Posiciona shellFrame após o sidebar (respeita breakpoints responsivos)
-  var sbWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sb')) || 0;
-  wrap.style.left = sbWidth + 'px';
   wrap.style.display = 'block';
   // Highlight active sidebar button
   document.querySelectorAll('.sb-btn[data-tab]').forEach(function(el) {
