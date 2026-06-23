@@ -466,6 +466,24 @@ function _analysisToCvText(analysis) {
   return [text, fallback.join('\n\n')].filter(Boolean).join('\n\n');
 }
 
+function _inferCvLabel(text, source) {
+  var label = source || '';
+  if (!label) {
+    var m = String(text || '').match(/(?:^|\n)\s*Nome\s*:\s*([^\n\r]+)/i);
+    if (m && m[1]) label = 'Currículo - ' + m[1].trim();
+  }
+  if (!label) label = 'Currículo carregado';
+  if (!/\.(pdf|docx?|txt)$/i.test(label)) label += '.doc';
+  return label;
+}
+
+function setCvText(text, source) {
+  text = String(text || '').trim();
+  if (!text) return;
+  document.getElementById('cvInput').value = text;
+  showCvReceived(_inferCvLabel(text, source));
+}
+
 async function loadCartaContext() {
   var params = new URLSearchParams(window.location.search);
   var analysisId = (params.get('analysis_id') || '').trim();
@@ -489,7 +507,7 @@ async function loadCartaContext() {
         var jobText = _analysisToJobText(analysis);
         var cvText = _analysisToCvText(analysis);
         if (jobText) document.getElementById('jobInput').value = jobText;
-        if (cvText) document.getElementById('cvInput').value = cvText;
+        if (cvText) setCvText(cvText);
         if (jobText.length >= 50) {
           var preview = extractJobPreview(jobText, '');
           var r = analysis.result || {};
@@ -514,7 +532,7 @@ async function loadCartaContext() {
       var j = localStorage.getItem('vagaai_last_job') || '';
       var c = localStorage.getItem('vagaai_last_cv') || '';
       if (j) document.getElementById('jobInput').value = j;
-      if (c) document.getElementById('cvInput').value = c;
+      if (c) setCvText(c);
     } catch(e) {}
   }
 }
@@ -712,7 +730,7 @@ function loadSavedCv(e) {
     pl('Habilidades', cv.habilidades || cv.skills || cv.competencias);
     pl('Idiomas', cv.idiomas);
     var text = parts.join('\n');
-    if (text) document.getElementById('cvInput').value = text;
+    if (text) setCvText(text, cv.nome ? 'Currículo - ' + cv.nome : 'Currículo salvo');
   } catch(err) {}
 }
 
