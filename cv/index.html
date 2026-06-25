@@ -663,7 +663,18 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 .s4-score-note b{color:var(--app-t1)}
 .s4-score-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .s4-score-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:rgba(78,206,145,.1);border:1px solid rgba(78,206,145,.18);color:var(--app-emerald);font-size:10px;font-weight:800}
-.csv-tracker-card{background:var(--app-card);border:1px solid var(--app-border);border-radius:12px;padding:1.1rem 1.25rem}
+.csv-send-card{background:linear-gradient(135deg,rgba(46,207,138,.09),rgba(15,160,90,.05));border:1px solid rgba(46,207,138,.3);border-radius:12px;padding:1.1rem 1.25rem;margin-top:.6rem}
+.csv-send-step{display:inline-flex;align-items:center;gap:.4rem;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--app-emerald);margin-bottom:.4rem}
+.csv-send-step .csv-send-num{width:16px;height:16px;border-radius:50%;background:var(--app-emerald);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px}
+.csv-send-title{font-size:14px;font-weight:800;color:var(--app-t1);margin-bottom:.3rem}
+.csv-send-sub{font-size:12px;color:var(--app-t2);line-height:1.5;margin-bottom:.9rem}
+.csv-send-sub strong{color:var(--app-t1)}
+.csv-send-btn{display:flex;align-items:center;justify-content:center;gap:.55rem;width:100%;padding:.8rem 1.2rem;border-radius:11px;background:linear-gradient(135deg,#2ecf8a 0%,#1ab870 60%,#0fa05a 100%);color:#fff;border:none;font-family:'Manrope',sans-serif;font-size:13.5px;font-weight:800;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(46,207,138,.26);text-decoration:none}
+.csv-send-btn:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(46,207,138,.36)}
+.csv-send-btn svg{flex-shrink:0}
+.csv-send-manual{font-size:11.5px;color:var(--app-t3);line-height:1.5}
+.csv-send-manual strong{color:var(--app-t2)}
+.csv-tracker-card{background:var(--app-card);border:1px solid var(--app-border);border-radius:12px;padding:1.1rem 1.25rem;margin-top:.6rem}
 .csv-tracker-title{font-size:13px;font-weight:800;color:var(--app-t1);margin-bottom:.35rem}
 .csv-tracker-sub{font-size:11.5px;color:var(--app-t3);margin-bottom:.9rem;line-height:1.5}
 .csv-tracker-select{width:100%;padding:.55rem .8rem;background:var(--app-bg);border:1px solid var(--app-border);border-radius:9px;font-family:'Manrope',sans-serif;font-size:12.5px;color:var(--app-t1);outline:none;margin-bottom:.65rem}
@@ -1321,10 +1332,13 @@ html.no-photo .mod-header{display:block}
           </div>
         </div>
       </div>
+      <!-- Send card — abrir vaga para enviar o currículo (aparece após PDF gerado) -->
+      <div class="csv-send-card" id="s4SendCard" style="display:none"></div>
       <!-- Tracker card — aparece após PDF gerado -->
       <div class="csv-tracker-card" id="s4TrackerCard" style="display:none">
-        <div class="csv-tracker-title">Próximo passo: marcar candidatura</div>
-        <div class="csv-tracker-sub">Registre que você enviou este currículo para acompanhar nas Candidaturas.</div>
+        <div class="csv-send-step"><span class="csv-send-num">2</span> Acompanhar candidatura</div>
+        <div class="csv-tracker-title">Marque como enviada</div>
+        <div class="csv-tracker-sub">Depois de aplicar, registre aqui para acompanhar nas Candidaturas e receber lembretes de follow-up.</div>
         <select class="csv-tracker-select" id="csTrackerJobSelect">
           <option value="">Selecionar vaga...</option>
         </select>
@@ -3064,7 +3078,10 @@ function s3RenderSmartWarns() {
   if (!container || !_cvData) return;
   var warns = [];
   var exps = _cvData.experiencias || [];
-  var noMetrics = exps.filter(function(e) { return e.descricao && !/\d/.test(e.descricao); });
+  var noMetrics = exps.filter(function(e) {
+    var txt = (e.bullets || []).join(' ');
+    return txt.length > 0 && !/\d/.test(txt);
+  });
   if (noMetrics.length > 0) warns.push('⚠ ' + noMetrics.length + ' experiência' + (noMetrics.length > 1 ? 's' : '') + ' sem métricas — adicione números e resultados');
   var noPeriod = exps.filter(function(e) { return !e.periodo && !e.dataInicio; });
   if (noPeriod.length > 0) warns.push('⚠ ' + noPeriod.length + ' experiência' + (noPeriod.length > 1 ? 's' : '') + ' sem período definido');
@@ -3177,6 +3194,31 @@ function s4ShowTrackerCard() {
   }
 }
 
+function s4RenderSendCard() {
+  var card = document.getElementById('s4SendCard');
+  if (!card) return;
+  var identity = getCvContextIdentity();
+  var url = identity.job_url || '';
+  var role = identity.cargo && identity.cargo !== 'Vaga analisada' ? identity.cargo : '';
+  var company = identity.empresa && identity.empresa !== 'Empresa não informada' ? identity.empresa : '';
+  var alvo = role ? '<strong>' + _esc(role) + '</strong>' + (company ? ' na <strong>' + _esc(company) + '</strong>' : '') : (company ? '<strong>' + _esc(company) + '</strong>' : 'a vaga');
+  var ARROW = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>';
+  if (url) {
+    card.innerHTML =
+      '<div class="csv-send-step"><span class="csv-send-num">1</span> Enviar para a vaga</div>'
+      + '<div class="csv-send-title">Seu currículo está pronto — agora aplique</div>'
+      + '<div class="csv-send-sub">Abrimos a página de ' + alvo + ' em uma nova aba. Anexe o arquivo que você acabou de baixar e finalize a candidatura.</div>'
+      + '<a class="csv-send-btn" href="' + _esc(url) + '" target="_blank" rel="noopener noreferrer"">Abrir vaga e enviar currículo ' + ARROW + '</a>';
+  } else {
+    card.innerHTML =
+      '<div class="csv-send-step"><span class="csv-send-num">1</span> Enviar para a vaga</div>'
+      + '<div class="csv-send-title">Seu currículo está pronto — agora aplique</div>'
+      + '<div class="csv-send-manual">Acesse o site onde encontrou a vaga, anexe o arquivo que você acabou de baixar e finalize a candidatura. <strong>Dica:</strong> da próxima vez, cole o link da vaga na análise para abrirmos a página automaticamente aqui.</div>';
+  }
+  card.style.display = 'block';
+  card.style.animation = 'fadeInUp .35s ease';
+}
+
 function s4DownloadDoc(btn) {
   if (!_cvData) { showToast('Preencha o currículo antes de baixar', 'warn'); return; }
   var orig = btn ? btn.innerHTML : '';
@@ -3240,6 +3282,7 @@ function s4StartPdfDownload() {
       if (spinTimer) clearInterval(spinTimer);
       if (loading) loading.style.display = 'none';
       if (success) success.style.display = 'flex';
+      s4RenderSendCard();
       s4ShowTrackerCard();
       initTrackerCard();
     }
@@ -3332,9 +3375,8 @@ function renderStep3() {
     if (!exp.length) {
       expEl.innerHTML = '<div class="csv-metric-warn">Nenhuma experiência ainda. Clique em "Adicionar" abaixo.</div>';
     } else {
-      var hasM = exp.some(function(e) { return hasMetricText && (e.bullets || []).some(function(b){ return /\d/.test(b); }); });
       expEl.innerHTML = exp.map(function(e) {
-        return '<div class="csv-item-card"><div style="flex:1;min-width:0"><div class="csv-item-name">' + _esc(e.cargo || '—') + '</div><div class="csv-item-sub">' + _esc(e.empresa || '') + (e.periodo_inicio ? ' · ' + _esc(e.periodo_inicio) : '') + '</div></div></div>';
+        return '<div class="csv-item-card"><div style="flex:1;min-width:0"><div class="csv-item-name">' + _esc(e.cargo || '—') + '</div><div class="csv-item-sub">' + _esc(e.empresa || '') + (e.periodo ? ' · ' + _esc(e.periodo) : '') + '</div></div></div>';
       }).join('');
       var warn = document.getElementById('s3ExpWarn');
       var warnTxt = document.getElementById('s3WarnText');
@@ -3641,6 +3683,10 @@ function saveEdit() {
   }
   saveCvData();
   closeEdit();
+  // Sincroniza listas dos passos e scores com os dados recém-salvos
+  if (typeof renderStep3 === 'function') renderStep3();
+  if (typeof renderStep4 === 'function') renderStep4();
+  if (typeof updateNavAtsScore === 'function') updateNavAtsScore();
   // Update page-break indicator after content changes
   setTimeout(addPageBreakIndicator, 200);
   setTimeout(updateCvQualityDashboard, 260);
@@ -3698,11 +3744,12 @@ function renderExpEditor() {
       +DRAG+'<span class="ef-card-name">'+(e.cargo||'Sem título')+' — '+(e.empresa||'')+'</span>'
       +'<span class="ef-card-arr" id="efec_'+i+'_arr">▼</span></div>'
       +'<div class="ef-card-body collapsed" id="efec_'+i+'_body">'
-      +'<div class="ef-group"><div class="ef-label">Cargo</div><input class="ef-input" id="efec_cargo_'+i+'" value="'+_esc(e.cargo||'')+'"></div>'
-      +'<div class="ef-row"><div class="ef-group"><div class="ef-label">Empresa</div><input class="ef-input" id="efec_emp_'+i+'" value="'+_esc(e.empresa||'')+'"></div>'
-      +'<div class="ef-group"><div class="ef-label">Período</div><input class="ef-input" id="efec_per_'+i+'" value="'+_esc(e.periodo||'')+'"></div></div>'
-      +'<div class="ef-group"><div class="ef-label">Atividades (uma por linha)</div>'
-      +'<textarea class="ef-textarea" id="efec_bul_'+i+'" rows="4">'+_esc((e.bullets||[]).join('\n'))+'</textarea></div>'
+      +'<div class="ef-group"><div class="ef-label">Cargo</div><input class="ef-input" id="efec_cargo_'+i+'" value="'+_esc(e.cargo||'')+'" placeholder="Ex: Analista de Marketing"></div>'
+      +'<div class="ef-row"><div class="ef-group"><div class="ef-label">Empresa</div><input class="ef-input" id="efec_emp_'+i+'" value="'+_esc(e.empresa||'')+'" placeholder="Ex: Empresa XYZ"></div>'
+      +'<div class="ef-group"><div class="ef-label">Período</div><input class="ef-input" id="efec_per_'+i+'" value="'+_esc(e.periodo||'')+'" placeholder="Ex: Jan 2022 — Atual"></div></div>'
+      +'<div class="ef-group"><div class="ef-label">Atividades e resultados (uma por linha)</div>'
+      +'<textarea class="ef-textarea" id="efec_bul_'+i+'" rows="4" placeholder="Use uma linha por entrega, começando por verbo e com números:&#10;Aumentei as vendas em 30% em 6 meses&#10;Gerenciei equipe de 5 pessoas&#10;Reduzi custos operacionais em R$ 20 mil/mês">'+_esc((e.bullets||[]).join('\n'))+'</textarea>'
+      +'<div class="ef-hint" style="margin-top:.35rem">Dica: comece cada linha com um verbo de ação e inclua números — isso eleva o score ATS.</div></div>'
       +'<button class="ef-card-rm" onclick="efRemoveExp('+i+')">🗑 Remover experiência</button>'
       +'</div></div>';
   }).join('');
@@ -3875,7 +3922,7 @@ function _enterReviewMode(ctx) {
     var resumo = (d.resumo_profissional || d.resumo || '').trim();
     var resumoScore = resumo.length >= 80 ? 100 : resumo.length > 0 ? Math.round(resumo.length/80*100) : 0;
     var exps = d.experiencias || [];
-    var withMetrics = exps.filter(function(e){ return e.descricao && /\d/.test(e.descricao); });
+    var withMetrics = exps.filter(function(e){ return /\d/.test((e.bullets || []).join(' ')); });
     var metricsScore = exps.length > 0 ? Math.round(withMetrics.length/exps.length*100) : 0;
     var skills = d.habilidades || [];
     var kwScore = Math.min(100, skills.length * 10);
