@@ -1347,12 +1347,8 @@ html.no-photo .mod-header{display:block}
       <!-- Tracker card — aparece após PDF gerado -->
       <div class="csv-tracker-card" id="s4TrackerCard" style="display:none">
         <div class="csv-send-step"><span class="csv-send-num">3</span> Acompanhar candidatura</div>
-        <div class="csv-tracker-title">Marque como enviada</div>
-        <div class="csv-tracker-sub">Depois de aplicar, registre aqui para acompanhar nas Candidaturas e receber lembretes de follow-up.</div>
-        <select class="csv-tracker-select" id="csTrackerJobSelect">
-          <option value="">Selecionar vaga...</option>
-        </select>
-        <button class="csv-tracker-mark-btn" id="csTrackerMarkBtn" onclick="markCvApplied()" disabled>
+        <div class="csv-tracker-sub">Registre o envio para acompanhar nas Candidaturas e receber lembretes de follow-up.</div>
+        <button class="csv-tracker-mark-btn" id="csTrackerMarkBtn" onclick="markCvApplied()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           Marcar como candidatura enviada
         </button>
@@ -1362,15 +1358,6 @@ html.no-photo .mod-header{display:block}
         <div class="sp-cloud-list" id="spCloudList"></div>
         <p class="sp-cloud-login hidden" id="spCloudLoginMsg">Faça <a href="/login">login</a> para salvar na nuvem.</p>
       </div>
-      <!-- Job summary -->
-      <article class="job-summary" id="jobSummaryCard" hidden>
-        <div class="job-summary-head"><span class="job-summary-label">Resumo da vaga</span><span class="job-summary-score" id="jobSummaryScore"></span></div>
-        <div class="job-summary-role" id="jobSummaryRole"></div>
-        <div class="job-summary-company" id="jobSummaryCompany"></div>
-        <div class="job-summary-chips" id="jobSummaryChips"></div>
-        <p class="job-summary-text" id="jobSummaryText"></p>
-        <a class="job-summary-link" id="jobSummaryLink" href="#" target="_blank" rel="noopener noreferrer">Ver vaga original ↗</a>
-      </article>
       <!-- Legacy hidden IDs -->
       <div style="display:none" aria-hidden="true">
         <span id="cvQualityScore"></span><span id="cvQualityFill"></span><span id="cvQualityCopy"></span>
@@ -2754,112 +2741,65 @@ function setTemplate(t) {
 }
 
 async function initTrackerCard() {
-  var sel = document.getElementById('csTrackerJobSelect');
   var btn = document.getElementById('csTrackerMarkBtn');
-  if (!sel || !btn) return;
-  sel.innerHTML = '<option value="">Carregando candidaturas...</option>';
-  btn.disabled = true;
-  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Marcar como candidatura enviada';
-  if (!_sb) {
-    sel.innerHTML = '<option value="">Login indisponível nesta sessão</option>';
-    return;
-  }
+  if (!btn) return;
+  if (!_sb) return;
   if (!_sbSession) await _initSbSession();
-  if (!_sbSession) {
-    sel.innerHTML = '<option value="">Faça login para marcar candidatura</option>';
-    return;
-  }
+  if (!_sbSession) return;
   var identity = getCvContextIdentity();
-  sel.dataset.currentJobId = '';
+  if (!identity.analysisId) return;
   try {
     var resp = await _sb.from('job_tracker')
-      .select('id,empresa,cargo,status,analysis_id,job_url,salario')
+      .select('id,status')
       .eq('user_id', _sbSession.user.id)
-      .order('updated_at', { ascending: false })
-      .limit(60);
-    var jobs = (resp && resp.data) ? resp.data : [];
-    var currentJob = identity.analysisId
-      ? jobs.find(function(j){ return String(j.analysis_id || '') === identity.analysisId; })
-      : null;
-    sel.innerHTML = '<option value="">Selecionar vaga...</option>';
-    if (identity.analysisId && !currentJob) {
-      var curOpt = document.createElement('option');
-      curOpt.value = '__current';
-      curOpt.textContent = (identity.cargo || 'Vaga atual') + ' — ' + (identity.empresa || 'Empresa não informada') + ' (vaga atual)';
-      sel.appendChild(curOpt);
+      .eq('analysis_id', identity.analysisId)
+      .limit(1);
+    var existing = resp && resp.data && resp.data[0];
+    if (existing && existing.status === 'aplicada') {
+      btn.textContent = '✓ Candidatura já marcada como enviada';
+      btn.disabled = true;
     }
-    jobs.forEach(function(job) {
-      if (!job || !job.id) return;
-      var opt = document.createElement('option');
-      opt.value = String(job.id);
-      opt.textContent = (job.cargo || 'Vaga') + (job.empresa ? ' — ' + job.empresa : '') + (job.status ? ' · ' + job.status.replace(/_/g, ' ') : '');
-      sel.appendChild(opt);
-    });
-    if (currentJob) {
-      sel.value = String(currentJob.id);
-      sel.dataset.currentJobId = String(currentJob.id);
-    }
-    else if (identity.analysisId) sel.value = '__current';
-  } catch(e) {
-    sel.innerHTML = '<option value="">Não foi possível carregar candidaturas</option>';
-    showToast('Erro ao carregar candidaturas.', 'error');
-  }
-  sel.onchange = function() { btn.disabled = !sel.value; };
-  btn.disabled = !sel.value;
+  } catch(e) {}
 }
 
 async function markCvApplied() {
-  var sel = document.getElementById('csTrackerJobSelect');
   var btn = document.getElementById('csTrackerMarkBtn');
-  if (!sel || !sel.value) return;
   if (!_sb) { showToast('Login indisponível nesta sessão.', 'error'); return; }
   if (!_sbSession) await _initSbSession();
   if (!_sbSession) { showToast('Faça login para marcar a candidatura.', 'warn'); return; }
-  var prevHtml = btn.innerHTML;
-  btn.disabled = true;
-  btn.textContent = 'Salvando...';
+  var prevHtml = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
   try {
     var now = new Date().toISOString();
-    if (sel.value === '__current') {
-      var identity = getCvContextIdentity();
-      var payload = {
+    var identity = getCvContextIdentity();
+    var resp = identity.analysisId ? await _sb.from('job_tracker')
+      .select('id').eq('user_id', _sbSession.user.id).eq('analysis_id', identity.analysisId).limit(1) : null;
+    var existing = resp && resp.data && resp.data[0];
+    if (existing) {
+      var upd = await _sb.from('job_tracker').update({ status: 'aplicada', updated_at: now })
+        .eq('id', existing.id).eq('user_id', _sbSession.user.id);
+      if (upd.error) throw upd.error;
+    } else {
+      var ins = await _sb.from('job_tracker').insert([{
         user_id: _sbSession.user.id,
         empresa: identity.empresa || 'Empresa não informada',
         cargo: identity.cargo || 'Vaga analisada',
         score: identity.score,
         status: 'aplicada',
-        nota: 'Candidatura marcada como enviada pela página de CV.',
         analysis_id: identity.analysisId || null,
         job_url: identity.job_url || null,
         salario: identity.salario || null,
         origem: 'cv',
         updated_at: now
-      };
-      var ins = await _sb.from('job_tracker').insert([payload]).select('id').single();
+      }]);
       if (ins.error) throw ins.error;
-      showToast('Candidatura criada e marcada como currículo enviado.', 'success');
-    } else {
-      var patch = { status: 'aplicada', updated_at: now };
-      var currentIdentity = getCvContextIdentity();
-      if (sel.dataset.currentJobId && sel.value === sel.dataset.currentJobId) {
-        if (currentIdentity.job_url) patch.job_url = currentIdentity.job_url;
-        if (currentIdentity.salario) patch.salario = currentIdentity.salario;
-      }
-      var upd = await _sb.from('job_tracker')
-        .update(patch)
-        .eq('id', sel.value)
-        .eq('user_id', _sbSession.user.id);
-      if (upd.error) throw upd.error;
-      showToast('Candidatura atualizada nas Candidaturas.', 'success');
     }
-    btn.textContent = '✓ Candidatura marcada!';
+    if (btn) { btn.textContent = '✓ Candidatura marcada!'; btn.disabled = true; }
+    showToast('Candidatura marcada como enviada.', 'success');
     _s4Progress.enviado = true;
-    s4RenderProgress();
-    setTimeout(initTrackerCard, 900);
   } catch(e) {
     console.error('markCvApplied failed', e);
-    btn.innerHTML = prevHtml;
-    btn.disabled = false;
+    if (btn) { btn.innerHTML = prevHtml; btn.disabled = false; }
     showToast('Não foi possível atualizar a candidatura.', 'error');
   }
 }
