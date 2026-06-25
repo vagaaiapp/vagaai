@@ -663,15 +663,12 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 .s4-score-note b{color:var(--app-t1)}
 .s4-score-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .s4-score-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:rgba(78,206,145,.1);border:1px solid rgba(78,206,145,.18);color:var(--app-emerald);font-size:10px;font-weight:800}
-.s4-progress-strip{display:flex;align-items:flex-start;margin:.2rem 4px 1.5rem}
-.s4-journey-node{display:flex;flex-direction:column;align-items:center;gap:7px;flex-shrink:0}
-.s4-journey-dot{width:30px;height:30px;border-radius:50%;background:var(--app-sub);border:2px solid var(--app-border);color:var(--app-t3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;transition:all .25s}
-.s4-journey-dot svg{width:16px;height:16px}
-.s4-journey-dot.done{background:var(--app-emerald);border-color:var(--app-emerald);color:#fff}
-.s4-journey-lbl{font-size:11.5px;font-weight:600;color:var(--app-t3);white-space:nowrap}
-.s4-journey-lbl.done{color:var(--app-emerald);font-weight:700}
-.s4-journey-line{flex:1;height:2px;background:var(--app-border);margin:14px 8px 0;border-radius:2px;transition:background .25s}
-.s4-journey-line.done{background:var(--app-emerald)}
+.s4-progress-strip{display:flex;align-items:stretch;margin:.2rem 0 1.5rem;border:1px solid var(--app-border);border-radius:10px;overflow:hidden}
+.s4-pill{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:.55rem .5rem;font-size:13px;font-weight:600;color:var(--app-t3);background:var(--app-card);transition:background .2s,color .2s;white-space:nowrap}
+.s4-pill+.s4-pill{border-left:1px solid var(--app-border)}
+.s4-pill.done{background:rgba(78,206,145,.12);color:var(--app-emerald)}
+.s4-pill.done svg{stroke:var(--app-emerald)}
+.s4-pill svg{width:14px;height:14px;stroke:var(--app-t3);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .csv-materials-card{background:var(--app-card);border:1px solid var(--app-border);border-radius:12px;padding:1.1rem 1.25rem;margin-bottom:.6rem}
 .csv-material-label{font-size:11px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--app-t3);margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem}
 .csv-material-opt{text-transform:none;letter-spacing:0;font-weight:600;font-size:10px;padding:2px 7px;border-radius:999px;background:var(--app-sub);border:1px solid var(--app-border);color:var(--app-t3)}
@@ -3211,21 +3208,18 @@ var _s4Progress = { cv: false, carta: false, enviado: false };
 function s4RenderProgress() {
   var el = document.getElementById('s4ProgressStrip');
   if (!el) return;
-  var CHK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  var CHK = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
   var steps = [
     { done: _s4Progress.cv,      label: 'CV pronto' },
     { done: _s4Progress.carta,   label: 'Carta' },
     { done: _s4Progress.enviado, label: 'Enviado' }
   ];
-  var html = '';
-  steps.forEach(function(s, i) {
-    if (i > 0) html += '<div class="s4-journey-line' + (steps[i-1].done ? ' done' : '') + '"></div>';
-    html += '<div class="s4-journey-node">'
-      + '<div class="s4-journey-dot' + (s.done ? ' done' : '') + '">' + (s.done ? CHK : (i + 1)) + '</div>'
-      + '<span class="s4-journey-lbl' + (s.done ? ' done' : '') + '">' + s.label + '</span>'
+  el.innerHTML = steps.map(function(s) {
+    return '<div class="s4-pill' + (s.done ? ' done' : '') + '">'
+      + (s.done ? CHK : '')
+      + s.label
       + '</div>';
-  });
-  el.innerHTML = html;
+  }).join('');
 }
 
 function s4OpenCarta() {
