@@ -1778,41 +1778,69 @@ function escEmail(s) {
 // Salva as vagas do último envio no cache (dashboard lê daqui, sem nova busca às APIs).
 // On-demand: mescla com o cache existente para não apagar vagas de envios anteriores.
 async function upsertAlertCache(userId, jobs, { isDemand = false } = {}) {
+  const nowIso = new Date().toISOString();
   const normalize = j => ({
     title: j.title, company: j.company || j.employer || j.companyName || '',
     location: j.location || '', salary: j.salary || '', link: j.link || '',
     _score: j._score || 0, source: j.source || '',
+    first_seen_at: j.first_seen_at || nowIso,
+    last_seen_at: nowIso,
   });
+  const cacheKey = j => {
+    if (j.link) return `link:${String(j.link).trim().toLowerCase()}`;
+    return `hash:${jobHash(j.title || '', j.company || '', j.location || '')}`;
+  };
 
-  let mergedJobs = jobs.map(normalize);
+  const mergedMap = new Map();
 
-  if (isDemand) {
-    // Busca cache existente para mesclar — preserva vagas de envios anteriores
-    try {
-      const existing = await fetch(
-        `${SUPABASE_URL}/rest/v1/job_alert_cache?user_id=eq.${userId}&select=jobs`,
-        { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
-      );
-      if (existing.ok) {
-        const rows = await existing.json();
-        if (rows[0]?.jobs) {
-          const prev = typeof rows[0].jobs === 'string' ? JSON.parse(rows[0].jobs) : rows[0].jobs;
-          // Novas vagas primeiro; remove duplicatas por link
-          const seenLinks = new Set(mergedJobs.map(j => j.link).filter(Boolean));
+  // Preserva o historico visual de oportunidades: cron e busca manual sempre
+  // mesclam com o cache existente, em vez de apagar a lista a cada envio.
+  try {
+    const existing = await fetch(
+      `${SUPABASE_URL}/rest/v1/job_alert_cache?user_id=eq.${userId}&select=jobs`,
+      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+    );
+    if (existing.ok) {
+      const rows = await existing.json();
+      if (rows[0]?.jobs) {
+        const prev = typeof rows[0].jobs === 'string' ? JSON.parse(rows[0].jobs) : rows[0].jobs;
+        if (Array.isArray(prev)) {
           for (const p of prev) {
-            if (!p.link || !seenLinks.has(p.link)) mergedJobs.push(p);
+            const normalized = normalize(p);
+            normalized.first_seen_at = p.first_seen_at || p.cached_at || normalized.first_seen_at;
+            normalized.last_seen_at = p.last_seen_at || p.cached_at || normalized.last_seen_at;
+            mergedMap.set(cacheKey(normalized), normalized);
           }
         }
       }
-    } catch (e) { console.warn('job_alert_cache merge fetch failed:', e.message); }
+    }
+  } catch (e) { console.warn('job_alert_cache merge fetch failed:', e.message); }
+
+  for (const j of jobs.map(normalize)) {
+    const key = cacheKey(j);
+    const prev = mergedMap.get(key);
+    mergedMap.set(key, {
+      ...prev,
+      ...j,
+      first_seen_at: prev?.first_seen_at || j.first_seen_at || nowIso,
+      last_seen_at: nowIso,
+    });
   }
+
+  const mergedJobs = Array.from(mergedMap.values())
+    .sort((a, b) => {
+      const seenDiff = new Date(b.last_seen_at || 0) - new Date(a.last_seen_at || 0);
+      if (seenDiff) return seenDiff;
+      return (b._score || 0) - (a._score || 0);
+    })
+    .slice(0, 120);
 
   const row = {
     user_id: userId,
     jobs: JSON.stringify(mergedJobs),
-    cached_at: new Date().toISOString(),
+    cached_at: nowIso,
     source: isDemand ? 'demand' : 'cron',
-    ...(isDemand ? { last_manual_at: new Date().toISOString() } : {}),
+    ...(isDemand ? { last_manual_at: nowIso } : {}),
   };
   await fetch(`${SUPABASE_URL}/rest/v1/job_alert_cache`, {
     method: 'POST',
@@ -1824,8 +1852,8 @@ async function upsertAlertCache(userId, jobs, { isDemand = false } = {}) {
   }).catch(e => console.warn('job_alert_cache upsert failed:', e.message));
 }
 
-// Re-ranqueia as melhores vagas com Claude Haiku para compatibilidade real (não
-// estimada) — apenas planos pagos. Timeout curto + fallback ao score heurístico:
+// Re-ranqueia as melhores vagas com Claude Haiku para compatibilidade real (nao
+// estimada) - apenas planos pagos. Timeout curto + fallback ao score heuristico:
 // se a IA falhar ou demorar, devolve as vagas como estavam (nunca bloqueia o envio).
 async function aiRescoreJobs(jobs, profile) {
   if (!process.env.ANTHROPIC_API_KEY || !Array.isArray(jobs) || jobs.length < 2) return jobs;
@@ -2378,4 +2406,3 @@ export {
   calcScore, applyExtendedFilters, userLevelRank, jobLevelRank, jobMatchesCargo, cargoGateTokens,
   primaryKeyword, cargoSynonymQuery, cargoQueryVariants, _postedAtMs, recencyBonus, parseAiScores,
 };
-

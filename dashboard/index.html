@@ -4345,7 +4345,7 @@ async function deleteTracker(id) {
 var _alertProfile   = null;   // from Supabase
 var _alertExtended  = {};     // from localStorage (extended prefs)
 var _alertHistory   = [];     // job_alert_history (envios reais) — alimenta métricas
-var _alertCache     = null;   // job_alert_cache — vagas do último envio para o dashboard
+var _alertCache     = null;   // job_alert_cache — histórico de oportunidades exibidas no dashboard
 var _alJobFilter    = 'todas';
 var _alJobPage      = 0;      // página atual da grade (0-based)
 var AL_JOBS_PER_PAGE = 5;
@@ -4414,7 +4414,7 @@ async function loadAlerts() {
     });
     _alertHistory = hres.ok ? (await hres.json()) : [];
   } catch(e) { _alertHistory = []; }
-  // Cache de vagas do último envio (alimenta a grade do dashboard)
+  // Histórico/cache de vagas encontradas (alimenta a grade do dashboard)
   try {
     var cres = await fetch(SUPABASE_URL + '/rest/v1/job_alert_cache?user_id=eq.' + currentUserId + '&select=jobs,cached_at,last_manual_at,source', {
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
@@ -4887,11 +4887,11 @@ function renderAlertJobsGrid() {
   });
 
   if (!allJobs.length) {
-    // Cache existe mas vazio — nunca houve envio
+    // Histórico existe mas ainda vazio — nunca houve envio com vagas
     var rateInfo = _getRateLimitInfo();
     var btnLabel = rateInfo.blocked ? ('Disponível em ' + rateInfo.waitMin + 'min') : 'Receber vagas agora';
     var btnDisabled = rateInfo.blocked ? 'disabled' : '';
-    grid.innerHTML = '<div class="al-empty" style="padding:28px"><div class="al-empty-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="38" height="38"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg></div><div class="al-empty-title">Nenhuma vaga no cache ainda</div><div class="al-empty-sub">Clique em <strong>Receber vagas agora</strong> para buscar oportunidades em tempo real.</div><button class="al-empty-cta" onclick="requestJobsNow()" style="margin-top:12px" ' + btnDisabled + '>' + btnLabel + '</button></div>';
+    grid.innerHTML = '<div class="al-empty" style="padding:28px"><div class="al-empty-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="38" height="38"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg></div><div class="al-empty-title">Nenhuma oportunidade salva ainda</div><div class="al-empty-sub">Clique em <strong>Receber vagas agora</strong> para buscar oportunidades em tempo real. As próximas seleções ficarão guardadas aqui.</div><button class="al-empty-cta" onclick="requestJobsNow()" style="margin-top:12px" ' + btnDisabled + '>' + btnLabel + '</button></div>';
     return;
   }
 
