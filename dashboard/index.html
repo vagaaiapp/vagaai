@@ -2179,10 +2179,10 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         <div class="interview-hero-copy">
           <div class="interview-eyebrow">Simulador com IA</div>
           <h1 class="interview-title">Treine antes da entrevista real.</h1>
-          <p class="interview-sub">Toda vaga analisada com CV otimizado aparece aqui pronta para gerar perguntas personalizadas. Você treina com base no cargo, empresa, score e pontos fracos da análise.</p>
+          <p class="interview-sub">Vagas marcadas como "Em entrevista" ou "Oferta" aparecem aqui para você treinar antes da conversa real. Perguntas personalizadas com base no cargo, empresa e pontos fracos da análise.</p>
           <div class="interview-metrics">
-            <div><strong id="intReadyCount">—</strong><span>prontas para treino</span></div>
-            <div><strong id="intPriorityCount">—</strong><span>em entrevista</span></div>
+            <div><strong id="intReadyCount">—</strong><span>entrevistas marcadas</span></div>
+            <div><strong id="intPriorityCount">—</strong><span>ofertas recebidas</span></div>
             <div><strong id="intCvCount">—</strong><span>com CV otimizado</span></div>
           </div>
         </div>
@@ -3526,17 +3526,20 @@ function renderInterviewHub() {
   var withCv = all.filter(function(i) { return i.result && i.result.cv_otimizado; });
   var priorities = all.filter(function(i) { return i.status === 'entrevista'; });
 
+  var marcadas = all.filter(function(i) { return i.status === 'entrevista'; });
+  var ofertas  = all.filter(function(i) { return i.status === 'oferta'; });
+
   var readyEl = document.getElementById('intReadyCount');
-  var prioEl = document.getElementById('intPriorityCount');
-  var cvEl = document.getElementById('intCvCount');
-  if (readyEl) readyEl.textContent = all.length;
-  if (prioEl) prioEl.textContent = priorities.length;
-  if (cvEl) cvEl.textContent = withCv.length;
+  var prioEl  = document.getElementById('intPriorityCount');
+  var cvEl    = document.getElementById('intCvCount');
+  if (readyEl) readyEl.textContent = marcadas.length;
+  if (prioEl)  prioEl.textContent  = ofertas.length;
+  if (cvEl)    cvEl.textContent    = withCv.length;
 
   var preview = document.getElementById('intPreviewJob');
   if (preview) {
-    var first = priorities[0] || all[0];
-    preview.textContent = first ? first.cargo + (first.empresa ? ' · ' + first.empresa : '') : 'Analise uma vaga para começar';
+    var first = marcadas[0] || ofertas[0] || all[0];
+    preview.textContent = first ? first.cargo + (first.empresa ? ' · ' + first.empresa : '') : 'Marque uma vaga como entrevista para começar';
   }
 
   var upsell = document.getElementById('interviewUpsell');
