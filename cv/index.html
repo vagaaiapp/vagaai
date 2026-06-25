@@ -388,6 +388,26 @@ body{background:var(--page-bg);font-family:'Manrope',sans-serif;padding:0}
 .minimal-tags{display:flex;flex-wrap:wrap;gap:.35rem}
 .minimal-tag{font-size:9pt;color:var(--ac);border:1px solid #cbd5e0;border-radius:20px;padding:.18rem .55rem;line-height:1.4}
 
+/* ─── TEMPLATE 6: FOCADO (ATS) ──────────────────────────── */
+.page-focus{flex-direction:column}
+.focus-header{padding:10mm 14mm 5mm;flex-shrink:0}
+.focus-name{font-family:'Lora',serif;font-size:23pt;font-weight:700;color:#1a202c;letter-spacing:-.02em;line-height:1.2}
+.focus-role{font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ac);margin-top:.3rem}
+.focus-contact-row{display:flex;flex-wrap:wrap;gap:.2rem .9rem;margin-top:.55rem}
+.focus-ci{font-size:8.5pt;color:#555;display:flex;align-items:center;gap:.28rem}
+.focus-ci a{color:#555;text-decoration:none}
+.focus-rule{height:1.5px;background:var(--ac);margin:0 14mm 5mm;flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.focus-body{flex:1;padding:0 14mm 10mm;display:flex;flex-direction:column;gap:.9rem}
+.focus-sec-h{font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ac);border-left:3px solid var(--ac);padding-left:.5rem;margin-bottom:.65rem;-webkit-print-color-adjust:exact;print-color-adjust:exact;page-break-after:avoid}
+.focus-resumo{font-size:10pt;color:#333;line-height:1.6}
+.focus-bottom{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
+.focus-edu-item{margin-bottom:.6rem;page-break-inside:avoid}
+.focus-edu-curso{font-size:10.5pt;font-weight:700;color:#111;line-height:1.35}
+.focus-edu-inst{font-size:9.5pt;color:#555;line-height:1.35}
+.focus-edu-per{font-size:9pt;color:var(--ac2);margin-top:.12rem}
+.focus-tags{display:flex;flex-wrap:wrap;gap:.35rem}
+.focus-tag{font-size:9pt;color:#333;border:1px solid #d1d5db;border-radius:4px;padding:.2rem .52rem;line-height:1.4}
+
 /* no-photo: novos templates */
 html.no-photo .exec-photo{display:none}
 html.no-photo .exec-header{display:block}
@@ -1138,13 +1158,21 @@ html.no-photo .mod-header{display:block}
     </div>
     <div class="csv-body">
       <div class="tpl-card-grid">
-        <div class="tpl-card active" id="tplCardClassic" onclick="setTemplate('classic')">
-          <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></div>
-          <div class="tpl-card-info"><div class="tpl-card-name">Profissional</div><div class="tpl-card-badge">Sidebar</div></div>
-        </div>
         <div class="tpl-card" id="tplCardModern" onclick="setTemplate('modern')">
           <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></div>
           <div class="tpl-card-info"><div class="tpl-card-name">Moderno</div><div class="tpl-card-badge ats">ATS ✓</div></div>
+        </div>
+        <div class="tpl-card" id="tplCardFocus" onclick="setTemplate('focus')">
+          <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="3" y1="15" x2="16" y2="15"/><line x1="3" y1="20" x2="13" y2="20"/></svg></div>
+          <div class="tpl-card-info"><div class="tpl-card-name">Focado</div><div class="tpl-card-badge ats">ATS ✓</div></div>
+        </div>
+        <div class="tpl-card" id="tplCardMinimal" onclick="setTemplate('minimal')">
+          <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+          <div class="tpl-card-info"><div class="tpl-card-name">Minimalista</div><div class="tpl-card-badge ats">ATS ✓</div></div>
+        </div>
+        <div class="tpl-card" id="tplCardClassic" onclick="setTemplate('classic')">
+          <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></div>
+          <div class="tpl-card-info"><div class="tpl-card-name">Profissional</div><div class="tpl-card-badge">Sidebar</div></div>
         </div>
         <div class="tpl-card" id="tplCardExec" onclick="setTemplate('exec')">
           <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"/></svg></div>
@@ -1154,14 +1182,10 @@ html.no-photo .mod-header{display:block}
           <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg></div>
           <div class="tpl-card-info"><div class="tpl-card-name">Compacto</div><div class="tpl-card-badge">Sidebar</div></div>
         </div>
-        <div class="tpl-card" id="tplCardMinimal" onclick="setTemplate('minimal')">
-          <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
-          <div class="tpl-card-info"><div class="tpl-card-name">Minimalista</div><div class="tpl-card-badge ats">ATS ✓</div></div>
-        </div>
       </div>
       <div class="csv-ats-note">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-        <span><strong>Moderno</strong> e <strong>Minimalista</strong> são lidos corretamente por sistemas de recrutamento automático (ATS). Os modelos com Sidebar podem ter parsing reduzido em alguns sistemas.</span>
+        <span><strong>Moderno</strong>, <strong>Focado</strong> e <strong>Minimalista</strong> são lidos corretamente por sistemas de recrutamento automático (ATS). Os modelos com Sidebar podem ter parsing reduzido em alguns sistemas.</span>
       </div>
     </div>
     <div class="csv-footer">
@@ -1371,6 +1395,7 @@ html.no-photo .mod-header{display:block}
         <button id="tplBtnExec" style="display:none"></button>
         <button id="tplBtnCompact" style="display:none"></button>
         <button id="tplBtnMinimal" style="display:none"></button>
+        <button id="tplBtnFocus" style="display:none"></button>
         <button id="spCloudSaveBtn"></button><span id="spCloudSaveLbl"></span>
       </div>
     </div>
@@ -1579,6 +1604,36 @@ html.no-photo .mod-header{display:block}
       <div id="mnSecSkills" style="display:none">
         <div class="minimal-sec-h">Habilidades</div>
         <div class="minimal-tags" id="mnSkills"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Template: Focado ─────────────────────────────────── -->
+<div class="page page-focus" id="pageFocus">
+  <div class="focus-header">
+    <div class="focus-name" id="foNome"></div>
+    <div class="focus-role" id="foRole"></div>
+    <div class="focus-contact-row" id="foContatos"></div>
+  </div>
+  <div class="focus-rule"></div>
+  <div class="focus-body">
+    <div id="foSecResumo" style="display:none">
+      <div class="focus-sec-h">Resumo Profissional</div>
+      <div class="focus-resumo" id="foResumo"></div>
+    </div>
+    <div id="foSecExp" style="display:none">
+      <div class="focus-sec-h">Experiência Profissional</div>
+      <div id="foExps"></div>
+    </div>
+    <div class="focus-bottom" id="foBottom" style="display:none">
+      <div id="foSecEdu" style="display:none">
+        <div class="focus-sec-h">Formação</div>
+        <div id="foEdu"></div>
+      </div>
+      <div id="foSecSkills" style="display:none">
+        <div class="focus-sec-h">Habilidades</div>
+        <div class="focus-tags" id="foSkills"></div>
       </div>
     </div>
   </div>
@@ -1956,7 +2011,7 @@ function getActiveTemplateKey() {
 }
 
 function getTemplateLabel(key) {
-  return ({classic:'Profissional', modern:'Moderno', exec:'Executivo', compact:'Compacto', minimal:'Minimalista'})[key || getActiveTemplateKey()] || 'Profissional';
+  return ({classic:'Profissional', modern:'Moderno', exec:'Executivo', compact:'Compacto', minimal:'Minimalista', focus:'Focado'})[key || getActiveTemplateKey()] || 'Profissional';
 }
 
 var _fitScale = 1;
@@ -2705,6 +2760,7 @@ function applyTemplate(tpl, save) {
     {id:'pageExec',     btn:'tplBtnExec',     key:'exec'},
     {id:'pageCompact',  btn:'tplBtnCompact',  key:'compact'},
     {id:'pageMinimal',  btn:'tplBtnMinimal',  key:'minimal'},
+    {id:'pageFocus',    btn:'tplBtnFocus',    key:'focus'},
   ];
   tpls.forEach(function(t) {
     var page = document.getElementById(t.id);
@@ -2732,7 +2788,7 @@ function setTemplate(t) {
   if (_cvData) { _cvData.template = t; saveCvData(); }
   try { localStorage.setItem('vagaai_cv_tpl', t); } catch(e) {}
   // Update new card UI
-  var map = {classic:'tplCardClassic',modern:'tplCardModern',exec:'tplCardExec',compact:'tplCardCompact',minimal:'tplCardMinimal'};
+  var map = {classic:'tplCardClassic',modern:'tplCardModern',exec:'tplCardExec',compact:'tplCardCompact',minimal:'tplCardMinimal',focus:'tplCardFocus'};
   Object.keys(map).forEach(function(k) {
     var el = document.getElementById(map[k]);
     if (el) el.classList.toggle('active', k === t);
@@ -3534,9 +3590,9 @@ function renderStep4() {
 
 /* ── Re-render helpers ──────────────────────────────────── */
 function _rr(ids, val) { ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=val||''; }); }
-function reRenderNome(v)  { _rr(['clNome','clCvNome','modNome','exNome','cpNome','mnNome'], v); }
-function reRenderRole(v)  { _rr(['clRole','clCvRole','modRole','exRole','cpRole','mnRole'], v); }
-function reRenderResumo(v){ _rr(['clResumo','modResumo','exResumo','cpResumo','mnResumo'], v); }
+function reRenderNome(v)  { _rr(['clNome','clCvNome','modNome','exNome','cpNome','mnNome','foNome'], v); }
+function reRenderRole(v)  { _rr(['clRole','clCvRole','modRole','exRole','cpRole','mnRole','foRole'], v); }
+function reRenderResumo(v){ _rr(['clResumo','modResumo','exResumo','cpResumo','mnResumo','foResumo'], v); }
 
 function reRenderContact(c) {
   var SVG_E='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>';
@@ -3578,6 +3634,13 @@ function reRenderContact(c) {
   if(c.linkedin) mnCI.push('<div class="minimal-ci">'+SVG_L+' <a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></div>');
   if(c.cidade) mnCI.push('<div class="minimal-ci">'+SVG_M+' '+_esc(c.cidade)+'</div>');
   var mnC=document.getElementById('mnContatos'); if(mnC) mnC.innerHTML=mnCI.join('');
+  // Focado
+  var foCI=[];
+  if(c.email) foCI.push('<div class="focus-ci">'+SVG_E+' <a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></div>');
+  if(c.telefone) foCI.push('<div class="focus-ci">'+SVG_P+' '+_esc(c.telefone)+'</div>');
+  if(c.linkedin) foCI.push('<div class="focus-ci">'+SVG_L+' <a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></div>');
+  if(c.cidade) foCI.push('<div class="focus-ci">'+SVG_M+' '+_esc(c.cidade)+'</div>');
+  var foC=document.getElementById('foContatos'); if(foC) foC.innerHTML=foCI.join('');
 }
 
 function reRenderSkills(skills) {
@@ -3586,17 +3649,19 @@ function reRenderSkills(skills) {
   var es=document.getElementById('exSkills'); if(es) es.innerHTML=skills.slice(0,20).map(function(s){return '<span class="exec-tag">'+_esc(s)+'</span>';}).join('');
   var cs=document.getElementById('cpSkills'); if(cs) cs.innerHTML=skills.slice(0,18).map(function(s){return '<span class="compact-tag">'+_esc(s)+'</span>';}).join('');
   var ns=document.getElementById('mnSkills'); if(ns) ns.innerHTML=skills.slice(0,20).map(function(s){return '<span class="minimal-tag">'+_esc(s)+'</span>';}).join('');
+  var fs=document.getElementById('foSkills'); if(fs) fs.innerHTML=skills.slice(0,20).map(function(s){return '<span class="focus-tag">'+_esc(s)+'</span>';}).join('');
   // Show/hide sections
-  ['clSecSkills','modSecSkills','exSecSkills','cpSecSkills','mnSecSkills'].forEach(function(id){
+  ['clSecSkills','modSecSkills','exSecSkills','cpSecSkills','mnSecSkills','foSecSkills'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.style.display=skills.length?'block':'none';
   });
   var mb=document.getElementById('modBottom'); if(mb&&skills.length) mb.style.display='grid';
   var ex=document.getElementById('exBottom'); if(ex&&skills.length) ex.style.display='grid';
   var mn=document.getElementById('mnBottom'); if(mn&&skills.length) mn.style.display='grid';
+  var fb=document.getElementById('foBottom'); if(fb&&skills.length) fb.style.display='grid';
 }
 
 function reRenderExp(exps) {
-  var ids=['clExps','modExps','exExps','cpExps'];
+  var ids=['clExps','modExps','exExps','cpExps','foExps'];
   ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.innerHTML=_expHtml(exps); });
   // Minimal timeline
   var mnE=document.getElementById('mnExps');
@@ -3607,7 +3672,7 @@ function reRenderExp(exps) {
       return '<div class="minimal-exp-item"><div class="minimal-exp-spine"><div class="minimal-exp-dot"></div>'+(i<arr.length-1?'<div class="minimal-exp-line"></div>':'')+'</div><div class="minimal-exp-body"><div class="minimal-exp-row"><span class="minimal-exp-cargo">'+_esc(e.cargo||'')+'</span>'+(mnPer?'<span class="minimal-exp-per">'+_esc(mnPer)+'</span>':'')+'</div><div class="minimal-exp-emp">'+_esc(e.empresa||'')+'</div>'+(buls?'<ul class="minimal-exp-ul">'+buls+'</ul>':'')+'</div></div>';
     }).join('');
   }
-  ['clSecExp','modSecExp','exSecExp','cpSecExp','mnSecExp'].forEach(function(id){
+  ['clSecExp','modSecExp','exSecExp','cpSecExp','mnSecExp','foSecExp'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.style.display=exps.length?'block':'none';
   });
 }
@@ -3618,12 +3683,14 @@ function reRenderEdu(edu) {
   var exE=document.getElementById('exEdu'); if(exE) exE.innerHTML=edu.map(function(e){return '<div class="exec-edu-item"><div class="exec-edu-curso">'+_esc(e.curso||'')+'</div><div class="exec-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="exec-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
   var cpE=document.getElementById('cpEdu'); if(cpE) cpE.innerHTML=edu.map(function(e){return '<div style="margin-bottom:.55rem"><div class="compact-edu-curso">'+_esc(e.curso||'')+'</div><div class="compact-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="compact-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
   var mnE=document.getElementById('mnEdu'); if(mnE) mnE.innerHTML=edu.map(function(e){return '<div class="minimal-edu-item"><div class="minimal-edu-curso">'+_esc(e.curso||'')+'</div><div class="minimal-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="minimal-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
-  ['clSecEdu','modSecEdu','exSecEdu','cpSecEdu','mnSecEdu'].forEach(function(id){
+  var foE=document.getElementById('foEdu'); if(foE) foE.innerHTML=edu.map(function(e){return '<div class="focus-edu-item"><div class="focus-edu-curso">'+_esc(e.curso||'')+'</div><div class="focus-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="focus-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
+  ['clSecEdu','modSecEdu','exSecEdu','cpSecEdu','mnSecEdu','foSecEdu'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.style.display=edu.length?'block':'none';
   });
   var mb=document.getElementById('modBottom'); if(mb&&edu.length) mb.style.display='grid';
   var ex=document.getElementById('exBottom'); if(ex&&edu.length) ex.style.display='grid';
   var mn=document.getElementById('mnBottom'); if(mn&&edu.length) mn.style.display='grid';
+  var fb=document.getElementById('foBottom'); if(fb&&edu.length) fb.style.display='grid';
 }
 
 /* ── Inline editing setup ───────────────────────────────── */
@@ -3631,9 +3698,9 @@ function setupInlineEditing() {
   if (!_cvData) return;
   // Fields: [cvKey, [elementIds], isBlock]
   var fields = [
-    ['nome', ['clNome','clCvNome','modNome','exNome','cpNome','mnNome'], false],
-    ['titulo_profissional', ['clRole','clCvRole','modRole','exRole','cpRole','mnRole'], false],
-    ['resumo_profissional', ['clResumo','modResumo','exResumo','cpResumo','mnResumo'], true],
+    ['nome', ['clNome','clCvNome','modNome','exNome','cpNome','mnNome','foNome'], false],
+    ['titulo_profissional', ['clRole','clCvRole','modRole','exRole','cpRole','mnRole','foRole'], false],
+    ['resumo_profissional', ['clResumo','modResumo','exResumo','cpResumo','mnResumo','foResumo'], true],
   ];
   fields.forEach(function(f) {
     var key=f[0], ids=f[1], isBlock=f[2];
