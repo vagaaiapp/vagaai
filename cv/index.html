@@ -663,12 +663,15 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 .s4-score-note b{color:var(--app-t1)}
 .s4-score-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .s4-score-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:rgba(78,206,145,.1);border:1px solid rgba(78,206,145,.18);color:var(--app-emerald);font-size:10px;font-weight:800}
-.s4-progress-strip{display:flex;align-items:center;gap:.45rem;margin-bottom:1.1rem}
-.s4-prog-chip{display:inline-flex;align-items:center;gap:.4rem;font-size:11.5px;font-weight:700;padding:.4rem .75rem;border-radius:999px;background:var(--app-sub);border:1px solid var(--app-border);color:var(--app-t3);white-space:nowrap}
-.s4-prog-chip .s4-prog-dot{width:13px;height:13px;border-radius:50%;border:1.5px solid var(--app-t3);display:inline-block;flex-shrink:0}
-.s4-prog-chip.done{background:rgba(46,207,138,.1);border-color:rgba(46,207,138,.32);color:var(--app-emerald)}
-.s4-prog-chip.done .s4-prog-dot{border:none;width:14px;height:14px}
-.s4-prog-sep{flex:1;height:1.5px;background:var(--app-border);max-width:30px;border-radius:2px}
+.s4-progress-strip{display:flex;align-items:flex-start;margin:.2rem 4px 1.5rem}
+.s4-journey-node{display:flex;flex-direction:column;align-items:center;gap:7px;flex-shrink:0}
+.s4-journey-dot{width:30px;height:30px;border-radius:50%;background:var(--app-sub);border:2px solid var(--app-border);color:var(--app-t3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;transition:all .25s}
+.s4-journey-dot svg{width:16px;height:16px}
+.s4-journey-dot.done{background:var(--app-emerald);border-color:var(--app-emerald);color:#fff}
+.s4-journey-lbl{font-size:11.5px;font-weight:600;color:var(--app-t3);white-space:nowrap}
+.s4-journey-lbl.done{color:var(--app-emerald);font-weight:700}
+.s4-journey-line{flex:1;height:2px;background:var(--app-border);margin:14px 8px 0;border-radius:2px;transition:background .25s}
+.s4-journey-line.done{background:var(--app-emerald)}
 .csv-materials-card{background:var(--app-card);border:1px solid var(--app-border);border-radius:12px;padding:1.1rem 1.25rem;margin-bottom:.6rem}
 .csv-material-label{font-size:11px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--app-t3);margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem}
 .csv-material-opt{text-transform:none;letter-spacing:0;font-weight:600;font-size:10px;padding:2px 7px;border-radius:999px;background:var(--app-sub);border:1px solid var(--app-border);color:var(--app-t3)}
@@ -1292,12 +1295,12 @@ html.no-photo .mod-header{display:block}
   <!-- ── STEP 4: Exportar ──────────────────────────────────── -->
   <div class="cv-step" id="csStep4">
     <div class="csv-header">
-      <div class="csv-done-badge">
+      <div class="csv-done-badge" id="s4HeaderBadge">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        Currículo pronto
+        <span id="s4HeaderBadgeText">Currículo otimizado</span>
       </div>
-      <h1 class="csv-title">Baixe e envie para a vaga</h1>
-      <p class="csv-sub">Seu currículo está otimizado. Confira o score ATS, baixe e marque a candidatura.</p>
+      <h1 class="csv-title">Conclua sua candidatura</h1>
+      <p class="csv-sub">Baixe seus materiais, envie para a vaga e acompanhe a candidatura — tudo a partir daqui.</p>
     </div>
     <div class="csv-body">
       <!-- Review banner — shown only when coming from analysis -->
@@ -3230,13 +3233,21 @@ var _s4Progress = { cv: false, carta: false, enviado: false };
 function s4RenderProgress() {
   var el = document.getElementById('s4ProgressStrip');
   if (!el) return;
-  var CHK = '<svg class="s4-prog-dot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-  function chip(done, label) {
-    return '<span class="s4-prog-chip' + (done ? ' done' : '') + '">' + (done ? CHK : '<span class="s4-prog-dot"></span>') + label + '</span>';
-  }
-  el.innerHTML = chip(_s4Progress.cv, 'CV') + '<span class="s4-prog-sep"></span>'
-    + chip(_s4Progress.carta, 'Carta') + '<span class="s4-prog-sep"></span>'
-    + chip(_s4Progress.enviado, 'Enviado');
+  var CHK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  var steps = [
+    { done: _s4Progress.cv,      label: 'CV pronto' },
+    { done: _s4Progress.carta,   label: 'Carta' },
+    { done: _s4Progress.enviado, label: 'Enviado' }
+  ];
+  var html = '';
+  steps.forEach(function(s, i) {
+    if (i > 0) html += '<div class="s4-journey-line' + (steps[i-1].done ? ' done' : '') + '"></div>';
+    html += '<div class="s4-journey-node">'
+      + '<div class="s4-journey-dot' + (s.done ? ' done' : '') + '">' + (s.done ? CHK : (i + 1)) + '</div>'
+      + '<span class="s4-journey-lbl' + (s.done ? ' done' : '') + '">' + s.label + '</span>'
+      + '</div>';
+  });
+  el.innerHTML = html;
 }
 
 function s4OpenCarta() {
@@ -3620,6 +3631,8 @@ function renderStep4() {
   var scoreFill = document.getElementById('s4ScoreFill');
   if (scoreVal)  scoreVal.textContent = overall + '%';
   if (scoreFill) scoreFill.style.width = overall + '%';
+  var badgeTxt = document.getElementById('s4HeaderBadgeText');
+  if (badgeTxt) badgeTxt.textContent = 'Currículo otimizado · ' + overall + '%';
 
   var diag = typeof getPrintDiagnostics === 'function' ? getPrintDiagnostics() : { sidebarRisk: false, longTextRisk: false };
   var pages = typeof getPageEstimate === 'function' ? getPageEstimate() : 1;
