@@ -1302,11 +1302,9 @@ html.no-photo .mod-header{display:block}
     <div class="csv-body">
       <!-- Review banner — shown only when coming from analysis -->
       <div id="s4ReviewBanner" style="display:none"></div>
-      <!-- Bloco 1: Seus materiais (CV + carta) -->
-      <div class="csv-materials-card">
-        <div class="csv-send-step"><span class="csv-send-num">1</span> Seus materiais</div>
-        <div class="csv-send-sub" style="margin-bottom:.8rem">Baixe seu currículo otimizado e, se a vaga pedir, gere uma carta de apresentação já adaptada à oportunidade.</div>
-        <div class="csv-material-label">Currículo</div>
+      <!-- Download standalone — shown when no review banner (fluxo direto) -->
+      <div class="csv-materials-card" id="s4DirectDownload">
+        <div class="csv-send-sub" style="margin-bottom:.8rem">Baixe seu currículo para anexar na candidatura.</div>
         <div class="csv-download-row" id="s4DownloadRow">
           <button class="csv-dl-btn primary" id="s4PdfBtn" onclick="s4StartPdfDownload()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1317,7 +1315,11 @@ html.no-photo .mod-header{display:block}
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           Baixar como .doc
         </button>
-        <div class="csv-material-label" style="margin-top:.9rem">Carta de apresentação <span class="csv-material-opt">opcional</span></div>
+      </div>
+      <!-- Bloco 1: Carta de apresentação -->
+      <div class="csv-materials-card">
+        <div class="csv-send-step"><span class="csv-send-num">1</span> Carta de apresentação <span class="csv-material-opt" style="margin-left:.4rem">opcional</span></div>
+        <div class="csv-send-sub" style="margin-bottom:.8rem">A carta já vem escrita para esta vaga — lê seu currículo, identifica os pontos certos e adapta o tom ao que o recrutador quer ver.</div>
         <button class="csv-material-carta" id="s4CartaBtn" onclick="s4OpenCarta()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
           Gerar carta de apresentação
@@ -3993,12 +3995,15 @@ function _enterReviewMode(ctx) {
     changes.map(function(c) { return '<div class="s4rb-change"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>' + c + '</span></div>'; }).join(''),
     '</div>',
     '<div class="s4rb-actions">',
+    '  <button class="csv-dl-btn primary" onclick="s4StartPdfDownload()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Baixar PDF</button>',
     '  <button class="s4rb-review-btn" onclick="goToStep(2)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Revisar alterações</button>',
     '</div>'
   ].join('');
 
   banner.style.display = 'block';
   banner.style.animation = 'fadeInUp .4s ease';
+  var dd = document.getElementById('s4DirectDownload');
+  if (dd) dd.style.display = 'none';
 }
 </script>
 </body>
