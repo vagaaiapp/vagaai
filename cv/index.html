@@ -1344,8 +1344,8 @@ html.no-photo .mod-header{display:block}
           </div>
         </div>
       </div>
-      <!-- Send card — abrir vaga para enviar o currículo (aparece após PDF gerado) -->
-      <div class="csv-send-card" id="s4SendCard" style="display:none"></div>
+      <!-- Send card — abrir vaga para enviar o currículo -->
+      <div class="csv-send-card" id="s4SendCard"></div>
       <!-- Tracker card — aparece após PDF gerado -->
       <div class="csv-tracker-card" id="s4TrackerCard" style="display:none">
         <div class="csv-send-step"><span class="csv-send-num">3</span> Acompanhar candidatura</div>
@@ -3255,7 +3255,6 @@ function s4RenderSendCard() {
       + '<div class="csv-send-manual">Acesse o site onde encontrou a vaga, anexe o arquivo que você acabou de baixar e finalize a candidatura. <strong>Dica:</strong> da próxima vez, cole o link da vaga na análise para abrirmos a página automaticamente aqui.</div>';
   }
   card.style.display = 'block';
-  card.style.animation = 'fadeInUp .35s ease';
 }
 
 // Prompt-na-volta: ao abrir a vaga, perguntamos quando o usuário retornar
@@ -3576,65 +3575,11 @@ function computeAtsScore() {
 
 function renderStep4() {
   if (!_cvData) return;
-  var kws      = getContextKeywords ? getContextKeywords() : { total: 0, missing: [] };
-  var c        = _cvData.contato || {};
-  var hasContact  = Boolean((c.email || '').trim() || (c.telefone || '').trim());
-  var summaryLen  = String(_cvData.resumo_profissional || '').trim().length;
-  var hasSummary  = summaryLen > 80;
-  var hasMetrics  = typeof hasMetricText === 'function' ? hasMetricText() : false;
-
-  var ats = computeAtsScore();
-  var pillars = [
-    { id: 's4p1', pct: ats.pillars.contato },
-    { id: 's4p2', pct: ats.pillars.resumo },
-    { id: 's4p3', pct: ats.pillars.metricas },
-    { id: 's4p4', pct: ats.pillars.keywords }
-  ];
-
-  pillars.forEach(function(p, i) {
-    var fill = document.getElementById(p.id);
-    var pct  = document.getElementById(p.id + 'pct');
-    if (fill) fill.style.width = p.pct + '%';
-    if (pct)  pct.textContent  = p.pct + '%';
-  });
-
-  var overall = ats.overall;
-  var scoreVal  = document.getElementById('s4ScoreVal');
-  var scoreFill = document.getElementById('s4ScoreFill');
-  if (scoreVal)  scoreVal.textContent = overall + '%';
-  if (scoreFill) scoreFill.style.width = overall + '%';
+  var overall = computeAtsScore().overall;
   var badgeTxt = document.getElementById('s4HeaderBadgeText');
   if (badgeTxt) badgeTxt.textContent = 'Currículo otimizado · ' + overall + '%';
-
-  var diag = typeof getPrintDiagnostics === 'function' ? getPrintDiagnostics() : { sidebarRisk: false, longTextRisk: false };
-  var pages = typeof getPageEstimate === 'function' ? getPageEstimate() : 1;
-  var cl = document.getElementById('s4Checklist');
-  if (cl) {
-    var items = [
-      ['Nome e contato',          hasContact],
-      ['Resumo com +80 caracteres', hasSummary],
-      ['Métricas nas experiências', hasMetrics],
-      ['Keywords identificadas',    kws.total >= 3],
-      ['Cabe em 1 página',          pages <= 1],
-      ['Margem segura',             !(diag.sidebarRisk || diag.longTextRisk)]
-    ];
-    cl.innerHTML = items.map(function(it) {
-      return '<div class="s4-check ' + (it[1] ? 'ok' : 'warn') + '"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' + (it[1] ? '<polyline points="20 6 9 17 4 12"/>' : '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>') + '</svg><span>' + it[0] + '</span></div>';
-    }).join('');
-  }
-  var note = document.getElementById('s4ScoreNote');
-  if (note) {
-    var missing = (kws.missing || []).slice(0, 4);
-    var noteTitle = overall >= 75 ? 'Currículo pronto para envio.' : overall >= 55 ? 'Currículo bom, com ajustes finos recomendados.' : 'Currículo precisa de reforço antes do envio.';
-    note.innerHTML =
-      '<b>' + noteTitle + '</b> Este score combina estrutura do currículo, contato, resumo, métricas e aderência às palavras-chave da vaga.' +
-      '<div class="s4-score-tags">' +
-        '<span class="s4-score-tag">A4 seguro</span>' +
-        '<span class="s4-score-tag">' + (hasMetrics ? 'Métricas presentes' : 'Métricas pendentes') + '</span>' +
-        '<span class="s4-score-tag">' + (missing.length ? 'Ajustar: ' + _esc(missing.join(', ')) : 'Keywords alinhadas') + '</span>' +
-      '</div>';
-  }
   s4RenderProgress();
+  s4RenderSendCard();
 }
 
 /* ── Re-render helpers ──────────────────────────────────── */
