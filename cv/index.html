@@ -1101,7 +1101,7 @@ html.no-photo .mod-header{display:block}
       <div class="cn-step-badge">4</div>
       <div class="cn-step-info">
         <div class="cn-step-name">Exportar</div>
-        <div class="cn-step-sub">Score ATS e download</div>
+        <div class="cn-step-sub">Baixar e enviar</div>
       </div>
     </div>
   </div>
@@ -2647,6 +2647,15 @@ function applySmartFix(type) {
   // Setup inline editing
   setTimeout(setupInlineEditing, 150);
 
+  // Restore last active step on refresh (only if initOptimizedMode won't override it)
+  try {
+    var savedStep = parseInt(sessionStorage.getItem('vagaai_cv_step'), 10);
+    var hasOptFlag = !!localStorage.getItem('vagaai_cv_from_analysis');
+    if (savedStep >= 2 && savedStep <= 4 && !hasOptFlag) {
+      setTimeout(function() { goToStep(savedStep); }, 0);
+    }
+  } catch(e) {}
+
 })();
 
 /* ── Photo UI helpers ───────────────────────────────────── */
@@ -3037,6 +3046,7 @@ var _sfDebTimer = null;
 
 function goToStep(n) {
   _cvStep = n;
+  try { sessionStorage.setItem('vagaai_cv_step', n); } catch(e) {}
   var total = 4;
   for (var i = 1; i <= total; i++) {
     var si = document.getElementById('cnsi' + i);
