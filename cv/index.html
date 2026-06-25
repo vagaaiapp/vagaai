@@ -674,6 +674,16 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 .csv-send-btn svg{flex-shrink:0}
 .csv-send-manual{font-size:11.5px;color:var(--app-t3);line-height:1.5}
 .csv-send-manual strong{color:var(--app-t2)}
+.csv-return-prompt{margin-top:.85rem;padding-top:.85rem;border-top:1px dashed rgba(46,207,138,.3)}
+.csv-return-q{font-size:12.5px;font-weight:700;color:var(--app-t1);margin-bottom:.6rem}
+.csv-return-q strong{color:var(--app-emerald)}
+.csv-return-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.csv-return-yes{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem .9rem;border-radius:9px;background:var(--app-emerald);color:#fff;border:none;font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.csv-return-yes:hover:not(:disabled){background:var(--app-green)}
+.csv-return-yes:disabled{opacity:.6;cursor:not-allowed}
+.csv-return-no{padding:.55rem .9rem;border-radius:9px;background:transparent;color:var(--app-t2);border:1px solid var(--app-border);font-family:'Manrope',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.csv-return-no:hover{border-color:var(--app-t3);color:var(--app-t1)}
+.csv-return-done{display:inline-flex;align-items:center;gap:.4rem;font-size:12px;font-weight:700;color:var(--app-emerald)}
 .csv-tracker-card{background:var(--app-card);border:1px solid var(--app-border);border-radius:12px;padding:1.1rem 1.25rem;margin-top:.6rem}
 .csv-tracker-title{font-size:13px;font-weight:800;color:var(--app-t1);margin-bottom:.35rem}
 .csv-tracker-sub{font-size:11.5px;color:var(--app-t3);margin-bottom:.9rem;line-height:1.5}
@@ -3203,7 +3213,8 @@ function s4RenderSendCard() {
       '<div class="csv-send-step"><span class="csv-send-num">1</span> Enviar para a vaga</div>'
       + '<div class="csv-send-title">Seu currículo está pronto — agora aplique</div>'
       + '<div class="csv-send-sub">Abrimos a página de ' + alvo + ' em uma nova aba. Anexe o arquivo que você acabou de baixar e finalize a candidatura.</div>'
-      + '<a class="csv-send-btn" href="' + _esc(url) + '" target="_blank" rel="noopener noreferrer"">Abrir vaga e enviar currículo ' + ARROW + '</a>';
+      + '<a class="csv-send-btn" href="' + _esc(url) + '" target="_blank" rel="noopener noreferrer" onclick="s4ArmReturnPrompt()">Abrir vaga e enviar currículo ' + ARROW + '</a>'
+      + '<div class="csv-return-prompt" id="s4ReturnPrompt" style="display:none"></div>';
   } else {
     card.innerHTML =
       '<div class="csv-send-step"><span class="csv-send-num">1</span> Enviar para a vaga</div>'
@@ -3212,6 +3223,101 @@ function s4RenderSendCard() {
   }
   card.style.display = 'block';
   card.style.animation = 'fadeInUp .35s ease';
+}
+
+// Prompt-na-volta: ao abrir a vaga, perguntamos quando o usuário retornar
+// se conseguiu enviar — marcamos só com confirmação (sem falsos positivos).
+var _s4AwaitingReturn = false;
+function s4ArmReturnPrompt() {
+  if (_s4AwaitingReturn) return;
+  _s4AwaitingReturn = true;
+  document.addEventListener('visibilitychange', _s4OnReturn);
+  window.addEventListener('focus', _s4OnReturn);
+}
+function _s4OnReturn() {
+  if (!_s4AwaitingReturn) return;
+  if (document.visibilityState && document.visibilityState !== 'visible') return;
+  _s4AwaitingReturn = false;
+  document.removeEventListener('visibilitychange', _s4OnReturn);
+  window.removeEventListener('focus', _s4OnReturn);
+  // Pequeno atraso evita disparo no mesmo tick da troca de aba
+  setTimeout(s4ShowReturnPrompt, 250);
+}
+function s4ShowReturnPrompt() {
+  var box = document.getElementById('s4ReturnPrompt');
+  if (!box) return;
+  var identity = getCvContextIdentity();
+  var role = identity.cargo && identity.cargo !== 'Vaga analisada' ? identity.cargo : '';
+  var company = identity.empresa && identity.empresa !== 'Empresa não informada' ? identity.empresa : '';
+  var alvo = role ? '<strong>' + _esc(role) + '</strong>' + (company ? ' · ' + _esc(company) : '') : (company ? '<strong>' + _esc(company) + '</strong>' : 'essa vaga');
+  box.innerHTML =
+    '<div class="csv-return-q">Conseguiu enviar para ' + alvo + '?</div>'
+    + '<div class="csv-return-actions">'
+    + '  <button class="csv-return-yes" id="s4ReturnYes" onclick="s4MarkCurrentApplied(this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Sim, marcar como enviada</button>'
+    + '  <button class="csv-return-no" onclick="s4HideReturnPrompt()">Ainda não</button>'
+    + '</div>';
+  box.style.display = 'block';
+  box.style.animation = 'fadeInUp .3s ease';
+}
+function s4HideReturnPrompt(done) {
+  var box = document.getElementById('s4ReturnPrompt');
+  if (!box) return;
+  if (done) {
+    box.innerHTML = '<div class="csv-return-done"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Candidatura registrada em Candidaturas.</div>';
+  } else {
+    box.style.display = 'none';
+    box.innerHTML = '';
+  }
+}
+
+async function s4MarkCurrentApplied(btn) {
+  if (!_sb) { showToast('Login indisponível nesta sessão.', 'error'); return; }
+  if (!_sbSession) await _initSbSession();
+  if (!_sbSession) { showToast('Faça login para marcar a candidatura.', 'warn'); return; }
+  var identity = getCvContextIdentity();
+  var now = new Date().toISOString();
+  var prev = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+  try {
+    var existingId = null;
+    if (identity.analysisId) {
+      var q = await _sb.from('job_tracker').select('id')
+        .eq('user_id', _sbSession.user.id)
+        .eq('analysis_id', identity.analysisId)
+        .limit(1).maybeSingle();
+      if (q && q.data && q.data.id) existingId = q.data.id;
+    }
+    if (existingId) {
+      var patch = { status: 'aplicada', updated_at: now };
+      if (identity.job_url) patch.job_url = identity.job_url;
+      if (identity.salario) patch.salario = identity.salario;
+      var upd = await _sb.from('job_tracker').update(patch).eq('id', existingId).eq('user_id', _sbSession.user.id);
+      if (upd.error) throw upd.error;
+    } else {
+      var payload = {
+        user_id: _sbSession.user.id,
+        empresa: identity.empresa || 'Empresa não informada',
+        cargo: identity.cargo || 'Vaga analisada',
+        score: identity.score,
+        status: 'aplicada',
+        nota: 'Candidatura marcada como enviada após abrir a vaga.',
+        analysis_id: identity.analysisId || null,
+        job_url: identity.job_url || null,
+        salario: identity.salario || null,
+        origem: 'cv',
+        updated_at: now
+      };
+      var ins = await _sb.from('job_tracker').insert([payload]).select('id').single();
+      if (ins.error) throw ins.error;
+    }
+    showToast('Candidatura marcada como enviada.', 'success');
+    if (typeof initTrackerCard === 'function') initTrackerCard();
+    s4HideReturnPrompt(true);
+  } catch(e) {
+    console.error('s4MarkCurrentApplied failed', e);
+    if (btn) { btn.disabled = false; btn.innerHTML = prev; }
+    showToast('Não foi possível marcar a candidatura.', 'error');
+  }
 }
 
 function s4DownloadDoc(btn) {
