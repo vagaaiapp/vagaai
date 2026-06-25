@@ -113,7 +113,9 @@ textarea::placeholder{color:var(--muted)}
 .job-preview-company{font-size:13px;color:var(--muted);margin-bottom:.55rem}
 .job-preview-chips{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.55rem}
 .job-preview-chip{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--muted)}
-.job-preview-excerpt{font-size:12px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.job-preview-chip.salary{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.job-preview-chip.contract{background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.25);color:#6366f1}
+.job-preview-excerpt{font-size:12px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 
 /* FILE UPLOAD */
 .upload-row{display:flex;align-items:center;gap:.6rem;margin-top:.5rem;flex-wrap:wrap}
@@ -1571,16 +1573,49 @@ function extractJobPreview(text, jobUrlStr) {
     if (modalidade && cidade) break;
   }
 
-  // ── 6. Trecho descritivo ──────────────────────────────────────────────────
+  // ── 6. Salário ────────────────────────────────────────────────────────────
+  var salario = '';
+  var salRE = /(?:sal[aá]rio|remunera[çc][aã]o|remuner|paga|faixa salarial|combinar|a combinar|pacote)[^\n\r]{0,40}?(R\$\s*[\d.,]+(?:\s*[–\-]\s*R\$\s*[\d.,]+)?)|R\$\s*[\d.,]+(?:\s*[–\-]\s*R\$\s*[\d.,]+)?(?:\s*(?:mil|k|\/h|\/hora|\/mês|mensais?|brutos?))?/gi;
+  var allText = lines.join(' ');
+  var sm = allText.match(salRE);
+  if (sm) {
+    // Pega a primeira ocorrência que tenha R$
+    var salMatch = sm.find(function(s){ return /R\$/i.test(s); });
+    if (salMatch) salario = salMatch.trim().replace(/^[^R]*(R\$)/i, 'R$').substring(0, 40);
+  }
+  // Fallback: "a combinar" / "confidencial"
+  if (!salario && /a combinar|confidencial|à combinar/i.test(allText)) salario = 'A combinar';
+
+  // ── 7. Contrato (CLT / PJ / Estágio / etc.) ───────────────────────────────
+  var contrato = '';
+  var cltM = allText.match(/\bCLT\b/i);
+  var pjM  = allText.match(/\bP\.?\s*J\.?\b|\bpessoa jur[ií]dica\b/i);
+  var estM = allText.match(/\best[aá]gio\b|\bestagiário\b/i);
+  var tmpM = allText.match(/\btemporário\b|\bfreelance\b|\bfreelancer\b/i);
+  if (cltM && pjM) contrato = 'CLT ou PJ';
+  else if (cltM) contrato = 'CLT';
+  else if (pjM) contrato = 'PJ';
+  else if (estM) contrato = 'Estágio';
+  else if (tmpM) contrato = tmpM[0].charAt(0).toUpperCase() + tmpM[0].slice(1).toLowerCase();
+
+  // ── 8. Senioridade ────────────────────────────────────────────────────────
+  var nivel = '';
+  if (/\bpleno\b/i.test(allText)) nivel = 'Pleno';
+  else if (/\bs[eê]nior\b|\bsr\.?\b|\bsênior\b/i.test(allText)) nivel = 'Sênior';
+  else if (/\bjunior\b|\bjr\.?\b|\bjúnior\b/i.test(allText)) nivel = 'Júnior';
+  else if (/\btrainee\b/i.test(allText)) nivel = 'Trainee';
+  else if (estM) nivel = '';
+
+  // ── 9. Trecho descritivo ──────────────────────────────────────────────────
   var descRE = /atua[rá]|responsab|requisito|buscamos|procuramos|desafio|atividade|fun[çc][aã]o|perfil|experi[eê]ncia|habilidade|conhecimento|forma[çc][aã]o|objetivo|missão|voc[eê] vai|você será|o que esperamos/i;
   var excerptLines = [];
-  for (var p = 0; p < lines.length && excerptLines.length < 2; p++) {
+  for (var p = 0; p < lines.length && excerptLines.length < 3; p++) {
     if (lines[p].length > 50 && descRE.test(lines[p])) excerptLines.push(lines[p]);
   }
-  if (!excerptLines.length) excerptLines = lines.filter(function(l){ return l.length > 70; }).slice(0, 2);
-  var excerpt = excerptLines.join(' ').substring(0, 220);
+  if (!excerptLines.length) excerptLines = lines.filter(function(l){ return l.length > 70; }).slice(0, 3);
+  var excerpt = excerptLines.join(' ').substring(0, 320);
 
-  return { cargo: cargo, empresa: empresa, modalidade: modalidade, cidade: cidade, excerpt: excerpt, platform: platform };
+  return { cargo: cargo, empresa: empresa, modalidade: modalidade, cidade: cidade, salario: salario, contrato: contrato, nivel: nivel, excerpt: excerpt, platform: platform };
 }
 
 function showJobPreview(preview, charCount) {
@@ -1588,10 +1623,14 @@ function showJobPreview(preview, charCount) {
   document.getElementById('jpCompany').textContent = preview.empresa || '';
 
   var chips = [];
-  if (preview.modalidade) chips.push(preview.modalidade.charAt(0).toUpperCase() + preview.modalidade.slice(1).toLowerCase());
-  if (preview.cidade) chips.push(preview.cidade);
+  if (preview.salario)   chips.push({ text: preview.salario, type: 'salary' });
+  if (preview.contrato)  chips.push({ text: preview.contrato, type: 'contract' });
+  if (preview.nivel)     chips.push({ text: preview.nivel, type: 'default' });
+  if (preview.modalidade) chips.push({ text: preview.modalidade.charAt(0).toUpperCase() + preview.modalidade.slice(1).toLowerCase(), type: 'default' });
+  if (preview.cidade)    chips.push({ text: preview.cidade, type: 'default' });
   document.getElementById('jpChips').innerHTML = chips.map(function(c){
-    return '<span class="job-preview-chip">' + c + '</span>';
+    var cls = 'job-preview-chip' + (c.type === 'salary' ? ' salary' : c.type === 'contract' ? ' contract' : '');
+    return '<span class="' + cls + '">' + c.text + '</span>';
   }).join('');
 
   document.getElementById('jpExcerpt').textContent = preview.excerpt || '';
