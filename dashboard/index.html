@@ -2210,13 +2210,13 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       <div class="interview-list-card">
         <div class="interview-list-head">
           <div>
-            <h3>Vagas prontas para simular</h3>
-            <p>Priorize entrevistas marcadas e oportunidades com maior potencial.</p>
+            <h3>Suas entrevistas marcadas</h3>
+            <p>Vagas com status "Em entrevista" ou "Oferta". Use "Todas analisadas" para ver o histórico completo.</p>
           </div>
           <div class="interview-filters">
-            <button class="int-filter active" data-filter="todas" onclick="setInterviewFilter('todas')">Todas</button>
-            <button class="int-filter" data-filter="entrevista" onclick="setInterviewFilter('entrevista')">Em entrevista</button>
-            <button class="int-filter" data-filter="cv" onclick="setInterviewFilter('cv')">Com CV</button>
+            <button class="int-filter active" data-filter="marcadas" onclick="setInterviewFilter('marcadas')">Em entrevista</button>
+            <button class="int-filter" data-filter="oferta" onclick="setInterviewFilter('oferta')">Oferta recebida</button>
+            <button class="int-filter" data-filter="todas" onclick="setInterviewFilter('todas')">Todas analisadas</button>
           </div>
         </div>
         <div id="interviewListBody">
@@ -2546,7 +2546,7 @@ var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 var currentSession = null, currentUserId = null;
 var _kTracked = [];
 var _alertKeywords = [];
-var _interviewFilter = 'todas';
+var _interviewFilter = 'marcadas';
 
 async function init() {
   try {
@@ -3500,7 +3500,7 @@ function canUseInterviewSimulator() {
 }
 
 function setInterviewFilter(filter) {
-  _interviewFilter = filter || 'todas';
+  _interviewFilter = filter || 'marcadas';
   document.querySelectorAll('.int-filter').forEach(function(btn) {
     btn.classList.toggle('active', btn.dataset.filter === _interviewFilter);
   });
@@ -3543,13 +3543,27 @@ function renderInterviewHub() {
   if (upsell) upsell.style.display = hasAccess ? 'none' : 'flex';
 
   var filtered = all.filter(function(item) {
-    if (_interviewFilter === 'entrevista') return item.status === 'entrevista';
-    if (_interviewFilter === 'cv') return item.result && item.result.cv_otimizado;
-    return true;
+    if (_interviewFilter === 'marcadas') return item.status === 'entrevista' || item.status === 'oferta';
+    if (_interviewFilter === 'oferta') return item.status === 'oferta';
+    return true; // 'todas'
   });
 
   if (!filtered.length) {
-    body.innerHTML = '<div class="int-empty"><strong>Nenhuma vaga pronta para treino ainda.</strong><span>Analise uma vaga com seu currículo para gerar perguntas personalizadas de entrevista.</span><div style="margin-top:16px"><button class="btn-cta" style="display:inline-flex" onclick="switchDashTab(\'app\')">Analisar vaga</button></div></div>';
+    var emptyMsg, emptySub, emptyBtn;
+    if (_interviewFilter === 'marcadas') {
+      emptyMsg = 'Nenhuma vaga marcada como entrevista.';
+      emptySub = 'Quando você tiver uma entrevista agendada, vá em Candidaturas, abra a vaga e mude o status para "Em entrevista".';
+      emptyBtn = '<button class="btn-cta" style="display:inline-flex;margin-top:16px" onclick="switchDashTab(\'vagas\')">Ver candidaturas</button>';
+    } else if (_interviewFilter === 'oferta') {
+      emptyMsg = 'Nenhuma oferta recebida ainda.';
+      emptySub = 'Quando receber uma proposta, marque a candidatura com o status "Oferta" em Candidaturas.';
+      emptyBtn = '<button class="btn-cta" style="display:inline-flex;margin-top:16px" onclick="switchDashTab(\'vagas\')">Ver candidaturas</button>';
+    } else {
+      emptyMsg = 'Nenhuma vaga analisada ainda.';
+      emptySub = 'Analise uma vaga com seu currículo para gerar perguntas personalizadas de entrevista.';
+      emptyBtn = '<button class="btn-cta" style="display:inline-flex;margin-top:16px" onclick="switchDashTab(\'app\')">Analisar vaga</button>';
+    }
+    body.innerHTML = '<div class="int-empty"><strong>' + emptyMsg + '</strong><span>' + emptySub + '</span>' + emptyBtn + '</div>';
     return;
   }
 
