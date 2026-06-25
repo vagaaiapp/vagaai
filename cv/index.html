@@ -663,6 +663,17 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 .s4-score-note b{color:var(--app-t1)}
 .s4-score-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .s4-score-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:rgba(78,206,145,.1);border:1px solid rgba(78,206,145,.18);color:var(--app-emerald);font-size:10px;font-weight:800}
+.s4-progress-strip{display:flex;align-items:center;gap:.45rem;margin-bottom:1.1rem}
+.s4-prog-chip{display:inline-flex;align-items:center;gap:.4rem;font-size:11.5px;font-weight:700;padding:.4rem .75rem;border-radius:999px;background:var(--app-sub);border:1px solid var(--app-border);color:var(--app-t3);white-space:nowrap}
+.s4-prog-chip .s4-prog-dot{width:13px;height:13px;border-radius:50%;border:1.5px solid var(--app-t3);display:inline-block;flex-shrink:0}
+.s4-prog-chip.done{background:rgba(46,207,138,.1);border-color:rgba(46,207,138,.32);color:var(--app-emerald)}
+.s4-prog-chip.done .s4-prog-dot{border:none;width:14px;height:14px}
+.s4-prog-sep{flex:1;height:1.5px;background:var(--app-border);max-width:30px;border-radius:2px}
+.csv-materials-card{background:var(--app-card);border:1px solid var(--app-border);border-radius:12px;padding:1.1rem 1.25rem;margin-bottom:.6rem}
+.csv-material-label{font-size:11px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--app-t3);margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem}
+.csv-material-opt{text-transform:none;letter-spacing:0;font-weight:600;font-size:10px;padding:2px 7px;border-radius:999px;background:var(--app-sub);border:1px solid var(--app-border);color:var(--app-t3)}
+.csv-material-carta{display:flex;align-items:center;gap:.55rem;width:100%;padding:.75rem 1rem;border-radius:11px;background:var(--app-sub);border:1.5px solid var(--green-border,rgba(46,207,138,.3));color:var(--app-emerald);font-family:'Manrope',sans-serif;font-size:13.5px;font-weight:700;cursor:pointer;transition:all .18s}
+.csv-material-carta:hover{background:rgba(46,207,138,.1);transform:translateY(-1px)}
 .csv-send-card{background:linear-gradient(135deg,rgba(46,207,138,.09),rgba(15,160,90,.05));border:1px solid rgba(46,207,138,.3);border-radius:12px;padding:1.1rem 1.25rem;margin-top:.6rem}
 .csv-send-step{display:inline-flex;align-items:center;gap:.4rem;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--app-emerald);margin-bottom:.4rem}
 .csv-send-step .csv-send-num{width:16px;height:16px;border-radius:50%;background:var(--app-emerald);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px}
@@ -1291,6 +1302,8 @@ html.no-photo .mod-header{display:block}
     <div class="csv-body">
       <!-- Review banner — shown only when coming from analysis -->
       <div id="s4ReviewBanner" style="display:none"></div>
+      <!-- Progresso da candidatura: CV · Carta · Enviado -->
+      <div class="s4-progress-strip" id="s4ProgressStrip"></div>
       <!-- ATS Score -->
       <div class="csv-ats-section">
         <div class="csv-ats-header">
@@ -1313,15 +1326,26 @@ html.no-photo .mod-header{display:block}
           O score mede se o currículo está completo, legível e alinhado à vaga. Use a prévia antes de baixar para confirmar que o PDF está limpo.
         </div>
       </div>
-      <!-- Download -->
-      <div class="csv-download-row" id="s4DownloadRow">
-        <button class="csv-dl-btn primary" id="s4PdfBtn" onclick="s4StartPdfDownload()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Baixar PDF
-        </button>
-        <button class="csv-dl-btn secondary" id="s4DocBtn" onclick="s4DownloadDoc(this)">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Baixar .doc
+      <!-- Bloco 1: Seus materiais (CV + carta) -->
+      <div class="csv-materials-card">
+        <div class="csv-send-step"><span class="csv-send-num">1</span> Seus materiais</div>
+        <div class="csv-send-sub" style="margin-bottom:.8rem">Baixe seu currículo otimizado e, se a vaga pedir, gere uma carta de apresentação já adaptada à oportunidade.</div>
+        <div class="csv-material-label">Currículo</div>
+        <div class="csv-download-row" id="s4DownloadRow">
+          <button class="csv-dl-btn primary" id="s4PdfBtn" onclick="s4StartPdfDownload()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Baixar PDF
+          </button>
+          <button class="csv-dl-btn secondary" id="s4DocBtn" onclick="s4DownloadDoc(this)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Baixar .doc
+          </button>
+        </div>
+        <div class="csv-material-label" style="margin-top:.9rem">Carta de apresentação <span class="csv-material-opt">opcional</span></div>
+        <button class="csv-material-carta" id="s4CartaBtn" onclick="s4OpenCarta()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
+          Gerar carta de apresentação
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
         </button>
       </div>
       <!-- PDF loading state -->
@@ -1346,7 +1370,7 @@ html.no-photo .mod-header{display:block}
       <div class="csv-send-card" id="s4SendCard" style="display:none"></div>
       <!-- Tracker card — aparece após PDF gerado -->
       <div class="csv-tracker-card" id="s4TrackerCard" style="display:none">
-        <div class="csv-send-step"><span class="csv-send-num">2</span> Acompanhar candidatura</div>
+        <div class="csv-send-step"><span class="csv-send-num">3</span> Acompanhar candidatura</div>
         <div class="csv-tracker-title">Marque como enviada</div>
         <div class="csv-tracker-sub">Depois de aplicar, registre aqui para acompanhar nas Candidaturas e receber lembretes de follow-up.</div>
         <select class="csv-tracker-select" id="csTrackerJobSelect">
@@ -2844,6 +2868,8 @@ async function markCvApplied() {
       showToast('Candidatura atualizada nas Candidaturas.', 'success');
     }
     btn.textContent = '✓ Candidatura marcada!';
+    _s4Progress.enviado = true;
+    s4RenderProgress();
     setTimeout(initTrackerCard, 900);
   } catch(e) {
     console.error('markCvApplied failed', e);
@@ -3199,6 +3225,34 @@ function s4ShowTrackerCard() {
   }
 }
 
+// Progresso da candidatura: CV baixado · Carta gerada · Enviado
+var _s4Progress = { cv: false, carta: false, enviado: false };
+function s4RenderProgress() {
+  var el = document.getElementById('s4ProgressStrip');
+  if (!el) return;
+  var CHK = '<svg class="s4-prog-dot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  function chip(done, label) {
+    return '<span class="s4-prog-chip' + (done ? ' done' : '') + '">' + (done ? CHK : '<span class="s4-prog-dot"></span>') + label + '</span>';
+  }
+  el.innerHTML = chip(_s4Progress.cv, 'CV') + '<span class="s4-prog-sep"></span>'
+    + chip(_s4Progress.carta, 'Carta') + '<span class="s4-prog-sep"></span>'
+    + chip(_s4Progress.enviado, 'Enviado');
+}
+
+function s4OpenCarta() {
+  var id = getCvContextIdentity().analysisId;
+  var href = '/carta' + (id ? '?analysis_id=' + encodeURIComponent(id) : '');
+  _s4Progress.carta = true;
+  s4RenderProgress();
+  if (window.self !== window.top) {
+    window.parent.postMessage({ type: 'vagaai-nav', id: 'carta', href: href, frame: true }, '*');
+  } else if (typeof window.shellNavigate === 'function') {
+    window.shellNavigate({ href: href, frame: true, id: 'carta' });
+  } else {
+    window.location.href = href;
+  }
+}
+
 function s4RenderSendCard() {
   var card = document.getElementById('s4SendCard');
   if (!card) return;
@@ -3210,14 +3264,14 @@ function s4RenderSendCard() {
   var ARROW = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>';
   if (url) {
     card.innerHTML =
-      '<div class="csv-send-step"><span class="csv-send-num">1</span> Enviar para a vaga</div>'
+      '<div class="csv-send-step"><span class="csv-send-num">2</span> Enviar para a vaga</div>'
       + '<div class="csv-send-title">Seu currículo está pronto — agora aplique</div>'
       + '<div class="csv-send-sub">Abrimos a página de ' + alvo + ' em uma nova aba. Anexe o arquivo que você acabou de baixar e finalize a candidatura.</div>'
       + '<a class="csv-send-btn" href="' + _esc(url) + '" target="_blank" rel="noopener noreferrer" onclick="s4ArmReturnPrompt()">Abrir vaga e enviar currículo ' + ARROW + '</a>'
       + '<div class="csv-return-prompt" id="s4ReturnPrompt" style="display:none"></div>';
   } else {
     card.innerHTML =
-      '<div class="csv-send-step"><span class="csv-send-num">1</span> Enviar para a vaga</div>'
+      '<div class="csv-send-step"><span class="csv-send-num">2</span> Enviar para a vaga</div>'
       + '<div class="csv-send-title">Seu currículo está pronto — agora aplique</div>'
       + '<div class="csv-send-manual">Acesse o site onde encontrou a vaga, anexe o arquivo que você acabou de baixar e finalize a candidatura. <strong>Dica:</strong> da próxima vez, cole o link da vaga na análise para abrirmos a página automaticamente aqui.</div>';
   }
@@ -3311,6 +3365,8 @@ async function s4MarkCurrentApplied(btn) {
       if (ins.error) throw ins.error;
     }
     showToast('Candidatura marcada como enviada.', 'success');
+    _s4Progress.enviado = true;
+    s4RenderProgress();
     if (typeof initTrackerCard === 'function') initTrackerCard();
     s4HideReturnPrompt(true);
   } catch(e) {
@@ -3326,6 +3382,8 @@ function s4DownloadDoc(btn) {
   if (btn) btn.innerHTML = btn.innerHTML.replace('Baixar .doc', 'Baixando…');
   try {
     downloadWordDoc();
+    _s4Progress.cv = true;
+    s4RenderProgress();
     setTimeout(function() {
       if (btn) { btn.innerHTML = orig.replace('Baixar .doc', '✓ Baixado!'); }
       setTimeout(function() { if (btn) btn.innerHTML = orig; }, 2000);
@@ -3383,6 +3441,8 @@ function s4StartPdfDownload() {
       if (spinTimer) clearInterval(spinTimer);
       if (loading) loading.style.display = 'none';
       if (success) success.style.display = 'flex';
+      _s4Progress.cv = true;
+      s4RenderProgress();
       s4RenderSendCard();
       s4ShowTrackerCard();
       initTrackerCard();
@@ -3593,6 +3653,7 @@ function renderStep4() {
         '<span class="s4-score-tag">' + (missing.length ? 'Ajustar: ' + _esc(missing.join(', ')) : 'Keywords alinhadas') + '</span>' +
       '</div>';
   }
+  s4RenderProgress();
 }
 
 /* ── Re-render helpers ──────────────────────────────────── */
