@@ -2080,8 +2080,8 @@ function getPreflightRows() {
   var diag = getPrintDiagnostics();
   var pages = diag.pages;
   var kws = getContextKeywords();
-  var score = Number(_cvContext && _cvContext.score);
-  var safeScore = Number.isFinite(score) ? Math.round(score) + '%' : '—';
+  // Score do currículo OTIMIZADO atual (não o score original da vaga)
+  var safeScore = (typeof computeAtsScore === 'function') ? computeAtsScore().overall + '%' : '—';
   return {
     pages: pages,
     format: 'A4',
@@ -2102,17 +2102,12 @@ function getPreflightRows() {
 function renderAtsBreakdown() {
   var el = document.getElementById('pfAtsBreakdown');
   if (!el || !_cvData) return;
-  var kws = getContextKeywords();
-  var c = _cvData.contato || {};
-  var hasContact = Boolean(c.email || c.telefone);
-  var hasSummary = String(_cvData.resumo_profissional || '').trim().length > 80;
-  var hasMetrics = hasMetricText();
-  var kwScore = Math.min(100, Math.round(kws.total / Math.max(kws.total + kws.missing.length, 5) * 100));
+  var ats = computeAtsScore();
   var pillars = [
-    { label: 'Contato',    score: hasContact ? 100 : 0 },
-    { label: 'Resumo',     score: hasSummary ? 90 : (String(_cvData.resumo_profissional || '').trim().length > 30 ? 40 : 0) },
-    { label: 'Métricas',   score: hasMetrics ? 95 : 0 },
-    { label: 'Keywords',   score: kwScore }
+    { label: 'Contato',    score: ats.pillars.contato },
+    { label: 'Resumo',     score: ats.pillars.resumo },
+    { label: 'Métricas',   score: ats.pillars.metricas },
+    { label: 'Keywords',   score: ats.pillars.keywords }
   ];
   el.innerHTML = '<div class="pf-ats-title">Análise ATS por categoria</div>' + pillars.map(function(p) {
     return '<div class="pf-ats-row">' +
@@ -3411,6 +3406,29 @@ function renderStep3() {
   }
 }
 
+// Score ATS canônico do currículo OTIMIZADO (atual) — fonte única para
+// passo 4, modal de exportação e banner de revisão. Não confundir com
+// _cvContext.score, que é o score ORIGINAL da vaga antes da otimização.
+function computeAtsScore() {
+  var kws = (typeof getContextKeywords === 'function') ? getContextKeywords() : { total: 0, missing: [] };
+  var c = (_cvData && _cvData.contato) || {};
+  var hasContact = Boolean((c.email || '').trim() || (c.telefone || '').trim());
+  var summaryLen = String((_cvData && _cvData.resumo_profissional) || '').trim().length;
+  var hasSummary = summaryLen > 80;
+  var hasMetrics = typeof hasMetricText === 'function' ? hasMetricText() : false;
+  var kwScore = (kws.total + kws.missing.length > 0)
+    ? Math.min(100, Math.round(kws.total / (kws.total + kws.missing.length) * 100))
+    : 50;
+  var pillars = {
+    contato:  hasContact ? 100 : 20,
+    resumo:   hasSummary ? 90  : (summaryLen > 30 ? 40 : 10),
+    metricas: hasMetrics ? 95  : 0,
+    keywords: kwScore
+  };
+  var overall = Math.round((pillars.contato + pillars.resumo + pillars.metricas + pillars.keywords) / 4);
+  return { overall: overall, pillars: pillars };
+}
+
 function renderStep4() {
   if (!_cvData) return;
   var kws      = getContextKeywords ? getContextKeywords() : { total: 0, missing: [] };
@@ -3419,15 +3437,13 @@ function renderStep4() {
   var summaryLen  = String(_cvData.resumo_profissional || '').trim().length;
   var hasSummary  = summaryLen > 80;
   var hasMetrics  = typeof hasMetricText === 'function' ? hasMetricText() : false;
-  var kwScore     = kws.total + kws.missing.length > 0
-    ? Math.min(100, Math.round(kws.total / (kws.total + kws.missing.length) * 100))
-    : 50;
 
+  var ats = computeAtsScore();
   var pillars = [
-    { id: 's4p1', pct: hasContact  ? 100 : 20 },
-    { id: 's4p2', pct: hasSummary  ? 90  : (summaryLen > 30 ? 40 : 10) },
-    { id: 's4p3', pct: hasMetrics  ? 95  : 0 },
-    { id: 's4p4', pct: kwScore }
+    { id: 's4p1', pct: ats.pillars.contato },
+    { id: 's4p2', pct: ats.pillars.resumo },
+    { id: 's4p3', pct: ats.pillars.metricas },
+    { id: 's4p4', pct: ats.pillars.keywords }
   ];
 
   pillars.forEach(function(p, i) {
@@ -3437,7 +3453,7 @@ function renderStep4() {
     if (pct)  pct.textContent  = p.pct + '%';
   });
 
-  var overall = Math.round(pillars.reduce(function(s, p){ return s + p.pct; }, 0) / pillars.length);
+  var overall = ats.overall;
   var scoreVal  = document.getElementById('s4ScoreVal');
   var scoreFill = document.getElementById('s4ScoreFill');
   if (scoreVal)  scoreVal.textContent = overall + '%';
@@ -3910,24 +3926,9 @@ function _enterReviewMode(ctx) {
   var jobTitle = ctx && ctx.job_info && ctx.job_info.titulo ? ctx.job_info.titulo : null;
   var kwMissing = (ctx && ctx.keywords_faltando) ? ctx.keywords_faltando.slice(0, 4) : [];
 
-  // Compute projected score from current CV data
-  var projScore = null;
-  if (typeof updateNavAtsScore === 'function' && _cvData) {
-    var d = _cvData;
-    var hasEmail = !!(d.email || (d.contato && d.contato.email) || '').trim ? ((d.contato&&d.contato.email)||d.email||'').trim().length > 0 : false;
-    var hasTel = !!((d.contato&&d.contato.telefone)||d.telefone||'').trim ? ((d.contato&&d.contato.telefone)||d.telefone||'').trim().length > 0 : false;
-    var hasCidade = !!((d.contato&&d.contato.cidade)||d.cidade||'').trim ? ((d.contato&&d.contato.cidade)||d.cidade||'').trim().length > 0 : false;
-    var hasLi = !!((d.contato&&d.contato.linkedin)||d.linkedin||'').trim ? ((d.contato&&d.contato.linkedin)||d.linkedin||'').trim().length > 0 : false;
-    var contactScore = Math.round(((hasEmail?1:0)+(hasTel?1:0)+(hasCidade?1:0)+(hasLi?1:0))/4*100);
-    var resumo = (d.resumo_profissional || d.resumo || '').trim();
-    var resumoScore = resumo.length >= 80 ? 100 : resumo.length > 0 ? Math.round(resumo.length/80*100) : 0;
-    var exps = d.experiencias || [];
-    var withMetrics = exps.filter(function(e){ return /\d/.test((e.bullets || []).join(' ')); });
-    var metricsScore = exps.length > 0 ? Math.round(withMetrics.length/exps.length*100) : 0;
-    var skills = d.habilidades || [];
-    var kwScore = Math.min(100, skills.length * 10);
-    projScore = Math.round((contactScore + resumoScore + metricsScore + kwScore) / 4);
-  }
+  // Score projetado = score do currículo OTIMIZADO (mesma fonte do passo 4 e do modal)
+  var resumo = (_cvData ? (_cvData.resumo_profissional || _cvData.resumo || '') : '').trim();
+  var projScore = (_cvData && typeof computeAtsScore === 'function') ? computeAtsScore().overall : null;
 
   var changes = [];
   if (resumo && resumo.length > 40) changes.push('Resumo profissional reescrito para a vaga');
