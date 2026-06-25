@@ -1969,7 +1969,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         <p class="pba-desc" id="pbaDesc"> </p>
         <div class="pba-btns">
           <button class="pba-btn-primary" id="pbaBtnPrimary" onclick="switchDashTab('app')">Otimizar CV agora →</button>
-          <button class="pba-btn-ghost" id="pbaBtnSecondary" onclick="switchDashTab('vagas')">Ver candidaturas</button>
+          <button class="pba-btn-ghost" id="pbaBtnSecondary" onclick="openCandidaturasFiltered('todas')">Ver candidaturas</button>
         </div>
       </div>
       <div class="pba-right">
@@ -2003,7 +2003,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           <div class="psa-title">Precisa da sua atenção</div>
           <div class="psa-sub-txt">Ações organizadas por urgência e impacto.</div>
         </div>
-        <a href="#" class="psa-link" onclick="switchDashTab('vagas');return false;">Gerenciar próximas ações →</a>
+        <a href="#" class="psa-link" onclick="openCandidaturasFiltered('todas');return false;">Gerenciar próximas ações →</a>
       </div>
       <div class="psa-grid" id="psaGrid">
         <div class="psa-card"><div class="psa-card-desc" style="color:var(--t3)">Carregando...</div></div>
@@ -2019,7 +2019,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           <div class="opp-title">Suas oportunidades</div>
           <div class="opp-sub-txt">Vagas analisadas, candidaturas enviadas e próximas ações em uma única visão.</div>
         </div>
-        <a href="#" class="psa-link" onclick="switchDashTab('vagas');return false;">Abrir rastreador completo →</a>
+        <a href="#" class="psa-link" onclick="openCandidaturasFiltered('todas');return false;">Abrir rastreador completo →</a>
       </div>
       <div class="opp-cols">
         <div class="opp-list-card">
@@ -2038,7 +2038,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           </div>
           <div id="oppList"><div style="padding:28px;text-align:center;color:var(--t3);font-size:12px">Carregando...</div></div>
           <div class="opp-footer">
-            <button class="opp-footer-btn" onclick="switchDashTab('vagas')">Ver todas as oportunidades →</button>
+            <button class="opp-footer-btn" onclick="openCandidaturasFiltered('todas')">Ver todas as oportunidades →</button>
           </div>
         </div>
         <div class="funil-card">
@@ -2891,7 +2891,7 @@ function buildPBACard(analyses, tracked) {
     if (titleEl) titleEl.textContent = 'Prepare-se para a entrevista de ' + cargo;
     if (descEl) descEl.textContent = (hasDate ? 'Entrevista em ' + iDateFmt + ' — ' + cargo + (emp ? ' na ' + emp : '') : 'Em processo de entrevista para ' + cargo + (emp ? ' na ' + emp : '')) + '. Use o simulador para chegar mais preparado e aumentar suas chances.';
     if (btnPri) { btnPri.textContent = 'Treinar entrevista →'; (function(aid){ btnPri.onclick = function(){ switchDashTab('entrevista', '/entrevista' + (aid ? '?analysis_id=' + encodeURIComponent(aid) : '')); }; })(interviewJob.analysis_id); }
-    if (btnSec) { btnSec.textContent = 'Ver candidaturas'; btnSec.onclick = function(){ switchDashTab('vagas'); }; }
+    if (btnSec) { btnSec.textContent = 'Ver candidatura'; (function(tid, aid){ btnSec.onclick = function(){ openCandidaturasSmart({ trackerId: tid, analysisId: aid, openDetail: true, view: 'lista' }); }; })(interviewJob.id, interviewJob.analysis_id); }
     updatePBAPriority(interviewJob.score || (a ? a.score : 0), cargo, emp || '', hasDate ? 'Entrevista marcada' : 'Em entrevista');
   } else if (followUpJob) {
     var a = analyses.find(function(x){ return x.id === followUpJob.analysis_id; });
@@ -2899,8 +2899,8 @@ function buildPBACard(analyses, tracked) {
     var emp = followUpJob.empresa || '';
     if (titleEl) titleEl.textContent = 'Faça follow-up com ' + (emp || cargo);
     if (descEl) descEl.textContent = 'Você se candidatou há ' + followUpJob._days + ' dias e ainda não registrou um retorno. Um follow-up aumenta muito suas chances de resposta.';
-    if (btnPri) { btnPri.textContent = 'Registrar follow-up →'; btnPri.onclick = function(){ switchDashTab('vagas'); }; }
-    if (btnSec) { btnSec.textContent = 'Ver candidaturas'; btnSec.onclick = function(){ switchDashTab('vagas'); }; }
+    if (btnPri) { btnPri.textContent = 'Registrar follow-up →'; (function(tid){ btnPri.onclick = function(){ openCandidaturaByTracker(tid, 'aplicada'); }; })(followUpJob.id); }
+    if (btnSec) { btnSec.textContent = 'Ver candidaturas'; btnSec.onclick = function(){ openCandidaturasFiltered('aplicada'); }; }
     updatePBAPriority(followUpJob.score || (a ? a.score : 0), cargo, emp || '', followUpJob._days + ' dias sem retorno');
   } else if (untrackedBest) {
     var r = untrackedBest.result || {};
@@ -2911,7 +2911,7 @@ function buildPBACard(analyses, tracked) {
     if (titleEl) titleEl.textContent = 'Aumente seu score na vaga de ' + cargo;
     if (descEl) descEl.textContent = 'Seu currículo ainda não menciona ' + (missing > 0 ? missing + ' requisito' + (missing > 1 ? 's importantes' : ' importante') : 'alguns requisitos') + ' da vaga. Com esses ajustes, sua aderência pode subir significativamente.';
     if (btnPri) { btnPri.textContent = 'Otimizar CV agora →'; btnPri.onclick = function(){ switchDashTab('app'); }; }
-    if (btnSec) { btnSec.textContent = 'Ver análise completa'; btnSec.onclick = function(){ switchDashTab('vagas'); }; }
+    if (btnSec) { btnSec.textContent = 'Ver análise completa'; (function(aid){ btnSec.onclick = function(){ openCandidaturaByAnalysis(aid, 'so_analise'); }; })(untrackedBest.id); }
     updatePBAPriority(untrackedBest.score, cargo, emp, missing + ' requisito' + (missing !== 1 ? 's' : '') + ' ausente' + (missing !== 1 ? 's' : ''));
   } else if (anyBest) {
     var r = anyBest.result || {};
@@ -2922,7 +2922,7 @@ function buildPBACard(analyses, tracked) {
     if (titleEl) titleEl.textContent = 'Aumente seu score na vaga de ' + cargo;
     if (descEl) descEl.textContent = 'Revise sua melhor análise e otimize o currículo para aumentar sua compatibilidade com essa vaga.';
     if (btnPri) { btnPri.textContent = 'Otimizar CV agora →'; btnPri.onclick = function(){ switchDashTab('app'); }; }
-    if (btnSec) { btnSec.textContent = 'Ver candidaturas'; btnSec.onclick = function(){ switchDashTab('vagas'); }; }
+    if (btnSec) { btnSec.textContent = 'Ver candidatura'; (function(aid){ btnSec.onclick = function(){ openCandidaturaByAnalysis(aid, 'todas'); }; })(anyBest.id); }
     updatePBAPriority(anyBest.score, cargo, emp, missing > 0 ? missing + ' requisito' + (missing > 1 ? 's' : '') + ' ausente' + (missing > 1 ? 's' : '') : 'Boa compatibilidade');
   } else {
     if (titleEl) titleEl.textContent = 'Analise sua primeira vaga';
@@ -2962,7 +2962,7 @@ function buildAttentionCards(analyses, tracked) {
     cards.push('<div class="psa-card"><div class="psa-badge psa-badge-hoje">Hoje</div><div class="psa-ico">✉️</div>' +
       '<div class="psa-card-title">Faça follow-up com ' + escHtml(emp) + '</div>' +
       '<div class="psa-card-desc">Você se candidatou há ' + followUp._days + ' dias e ainda não registrou um retorno.</div>' +
-      '<button class="psa-cta" onclick="switchDashTab(\'vagas\')">Registrar follow-up →</button></div>');
+      '<button class="psa-cta" onclick="openCandidaturaByTracker(\'' + escAttr(followUp.id) + '\',\'aplicada\')">Registrar follow-up →</button></div>');
   }
 
   if (interviewJob) {
@@ -2984,12 +2984,12 @@ function buildAttentionCards(analyses, tracked) {
     cards.push('<div class="psa-card"><div class="psa-badge psa-badge-impacto">Alto impacto</div><div class="psa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>' +
       '<div class="psa-card-title">Complete a candidatura</div>' +
       '<div class="psa-card-desc">Seu CV foi analisado para ' + escHtml(cargo) + escHtml(emp) + ', mas a candidatura ainda não foi enviada.</div>' +
-      '<button class="psa-cta" onclick="switchDashTab(\'vagas\')">Continuar candidatura →</button></div>');
+      '<button class="psa-cta" onclick="openCandidaturaByAnalysis(\'' + escAttr(untrackedAnalysis.id) + '\',\'so_analise\')">Continuar candidatura →</button></div>');
   }
 
   // Fill remaining slots with tips
   var tips = [
-    '<div class="psa-card"><div class="psa-badge psa-badge-ok">✓ Dica</div><div class="psa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg></div><div class="psa-card-title">Rastreie suas candidaturas</div><div class="psa-card-desc">Mantenha as candidaturas atualizadas para receber lembretes de follow-up automáticos.</div><button class="psa-cta" onclick="switchDashTab(\'vagas\')">Ver candidaturas →</button></div>',
+    '<div class="psa-card"><div class="psa-badge psa-badge-ok">✓ Dica</div><div class="psa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg></div><div class="psa-card-title">Rastreie suas candidaturas</div><div class="psa-card-desc">Mantenha as candidaturas atualizadas para receber lembretes de follow-up automáticos.</div><button class="psa-cta" onclick="openCandidaturasFiltered(\'todas\')">Ver candidaturas →</button></div>',
     '<div class="psa-card"><div class="psa-badge psa-badge-ok">✓ Dica</div><div class="psa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div><div class="psa-card-title">Configure alertas de vagas</div><div class="psa-card-desc">Receba vagas compatíveis com seu perfil toda semana diretamente no e-mail.</div><button class="psa-cta" onclick="switchDashTab(\'alertas\')">Configurar alertas →</button></div>',
     '<div class="psa-card"><div class="psa-badge psa-badge-ok">✓ Dica</div><div class="psa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></div><div class="psa-card-title">Analise mais vagas</div><div class="psa-card-desc">Quanto mais vagas você analisar, mais preciso fica o Insight da VagaAI sobre seu perfil.</div><button class="psa-cta" onclick="switchDashTab(\'app\')">Nova análise →</button></div>'
   ];
@@ -3061,7 +3061,7 @@ function renderOppList() {
     var na = nextAction(status, tj ? (tj.updated_at || tj.created_at) : null);
     var daysAgo = Math.floor((now - new Date(a.created_at).getTime()) / 86400000);
     var dStr = daysAgo === 0 ? 'hoje' : daysAgo === 1 ? 'ontem' : 'há ' + daysAgo + ' dias';
-    return '<div class="opp-item" onclick="switchDashTab(\'vagas\')">' +
+    return '<div class="opp-item" onclick="openCandidaturaByAnalysis(\'' + escAttr(a.id) + '\',\'todas\')">' +
       '<div class="opp-item-score" style="background:' + sbg + ';color:' + sclr + '">' + s + '%</div>' +
       '<div class="opp-item-body"><div class="opp-item-cargo">' + escHtml(cargo) + '</div>' +
       '<div class="opp-item-sub">' + escHtml(empresa) + ' · ' + dStr + '</div></div>' +
@@ -3398,6 +3398,89 @@ function runPriorityAction(pa) {
   if (pa.action === 'track')   { if (pa.id) trackAnalysis(pa.id); else setCandFilter('so_analise'); return; }
   if (pa.action === 'filter')  { setCandFilter(pa.chip || 'todas'); return; }
   if (pa.action === 'analyze') { switchDashTab('app'); return; }
+}
+
+function findCandidaturaItem(opts) {
+  opts = opts || {};
+  var items = mergeApplications();
+  if (opts.trackerId) {
+    var byTracker = items.find(function(i) { return String(i.trackerId || '') === String(opts.trackerId); });
+    if (byTracker) return byTracker;
+  }
+  if (opts.analysisId) {
+    var byAnalysis = items.find(function(i) {
+      return String(i.id || '') === String(opts.analysisId) ||
+        (i.analysisData && String(i.analysisData.id || '') === String(opts.analysisId)) ||
+        (i.trackerData && String(i.trackerData.analysis_id || '') === String(opts.analysisId));
+    });
+    if (byAnalysis) return byAnalysis;
+  }
+  if (opts.id) {
+    return items.find(function(i) { return String(i.id || '') === String(opts.id); }) || null;
+  }
+  return null;
+}
+
+function candItemMatchesFilter(item, filter) {
+  if (!filter || filter === 'todas') return true;
+  if (filter === 'rastreadas') return !!item.hasTracker;
+  if (filter === 'so_analise') return !item.hasTracker;
+  return item.status === filter;
+}
+
+function openCandidaturasSmart(opts) {
+  opts = opts || {};
+  switchDashTab('vagas');
+
+  if (opts.filter) {
+    _candChip = opts.filter;
+    _vagasFilter = opts.filter;
+  }
+  if (opts.view) _candView = opts.view;
+
+  if (opts.openDetail || opts.analysisId || opts.trackerId || opts.id) {
+    _candAdvFilters = {};
+    var search = document.getElementById('candSearch');
+    if (search) search.value = '';
+  }
+
+  setCandView(_candView || 'lista');
+
+  if (opts.openDetail || opts.analysisId || opts.trackerId || opts.id) {
+    setTimeout(function() {
+      var item = findCandidaturaItem(opts);
+      if (!item) {
+        if (opts.filter) setCandFilter(opts.filter);
+        showToast('Não encontrei essa candidatura. Abrindo o rastreador completo.', 'error');
+        return;
+      }
+      var finalFilter = opts.filter || 'todas';
+      if (!candItemMatchesFilter(item, finalFilter)) finalFilter = 'todas';
+      if (finalFilter) {
+        _candChip = finalFilter;
+        _vagasFilter = finalFilter;
+      } else {
+        _candChip = 'todas';
+        _vagasFilter = 'todas';
+      }
+      candRender();
+      openCandDetail(item.id);
+      var selected = document.querySelector('.cand-row.cr-selected');
+      if (selected) selected.scrollIntoView({ behavior:'smooth', block:'center' });
+    }, 40);
+  }
+}
+
+function openCandidaturasFiltered(filter) {
+  openCandidaturasSmart({ filter: filter || 'todas', view: 'lista' });
+}
+
+function openCandidaturaByAnalysis(analysisId, filter) {
+  openCandidaturasSmart({ analysisId: analysisId, filter: filter || 'todas', view: 'lista', openDetail: true });
+}
+
+function openCandidaturaByTracker(trackerId, filter) {
+  openCandidaturasSmart({ trackerId: trackerId, filter: filter || 'todas', view: 'lista', openDetail: true });
 }
 
 function calcCandMetrics(items) {
