@@ -1606,14 +1606,33 @@ function extractJobPreview(text, jobUrlStr) {
   else if (/\btrainee\b/i.test(allText)) nivel = 'Trainee';
   else if (estM) nivel = '';
 
-  // ── 9. Trecho descritivo ──────────────────────────────────────────────────
-  var descRE = /atua[rá]|responsab|requisito|buscamos|procuramos|desafio|atividade|fun[çc][aã]o|perfil|experi[eê]ncia|habilidade|conhecimento|forma[çc][aã]o|objetivo|missão|voc[eê] vai|você será|o que esperamos/i;
-  var excerptLines = [];
-  for (var p = 0; p < lines.length && excerptLines.length < 3; p++) {
-    if (lines[p].length > 50 && descRE.test(lines[p])) excerptLines.push(lines[p]);
+  // ── 9. Trecho descritivo — limpo e orientado ao candidato ────────────────
+  // Cabeçalhos de seção que não devem aparecer no resumo
+  var sectionHeaderRE = /^(como ser[aá] o dia|o dia a dia|responsabilidades|o que voc[eê] far[aá]|principais atividades|atribui[çc][oõ]e?s|o que esperamos|requisitos|qualifica[çc][oõ]e?s|pr[eé]-requisitos|o que buscamos|sobre a vaga|sobre a empresa|quem somos|benef[ií]cios|o que oferecemos|atividades|fun[çc][oõ]e?s|perfil desejado|descri[çc][aã]o da vaga)[:\s]*$/i;
+  // Remove bullets, hífens de lista, marcadores
+  function cleanBullet(l) {
+    return l.replace(/^[\-–•·▸▪◦\*]\s*/, '').replace(/^\d+[\.\)]\s*/, '').trim();
   }
-  if (!excerptLines.length) excerptLines = lines.filter(function(l){ return l.length > 70; }).slice(0, 3);
-  var excerpt = excerptLines.join(' ').substring(0, 320);
+  // Pega linhas de tarefas/atividades — substância, sem cabeçalhos
+  var taskLines = [];
+  var collecting = false;
+  for (var p = 0; p < lines.length; p++) {
+    var l = lines[p];
+    if (sectionHeaderRE.test(l)) { collecting = true; continue; }
+    if (collecting && l.length > 20 && l.length < 160) {
+      var clean = cleanBullet(l);
+      if (clean.length > 20) taskLines.push(clean);
+    }
+    if (taskLines.length >= 3) break;
+  }
+  // Fallback: pega primeiras linhas substanciais
+  if (!taskLines.length) {
+    taskLines = lines
+      .filter(function(l){ return l.length > 40 && !sectionHeaderRE.test(l); })
+      .slice(0, 3)
+      .map(cleanBullet);
+  }
+  var excerpt = taskLines.join(' · ').substring(0, 320);
 
   return { cargo: cargo, empresa: empresa, modalidade: modalidade, cidade: cidade, salario: salario, contrato: contrato, nivel: nivel, excerpt: excerpt, platform: platform };
 }
