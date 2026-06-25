@@ -5639,6 +5639,8 @@ async function _showShellFrame(href, activeId) {
   var sbEl = document.querySelector('aside.sidebar');
   var sbWidth = (!hasOwnNav && sbEl) ? Math.round(sbEl.getBoundingClientRect().width) : 0;
   wrap.style.left = sbWidth + 'px';
+  // Páginas com nav própria precisam cobrir a sidebar (z-index maior)
+  wrap.style.zIndex = hasOwnNav ? '201' : '100';
   wrap.style.display = 'block';
   // Highlight active sidebar button
   document.querySelectorAll('.sb-btn[data-tab]').forEach(function(el) {
