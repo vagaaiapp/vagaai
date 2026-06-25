@@ -1,4 +1,5 @@
 import { createHash } from 'crypto';
+import { resolvePlan } from '../lib/entitlements.js';
 
 // ─── Score breakdown determinístico ──────────────────────────────────────────
 
@@ -50,6 +51,7 @@ function normalizeKeywords(result) {
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const STARTER_ANALYSES_CAP = 10;
 
 // ─── Hash de conteúdo (cv + job) ─────────────────────────────────────────────
 
@@ -271,20 +273,32 @@ async function checkAndDeductCredit(userId) {
     if (!rpcRes.ok) {
       // Infra falhou — FAIL-CLOSED: não autoriza
       console.error('check_and_increment_analyses RPC HTTP error:', rpcRes.status);
+      const directOnRpcError = await checkSubscriptionDirect(userId, 'analysis');
+      if (directOnRpcError.ok) return directOnRpcError;
+      if (directOnRpcError.reason && directOnRpcError.via !== 'no_subscription') return directOnRpcError;
       return { ok: false, reason: 'infrastructure_error', detail: 'rpc_http_' + rpcRes.status };
     }
 
     rpcResult = await rpcRes.json();
   } catch (err) {
     console.error('checkAndDeductCredit RPC exception:', err.message);
+    const directOnRpcError = await checkSubscriptionDirect(userId, 'analysis').catch(() => null);
+    if (directOnRpcError && directOnRpcError.ok) return directOnRpcError;
+    if (directOnRpcError && directOnRpcError.reason && directOnRpcError.via !== 'no_subscription') return directOnRpcError;
     return { ok: false, reason: 'infrastructure_error', detail: 'rpc_exception' };
   }
 
   // 'no_subscription' → cai no sistema de créditos avulsos / free monthly
   if (rpcResult && rpcResult.via !== 'no_subscription') {
-    // Tem assinatura — retorna diretamente (ok:true = pro/starter, ok:false = plan_limit/invalid_plan)
+    if (rpcResult.ok) return rpcResult;
+    const direct = await checkSubscriptionDirect(userId, 'analysis');
+    if (direct.ok && direct.plan === 'pro') return direct;
     return rpcResult;
   }
+
+  const direct = await checkSubscriptionDirect(userId, 'analysis');
+  if (direct.ok) return direct;
+  if (direct.reason && direct.via !== 'no_subscription') return direct;
 
   // 2. Fallback: créditos avulsos (usuários sem assinatura ativa)
   let credRows;
@@ -513,6 +527,98 @@ function checkCvRateLimit(userId) {
 // Diferença em relação a checkAndDeductCredit: BLOQUEIA usuários Free.
 // Não usa a gratuidade mensal de análise (free_monthly) para liberar CV.
 
+async function getLatestSubscription(userId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${encodeURIComponent(userId)}&order=created_at.desc&limit=1&select=id,plan,status,analyses_used_this_month,analyses_reset_at,current_period_start`,
+    { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+  );
+  if (!res.ok) {
+    console.error('getLatestSubscription failed:', res.status);
+    return { error: 'subscription_get_' + res.status };
+  }
+  const rows = await res.json().catch(() => []);
+  return { sub: Array.isArray(rows) ? rows[0] : null };
+}
+
+async function resetStarterCounterIfNeeded(sub) {
+  if (!sub || sub.plan !== 'starter') return sub;
+  const shouldReset = !sub.analyses_reset_at ||
+    (sub.current_period_start && new Date(sub.analyses_reset_at).getTime() < new Date(sub.current_period_start).getTime());
+  if (!shouldReset) return sub;
+
+  const patch = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?id=eq.${encodeURIComponent(sub.id)}`, {
+    method: 'PATCH',
+    headers: {
+      apikey: SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation',
+    },
+    body: JSON.stringify({ analyses_used_this_month: 0, analyses_reset_at: new Date().toISOString() }),
+  });
+  if (!patch.ok) {
+    console.error('resetStarterCounterIfNeeded failed:', patch.status);
+    return { ...sub, _reset_error: 'subscription_reset_' + patch.status };
+  }
+  const rows = await patch.json().catch(() => []);
+  return Array.isArray(rows) && rows[0] ? rows[0] : { ...sub, analyses_used_this_month: 0 };
+}
+
+async function checkSubscriptionDirect(userId, context = 'analysis') {
+  try {
+    const latest = await getLatestSubscription(userId);
+    if (latest.error) return { ok: false, reason: 'infrastructure_error', detail: latest.error };
+
+    let sub = latest.sub;
+    const plan = resolvePlan(sub);
+    if (plan === 'free') return { ok: false, via: 'no_subscription' };
+
+    if (plan === 'pro') {
+      return { ok: true, via: 'pro_direct', plan: 'pro' };
+    }
+
+    if (plan !== 'starter') {
+      return { ok: false, reason: 'invalid_plan', plan };
+    }
+
+    sub = await resetStarterCounterIfNeeded(sub);
+    if (sub && sub._reset_error) {
+      return { ok: false, reason: 'infrastructure_error', detail: sub._reset_error };
+    }
+
+    const used = Number(sub?.analyses_used_this_month || 0);
+    if (used >= STARTER_ANALYSES_CAP) {
+      return { ok: false, reason: 'plan_limit', plan: 'starter', used, limit: STARTER_ANALYSES_CAP };
+    }
+
+    const patch = await fetch(
+      `${SUPABASE_URL}/rest/v1/subscriptions?id=eq.${encodeURIComponent(sub.id)}&analyses_used_this_month=eq.${used}`,
+      {
+        method: 'PATCH',
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
+        body: JSON.stringify({ analyses_used_this_month: used + 1 }),
+      }
+    );
+    if (!patch.ok) {
+      console.error('checkSubscriptionDirect starter PATCH failed:', patch.status);
+      return { ok: false, reason: 'infrastructure_error', detail: 'subscription_patch_' + patch.status };
+    }
+    const rows = await patch.json().catch(() => []);
+    if (!Array.isArray(rows) || !rows.length) {
+      return { ok: false, reason: 'infrastructure_error', detail: 'subscription_patch_race' };
+    }
+    return { ok: true, via: context === 'create_cv' ? 'starter_direct_cv' : 'starter_direct', plan: 'starter', used: used + 1, limit: STARTER_ANALYSES_CAP };
+  } catch (err) {
+    console.error('checkSubscriptionDirect exception:', err.message);
+    return { ok: false, reason: 'infrastructure_error', detail: 'subscription_direct_exception' };
+  }
+}
+
 async function checkAndDeductCreditForCV(userId) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
     return { ok: false, reason: 'infrastructure_error', detail: 'missing_config' };
@@ -532,19 +638,31 @@ async function checkAndDeductCreditForCV(userId) {
     });
     if (!rpcRes.ok) {
       console.error('create_cv: check_and_increment_analyses HTTP error:', rpcRes.status);
+      const directOnRpcError = await checkSubscriptionDirect(userId, 'create_cv');
+      if (directOnRpcError.ok) return directOnRpcError;
+      if (directOnRpcError.reason && directOnRpcError.via !== 'no_subscription') return directOnRpcError;
       return { ok: false, reason: 'infrastructure_error', detail: 'rpc_http_' + rpcRes.status };
     }
     rpcResult = await rpcRes.json();
   } catch (err) {
     console.error('create_cv: RPC exception:', err.message);
+    const directOnRpcError = await checkSubscriptionDirect(userId, 'create_cv').catch(() => null);
+    if (directOnRpcError && directOnRpcError.ok) return directOnRpcError;
+    if (directOnRpcError && directOnRpcError.reason && directOnRpcError.via !== 'no_subscription') return directOnRpcError;
     return { ok: false, reason: 'infrastructure_error', detail: 'rpc_exception' };
   }
 
   // 'no_subscription' → cai nos créditos avulsos, mas NUNCA em free_monthly
   if (rpcResult && rpcResult.via !== 'no_subscription') {
-    // Pro ou Starter → resultado da RPC é definitivo
+    if (rpcResult.ok) return rpcResult;
+    const direct = await checkSubscriptionDirect(userId, 'create_cv');
+    if (direct.ok && direct.plan === 'pro') return direct;
     return rpcResult;
   }
+
+  const direct = await checkSubscriptionDirect(userId, 'create_cv');
+  if (direct.ok) return direct;
+  if (direct.reason && direct.via !== 'no_subscription') return direct;
 
   // 2. Sem assinatura: verifica créditos avulsos
   let credRows;
