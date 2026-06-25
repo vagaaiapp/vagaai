@@ -1703,7 +1703,7 @@ async function cvSaveToCloud() {
   if (!_cvData) return;
   if (btn) btn.classList.add('saving');
   if (lbl) lbl.textContent = 'Salvando…';
-  var tpl = (function(){ try { return localStorage.getItem('vagaai_cv_tpl') || 'classic'; } catch(e){ return 'classic'; } })();
+  var tpl = (function(){ try { return localStorage.getItem('vagaai_cv_tpl') || 'modern'; } catch(e){ return 'classic'; } })();
   var photo = (function(){ try { var p = localStorage.getItem('vagaai_cv_photo'); return (p && p !== 'none') ? p : null; } catch(e){ return null; } })();
   var nome = (_cvData.nome || 'Currículo').trim();
   try {
@@ -2619,7 +2619,7 @@ function applySmartFix(type) {
   try {
     // Primary: embedded in CV JSON (most reliable on mobile)
     // Fallback: separate localStorage key
-    savedTpl = cv.template || localStorage.getItem('vagaai_cv_tpl') || 'classic';
+    savedTpl = cv.template || localStorage.getItem('vagaai_cv_tpl') || 'modern';
   } catch(e) {}
   applyTemplate(savedTpl, false);
   // Scale after fonts & layout settle (multiple calls for reliability)
@@ -3330,7 +3330,7 @@ async function s4SaveCloud(btn) {
   try {
     if (!_sbSession) await _initSbSession();
     if (!_sbSession) { showToast('Faça login para salvar na nuvem', 'warn'); if (btn) { btn.disabled = false; btn.innerHTML = orig; } return; }
-    var tpl = (function(){ try { return localStorage.getItem('vagaai_cv_tpl') || 'classic'; } catch(e){ return 'classic'; } })();
+    var tpl = (function(){ try { return localStorage.getItem('vagaai_cv_tpl') || 'modern'; } catch(e){ return 'classic'; } })();
     var photo = (function(){ try { var p = localStorage.getItem('vagaai_cv_photo'); return (p && p !== 'none') ? p : null; } catch(e){ return null; } })();
     var nome = (_cvData.nome || 'Currículo').trim();
     var payload = { user_id: _sbSession.user.id, name: nome, cv_data: _cvData, template: tpl, photo: photo, updated_at: new Date().toISOString() };
