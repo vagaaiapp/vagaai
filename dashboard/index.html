@@ -5633,8 +5633,11 @@ async function _showShellFrame(href, activeId) {
     if (el) el.style.display = 'none';
   });
   if (hdr) hdr.style.display = 'none';
+  // Páginas com nav própria (cv, carta) cobrem tudo; demais ficam após a sidebar
+  var pagesWithOwnNav = ['/cv', '/carta', '/entrevista'];
+  var hasOwnNav = pagesWithOwnNav.some(function(p){ return href && href.startsWith(p); });
   var sbEl = document.querySelector('aside.sidebar');
-  var sbWidth = sbEl ? Math.round(sbEl.getBoundingClientRect().width) : 0;
+  var sbWidth = (!hasOwnNav && sbEl) ? Math.round(sbEl.getBoundingClientRect().width) : 0;
   wrap.style.left = sbWidth + 'px';
   wrap.style.display = 'block';
   // Highlight active sidebar button
