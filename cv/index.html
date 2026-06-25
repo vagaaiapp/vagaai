@@ -3241,16 +3241,12 @@ function s4RenderProgress() {
 
 function s4OpenCarta() {
   var id = getCvContextIdentity().analysisId;
-  var href = '/carta' + (id ? '?analysis_id=' + encodeURIComponent(id) : '');
+  // Abre em nova aba para preservar o hub de exportação (3 blocos + progresso).
+  // A carta é um material à parte; o usuário a gera e volta para concluir o envio.
+  var href = location.origin + '/carta' + (id ? '?analysis_id=' + encodeURIComponent(id) : '');
   _s4Progress.carta = true;
   s4RenderProgress();
-  if (window.self !== window.top) {
-    window.parent.postMessage({ type: 'vagaai-nav', id: 'carta', href: href, frame: true }, '*');
-  } else if (typeof window.shellNavigate === 'function') {
-    window.shellNavigate({ href: href, frame: true, id: 'carta' });
-  } else {
-    window.location.href = href;
-  }
+  window.open(href, '_blank', 'noopener');
 }
 
 function s4RenderSendCard() {
