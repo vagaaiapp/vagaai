@@ -2637,6 +2637,21 @@ function applySmartFix(type) {
   if (cv.habilidades && cv.habilidades.length) { show('mnSecSkills'); mnHasBottom = true; document.getElementById('mnSkills').innerHTML = cv.habilidades.slice(0,20).map(function(s){ return '<span class="minimal-tag">' + esc(s) + '</span>'; }).join(''); }
   if (mnHasBottom) show('mnBottom', 'grid');
 
+  /* ── FOCADO template ────────────────────────────────────── */
+  txt('foNome', cv.nome); txt('foRole', cv.titulo_profissional);
+  var foCI2 = [];
+  if (c.email)    foCI2.push('<div class="focus-ci">' + SVG_EMAIL + ' <a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></div>');
+  if (c.telefone) foCI2.push('<div class="focus-ci">' + SVG_PHONE + ' ' + esc(c.telefone) + '</div>');
+  if (c.linkedin) { var folt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); foCI2.push('<div class="focus-ci">' + SVG_LINK + ' <a href="' + esc(c.linkedin) + '" target="_blank">' + esc(folt) + '</a></div>'); }
+  if (c.cidade)   foCI2.push('<div class="focus-ci">' + SVG_LOC + ' ' + esc(c.cidade) + '</div>');
+  document.getElementById('foContatos').innerHTML = foCI2.join('');
+  if (cv.resumo_profissional) { show('foSecResumo'); txt('foResumo', cv.resumo_profissional); }
+  if (cv.experiencias && cv.experiencias.length) { show('foSecExp'); document.getElementById('foExps').innerHTML = expHtml(cv.experiencias); }
+  var foHasBottom = false;
+  if (cv.formacao && cv.formacao.length) { show('foSecEdu'); foHasBottom = true; document.getElementById('foEdu').innerHTML = cv.formacao.map(function(e){ return '<div class="focus-edu-item"><div class="focus-edu-curso">' + esc(e.curso||'') + '</div><div class="focus-edu-inst">' + esc(e.instituicao||'') + '</div>' + (e.periodo ? '<div class="focus-edu-per">' + esc(e.periodo) + '</div>' : '') + '</div>'; }).join(''); }
+  if (cv.habilidades && cv.habilidades.length) { show('foSecSkills'); foHasBottom = true; document.getElementById('foSkills').innerHTML = cv.habilidades.slice(0,20).map(function(s){ return '<span class="focus-tag">' + esc(s) + '</span>'; }).join(''); }
+  if (foHasBottom) show('foBottom', 'grid');
+
   /* ── Photo ──────────────────────────────────────────────── */
   var savedPhoto = null;
   try { savedPhoto = localStorage.getItem('vagaai_cv_photo'); } catch(e) {}
