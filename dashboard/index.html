@@ -5635,10 +5635,10 @@ async function _showShellFrame(href, activeId) {
     if (el) el.style.display = 'none';
   });
   if (hdr) hdr.style.display = 'none';
-  // Páginas com nav própria (cv, carta) cobrem tudo; demais ficam após a sidebar
-  var pagesWithOwnNav = ['/cv', '/carta', '/entrevista'];
+  // Páginas focadas cobrem tudo; carta mantém o menu lateral do app.
+  var pagesWithOwnNav = ['/cv', '/entrevista'];
   var hasOwnNav = pagesWithOwnNav.some(function(p){ return href && href.startsWith(p); });
-  // Páginas com nav própria (cv, carta) ocultam a sidebar e cobrem tudo
+  // Páginas focadas ocultam a sidebar e cobrem tudo
   if (hasOwnNav) {
     document.body.classList.add('frame-fullscreen');
     wrap.style.left = '0px';
