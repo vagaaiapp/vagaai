@@ -2066,13 +2066,27 @@ function getPrintDiagnostics() {
 
 function getContextKeywords() {
   var c = _cvContext || {};
-  var found = Array.isArray(c.keywords_encontradas) ? c.keywords_encontradas : [];
-  var missing = Array.isArray(c.keywords_faltando) ? c.keywords_faltando : [];
+  var foundOrig = Array.isArray(c.keywords_encontradas) ? c.keywords_encontradas.filter(Boolean) : [];
+  var missingOrig = Array.isArray(c.keywords_faltando) ? c.keywords_faltando.filter(Boolean) : [];
   var fromSkills = Array.isArray(_cvData && _cvData.habilidades) ? _cvData.habilidades : [];
+
+  // Verifica o texto real do CV atual para reclassificar keywords
+  var cvText = (function() {
+    if (!_cvData) return '';
+    var parts = [_cvData.resumo_profissional || _cvData.resumo || ''];
+    (_cvData.experiencias || []).forEach(function(e) { (e.bullets || []).forEach(function(b) { parts.push(b); }); });
+    fromSkills.forEach(function(h) { parts.push(typeof h === 'string' ? h : (h.nome || '')); });
+    return parts.join(' ').toLowerCase();
+  })();
+
+  var nowFound = missingOrig.filter(function(kw) { return cvText.includes(String(kw).toLowerCase()); });
+  var stillMissing = missingOrig.filter(function(kw) { return !cvText.includes(String(kw).toLowerCase()); });
+  var allFound = foundOrig.concat(nowFound);
+
   return {
-    found: found.filter(Boolean),
-    missing: missing.filter(Boolean),
-    total: found.length || fromSkills.length || 0
+    found: allFound,
+    missing: stillMissing,
+    total: allFound.length || fromSkills.length || 0
   };
 }
 
@@ -4077,17 +4091,30 @@ function _enterReviewMode(ctx) {
   var resumo = (_cvData ? (_cvData.resumo_profissional || _cvData.resumo || '') : '').trim();
   var projScore = (_cvData && typeof computeAtsScore === 'function') ? computeAtsScore().overall : null;
 
+  // Verifica quais keywords faltantes do contexto original realmente aparecem no CV agora
+  var cvFullText = (function() {
+    if (!_cvData) return '';
+    var parts = [_cvData.resumo_profissional || _cvData.resumo || ''];
+    (_cvData.experiencias || []).forEach(function(e) { (e.bullets || []).forEach(function(b) { parts.push(b); }); });
+    (_cvData.habilidades || []).forEach(function(h) { parts.push(typeof h === 'string' ? h : (h.nome || '')); });
+    return parts.join(' ').toLowerCase();
+  })();
+  var kwActuallyAdded = kwMissing.filter(function(kw) { return cvFullText.includes(String(kw).toLowerCase()); });
+
   var changes = [];
   if (resumo && resumo.length > 40) changes.push('Resumo profissional reescrito para a vaga');
-  if (kwMissing.length > 0) changes.push('Keywords adicionadas: ' + kwMissing.map(function(k){ return '<strong>' + k + '</strong>'; }).join(', '));
+  if (kwActuallyAdded.length > 0) changes.push('Keywords adicionadas: ' + kwActuallyAdded.map(function(k){ return '<strong>' + k + '</strong>'; }).join(', '));
   var exps = _cvData && _cvData.experiencias ? _cvData.experiencias : [];
   if (exps.length > 0) changes.push('Experiências reorganizadas por relevância');
   var skls = _cvData && _cvData.habilidades ? _cvData.habilidades : [];
   if (skls.length > 0) changes.push('Habilidades alinhadas com requisitos da vaga');
 
+  // Scores medem coisas diferentes: não comparar diretamente
+  // origScore = compatibilidade com a vaga (escala de análise)
+  // projScore = score ATS do editor (estrutura, keywords, métricas)
   var scoreHtml = '';
-  if (origScore !== null && projScore !== null) {
-    scoreHtml = '<div class="s4rb-scores"><div class="s4rb-score-before"><span class="s4rb-score-n">' + origScore + '%</span><span class="s4rb-score-lbl">Antes</span></div><div class="s4rb-arrow">→</div><div class="s4rb-score-after"><span class="s4rb-score-n">' + projScore + '%</span><span class="s4rb-score-lbl">Agora</span></div></div>';
+  if (projScore !== null) {
+    scoreHtml = '<div class="s4rb-scores"><div class="s4rb-score-after"><span class="s4rb-score-n">' + projScore + '%</span><span class="s4rb-score-lbl">Score ATS</span></div></div>';
   }
 
   banner.innerHTML = [
