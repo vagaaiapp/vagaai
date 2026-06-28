@@ -1946,6 +1946,7 @@ async function doAnalyze(job, cv) {
       document.getElementById('loadingSection').classList.remove('show');
       showResult(data);
       setStep(3);
+      try { window.parent.postMessage({ type: 'vagaai-analysis-complete' }, '*'); } catch(e) {}
     }
 
   } catch (err) {

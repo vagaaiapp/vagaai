@@ -3228,8 +3228,9 @@ function buildFunilCard(analyses, tracked) {
 
 async function loadAnalyses() {
   try {
+    var token = await getFreshToken();
     var res = await fetch(SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + currentUserId + '&archived_at=is.null&select=id,score,job_excerpt,created_at,result&order=created_at.desc&limit=200', {
-      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + token }
     });
     var data = await res.json();
     if (Array.isArray(data)) {
@@ -5799,8 +5800,9 @@ window.shellNavigate = function(item) {
 };
 
 window.addEventListener('message', function(e) {
-  if (!e.data || e.data.type !== 'vagaai-nav') return;
-  window.shellNavigate(e.data);
+  if (!e.data) return;
+  if (e.data.type === 'vagaai-nav') { window.shellNavigate(e.data); return; }
+  if (e.data.type === 'vagaai-analysis-complete') { loadAnalyses(); return; }
 });
 
 window.addEventListener('popstate', function(e) {
