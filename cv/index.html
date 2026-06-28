@@ -1697,7 +1697,7 @@ html.no-photo .mod-header{display:block}
         <div class="preflight-score">
           <div class="pf-stat"><b id="pfPages">—</b><span>páginas</span></div>
           <div class="pf-stat"><b id="pfFormat">A4</b><span>formato</span></div>
-          <div class="pf-stat"><b id="pfScore">—</b><span>score ATS</span></div>
+          <div class="pf-stat"><b id="pfScore">—</b><span id="pfScoreLabel">aderência</span></div>
           <div class="pf-stat"><b id="pfKeywords">—</b><span>keywords</span></div>
         </div>
         <div class="pf-list" id="pfList"></div>
@@ -1903,6 +1903,24 @@ function getCvContextIdentity() {
     job_url: /^https?:\/\//i.test(url) ? url : '',
     salario: salary && !/^n[aã]o informado$/i.test(salary) ? salary : ''
   };
+}
+
+function clampScoreValue(value) {
+  var n = Number(value);
+  return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : null;
+}
+
+function getCvScoreContext() {
+  var ctx = _cvContext || {};
+  var original = clampScoreValue(ctx.score);
+  var rawProjected = ctx.score_estimado_apos_ajustes;
+  if (rawProjected == null) rawProjected = ctx.score_projetado;
+  if (rawProjected == null) rawProjected = ctx.projected_score;
+  if (rawProjected == null) rawProjected = ctx.estimated_score;
+  var projected = clampScoreValue(rawProjected);
+  if (projected !== null && original !== null && projected < original) projected = original;
+  var technical = (typeof computeAtsScore === 'function') ? clampScoreValue(computeAtsScore().overall) : null;
+  return { original: original, projected: projected, technical: technical };
 }
 
 function _periodo(p) {
@@ -2149,14 +2167,28 @@ function getPreflightRows() {
   var diag = getPrintDiagnostics();
   var pages = diag.pages;
   var kws = getContextKeywords();
-  // Score do currículo OTIMIZADO atual (não o score original da vaga)
-  var safeScore = (typeof computeAtsScore === 'function') ? computeAtsScore().overall + '%' : '—';
+  var scoreCtx = getCvScoreContext();
+  var displayScore = scoreCtx.projected !== null
+    ? scoreCtx.projected + '%'
+    : (scoreCtx.technical !== null ? scoreCtx.technical + '%' : '—');
+  var scoreLabel = scoreCtx.projected !== null ? 'aderência' : 'qualidade CV';
+  var scoreRows = [];
+  if (scoreCtx.projected !== null) {
+    scoreRows.push({
+      ok: true,
+      text: 'Aderência projetada à vaga: ' + (scoreCtx.original !== null ? scoreCtx.original + '% → ' : '') + scoreCtx.projected + '%.'
+    });
+  }
+  if (scoreCtx.technical !== null) {
+    scoreRows.push({ ok: true, text: 'Qualidade técnica do currículo otimizado: ' + scoreCtx.technical + '%.' });
+  }
   return {
     pages: pages,
     format: 'A4',
-    score: safeScore,
+    score: displayScore,
+    scoreLabel: scoreLabel,
     keywords: kws.total || '—',
-    rows: [
+    rows: scoreRows.concat([
       { ok: true, text: 'Exportação configurada em A4 vertical (210 × 297 mm), sem zoom ou escala artificial no print.' },
       { ok: pages <= 1, text: pages <= 1 ? 'O currículo cabe em 1 página.' : 'O currículo está em ' + pages + ' páginas. Se quiser uma versão mais objetiva, use compactar modelo.' },
       { ok: !diag.sidebarRisk, text: diag.sidebarRisk ? 'A sidebar do modelo ' + diag.templateLabel + ' está muito cheia e pode ficar próxima da margem inferior.' : 'A margem interna do modelo atual está dentro da área segura.' },
@@ -2164,7 +2196,7 @@ function getPreflightRows() {
       { ok: hasMetricText(), text: hasMetricText() ? 'Há métricas nas experiências.' : 'Ainda faltam métricas/resultados nos bullets principais.' },
       { ok: kws.missing.length === 0, text: kws.missing.length === 0 ? 'Sem keywords críticas pendentes.' : 'Keywords ausentes: ' + kws.missing.slice(0, 4).join(', ') + '.' },
       { ok: true, text: 'Use "Salvar como PDF" no destino de impressão para preservar o layout.' }
-    ]
+    ])
   };
 }
 
@@ -2270,6 +2302,8 @@ function openPdfPreflight() {
   var fmt = document.getElementById('pfFormat');
   if (fmt) fmt.textContent = data.format || 'A4';
   document.getElementById('pfScore').textContent = data.score || '—';
+  var scoreLbl = document.getElementById('pfScoreLabel');
+  if (scoreLbl) scoreLbl.textContent = data.scoreLabel || 'qualidade CV';
   document.getElementById('pfKeywords').textContent = data.keywords || '—';
   document.getElementById('pfList').innerHTML = data.rows.map(function(row) {
     return '<div class="pf-row ' + (row.ok ? 'ok' : 'warn') + '"><i>' + (row.ok ? '✓' : '!') + '</i><span>' + _esc(row.text) + '</span></div>';
@@ -3632,9 +3666,13 @@ function computeAtsScore() {
 
 function renderStep4() {
   if (!_cvData) return;
-  var overall = computeAtsScore().overall;
+  var scoreCtx = getCvScoreContext();
   var badgeTxt = document.getElementById('s4HeaderBadgeText');
-  if (badgeTxt) badgeTxt.textContent = 'Currículo otimizado · ' + overall + '%';
+  if (badgeTxt) {
+    badgeTxt.textContent = scoreCtx.projected !== null
+      ? 'Currículo otimizado · aderência estimada ' + scoreCtx.projected + '%'
+      : 'Currículo otimizado' + (scoreCtx.technical !== null ? ' · qualidade CV ' + scoreCtx.technical + '%' : '');
+  }
   s4RenderProgress();
   s4RenderSendCard();
 }
@@ -4083,13 +4121,11 @@ function _enterReviewMode(ctx) {
   var banner = document.getElementById('s4ReviewBanner');
   if (!banner) return;
 
-  var origScore = ctx && ctx.score ? ctx.score : null;
   var jobTitle = ctx && ctx.job_info && ctx.job_info.titulo ? ctx.job_info.titulo : null;
   var kwMissing = (ctx && ctx.keywords_faltando) ? ctx.keywords_faltando.slice(0, 4) : [];
 
-  // Score projetado = score do currículo OTIMIZADO (mesma fonte do passo 4 e do modal)
   var resumo = (_cvData ? (_cvData.resumo_profissional || _cvData.resumo || '') : '').trim();
-  var projScore = (_cvData && typeof computeAtsScore === 'function') ? computeAtsScore().overall : null;
+  var scoreCtx = getCvScoreContext();
 
   // Verifica quais keywords faltantes do contexto original realmente aparecem no CV agora
   var cvFullText = (function() {
@@ -4109,12 +4145,17 @@ function _enterReviewMode(ctx) {
   var skls = _cvData && _cvData.habilidades ? _cvData.habilidades : [];
   if (skls.length > 0) changes.push('Habilidades alinhadas com requisitos da vaga');
 
-  // Scores medem coisas diferentes: não comparar diretamente
-  // origScore = compatibilidade com a vaga (escala de análise)
-  // projScore = score ATS do editor (estrutura, keywords, métricas)
   var scoreHtml = '';
-  if (projScore !== null) {
-    scoreHtml = '<div class="s4rb-scores"><div class="s4rb-score-after"><span class="s4rb-score-n">' + projScore + '%</span><span class="s4rb-score-lbl">Score ATS</span></div></div>';
+  if (scoreCtx.projected !== null && scoreCtx.original !== null) {
+    scoreHtml = '<div class="s4rb-scores">'
+      + '<div class="s4rb-score-before"><span class="s4rb-score-n">' + scoreCtx.original + '%</span><span class="s4rb-score-lbl">Antes</span></div>'
+      + '<span class="s4rb-arrow">→</span>'
+      + '<div class="s4rb-score-after"><span class="s4rb-score-n">' + scoreCtx.projected + '%</span><span class="s4rb-score-lbl">Projetado</span></div>'
+      + '</div>';
+  } else if (scoreCtx.projected !== null) {
+    scoreHtml = '<div class="s4rb-scores"><div class="s4rb-score-after"><span class="s4rb-score-n">' + scoreCtx.projected + '%</span><span class="s4rb-score-lbl">Aderência</span></div></div>';
+  } else if (scoreCtx.technical !== null) {
+    scoreHtml = '<div class="s4rb-scores"><div class="s4rb-score-after"><span class="s4rb-score-n">' + scoreCtx.technical + '%</span><span class="s4rb-score-lbl">Qualidade CV</span></div></div>';
   }
 
   banner.innerHTML = [

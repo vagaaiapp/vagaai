@@ -2018,8 +2018,11 @@ function showResult(d) {
     if (nextStepEstimate) {
       var kwFaltando = Array.isArray(d.keywords_faltando) ? d.keywords_faltando.length : 0;
       var prioridades = Array.isArray(d.prioridades) ? d.prioridades.length : 0;
+      var estimatedScore = Number(d.score_estimado_apos_ajustes);
       var infoLine = '';
-      if (kwFaltando > 0) {
+      if (Number.isFinite(estimatedScore) && estimatedScore > score) {
+        infoLine = 'Aderência projetada após otimização: ' + score + '% → ' + Math.min(100, Math.round(estimatedScore)) + '%';
+      } else if (kwFaltando > 0) {
         infoLine = kwFaltando + ' keyword' + (kwFaltando > 1 ? 's' : '') + ' da vaga ausente' + (kwFaltando > 1 ? 's' : '') + ' no seu CV';
         if (prioridades > 0) infoLine += ' · ' + prioridades + ' ajuste' + (prioridades > 1 ? 's' : '') + ' prioritário' + (prioridades > 1 ? 's' : '');
       } else if (prioridades > 0) {
@@ -2171,6 +2174,7 @@ function showResult(d) {
       localStorage.setItem('vagaai_cv_context', JSON.stringify({
         analysis_id: d._analysis_id || null,
         score: d.score,
+        score_estimado_apos_ajustes: d.score_estimado_apos_ajustes == null ? null : d.score_estimado_apos_ajustes,
         nivel: d.nivel,
         resumo: d.resumo,
         job_info: d.job_info || {},
