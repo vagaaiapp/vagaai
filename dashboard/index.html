@@ -218,29 +218,56 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .sb-profile-info strong { display: block; font-size: 11.5px; color: rgba(255,255,255,.85); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sb-profile-info span { font-size:11px; color: rgba(255,255,255,.38); white-space: nowrap; }
 
+/* user account modal */
+.user-account-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  display: none; align-items: center; justify-content: center;
+}
+.user-account-overlay.active { display: flex; }
+
 .user-dropdown {
-  position: fixed; bottom: 70px; left: calc(var(--sb) + 8px);
   background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: 12px; min-width: 220px;
-  box-shadow: 0 8px 32px rgba(0,0,0,.18); z-index: 500;
-  overflow: hidden; display: none;
-  animation: fadeUp .15s ease both;
+  border-radius: 16px; width: 320px; max-width: calc(100vw - 32px);
+  box-shadow: 0 24px 64px rgba(0,0,0,.28);
+  overflow: hidden;
+  animation: uaModalIn .18s ease both;
 }
+@keyframes uaModalIn { from { opacity:0; transform:scale(.95) translateY(8px); } to { opacity:1; transform:none; } }
 
-.user-dropdown.active { display: block; }
-
-.dropdown-header {
-  padding: 12px 14px; border-bottom: 1px solid var(--border);
+.ua-header {
+  padding: 20px 20px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
 }
+.ua-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg,#1a7a4a,#4ece91);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.ua-info { flex: 1; min-width: 0; }
+.ua-name { font-size: 14px; font-weight: 600; color: var(--t1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ua-email { font-size: 11.5px; color: var(--t3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ua-plan-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 2px 7px; border-radius: 20px; background: rgba(26,122,74,.15); color: var(--gb-emerald); border: 1px solid rgba(26,122,74,.25); margin-top: 4px; display: inline-block; }
+.ua-close {
+  width: 28px; height: 28px; border-radius: 50%; border: none; background: var(--bg-sub);
+  color: var(--t3); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: background .15s, color .15s;
+}
+.ua-close:hover { background: var(--border); color: var(--t1); }
 
+.ua-body { padding: 8px 0; }
+.ua-divider { height: 1px; background: var(--border); margin: 6px 0; }
+
+.dropdown-header { display: none; }
 .dropdown-name { font-size: 13px; font-weight: 600; color: var(--t1); margin-bottom: 2px; }
 .dropdown-email { font-size: 11px; color: var(--t3); }
 
 .dropdown-item {
   width: 100%; background: none; border: none;
   font-family: inherit; font-size: 13px; color: var(--t1);
-  padding: 10px 14px; text-align: left; cursor: pointer;
-  display: flex; align-items: center; gap: 8px;
+  padding: 11px 20px; text-align: left; cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
   transition: background .15s;
 }
 
@@ -1801,6 +1828,36 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
   </div>
 </div>
 
+<!-- ─── MODAL SUPORTE ─────────────────────────────── -->
+<div class="modal-overlay hidden" id="modalSuporte">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeSuporte()">✕</button>
+    <div class="modal-title">Falar com o suporte</div>
+    <div class="modal-sub">Preencha o formulário e responderemos em até 24h.</div>
+    <div class="modal-field">
+      <label class="modal-label" for="suporteEmail">Seu e-mail</label>
+      <input class="modal-input" type="email" id="suporteEmail" readonly style="opacity:.7;cursor:default">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label" for="suporteMotivo">Motivo do contato</label>
+      <select class="modal-input" id="suporteMotivo" style="cursor:pointer">
+        <option value="">Selecione...</option>
+        <option value="duvida">Dúvida</option>
+        <option value="problema">Problema técnico</option>
+        <option value="cobranca">Cobrança / Pagamento</option>
+        <option value="sugestao">Sugestão</option>
+        <option value="outro">Outro</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label" for="suporteMensagem">Mensagem</label>
+      <textarea class="modal-input" id="suporteMensagem" rows="4" placeholder="Descreva sua dúvida ou problema..." style="resize:vertical;min-height:100px"></textarea>
+    </div>
+    <button class="modal-btn" id="btnEnviarSuporte" onclick="doEnviarSuporte()">Enviar mensagem</button>
+    <div class="modal-msg" id="suporteMsg"></div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="modalSenha">
   <div class="modal-box">
     <button class="modal-close" onclick="closeSenha()">✕</button>
@@ -1892,25 +1949,47 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       </button>
       <div class="sb-profile-info">
         <strong id="sbDisplayName">—</strong>
-        <span id="sbPlanLabel">Plano Pro</span>
+        <span id="sbPlanLabel">—</span>
       </div>
     </div>
-    <div class="user-dropdown" id="userDropdown" role="menu">
-      <div class="dropdown-header">
-        <div class="dropdown-name" id="dropName">—</div>
-        <div class="dropdown-email" id="dropEmail">—</div>
+  </div>
+</aside>
+
+<!-- USER ACCOUNT MODAL -->
+<div class="user-account-overlay" id="userDropdown" role="dialog" aria-modal="true" aria-label="Menu da conta" onclick="if(event.target===this)closeDropdown()">
+  <div class="user-dropdown">
+    <div class="ua-header">
+      <div class="ua-avatar" id="uaAvatarCircle">?</div>
+      <div class="ua-info">
+        <div class="ua-name" id="dropName">—</div>
+        <div class="ua-email" id="dropEmail">—</div>
+        <div class="ua-plan-badge" id="uaPlanBadge">Pro</div>
       </div>
+      <button class="ua-close" onclick="closeDropdown()" aria-label="Fechar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="ua-body">
       <button class="dropdown-item" role="menuitem" onclick="closeDropdown();openPerfil()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
         Meu Perfil
       </button>
+      <button class="dropdown-item" role="menuitem" id="uaManageSubBtn" onclick="closeDropdown();openStripePortal(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Gerenciar assinatura
+      </button>
+      <button class="dropdown-item" role="menuitem" onclick="closeDropdown();openSuporte()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Suporte
+      </button>
+      <div class="ua-divider"></div>
       <button class="dropdown-item danger" role="menuitem" onclick="logout()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Sair
       </button>
     </div>
   </div>
-</aside>
+</div>
 
 <!-- SHELL FRAME — fora do main para não criar stacking context aninhado -->
 <div id="shellFrameWrap" style="display:none;position:fixed;left:var(--sb);top:0;right:0;bottom:0;z-index:100;background:var(--bg)">
@@ -2825,11 +2904,19 @@ function buildPainelV2(analyses, tracked) {
   }
 
   var actionCount = buildAttentionCards(analyses, tracked);
+  // PBA priority-4 (anyBest) also represents an actionable recommendation — count it
+  var hasAnyAnalysis = analyses.some(function(a){ return a.score > 0; });
+  var hasPbaAction = actionCount > 0 || hasAnyAnalysis;
   var pgActionSub = document.getElementById('pgActionSub');
   if (pgActionSub) {
-    pgActionSub.textContent = actionCount > 0
-      ? 'Você tem ' + actionCount + ' ' + (actionCount === 1 ? 'ação que pode' : 'ações que podem') + ' aumentar suas chances esta semana.'
-      : 'Tudo em dia! Continue analisando vagas para aumentar suas chances.';
+    if (!hasAnyAnalysis && tracked.length === 0) {
+      pgActionSub.textContent = 'Analise sua primeira vaga para começar.';
+    } else if (hasPbaAction) {
+      var total = actionCount + (actionCount === 0 && hasAnyAnalysis ? 1 : 0);
+      pgActionSub.textContent = 'Você tem ' + total + ' ' + (total === 1 ? 'ação que pode' : 'ações que podem') + ' aumentar suas chances esta semana.';
+    } else {
+      pgActionSub.textContent = 'Tudo em dia! Continue analisando vagas para aumentar suas chances.';
+    }
   }
 
   buildPBACard(analyses, tracked);
@@ -2849,7 +2936,7 @@ function updatePBAPriority(score, cargo, empresa, subText) {
   var numEl = document.getElementById('pbaScoreNum');
   if (numEl) numEl.textContent = s + '%';
   var labelEl = document.getElementById('pbaScoreLabel');
-  if (labelEl) labelEl.textContent = s >= 70 ? 'Boa aderência' : s >= 40 ? 'Aderência moderada' : 'Baixa aderência';
+  if (labelEl) labelEl.textContent = s === 0 ? '—' : s >= 70 ? 'Boa aderência' : s >= 40 ? 'Aderência moderada' : 'Baixa aderência';
   var subEl = document.getElementById('pbaScoreSub');
   if (subEl) subEl.textContent = subText || '';
   var cargoEl = document.getElementById('pbaCargo');
@@ -3015,7 +3102,7 @@ function renderOppList() {
     if (_oppFilter === 'todas') return true;
     var tj = tracked.find(function(t){ return t.analysis_id === a.id; });
     if (!tj) return false;
-    return tj.status === _oppFilter;
+    return normalizeStatus(tj.status) === normalizeStatus(_oppFilter);
   });
 
   var activeCount = tracked.filter(function(t){ var ns = normalizeStatus(t.status); return ns && ns !== 'recusada' && ns !== 'encerrada'; }).length;
@@ -3023,7 +3110,10 @@ function renderOppList() {
   if (countEl) countEl.textContent = activeCount + ' candidatura' + (activeCount !== 1 ? 's' : '') + ' ativa' + (activeCount !== 1 ? 's' : '');
 
   if (!filtered.length) {
-    container.innerHTML = '<div style="padding:28px;text-align:center;color:var(--t3);font-size:12px">Nenhuma vaga nesta categoria ainda.</div>';
+    var emptyMsg = _oppFilter === 'todas'
+      ? 'Nenhuma vaga analisada ainda.'
+      : 'Nenhuma candidatura nesta categoria ainda.';
+    container.innerHTML = '<div style="padding:28px;text-align:center;color:var(--t3);font-size:12px">' + emptyMsg + '</div>';
     return;
   }
 
@@ -3040,7 +3130,7 @@ function renderOppList() {
     if (status === 'aplicada') {
       var d = Math.floor((now - new Date(updatedAt).getTime()) / 86400000);
       if (d >= 7) return { lbl:'Fazer follow-up', when:'Vence hoje' };
-      if (d >= 5) return { lbl:'Fazer follow-up', when:'Em breve' };
+      if (d >= 5) return { lbl:'Fazer follow-up', when:'Em ' + (7 - d) + ' dia' + (7 - d !== 1 ? 's' : '') };
       return { lbl:'Aguardar retorno', when:'Há ' + d + ' dia' + (d !== 1 ? 's' : '') };
     }
     if (status === 'em_processo') return { lbl:'Aguardar retorno', when:'' };
@@ -5596,9 +5686,6 @@ async function saveTracker(btn) {
       body: JSON.stringify(body)
     });
 
-    var resText = await res.text();
-    console.log('SaveTracker Response:', res.status, resText);
-
     if (res.ok || res.status === 201) {
       btn.parentElement.parentElement.remove();
       showToast('Candidatura rastreada!');
@@ -5754,13 +5841,27 @@ function openAuthCheckout(baseUrl) {
   window.open(url, '_blank');
 }
 
+// Retorna um access_token válido, renovando a sessão se necessário.
+// currentSession é capturado uma vez na init e tokens Supabase expiram em ~1h —
+// sem renovar, chamadas autenticadas falham com "Invalid token".
+async function getFreshToken() {
+  try {
+    var r = await sb.auth.getSession();
+    var session = r && r.data && r.data.session;
+    if (session) { currentSession = session; currentUserId = session.user.id; return session.access_token; }
+  } catch(e) {}
+  return (currentSession && currentSession.access_token) || '';
+}
+
 async function openStripePortal(btn) {
   var origText = btn ? btn.textContent : '';
   try {
     if (btn) { btn.disabled = true; btn.textContent = 'Aguarde...'; }
+    var token = await getFreshToken();
+    if (!token) { showToast('Sessão expirada. Faça login novamente.', 'error'); return; }
     var res = await fetch('/api/subscription', {
       method: 'POST',
-      headers: { Authorization: 'Bearer ' + (currentSession && currentSession.access_token || '') }
+      headers: { Authorization: 'Bearer ' + token }
     });
     var data = await res.json();
     if (data.url) {
@@ -5779,8 +5880,9 @@ async function openStripePortal(btn) {
 
 async function loadSubscriptionData() {
   try {
+    var token = await getFreshToken();
     var res = await fetch('/api/subscription', {
-      headers: { Authorization: 'Bearer ' + (currentSession && currentSession.access_token || '') }
+      headers: { Authorization: 'Bearer ' + token }
     });
     if (!res.ok) return;
     var sub = await res.json();
@@ -5961,29 +6063,88 @@ function toggleTheme() {
 }
 
 function toggleDropdown() {
-  var dd = document.getElementById('userDropdown');
-  if (!dd) return;
-  var open = dd.classList.toggle('active');
+  var overlay = document.getElementById('userDropdown');
+  if (!overlay) return;
+  var isOpen = overlay.classList.contains('active');
+  if (isOpen) { closeDropdown(); return; }
+  // Sync name/email/avatar/plan into modal
+  var d = window._perfilData || {};
+  var name = d.displayName || d.email || '—';
+  var email = d.email || '—';
+  var initials = name.split(' ').slice(0,2).map(function(p){return p[0]||'';}).join('').toUpperCase() || '?';
+  var planLabelEl = document.getElementById('sbPlanLabel');
+  var planLabel = planLabelEl ? planLabelEl.textContent : 'Grátis';
+  var nameEl = document.getElementById('dropName'); if (nameEl) nameEl.textContent = name;
+  var emailEl = document.getElementById('dropEmail'); if (emailEl) emailEl.textContent = email;
+  var av = document.getElementById('uaAvatarCircle'); if (av) av.textContent = initials;
+  var badge = document.getElementById('uaPlanBadge'); if (badge) badge.textContent = planLabel;
+  overlay.classList.add('active');
   var trigger = document.querySelector('.sb-profile-row');
-  if (trigger) trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
-  if (open) { var firstBtn = dd.querySelector('button'); if (firstBtn) firstBtn.focus(); }
+  if (trigger) trigger.setAttribute('aria-expanded', 'true');
+  var firstBtn = overlay.querySelector('button'); if (firstBtn) firstBtn.focus();
 }
 
 function closeDropdown() {
-  var dd = document.getElementById('userDropdown');
-  if (dd) dd.classList.remove('active');
+  var overlay = document.getElementById('userDropdown');
+  if (overlay) overlay.classList.remove('active');
   var trigger = document.querySelector('.sb-profile-row');
   if (trigger) trigger.setAttribute('aria-expanded', 'false');
 }
 
-document.addEventListener('click', function(e) {
-  var profileRow = document.querySelector('.sb-profile-row');
-  var dd = document.getElementById('userDropdown');
-  if (!profileRow || !dd) return;
-  if (!profileRow.contains(e.target) && !dd.contains(e.target)) {
-    closeDropdown();
-  }
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeDropdown();
 });
+
+// ─── SUPORTE ──────────────────────────────────────────────────────────────────
+function openSuporte() {
+  var d = window._perfilData || {};
+  document.getElementById('suporteEmail').value = d.email || '';
+  document.getElementById('suporteMotivo').value = '';
+  document.getElementById('suporteMensagem').value = '';
+  document.getElementById('suporteMsg').textContent = '';
+  document.getElementById('suporteMsg').className = 'modal-msg';
+  document.getElementById('btnEnviarSuporte').disabled = false;
+  document.getElementById('btnEnviarSuporte').textContent = 'Enviar mensagem';
+  document.getElementById('modalSuporte').classList.remove('hidden');
+}
+function closeSuporte() { document.getElementById('modalSuporte').classList.add('hidden'); }
+document.getElementById('modalSuporte').addEventListener('click', function(e){ if(e.target===this) closeSuporte(); });
+
+async function doEnviarSuporte() {
+  var email = document.getElementById('suporteEmail').value.trim();
+  var motivo = document.getElementById('suporteMotivo').value;
+  var mensagem = document.getElementById('suporteMensagem').value.trim();
+  var msg = document.getElementById('suporteMsg');
+  var btn = document.getElementById('btnEnviarSuporte');
+  msg.className = 'modal-msg'; msg.textContent = '';
+  if (!motivo) { msg.className = 'modal-msg err'; msg.textContent = 'Selecione o motivo do contato.'; return; }
+  if (!mensagem || mensagem.length < 10) { msg.className = 'modal-msg err'; msg.textContent = 'Escreva uma mensagem com pelo menos 10 caracteres.'; return; }
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  try {
+    var sessRes = await sb.auth.getSession();
+    var session = sessRes && sessRes.data && sessRes.data.session;
+    var headers = { 'Content-Type': 'application/json' };
+    if (session) headers['Authorization'] = 'Bearer ' + session.access_token;
+    var res = await fetch('/api/support', {
+      method: 'POST', headers: headers,
+      body: JSON.stringify({ email: email, motivo: motivo, mensagem: mensagem })
+    });
+    var data = await res.json();
+    if (!res.ok || data.error) {
+      btn.disabled = false; btn.textContent = 'Enviar mensagem';
+      msg.className = 'modal-msg err'; msg.textContent = data.error || 'Erro ao enviar. Tente novamente.';
+    } else {
+      msg.className = 'modal-msg ok'; msg.textContent = '✓ Mensagem enviada! Responderemos em até 24h.';
+      document.getElementById('suporteMensagem').value = '';
+      document.getElementById('suporteMotivo').value = '';
+      btn.textContent = 'Enviar mensagem';
+      setTimeout(closeSuporte, 3000);
+    }
+  } catch(e) {
+    btn.disabled = false; btn.textContent = 'Enviar mensagem';
+    msg.className = 'modal-msg err'; msg.textContent = 'Erro de conexão. Tente novamente.';
+  }
+}
 
 function openPerfil() {
   var d = window._perfilData || {};

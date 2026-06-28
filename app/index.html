@@ -1295,7 +1295,7 @@ async function gerarCV() {
     });
     var data = await res.json().catch(function(){ return {}; });
     if (!res.ok || !data.cv_text) {
-      appToast(data.error || 'Erro ao gerar currículo. Tente novamente.', 'error');
+      appToast(data.message || data.error || 'Erro ao gerar currículo. Tente novamente.', 'error');
       return;
     }
     // Coloca o CV gerado no campo de texto e muda para a aba "Tenho CV"
@@ -1630,44 +1630,68 @@ function extractJobPreview(text, jobUrlStr) {
     }
   }
 
+  // Padrões que descartam linhas que NÃO são atividades reais
+  var notActivityRE = /^(R\$|a partir|sal[aá]rio|empresa confidencial|por que essa empresa|confidencial|aplicar|candidatar|ver mais|outras vagas|compartilhar|salvar|seguir|denunciar|imprimir|enviar|baixar|acessar|entrar|cadastr|cookie|termos|copyright|©|home|voltar|menu|\?$)/i;
+  var looksLikeActivity = /\b(gerenciar|desenvolver|criar|analisar|coordenar|elaborar|implementar|executar|monitorar|garantir|definir|planejar|liderar|atuar|acompanhar|suporte|responsável|contribuir|trabalhar|colaborar|propor|estruturar|otimizar|entregar|apoiar|conduzir|avaliar|identificar|mapear|construir|manter|reportar|treinar|capacitar)\b/i;
+
   // Coleta linhas de atividades após o primeiro cabeçalho de seção encontrado
   var taskLines = [];
   var collecting = false;
   for (var p = 0; p < workLines.length; p++) {
     var l = workLines[p];
-    // Para se encontrar padrão de outra vaga
     if (newJobTitleRE.test(l) && p > 5) break;
     if (sectionHeaderRE.test(l)) { collecting = true; continue; }
-    if (collecting && l.length > 18 && l.length < 180) {
+    if (collecting && l.length > 25 && l.length < 200) {
+      if (notActivityRE.test(l)) continue;
       var clean = cleanBullet(l);
-      // Linha incompleta (termina com ":") — descarta, seria cabeçalho de sub-seção
-      if (clean.length > 18 && !/:\s*$/.test(clean)) taskLines.push(clean);
+      if (clean.length > 25 && !/:\s*$/.test(clean) && !notActivityRE.test(clean)) {
+        taskLines.push(clean);
+      }
     }
     if (taskLines.length >= 3) break;
   }
-  // Fallback: primeiras linhas substanciais da janela
-  if (!taskLines.length) {
-    taskLines = workLines
-      .filter(function(l){ return l.length > 35 && !sectionHeaderRE.test(l) && !/:\s*$/.test(l); })
-      .slice(0, 3)
-      .map(cleanBullet);
+
+  // Fallback: varre todo o texto em busca de frases que pareçam atividades
+  if (taskLines.length < 2) {
+    var candidateLines = workLines.filter(function(l) {
+      return l.length > 30 && l.length < 180
+        && !sectionHeaderRE.test(l)
+        && !notActivityRE.test(l)
+        && !/:\s*$/.test(l)
+        && looksLikeActivity.test(l);
+    }).map(cleanBullet);
+    for (var ci = 0; ci < candidateLines.length && taskLines.length < 3; ci++) {
+      if (!taskLines.includes(candidateLines[ci])) taskLines.push(candidateLines[ci]);
+    }
   }
 
-  // Frase introdutória variada, direcionada ao candidato
-  var introOptions = [
-    'Nessa vaga, você vai',
-    'Como parte do time, você será responsável por',
-    'No dia a dia, você vai',
-    'Sua missão aqui será',
-    'Nessa posição, você irá',
-    'Como ' + (cargo ? cargo.split(' ').slice(0,2).join(' ').toLowerCase() : 'profissional') + ', você vai',
-  ];
-  // Escolha determinística baseada no comprimento do cargo (evita Math.random para ser estável)
-  var introIdx = (cargo ? cargo.length : 7) % introOptions.length;
-  var intro = introOptions[introIdx];
-
-  // Junta sem cortar no meio — cada item já é uma linha completa
-  var excerpt = (taskLines.length ? intro + ': ' + taskLines.join(' · ') : '');
+  // Constrói o excerpt
+  var excerpt = '';
+  if (taskLines.length >= 2) {
+    // Temos frases de atividade reais — usa intro + bullets
+    var introOptions = [
+      'Nessa vaga, você vai',
+      'Como parte do time, você será responsável por',
+      'Nessa posição, você irá',
+      'Sua missão será',
+      'Como ' + (cargo ? cargo.split(' ').slice(0,2).join(' ').toLowerCase() : 'profissional') + ', você vai',
+    ];
+    var introIdx = (cargo ? cargo.length : 7) % introOptions.length;
+    excerpt = introOptions[introIdx] + ': ' + taskLines.slice(0,3).join(' · ');
+  } else if (taskLines.length === 1) {
+    excerpt = taskLines[0];
+  } else {
+    // Sem atividades identificáveis — sintetiza descrição a partir dos dados estruturados
+    var parts = [];
+    if (nivel) parts.push('Posição ' + nivel.toLowerCase());
+    else parts.push('Vaga');
+    if (cargo) parts[0] += ' de ' + cargo;
+    if (contrato) parts.push(contrato);
+    if (modalidade) parts.push(modalidade.charAt(0).toUpperCase() + modalidade.slice(1).toLowerCase());
+    if (cidade) parts.push('em ' + cidade);
+    if (salario && salario !== 'A combinar') parts.push('remuneração ' + salario);
+    excerpt = parts.join(' · ') + '. Carregue a descrição completa para ver os detalhes da função.';
+  }
 
   return { cargo: cargo, empresa: empresa, modalidade: modalidade, cidade: cidade, salario: salario, contrato: contrato, nivel: nivel, excerpt: excerpt, platform: platform };
 }
