@@ -941,9 +941,12 @@ body.fit-one-page .exp-emp{margin:.05rem 0 .2rem}
     transform:translateX(0);
     box-shadow:4px 0 24px rgba(0,0,0,.55);
   }
-  /* CV pages: scaled by JS (zoom or transform fallback) */
+  /* CV pages: scaled by JS for viewport-safe A4 preview */
   .page{margin:0 auto}
   .page-wrap{width:100%;overflow:visible;display:block}
+  #cvpScaleOuter{max-width:calc(100vw - 28px);margin-inline:auto;overflow:hidden}
+  #pageWrap{position:absolute!important;top:0;left:0;width:210mm!important;min-width:210mm!important;transform-origin:top left!important}
+  .cv-main{padding-bottom:6.5rem}
 }
 
 /* ─── No data ─────────────────────────────────────────────── */
@@ -2415,12 +2418,16 @@ function printIsolatedA4() {
   var runPrint = function() {
     if (printed) return;
     printed = true;
+    var prevTopTitle = '';
+    try { prevTopTitle = window.top.document.title; window.top.document.title = title; } catch(e) {}
+    var restoreTitle = function() { try { window.top.document.title = prevTopTitle; } catch(e) {} };
     try {
       frame.contentWindow.focus();
       frame.contentWindow.print();
     } catch(e) {
       window.print();
     }
+    setTimeout(restoreTitle, 1000);
     cleanup();
   };
 
@@ -2432,7 +2439,15 @@ function printIsolatedA4() {
   setTimeout(runPrint, 800);
 }
 
+// Geração de PDF no servidor está desativada no plano Hobby: o endpoint
+// /api/generate-cv-pdf é excluído do deploy (ver .vercelignore). Enquanto isso,
+// usamos direto o diálogo de impressão do navegador — mesmo resultado, sem o
+// 404 + espera. Trocar para true ao reativar o endpoint (migração para Pro).
+var PDF_SERVER_ENABLED = false;
+
 async function printAfterPreflight() {
+  if (!PDF_SERVER_ENABLED) { _fallbackPrint(); return; }
+
   var btn = document.getElementById('pfDownloadBtn');
   var lbl = document.getElementById('pfDownloadLbl');
   if (btn) btn.style.pointerEvents = 'none';
@@ -2970,8 +2985,12 @@ function scaleCvPages() {
   if (!wrap) return;
   var vw = window.innerWidth;
   var isMobile = vw <= 900;
+  var outer = document.getElementById('cvpScaleOuter');
 
   // Reset pages
+  wrap.style.transform = '';
+  wrap.style.transformOrigin = '';
+  wrap.style.overflowX = '';
   wrap.querySelectorAll('.page').forEach(function(p) {
     p.style.zoom = '';
     p.style.transform = '';
@@ -2982,7 +3001,6 @@ function scaleCvPages() {
 
   if (!isMobile) {
     // Desktop: scale pageWrap to fit the cv-preview column
-    var outer = document.getElementById('cvpScaleOuter');
     if (outer) {
       var containerW = outer.clientWidth || 268;
       var scale = containerW / 794; // 794px = 210mm at 96dpi
@@ -2995,27 +3013,15 @@ function scaleCvPages() {
     return;
   }
 
-  // Mobile: scale to viewport width
-  var scale = Math.min(1, Math.max(0.25, vw / 794));
-  var useTransform = false;
+  // Mobile: keep the real A4 width, but scale the whole preview into the viewport.
   var activePage = wrap.querySelector('.page.active');
-  if (activePage) {
-    activePage.style.zoom = scale.toFixed(4);
-    if (activePage.offsetWidth >= 780) useTransform = true;
-    activePage.style.zoom = '';
-  }
-  wrap.querySelectorAll('.page').forEach(function(p) {
-    if (useTransform) {
-      var pH = p.scrollHeight || 1123;
-      p.style.transformOrigin = 'top left';
-      p.style.transform = 'scale(' + scale.toFixed(4) + ')';
-      p.style.marginBottom = '-' + Math.round(pH * (1 - scale)) + 'px';
-      p.style.width = Math.round(vw / scale) + 'px';
-    } else {
-      p.style.zoom = scale.toFixed(4);
-    }
-  });
-  wrap.style.overflowX = 'hidden';
+  var containerW = Math.max(280, Math.min(vw - 28, outer ? outer.clientWidth || (vw - 28) : (vw - 28)));
+  var scale = Math.min(1, Math.max(0.32, containerW / 794));
+  var activeH = activePage ? Math.max(activePage.scrollHeight || 0, 1123) : 1123;
+  if (outer) outer.style.height = Math.ceil(activeH * scale) + 'px';
+  wrap.style.transform = 'scale(' + scale.toFixed(4) + ')';
+  wrap.style.transformOrigin = 'top left';
+  wrap.style.overflowX = 'visible';
 }
 window.addEventListener('resize', scaleCvPages);
 window.addEventListener('load', scaleCvPages);
