@@ -202,8 +202,8 @@ textarea::placeholder{color:var(--muted)}
 .next-step-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.4rem}
 .next-step-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--green);margin-bottom:.45rem}
 .next-step-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:.3rem;line-height:1.4}
-.next-step-estimate{font-size:12px;color:var(--muted);margin:.6rem 0 .15rem;line-height:1.4}
-.next-step-estimate strong{font-size:22px;font-weight:700;color:var(--green);display:block;line-height:1.2;margin-top:.1rem}
+.next-step-estimate{font-size:12px;color:var(--muted);margin:.6rem 0 .4rem;line-height:1.4}
+.next-step-estimate strong{font-size:13px;font-weight:700;color:var(--green);display:block;line-height:1.4}
 .next-step-sep{border:none;border-top:1px solid var(--border);margin:.6rem 0}
 .next-step-microcopy{font-size:11px;color:var(--muted);margin-bottom:.9rem;line-height:1.5}
 .btn-cv-inline{display:none;align-items:center;gap:.6rem;padding:.8rem 1.2rem;background:linear-gradient(135deg,#2ecf8a 0%,#1ab870 60%,#0fa05a 100%);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;font-family:'Manrope',sans-serif;cursor:pointer;letter-spacing:.01em;transition:all .22s;width:100%;justify-content:center;box-shadow:0 4px 18px rgba(46,207,138,.28),0 1px 3px rgba(0,0,0,.12);position:relative}
@@ -2016,11 +2016,17 @@ function showResult(d) {
     if (cvBtnInline) cvBtnInline.style.display = 'flex';
     if (nextStepUpsell) nextStepUpsell.style.display = 'none';
     if (nextStepEstimate) {
-      var est = d.score_estimado_apos_ajustes;
-      // Exibe estimativa se o CV tem conteúdo real; limita o ganho a 30 pts para evitar promessas irreais
-      if (est && est > score) {
-        var estCapped = Math.min(est, score + 30, 85);
-        nextStepEstimate.innerHTML = 'Estimativa após ajustes: <strong>até ' + estCapped + '%</strong>';
+      var kwFaltando = Array.isArray(d.keywords_faltando) ? d.keywords_faltando.length : 0;
+      var prioridades = Array.isArray(d.prioridades) ? d.prioridades.length : 0;
+      var infoLine = '';
+      if (kwFaltando > 0) {
+        infoLine = kwFaltando + ' keyword' + (kwFaltando > 1 ? 's' : '') + ' da vaga ausente' + (kwFaltando > 1 ? 's' : '') + ' no seu CV';
+        if (prioridades > 0) infoLine += ' · ' + prioridades + ' ajuste' + (prioridades > 1 ? 's' : '') + ' prioritário' + (prioridades > 1 ? 's' : '');
+      } else if (prioridades > 0) {
+        infoLine = prioridades + ' ajuste' + (prioridades > 1 ? 's' : '') + ' prioritário' + (prioridades > 1 ? 's' : '') + ' identificado' + (prioridades > 1 ? 's' : '');
+      }
+      if (infoLine) {
+        nextStepEstimate.innerHTML = '<strong>' + infoLine + '</strong>';
         nextStepEstimate.style.display = '';
       } else {
         nextStepEstimate.style.display = 'none';
