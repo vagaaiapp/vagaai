@@ -2017,10 +2017,10 @@ function showResult(d) {
     if (nextStepUpsell) nextStepUpsell.style.display = 'none';
     if (nextStepEstimate) {
       var est = d.score_estimado_apos_ajustes;
-      // Só mostra estimativa se o CV tem conteúdo real (score >= 15) e o ganho é plausível (≤ 30 pts)
-      var gainPlausible = est && est > score && (est - score) <= 30 && score >= 15;
-      if (gainPlausible) {
-        nextStepEstimate.innerHTML = 'Estimativa após ajustes:<strong>até ' + est + '%</strong>';
+      // Exibe estimativa se o CV tem conteúdo real; limita o ganho a 30 pts para evitar promessas irreais
+      if (est && est > score) {
+        var estCapped = Math.min(est, score + 30, 85);
+        nextStepEstimate.innerHTML = 'Estimativa após ajustes: <strong>até ' + estCapped + '%</strong>';
         nextStepEstimate.style.display = '';
       } else {
         nextStepEstimate.style.display = 'none';
