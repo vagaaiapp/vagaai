@@ -202,8 +202,15 @@ textarea::placeholder{color:var(--muted)}
 .next-step-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.4rem}
 .next-step-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--green);margin-bottom:.45rem}
 .next-step-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:.3rem;line-height:1.4}
-.next-step-estimate{font-size:12px;color:var(--muted);margin:.6rem 0 .4rem;line-height:1.4}
+.next-step-estimate{font-size:12px;color:var(--muted);margin:.75rem 0 .55rem;line-height:1.4}
 .next-step-estimate strong{font-size:13px;font-weight:700;color:var(--green);display:block;line-height:1.4}
+.score-projection{background:linear-gradient(135deg,rgba(78,206,145,.14),rgba(255,255,255,.72));border:1px solid rgba(26,122,74,.18);border-radius:14px;padding:14px 16px;box-shadow:0 10px 28px rgba(13,90,53,.08)}
+.score-projection-label{display:block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:8px}
+.score-projection-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.score-projection-before{font-size:22px;font-weight:800;color:var(--muted);line-height:1}
+.score-projection-arrow{font-size:18px;font-weight:800;color:var(--green)}
+.score-projection-after{font-size:32px;font-weight:900;color:var(--green);line-height:.95;letter-spacing:-.04em}
+.score-projection-caption{display:block;font-size:11px;color:var(--muted);margin-top:7px}
 .next-step-sep{border:none;border-top:1px solid var(--border);margin:.6rem 0}
 .next-step-microcopy{font-size:11px;color:var(--muted);margin-bottom:.9rem;line-height:1.5}
 .btn-cv-inline{display:none;align-items:center;gap:.6rem;padding:.8rem 1.2rem;background:linear-gradient(135deg,#2ecf8a 0%,#1ab870 60%,#0fa05a 100%);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;font-family:'Manrope',sans-serif;cursor:pointer;letter-spacing:.01em;transition:all .22s;width:100%;justify-content:center;box-shadow:0 4px 18px rgba(46,207,138,.28),0 1px 3px rgba(0,0,0,.12);position:relative}
@@ -2020,16 +2027,25 @@ function showResult(d) {
       var prioridades = Array.isArray(d.prioridades) ? d.prioridades.length : 0;
       var estimatedScore = Number(d.score_estimado_apos_ajustes);
       var infoLine = '';
+      var estimateHtml = '';
       if (Number.isFinite(estimatedScore) && estimatedScore > score) {
-        infoLine = 'Aderência projetada após otimização: ' + score + '% → ' + Math.min(100, Math.round(estimatedScore)) + '%';
+        estimateHtml = '<div class="score-projection">'
+          + '<span class="score-projection-label">Aderência projetada após otimização</span>'
+          + '<div class="score-projection-row">'
+          + '<span class="score-projection-before">' + score + '%</span>'
+          + '<span class="score-projection-arrow">→</span>'
+          + '<span class="score-projection-after">' + Math.min(100, Math.round(estimatedScore)) + '%</span>'
+          + '</div>'
+          + '<span class="score-projection-caption">Estimativa realista após aplicar as prioridades do currículo.</span>'
+          + '</div>';
       } else if (kwFaltando > 0) {
         infoLine = kwFaltando + ' keyword' + (kwFaltando > 1 ? 's' : '') + ' da vaga ausente' + (kwFaltando > 1 ? 's' : '') + ' no seu CV';
         if (prioridades > 0) infoLine += ' · ' + prioridades + ' ajuste' + (prioridades > 1 ? 's' : '') + ' prioritário' + (prioridades > 1 ? 's' : '');
       } else if (prioridades > 0) {
         infoLine = prioridades + ' ajuste' + (prioridades > 1 ? 's' : '') + ' prioritário' + (prioridades > 1 ? 's' : '') + ' identificado' + (prioridades > 1 ? 's' : '');
       }
-      if (infoLine) {
-        nextStepEstimate.innerHTML = '<strong>' + infoLine + '</strong>';
+      if (estimateHtml || infoLine) {
+        nextStepEstimate.innerHTML = estimateHtml || ('<strong>' + infoLine + '</strong>');
         nextStepEstimate.style.display = '';
       } else {
         nextStepEstimate.style.display = 'none';
