@@ -1040,7 +1040,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
     {"titulo": "<terceira ação mais impactante>", "explicacao": "<justificativa objetiva>"}
   ],
   "keywords_parcialmente_encontradas": ["<keyword presente no currículo mas mencionada superficialmente ou sem evidência quantificável — DEVE ser mutuamente exclusiva com keywords_encontradas e keywords_faltando>"],
-  "score_estimado_apos_ajustes": <número inteiro de 0 a 100 estimando o score se o candidato implementar as 3 prioridades acima>,
+  "score_estimado_apos_ajustes": <número inteiro de 0 a 100 estimando o score REALISTA se o candidato implementar as 3 prioridades acima — deve ser no máximo score_atual + 30 pontos e nunca ultrapassar 85; se o currículo for vazio ou inválido, retorne o mesmo valor do score>,
   "plano_melhoria": [
     {
       "id": "posicionamento",

@@ -2009,13 +2009,17 @@ function showResult(d) {
   var cvBtnInline = document.getElementById('cvBtnInline');
   var nextStepEstimate = document.getElementById('nextStepEstimate');
   var nextStepUpsell = document.getElementById('nextStepUpsell');
-  var hasCv = !isAnonymous && d.cv_otimizado && d.cv_otimizado.nome;
+  var cvNome = d.cv_otimizado && d.cv_otimizado.nome || '';
+  var cvIsValid = !isAnonymous && cvNome && score >= 15 && !cvNome.startsWith('[');
+  var hasCv = cvIsValid;
   if (hasCv) {
     if (cvBtnInline) cvBtnInline.style.display = 'flex';
     if (nextStepUpsell) nextStepUpsell.style.display = 'none';
     if (nextStepEstimate) {
       var est = d.score_estimado_apos_ajustes;
-      if (est && est > score) {
+      // Só mostra estimativa se o CV tem conteúdo real (score >= 15) e o ganho é plausível (≤ 30 pts)
+      var gainPlausible = est && est > score && (est - score) <= 30 && score >= 15;
+      if (gainPlausible) {
         nextStepEstimate.innerHTML = 'Estimativa após ajustes:<strong>até ' + est + '%</strong>';
         nextStepEstimate.style.display = '';
       } else {
