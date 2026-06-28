@@ -9,8 +9,18 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
+const ALLOWED_ORIGINS = [
+  'https://www.vagaai.app.br',
+  'https://vagaai.app.br',
+  'https://vagaai.vercel.app',
+];
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', 'https://www.vagaai.app.br');
+  const origin = req.headers.origin || '';
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
 
   if (req.method === 'POST') {
@@ -25,7 +35,7 @@ export default async function handler(req, res) {
       if (!userRes.ok) return res.status(401).json({ error: 'Invalid token' });
       const user = await userRes.json();
       const subRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${encodeURIComponent(user.id)}&select=stripe_customer_id`,
+        `${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${encodeURIComponent(user.id)}&stripe_customer_id=not.is.null&order=created_at.desc&limit=1&select=stripe_customer_id`,
         { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
       );
       const rows = await subRes.json();

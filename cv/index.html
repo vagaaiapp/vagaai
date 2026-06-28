@@ -554,6 +554,7 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 .csv-btn-prev:hover{color:var(--app-t1);border-color:var(--app-t3)}
 
 /* Template cards */
+.tpl-group-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding-bottom:.35rem;border-bottom:1px solid var(--app-border);margin-bottom:.6rem}
 .tpl-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.75rem}
 .tpl-card{padding:1rem 1.1rem;background:var(--app-card);border:1.5px solid var(--app-border);border-radius:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.75rem}
 .tpl-card:hover{border-color:rgba(26,122,74,.35);background:var(--app-sub)}
@@ -1157,6 +1158,7 @@ html.no-photo .mod-header{display:block}
       <p class="csv-sub">Selecione o template que melhor representa seu perfil.</p>
     </div>
     <div class="csv-body">
+      <div class="tpl-group-label">Compatíveis com ATS — recomendados para candidaturas online</div>
       <div class="tpl-card-grid">
         <div class="tpl-card" id="tplCardModern" onclick="setTemplate('modern')">
           <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></div>
@@ -1170,6 +1172,9 @@ html.no-photo .mod-header{display:block}
           <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
           <div class="tpl-card-info"><div class="tpl-card-name">Minimalista</div><div class="tpl-card-badge ats">ATS ✓</div></div>
         </div>
+      </div>
+      <div class="tpl-group-label" style="margin-top:1.2rem">Com design visual — ideais para enviar diretamente ao recrutador</div>
+      <div class="tpl-card-grid">
         <div class="tpl-card" id="tplCardClassic" onclick="setTemplate('classic')">
           <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></div>
           <div class="tpl-card-info"><div class="tpl-card-name">Profissional</div><div class="tpl-card-badge">Sidebar</div></div>
@@ -1182,10 +1187,6 @@ html.no-photo .mod-header{display:block}
           <div class="tpl-card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg></div>
           <div class="tpl-card-info"><div class="tpl-card-name">Compacto</div><div class="tpl-card-badge">Sidebar</div></div>
         </div>
-      </div>
-      <div class="csv-ats-note">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-        <span><strong>Moderno</strong>, <strong>Focado</strong> e <strong>Minimalista</strong> são lidos corretamente por sistemas de recrutamento automático (ATS). Os modelos com Sidebar podem ter parsing reduzido em alguns sistemas.</span>
       </div>
     </div>
     <div class="csv-footer">
@@ -2383,11 +2384,16 @@ function printIsolatedA4() {
   setTimeout(runPrint, 800);
 }
 
-function printAfterPreflight() {
+async function printAfterPreflight() {
   var btn = document.getElementById('pfDownloadBtn');
   var lbl = document.getElementById('pfDownloadLbl');
   if (btn) btn.style.pointerEvents = 'none';
   if (lbl) lbl.textContent = 'Gerando PDF…';
+
+  // Token de sessão para autenticar no endpoint de PDF. Sem sessão, o servidor
+  // recusa (401) e caímos no _fallbackPrint() (diálogo de impressão do browser).
+  if (!_sbSession) { try { await _initSbSession(); } catch(e) {} }
+  var _pdfToken = (_sbSession && _sbSession.access_token) ? _sbSession.access_token : null;
 
   var active = getActiveCvPage();
   if (!active) { _fallbackPrint(); return; }
@@ -2417,9 +2423,11 @@ function printAfterPreflight() {
     + '<div class="page-wrap">' + pageHtml + '</div>'
     + '</body></html>';
 
+  var _pdfHeaders = { 'Content-Type': 'application/json' };
+  if (_pdfToken) _pdfHeaders['Authorization'] = 'Bearer ' + _pdfToken;
   fetch('/api/generate-cv-pdf', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: _pdfHeaders,
     body: JSON.stringify({ html: fullHtml, filename: filename }),
     signal: AbortSignal.timeout ? AbortSignal.timeout(25000) : undefined
   })
@@ -2514,6 +2522,12 @@ function applySmartFix(type) {
 
   if (cv.nome) document.title = cv.nome + ' — Currículo';
   _cvData = cv;
+  // Captura o flag de origem-análise AGORA (síncrono, antes de initOptimizedMode
+  // consumi-lo) e agenda a restauração do passo de forma independente: assim ela
+  // roda mesmo que a populção de templates abaixo lance uma exceção.
+  var _optFlagAtLoad = false;
+  try { _optFlagAtLoad = !!localStorage.getItem('vagaai_cv_from_analysis'); } catch(e) {}
+  setTimeout(function() { _restoreCvStep(_optFlagAtLoad); }, 120);
   setTimeout(updateNavAtsScore, 0);
   try {
     var contextRaw = localStorage.getItem('vagaai_cv_context');
@@ -2704,14 +2718,9 @@ function applySmartFix(type) {
   // Setup inline editing
   setTimeout(setupInlineEditing, 150);
 
-  // Restore last active step on refresh (only if initOptimizedMode won't override it)
-  try {
-    var savedStep = parseInt(sessionStorage.getItem('vagaai_cv_step'), 10);
-    var hasOptFlag = !!localStorage.getItem('vagaai_cv_from_analysis');
-    if (savedStep >= 2 && savedStep <= 4 && !hasOptFlag) {
-      setTimeout(function() { goToStep(savedStep); }, 0);
-    }
-  } catch(e) {}
+  // (A restauração do passo agora é agendada no início da init, logo após
+  //  carregar _cvData — ver _restoreCvStep. Isso garante que rode mesmo se a
+  //  populção de templates acima lançar uma exceção.)
 
 })();
 
@@ -3055,9 +3064,22 @@ function saveCvData() {
 var _cvStep = 1;
 var _sfDebTimer = null;
 
+// Restaura o passo ativo no refresh. `hadOptFlag` é capturado de forma síncrona
+// na init (antes de initOptimizedMode consumir o flag): se true, é a 1ª carga
+// vinda da análise e quem controla a navegação é o initOptimizedMode (overlay →
+// passo 4), então não restauramos aqui.
+function _restoreCvStep(hadOptFlag) {
+  try {
+    if (hadOptFlag) return;
+    if (!_cvData) return;
+    var savedStep = parseInt(sessionStorage.getItem('vagaai_cv_step') || localStorage.getItem('vagaai_cv_step'), 10);
+    if (savedStep >= 2 && savedStep <= 4) goToStep(savedStep);
+  } catch(e) {}
+}
+
 function goToStep(n) {
   _cvStep = n;
-  try { sessionStorage.setItem('vagaai_cv_step', n); } catch(e) {}
+  try { sessionStorage.setItem('vagaai_cv_step', n); localStorage.setItem('vagaai_cv_step', n); } catch(e) {}
   var total = 4;
   for (var i = 1; i <= total; i++) {
     var si = document.getElementById('cnsi' + i);

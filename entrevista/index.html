@@ -308,6 +308,18 @@ var _SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 var sb = window.supabase.createClient(_SUPA_URL, _SUPA_ANON);
 
 var _session = null;
+
+// Retorna um access_token válido, renovando a sessão se expirou. _session é
+// capturado no load e tokens Supabase expiram em ~1h — sem renovar, as chamadas
+// falham com "Invalid token" em sessões longas.
+async function getFreshToken() {
+  try {
+    var r = await sb.auth.getSession();
+    if (r && r.data && r.data.session) { _session = r.data.session; return _session.access_token; }
+  } catch(e) {}
+  return (_session && _session.access_token) || '';
+}
+
 var _questions = [];
 var _currentQ = 0;
 var _answers = [];
@@ -552,13 +564,15 @@ async function generateInterview(options) {
   showScreen('screenLoading');
 
   try {
+    var _t = await getFreshToken();
     var res = await fetch('/api/interview', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _session.access_token },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _t },
       body: JSON.stringify({ action: 'generate', job, cv })
     });
     var data = await res.json();
 
+    if (res.status === 401) throw new Error('Sessão expirada. Recarregue a página e faça login novamente.');
     if (res.status === 403) { showScreen('screenGate'); return; }
     if (!res.ok || data.error) throw new Error(data.message || data.error || 'Erro ao gerar perguntas');
 
@@ -758,14 +772,16 @@ async function transcribeRecordedAudio() {
     if (blob.size < 1000) throw new Error('Áudio muito curto');
     setAudioStatus('Transcrevendo sua resposta...');
     var audioBase64 = await blobToBase64(blob);
+    var _t = await getFreshToken();
     var res = await fetch('/api/interview', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _session.access_token },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _t },
       body: JSON.stringify({ action: 'transcribe', audioBase64: audioBase64, mimeType: blob.type })
     });
     var data = await res.json();
+    if (res.status === 401) throw new Error('Sessão expirada. Recarregue a página e faça login novamente.');
     if (res.status === 403) { showScreen('screenGate'); return; }
-    if (!res.ok || data.error) throw new Error(data.error || 'Falha ao transcrever');
+    if (!res.ok || data.error) throw new Error(data.message || data.error || 'Falha ao transcrever');
 
     if (!fillAnswerFromTranscript(data.text)) {
       setAudioStatus('Transcrição retornou vazia. Grave novamente ou responda por texto.', 'err');
@@ -797,13 +813,16 @@ async function evaluateAnswer() {
   var q = _questions[_currentQ];
 
   try {
+    var _t = await getFreshToken();
     var res = await fetch('/api/interview', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _session.access_token },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _t },
       body: JSON.stringify({ action: 'evaluate', question: q.pergunta, answer, job: _jobText, cv: _cvText })
     });
     var feedback = await res.json();
-    if (!res.ok || feedback.error) throw new Error(feedback.error || 'Erro ao avaliar');
+    if (res.status === 401) throw new Error('Sessão expirada. Recarregue a página e faça login novamente.');
+    if (res.status === 403) { showScreen('screenGate'); return; }
+    if (!res.ok || feedback.error) throw new Error(feedback.message || feedback.error || 'Erro ao avaliar');
 
     _answers[_currentQ] = { question: q.pergunta, answer, feedback, categoria: q.categoria };
 

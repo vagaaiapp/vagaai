@@ -193,8 +193,12 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-  const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
-    || req.headers['x-real-ip'] || 'unknown';
+  // Prefere x-real-ip (definido pela Vercel, não spoofável) e, na ausência, o
+  // ÚLTIMO salto do x-forwarded-for. O 1º item do XFF é forjável pelo cliente —
+  // usá-lo permitiria burlar o rate-limit (mesma lógica do analyze.js).
+  const clientIp = (req.headers['x-real-ip'] || '').trim()
+    || (req.headers['x-forwarded-for'] || '').split(',').map(s => s.trim()).filter(Boolean).pop()
+    || 'unknown';
   if (!checkRateLimit(clientIp)) {
     return res.status(429).json({ error: 'Muitas requisições. Tente novamente em um minuto.' });
   }

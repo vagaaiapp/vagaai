@@ -65,53 +65,43 @@ function verifyStripeSignature(rawBody, signature, secret) {
 }
 
 async function upsertCredits(userId, creditsToAdd) {
-  // Tenta buscar registro existente
-  const getRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&select=credits,total_purchased`,
-    {
-      headers: {
-        apikey: SUPABASE_SERVICE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-      },
-    }
-  );
-  const rows = await getRes.json();
-
-  if (rows.length > 0) {
-    // Atualiza créditos existentes
-    const newCredits = (rows[0].credits || 0) + creditsToAdd;
-    const newTotal = (rows[0].total_purchased || 0) + creditsToAdd;
-    const patchRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}`,
-      {
-        method: 'PATCH',
-        headers: {
-          apikey: SUPABASE_SERVICE_KEY,
-          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-          'Content-Type': 'application/json',
-          Prefer: 'return=minimal',
-        },
-        body: JSON.stringify({
-          credits: newCredits,
-          total_purchased: newTotal,
-          updated_at: new Date().toISOString(),
-        }),
-      }
+  const headers = { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` };
+  // Read-modify-write com optimistic lock + retry: o PATCH só altera a linha
+  // se `credits` ainda for igual ao valor lido; se outra requisição concorrente
+  // alterou nesse intervalo, 0 linhas mudam e tentamos de novo (sem perder soma).
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const getRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&select=credits,total_purchased`,
+      { headers }
     );
-    if (!patchRes.ok) {
-      const err = await patchRes.text();
-      throw new Error(`Supabase PATCH error: ${err}`);
+    if (!getRes.ok) throw new Error(`Supabase GET error: ${await getRes.text()}`);
+    const rows = await getRes.json();
+
+    if (rows.length > 0) {
+      const current = rows[0].credits || 0;
+      const patchRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&credits=eq.${current}`,
+        {
+          method: 'PATCH',
+          headers: { ...headers, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+          body: JSON.stringify({
+            credits: current + creditsToAdd,
+            total_purchased: (rows[0].total_purchased || 0) + creditsToAdd,
+            updated_at: new Date().toISOString(),
+          }),
+        }
+      );
+      if (!patchRes.ok) throw new Error(`Supabase PATCH error: ${await patchRes.text()}`);
+      const updated = await patchRes.json().catch(() => []);
+      if (Array.isArray(updated) && updated.length > 0) return; // sucesso
+      continue; // corrida: outro processo alterou credits → relê e retenta
     }
-  } else {
-    // Cria novo registro
+
+    // Sem linha: cria. merge-duplicates evita erro se outra requisição criar
+    // a linha ao mesmo tempo; nesse caso o próximo retry do loop faz o PATCH.
     const postRes = await fetch(`${SUPABASE_URL}/rest/v1/user_credits`, {
       method: 'POST',
-      headers: {
-        apikey: SUPABASE_SERVICE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-        'Content-Type': 'application/json',
-        Prefer: 'resolution=merge-duplicates',
-      },
+      headers: { ...headers, 'Content-Type': 'application/json', Prefer: 'resolution=ignore-duplicates,return=representation' },
       body: JSON.stringify({
         user_id: userId,
         credits: creditsToAdd,
@@ -119,11 +109,12 @@ async function upsertCredits(userId, creditsToAdd) {
         updated_at: new Date().toISOString(),
       }),
     });
-    if (!postRes.ok) {
-      const err = await postRes.text();
-      throw new Error(`Supabase POST error: ${err}`);
-    }
+    if (!postRes.ok) throw new Error(`Supabase POST error: ${await postRes.text()}`);
+    const inserted = await postRes.json().catch(() => []);
+    if (Array.isArray(inserted) && inserted.length > 0) return; // criou a linha
+    continue; // linha já existia (corrida) → retry cai no ramo do PATCH
   }
+  throw new Error('upsertCredits: optimistic lock falhou após retries');
 }
 
 export const config = {
@@ -181,7 +172,7 @@ export default async function handler(req, res) {
   );
 
   // ── Upsert subscription no Supabase ──────────────────────────────────────────
-  async function upsertSubscription(userId, stripeSubId, stripeCustomerId, plan, status, periodEnd, isNew = false) {
+  async function upsertSubscription(userId, stripeSubId, stripeCustomerId, plan, status, periodEnd, periodStart, isNew = false) {
     const now = new Date();
     const body = {
       user_id: userId,
@@ -190,6 +181,9 @@ export default async function handler(req, res) {
       plan,
       status,
       current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+      // current_period_start é necessário para o reset mensal da cota Starter
+      // (ver resetStarterCounterIfNeeded em analyze.js).
+      current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
       updated_at: now.toISOString(),
     };
     if (isNew) {
@@ -273,7 +267,7 @@ export default async function handler(req, res) {
       console.warn(`Webhook: no user found for customer ${customerId}`);
       return res.status(200).json({ received: true, note: 'no_user' });
     }
-    await upsertSubscription(userId, sub.id, customerId, planInfo.plan, sub.status, sub.current_period_end, eventType === 'customer.subscription.created');
+    await upsertSubscription(userId, sub.id, customerId, planInfo.plan, sub.status, sub.current_period_end, sub.current_period_start, eventType === 'customer.subscription.created');
     // Email de boas-vindas (apenas na criação)
     if (eventType === 'customer.subscription.created' && email && process.env.CRON_SECRET) {
       fetch(`https://www.vagaai.app.br/api/onboarding-emails`, {
@@ -292,7 +286,7 @@ export default async function handler(req, res) {
     const customerId = sub.customer;
     const userId = await getUserIdByCustomerOrEmail(customerId, null);
     if (userId) {
-      await upsertSubscription(userId, sub.id, customerId, 'free', 'canceled', null);
+      await upsertSubscription(userId, sub.id, customerId, 'free', 'canceled', null, null);
       console.log(`Webhook: subscription canceled → user=${userId} downgraded to free`);
     }
     return res.status(200).json({ received: true, note: 'subscription_canceled' });
@@ -358,36 +352,42 @@ export default async function handler(req, res) {
     return res.status(200).json({ received: true, note: 'unknown_amount' });
   }
 
-  // Idempotência
+  // ── Idempotência atômica ──────────────────────────────────────────────────
+  // Insere o marcador ANTES de creditar. webhook_events.stripe_session_id é
+  // UNIQUE, então uma 2ª entrega da mesma sessão é ignorada (retorna vazio) e
+  // pulamos — sem a janela de corrida do antigo "checa, depois processa".
+  let firstDelivery = false;
   try {
-    const checkRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/webhook_events?stripe_session_id=eq.${encodeURIComponent(session.id)}&select=id`,
-      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
-    );
-    const existing = await checkRes.json();
-    if (existing.length > 0) {
-      console.log(`Webhook: session ${session.id} already processed — skipping`);
-      return res.status(200).json({ received: true, note: 'already_processed' });
+    const insRes = await fetch(`${SUPABASE_URL}/rest/v1/webhook_events`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=ignore-duplicates,return=representation',
+      },
+      body: JSON.stringify({ stripe_session_id: session.id, user_id: userId, amount: amountTotal, processed_at: new Date().toISOString() }),
+    });
+    if (!insRes.ok) {
+      console.error('Webhook: idempotency insert HTTP', insRes.status);
+      // Sem o marcador não há como garantir exatamente-uma-vez: aborta com 500
+      // para o Stripe reenviar (melhor reprocessar que creditar em dobro).
+      return res.status(500).json({ error: 'Idempotency store unavailable' });
     }
+    const inserted = await insRes.json().catch(() => []);
+    firstDelivery = Array.isArray(inserted) && inserted.length > 0;
   } catch (e) {
-    console.warn('Webhook: idempotency check failed', e.message);
+    console.error('Webhook: idempotency insert failed', e.message);
+    return res.status(500).json({ error: 'Idempotency store unavailable' });
+  }
+
+  if (!firstDelivery) {
+    console.log(`Webhook: session ${session.id} already processed — skipping`);
+    return res.status(200).json({ received: true, note: 'already_processed' });
   }
 
   try {
     await upsertCredits(userId, creditsToAdd);
-    // Registra evento processado
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/webhook_events`, {
-        method: 'POST',
-        headers: {
-          apikey: SUPABASE_SERVICE_KEY,
-          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-          'Content-Type': 'application/json',
-          Prefer: 'resolution=ignore-duplicates',
-        },
-        body: JSON.stringify({ stripe_session_id: session.id, user_id: userId, amount: amountTotal, processed_at: new Date().toISOString() }),
-      });
-    } catch (e) { /* não bloqueia se falhar */ }
 
     // Envia e-mail de confirmação via Resend
     if (RESEND_API_KEY && customerEmail) {
@@ -419,6 +419,14 @@ export default async function handler(req, res) {
     return res.status(200).json({ received: true, credits_added: creditsToAdd });
   } catch (err) {
     console.error('Webhook: failed to upsert credits', err);
+    // Reverte o marcador de idempotência para o Stripe poder reprocessar —
+    // senão o usuário pagaria e ficaria sem créditos (o retry seria pulado).
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/webhook_events?stripe_session_id=eq.${encodeURIComponent(session.id)}`, {
+        method: 'DELETE',
+        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
+      });
+    } catch (_) {}
     return res.status(500).json({ error: 'Failed to update credits' });
   }
 }

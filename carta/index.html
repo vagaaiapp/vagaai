@@ -364,6 +364,17 @@ var _cartaTexto = '';
 var _cartaAssunto = '';
 var _autoGenerateFromAnalysis = false;
 
+// Retorna um access_token válido, renovando a sessão se expirou. _session é
+// capturado no load e tokens Supabase expiram em ~1h — sem renovar, a geração
+// falha com "Invalid token" em sessões longas.
+async function getFreshToken() {
+  try {
+    var r = await sb.auth.getSession();
+    if (r && r.data && r.data.session) { _session = r.data.session; return _session.access_token; }
+  } catch(e) {}
+  return (_session && _session.access_token) || '';
+}
+
 (async function() {
   var r = await sb.auth.getSession();
   _session = r.data.session;
@@ -783,13 +794,15 @@ async function generate() {
   btn.innerHTML = '<div class="spinner"></div> Gerando carta…';
 
   try {
+    var _t = await getFreshToken();
     var res = await fetch('/api/cover-letter', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _session.access_token },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _t },
       body: JSON.stringify({ job, cv, tom: _tom })
     });
     var data = await res.json();
 
+    if (res.status === 401) { throw new Error('Sessão expirada. Recarregue a página e tente novamente.'); }
     if (res.status === 403) {
       document.getElementById('mainSection').style.display = 'none';
       document.getElementById('gateSection').style.display = 'block';

@@ -7,9 +7,48 @@ import puppeteer from 'puppeteer-core';
 
 export const config = { maxDuration: 30 };
 
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
+
+async function getUserFromToken(token) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` },
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+// Rate limit por usuário (em memória) — evita abuso do Chromium headless,
+// que é caro em compute. Combina com a autenticação obrigatória abaixo.
+const _userHits = new Map();
+const PDF_USER_LIMIT = 15;                 // máx 15 PDFs/hora por usuário
+const PDF_USER_WINDOW_MS = 60 * 60 * 1000;
+function checkUserRateLimit(userId) {
+  const now = Date.now();
+  const entry = _userHits.get(userId) || { count: 0, resetAt: now + PDF_USER_WINDOW_MS };
+  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + PDF_USER_WINDOW_MS; }
+  entry.count++;
+  _userHits.set(userId, entry);
+  return entry.count <= PDF_USER_LIMIT;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // Autenticação obrigatória — o endpoint roda Chromium headless (caro), então
+  // não pode ser invocado anonimamente.
+  const token = (req.headers['authorization'] || '').startsWith('Bearer ')
+    ? req.headers['authorization'].slice(7).trim() : null;
+  if (!token) return res.status(401).json({ error: 'Autenticação necessária.' });
+  const user = await getUserFromToken(token);
+  if (!user?.id) return res.status(401).json({ error: 'Token inválido. Faça login novamente.' });
+  if (!checkUserRateLimit(user.id)) {
+    return res.status(429).json({ error: 'Limite de geração de PDF atingido. Aguarde antes de tentar novamente.' });
   }
 
   let html, filename;
