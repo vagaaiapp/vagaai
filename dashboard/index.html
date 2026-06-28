@@ -3441,7 +3441,16 @@ function mergeApplications() {
     });
   });
 
-  items.sort(function(a, b) { return b.score - a.score; });
+  // Ordena por: 1) candidaturas ativas (têm tracker) primeiro, 2) mais recente, 3) maior score
+  var statusPriority = { entrevista:5, oferta:4, em_processo:3, aplicada:2, cv_pronto:1, quero_aplicar:1, analisada:0 };
+  items.sort(function(a, b) {
+    var aActive = a.hasTracker && a.status !== 'recusada' && a.status !== 'encerrada' ? 1 : 0;
+    var bActive = b.hasTracker && b.status !== 'recusada' && b.status !== 'encerrada' ? 1 : 0;
+    if (bActive !== aActive) return bActive - aActive;
+    var aSP = statusPriority[a.status] || 0, bSP = statusPriority[b.status] || 0;
+    if (bSP !== aSP) return bSP - aSP;
+    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+  });
   return items;
 }
 
