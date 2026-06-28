@@ -1324,7 +1324,8 @@ body.frame-fullscreen .sidebar { display: none !important; }
   .sidebar { display: none; }
   :root { --sb: 0px; }
   .main { margin-left: 0; }
-  .content { padding: 22px 16px 40px; }
+  .header { display: none; }
+  .content { padding: 82px 16px 104px; }
   .psa-grid { grid-template-columns: 1fr; }
   .opp-cols { grid-template-columns: 1fr; }
   .pg-title { font-size: 27px; }
@@ -1345,6 +1346,79 @@ body.frame-fullscreen .sidebar { display: none !important; }
 }
 @media (max-width: 768px) {
   .user-dropdown { left: 16px; bottom: 16px; }
+}
+
+/* ── Mobile navigation shell ───────────────────────────────── */
+.dash-mobile-ui { display:none; }
+
+@media (max-width:768px) {
+  body.mobile-drawer-open { overflow:hidden; }
+  .dash-mobile-ui { display:block; }
+
+  .dm-top {
+    position:fixed; top:0; left:0; right:0; height:58px; z-index:650;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 14px; background:rgba(245,247,245,.92);
+    border-bottom:1px solid rgba(7,18,9,.08); backdrop-filter:blur(18px);
+  }
+  [data-theme="dark"] .dm-top { background:rgba(7,13,8,.9); border-color:rgba(255,255,255,.07); }
+  .dm-menu-btn {
+    width:40px; height:40px; border:1px solid rgba(26,122,74,.18); border-radius:12px;
+    background:var(--bg-card); color:var(--t1); display:grid; place-items:center;
+    box-shadow:0 8px 24px rgba(7,18,9,.08); cursor:pointer;
+  }
+  .dm-menu-btn svg { width:21px; height:21px; }
+  .dm-brand { display:flex; align-items:center; gap:8px; text-decoration:none; }
+  .dm-brand img:first-child { width:28px; height:28px; border-radius:8px; }
+  .dm-brand img:last-child { height:30px; width:auto; }
+  [data-theme="dark"] .dm-brand img:last-child { filter:brightness(0) invert(1); }
+  .dm-top-spacer { width:40px; }
+
+  .dm-overlay {
+    position:fixed; inset:0; z-index:690; background:rgba(3,12,7,.52);
+    backdrop-filter:blur(2px); opacity:0; pointer-events:none; transition:opacity .2s;
+  }
+  .dm-drawer {
+    position:fixed; z-index:700; top:0; bottom:0; left:0; width:min(82vw,310px);
+    padding:22px 18px; background:var(--bg-card); border-radius:0 24px 24px 0;
+    box-shadow:24px 0 70px rgba(0,0,0,.22); transform:translateX(-105%);
+    transition:transform .24s cubic-bezier(.2,.8,.2,1); display:flex; flex-direction:column;
+  }
+  body.mobile-drawer-open .dm-overlay { opacity:1; pointer-events:auto; }
+  body.mobile-drawer-open .dm-drawer { transform:translateX(0); }
+  .dm-drawer-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .dm-drawer-logo { display:flex; align-items:center; gap:9px; }
+  .dm-drawer-logo img:first-child { width:30px; height:30px; border-radius:9px; }
+  .dm-drawer-logo img:last-child { height:34px; width:auto; }
+  [data-theme="dark"] .dm-drawer-logo img:last-child { filter:brightness(0) invert(1); }
+  .dm-close { width:36px; height:36px; border:1px solid var(--border); border-radius:11px; background:var(--bg-sub); color:var(--t1); display:grid; place-items:center; cursor:pointer; }
+  .dm-drawer-label { font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--t3); margin:8px 4px 10px; }
+  .dm-drawer-nav { display:grid; gap:5px; }
+  .dm-drawer-btn {
+    width:100%; border:0; border-radius:12px; background:transparent; color:var(--t2);
+    display:flex; align-items:center; gap:11px; padding:12px 11px;
+    font:700 13px Manrope,system-ui; text-align:left; cursor:pointer;
+  }
+  .dm-drawer-btn svg { width:18px; height:18px; flex-shrink:0; }
+  .dm-drawer-btn.active { background:rgba(78,206,145,.14); color:var(--t1); box-shadow:inset 3px 0 0 var(--gb-bright); }
+  .dm-drawer-foot { margin-top:auto; padding-top:16px; border-top:1px solid var(--border); display:flex; align-items:center; gap:10px; color:var(--t2); }
+  .dm-drawer-user strong { display:block; font-size:12px; color:var(--t1); }
+  .dm-drawer-user span { font-size:11px; color:var(--t3); }
+
+  .dm-bottom {
+    position:fixed; left:10px; right:10px; bottom:10px; height:66px; z-index:660;
+    background:var(--bg-card); border:1px solid rgba(7,18,9,.08); border-radius:24px;
+    box-shadow:0 14px 44px rgba(7,18,9,.16); display:grid; grid-template-columns:repeat(5,1fr); overflow:hidden;
+  }
+  [data-theme="dark"] .dm-bottom { border-color:rgba(255,255,255,.08); }
+  .dm-bottom-btn {
+    border:0; background:transparent; color:var(--t3); display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:4px; font:700 10.5px Manrope,system-ui;
+    min-width:0; cursor:pointer;
+  }
+  .dm-bottom-btn svg { width:20px; height:20px; }
+  .dm-bottom-btn.active { color:#fff; background:#0b2116; }
+  .dm-bottom-btn.active svg { color:var(--gb-bright); }
 }
 
 /* ── Candidaturas redesign ──────────────────────────────────── */
@@ -1389,7 +1463,6 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .caf-opt { font-size:11px; font-weight:600; padding:4px 11px; border-radius:14px; border:1px solid var(--border); background:var(--bg-sub); color:var(--t2); cursor:pointer; transition:all .12s; }
 .caf-opt.on { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); }
 .cand-layout { display:grid; grid-template-columns:1fr; gap:16px; }
-.cand-layout.has-detail { grid-template-columns:minmax(0,1fr) 340px; }
 .cand-list-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); overflow:hidden; }
 .cand-list-head { display:grid; grid-template-columns:44px minmax(0,1.5fr) 115px 100px minmax(120px,.9fr) 28px; gap:10px; align-items:center; padding:10px 18px; background:var(--bg-sub); border-bottom:1px solid var(--border); }
 .clh-lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--t3); }
@@ -1409,8 +1482,12 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .cr-next-txt.urgent { color:var(--s-red); }
 .cr-next-txt.warn { color:var(--s-amb); }
 .cr-arrow { color:var(--t3); display:flex; align-items:center; justify-content:center; }
-.cand-detail { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); display:flex; flex-direction:column; position:sticky; top:20px; }
-.cd-top { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+.cd-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); z-index:290; display:flex; align-items:center; justify-content:center; padding:24px; overflow-y:auto; }
+.cd-modal-overlay.hidden { display:none; }
+body.cd-modal-open { overflow:hidden; }
+.cand-detail { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,.32); display:flex; flex-direction:column; width:min(560px,100%); max-height:calc(100vh - 48px); margin:auto; animation:cdRise .24s cubic-bezier(.22,1,.36,1); }
+@keyframes cdRise { from { opacity:0; transform:translateY(16px) scale(.985); } to { opacity:1; transform:none; } }
+.cd-top { padding:18px 20px 14px; border-bottom:1px solid var(--border); flex-shrink:0; }
 .cd-close { background:none; border:none; cursor:pointer; color:var(--t3); font-size:18px; padding:2px; float:right; margin-top:-4px; margin-right:-4px; line-height:1; }
 .cd-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--t3); margin-bottom:6px; margin-top:4px; }
 .cd-title { font-size:16px; font-weight:800; color:var(--t1); line-height:1.25; margin-bottom:3px; }
@@ -1419,7 +1496,7 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .cd-ring { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0; }
 .cd-score-lbl { font-size:11px; color:var(--t3); }
 .cd-status-wrap { margin-left:auto; }
-.cd-body { padding:16px 20px; overflow-y:auto; max-height:500px; display:flex; flex-direction:column; gap:14px; }
+.cd-body { padding:16px 20px; overflow-y:auto; flex:1 1 auto; min-height:0; display:flex; flex-direction:column; gap:14px; }
 .cd-section { display:flex; flex-direction:column; gap:6px; }
 .cd-section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--t3); }
 .cd-meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
@@ -1441,7 +1518,7 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .kw-tag { font-size:11px; font-weight:600; padding:3px 9px; border-radius:12px; }
 .kw-missing { background:var(--s-red-bg); color:var(--s-red); }
 .kw-present { background:var(--s-grn-bg); color:var(--s-grn); }
-.cd-actions { display:flex; gap:8px; flex-wrap:wrap; padding:14px 20px; border-top:1px solid var(--border); }
+.cd-actions { display:flex; gap:8px; flex-wrap:wrap; padding:14px 20px; border-top:1px solid var(--border); flex-shrink:0; }
 .cd-btn { font-size:11.5px; font-weight:600; padding:7px 14px; border:1px solid var(--border); border-radius:8px; background:var(--bg-sub); color:var(--t2); cursor:pointer; font-family:inherit; transition:all .15s; text-decoration:none; display:inline-flex; align-items:center; }
 .cd-btn:hover { border-color:var(--gb-emerald); color:var(--gb-emerald); }
 .cd-btn.cd-cta { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); }
@@ -1483,7 +1560,8 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .cand-empty-title { font-size:15px; font-weight:700; color:var(--t1); margin-bottom:6px; }
 .cand-empty-sub { font-size:12.5px; color:var(--t3); line-height:1.5; }
 @media (max-width:1200px) { .cand-summary { grid-template-columns:1fr 1fr; } }
-@media (max-width:768px) { .cand-summary { grid-template-columns:1fr 1fr; } .cand-layout.has-detail { grid-template-columns:1fr; } }
+@media (max-width:768px) { .cand-summary { grid-template-columns:1fr 1fr; } }
+@media (max-width:560px) { .cd-modal-overlay { padding:0; align-items:flex-end; } .cand-detail { width:100%; max-height:92vh; border-radius:18px 18px 0 0; } }
 
 /* ── Alertas redesign ──────────────────────────────────────── */
 .al-page { display:flex; flex-direction:column; gap:20px; }
@@ -1798,6 +1876,8 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
 <body>
 
 <!-- Modals -->
+<div class="cd-modal-overlay hidden" id="candDetailPanel" onclick="if(event.target===this)closeCandDetail()"></div>
+
 <div class="modal-overlay hidden" id="delConfirm">
   <div class="modal-box" style="max-width:320px">
     <div style="font-size:28px;margin-bottom:10px">🗑️</div>
@@ -1954,6 +2034,90 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     </div>
   </div>
 </aside>
+
+<!-- MOBILE NAVIGATION -->
+<div class="dash-mobile-ui" aria-hidden="false">
+  <div class="dm-top">
+    <button class="dm-menu-btn" onclick="toggleMobileDrawer()" aria-label="Abrir menu" aria-expanded="false" id="dmMenuBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <button class="dm-brand" onclick="switchDashTab('painel')" aria-label="Ir para visão geral" style="border:0;background:transparent;cursor:pointer">
+      <img src="/logo-icon.svg" alt="">
+      <img src="/logo.svg" alt="VagaAI">
+    </button>
+    <span class="dm-top-spacer" aria-hidden="true"></span>
+  </div>
+  <div class="dm-overlay" onclick="closeMobileDrawer()" aria-hidden="true"></div>
+  <aside class="dm-drawer" aria-label="Menu mobile">
+    <div class="dm-drawer-head">
+      <div class="dm-drawer-logo">
+        <img src="/logo-icon.svg" alt="">
+        <img src="/logo.svg" alt="VagaAI">
+      </div>
+      <button class="dm-close" onclick="closeMobileDrawer()" aria-label="Fechar menu">×</button>
+    </div>
+    <div class="dm-drawer-label">Seu espaço</div>
+    <nav class="dm-drawer-nav" aria-label="Navegação completa">
+      <button class="dm-drawer-btn active" data-tab="painel" onclick="switchDashTab('painel')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span>Visão geral</span>
+      </button>
+      <button class="dm-drawer-btn" data-tab="app" onclick="switchDashTab('app')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+        <span>Analisar vaga</span>
+      </button>
+      <button class="dm-drawer-btn" data-tab="vagas" onclick="switchDashTab('vagas')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+        <span>Candidaturas</span>
+      </button>
+      <button class="dm-drawer-btn" data-tab="entrevistas" onclick="switchDashTab('entrevistas')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+        <span>Entrevistas</span>
+      </button>
+      <button class="dm-drawer-btn" data-tab="carta" onclick="switchDashTab('carta')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
+        <span>Carta para vaga</span>
+      </button>
+      <button class="dm-drawer-btn" data-tab="alertas" onclick="switchDashTab('alertas')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span>Alertas</span>
+      </button>
+      <button class="dm-drawer-btn" data-tab="plano" onclick="switchDashTab('plano')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <span>Conta e plano</span>
+      </button>
+    </nav>
+    <div class="dm-drawer-foot">
+      <div class="sb-avatar"><span id="dmAvatarInitials">?</span></div>
+      <div class="dm-drawer-user">
+        <strong id="dmDisplayName">—</strong>
+        <span id="dmPlanLabel">VagaAI</span>
+      </div>
+    </div>
+  </aside>
+  <nav class="dm-bottom" aria-label="Navegação principal mobile">
+    <button class="dm-bottom-btn active" data-tab="painel" onclick="switchDashTab('painel')" aria-label="Visão geral">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      <span>Início</span>
+    </button>
+    <button class="dm-bottom-btn" data-tab="app" onclick="switchDashTab('app')" aria-label="Analisar vaga">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+      <span>Analisar</span>
+    </button>
+    <button class="dm-bottom-btn" data-tab="vagas" onclick="switchDashTab('vagas')" aria-label="Candidaturas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+      <span>Candid.</span>
+    </button>
+    <button class="dm-bottom-btn" data-tab="alertas" onclick="switchDashTab('alertas')" aria-label="Alertas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <span>Alertas</span>
+    </button>
+    <button class="dm-bottom-btn" data-tab="plano" onclick="switchDashTab('plano')" aria-label="Conta">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span>Conta</span>
+    </button>
+  </nav>
+</div>
 
 <!-- USER ACCOUNT MODAL -->
 <div class="user-account-overlay" id="userDropdown" role="dialog" aria-modal="true" aria-label="Menu da conta" onclick="if(event.target===this)closeDropdown()">
@@ -2235,7 +2399,6 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
               <div style="padding:32px;text-align:center;color:var(--t3);font-size:13px">Carregando…</div>
             </div>
           </div>
-          <div id="candDetailPanel" style="display:none"></div>
         </div>
       </div>
 
@@ -2643,6 +2806,10 @@ async function init() {
     document.getElementById('dropEmail').textContent = email;
     var sbDisp = document.getElementById('sbDisplayName');
     if (sbDisp) sbDisp.textContent = displayName;
+    var dmInitials = document.getElementById('dmAvatarInitials');
+    if (dmInitials) dmInitials.textContent = initials;
+    var dmName = document.getElementById('dmDisplayName');
+    if (dmName) dmName.textContent = displayName;
 
     window._perfilData = { email, displayName };
     window._userName = displayName;
@@ -3824,21 +3991,21 @@ function openCandDetail(id) {
   var all = mergeApplications();
   var item = all.find(function(i){ return i.id === id; });
   if (!item) return;
-  var layout = document.getElementById('candLayout');
   var panel = document.getElementById('candDetailPanel');
-  if (!layout || !panel) return;
-  layout.classList.add('has-detail');
-  panel.style.display = 'block';
+  if (!panel) return;
   panel.innerHTML = renderCandDetail(item);
+  panel.classList.remove('hidden');
+  panel.scrollTop = 0;
+  document.body.classList.add('cd-modal-open');
   renderCandList(filterApplications(all), all);
 }
 
 function closeCandDetail() {
+  if (!_candSelectedId) return;
   _candSelectedId = null;
-  var layout = document.getElementById('candLayout');
   var panel = document.getElementById('candDetailPanel');
-  if (layout) layout.classList.remove('has-detail');
-  if (panel) { panel.style.display = 'none'; panel.innerHTML = ''; }
+  if (panel) { panel.classList.add('hidden'); panel.innerHTML = ''; }
+  document.body.classList.remove('cd-modal-open');
   var all = mergeApplications();
   renderCandList(filterApplications(all), all);
 }
@@ -5667,7 +5834,57 @@ function trackAnalysis(analysisId) {
   var item = mergeApplications().find(function(i){ return i.id === analysisId; });
   if (!item) { showToast('Análise não encontrada.', 'error'); return; }
   if (item.hasTracker) { openTrackerEditById(item.trackerId); return; }
-  addToTracker(item.empresa, item.cargo, item.score, item.id);
+  openQuickTrack(item);
+}
+
+function openQuickTrack(item) {
+  var r = item.result || {};
+  var ji = r.job_info || {};
+  var salario = ji.salario || r.salario || '';
+  var jobUrl  = ji.job_url  || r.job_url  || '';
+
+  var statusOptions = [
+    ['quero_aplicar','Quero aplicar'],['cv_pronto','CV pronto'],['aplicada','Aplicada'],
+    ['em_processo','Em processo'],['entrevista','Entrevista'],['oferta','Oferta'],
+    ['recusada','Recusada'],['encerrada','Encerrada'],['arquivada','Arquivada']
+  ];
+  var selectOpts = statusOptions.map(function(s) {
+    return '<option value="'+s[0]+'"'+(s[0]==='quero_aplicar'?' selected':'')+'>'+s[1]+'</option>';
+  }).join('');
+
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML =
+    '<div class="modal-box" style="max-width:400px">'+
+      '<button class="modal-close">✕</button>'+
+      '<div class="modal-title">Rastrear candidatura</div>'+
+      '<div style="background:var(--bg-sub);border-radius:var(--r-sm);padding:11px 14px;margin-bottom:18px">'+
+        '<div style="font-size:13px;font-weight:700;color:var(--t1)">'+escHtml(item.cargo||'')+'</div>'+
+        '<div style="font-size:11.5px;color:var(--t3);margin-top:2px">'+escHtml(item.empresa||'')+'</div>'+
+      '</div>'+
+      '<input type="hidden" id="tkAnalysisId" value="'+escHtml(item.id||'')+'">'+
+      '<input type="hidden" id="tkEmpresa"    value="'+escHtml(item.empresa||'')+'">'+
+      '<input type="hidden" id="tkCargo"      value="'+escHtml(item.cargo||'')+'">'+
+      '<input type="hidden" id="tkScore"      value="'+(item.score||0)+'">'+
+      '<input type="hidden" id="tkSalario"    value="'+escHtml(salario)+'">'+
+      '<input type="hidden" id="tkUrl"        value="'+escHtml(jobUrl)+'">'+
+      '<div class="modal-field"><label class="modal-label">Status</label><select class="modal-input" id="tkStatus">'+selectOpts+'</select></div>'+
+      '<div class="modal-field" id="tkInterviewRow" style="display:none">'+
+        '<label class="modal-label">Data e hora da entrevista <span style="color:var(--t3);font-weight:400">(opcional)</span></label>'+
+        '<input class="modal-input" type="datetime-local" id="tkInterviewAt">'+
+      '</div>'+
+      '<div class="modal-field"><label class="modal-label">Notas <span style="color:var(--t3);font-weight:400">(opcional)</span></label>'+
+        '<textarea class="modal-input" id="tkNota" rows="3" style="resize:vertical" placeholder="Observações, contatos, próximos passos…"></textarea>'+
+      '</div>'+
+      '<button class="modal-btn tracker-save-btn">Rastrear</button>'+
+    '</div>';
+
+  document.body.appendChild(modal);
+  modal.querySelector('.modal-close').addEventListener('click', function(){ modal.remove(); });
+  modal.querySelector('.tracker-save-btn').addEventListener('click', function(){ saveTrackerModal(modal, null); });
+  modal.addEventListener('click', function(e){ if (e.target === modal) modal.remove(); });
+  var tkSt = modal.querySelector('#tkStatus'), tkIr = modal.querySelector('#tkInterviewRow');
+  if (tkSt && tkIr) tkSt.addEventListener('change', function(){ tkIr.style.display = tkSt.value === 'entrevista' ? '' : 'none'; });
 }
 
 async function saveTracker(btn) {
@@ -5714,6 +5931,32 @@ async function saveTracker(btn) {
   }
 }
 
+function _normalDashTab(tab) {
+  return tab === 'entrevista' ? 'entrevistas' : tab;
+}
+
+function setDashboardNavActive(tab) {
+  var activeId = _normalDashTab(tab || 'painel');
+  document.querySelectorAll('.sb-btn[data-tab], .dm-drawer-btn[data-tab], .dm-bottom-btn[data-tab]').forEach(function(el) {
+    var isActive = el.dataset.tab === activeId;
+    el.classList.toggle('active', isActive);
+    el.setAttribute('aria-current', isActive ? 'page' : 'false');
+  });
+}
+
+function toggleMobileDrawer() {
+  var open = !document.body.classList.contains('mobile-drawer-open');
+  document.body.classList.toggle('mobile-drawer-open', open);
+  var btn = document.getElementById('dmMenuBtn');
+  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function closeMobileDrawer() {
+  document.body.classList.remove('mobile-drawer-open');
+  var btn = document.getElementById('dmMenuBtn');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+
 function _hideShellFrame() {
   var wrap = document.getElementById('shellFrameWrap');
   var hdr  = document.querySelector('.header');
@@ -5748,11 +5991,8 @@ async function _showShellFrame(href, activeId) {
   wrap.style.zIndex = '100';
   wrap.style.display = 'block';
   // Highlight active sidebar button
-  document.querySelectorAll('.sb-btn[data-tab]').forEach(function(el) {
-    var isActive = el.dataset.tab === activeId;
-    el.classList.toggle('active', isActive);
-    el.setAttribute('aria-current', isActive ? 'page' : 'false');
-  });
+  setDashboardNavActive(activeId);
+  closeMobileDrawer();
   try { history.pushState({ vagaaiShell: activeId, href: href }, '', '/dashboard#' + activeId); } catch(e) {}
   // Load iframe via fetch+write (bypasses X-Frame-Options)
   var embeddedUrl = href + (href.indexOf('?') > -1 ? '&' : '?') + 'embedded=1';
@@ -5777,21 +6017,20 @@ async function _showShellFrame(href, activeId) {
 }
 
 function switchDashTab(tab, href) {
+  var requestedTab = tab;
+  closeMobileDrawer();
   // Frame-based sections
   if (tab === 'app')        { _showShellFrame(href || '/app',        'app');         return; }
   if (tab === 'carta')      { _showShellFrame(href || '/carta',      'carta');       return; }
   if (tab === 'entrevista') { _showShellFrame(href || '/entrevista', 'entrevistas'); return; }
   // Native dashboard tabs
+  tab = _normalDashTab(requestedTab);
   _hideShellFrame();
   ['painel','vagas','entrevistas','alertas','plano'].forEach(function(t) {
     var el = document.getElementById('tab-'+t);
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
-  document.querySelectorAll('.sb-btn[data-tab]').forEach(function(el) {
-    var isActive = el.dataset.tab === tab;
-    el.classList.toggle('active', isActive);
-    el.setAttribute('aria-current', isActive ? 'page' : 'false');
-  });
+  setDashboardNavActive(tab);
   var labels = { painel:'Visão geral', vagas:'Candidaturas', entrevistas:'Entrevistas', alertas:'Alertas', plano:'Conta e Plano' };
   var subs   = { painel:'Sua busca de emprego', vagas:'Rastreamento de candidaturas', entrevistas:'Simulação e preparo', alertas:'Configurações de alertas', plano:'Assinatura e conta' };
   var bcSec = document.getElementById('bc-sec');
@@ -5826,7 +6065,32 @@ window.addEventListener('popstate', function(e) {
   }
 });
 
+// Retoma um checkout iniciado na landing (intenção guardada em localStorage).
+// O usuário já está autenticado aqui, então anexamos client_reference_id e
+// navegamos na MESMA aba (window.open programático seria bloqueado por popup).
+function resumePendingCheckout() {
+  var raw = null;
+  try { raw = localStorage.getItem('vagaai_pending_checkout'); } catch (e) { return false; }
+  if (!raw) return false;
+  try { localStorage.removeItem('vagaai_pending_checkout'); } catch (e) {}
+  var data = null;
+  try { data = JSON.parse(raw); } catch (e) { return false; }
+  if (!data || !data.url) return false;
+  // valida destino — só aceita links de checkout do Stripe
+  if (!/^https:\/\/buy\.stripe\.com\//.test(data.url)) return false;
+  // expira em 30 min para não disparar um checkout surpresa em visitas futuras
+  if (!data.ts || (Date.now() - data.ts) > 30 * 60 * 1000) return false;
+  if (!(currentUserId && currentSession && currentSession.user)) return false;
+  var sep = data.url.indexOf('?') !== -1 ? '&' : '?';
+  var url = data.url + sep + 'client_reference_id=' + encodeURIComponent(currentUserId)
+          + '&prefilled_email=' + encodeURIComponent(currentSession.user.email || '');
+  window.location.assign(url);
+  return true;
+}
+
 function openRequestedDashboardTab() {
+  if (resumePendingCheckout()) return;
+
   var requestedTab = '';
   try {
     requestedTab = new URLSearchParams(window.location.search).get('tab') ||
@@ -5910,6 +6174,7 @@ async function loadSubscriptionData() {
     el = document.getElementById('planoVagas'); if (el) el.textContent = Array.isArray(_kTracked) ? String(_kTracked.length) : '—';
     // Sidebar label
     el = document.getElementById('sbPlanLabel'); if (el) el.textContent = planLabel;
+    el = document.getElementById('dmPlanLabel'); if (el) el.textContent = planLabel;
     // Hero subtitle
     var heroAnDesc = sub.plan === 'pro' ? 'análises ilimitadas' : sub.plan === 'starter' ? '10 análises/mês' : 'plano gratuito';
     el = document.getElementById('planoHeroSub');
@@ -6105,7 +6370,12 @@ function closeDropdown() {
 }
 
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeDropdown();
+  if (e.key !== 'Escape') return;
+  closeDropdown();
+  var del = document.getElementById('delConfirm');
+  if (del && !del.classList.contains('hidden')) return; // confirmação de exclusão tem prioridade
+  var cd = document.getElementById('candDetailPanel');
+  if (cd && !cd.classList.contains('hidden')) closeCandDetail();
 });
 
 // ─── SUPORTE ──────────────────────────────────────────────────────────────────
