@@ -780,7 +780,9 @@ export default async function handler(req, res) {
     // 5. Chama a IA somente após dedução confirmada
     const cvPrompt = `Você é especialista em criação de currículos otimizados para sistemas ATS (Applicant Tracking System). Crie um currículo profissional completo em texto puro para o candidato abaixo.
 
-${jobCtx ? `VAGA ALVO — use as keywords desta vaga para otimizar o currículo:\n${jobCtx.substring(0, 2000)}\n\n` : ''}DADOS DO CANDIDATO:
+⚠️ REGRA ABSOLUTA: Use SOMENTE as informações fornecidas nos DADOS DO CANDIDATO. NUNCA invente experiências, anos de carreira, certificações, métricas, números, habilidades ou realizações que não estejam explicitamente nos dados. Se uma informação não foi fornecida, não a inclua.
+
+${jobCtx ? `VAGA ALVO — incorpore as keywords desta vaga APENAS onde se aplicam às experiências reais do candidato:\n${jobCtx.substring(0, 2000)}\n\n` : ''}DADOS DO CANDIDATO:
 Nome: ${nome}
 ${cargo_objetivo ? `Cargo / Objetivo: ${cargo_objetivo}` : ''}
 ${experiencias ? `Experiência profissional: ${experiencias}` : ''}
@@ -791,9 +793,8 @@ INSTRUÇÕES:
 - Gere o currículo em texto puro (sem markdown, sem asteriscos, sem caracteres especiais)
 - Use MAIÚSCULAS apenas para títulos de seção
 - Estrutura obrigatória: RESUMO PROFISSIONAL → EXPERIÊNCIA PROFISSIONAL → FORMAÇÃO ACADÊMICA → HABILIDADES
-- Resumo: 3-4 linhas com keywords da vaga incorporadas naturalmente
-- Experiência: bullets começando com verbo de ação no passado + resultado mensurável
-- Se a vaga foi fornecida, incorpore as principais keywords de forma natural
+- Resumo: 3-4 linhas com keywords da vaga incorporadas naturalmente — apenas onde verdadeiras
+- Experiência: bullets começando com verbo de ação no passado; só inclua métricas que estão nos dados fornecidos
 - Seja conciso e objetivo — máximo 1 página equivalente
 - No topo, coloque o nome em destaque seguido do cargo/objetivo
 
@@ -943,6 +944,8 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
 
   const prompt = `Você é um especialista em recrutamento e sistemas ATS (Applicant Tracking System). Analise a compatibilidade entre o currículo e a vaga abaixo e gere uma versão otimizada do currículo.
 
+⚠️ REGRA ABSOLUTA ANTI-ALUCINAÇÃO: O cv_otimizado deve conter SOMENTE informações presentes no CURRÍCULO fornecido. NUNCA invente experiências, anos de carreira, certificações, números, métricas, habilidades ou realizações ausentes do CV original. Otimize a redação e as keywords — jamais os fatos.
+
 VAGA:
 ${job}
 
@@ -994,7 +997,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
         "empresa": "<empresa>",
         "periodo": "<período ex: Jan 2020 – Dez 2022>",
         "bullets": [
-          "<bullet otimizado: verbo de ação + resultado mensurável + keyword relevante da vaga>",
+          "<bullet otimizado: verbo de ação + resultado ou contexto do CV original + keyword da vaga onde aplicável — NUNCA invente métricas>",
           "<bullet 2>",
           "<bullet 3>"
         ]

@@ -74,16 +74,19 @@ export default async function handler(req, res) {
 
   const prompt = `Você é especialista em carreira no Brasil. Escreva uma carta de apresentação personalizada.
 
+⚠️ REGRA ABSOLUTA: Use SOMENTE informações presentes no CURRÍCULO abaixo. NUNCA invente experiências, anos de carreira, certificações, métricas, números, habilidades ou realizações que não estejam explicitamente no CV. Se uma informação não está no CV, não a mencione.
+
 TOM: ${tomText}
 VAGA: ${job.slice(0, 2500)}
 CURRÍCULO: ${cv.slice(0, 2500)}
 
 Escreva uma carta de apresentação que:
 1. Abre com um gancho forte (NÃO comece com "Prezado(a)")
-2. Conecta as experiências mais relevantes do CV com os requisitos da vaga
-3. Demonstra conhecimento sobre a empresa/área
+2. Conecta APENAS as experiências presentes no CV com os requisitos da vaga
+3. Demonstra alinhamento com a empresa baseado no que o CV comprova
 4. Tem entre 200-280 palavras
 5. Termina com um chamado à ação claro
+6. Não fabrica conquistas: só mencione métricas e realizações que estão literalmente no CV
 
 Retorne APENAS este JSON (sem markdown):
 {
