@@ -1631,10 +1631,13 @@ function extractJobPreview(text, jobUrlStr) {
   }
 
   // Padrões que descartam linhas que NÃO são atividades reais
-  var notActivityRE = /^(R\$|a partir|sal[aá]rio|empresa confidencial|por que essa empresa|confidencial|aplicar|candidatar|ver mais|outras vagas|compartilhar|salvar|seguir|denunciar|imprimir|enviar|baixar|acessar|entrar|cadastr|cookie|termos|copyright|©|home|voltar|menu|\?$)/i;
-  var looksLikeActivity = /\b(gerenciar|desenvolver|criar|analisar|coordenar|elaborar|implementar|executar|monitorar|garantir|definir|planejar|liderar|atuar|acompanhar|suporte|responsável|contribuir|trabalhar|colaborar|propor|estruturar|otimizar|entregar|apoiar|conduzir|avaliar|identificar|mapear|construir|manter|reportar|treinar|capacitar)\b/i;
+  var notActivityRE = /^(R\$|de R\$|a partir|sal[aá]rio|empresa confidencial|por que essa empresa|confidencial|aplicar|candidatar|ver mais|outras vagas|vagas relacionadas|compartilhar|salvar|seguir|denunciar|imprimir|enviar|baixar|acessar|entrar|cadastr|cookie|termos|copyright|©|home|voltar|menu)/i;
+  // Linha que parece listagem de outra vaga: começa com número + "vaga", só localização, só faixa salarial
+  var looksLikeJobListing = /^\d+\s*vaga|^de r\$\s*[\d.,]+\s*(a|–|-)\s*r\$|^[A-ZÁÉÍÓÚÃÕ][a-záéíóúãõ\s,]+,\s*[A-ZÁÉÍÓÚÃÕ][a-záéíóúãõ\s]+$|^\s*[-–·]\s*r\$|tempo integral|período integral/i;
+  var looksLikeActivity = /\b(gerenciar|desenvolver|criar|analisar|coordenar|elaborar|implementar|executar|monitorar|garantir|definir|planejar|liderar|atuar|acompanhar|suporte|responsável|contribuir|trabalhar|colaborar|propor|estruturar|otimizar|entregar|apoiar|conduzir|avaliar|identificar|mapear|construir|manter|reportar|treinar|capacitar|realizar|participar|gerir|assegurar|promover|negociar)\b/i;
 
   // Coleta linhas de atividades após o primeiro cabeçalho de seção encontrado
+  // Exige que a linha pareça uma atividade real (verbo de ação) para evitar capturar dados de outras vagas
   var taskLines = [];
   var collecting = false;
   for (var p = 0; p < workLines.length; p++) {
@@ -1642,9 +1645,9 @@ function extractJobPreview(text, jobUrlStr) {
     if (newJobTitleRE.test(l) && p > 5) break;
     if (sectionHeaderRE.test(l)) { collecting = true; continue; }
     if (collecting && l.length > 25 && l.length < 200) {
-      if (notActivityRE.test(l)) continue;
+      if (notActivityRE.test(l) || looksLikeJobListing.test(l)) continue;
       var clean = cleanBullet(l);
-      if (clean.length > 25 && !/:\s*$/.test(clean) && !notActivityRE.test(clean)) {
+      if (clean.length > 25 && !/:\s*$/.test(clean) && !notActivityRE.test(clean) && looksLikeActivity.test(clean)) {
         taskLines.push(clean);
       }
     }
@@ -1657,6 +1660,7 @@ function extractJobPreview(text, jobUrlStr) {
       return l.length > 30 && l.length < 180
         && !sectionHeaderRE.test(l)
         && !notActivityRE.test(l)
+        && !looksLikeJobListing.test(l)
         && !/:\s*$/.test(l)
         && looksLikeActivity.test(l);
     }).map(cleanBullet);
