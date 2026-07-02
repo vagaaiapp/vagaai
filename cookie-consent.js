@@ -29,6 +29,13 @@
     bar.setAttribute('role', 'dialog');
     bar.setAttribute('aria-label', 'Aviso de cookies');
     bar.style.cssText = 'position:fixed;left:16px;right:16px;bottom:16px;z-index:2147483000;max-width:560px;margin:0 auto;background:#0a1a10;color:#e8ede9;border:1px solid rgba(62,207,142,.3);border-radius:14px;padding:16px 18px;box-shadow:0 12px 40px rgba(0,0,0,.35);font-family:Inter,system-ui,sans-serif;display:flex;flex-direction:column;gap:12px';
+    // Nas páginas internas mobile há a bottom-nav fixa (66px na base) — sobe
+    // o banner para não cobrir a navegação enquanto o usuário não decide.
+    try {
+      if (window.matchMedia('(max-width:760px)').matches && document.querySelector('.vm-bottom')) {
+        bar.style.bottom = '92px';
+      }
+    } catch (e) {}
     bar.innerHTML =
       '<div style="font-size:13px;line-height:1.55;color:#cdd8d1">' +
       'Usamos cookies para entender o uso do site e melhorar sua experiência. ' +

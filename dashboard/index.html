@@ -1565,6 +1565,11 @@ body.cd-modal-open { overflow:hidden; }
   .cd-btn.cd-danger { margin-left:0; }
 }
 .cand-kanban { overflow-x:auto; padding-bottom:8px; }
+/* Mobile: fade na borda direita sinaliza que há mais colunas no scroll */
+.cand-kanban-wrap { position:relative; }
+@media (max-width:768px) {
+  .cand-kanban-wrap::after { content:''; position:absolute; top:0; right:0; bottom:8px; width:34px; background:linear-gradient(to left, var(--bg-sub), transparent); pointer-events:none; border-radius:0 12px 12px 0; }
+}
 .kk-board { display:flex; gap:12px; min-width:900px; }
 .kk-col { flex:1; min-width:160px; background:var(--bg-sub); border-radius:12px; padding:12px; }
 .kk-col-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
@@ -1599,7 +1604,7 @@ body.cd-modal-open { overflow:hidden; }
   .cand-header { gap:12px; }
   .cand-header-right { width:100%; justify-content:space-between; align-items:stretch; }
   .cand-view-switcher { flex:1; min-width:0; }
-  .cvs-btn { flex:1; padding:8px 9px; font-size:12px; }
+  .cvs-btn { flex:1; padding:12px 9px; font-size:12px; min-height:44px; }
   .cand-new-btn { padding:9px 12px; white-space:nowrap; }
   .cand-summary { grid-template-columns:1fr; gap:10px; }
   .cand-priority,
@@ -2523,7 +2528,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
 
       <!-- Kanban view -->
       <div id="candKanbanView" style="display:none">
-        <div class="cand-kanban"><div class="kk-board" id="candKanbanBoard"></div></div>
+        <div class="cand-kanban-wrap"><div class="cand-kanban"><div class="kk-board" id="candKanbanBoard"></div></div></div>
       </div>
 
       <!-- Calendar view -->
