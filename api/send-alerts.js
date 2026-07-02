@@ -57,6 +57,9 @@ const BR_SOURCES = new Set([
 // Regex de palavras comuns em PT-BR para detectar idioma
 const PT_BR_PATTERN = /\b(vaga|empresa|cargo|área|experiência|conhecimento|gestão|análise|desenvolvimento|requisitos|benefícios|você|para|com|são|ção|ões|remuneração|contratação|oportunidade|atuação|salário|remoto|híbrido|presencial)\b/i;
 
+// Marketplaces de freela/bico — publicam pedidos de orçamento, não vagas de emprego.
+const GIG_MARKETPLACES = /\b(cronoshare|getninjas|get ninjas|workana|99freelas|99 freelas|freelancer\.com|fiverr|upwork)\b/i;
+
 // Marcadores de idiomas estrangeiros NÃO-PT/NÃO-EN (alemão, francês, holandês, espanhol).
 // Vagas com esses sinais são ruído para um alerta brasileiro (ex.: "Produktmanager (m/w/d) Berlin").
 // Inglês é mantido de propósito — vagas remotas internacionais em EN são relevantes.
@@ -315,6 +318,15 @@ function applyExtendedFilters(jobs, profile, options = {}) {
   // Tokens de cargo para o gate de relevância (calculado uma vez, fora do loop).
   const cargoTokens = cargoGateTokens(profile);
 
+  // Cargo genérico de 1 palavra ("Marketing") deixa o gate fraco — tudo passa,
+  // de "Auxiliar" a "Estagiário". Quando o perfil tem keywords ricas (3+),
+  // exige ao menos uma no título/descrição (só no estrito; o relaxado preserva volume).
+  const _cargoWordCount = _norm(profile.cargo_desejado || '')
+    .split(/\s+/).filter(w => w.length > 2 && !ROLE_STOPWORDS.has(w)).length;
+  const _profileKws = (Array.isArray(profile.keywords) ? profile.keywords : [])
+    .map(k => _norm(String(k))).filter(k => k.length > 2);
+  const _requireKw = _cargoWordCount <= 1 && _profileKws.length >= 3;
+
   const filtered = jobs.filter(job => {
     const title = (job.title || '').toLowerCase();
     const desc = (job.snippet || job.description || '').toLowerCase();
@@ -330,10 +342,17 @@ function applyExtendedFilters(jobs, profile, options = {}) {
     // É o que impede "Auxiliar de Account Payable" / "Data Analyst" num alerta de Marketing.
     if (!jobMatchesCargo(job, cargoTokens)) return false;
 
+    // Gate complementar para cargo de 1 palavra: exige uma keyword do perfil
+    if (!relaxPreferences && _requireKw && !_profileKws.some(k => combinedNorm.includes(k))) return false;
+
     // Exclui dados ruins: empresa com CPF/CNPJ ou placeholder genérico
     const companyRaw = (job.company || '').trim();
     if (/^\d[\d.\-\/]+\d$/.test(companyRaw)) return false; // CPF/CNPJ como nome
     if (/^(empresa|company|empregador|n\/a|confidencial)$/i.test(companyRaw) && !job.title) return false;
+
+    // Exclui marketplaces de freela/bico — são pedidos de orçamento, não vagas.
+    // Evidência de produção: "Consultor de Marketing para melhorar o seo" (Cronoshare).
+    if (GIG_MARKETPLACES.test(companyRaw) || GIG_MARKETPLACES.test(String(job.link || job.url || ''))) return false;
 
     // Sinal brasileiro da vaga (fonte BR, texto PT-BR ou localização BR)
     const _brText = title + ' ' + desc + ' ' + (job.location || '');
@@ -358,6 +377,12 @@ function applyExtendedFilters(jobs, profile, options = {}) {
     if (nivelPerfil === 'pleno' || nivelPerfil === 'senior' || nivelPerfil === 'sênior') {
       if (/\b(estágio|estagio|estagiário|estagiario|trainee|jovem aprendiz|aprendiz|junior|júnior)\b/i.test(title)) return false;
     }
+
+    // Estágio nunca paga R$4k+: com salário mínimo definido nesse patamar, corta
+    // estágio/aprendiz/trainee mesmo com nível "qualquer" (o default do perfil).
+    // Evidência de produção: "Estagiário De Marketing" enviado a perfil com piso de R$6.000.
+    const _salFloor = parseInt(profile.salario_min) || 0;
+    if (_salFloor >= 4000 && /\b(est[áa]gio|estagi[áa]ri[oa]|jovem aprendiz|aprendiz|trainee)\b/i.test(title)) return false;
 
     // Senioridade bidirecional: descarta vagas 3+ níveis distantes do alvo (só estrito).
     // Pega o caso oposto ao filtro acima: júnior/pleno recebendo diretoria/C-level.
@@ -388,20 +413,22 @@ function applyExtendedFilters(jobs, profile, options = {}) {
     if (!relaxPreferences && (job._score || 0) < 20) return false;
 
     // Filtra por formato(s) preferido(s)
-    if (!relaxPreferences && formatos.length > 0) {
+    if (formatos.length > 0) {
       const wantsOnlyRemote = formatos.length === 1 && (formatos[0] === 'remoto' || formatos[0] === 'remote');
       const mentionsAnyMode = /remoto|remote|home.?office|h[ií]brido|presencial|hybrid|on.?site/i.test(combined);
 
       if (mentionsAnyMode) {
-        // Vaga menciona modalidade → exige compatibilidade
+        // Vaga que DECLARA modalidade incompatível nunca entra — nem no passe
+        // relaxado. Evidência de produção: "Presencial LONDRINA/PR" enviada a
+        // quem pediu Remoto+SP via fallback relaxado → dispensada pelo usuário.
         const matches = formatos.some(fmt => {
           const tokens = fmtMap[fmt] || [fmt];
           return tokens.some(t => combined.includes(t));
         });
         if (!matches) return false;
-      } else if (wantsOnlyRemote) {
-        // Usuário quer só remoto e a vaga não menciona nenhum formato:
-        // se a localização parece ser uma cidade física (não "remoto/brasil/brazil") → exclui
+      } else if (!relaxPreferences && wantsOnlyRemote) {
+        // Heurística (só no estrito): usuário quer só remoto e a vaga não declara
+        // formato — se a localização parece cidade física, exclui
         const loc = (job.location || '').toLowerCase();
         const locSeemsPhysical = loc.length > 3
           && !/remoto|remote|home.?office|brasil|brazil|worldwide|anywhere/i.test(loc);
@@ -1642,12 +1669,27 @@ function calculateNextRun(profile, fromDate = new Date()) {
 }
 
 // ── DEDUPLICAÇÃO ──────────────────────────────────────────────────────────────
+// URL canônica (host+path, sem query/hash) — pega a mesma vaga anunciada com
+// títulos ligeiramente diferentes ("Analista - Especialista" vs "Analista | Especialista").
+function canonicalJobLink(link) {
+  try {
+    const u = new URL(String(link || ''));
+    const path = u.pathname.replace(/\/+$/, '');
+    if (!path || path === '/') return '';   // raiz do site não identifica vaga
+    return (u.host + path).toLowerCase();
+  } catch { return ''; }
+}
+
 function deduplicateJobs(jobs) {
   const seen = new Set();
+  const seenLinks = new Set();
   return jobs.filter(j => {
     const key = jobHash(j.title, j.company, j.location);
     if (seen.has(key)) return false;
+    const lk = canonicalJobLink(j.link || j.url);
+    if (lk && seenLinks.has(lk)) return false;
     seen.add(key);
+    if (lk) seenLinks.add(lk);
     return true;
   });
 }
@@ -1752,6 +1794,9 @@ function buildEmailHTML(profile, jobs, userName, userId, plan = 'free', ent = nu
         : `Encontramos <strong>${jobs.length} oportunidade${jobs.length > 1 ? 's' : ''}</strong> para você. Veja as vagas gratuitamente e analise a que mais combina com seu perfil.`}
       <br>Perfil: <strong>${escEmail(profile.cargo_desejado)}</strong>${profile.cidade ? ' · <strong>' + escEmail(profile.cidade) + '</strong>' : ''}.
       Clique em "Analisar" para ver o score ATS real do seu currículo antes de se candidatar.
+      ${profile._proSummary
+        ? `<div style="margin-top:12px;background:#f0faf4;border:1px solid #bfe8d2;border-left:3px solid #1a8f5c;border-radius:8px;padding:10px 13px;color:#14532d;font-size:13px;line-height:1.6"><strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#1a8f5c;margin-bottom:3px">Análise do dia · Pro</strong>${escEmail(profile._proSummary)}</div>`
+        : ''}
       ${profile._relaxedMatches
         ? '<br><span style="display:inline-block;margin-top:8px;color:#8a6513;background:#fff8e9;border:1px solid #f0d7a5;border-radius:6px;padding:6px 9px">Algumas oportunidades próximas ao seu perfil foram incluídas porque os filtros exatos não retornaram resultados.</span>'
         : ''}
@@ -1855,25 +1900,67 @@ async function upsertAlertCache(userId, jobs, { isDemand = false } = {}) {
 // Re-ranqueia as melhores vagas com Claude Haiku para compatibilidade real (nao
 // estimada) - apenas planos pagos. Timeout curto + fallback ao score heuristico:
 // se a IA falhar ou demorar, devolve as vagas como estavam (nunca bloqueia o envio).
-async function aiRescoreJobs(jobs, profile) {
+// Resumo executivo do lote (Pro): 2 frases em PT-BR citando a melhor vaga e o
+// porquê. Retorna '' em qualquer falha — o e-mail nunca depende disto.
+async function aiProSummary(topJobs, profile, cvHint = '') {
+  if (!process.env.ANTHROPIC_API_KEY || !Array.isArray(topJobs) || !topJobs.length) return '';
+  const lines = topJobs.map((j, i) =>
+    `${i + 1}. ${String(j.title || '').slice(0, 80)} — ${String(j.company || '').slice(0, 40)} (${String(j.location || '').slice(0, 30)})`
+  ).join('\n');
+  const prompt = `Você é um conselheiro de carreira. Em NO MÁXIMO 2 frases curtas em português (sem markdown, sem emoji, sem saudação), diga ao candidato qual das vagas abaixo é a melhor aposta e por quê, considerando o perfil dele. Seja específico e direto.
+
+PERFIL: ${profile.cargo_desejado || ''} · ${profile.nivel || 'qualquer'} · ${profile.cidade || ''}${cvHint ? `\nCURRÍCULO: ${cvHint}` : ''}
+
+VAGAS DE HOJE:
+${lines}`;
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 220,
+        temperature: 0.3,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!resp.ok) return '';
+    const data = await resp.json();
+    const text = (data.content?.[0]?.text || '').trim();
+    // Guarda-chuva: resposta longa demais ou com cara de erro → descarta
+    if (!text || text.length > 420) return '';
+    return text;
+  } catch { return ''; }
+}
+
+async function aiRescoreJobs(jobs, profile, cvHint = '') {
   if (!process.env.ANTHROPIC_API_KEY || !Array.isArray(jobs) || jobs.length < 2) return jobs;
   const top = jobs.slice(0, 20);
+  // Inclui salário e um trecho da descrição — só título|empresa|local fazia a IA
+  // dar score parecido para match forte e vaga genérica de mesmo nome.
   const compact = top.map((j, i) =>
-    `${i}. ${String(j.title || '').slice(0, 90)} | ${String(j.company || '').slice(0, 40)} | ${String(j.location || '').slice(0, 40)}`
+    `${i}. ${String(j.title || '').slice(0, 90)} | ${String(j.company || '').slice(0, 40)} | ${String(j.location || '').slice(0, 40)} | ${String(j.salary || 's/sal').slice(0, 30)} | ${String(j.snippet || j.description || '').replace(/\s+/g, ' ').slice(0, 140)}`
   ).join('\n');
+  const formatoStr = Array.isArray(profile.formato) ? profile.formato.join(', ')
+    : (profile.formato || 'qualquer');
   const prompt = `Você avalia a compatibilidade de vagas com o perfil de um candidato brasileiro.
 
 PERFIL:
 - Cargo desejado: ${profile.cargo_desejado || 'não informado'}
 - Senioridade: ${profile.nivel || 'qualquer'}
-- Cidade/Modalidade: ${profile.cidade || 'não informada'}
+- Cidade: ${profile.cidade || 'não informada'} · Modalidade preferida: ${formatoStr}
 - Competências: ${(Array.isArray(profile.keywords) ? profile.keywords.join(', ') : '') || 'não informadas'}
 ${profile.salario_min ? `- Salário mínimo desejado: R$ ${profile.salario_min}` : ''}
-
-VAGAS (índice. título | empresa | local):
+${cvHint ? `\nCURRÍCULO REAL DO CANDIDATO (use como sinal mais forte que o perfil declarado):\n${cvHint}\n` : ''}
+VAGAS (índice. título | empresa | local | salário | trecho da descrição):
 ${compact}
 
-Para cada vaga dê um score de 0 a 100 de compatibilidade com o perfil, pesando aderência de cargo, senioridade e localização. Responda APENAS com um array JSON, sem nenhum texto extra, no formato:
+Para cada vaga dê um score de 0 a 100 de compatibilidade, pesando aderência de cargo/experiência real, senioridade, modalidade e localização. Penalize fortemente (score < 25): estágio/aprendiz quando o perfil não é de estágio; anúncios de freela/bico/orçamento; vaga que declara modalidade incompatível com a preferida (ex.: presencial em outra cidade para quem quer remoto); vagas claramente de outro país sem opção Brasil. Responda APENAS com um array JSON, sem nenhum texto extra, no formato:
 [{"i":0,"score":87},{"i":1,"score":42}]`;
 
   try {
@@ -2102,8 +2189,29 @@ async function processUserAlert(profile, options = {}) {
   // Guarda de deadline reserva tempo do maxDuration p/ não derrubar o lote inteiro
   // conforme a base cresce. Em modo teste legado não roda (sem efeitos colaterais).
   const deadline = options.deadline || (Date.now() + 50000);
+  let cvHint = '';
   if (!isTest && plan !== 'free' && jobs.length > 1 && Date.now() < deadline - 12000) {
-    jobs = await aiRescoreJobs(jobs, profile);
+    // CV real da última análise do usuário: sinal muito mais forte que o perfil
+    // declarado ("compatibilidade estimada" vira quase score ATS real).
+    try {
+      const ar = await fetch(
+        `${SUPABASE_URL}/rest/v1/analyses?user_id=eq.${userId}&order=created_at.desc&limit=1&select=result`,
+        { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+      );
+      const arRows = await ar.json();
+      const cv = arRows?.[0]?.result?.cv_otimizado;
+      if (cv) {
+        const skills = Array.isArray(cv.habilidades) ? cv.habilidades.slice(0, 12).join(', ') : '';
+        const exps = Array.isArray(cv.experiencias)
+          ? cv.experiencias.slice(0, 3).map(e => e && e.cargo).filter(Boolean).join('; ') : '';
+        cvHint = [
+          cv.titulo_profissional || '',
+          exps ? `Experiências: ${exps}` : '',
+          skills ? `Skills: ${skills}` : '',
+        ].filter(Boolean).join(' | ').slice(0, 400);
+      }
+    } catch (e) { /* sem CV → re-rank segue só com o perfil */ }
+    jobs = await aiRescoreJobs(jobs, profile, cvHint);
   }
 
   // Volume por plano: free=5, starter=15, pro=sem limite
@@ -2122,8 +2230,15 @@ async function processUserAlert(profile, options = {}) {
     if (ud.user_metadata?.name) userName = ud.user_metadata.name.split(' ')[0];
   } catch(e) {}
 
+  // Resumo executivo por IA no topo do e-mail (exclusivo Pro): 2 frases sobre
+  // o lote e a melhor vaga. Fail-open: qualquer falha → e-mail sai sem resumo.
+  let proSummary = '';
+  if (!isTest && plan === 'pro' && jobs.length >= 2 && Date.now() < deadline - 9000) {
+    proSummary = await aiProSummary(jobs.slice(0, 6), profile, cvHint);
+  }
+
   // Envia email (copy e profundidade variam por plano)
-  const deliveryProfile = { ...effectiveProfile, _relaxedMatches: relaxedMatches };
+  const deliveryProfile = { ...effectiveProfile, _relaxedMatches: relaxedMatches, _proSummary: proSummary };
   const html = buildEmailHTML(deliveryProfile, jobs, userName, userId, plan, ent);
   const emailRes = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -2143,7 +2258,7 @@ async function processUserAlert(profile, options = {}) {
       fetch(`${SUPABASE_URL}/rest/v1/job_alert_history`, {
         method: 'POST',
         headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-        body: JSON.stringify({ user_id: userId, sent_at: new Date().toISOString(), jobs_count: 0, status: 'failed', error: String(err).slice(0, 500) }),
+        body: JSON.stringify({ user_id: userId, sent_at: new Date().toISOString(), jobs_count: 0, status: 'failed', error: String(err).slice(0, 500), diagnostics: { sourceCounts, rawCount, dedupCount, newCount, strictCount, relaxedCount } }),
       }).catch(e => console.warn('job_alert_history (failed) insert failed:', e.message));
     }
     throw new Error(`Resend error: ${err}`);
@@ -2167,7 +2282,7 @@ async function processUserAlert(profile, options = {}) {
     fetch(`${SUPABASE_URL}/rest/v1/job_alert_history`, {
       method: 'POST',
       headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ user_id: userId, sent_at: now.toISOString(), jobs_count: jobs.length, status: 'sent' }),
+      body: JSON.stringify({ user_id: userId, sent_at: now.toISOString(), jobs_count: jobs.length, status: 'sent', diagnostics: { sourceCounts, rawCount, dedupCount, newCount, strictCount, relaxedCount, aiRescored: jobs.some(j => j._ai_scored) || false } }),
     }).catch(e => console.warn('job_alert_history insert failed:', e.message));
     // Atualiza cache do dashboard
     await upsertAlertCache(userId, jobs, { isDemand });
