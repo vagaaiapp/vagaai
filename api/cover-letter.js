@@ -1,6 +1,8 @@
 // /api/cover-letter.js — Gera carta de apresentação personalizada
 // Disponível a partir do plano Starter
 
+import { resolvePlan } from '../lib/entitlements.js';
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -35,10 +37,8 @@ async function getUserPlan(userId) {
       headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
     });
     const rows = await res.json();
-    const sub = rows?.[0];
-    const paidStatuses = ['active', 'trialing', 'past_due'];
-    if (!sub || !paidStatuses.includes(sub.status)) return 'free';
-    return sub.plan || 'free';
+    // Fonte única de verdade de plano/status (lib/entitlements.js)
+    return resolvePlan(rows?.[0]);
   } catch { return 'free'; }
 }
 

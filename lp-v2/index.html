@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Pare de enviar currículos no escuro. Compare vaga e CV, descubra onde perde aderência e fortaleça sua candidatura sem inventar experiências.">
+  <title>VagaAI | Descubra onde seu currículo perde pontos</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #071b11;
+      --ink-2: #173a28;
+      --copy: #486052;
+      --muted: #718579;
+      --line: #dce8e0;
+      --line-strong: #c8dacf;
+      --paper: #f6f8f5;
+      --paper-2: #edf3ef;
+      --card: #fff;
+      --forest: #08291a;
+      --forest-2: #0d4930;
+      --green: #178758;
+      --green-2: #42d291;
+      --mint: #dff7ea;
+      --mint-2: #effaf4;
+      --amber: #e6a436;
+      --red: #e96d6d;
+      --shadow-sm: 0 10px 30px rgba(8, 41, 26, .08);
+      --shadow-lg: 0 35px 90px rgba(8, 41, 26, .16);
+      --radius: 24px;
+      --radius-sm: 14px;
+      --max: 1180px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "Manrope", sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+      overflow-x: hidden;
+      text-rendering: optimizeLegibility;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 99;
+      opacity: .025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    a { color: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { font: inherit; }
+    img { max-width: 100%; display: block; }
+    .container { width: min(var(--max), calc(100% - 48px)); margin: 0 auto; }
+    .serif { font-family: "Lora", serif; }
+    .green { color: var(--green); }
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--green);
+      font-size: 11px;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    .kicker::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green-2);
+      box-shadow: 0 0 0 5px rgba(66, 210, 145, .12);
+    }
+    .section-title {
+      margin-top: 18px;
+      font-family: "Lora", serif;
+      font-size: clamp(34px, 4.5vw, 58px);
+      line-height: 1.08;
+      letter-spacing: -.035em;
+      text-wrap: balance;
+    }
+    .section-copy {
+      margin-top: 18px;
+      max-width: 650px;
+      color: var(--copy);
+      font-size: 17px;
+      line-height: 1.75;
+    }
+    .section-head.center { max-width: 780px; margin: 0 auto 54px; text-align: center; }
+    .section-head.center .section-copy { margin-left: auto; margin-right: auto; }
+    .section { padding: 112px 0; position: relative; }
+    .icon {
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    /* NAV */
+    .nav-wrap {
+      position: fixed;
+      top: 14px;
+      left: 0;
+      right: 0;
+      z-index: 80;
+      pointer-events: none;
+    }
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 120;
+      width: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--green), var(--green-2));
+      box-shadow: 0 0 18px rgba(66,210,145,.45);
+    }
+    .nav {
+      width: min(1160px, calc(100% - 32px));
+      height: 64px;
+      margin: 0 auto;
+      padding: 0 10px 0 20px;
+      border: 1px solid rgba(200, 218, 207, .8);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, .82);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 10px 38px rgba(8, 41, 26, .08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: auto;
+    }
+    .brand { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+    .brand img { width: 31px; height: 31px; object-fit: contain; }
+    .brand span { font-family: "Lora", serif; color: var(--ink); font-size: 18px; font-weight: 700; letter-spacing: -.03em; }
+    .brand span i { color: var(--green); font-style: normal; }
+    .nav-links { display: flex; align-items: center; gap: 28px; }
+    .nav-links a {
+      color: var(--copy);
+      font-size: 13px;
+      font-weight: 650;
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--green); }
+    .nav-actions { display: flex; align-items: center; gap: 9px; }
+    .btn {
+      min-height: 44px;
+      padding: 0 19px;
+      border: 1px solid transparent;
+      border-radius: 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s, background .2s, border-color .2s;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary {
+      color: #fff;
+      background: var(--green);
+      box-shadow: 0 10px 25px rgba(23, 135, 88, .24);
+    }
+    .btn-primary:hover { background: #107449; box-shadow: 0 14px 32px rgba(23, 135, 88, .3); }
+    .btn-dark { color: #fff; background: var(--forest); box-shadow: 0 14px 30px rgba(8, 41, 26, .18); }
+    .btn-dark:hover { background: #0e3a26; }
+    .btn-ghost { color: var(--ink-2); background: transparent; border-color: var(--line); }
+    .btn-ghost:hover { background: var(--mint-2); border-color: var(--line-strong); }
+    .menu-btn { display: none; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 11px; background: #fff; }
+
+    /* HERO */
+    .hero {
+      min-height: 860px;
+      padding: 150px 0 80px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      background-image:
+        linear-gradient(rgba(23,135,88,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(23,135,88,.035) 1px, transparent 1px);
+      background-size: 48px 48px;
+      background-position: center center;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      width: 820px;
+      height: 820px;
+      right: -240px;
+      top: -210px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 42% 42%, rgba(66, 210, 145, .2), rgba(66, 210, 145, .05) 45%, transparent 70%);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      left: -270px;
+      bottom: -280px;
+      border-radius: 50%;
+      border: 1px solid rgba(23, 135, 88, .12);
+      box-shadow: 0 0 0 80px rgba(23, 135, 88, .025), 0 0 0 160px rgba(23, 135, 88, .018);
+    }
+    .hero-grid {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: .9fr 1.1fr;
+      gap: 76px;
+      align-items: center;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 13px;
+      margin-bottom: 24px;
+      color: var(--ink-2);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.72);
+      font-size: 11px;
+      font-weight: 700;
+      box-shadow: var(--shadow-sm);
+    }
+    .hero-badge strong { color: var(--green); }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-2); box-shadow: 0 0 0 5px rgba(66,210,145,.14); }
+    .hero h1 {
+      font-family: "Lora", serif;
+      font-size: clamp(48px, 5.45vw, 72px);
+      line-height: 1.02;
+      letter-spacing: -.048em;
+      text-wrap: balance;
+    }
+    .hero h1 em { color: var(--green); font-weight: 500; }
+    .hero-copy {
+      max-width: 560px;
+      margin: 24px 0 30px;
+      color: var(--copy);
+      font-size: 18px;
+      line-height: 1.78;
+    }
+    .hero-actions { display: flex; gap: 11px; flex-wrap: wrap; }
+    .hero-actions .btn { min-height: 52px; padding: 0 24px; font-size: 14px; }
+    .hero-trust { margin-top: 25px; display: flex; gap: 18px; flex-wrap: wrap; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .hero-trust span { display: inline-flex; align-items: center; gap: 7px; }
+    .hero-trust svg { color: var(--green); }
+
+    .hero-system {
+      min-height: 570px;
+      position: relative;
+      perspective: 1500px;
+    }
+    .system-shell {
+      position: absolute;
+      inset: 22px 0 0 22px;
+      border: 1px solid rgba(200, 218, 207, .9);
+      border-radius: 26px;
+      background: rgba(255,255,255,.88);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      transform: rotateY(-3deg) rotateX(1deg);
+      transform-origin: center;
+      transition: transform .25s ease-out;
+    }
+    .system-top {
+      height: 48px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(250,252,250,.95);
+    }
+    .browser-dots { display: flex; gap: 6px; }
+    .browser-dots i { width: 7px; height: 7px; border-radius: 50%; background: #d9e2dc; }
+    .browser-dots i:first-child { background: #f0a8a8; }
+    .browser-dots i:nth-child(2) { background: #f2d091; }
+    .browser-dots i:nth-child(3) { background: #9eddbd; }
+    .system-url {
+      padding: 5px 48px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      color: var(--muted);
+      background: #fff;
+      font-size: 9px;
+    }
+    .system-body { height: calc(100% - 48px); display: grid; grid-template-columns: 68px 1fr; }
+    .mini-sidebar {
+      padding: 15px 11px;
+      background: var(--forest);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 13px;
+    }
+    .mini-logo { width: 34px; height: 34px; margin-bottom: 9px; }
+    .side-icon { width: 35px; height: 35px; border-radius: 9px; display: grid; place-items: center; color: rgba(255,255,255,.48); }
+    .side-icon.active { color: var(--green-2); background: rgba(66,210,145,.13); }
+    .system-main { padding: 20px 21px 22px; background: #f5f8f6; overflow: hidden; }
+    .system-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .system-heading small { color: var(--muted); font-size: 9px; }
+    .system-heading strong { display: block; margin-top: 2px; font-family: "Lora", serif; font-size: 19px; }
+    .pro-pill { padding: 5px 9px; border: 1px solid rgba(23,135,88,.18); border-radius: 999px; color: var(--green); background: var(--mint-2); font-size: 8px; font-weight: 800; }
+    .system-priority {
+      position: relative;
+      padding: 17px;
+      border-radius: 15px;
+      color: #fff;
+      background: linear-gradient(125deg, #0a3824, #126342);
+      box-shadow: 0 15px 30px rgba(8,41,26,.16);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+      overflow: hidden;
+    }
+    .system-priority::after {
+      content: "";
+      position: absolute;
+      top: -40%;
+      bottom: -40%;
+      width: 70px;
+      left: -100px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
+      transform: skewX(-18deg);
+      animation: scan 5.2s ease-in-out infinite;
+    }
+    .priority-label { color: var(--green-2); font-size: 8px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .priority-title { margin: 4px 0; font-size: 14px; font-weight: 750; }
+    .priority-copy { color: rgba(255,255,255,.66); font-size: 8px; }
+    .priority-score {
+      width: 65px;
+      height: 65px;
+      border: 7px solid rgba(255,255,255,.12);
+      border-top-color: var(--green-2);
+      border-right-color: var(--green-2);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+      font-weight: 800;
+      transform: rotate(8deg);
+    }
+    .priority-score span { transform: rotate(-8deg); }
+    @keyframes scan { 0%,45% { left:-100px; } 75%,100% { left:calc(100% + 100px); } }
+    .system-grid { margin-top: 12px; display: grid; grid-template-columns: 1.1fr .9fr; gap: 11px; }
+    .sys-card { padding: 14px; border: 1px solid var(--line); border-radius: 13px; background: #fff; }
+    .sys-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .sys-card-head strong { font-size: 10px; }
+    .sys-card-head span { color: var(--green); font-size: 7px; font-weight: 800; }
+    .job-mini { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid #eef3ef; }
+    .job-mini:first-of-type { border-top: 0; }
+    .job-score { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--green); background: var(--mint-2); font-size: 8px; font-weight: 800; }
+    .job-mini b { display: block; font-size: 8px; }
+    .job-mini small { display: block; color: var(--muted); font-size: 6px; }
+    .status { margin-left: auto; padding: 3px 6px; border-radius: 999px; color: var(--green); background: var(--mint); font-size: 6px; font-weight: 800; }
+    .next-list { display: grid; gap: 8px; }
+    .next-item { display: flex; gap: 8px; align-items: flex-start; }
+    .next-num { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; color: var(--green); background: var(--mint); font-size: 7px; font-weight: 800; }
+    .next-item b { display: block; font-size: 8px; }
+    .next-item small { display: block; color: var(--muted); font-size: 6px; line-height: 1.4; }
+    .float-card {
+      position: absolute;
+      z-index: 3;
+      border: 1px solid rgba(200, 218, 207, .9);
+      border-radius: 14px;
+      background: rgba(255,255,255,.94);
+      box-shadow: 0 20px 48px rgba(8,41,26,.16);
+      animation: hover 5s ease-in-out infinite;
+    }
+    .float-alert { top: 3px; right: -25px; width: 192px; padding: 13px; }
+    .float-cv { left: -28px; bottom: 44px; width: 178px; padding: 13px; animation-delay: -2.3s; }
+    .float-card-top { display: flex; align-items: center; gap: 8px; }
+    .float-card-icon { width: 27px; height: 27px; border-radius: 8px; display: grid; place-items: center; color: var(--green); background: var(--mint); }
+    .float-card b { display: block; font-size: 8px; }
+    .float-card small { display: block; color: var(--muted); font-size: 6px; }
+    .float-line { height: 5px; margin-top: 10px; border-radius: 4px; background: #edf2ee; overflow: hidden; }
+    .float-line::after { content: ""; display: block; width: 78%; height: 100%; border-radius: inherit; background: var(--green-2); }
+    @keyframes hover { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+    .pain-marquee {
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: var(--forest);
+      color: #fff;
+      overflow: hidden;
+    }
+    .pain-marquee-track {
+      width: max-content;
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      gap: 34px;
+      animation: marquee 30s linear infinite;
+    }
+    .pain-marquee-track span {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: rgba(255,255,255,.68);
+      font-family: "Lora", serif;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .pain-marquee-track i { width: 5px; height: 5px; border-radius: 50%; background: var(--green-2); box-shadow: 0 0 0 5px rgba(66,210,145,.1); }
+    @keyframes marquee { to { transform: translateX(-50%); } }
+    .metric-bar { border-bottom: 1px solid var(--line); background: rgba(255,255,255,.72); }
+    .metric-grid { min-height: 104px; display: grid; grid-template-columns: repeat(4, 1fr); align-items: center; }
+    .metric { padding: 0 28px; border-right: 1px solid var(--line); text-align: center; }
+    .metric:last-child { border-right: 0; }
+    .metric b { display: block; font-family: "Lora", serif; font-size: 25px; letter-spacing: -.02em; }
+    .metric span { color: var(--muted); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+
+    /* PROBLEM / SYSTEM */
+    .problem { background: #fff; }
+    .problem-grid { display: grid; grid-template-columns: .78fr 1.22fr; gap: 68px; align-items: center; }
+    .problem-copy .section-copy { max-width: 500px; }
+    .problem-note {
+      margin-top: 28px;
+      padding: 16px 18px;
+      border-left: 3px solid var(--green);
+      color: var(--ink-2);
+      background: var(--mint-2);
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .pain-board {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      grid-template-rows: repeat(2, minmax(170px, auto));
+      gap: 13px;
+    }
+    .pain-card-modern {
+      position: relative;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 19px;
+      background: var(--paper);
+      overflow: hidden;
+      transition: transform .25s, box-shadow .25s, border-color .25s;
+    }
+    .pain-card-modern:hover { transform: translateY(-5px); border-color: var(--line-strong); box-shadow: var(--shadow-sm); }
+    .pain-card-modern.primary {
+      grid-row: 1 / 3;
+      color: #fff;
+      background: linear-gradient(145deg, #08291a, #0c4b31);
+      border-color: transparent;
+    }
+    .pain-card-modern.primary::after {
+      content: "";
+      position: absolute;
+      width: 230px;
+      height: 230px;
+      right: -110px;
+      bottom: -120px;
+      border: 1px solid rgba(66,210,145,.2);
+      border-radius: 50%;
+      box-shadow: 0 0 0 40px rgba(66,210,145,.035), 0 0 0 80px rgba(66,210,145,.02);
+    }
+    .pain-card-icon { width: 42px; height: 42px; margin-bottom: 30px; border-radius: 12px; display: grid; place-items: center; color: var(--green); background: var(--mint); }
+    .pain-card-modern.primary .pain-card-icon { color: var(--green-2); background: rgba(66,210,145,.13); }
+    .pain-card-modern h3 { position: relative; z-index: 1; font-family: "Lora", serif; font-size: 22px; line-height: 1.18; }
+    .pain-card-modern.primary h3 { max-width: 340px; margin-top: 35px; font-size: 30px; }
+    .pain-card-modern p { position: relative; z-index: 1; margin-top: 10px; color: var(--copy); font-size: 11px; line-height: 1.65; }
+    .pain-card-modern.primary p { max-width: 340px; color: rgba(255,255,255,.6); font-size: 12px; }
+    .pain-quote { position: relative; z-index: 1; margin-top: 40px; padding: 13px 15px; border: 1px solid rgba(255,255,255,.1); border-radius: 11px; color: rgba(255,255,255,.72); background: rgba(255,255,255,.055); font-size: 10px; font-weight: 700; }
+
+    /* JOURNEY */
+    .journey { overflow: hidden; background: var(--paper-2); }
+    .journey::before {
+      content: "";
+      position: absolute;
+      inset: 16% -20% auto;
+      height: 460px;
+      background: radial-gradient(ellipse, rgba(66,210,145,.08), transparent 70%);
+      pointer-events: none;
+    }
+    .how-grid { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .how-card { position: relative; min-height: 390px; padding: 27px; border: 1px solid var(--line); border-radius: 21px; background: #fff; box-shadow: 0 12px 38px rgba(8,41,26,.045); overflow: hidden; }
+    .how-card:nth-child(2) { transform: translateY(22px); }
+    .how-number { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: #fff; background: var(--forest); font-size: 11px; font-weight: 800; }
+    .how-card h3 { margin-top: 36px; font-family: "Lora", serif; font-size: 25px; line-height: 1.12; }
+    .how-card > p { margin-top: 11px; color: var(--copy); font-size: 12px; }
+    .how-example { position: absolute; left: 20px; right: 20px; bottom: 20px; min-height: 135px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); }
+    .how-example-label { color: var(--muted); font-size: 8px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .paste-line { height: 7px; margin-top: 11px; border-radius: 5px; background: #dfe8e2; }
+    .paste-line:nth-child(3) { width: 84%; }
+    .paste-line:nth-child(4) { width: 63%; }
+    .diagnosis-row { margin-top: 11px; display: flex; align-items: center; gap: 10px; }
+    .diagnosis-score { width: 42px; height: 42px; border: 5px solid #dce7df; border-top-color: var(--green); border-right-color: var(--green); border-radius: 50%; display: grid; place-items: center; color: var(--green); font-size: 9px; font-weight: 800; }
+    .diagnosis-row b { display: block; font-size: 9px; }
+    .diagnosis-row span { display: block; color: var(--muted); font-size: 7px; }
+    .action-pill { margin-top: 8px; padding: 8px 10px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; color: var(--ink-2); background: #fff; font-size: 8px; font-weight: 700; }
+    .action-pill i { color: var(--green); font-style: normal; }
+
+    /* DEMO */
+    .demo-section { background: var(--forest); color: #fff; overflow: hidden; }
+    .demo-section::before {
+      content: "";
+      position: absolute;
+      width: 720px;
+      height: 720px;
+      left: -250px;
+      top: -330px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(66,210,145,.14), transparent 67%);
+    }
+    .demo-section .kicker { color: var(--green-2); }
+    .demo-section .section-copy { color: rgba(255,255,255,.58); }
+    .demo-tabs {
+      margin: 0 auto 24px;
+      padding: 5px;
+      width: max-content;
+      max-width: 100%;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 13px;
+      background: rgba(255,255,255,.055);
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+    }
+    .demo-tab {
+      min-width: 132px;
+      padding: 10px 15px;
+      border: 0;
+      border-radius: 9px;
+      color: rgba(255,255,255,.48);
+      background: transparent;
+      font-size: 11px;
+      font-weight: 750;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: .2s;
+    }
+    .demo-tab.active { color: var(--ink); background: var(--green-2); }
+    .demo-window {
+      position: relative;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 24px;
+      background: #eff4f1;
+      box-shadow: 0 45px 100px rgba(0,0,0,.35);
+      overflow: hidden;
+    }
+    .demo-window::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.2);
+    }
+    .demo-window-top {
+      height: 48px;
+      padding: 0 18px;
+      border-bottom: 1px solid #d8e3dc;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+    }
+    .demo-window-top .system-url { color: #759083; background: #f7f9f7; }
+    .demo-panels { position: relative; aspect-ratio: 16 / 8.5; min-height: 510px; }
+    .demo-panel {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(10px);
+      transition: opacity .35s, transform .35s, visibility .35s;
+    }
+    .demo-panel.active { opacity: 1; visibility: visible; transform: translateY(0); }
+    .demo-panel img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+    .analysis-demo {
+      height: 100%;
+      padding: 30px;
+      color: var(--ink);
+      background: #f3f6f4;
+      display: grid;
+      grid-template-columns: .86fr 1.14fr;
+      gap: 22px;
+    }
+    .analysis-left {
+      padding: 30px;
+      border-radius: 18px;
+      color: #fff;
+      background: linear-gradient(145deg, #08291a, #0f5538);
+    }
+    .analysis-left .eyebrow { color: var(--green-2); font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .analysis-left h3 { margin: 12px 0 8px; font-family: "Lora", serif; font-size: 30px; line-height: 1.08; }
+    .analysis-left p { max-width: 390px; color: rgba(255,255,255,.62); font-size: 11px; }
+    .analysis-score-row { margin-top: 30px; display: flex; align-items: center; gap: 22px; }
+    .big-ring {
+      width: 112px;
+      height: 112px;
+      border: 10px solid rgba(255,255,255,.1);
+      border-top-color: var(--green-2);
+      border-right-color: var(--green-2);
+      border-bottom-color: var(--green-2);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      transform: rotate(15deg);
+    }
+    .big-ring strong { font-size: 26px; transform: rotate(-15deg); }
+    .score-summary b { display: block; font-size: 14px; }
+    .score-summary span { display: block; margin-top: 4px; color: rgba(255,255,255,.55); font-size: 9px; }
+    .analysis-right { display: grid; gap: 13px; }
+    .factor-card { padding: 17px 19px; border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: 0 8px 24px rgba(8,41,26,.05); }
+    .factor-top { display: flex; align-items: center; justify-content: space-between; font-size: 10px; font-weight: 750; }
+    .factor-top strong { color: var(--green); }
+    .factor-track { height: 7px; margin: 9px 0 7px; border-radius: 8px; background: #edf2ee; overflow: hidden; }
+    .factor-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--green), var(--green-2)); transform-origin: left; animation: grow 1.2s ease both; }
+    .factor-card small { color: var(--muted); font-size: 8px; }
+    @keyframes grow { from { transform: scaleX(0); } }
+    .interview-demo {
+      height: 100%;
+      padding: 34px;
+      color: var(--ink);
+      background: #f3f6f4;
+      display: grid;
+      grid-template-columns: .88fr 1.12fr;
+      gap: 20px;
+    }
+    .interview-brief, .interview-chat { border: 1px solid var(--line); border-radius: 17px; background: #fff; overflow: hidden; box-shadow: var(--shadow-sm); }
+    .demo-card-head { padding: 17px 19px; border-bottom: 1px solid var(--line); }
+    .demo-card-head small { color: var(--green); font-size: 8px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+    .demo-card-head h4 { margin-top: 3px; font-family: "Lora", serif; font-size: 18px; }
+    .brief-body { padding: 18px; display: grid; gap: 10px; }
+    .brief-item { padding: 12px; border-radius: 10px; background: var(--paper); }
+    .brief-item b { display: block; font-size: 9px; }
+    .brief-item span { display: block; margin-top: 4px; color: var(--muted); font-size: 8px; }
+    .chat-body { padding: 20px; }
+    .chat-bubble { max-width: 84%; margin-bottom: 12px; padding: 12px 14px; border-radius: 13px; font-size: 9px; line-height: 1.55; }
+    .chat-bubble.ai { background: var(--paper-2); }
+    .chat-bubble.user { margin-left: auto; color: #fff; background: var(--green); }
+    .chat-score { margin-top: 18px; padding: 13px; border: 1px solid rgba(23,135,88,.18); border-radius: 11px; color: var(--green); background: var(--mint-2); font-size: 9px; font-weight: 750; }
+
+    /* SCORE */
+    .score-story { background: #fff; }
+    .score-grid { display: grid; grid-template-columns: .82fr 1.18fr; gap: 72px; align-items: center; }
+    .score-visual {
+      padding: 34px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      box-shadow: var(--shadow-sm);
+    }
+    .score-main { display: flex; align-items: center; gap: 26px; }
+    .score-ring {
+      position: relative;
+      width: 145px;
+      height: 145px;
+      flex: 0 0 auto;
+    }
+    .score-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .score-ring circle { fill: none; stroke-width: 9; }
+    .score-ring .bg { stroke: #e5ece7; }
+    .score-ring .fill { stroke: var(--green); stroke-linecap: round; stroke-dasharray: 339; stroke-dashoffset: 78; }
+    .score-ring-label { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+    .score-ring-label b { display: block; font-family: "Lora", serif; font-size: 39px; line-height: 1; }
+    .score-ring-label span { color: var(--muted); font-size: 9px; font-weight: 750; }
+    .score-verdict small { color: var(--green); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; }
+    .score-verdict h3 { margin: 5px 0 8px; font-family: "Lora", serif; font-size: 23px; line-height: 1.15; }
+    .score-verdict p { color: var(--copy); font-size: 11px; }
+    .factor-list { margin-top: 25px; display: grid; gap: 14px; }
+    .factor-line { display: grid; grid-template-columns: 130px 1fr 36px; align-items: center; gap: 10px; }
+    .factor-line span { color: var(--copy); font-size: 10px; font-weight: 650; }
+    .factor-line b { color: var(--ink-2); font-size: 10px; text-align: right; }
+    .micro-track { height: 6px; border-radius: 999px; background: #e5ece7; overflow: hidden; }
+    .micro-track i { display: block; height: 100%; border-radius: inherit; background: var(--green); }
+    .action-list { margin-top: 32px; display: grid; gap: 11px; }
+    .action-item {
+      padding: 16px 17px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      background: #fff;
+    }
+    .action-number { width: 29px; height: 29px; border-radius: 9px; display: grid; place-items: center; color: var(--green); background: var(--mint); font-size: 10px; font-weight: 800; }
+    .action-item b { display: block; font-size: 12px; }
+    .action-item span { display: block; margin-top: 2px; color: var(--muted); font-size: 9px; }
+
+    /* OPERATING SYSTEM */
+    .workspace { overflow: hidden; }
+    .workspace-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .workspace-card {
+      min-height: 310px;
+      padding: 27px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 10px 35px rgba(8,41,26,.045);
+      transition: transform .25s, box-shadow .25s, border-color .25s;
+    }
+    .workspace-card:hover { transform: translateY(-6px); border-color: var(--line-strong); box-shadow: var(--shadow-sm); }
+    .workspace-card.dark { color: #fff; background: var(--forest); border-color: var(--forest); }
+    .workspace-icon { width: 43px; height: 43px; margin-bottom: 38px; border-radius: 12px; display: grid; place-items: center; color: var(--green); background: var(--mint); }
+    .workspace-card.dark .workspace-icon { color: var(--green-2); background: rgba(66,210,145,.12); }
+    .workspace-card h3 { font-family: "Lora", serif; font-size: 22px; line-height: 1.18; }
+    .workspace-card p { margin-top: 10px; color: var(--copy); font-size: 12px; }
+    .workspace-card.dark p { color: rgba(255,255,255,.55); }
+    .workspace-link { margin-top: 24px; display: inline-flex; align-items: center; gap: 7px; color: var(--green); font-size: 11px; font-weight: 800; }
+    .workspace-card.dark .workspace-link { color: var(--green-2); }
+    .mini-ui { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
+    .workspace-card.dark .mini-ui { border-color: rgba(255,255,255,.1); }
+    .mini-ui-line { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .mini-ui-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-2); }
+    .mini-ui-line span { color: var(--muted); font-size: 8px; }
+    .workspace-card.dark .mini-ui-line span { color: rgba(255,255,255,.45); }
+
+    /* PROOF */
+    .proof { color: #fff; background: var(--forest); }
+    .proof .kicker { color: var(--green-2); }
+    .proof .section-copy { color: rgba(255,255,255,.57); }
+    .proof-metrics { margin-bottom: 42px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .proof-metric { padding: 25px; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; background: rgba(255,255,255,.045); text-align: center; }
+    .proof-metric b { display: block; color: var(--green-2); font-family: "Lora", serif; font-size: 32px; }
+    .proof-metric span { color: rgba(255,255,255,.46); font-size: 10px; }
+    .testimonials { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .testimonial { min-height: 265px; padding: 26px; border: 1px solid rgba(255,255,255,.1); border-radius: 18px; background: rgba(255,255,255,.055); }
+    .stars { color: #e5b75d; font-size: 12px; letter-spacing: 3px; }
+    .testimonial blockquote { margin: 22px 0 28px; color: rgba(255,255,255,.78); font-family: "Lora", serif; font-size: 16px; line-height: 1.55; }
+    .person { display: flex; align-items: center; gap: 11px; }
+    .avatar { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: var(--forest); background: var(--green-2); font-size: 9px; font-weight: 800; }
+    .person b { display: block; font-size: 10px; }
+    .person span { display: block; color: rgba(255,255,255,.42); font-size: 8px; }
+
+    /* PRICING */
+    .pricing { background: #fff; }
+    .billing-toggle {
+      width: max-content;
+      margin: 0 auto 36px;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--paper);
+      display: flex;
+      gap: 4px;
+    }
+    .billing-btn { padding: 9px 14px; border: 0; border-radius: 8px; color: var(--muted); background: transparent; font-size: 10px; font-weight: 800; cursor: pointer; }
+    .billing-btn.active { color: #fff; background: var(--forest); }
+    .billing-btn i { color: var(--green); font-style: normal; }
+    .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; align-items: stretch; }
+    .plan {
+      position: relative;
+      padding: 29px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--paper);
+    }
+    .plan.featured { color: #fff; background: var(--forest); border-color: var(--forest); box-shadow: var(--shadow-lg); transform: translateY(-10px); }
+    .popular { position: absolute; top: 14px; right: 14px; padding: 5px 8px; border-radius: 999px; color: var(--forest); background: var(--green-2); font-size: 7px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+    .plan-name { color: var(--green); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+    .plan.featured .plan-name { color: var(--green-2); }
+    .plan h3 { margin-top: 8px; font-family: "Lora", serif; font-size: 24px; }
+    .plan-desc { min-height: 50px; margin-top: 9px; color: var(--copy); font-size: 11px; }
+    .plan.featured .plan-desc { color: rgba(255,255,255,.53); }
+    .price { margin-top: 25px; font-family: "Lora", serif; font-size: 38px; line-height: 1; }
+    .price small { color: var(--muted); font-family: "Manrope", sans-serif; font-size: 10px; font-weight: 600; }
+    .plan.featured .price small { color: rgba(255,255,255,.4); }
+    .plan .btn { width: 100%; margin: 22px 0; }
+    .features-list { padding-top: 20px; border-top: 1px solid var(--line); display: grid; gap: 11px; }
+    .plan.featured .features-list { border-color: rgba(255,255,255,.1); }
+    .feature-row { display: flex; align-items: flex-start; gap: 9px; color: var(--ink-2); font-size: 10px; }
+    .plan.featured .feature-row { color: rgba(255,255,255,.72); }
+    .feature-row svg { flex: 0 0 auto; color: var(--green); margin-top: 1px; }
+    .plan.featured .feature-row svg { color: var(--green-2); }
+    .plan-note { margin-top: 19px; color: var(--muted); text-align: center; font-size: 9px; }
+    .plan.featured .plan-note { color: rgba(255,255,255,.35); }
+
+    /* FAQ */
+    .faq-grid { display: grid; grid-template-columns: .72fr 1.28fr; gap: 80px; }
+    .faq-aside { position: sticky; top: 110px; align-self: start; }
+    .faq-list { border-top: 1px solid var(--line); }
+    .faq-item { border-bottom: 1px solid var(--line); }
+    .faq-question {
+      width: 100%;
+      padding: 23px 0;
+      border: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      color: var(--ink);
+      background: transparent;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+    .faq-plus { width: 27px; height: 27px; border: 1px solid var(--line); border-radius: 50%; display: grid; place-items: center; color: var(--green); flex: 0 0 auto; transition: transform .25s; }
+    .faq-answer { max-height: 0; overflow: hidden; color: var(--copy); font-size: 12px; line-height: 1.75; transition: max-height .35s, padding .35s; }
+    .faq-item.open .faq-answer { max-height: 220px; padding: 0 40px 22px 0; }
+    .faq-item.open .faq-plus { transform: rotate(45deg); }
+
+    /* FINAL */
+    .final { padding: 0 0 34px; }
+    .final-card {
+      position: relative;
+      min-height: 460px;
+      padding: 70px;
+      border-radius: 28px;
+      color: #fff;
+      background: var(--forest);
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+    .final-card::before, .final-card::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(66,210,145,.16);
+    }
+    .final-card::before { width: 600px; height: 600px; left: -330px; top: -220px; box-shadow: 0 0 0 90px rgba(66,210,145,.03); }
+    .final-card::after { width: 520px; height: 520px; right: -300px; bottom: -260px; box-shadow: 0 0 0 75px rgba(66,210,145,.025); }
+    .final-inner { position: relative; z-index: 2; max-width: 760px; }
+    .final h2 { font-family: "Lora", serif; font-size: clamp(40px, 5vw, 64px); line-height: 1.06; letter-spacing: -.04em; }
+    .final h2 em { color: var(--green-2); font-weight: 500; }
+    .final p { max-width: 570px; margin: 20px auto 29px; color: rgba(255,255,255,.58); font-size: 15px; }
+    .final .btn { min-height: 52px; padding: 0 25px; background: var(--green-2); color: var(--forest); }
+    .final small { display: block; margin-top: 17px; color: rgba(255,255,255,.34); font-size: 9px; }
+    footer { padding: 30px 0 36px; }
+    .footer-row { display: flex; align-items: center; justify-content: space-between; gap: 25px; }
+    .footer-row .brand img { width: 31px; height: 31px; object-fit: contain; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: var(--muted); font-size: 10px; text-decoration: none; }
+    .footer-copy { color: var(--muted); font-size: 9px; }
+
+    /* MOTION */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .75s ease, transform .75s ease; }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    .delay-1 { transition-delay: .08s; }
+    .delay-2 { transition-delay: .16s; }
+    .delay-3 { transition-delay: .24s; }
+
+    /* RESPONSIVE */
+    @media (max-width: 1040px) {
+      .hero-grid, .problem-grid, .score-grid { grid-template-columns: 1fr; }
+      .hero { padding-top: 125px; }
+      .hero-copy { max-width: 680px; }
+      .hero-system { max-width: 720px; width: 100%; margin: 15px auto 0; }
+      .problem-grid, .score-grid { gap: 48px; }
+      .problem-copy .section-copy { max-width: 680px; }
+      .demo-panels { min-height: 470px; }
+      .workspace-grid { grid-template-columns: repeat(2, 1fr); }
+      .workspace-card:last-child { grid-column: 1 / -1; min-height: 250px; }
+    }
+    @media (max-width: 820px) {
+      .nav-links, .nav .btn-ghost { display: none; }
+      .menu-btn { display: grid; place-items: center; }
+      .nav.open { height: auto; padding-top: 10px; padding-bottom: 14px; flex-wrap: wrap; }
+      .nav.open .nav-links { order: 3; width: 100%; padding: 15px 4px 2px; display: grid; gap: 13px; border-top: 1px solid var(--line); margin-top: 10px; }
+      .metric-grid { grid-template-columns: repeat(2,1fr); }
+      .metric { padding: 18px; border-bottom: 1px solid var(--line); }
+      .metric:nth-child(2) { border-right: 0; }
+      .metric:nth-child(3), .metric:nth-child(4) { border-bottom: 0; }
+      .how-grid { grid-template-columns: 1fr; }
+      .how-card { min-height: 350px; }
+      .how-card:nth-child(2) { transform: none; }
+      .analysis-demo, .interview-demo { grid-template-columns: 1fr; overflow: auto; }
+      .demo-panels { min-height: 690px; }
+      .plans, .testimonials { grid-template-columns: 1fr; }
+      .plan.featured { transform: none; }
+      .proof-metrics { grid-template-columns: repeat(3, 1fr); }
+      .faq-grid { grid-template-columns: 1fr; gap: 40px; }
+      .faq-aside { position: static; }
+    }
+    @media (max-width: 620px) {
+      .container { width: min(100% - 28px, var(--max)); }
+      .section { padding: 78px 0; }
+      .nav { width: calc(100% - 20px); }
+      .brand img { width: 30px; }
+      .nav .btn-primary { display: none; }
+      .hero { min-height: auto; padding: 118px 0 60px; }
+      .hero h1 { font-size: 43px; }
+      .hero h1 em { display: block; }
+      .hero-copy { font-size: 15px; }
+      .hero-actions { display: grid; }
+      .hero-actions .btn { width: 100%; }
+      .hero-system { min-height: 470px; margin-top: 0; transform: scale(.86); transform-origin: top center; width: 116%; margin-left: -8%; margin-bottom: -60px; }
+      .float-alert { right: -5px; }
+      .float-cv { left: -5px; }
+      .metric b { font-size: 21px; }
+      .pain-board { grid-template-columns: 1fr; grid-template-rows: auto; }
+      .pain-card-modern.primary { grid-row: auto; min-height: 330px; }
+      .pain-card-modern.primary h3 { font-size: 27px; }
+      .section-title { font-size: 36px; }
+      .section-copy { font-size: 15px; }
+      .demo-tabs { width: 100%; justify-content: flex-start; }
+      .demo-tab { min-width: 115px; }
+      .demo-window-top .system-url { padding: 5px 20px; }
+      .demo-panels { min-height: 650px; }
+      .analysis-demo, .interview-demo { padding: 17px; }
+      .analysis-left { padding: 22px; }
+      .analysis-score-row { align-items: flex-start; }
+      .score-main { align-items: flex-start; flex-direction: column; }
+      .factor-line { grid-template-columns: 105px 1fr 32px; }
+      .workspace-grid, .proof-metrics { grid-template-columns: 1fr; }
+      .workspace-card:last-child { grid-column: auto; }
+      .final-card { padding: 50px 24px; min-height: 420px; }
+      .footer-row { flex-direction: column; text-align: center; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition-duration: .01ms !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="scroll-progress" id="scrollProgress"></div>
+  <div class="nav-wrap">
+    <nav class="nav" id="nav">
+      <a class="brand" href="#inicio" aria-label="VagaAI">
+        <img src="/logo-icon.svg" alt="">
+        <span>Vaga<i>AI</i></span>
+      </a>
+      <div class="nav-links">
+        <a href="#plataforma">Plataforma</a>
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#resultados">Resultados</a>
+        <a href="#planos">Planos</a>
+      </div>
+      <div class="nav-actions">
+        <a class="btn btn-ghost" href="/login">Entrar</a>
+        <a class="btn btn-primary" href="/app">Testar análise grátis</a>
+        <button class="menu-btn" type="button" aria-label="Abrir menu" onclick="toggleMenu()">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <main>
+    <section class="hero" id="inicio">
+      <div class="container hero-grid">
+        <div class="hero-content">
+          <div class="hero-badge reveal"><span class="live-dot"></span><strong>1 análise gratuita</strong> · sem cadastro e sem cartão</div>
+          <h1 class="reveal delay-1">Pare de enviar currículos <em>no escuro.</em></h1>
+          <p class="hero-copy reveal delay-2">Cole a vaga e seu currículo. O VagaAI mostra o que pode estar impedindo você de avançar, quais requisitos ainda estão fracos e como fortalecer sua candidatura sem inventar experiências.</p>
+          <div class="hero-actions reveal delay-3">
+            <a class="btn btn-primary" href="/app">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg>
+              Descobrir onde meu CV perde pontos
+            </a>
+            <a class="btn btn-ghost" href="#como-funciona">Entender como funciona</a>
+          </div>
+          <div class="hero-trust reveal delay-3">
+            <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg> Vagas de qualquer plataforma</span>
+            <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg> Sem inventar experiências</span>
+            <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg> Diagnóstico em segundos</span>
+          </div>
+        </div>
+
+        <div class="hero-system reveal delay-2" aria-label="Representação do painel VagaAI">
+          <div class="system-shell">
+            <div class="system-top">
+              <div class="browser-dots"><i></i><i></i><i></i></div>
+              <div class="system-url">vagaai.app.br/dashboard</div>
+              <span style="font-size:8px;color:var(--muted)">Seguro</span>
+            </div>
+            <div class="system-body">
+              <div class="mini-sidebar">
+                <img class="mini-logo" src="/logo-icon.svg" alt="">
+                <div class="side-icon active"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+                <div class="side-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6V4h8v2M3 11h18"/></svg></div>
+                <div class="side-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></div>
+              </div>
+              <div class="system-main">
+                <div class="system-heading">
+                  <div><small>Diagnóstico da candidatura</small><strong>Head de Marketing</strong></div>
+                  <span class="pro-pill">Análise concluída</span>
+                </div>
+                <div class="system-priority">
+                  <div>
+                    <div class="priority-label">O que está reduzindo sua aderência</div>
+                    <div class="priority-title">Seu CV não evidencia 3 requisitos importantes</div>
+                    <div class="priority-copy">Gestão de budget, Meta Ads e liderança de times ainda não aparecem com clareza.</div>
+                  </div>
+                  <div class="priority-score"><span>58%</span></div>
+                </div>
+                <div class="system-grid">
+                  <div class="sys-card">
+                    <div class="sys-card-head"><strong>Onde você perde pontos</strong><span>4 fatores</span></div>
+                    <div class="job-mini"><div class="job-score">82%</div><div><b>Experiência compatível</b><small>Senioridade alinhada</small></div><span class="status">Forte</span></div>
+                    <div class="job-mini"><div class="job-score" style="color:#b9780d;background:#fff4df">46%</div><div><b>Keywords ATS</b><small>3 termos prioritários ausentes</small></div><span class="status" style="color:#b9780d;background:#fff4df">Atenção</span></div>
+                    <div class="job-mini"><div class="job-score">71%</div><div><b>Força dos resultados</b><small>Faltam métricas concretas</small></div><span class="status">Ajustar</span></div>
+                  </div>
+                  <div class="sys-card">
+                    <div class="sys-card-head"><strong>Corrija primeiro</strong><span>3 ações</span></div>
+                    <div class="next-list">
+                      <div class="next-item"><span class="next-num">1</span><div><b>Reescrever o resumo</b><small>Conecte sua experiência à vaga</small></div></div>
+                      <div class="next-item"><span class="next-num">2</span><div><b>Incluir evidências</b><small>Mostre impacto com números reais</small></div></div>
+                      <div class="next-item"><span class="next-num">3</span><div><b>Revisar keywords</b><small>Use apenas termos verdadeiros</small></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="float-card float-alert">
+            <div class="float-card-top"><span class="float-card-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span><div><b>3 pontos críticos</b><small>Saiba o que corrigir primeiro</small></div></div>
+            <div class="float-line"></div>
+          </div>
+          <div class="float-card float-cv">
+            <div class="float-card-top"><span class="float-card-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></svg></span><div><b>Próximo passo claro</b><small>Adapte o CV antes de enviar</small></div></div>
+            <div class="float-line"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="pain-marquee" aria-hidden="true">
+      <div class="pain-marquee-track">
+        <span><i></i>“Envio currículos e não recebo retorno”</span><span><i></i>“Não sei se meu CV passa no ATS”</span><span><i></i>“Uso o mesmo currículo para todas as vagas”</span><span><i></i>“Não sei se vale a pena me candidatar”</span><span><i></i>“Chego inseguro na entrevista”</span>
+        <span><i></i>“Envio currículos e não recebo retorno”</span><span><i></i>“Não sei se meu CV passa no ATS”</span><span><i></i>“Uso o mesmo currículo para todas as vagas”</span><span><i></i>“Não sei se vale a pena me candidatar”</span><span><i></i>“Chego inseguro na entrevista”</span>
+      </div>
+    </div>
+    <div class="metric-bar">
+      <div class="container metric-grid">
+        <div class="metric"><b>Antes de aplicar</b><span>entenda se a vaga combina</span></div>
+        <div class="metric"><b>Antes de enviar</b><span>adapte seu currículo</span></div>
+        <div class="metric"><b>Depois de aplicar</b><span>saiba quando agir</span></div>
+        <div class="metric"><b>Antes da entrevista</b><span>treine o que importa</span></div>
+      </div>
+    </div>
+
+    <section class="section problem">
+      <div class="container problem-grid">
+        <div class="problem-copy">
+          <span class="kicker">Se isso parece familiar</span>
+          <h2 class="section-title reveal">Você tem experiência. Mas sua candidatura pode não estar <span class="green">mostrando isso.</span></h2>
+          <p class="section-copy reveal delay-1">Muitas rejeições acontecem sem uma explicação clara. O currículo pode não conversar com a vaga, faltar termos relevantes ou simplesmente não evidenciar o impacto que você já gerou.</p>
+          <div class="problem-note reveal delay-2">O VagaAI não promete aprovação. Ele reduz o achismo e mostra onde sua candidatura pode ficar mais forte antes do envio.</div>
+        </div>
+        <div class="pain-board reveal delay-1">
+          <article class="pain-card-modern primary">
+            <div class="pain-card-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="m4 7 8 6 8-6"/></svg></div>
+            <h3>Você envia currículo, espera… e não sabe por que o retorno não vem.</h3>
+            <p>Sem diagnóstico, a tendência é enviar mais vezes o mesmo material e repetir os mesmos pontos fracos.</p>
+            <div class="pain-quote">Em vez de “tentar mais”, descubra o que merece ser ajustado primeiro.</div>
+          </article>
+          <article class="pain-card-modern">
+            <div class="pain-card-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></svg></div>
+            <h3>O mesmo CV para vagas diferentes</h3>
+            <p>Cada oportunidade valoriza sinais e palavras diferentes. Um currículo genérico dilui sua aderência.</p>
+          </article>
+          <article class="pain-card-modern">
+            <div class="pain-card-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+            <h3>Muito esforço, pouca direção</h3>
+            <p>Você perde tempo em vagas fracas, esquece follow-ups e chega à entrevista sem saber o que priorizar.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section journey" id="como-funciona">
+      <div class="container">
+        <div class="section-head center">
+          <span class="kicker">Como funciona na prática</span>
+          <h2 class="section-title reveal">Da dúvida ao próximo passo em <span class="green">3 etapas.</span></h2>
+          <p class="section-copy reveal delay-1">Você fornece o contexto. O VagaAI compara, explica e organiza. A decisão final continua sendo sua.</p>
+        </div>
+        <div class="how-grid">
+          <article class="how-card reveal">
+            <span class="how-number">01</span><h3>Cole a vaga e seu currículo atual</h3><p>Funciona com LinkedIn, Gupy, sites de empresas e outras plataformas. Você não precisa formatar nada para começar.</p>
+            <div class="how-example"><span class="how-example-label">O que você envia</span><div class="paste-line"></div><div class="paste-line"></div><div class="paste-line"></div></div>
+          </article>
+          <article class="how-card reveal delay-1">
+            <span class="how-number">02</span><h3>Entenda sua aderência antes de aplicar</h3><p>Veja o score em quatro fatores, os requisitos cobertos e o que ainda precisa aparecer com mais clareza.</p>
+            <div class="how-example"><span class="how-example-label">O que você descobre</span><div class="diagnosis-row"><span class="diagnosis-score">58%</span><div><b>3 lacunas prioritárias</b><span>Keywords, resultados e contexto</span></div></div></div>
+          </article>
+          <article class="how-card reveal delay-2">
+            <span class="how-number">03</span><h3>Escolha a próxima ação com mais segurança</h3><p>Adapte o CV, salve a candidatura, prepare o follow-up ou treine a entrevista quando fizer sentido.</p>
+            <div class="how-example"><span class="how-example-label">O que você pode fazer</span><div class="action-pill">Otimizar currículo <i>→</i></div><div class="action-pill">Acompanhar candidatura <i>→</i></div><div class="action-pill">Preparar entrevista <i>→</i></div></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section demo-section" id="plataforma">
+      <div class="container">
+        <div class="section-head center">
+          <span class="kicker">Veja por dentro</span>
+          <h2 class="section-title reveal">Menos abas abertas. Mais clareza sobre <span style="color:var(--green-2)">o que fazer agora.</span></h2>
+          <p class="section-copy reveal delay-1">A análise não termina em uma nota. Ela alimenta seu CV, suas candidaturas, seus alertas e sua preparação para entrevista.</p>
+        </div>
+        <div class="demo-tabs reveal">
+          <button class="demo-tab active" data-demo="analysis">Análise ATS</button>
+          <button class="demo-tab" data-demo="tracker">Candidaturas</button>
+          <button class="demo-tab" data-demo="alerts">Alertas</button>
+          <button class="demo-tab" data-demo="interview">Entrevista</button>
+        </div>
+        <div class="demo-window reveal delay-1">
+          <div class="demo-window-top">
+            <div class="browser-dots"><i></i><i></i><i></i></div>
+            <div class="system-url">vagaai.app.br</div>
+            <span style="font-size:8px;color:#789085">Produto VagaAI</span>
+          </div>
+          <div class="demo-panels">
+            <div class="demo-panel active" data-panel="analysis">
+              <div class="analysis-demo">
+                <div class="analysis-left">
+                  <div class="eyebrow">Diagnóstico da candidatura</div>
+                  <h3>Você está perto. Agora sabe onde melhorar.</h3>
+                  <p>O score não é uma nota vazia: ele transforma a comparação entre vaga e currículo em decisões concretas.</p>
+                  <div class="analysis-score-row">
+                    <div class="big-ring"><strong>75</strong></div>
+                    <div class="score-summary"><b>Boa aderência</b><span>Seu perfil cobre 8 de 10 requisitos prioritários.</span></div>
+                  </div>
+                </div>
+                <div class="analysis-right">
+                  <div class="factor-card"><div class="factor-top"><span>Compatibilidade com a vaga</span><strong>82%</strong></div><div class="factor-track"><div class="factor-fill" style="width:82%"></div></div><small>Experiência e senioridade estão alinhadas.</small></div>
+                  <div class="factor-card"><div class="factor-top"><span>Palavras-chave ATS</span><strong>71%</strong></div><div class="factor-track"><div class="factor-fill" style="width:71%"></div></div><small>Inclua “gestão de budget” e “Meta Ads”.</small></div>
+                  <div class="factor-card"><div class="factor-top"><span>Legibilidade e estrutura</span><strong>90%</strong></div><div class="factor-track"><div class="factor-fill" style="width:90%"></div></div><small>Seu currículo está claro e fácil de escanear.</small></div>
+                  <div class="factor-card"><div class="factor-top"><span>Força das realizações</span><strong>60%</strong></div><div class="factor-track"><div class="factor-fill" style="width:60%"></div></div><small>Transforme responsabilidades em resultados mensuráveis.</small></div>
+                </div>
+              </div>
+            </div>
+            <div class="demo-panel" data-panel="tracker">
+              <img src="/mockup-ux-candidaturas/vagaai-candidaturas-desktop.png" alt="Tela de candidaturas do VagaAI">
+            </div>
+            <div class="demo-panel" data-panel="alerts">
+              <img src="/mockup-ux-alertas/vagaai-alertas-desktop-v2.png" alt="Tela de alertas do VagaAI">
+            </div>
+            <div class="demo-panel" data-panel="interview">
+              <div class="interview-demo">
+                <div class="interview-brief">
+                  <div class="demo-card-head"><small>Briefing da empresa</small><h4>Chegue sabendo onde está entrando</h4></div>
+                  <div class="brief-body">
+                    <div class="brief-item"><b>O que a vaga prioriza</b><span>Visão estratégica, gestão de times e crescimento orientado por dados.</span></div>
+                    <div class="brief-item"><b>O que vale destacar</b><span>Cases com orçamento, impacto em receita e liderança multifuncional.</span></div>
+                    <div class="brief-item"><b>Ponto para confirmar</b><span>Estrutura do time e nível de autonomia da posição.</span></div>
+                  </div>
+                </div>
+                <div class="interview-chat">
+                  <div class="demo-card-head"><small>Simulador com IA</small><h4>Treine antes da conversa real</h4></div>
+                  <div class="chat-body">
+                    <div class="chat-bubble ai">Conte sobre uma iniciativa de crescimento que exigiu alinhamento entre marketing, produto e vendas.</div>
+                    <div class="chat-bubble user">Na minha última empresa, estruturei um squad para revisar aquisição e ativação...</div>
+                    <div class="chat-bubble ai">Boa estrutura. Agora torne o impacto mais concreto: qual métrica mudou e em quanto tempo?</div>
+                    <div class="chat-score">Resposta em evolução · inclua contexto, decisão e resultado mensurável.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section score-story">
+      <div class="container score-grid">
+        <div>
+          <span class="kicker">Chega de nota sem explicação</span>
+          <h2 class="section-title reveal">Um score só tem valor quando mostra <span class="green">o que corrigir.</span></h2>
+          <p class="section-copy reveal delay-1">Em vez de um número solto, você recebe quatro fatores, evidências e uma ordem de prioridade para melhorar o que realmente pesa naquela vaga.</p>
+          <div class="action-list">
+            <div class="action-item reveal"><span class="action-number">1</span><div><b>Corrija o que mais pesa</b><span>Comece pelas ausências que mais afetam seu score.</span></div></div>
+            <div class="action-item reveal delay-1"><span class="action-number">2</span><div><b>Adapte sem inventar</b><span>Reescreva sua experiência usando apenas fatos reais.</span></div></div>
+            <div class="action-item reveal delay-2"><span class="action-number">3</span><div><b>Aplique com contexto</b><span>Leve o briefing da empresa e os pontos-chave para a entrevista.</span></div></div>
+          </div>
+        </div>
+        <div class="score-visual reveal delay-1">
+          <div class="score-main">
+            <div class="score-ring">
+              <svg viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="54"/><circle class="fill" cx="60" cy="60" r="54"/></svg>
+              <div class="score-ring-label"><div><b>77</b><span>de 100</span></div></div>
+            </div>
+            <div class="score-verdict"><small>Boa oportunidade</small><h3>Seu perfil tem aderência. Seu CV ainda não mostra tudo.</h3><p>Você cobre a senioridade e a experiência exigidas, mas perde força em palavras-chave e resultados.</p></div>
+          </div>
+          <div class="factor-list">
+            <div class="factor-line"><span>Compatibilidade</span><div class="micro-track"><i style="width:86%"></i></div><b>86%</b></div>
+            <div class="factor-line"><span>Keywords ATS</span><div class="micro-track"><i style="width:68%;background:var(--amber)"></i></div><b>68%</b></div>
+            <div class="factor-line"><span>Legibilidade</span><div class="micro-track"><i style="width:91%"></i></div><b>91%</b></div>
+            <div class="factor-line"><span>Força dos bullets</span><div class="micro-track"><i style="width:61%;background:var(--amber)"></i></div><b>61%</b></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section workspace">
+      <div class="container">
+        <div class="section-head center">
+          <span class="kicker">Sua busca não termina no envio</span>
+          <h2 class="section-title reveal">Da oportunidade ao follow-up, tudo continua <span class="green">conectado.</span></h2>
+          <p class="section-copy reveal delay-1">Você para de depender da memória, de planilhas soltas e de decisões improvisadas em cada etapa.</p>
+        </div>
+        <div class="workspace-grid">
+          <article class="workspace-card reveal">
+            <div class="workspace-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></div>
+            <h3>Radar de oportunidades</h3><p>Receba vagas alinhadas ao cargo, localização, modalidade e momento da sua carreira.</p>
+            <div class="mini-ui"><div class="mini-ui-line"><i class="mini-ui-dot"></i><span>Head de Marketing · 92% compatível</span></div><div class="mini-ui-line"><i class="mini-ui-dot"></i><span>Growth Manager · 87% compatível</span></div></div>
+          </article>
+          <article class="workspace-card dark reveal delay-1">
+            <div class="workspace-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div>
+            <h3>Análise de aderência</h3><p>Compare vaga e currículo em quatro fatores e entenda onde está perdendo pontos.</p>
+            <span class="workspace-link">Score explicável, não uma caixa-preta →</span>
+          </article>
+          <article class="workspace-card reveal delay-2">
+            <div class="workspace-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></svg></div>
+            <h3>Currículo para cada vaga</h3><p>Gere uma versão mais forte, organizada e específica sem inventar nenhuma experiência.</p>
+            <span class="workspace-link">Baixe em PDF pronto para enviar →</span>
+          </article>
+          <article class="workspace-card reveal">
+            <div class="workspace-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6V4h8v2M3 11h18"/></svg></div>
+            <h3>Rastreador de candidaturas</h3><p>Acompanhe status, histórico, prazos, salário, link da vaga e a próxima melhor ação.</p>
+            <span class="workspace-link">Menos planilhas, mais clareza →</span>
+          </article>
+          <article class="workspace-card reveal delay-1">
+            <div class="workspace-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></div>
+            <h3>Preparação para entrevista</h3><p>Entenda a empresa, antecipe perguntas e treine respostas com feedback orientado.</p>
+            <span class="workspace-link">Transforme contexto em confiança →</span>
+          </article>
+          <article class="workspace-card dark reveal delay-2">
+            <div class="workspace-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <h3>Próxima melhor ação</h3><p>O painel cruza seu histórico para sugerir o movimento de maior impacto agora.</p>
+            <span class="workspace-link">Do dado para a decisão →</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section proof" id="resultados">
+      <div class="container">
+        <div class="section-head center">
+          <span class="kicker">Quem já testou</span>
+          <h2 class="section-title reveal">Mais clareza para candidaturas <span style="color:var(--green-2)">mais intencionais.</span></h2>
+          <p class="section-copy reveal delay-1">Resultados percebidos por pessoas que usaram o VagaAI durante o beta.</p>
+        </div>
+        <div class="proof-metrics">
+          <div class="proof-metric reveal"><b>+1.200</b><span>análises realizadas no beta</span></div>
+          <div class="proof-metric reveal delay-1"><b>+900</b><span>currículos otimizados</span></div>
+          <div class="proof-metric reveal delay-2"><b>4,8/5</b><span>avaliação média dos usuários</span></div>
+        </div>
+        <div class="testimonials">
+          <article class="testimonial reveal"><div class="stars">★★★★★</div><blockquote>“Ficou muito mais claro o que ajustar para cada vaga, sem transformar meu currículo em algo que não sou.”</blockquote><div class="person"><span class="avatar">AC</span><div><b>Ana Carolina S.</b><span>Desenvolvedora Full Stack</span></div></div></article>
+          <article class="testimonial reveal delay-1"><div class="stars">★★★★★</div><blockquote>“O briefing me ajudou a chegar mais preparado. Eu já sabia o que destacar e o que perguntar.”</blockquote><div class="person"><span class="avatar">RO</span><div><b>Ricardo O.</b><span>Gerente de Projetos</span></div></div></article>
+          <article class="testimonial reveal delay-2"><div class="stars">★★★★★</div><blockquote>“A maior diferença foi entender onde eu estava perdendo compatibilidade, não apenas receber um CV reescrito.”</blockquote><div class="person"><span class="avatar">JS</span><div><b>Juliana S.</b><span>Designer UX/UI</span></div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section pricing" id="planos">
+      <div class="container">
+        <div class="section-head center">
+          <span class="kicker">Planos para cada momento</span>
+          <h2 class="section-title reveal">Comece grátis. Evolua quando sua busca <span class="green">pedir mais.</span></h2>
+          <p class="section-copy reveal delay-1">Teste o diagnóstico e receba oportunidades sem cartão. Assine quando quiser acelerar e aprofundar sua estratégia.</p>
+        </div>
+        <div class="billing-toggle reveal">
+          <button class="billing-btn active" data-billing="monthly">Mensal</button>
+          <button class="billing-btn" data-billing="annual">Anual <i>economize</i></button>
+        </div>
+        <div class="plans">
+          <article class="plan reveal">
+            <span class="plan-name">Gratuito</span><h3>Para começar com clareza</h3><p class="plan-desc">Conheça sua aderência e receba oportunidades relevantes toda semana.</p>
+            <div class="price">R$0</div>
+            <a class="btn btn-ghost" href="/app">Começar grátis</a>
+            <div class="features-list">
+              <div class="feature-row"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>1 análise gratuita por mês</div>
+              <div class="feature-row"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Score ATS em quatro fatores</div>
+              <div class="feature-row"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>1 alerta semanal com até 5 vagas</div>
+              <div class="feature-row"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Rastreador de candidaturas</div>
+            </div>
+            <div class="plan-note">Sem cartão · Plano gratuito sempre disponível</div>
+          </article>
+          <article class="plan reveal delay-1">
+            <span class="plan-name">Starter</span><h3>Para uma busca ativa</h3><p class="plan-desc">Mais análises e ferramentas para adaptar cada candidatura.</p>
+            <div class="price" data-monthly="R$19,90" data-annual="R$14,92">R$19,90<small>/mês</small></div>
+            <a class="btn btn-ghost plan-link" data-monthly-url="https://buy.stripe.com/28E14n0WO2rne5Ff0P9k406" data-annual-url="https://buy.stripe.com/5kQaEXaxo0jfd1B5qf9k407" href="https://buy.stripe.com/28E14n0WO2rne5Ff0P9k406">Assinar Starter</a>
+            <div class="features-list">
+              <div class="feature-row"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>10 análises mensais</div>
+              <div class="feature-row"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>CV otimizado e PDF pronto</div>
+              <div class="feature-row"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Briefing e carta de apresentação</div>
+              <div class="feature-row"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Alertas com filtros avançados</div>
+            </div>
+            <div class="plan-note billing-note">R$19,90 por mês · cancele quando quiser</div>
+          </article>
+          <article class="plan featured reveal delay-2">
+            <span class="popular">Mais escolhido</span><span class="plan-name">Pro</span><h3>Para acelerar sua próxima contratação</h3><p class="plan-desc">Volume, inteligência e preparação completa para quem está levando a busca a sério.</p>
+            <div class="price" data-monthly="R$39,90" data-annual="R$24,92">R$39,90<small>/mês</small></div>
+            <a class="btn plan-link" data-monthly-url="https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408" data-annual-url="https://buy.stripe.com/bJe5kDgVM0jf8Ll8Cr9k409" href="https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408">Assinar Pro</a>
+            <div class="features-list">
+              <div class="feature-row"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Análises ilimitadas</div>
+              <div class="feature-row"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Todos os recursos do Starter</div>
+              <div class="feature-row"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Simulador de entrevista com IA</div>
+              <div class="feature-row"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Alertas prioritários e mais oportunidades</div>
+            </div>
+            <div class="plan-note billing-note">R$39,90 por mês · cancele quando quiser</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container faq-grid">
+        <div class="faq-aside">
+          <span class="kicker">Dúvidas frequentes</span>
+          <h2 class="section-title reveal">Antes de começar.</h2>
+          <p class="section-copy reveal delay-1">O essencial para entender como o VagaAI usa seus dados e fortalece suas candidaturas.</p>
+        </div>
+        <div class="faq-list reveal">
+          <div class="faq-item open"><button class="faq-question">Preciso criar uma conta para testar?<span class="faq-plus">+</span></button><div class="faq-answer">Não. Você pode fazer a primeira análise sem cadastro. A conta passa a ser útil para salvar histórico, acompanhar candidaturas e configurar alertas.</div></div>
+          <div class="faq-item"><button class="faq-question">O VagaAI inventa informações no meu currículo?<span class="faq-plus">+</span></button><div class="faq-answer">Não. A otimização reorganiza e melhora a apresentação do que você realmente informou. Cargos, experiências e resultados não são inventados.</div></div>
+          <div class="faq-item"><button class="faq-question">O que torna o score diferente de uma nota genérica?<span class="faq-plus">+</span></button><div class="faq-answer">O índice é dividido em compatibilidade, palavras-chave ATS, legibilidade e força das realizações. Cada fator aparece separadamente e gera ações específicas.</div></div>
+          <div class="faq-item"><button class="faq-question">O plano gratuito também recebe ofertas?<span class="faq-plus">+</span></button><div class="faq-answer">Sim. O plano gratuito inclui um alerta semanal com uma seleção limitada de oportunidades. A vaga e o link original continuam visíveis gratuitamente.</div></div>
+          <div class="faq-item"><button class="faq-question">Funciona com vagas de qualquer plataforma?<span class="faq-plus">+</span></button><div class="faq-answer">Sim. Você pode analisar vagas do LinkedIn, Gupy, Vagas.com, Catho, sites de empresas e outras fontes copiando a descrição da oportunidade.</div></div>
+          <div class="faq-item"><button class="faq-question">Posso cancelar uma assinatura?<span class="faq-plus">+</span></button><div class="faq-answer">Sim. Os planos não exigem fidelidade e podem ser gerenciados pelo portal do cliente.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="final">
+      <div class="container">
+        <div class="final-card reveal">
+          <div class="final-inner">
+            <h2>Antes de enviar o próximo currículo, descubra se ele está <em>trabalhando a seu favor.</em></h2>
+            <p>Faça o diagnóstico gratuito e veja onde sua candidatura pode ganhar clareza, aderência e força.</p>
+            <a class="btn" href="/app"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg>Ver onde meu CV perde pontos</a>
+            <small>Sem cartão para começar · Resultado em segundos</small>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-row">
+      <a class="brand" href="#inicio" aria-label="VagaAI"><img src="/logo-icon.svg" alt=""><span>Vaga<i>AI</i></span></a>
+      <div class="footer-links"><a href="/termos">Termos de uso</a><a href="/termos">Privacidade</a><a href="/blog">Conteúdos</a><a href="/login">Entrar</a></div>
+      <div class="footer-copy">© 2026 VagaAI · Feito para candidaturas melhores.</div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleMenu() {
+      document.getElementById('nav').classList.toggle('open');
+    }
+
+    document.querySelectorAll('.nav-links a').forEach(function(link) {
+      link.addEventListener('click', function() {
+        document.getElementById('nav').classList.remove('open');
+      });
+    });
+
+    function updateScrollProgress() {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      var progress = max > 0 ? (window.scrollY / max) * 100 : 0;
+      document.getElementById('scrollProgress').style.width = progress + '%';
+    }
+    window.addEventListener('scroll', updateScrollProgress, { passive: true });
+    updateScrollProgress();
+
+    var revealObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: .12 });
+    document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
+
+    var demoTabs = Array.from(document.querySelectorAll('.demo-tab'));
+    var demoIndex = 0;
+    var demoTimer;
+    function activateDemo(index) {
+      demoIndex = index;
+      var tab = demoTabs[index];
+      var id = tab.dataset.demo;
+      demoTabs.forEach(function(item) { item.classList.remove('active'); });
+      document.querySelectorAll('.demo-panel').forEach(function(panel) { panel.classList.remove('active'); });
+      tab.classList.add('active');
+      document.querySelector('[data-panel="' + id + '"]').classList.add('active');
+    }
+    function startDemoRotation() {
+      clearInterval(demoTimer);
+      demoTimer = setInterval(function() { activateDemo((demoIndex + 1) % demoTabs.length); }, 5500);
+    }
+    demoTabs.forEach(function(tab, index) {
+      tab.addEventListener('click', function() {
+        activateDemo(index);
+        startDemoRotation();
+      });
+    });
+    var demoWindow = document.querySelector('.demo-window');
+    demoWindow.addEventListener('mouseenter', function() { clearInterval(demoTimer); });
+    demoWindow.addEventListener('mouseleave', startDemoRotation);
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) startDemoRotation();
+
+    var heroSystem = document.querySelector('.hero-system');
+    var systemShell = document.querySelector('.system-shell');
+    if (heroSystem && systemShell && window.matchMedia('(pointer:fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      heroSystem.addEventListener('mousemove', function(event) {
+        var rect = heroSystem.getBoundingClientRect();
+        var x = (event.clientX - rect.left) / rect.width - .5;
+        var y = (event.clientY - rect.top) / rect.height - .5;
+        systemShell.style.transform = 'rotateY(' + (-3 + x * 5) + 'deg) rotateX(' + (1 - y * 4) + 'deg) translateY(-3px)';
+      });
+      heroSystem.addEventListener('mouseleave', function() {
+        systemShell.style.transform = 'rotateY(-3deg) rotateX(1deg)';
+      });
+    }
+
+    document.querySelectorAll('.faq-question').forEach(function(button) {
+      button.addEventListener('click', function() {
+        var item = button.closest('.faq-item');
+        var wasOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(function(el) { el.classList.remove('open'); });
+        if (!wasOpen) item.classList.add('open');
+      });
+    });
+
+    document.querySelectorAll('.billing-btn').forEach(function(button) {
+      button.addEventListener('click', function() {
+        var mode = button.dataset.billing;
+        document.querySelectorAll('.billing-btn').forEach(function(el) { el.classList.remove('active'); });
+        button.classList.add('active');
+        document.querySelectorAll('.price[data-monthly]').forEach(function(price) {
+          var value = price.dataset[mode];
+          price.innerHTML = value + '<small>/mês</small>';
+        });
+        document.querySelectorAll('.plan-link').forEach(function(link) {
+          link.href = link.dataset[mode + 'Url'];
+        });
+        document.querySelectorAll('.billing-note').forEach(function(note) {
+          note.textContent = mode === 'annual' ? 'Cobrança anual · melhor valor mensal' : 'Cobrança mensal · cancele quando quiser';
+        });
+      });
+    });
+  </script>
+</body>
+</html>

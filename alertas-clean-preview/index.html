@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VagaAI - Prévia clean de Alertas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --forest:#062719;--forest-2:#0a3b26;--green:#16834f;--bright:#38d189;
+      --bg:#f4f7f5;--card:#fff;--sub:#f0f5f2;--line:#dce7e0;
+      --text:#0b1a11;--text-2:#466353;--muted:#7d9788;
+      --amber:#b87513;--amber-bg:#fff8e9;--red:#d9534f;--shadow:0 12px 36px rgba(8,39,25,.07);
+      --sidebar:230px;
+    }
+    body{min-height:100vh;background:var(--bg);color:var(--text);font-family:Inter,sans-serif;font-size:14px}
+    button{font:inherit}
+    .sidebar{position:fixed;inset:0 auto 0 0;width:var(--sidebar);background:linear-gradient(180deg,#062719,#041d13);color:#fff;padding:27px 16px 22px;display:flex;flex-direction:column;z-index:20}
+    .brand{display:flex;align-items:center;gap:11px;padding:0 10px 31px;font-family:Lora,serif;font-size:18px;font-weight:700}
+    .brand img{width:25px;height:25px}
+    .brand b{color:#4cdb99}
+    .nav-label{padding:0 10px 10px;color:#58806c;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+    .nav{display:grid;gap:5px}
+    .nav-item{height:42px;border:0;border-radius:10px;background:transparent;color:#8fa99b;display:flex;align-items:center;gap:12px;padding:0 12px;text-align:left;font-weight:600;cursor:pointer}
+    .nav-item svg{width:18px;height:18px}
+    .nav-item.active{background:#104a31;color:#fff;box-shadow:inset 3px 0 #42d995}
+    .side-help{margin-top:auto;border-top:1px solid rgba(255,255,255,.08);padding:14px 0}
+    .help-box{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);border-radius:11px;padding:13px 12px;color:#7fa08e;font-size:11px;line-height:1.45}
+    .help-box strong{display:block;color:#d9e9df;margin-bottom:3px}
+    .profile{display:flex;align-items:center;gap:10px;padding:12px 6px 0}
+    .avatar{width:34px;height:34px;border-radius:9px;background:#18a965;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:800}
+    .profile strong{display:block;font-size:11px}.profile span{font-size:10px;color:#6f9580}
+    .topbar{position:fixed;left:var(--sidebar);right:0;top:0;height:64px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;z-index:15}
+    .crumb{font-size:13px;font-weight:700}.crumb span{color:#9ab0a3;font-weight:400;margin-left:10px}
+    .top-actions{display:flex;align-items:center;gap:10px}
+    .plan{border:1px solid #bfe5d2;background:#eef9f3;color:#137343;border-radius:20px;padding:5px 11px;font-size:11px;font-weight:700}
+    .icon-btn{width:36px;height:36px;border:1px solid var(--line);border-radius:9px;background:#fff;display:grid;place-items:center;color:#496755}
+    .primary{border:0;background:var(--green);color:#fff;border-radius:9px;padding:10px 16px;font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 8px 18px rgba(22,131,79,.18)}
+    main{margin-left:var(--sidebar);padding:102px 38px 64px;max-width:1580px}
+    .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:24px}
+    .eyebrow{color:var(--green);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+    h1{font-family:Lora,serif;font-size:32px;line-height:1.12;margin-bottom:7px}
+    .lead{color:var(--text-2);font-size:13px;line-height:1.55;max-width:620px}
+    .head-actions{display:flex;align-items:center;gap:10px}
+    .status-pill{display:flex;align-items:center;gap:7px;border:1px solid #a8d9c0;background:#f2fbf6;color:#146c42;border-radius:20px;padding:8px 12px;font-size:11px;font-weight:700}
+    .status-pill i{width:7px;height:7px;border-radius:50%;background:#2bc47d;box-shadow:0 0 0 4px rgba(43,196,125,.12)}
+    .command{background:linear-gradient(125deg,#08311f,#0d5e3a);border-radius:18px;color:#fff;padding:24px 26px;display:grid;grid-template-columns:1.25fr .85fr 1fr;gap:28px;align-items:center;box-shadow:0 18px 42px rgba(8,49,31,.16);margin-bottom:20px;position:relative;overflow:hidden}
+    .command:after{content:"";position:absolute;width:250px;height:250px;border-radius:50%;right:-90px;top:-140px;border:55px solid rgba(65,218,148,.06)}
+    .next-label{color:#65dca5;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+    .next-date{font-family:Lora,serif;font-size:20px;font-weight:700;margin-bottom:5px}
+    .next-sub{color:#a8c9b7;font-size:11px}
+    .quality{display:flex;align-items:center;gap:14px;padding:0 26px;border-left:1px solid rgba(255,255,255,.12);border-right:1px solid rgba(255,255,255,.12)}
+    .ring{width:64px;height:64px;border-radius:50%;background:conic-gradient(#45da98 0 80%,rgba(255,255,255,.12) 80%);display:grid;place-items:center;position:relative;flex-shrink:0}
+    .ring:after{content:"";position:absolute;inset:6px;background:#0b432a;border-radius:50%}
+    .ring strong{position:relative;z-index:1;font-size:15px}
+    .quality b{display:block;font-size:12px;margin-bottom:4px}.quality span{color:#a8c9b7;font-size:10px;line-height:1.4;display:block}
+    .command-actions{display:flex;gap:8px;justify-content:flex-end;position:relative;z-index:2}
+    .cmd-btn{border-radius:9px;padding:10px 13px;font-size:11px;font-weight:800;cursor:pointer}
+    .cmd-btn.light{background:#43d895;border:0;color:#082417}.cmd-btn.ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);color:#fff}
+    .smart-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+    .stat{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px 16px;display:flex;align-items:center;gap:12px}
+    .stat-icon{width:34px;height:34px;border-radius:9px;background:#eaf7f0;color:var(--green);display:grid;place-items:center}
+    .stat strong{font-family:Lora,serif;font-size:20px;line-height:1}.stat small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+    .layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.75fr);gap:20px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+    .card-head{padding:17px 19px 14px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+    .card-title{font-size:14px;font-weight:800;margin-bottom:3px}.card-sub{font-size:10.5px;color:var(--muted)}
+    .filters{display:flex;gap:6px;flex-wrap:wrap;padding:13px 19px;border-bottom:1px solid var(--line)}
+    .filter{border:1px solid var(--line);background:#fff;color:var(--text-2);border-radius:18px;padding:6px 10px;font-size:10px;font-weight:700;cursor:pointer}
+    .filter.active{border-color:#53b985;background:#edf8f2;color:#126f43}
+    .jobs{padding:4px 19px 8px}
+    .job{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:13px;align-items:center;padding:15px 0;border-bottom:1px solid #edf2ef}
+    .job:last-child{border-bottom:0}
+    .score{width:42px;height:42px;border-radius:11px;background:#e7f8ef;color:#11824b;display:grid;place-items:center;font-weight:800;font-size:12px}
+    .score.amber{background:#fff5de;color:#a8670a}
+    .job-title{font-size:12px;font-weight:800;margin-bottom:3px}.job-meta{font-size:10.5px;color:var(--muted);margin-bottom:7px}
+    .job-tags{display:flex;gap:5px;flex-wrap:wrap}.tag{font-size:9px;padding:3px 7px;border-radius:12px;background:var(--sub);color:#567363}
+    .job-action{border:1px solid var(--line);background:#fff;color:var(--green);border-radius:8px;padding:7px 10px;font-size:10px;font-weight:800;cursor:pointer}
+    .jobs-foot{padding:12px 19px;background:#f7faf8;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:10px}
+    .side-stack{display:grid;gap:16px}
+    .profile-card{padding:19px}
+    .profile-top{display:flex;justify-content:space-between;gap:12px;margin-bottom:16px}
+    .quality-badge{background:#e8f7ef;color:#0f7a46;border-radius:18px;padding:5px 8px;font-size:10px;font-weight:800}
+    .pref-main{font-family:Lora,serif;font-size:18px;font-weight:700;margin-bottom:4px}.pref-sub{color:var(--muted);font-size:10.5px}
+    .pref-list{display:grid;gap:10px;margin:17px 0}
+    .pref-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10.5px}
+    .pref-row span{color:var(--muted)}.pref-row b{font-weight:700;text-align:right}
+    .chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}.chip{background:#edf5f0;color:#3b654e;border-radius:6px;padding:4px 7px;font-size:9px}
+    .progress{height:6px;background:#edf2ef;border-radius:6px;overflow:hidden;margin:8px 0 6px}.progress i{display:block;width:80%;height:100%;background:#37c983;border-radius:6px}
+    .quality-note{font-size:10px;color:var(--amber);background:var(--amber-bg);border:1px solid #f0d7a5;border-radius:8px;padding:9px 10px;line-height:1.45;margin:13px 0}
+    .wide-btn{width:100%;border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px;color:var(--green);font-size:10.5px;font-weight:800;cursor:pointer}
+    .activity{padding:0 18px}
+    .activity-row{display:grid;grid-template-columns:8px 1fr auto;gap:10px;align-items:start;padding:13px 0;border-bottom:1px solid #edf2ef}
+    .activity-row:last-child{border-bottom:0}
+    .dot{width:8px;height:8px;border-radius:50%;background:#2bc47d;margin-top:3px}.dot.muted{background:#c5d5cc}
+    .activity-row b{font-size:10.5px;display:block;margin-bottom:2px}.activity-row span{font-size:9.5px;color:var(--muted)}.activity-row time{font-size:9px;color:var(--muted)}
+    .bottom{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:0}
+    .email{padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:center}
+    .email-copy h3{font-family:Lora,serif;font-size:19px;margin-bottom:7px}.email-copy p{font-size:11px;color:var(--text-2);line-height:1.55;margin-bottom:12px}
+    .mail-preview{border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#fff}
+    .mail-bar{background:#edf3ef;padding:8px 10px;font-size:9px;color:var(--muted)}
+    .mail-body{padding:12px}.mail-body b{font-size:10px}.mail-body p{font-size:9px;color:var(--muted);margin:5px 0 9px}.mail-job{background:#f2f7f4;border-radius:7px;padding:8px;font-size:9px;display:flex;justify-content:space-between;color:#41604e}
+    .preview-label{position:fixed;right:18px;bottom:18px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);padding:8px 12px;border-radius:20px;color:var(--green);font-size:10px;font-weight:800;z-index:30}
+    @media(max-width:1050px){
+      .command{grid-template-columns:1fr 1fr}.command-actions{grid-column:1/-1;justify-content:flex-start}.quality{border-right:0}
+      .layout{grid-template-columns:1fr}.side-stack{grid-template-columns:1fr 1fr}.bottom{grid-template-columns:1fr}
+    }
+    @media(max-width:760px){
+      :root{--sidebar:0px}.sidebar{display:none}.topbar{left:0;padding:0 16px}.crumb span,.plan{display:none}
+      main{margin-left:0;padding:88px 16px 44px}.page-head{align-items:flex-start;flex-direction:column}.head-actions{width:100%;justify-content:space-between}
+      h1{font-size:27px}.command{grid-template-columns:1fr;padding:21px}.quality{border:0;border-top:1px solid rgba(255,255,255,.12);padding:18px 0 0}.command-actions{grid-column:auto}
+      .smart-stats{grid-template-columns:1fr}.side-stack,.bottom,.email{grid-template-columns:1fr}.job{grid-template-columns:42px minmax(0,1fr)}.job-action{grid-column:2;justify-self:start}
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><img src="../logo-icon.svg" alt="">Vaga<b>AI</b></div>
+    <div class="nav-label">Seu espaço</div>
+    <nav class="nav">
+      <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Visão geral</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5"/></svg>Analisar vaga</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>Candidaturas</button>
+      <button class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg>Alertas</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="7" r="4"/><path d="M5 21a7 7 0 0114 0"/></svg>Conta e plano</button>
+    </nav>
+    <div class="side-help"><div class="help-box"><strong>Precisa de ajuda?</strong>Veja dicas para melhorar suas candidaturas.</div></div>
+    <div class="profile"><div class="avatar">JO</div><div><strong>João Victor Heringer</strong><span>Plano Pro</span></div></div>
+  </aside>
+
+  <header class="topbar">
+    <div class="crumb">Alertas <span>› &nbsp; Seu radar de vagas</span></div>
+    <div class="top-actions"><span class="plan">● &nbsp;Pro</span><button class="icon-btn" aria-label="Alternar tema">☾</button><button class="primary">＋ Analisar vaga</button></div>
+  </header>
+
+  <main>
+    <section class="page-head">
+      <div><div class="eyebrow">Seu radar de oportunidades</div><h1>Alertas de vagas</h1><p class="lead">Defina o que procura uma vez. A VagaAI monitora oportunidades, prioriza as mais compatíveis e entrega uma seleção pronta para você avaliar.</p></div>
+      <div class="head-actions"><span class="status-pill"><i></i> Alerta ativo</span><button class="primary">＋ Novo alerta</button></div>
+    </section>
+
+    <section class="command">
+      <div><div class="next-label">Próxima seleção</div><div class="next-date">Segunda-feira, pela manhã</div><div class="next-sub">Marketing · São Paulo e remoto · Faixa a partir de R$ 6 mil</div></div>
+      <div class="quality"><div class="ring"><strong>80%</strong></div><div><b>Alerta bem configurado</b><span>Adicione empresas preferidas para deixar a busca ainda mais precisa.</span></div></div>
+      <div class="command-actions"><button class="cmd-btn light">Enviar teste</button><button class="cmd-btn ghost">Editar preferências</button></div>
+    </section>
+
+    <section class="smart-stats">
+      <div class="stat"><div class="stat-icon">⌕</div><div><strong>24</strong><small>oportunidades encontradas em 30 dias</small></div></div>
+      <div class="stat"><div class="stat-icon">◎</div><div><strong>8</strong><small>vagas com aderência acima de 80%</small></div></div>
+      <div class="stat"><div class="stat-icon">↗</div><div><strong>3</strong><small>oportunidades adicionadas às candidaturas</small></div></div>
+    </section>
+
+    <section class="layout">
+      <article class="card">
+        <div class="card-head"><div><div class="card-title">Oportunidades recomendadas</div><div class="card-sub">Uma prévia do que a VagaAI encontrou com base no seu perfil.</div></div><button class="job-action">Ver todas →</button></div>
+        <div class="filters"><button class="filter active">Mais compatíveis</button><button class="filter">Remotas</button><button class="filter">Salário informado</button><button class="filter">Últimas 24h</button></div>
+        <div class="jobs">
+          <div class="job"><div class="score">92%</div><div><div class="job-title">Growth Marketing Manager</div><div class="job-meta">Nuvem Tech · São Paulo, SP · R$ 9 mil – R$ 12 mil</div><div class="job-tags"><span class="tag">Growth</span><span class="tag">Performance</span><span class="tag">Remoto híbrido</span></div></div><button class="job-action">Analisar vaga</button></div>
+          <div class="job"><div class="score">87%</div><div><div class="job-title">Gerente de Marketing Digital</div><div class="job-meta">Atlas Educação · Remoto · Faixa salarial informada</div><div class="job-tags"><span class="tag">Liderança</span><span class="tag">Meta Ads</span><span class="tag">Analytics</span></div></div><button class="job-action">Analisar vaga</button></div>
+          <div class="job"><div class="score amber">74%</div><div><div class="job-title">Especialista de Aquisição</div><div class="job-meta">FinNext · Rio de Janeiro, RJ · Presencial</div><div class="job-tags"><span class="tag">Aquisição</span><span class="tag">Google Ads</span><span class="tag">CRM</span></div></div><button class="job-action">Ver detalhes</button></div>
+        </div>
+        <div class="jobs-foot"><span>Atualizado há 12 minutos</span><span>24 vagas encontradas com seus critérios</span></div>
+      </article>
+
+      <div class="side-stack">
+        <article class="card profile-card">
+          <div class="profile-top"><div><div class="eyebrow" style="margin-bottom:6px">Perfil monitorado</div><div class="pref-main">Marketing</div><div class="pref-sub">Pleno e sênior · São Paulo + remoto</div></div><span class="quality-badge">80%</span></div>
+          <div class="pref-list">
+            <div class="pref-row"><span>Faixa salarial</span><b>R$ 6 mil ou mais</b></div>
+            <div class="pref-row"><span>Frequência</span><b>Semanal</b></div>
+            <div class="pref-row"><span>Contrato</span><b>CLT ou PJ</b></div>
+          </div>
+          <div class="chips"><span class="chip">SEO</span><span class="chip">Copywriting</span><span class="chip">Performance</span><span class="chip">Conteúdo</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700"><span>Precisão do alerta</span><span style="color:var(--green)">80%</span></div>
+          <div class="progress"><i></i></div>
+          <div class="quality-note"><strong>Próximo ajuste recomendado:</strong> informe empresas e setores preferidos.</div>
+          <button class="wide-btn">Editar preferências</button>
+        </article>
+        <article class="card">
+          <div class="card-head"><div><div class="card-title">Atividade recente</div><div class="card-sub">O que aconteceu com seu alerta.</div></div></div>
+          <div class="activity">
+            <div class="activity-row"><i class="dot"></i><div><b>8 vagas selecionadas</b><span>3 com aderência acima de 90%</span></div><time>Hoje</time></div>
+            <div class="activity-row"><i class="dot"></i><div><b>E-mail de teste enviado</b><span>Entregue em jvhr96@gmail.com</span></div><time>12 jun.</time></div>
+            <div class="activity-row"><i class="dot muted"></i><div><b>Preferências atualizadas</b><span>Faixa salarial adicionada</span></div><time>10 jun.</time></div>
+          </div>
+        </article>
+      </div>
+
+      <article class="card bottom">
+        <div class="email-copy">
+          <div class="eyebrow">Como você recebe</div>
+          <h3>Uma seleção curta, não uma lista infinita.</h3>
+          <p>O e-mail destaca as vagas com maior aderência, informa salário e modalidade quando disponíveis e leva você direto para a análise completa.</p>
+          <button class="primary">Enviar prévia para meu e-mail</button>
+        </div>
+        <div class="mail-preview">
+          <div class="mail-bar">VagaAI → jvhr96@gmail.com</div>
+          <div class="mail-body"><b>3 oportunidades que combinam com você</b><p>Selecionamos as vagas mais aderentes ao seu perfil em Marketing.</p><div class="mail-job"><span>Growth Marketing Manager</span><strong>92%</strong></div></div>
+        </div>
+      </article>
+    </section>
+  </main>
+  <div class="preview-label">Prévia conceitual · não aplicada</div>
+  <script>
+    document.querySelectorAll('.filter').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        document.querySelectorAll('.filter').forEach(function(item){item.classList.remove('active')});
+        btn.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

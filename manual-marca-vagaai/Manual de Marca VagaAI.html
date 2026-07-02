@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual de Marca VagaAI</title>
+  <style>
+    :root {
+      --forest:#0A1A10; --deep:#0D5A35; --green:#1A7A4A; --bright:#4ECE91;
+      --paper:#F5F7F5; --card:#FFFFFF; --ink:#071209; --text:#254B34; --muted:#6E8A78;
+      --border:#DDE8E2; --amber:#C47D0A; --red:#D94F4F;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family: Inter, Manrope, Arial, sans-serif; background:var(--paper); color:var(--ink); line-height:1.55; }
+    .layout { display:grid; grid-template-columns:300px 1fr; min-height:100vh; }
+    aside { position:sticky; top:0; height:100vh; background:linear-gradient(180deg,#061108,#0A1A10); color:#fff; padding:34px 28px; overflow:auto; }
+    .brand { display:flex; align-items:center; gap:12px; margin-bottom:32px; }
+    .mark { width:38px; height:38px; border-radius:50%; background:#111; border:1px solid rgba(255,255,255,.15); display:grid; place-items:center; font-weight:900; font-family:Georgia,serif; }
+    .word { font-family:Georgia,serif; font-size:24px; font-weight:800; } .word span { color:var(--bright); }
+    .side-sub { color:#9fbaa9; font-size:12px; text-transform:uppercase; letter-spacing:.12em; margin:22px 0 10px; }
+    aside a { display:flex; align-items:center; gap:10px; color:#cfe4d6; text-decoration:none; padding:10px 0; font-size:13px; border-bottom:1px solid rgba(255,255,255,.05); }
+    aside a span { color:var(--bright); font-weight:800; min-width:28px; }
+    main { padding:48px 64px 80px; }
+    .cover { background:radial-gradient(circle at 80% 20%,rgba(78,206,145,.28),transparent 32%), linear-gradient(140deg,#0A1A10,#0D5A35); color:#fff; border-radius:30px; padding:56px; box-shadow:0 24px 80px rgba(10,26,16,.22); margin-bottom:38px; overflow:hidden; position:relative; }
+    .cover:after { content:""; position:absolute; width:360px; height:360px; border-radius:50%; border:1px solid rgba(78,206,145,.25); right:-120px; bottom:-160px; }
+    .kicker { color:var(--bright); font-size:12px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; margin-bottom:16px; }
+    h1 { font-family:Georgia,serif; font-size:54px; line-height:1.02; margin:0 0 18px; letter-spacing:-.03em; max-width:760px; }
+    .cover p { max-width:760px; color:#d8efe0; font-size:18px; margin:0 0 28px; }
+    .cover-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:34px; }
+    .metric { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:18px; padding:18px; }
+    .metric b { display:block; color:#fff; font-size:18px; } .metric span { color:#a9cbb6; font-size:12px; }
+    .section { display:grid; grid-template-columns:70px 1fr; gap:28px; background:var(--card); border:1px solid var(--border); border-radius:24px; padding:34px; margin-bottom:22px; box-shadow:0 8px 30px rgba(10,26,16,.06); }
+    .sec-num { width:54px; height:54px; border-radius:16px; background:#E8F5EE; color:var(--green); display:grid; place-items:center; font-weight:900; }
+    h2 { font-family:Georgia,serif; font-size:34px; letter-spacing:-.03em; margin:0 0 8px; }
+    h3 { margin:24px 0 10px; font-size:15px; text-transform:uppercase; letter-spacing:.08em; color:var(--green); }
+    .lead { color:var(--text); font-size:16px; margin:0 0 22px; max-width:880px; }
+    .grid { display:grid; gap:14px; } .grid.two { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .mini { background:#F8FBF9; border:1px solid var(--border); border-radius:16px; padding:18px; }
+    .mini b { color:var(--green); } .mini p { margin:6px 0 0; color:var(--text); font-size:14px; }
+    .mini.negative b { color:var(--red); } .mini.positive b { color:var(--green); }
+    .callout, .tagline { border-left:4px solid var(--bright); background:#EAF8F0; border-radius:14px; padding:18px 20px; color:#143621; font-weight:700; margin:18px 0; }
+    .tagline { font-family:Georgia,serif; font-size:26px; }
+    .chips { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
+    .chips span { background:#EAF8F0; border:1px solid #BFE7CF; color:var(--green); border-radius:999px; padding:8px 12px; font-size:13px; font-weight:700; }
+    table { width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border:1px solid var(--border); border-radius:16px; margin:14px 0 4px; background:#fff; }
+    th { background:#0A1A10; color:#fff; text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:.08em; padding:12px 14px; }
+    td { border-top:1px solid var(--border); padding:13px 14px; vertical-align:top; font-size:14px; color:var(--text); }
+    code { background:#F0F4F1; border:1px solid var(--border); border-radius:8px; padding:4px 6px; }
+    .swatch { width:24px; height:24px; display:inline-block; border-radius:8px; border:1px solid rgba(0,0,0,.08); margin-right:10px; vertical-align:middle; }
+    .checklist { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .checklist label { background:#F8FBF9; border:1px solid var(--border); border-radius:14px; padding:12px 14px; font-size:14px; }
+    .checklist span { color:var(--green); font-weight:900; margin-right:8px; }
+    .sources { background:#fff; border:1px solid var(--border); border-radius:22px; padding:28px 34px; margin-top:24px; }
+    .sources a { color:var(--green); }
+    @media print { aside { display:none; } .layout { display:block; } main { padding:0; } .section, .cover { break-inside:avoid; box-shadow:none; } }
+    @media (max-width:900px) { .layout { grid-template-columns:1fr; } aside { position:relative; height:auto; } main { padding:28px 18px; } .section { grid-template-columns:1fr; } .grid.two,.cover-grid,.checklist { grid-template-columns:1fr; } h1 { font-size:38px; } }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <div class="brand"><div class="mark">V</div><div class="word">Vaga<span>AI</span></div></div>
+      <div class="side-sub">Manual da marca</div>
+      <a href="#s01"><span>01</span>Introdução da marca</a>
+<a href="#s02"><span>02</span>Essência da marca</a>
+<a href="#s03"><span>03</span>Posicionamento</a>
+<a href="#s04"><span>04</span>Mensagem central</a>
+<a href="#s05"><span>05</span>Tom de voz</a>
+<a href="#s06"><span>06</span>Identidade visual</a>
+<a href="#s07"><span>07</span>Cores da marca</a>
+<a href="#s08"><span>08</span>Tipografia</a>
+<a href="#s09"><span>09</span>Sistema visual do produto</a>
+<a href="#s10"><span>10</span>Mockups, imagens e ilustrações</a>
+<a href="#s11"><span>11</span>Comunicação por jornada</a>
+<a href="#s12"><span>12</span>Planos e comunicação comercial</a>
+<a href="#s13"><span>13</span>Aplicações da marca</a>
+<a href="#s14"><span>14</span>Exemplos práticos</a>
+<a href="#s15"><span>15</span>Checklist de consistência</a>
+    </aside>
+    <main>
+      <section class="cover">
+        <div class="kicker">Brand handbook estratégico</div>
+        <h1>Manual de Marca VagaAI</h1>
+        <p>Um guia para alinhar posicionamento, tom de voz, identidade visual, produto, marketing e comunicação comercial em torno de uma promessa realista: buscar emprego com mais clareza, estratégia e preparo.</p>
+        <div class="cover-grid">
+          <div class="metric"><b>Clareza</b><span>antes de aplicar</span></div>
+          <div class="metric"><b>Preparo</b><span>currículo e entrevista</span></div>
+          <div class="metric"><b>Jornada</b><span>vaga até candidatura</span></div>
+          <div class="metric"><b>Confiança</b><span>sem prometer contratação</span></div>
+        </div>
+      </section>
+      
+            <section id="s01" class="section">
+              <div class="sec-num">01</div>
+              <div>
+                <h2>Introdução da marca</h2>
+                <p class="lead">O VagaAI é uma plataforma de inteligência aplicada à busca por emprego. Ele conecta vagas, currículo, candidatura e entrevista em uma jornada única, ajudando profissionais a decidir melhor antes de aplicar.</p>
+                <div class="grid two"><div class="mini"><b>O que é</b><p>Uma plataforma que ajuda profissionais a encontrar vagas alinhadas, analisar aderência, otimizar currículo, gerar carta, rastrear candidaturas e treinar entrevistas.</p></div><div class="mini"><b>Por que existe</b><p>A busca por emprego ficou digital, competitiva e fragmentada. O candidato precisa lidar com filtros automáticos, currículos genéricos, pouca resposta e entrevistas mais exigentes.</p></div><div class="mini"><b>Problema que resolve</b><p>Falta de clareza. O usuário muitas vezes não sabe se a vaga combina, o que falta no currículo, quais palavras-chave importam ou qual próximo passo tomar.</p></div><div class="mini"><b>Promessa central</b><p>Buscar emprego com mais clareza, estratégia e preparo. O VagaAI não promete contratação; promete uma candidatura mais bem direcionada.</p></div></div><div class="callout">Direção guia: o VagaAI ajuda profissionais a buscar emprego com mais clareza, estratégia e preparo, conectando vagas, currículo, candidatura e entrevista em uma jornada única.</div>
+              </div>
+            </section>
+            
+            <section id="s02" class="section">
+              <div class="sec-num">02</div>
+              <div>
+                <h2>Essência da marca</h2>
+                <p class="lead">A marca deve agir como um mentor estratégico: clara, premium, confiável e objetiva.</p>
+                <div class="grid two"><div class="mini"><b>Propósito</b><p>Dar mais direção à busca por emprego, ajudando profissionais a tomarem decisões melhores antes de enviar uma candidatura.</p></div><div class="mini"><b>Missão</b><p>Transformar a candidatura em um processo mais inteligente, mostrando aderência, lacunas e próximo passo mais importante.</p></div><div class="mini"><b>Visão</b><p>Ser o copiloto de carreira mais confiável para profissionais que querem conquistar novas oportunidades com estratégia.</p></div><div class="mini"><b>Personalidade</b><p>Mentor estratégico, especialista acessível, copiloto de decisão e ferramenta premium sem arrogância.</p></div><div class="mini"><b>Tom emocional</b><p>Seguro, encorajador e direto. A marca deve transmitir: você não está perdido; existe um próximo passo claro.</p></div></div><div class="chips"><span>Clareza acima de volume</span><span>Preparo acima de improviso</span><span>Honestidade acima de promessa exagerada</span><span>Personalização acima de currículo genérico</span><span>Tecnologia a serviço da decisão humana</span></div>
+              </div>
+            </section>
+            
+            <section id="s03" class="section">
+              <div class="sec-num">03</div>
+              <div>
+                <h2>Posicionamento</h2>
+                <p class="lead">Para profissionais que querem buscar emprego com mais estratégia, o VagaAI é uma plataforma de candidatura inteligente que conecta vagas, currículo, acompanhamento e entrevista em um só lugar.</p>
+                <div class="grid two"><div class="mini"><b>Público principal</b><p>Profissionais em busca ativa, transição de carreira ou troca de emprego que querem aumentar a qualidade das candidaturas enviadas.</p></div><div class="mini"><b>Dores</b><p>Enviar currículos sem retorno, não saber se a vaga combina, usar currículo genérico, perder tempo com vaga desalinhada e chegar despreparado à entrevista.</p></div><div class="mini"><b>Desejos</b><p>Conseguir mais entrevistas, se sentir preparado, entender prioridades, organizar candidaturas e adaptar materiais sem inventar experiência.</p></div><div class="mini"><b>Diferenciais</b><p>Jornada completa, análise por vaga, score de aderência, currículo otimizado, rastreador, alertas, entrevista contextual e carta personalizada.</p></div></div><div class="grid two"><div class="mini positive"><b>É</b><p>Copiloto de candidatura; sistema de clareza profissional; ferramenta de preparo; produto premium acessível.</p></div><div class="mini negative"><b>Não é</b><p>Garantia de emprego; agência de recrutamento; ferramenta que inventa experiência; atalho mágico para aprovação.</p></div></div>
+              </div>
+            </section>
+            
+            <section id="s04" class="section">
+              <div class="sec-num">04</div>
+              <div>
+                <h2>Mensagem central</h2>
+                <p class="lead">A mensagem precisa ser direta, útil e realista: clareza antes de aplicar, currículo certo para a vaga certa e preparo para a entrevista.</p>
+                <div class="tagline">Passe pelo filtro. Chegue mais forte na entrevista.</div><h3>Headlines recomendadas</h3><ul><li>Receba vagas alinhadas ao seu perfil.</li><li>Otimize seu currículo para cada oportunidade.</li><li>Entenda se essa vaga vale seu tempo.</li><li>Pare de enviar currículo no escuro.</li><li>Veja onde seu currículo combina com a vaga e onde precisa melhorar.</li></ul><h3>Mensagens por funcionalidade</h3><table><thead><tr><th>Funcionalidade</th><th>Mensagem</th></tr></thead><tbody><tr><td>Alertas de vagas</td><td>Receba oportunidades alinhadas ao cargo, localização, salário e perfil definidos.</td></tr><tr><td>Análise de aderência</td><td>Veja score, pontos fortes e lacunas antes de se candidatar.</td></tr><tr><td>Currículo otimizado</td><td>Gere uma versão direcionada para a vaga, sem inventar experiências.</td></tr><tr><td>Rastreador de candidaturas</td><td>Acompanhe status, prazos e próximas ações de cada oportunidade.</td></tr><tr><td>Simulador de entrevista</td><td>Treine com perguntas baseadas na vaga, no currículo e nas lacunas identificadas.</td></tr><tr><td>Carta de apresentação</td><td>Crie uma carta personalizada com foco no que o recrutador precisa entender.</td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section id="s05" class="section">
+              <div class="sec-num">05</div>
+              <div>
+                <h2>Tom de voz</h2>
+                <p class="lead">O VagaAI fala com clareza, sem inflar promessa. A linguagem deve reduzir ansiedade e aumentar direção.</p>
+                <table><thead><tr><th>Diretriz</th><th>Descrição</th></tr></thead><tbody><tr><td>Como fala</td><td>Direto, humano, estratégico, simples, premium, confiante e educativo.</td></tr><tr><td>Como não fala</td><td>Promessa milagrosa, medo artificial, jargão técnico excessivo, tom frio ou motivação vazia.</td></tr></tbody></table><h3>Exemplos de tom</h3><table><thead><tr><th>Contexto</th><th>Mais VagaAI</th><th>Evitar</th></tr></thead><tbody><tr><td>Botão</td><td>Ver minha aderência</td><td>Garantir aprovação</td></tr><tr><td>Empty state</td><td>Analise uma vaga que você realmente pretende enviar.</td><td>Você ainda não fez nada.</td></tr><tr><td>Erro</td><td>Não conseguimos carregar essa informação agora. Tente novamente.</td><td>Erro inesperado.</td></tr><tr><td>Upsell</td><td>No Pro, você acompanha análise, currículo, candidatura e entrevista.</td><td>Desbloqueie seu sucesso agora.</td></tr><tr><td>Landing page</td><td>Entenda se essa vaga vale seu tempo.</td><td>Passe em qualquer processo seletivo.</td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section id="s06" class="section">
+              <div class="sec-num">06</div>
+              <div>
+                <h2>Identidade visual</h2>
+                <p class="lead">A identidade deve equilibrar tecnologia, confiança e orientação humana. O verde escuro é a assinatura institucional; o verde brilhante é ação e progresso.</p>
+                <div class="grid two"><div class="mini"><b>Logo principal</b><p>Usar a versão horizontal VagaAI em landing page, e-mails, documentos e materiais comerciais.</p></div><div class="mini"><b>Logo reduzida</b><p>Usar o ícone V em sidebar, favicon, botões compactos e espaços pequenos.</p></div><div class="mini"><b>Tema claro</b><p>Garantir leitura sobre fundo off-white ou branco, com verde em contraste suficiente.</p></div><div class="mini"><b>Tema escuro</b><p>Usar logo clara ou símbolo destacado sobre o verde institucional.</p></div><div class="mini"><b>Área de respiro</b><p>Manter no mínimo a altura do símbolo V como margem ao redor da logo.</p></div></div>
+              </div>
+            </section>
+            
+            <section id="s07" class="section">
+              <div class="sec-num">07</div>
+              <div>
+                <h2>Cores da marca</h2>
+                <p class="lead">As cores devem ter função: verde para direção e avanço; âmbar para atenção; vermelho para erro; neutros para legibilidade.</p>
+                <table><thead><tr><th>Cor</th><th>Hex</th><th>Uso</th></tr></thead><tbody><tr><td><span class='swatch' style='background:#4ECE91'></span>Verde VagaAI</td><td><code>#4ECE91</code></td><td>Ação, progresso, destaque positivo.</td></tr><tr><td><span class='swatch' style='background:#0A1A10'></span>Verde institucional</td><td><code>#0A1A10</code></td><td>Sidebar, áreas premium, assinatura da marca.</td></tr><tr><td><span class='swatch' style='background:#1A7A4A'></span>Verde ação</td><td><code>#1A7A4A</code></td><td>CTAs e estados ativos.</td></tr><tr><td><span class='swatch' style='background:#F5F7F5'></span>Fundo claro premium</td><td><code>#F5F7F5</code></td><td>Base do app e materiais.</td></tr><tr><td><span class='swatch' style='background:#C47D0A'></span>Atenção</td><td><code>#C47D0A</code></td><td>Lacunas, ajustes e score médio.</td></tr><tr><td><span class='swatch' style='background:#D94F4F'></span>Erro</td><td><code>#D94F4F</code></td><td>Falhas, remoções e score baixo.</td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section id="s08" class="section">
+              <div class="sec-num">08</div>
+              <div>
+                <h2>Tipografia</h2>
+                <p class="lead">A tipografia precisa transmitir sofisticação sem prejudicar leitura. O produto não deve parecer uma fintech microscópica.</p>
+                <table><thead><tr><th>Elemento</th><th>Recomendação</th><th>Uso</th></tr></thead><tbody><tr><td>Principal</td><td>Inter, Manrope ou similar sem serifa</td><td>Interface, corpo, menus, botões e formulários.</td></tr><tr><td>Secundária</td><td>Lora, Georgia, Playfair Display ou similar</td><td>Headlines, landing page e momentos editoriais.</td></tr><tr><td>H1</td><td>40–56px desktop / 32–38px mobile</td><td>Títulos curtos, fortes e com respiro.</td></tr><tr><td>Corpo</td><td>15–17px, linha 1.5–1.7</td><td>Texto funcional confortável.</td></tr><tr><td>Microcopy</td><td>12–13px</td><td>Nunca usar cinza claro demais em informação importante.</td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section id="s09" class="section">
+              <div class="sec-num">09</div>
+              <div>
+                <h2>Sistema visual do produto</h2>
+                <p class="lead">O sistema visual deve deixar a jornada óbvia: o usuário precisa entender onde está, o que aconteceu e qual ação tomar.</p>
+                <table><thead><tr><th>Componente</th><th>Direção</th></tr></thead><tbody><tr><td>Cards</td><td>Bordas médias, sombra leve, agrupamento claro e ação principal evidente.</td></tr><tr><td>Botões</td><td>Primário verde sólido; secundário claro com borda; perigo discreto com ícone.</td></tr><tr><td>Badges</td><td>Pequenos, semânticos e consistentes: Pro, Analisada, Entrevista, CV otimizado.</td></tr><tr><td>Menus</td><td>Sidebar escura no desktop; menu inferior e hambúrguer no mobile.</td></tr><tr><td>Modais</td><td>Overlay suave, título claro, texto curto e botões objetivos.</td></tr><tr><td>Listas</td><td>Score visual, status claro, próxima ação destacada e painel lateral de detalhes.</td></tr><tr><td>Motion</td><td>Score preenchendo, cards entrando, alertas chegando e loading inteligente.</td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section id="s10" class="section">
+              <div class="sec-num">10</div>
+              <div>
+                <h2>Mockups, imagens e ilustrações</h2>
+                <p class="lead">Mockups devem vender entendimento, não decorar. Toda representação visual precisa mostrar uma ação real do produto.</p>
+                <div class="grid two"><div class="mini"><b>Como devem ser</b><p>Baseados em telas reais, com dados plausíveis, fluxo claro e hierarquia objetiva.</p></div><div class="mini"><b>Representar análise</b><p>Score, lacunas, keywords, prioridade e CTA para otimizar currículo.</p></div><div class="mini"><b>Representar candidaturas</b><p>Status, próxima ação, histórico e oportunidade selecionada.</p></div><div class="mini"><b>Representar entrevista</b><p>Pergunta contextual, campo de resposta, feedback e progresso.</p></div><div class="mini"><b>Evitar</b><p>Imagens genéricas, personagens sem contexto, mockups irreais e enfeites sem função.</p></div></div>
+              </div>
+            </section>
+            
+            <section id="s11" class="section">
+              <div class="sec-num">11</div>
+              <div>
+                <h2>Comunicação por jornada</h2>
+                <p class="lead">A comunicação deve acompanhar o momento do usuário. Cada tela precisa responder: o que aconteceu, por que importa e o que fazer agora.</p>
+                <table><thead><tr><th>Momento</th><th>Mensagem orientadora</th></tr></thead><tbody><tr><td>Primeiro acesso</td><td>Comece analisando uma vaga que você realmente pretende enviar.</td></tr><tr><td>Primeira análise</td><td>Comparamos a vaga com seu currículo para mostrar pontos fortes e lacunas.</td></tr><tr><td>Resultado</td><td>Sua aderência atual é X%. Veja os principais ajustes para fortalecer sua candidatura.</td></tr><tr><td>Currículo otimizado</td><td>Seu currículo foi adaptado para esta vaga. Revise ou baixe a versão final.</td></tr><tr><td>Candidatura rastreada</td><td>Esta oportunidade foi adicionada ao rastreador para acompanhar próximos passos.</td></tr><tr><td>Alerta recebido</td><td>Encontramos vagas compatíveis com o perfil que você definiu.</td></tr><tr><td>Entrevista</td><td>Treine perguntas baseadas na vaga, no currículo e no que a empresa pode investigar.</td></tr><tr><td>Upgrade</td><td>Seu plano atual permite começar. O Pro libera a jornada completa.</td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section id="s12" class="section">
+              <div class="sec-num">12</div>
+              <div>
+                <h2>Planos e comunicação comercial</h2>
+                <p class="lead">A comunicação comercial deve vender continuidade de jornada, não pressão. O usuário precisa entender o que ganha em cada plano.</p>
+                <table><thead><tr><th>Plano</th><th>Papel</th><th>Mensagem</th></tr></thead><tbody><tr><td>Free</td><td>Entrada e ativação</td><td>Teste o VagaAI e entenda o valor de analisar uma vaga antes de se candidatar.</td></tr><tr><td>Starter</td><td>Uso recorrente leve</td><td>Para quem quer buscar emprego com mais frequência e parar de aplicar no escuro.</td></tr><tr><td>Pro</td><td>Sistema completo</td><td>Para quem quer usar o VagaAI como central da busca por emprego.</td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section id="s13" class="section">
+              <div class="sec-num">13</div>
+              <div>
+                <h2>Aplicações da marca</h2>
+                <p class="lead">A marca precisa se comportar de forma consistente em landing page, app, e-mails, anúncios, Instagram, PDFs e apresentações.</p>
+                <table><thead><tr><th>Aplicação</th><th>Direção</th></tr></thead><tbody><tr><td>Landing page</td><td>Headline direta, mockups reais, benefícios concretos e objeções claras.</td></tr><tr><td>Dashboard</td><td>Próxima melhor ação, candidaturas, alertas, metas úteis e pouca repetição.</td></tr><tr><td>Mobile</td><td>Menu inferior, hambúrguer, botões grandes e textos confortáveis.</td></tr><tr><td>E-mails</td><td>Curtos, com uma ação principal e baseados em oportunidade ou progresso.</td></tr><tr><td>Instagram</td><td>Dor do candidato, ATS, currículo, bastidores do recrutamento e uso do produto.</td></tr><tr><td>PDFs e currículos</td><td>A4 correto, legível, limpo e profissional acima de decorativo.</td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section id="s14" class="section">
+              <div class="sec-num">14</div>
+              <div>
+                <h2>Exemplos práticos</h2>
+                <p class="lead">Exemplos prontos ajudam a manter consistência entre produto, marketing e suporte.</p>
+                <table><thead><tr><th>Peça</th><th>Texto principal</th><th>Apoio/CTA</th></tr></thead><tbody><tr><td>Seção de LP</td><td>Antes de enviar o currículo, entenda se a vaga combina com você.</td><td>O VagaAI compara a descrição da vaga com seu currículo, identifica lacunas e mostra ajustes para fortalecer sua candidatura.</td></tr><tr><td>Card do app</td><td>Próxima melhor ação</td><td>Seu currículo ainda não destaca 4 requisitos importantes para esta vaga.</td></tr><tr><td>E-mail de alerta</td><td>Encontramos vagas compatíveis com seu perfil</td><td>Selecionamos oportunidades com base no cargo, localização e preferências que você definiu.</td></tr><tr><td>Notificação</td><td>Nova vaga com 82% de aderência encontrada.</td><td>Analisar vaga agora</td></tr><tr><td>Post</td><td>Mandar mais currículos nem sempre aumenta suas chances.</td><td>Antes de aplicar, entenda onde você está forte e onde precisa ajustar.</td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section id="s15" class="section">
+              <div class="sec-num">15</div>
+              <div>
+                <h2>Checklist de consistência</h2>
+                <p class="lead">Antes de publicar qualquer tela, texto ou campanha, usar este checklist como filtro de qualidade.</p>
+                <div class="checklist"><label><span>✓</span>A mensagem está clara em até 5 segundos?</label><label><span>✓</span>A promessa é realista e evita garantir emprego?</label><label><span>✓</span>O texto ajuda o usuário a tomar uma decisão?</label><label><span>✓</span>O próximo passo está evidente?</label><label><span>✓</span>O visual parece premium sem ficar pesado?</label><label><span>✓</span>A cor usada tem função?</label><label><span>✓</span>O componente reduz esforço ou só decora?</label><label><span>✓</span>A comunicação respeita o plano do usuário?</label><label><span>✓</span>O mobile está legível?</label><label><span>✓</span>O fluxo continua a jornada ou cria uma quebra?</label></div>
+              </div>
+            </section>
+            
+      <section class="sources">
+        <h2>Base estratégica de mercado</h2>
+        <p class="lead">O posicionamento do VagaAI parte de um mercado de trabalho competitivo, digitalizado e cada vez mais mediado por tecnologia. O candidato não precisa apenas de mais vagas; precisa de clareza para escolher, adaptar, acompanhar e se preparar melhor.</p>
+        <ul><li><a href="https://www.ibge.gov.br/explica/desemprego.php">IBGE - Desemprego</a></li><li><a href="https://www.ibge.gov.br/estatisticas/sociais/saude/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html">IBGE - PNAD Contínua</a></li><li><a href="https://business.linkedin.com/content/dam/me/business/en-us/talent-solutions/resources/pdfs/future-of-recruiting-2025.pdf">LinkedIn Future of Recruiting 2025</a></li><li><a href="https://conteudos.gupy.io/materiais/relatorio/empregabilidade-2026">Gupy - Mercado de Trabalho no Brasil 2026</a></li><li><a href="https://www.hiringlab.org/">Indeed Hiring Lab</a></li></ul>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -3,7 +3,25 @@ import crypto from 'crypto';
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
+
+// Busca o e-mail do customer direto na API do Stripe. Usado como fallback de
+// resolução de usuário quando o evento de assinatura não traz client_reference_id
+// nem customer_email (o objeto Subscription normalmente não carrega o e-mail).
+async function getStripeCustomerEmail(customerId) {
+  if (!customerId || !STRIPE_SECRET_KEY) return null;
+  try {
+    const r = await fetch(`https://api.stripe.com/v1/customers/${encodeURIComponent(customerId)}`, {
+      headers: { Authorization: `Bearer ${STRIPE_SECRET_KEY}` },
+    });
+    if (!r.ok) return null;
+    const c = await r.json();
+    return c && !c.deleted ? (c.email || null) : null;
+  } catch {
+    return null;
+  }
+}
 
 // Mapeamento: amount_total (em centavos) → créditos
 // R$9,90 = 990 → 1 crédito
@@ -212,6 +230,12 @@ export default async function handler(req, res) {
       const rows = await r.json();
       if (rows?.length) return rows[0].user_id;
     }
+    // 1b. Sem e-mail no evento? Busca direto no Stripe pelo customer.
+    // Resolve a corrida de ordem de eventos (subscription.created antes do
+    // checkout.session.completed) e provisiona mesmo sem client_reference_id.
+    if (!email && customerId) {
+      email = await getStripeCustomerEmail(customerId);
+    }
     // 2. Fallback: busca pelo email via SQL (admin users endpoint não filtra por query param)
     if (email) {
       const r = await fetch(
@@ -264,8 +288,12 @@ export default async function handler(req, res) {
     const email = sub.customer_email || sub.metadata?.email;
     const userId = await getUserIdByCustomerOrEmail(customerId, email);
     if (!userId) {
-      console.warn(`Webhook: no user found for customer ${customerId}`);
-      return res.status(200).json({ received: true, note: 'no_user' });
+      // FAIL-OPEN seria perigoso: o cliente pagou e ficaria sem o plano.
+      // Retorna 5xx para o Stripe RE-TENTAR (com backoff, por ~3 dias). Quando o
+      // checkout.session.completed criar o mapeamento — ou o usuário criar a
+      // conta com esse e-mail — uma re-tentativa provisiona corretamente.
+      console.warn(`Webhook: no user found for customer ${customerId} — pedindo retry ao Stripe`);
+      return res.status(503).json({ error: 'user_not_resolved_yet', customer: customerId });
     }
     await upsertSubscription(userId, sub.id, customerId, planInfo.plan, sub.status, sub.current_period_end, sub.current_period_start, eventType === 'customer.subscription.created');
     // Email de boas-vindas (apenas na criação)
@@ -305,9 +333,16 @@ export default async function handler(req, res) {
   // Se for assinatura: salva mapeamento user_id → customer_id via UPSERT
   // (PATCH não funciona se a linha ainda não existe — novo assinante)
   if (session.mode === 'subscription') {
-    const userId2 = session.client_reference_id;
+    let userId2 = session.client_reference_id;
     const customerId2 = session.customer;
     const subId2 = session.subscription;
+    // Sem client_reference_id (ex.: compra fora do fluxo autenticado)? Tenta
+    // resolver pelo e-mail do checkout antes de desistir, para ainda criar o
+    // mapeamento customer→user que o subscription.created vai usar.
+    if (!userId2) {
+      const email2 = session.customer_details?.email || session.customer_email;
+      if (email2) userId2 = await getUserIdByCustomerOrEmail(null, email2);
+    }
     if (userId2 && customerId2) {
       const now = new Date().toISOString();
       // UPSERT: cria a linha se não existir, atualiza se existir

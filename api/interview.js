@@ -2,6 +2,8 @@
 // Simulador de entrevista com IA. Requer plano Pro.
 // action=generate: gera perguntas | action=evaluate: avalia resposta | action=transcribe: transcreve audio
 
+import { resolvePlan } from '../lib/entitlements.js';
+
 export const config = {
   api: {
     bodyParser: {
@@ -50,11 +52,8 @@ async function getUserPlan(userId) {
       headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
     });
     const rows = await res.json();
-    const sub = rows?.[0];
-    if (!sub) return 'free';
-    const paidStatuses = ['active', 'trialing', 'past_due'];
-    if (!paidStatuses.includes(sub.status)) return 'free';
-    return sub.plan || 'free';
+    // Fonte única de verdade de plano/status (lib/entitlements.js)
+    return resolvePlan(rows?.[0]);
   } catch {
     return 'free';
   }

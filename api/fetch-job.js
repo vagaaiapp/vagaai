@@ -190,7 +190,8 @@ function checkRateLimit(ip) {
 // ── Handler ────────────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Sem CORS: o app chama este endpoint same-origin. Um header '*' aqui só
+  // serviria para sites de terceiros usarem o scraper como proxy gratuito.
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   // Prefere x-real-ip (definido pela Vercel, não spoofável) e, na ausência, o
@@ -303,8 +304,45 @@ function htmlToText(html, maxLen) {
     .slice(0, maxLen);
 }
 
+// Frases de boilerplate de sites de vagas que não fazem parte da descrição real
+const BOILERPLATE_PATTERNS = [
+  // Catho
+  /ela ser[aá] analisada em breve por nossa equipe/i,
+  /obrigado por contribuir para uma catho/i,
+  /contribuir para uma catho cada vez mais segura/i,
+  /denuncie esta vaga/i,
+  /reportar problema/i,
+  // LinkedIn
+  /linkedin.*não.*divulgar/i,
+  /ao clicar em.*concordo/i,
+  /inscreva-se com um clique/i,
+  /candidatura simplificada/i,
+  // Indeed
+  /indeed pode ser compensado/i,
+  /encontre empregos/i,
+  // Gerais
+  /javascript (está|esta) desativado/i,
+  /ative o javascript/i,
+  /esta página usa cookies/i,
+  /aceitar cookies/i,
+  /política de privacidade/i,
+  /termos de uso/i,
+  /compartilhe esta vaga/i,
+  /salvar vaga/i,
+  /candidatar-?se agora/i,
+  /ver mais vagas/i,
+  /vagas similares/i,
+  /enviar currículo/i,
+];
+
 function cleanText(text, maxLen) {
-  return text.replace(/\s{3,}/g, '\n\n').trim().slice(0, maxLen);
+  const lines = text.replace(/\s{3,}/g, '\n\n').trim().split('\n');
+  const filtered = lines.filter(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return true; // mantém linhas vazias para espaçamento
+    return !BOILERPLATE_PATTERNS.some(p => p.test(trimmed));
+  });
+  return filtered.join('\n').replace(/\n{3,}/g, '\n\n').trim().slice(0, maxLen);
 }
 
 // Detecta se o texto é conteúdo real de vaga ou boilerplate de navegação.

@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VagaAI - Proposta UX do painel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Lora:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-950:#07170f;
+      --green-900:#0b2116;
+      --green-800:#123923;
+      --green-700:#176c45;
+      --green-600:#1d9e75;
+      --green-500:#28b982;
+      --green-100:#ddf5e9;
+      --green-50:#effaf4;
+      --amber:#c47d0a;
+      --amber-bg:#fff8e8;
+      --blue:#3778c2;
+      --blue-bg:#edf5ff;
+      --red:#bd3a45;
+      --red-bg:#fff0f1;
+      --ink:#16221b;
+      --ink-2:#536158;
+      --ink-3:#8b968f;
+      --line:#e1e8e3;
+      --surface:#ffffff;
+      --canvas:#f4f7f5;
+      --shadow:0 12px 36px rgba(22,55,35,.07);
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      background:var(--canvas);
+      color:var(--ink);
+      font-family:"DM Sans",sans-serif;
+    }
+    button { font:inherit; }
+    .app { min-height:100vh; display:flex; }
+    .sidebar {
+      position:fixed;
+      inset:0 auto 0 0;
+      width:230px;
+      background:linear-gradient(180deg,var(--green-950),var(--green-900));
+      color:#fff;
+      padding:26px 18px 20px;
+      display:flex;
+      flex-direction:column;
+      z-index:10;
+    }
+    .brand { display:flex; align-items:center; gap:10px; padding:0 10px 28px; }
+    .brand img { width:30px; height:30px; }
+    .brand strong { font-family:Lora,serif; font-size:19px; }
+    .brand strong span { color:#47d99b; }
+    .nav-label {
+      color:#698276;
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      padding:0 12px;
+      margin-bottom:8px;
+    }
+    .nav { display:grid; gap:5px; }
+    .nav button {
+      width:100%;
+      border:0;
+      background:transparent;
+      color:#9fb0a7;
+      padding:11px 12px;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      gap:11px;
+      cursor:pointer;
+      text-align:left;
+      font-size:13px;
+      font-weight:600;
+    }
+    .nav button.active {
+      color:#fff;
+      background:rgba(62,207,142,.13);
+      box-shadow:inset 3px 0 #3ecf8e;
+    }
+    .nav svg { width:17px; height:17px; flex:none; }
+    .sidebar-bottom { margin-top:auto; }
+    .support {
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.035);
+      border-radius:12px;
+      padding:13px;
+      color:#9fb0a7;
+      font-size:11px;
+      line-height:1.5;
+      margin-bottom:14px;
+    }
+    .profile { display:flex; align-items:center; gap:10px; padding:8px; }
+    .avatar {
+      width:32px; height:32px; border-radius:50%;
+      display:grid; place-items:center;
+      background:#2c8e62; font-size:11px; font-weight:800;
+    }
+    .profile strong { display:block; font-size:12px; }
+    .profile span { color:#779085; font-size:10px; }
+    .main { margin-left:230px; width:calc(100% - 230px); }
+    .topbar {
+      height:70px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 38px;
+      background:rgba(255,255,255,.86);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:blur(14px);
+      position:sticky;
+      top:0;
+      z-index:5;
+    }
+    .breadcrumb { color:var(--ink-3); font-size:12px; }
+    .breadcrumb strong { color:var(--ink); }
+    .top-actions { display:flex; align-items:center; gap:10px; }
+    .plan {
+      color:var(--green-700);
+      background:var(--green-50);
+      border:1px solid #c9ebd9;
+      border-radius:20px;
+      font-size:11px;
+      font-weight:700;
+      padding:7px 11px;
+    }
+    .primary {
+      border:0;
+      border-radius:9px;
+      background:var(--green-600);
+      color:#fff;
+      padding:10px 15px;
+      font-weight:700;
+      font-size:12px;
+      cursor:pointer;
+      box-shadow:0 6px 16px rgba(29,158,117,.2);
+    }
+    .content { max-width:1260px; margin:0 auto; padding:34px 38px 56px; }
+    .intro { display:flex; justify-content:space-between; gap:24px; margin-bottom:22px; }
+    .eyebrow {
+      color:var(--green-700);
+      font-size:10px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.11em;
+      margin-bottom:7px;
+    }
+    h1 { font-family:Lora,serif; font-size:30px; margin:0 0 7px; letter-spacing:-.02em; }
+    .intro p { margin:0; color:var(--ink-2); font-size:13px; }
+    .date { color:var(--ink-3); font-size:11px; padding-top:9px; }
+    .next-action {
+      position:relative;
+      overflow:hidden;
+      background:linear-gradient(120deg,#0b2b1a,#176c45);
+      color:#fff;
+      border-radius:18px;
+      padding:28px 30px;
+      display:grid;
+      grid-template-columns:minmax(0,1.55fr) minmax(260px,.8fr);
+      gap:28px;
+      box-shadow:0 16px 38px rgba(11,56,34,.18);
+      margin-bottom:24px;
+    }
+    .next-action::after {
+      content:"";
+      width:260px; height:260px; border-radius:50%;
+      position:absolute; right:-95px; top:-120px;
+      background:rgba(89,225,164,.08);
+    }
+    .action-kicker {
+      display:inline-flex; align-items:center; gap:7px;
+      color:#86e4b7; font-size:10px; font-weight:800;
+      letter-spacing:.1em; text-transform:uppercase; margin-bottom:10px;
+    }
+    .action-kicker i { width:7px; height:7px; background:#4ee09e; border-radius:50%; }
+    .next-action h2 { font-size:23px; margin:0 0 8px; letter-spacing:-.02em; }
+    .next-action p { color:#b9d4c5; font-size:13px; line-height:1.6; margin:0 0 20px; max-width:640px; }
+    .action-buttons { display:flex; flex-wrap:wrap; gap:9px; }
+    .action-main {
+      border:0; border-radius:9px; padding:11px 16px;
+      background:#4bd895; color:#092416; font-size:12px; font-weight:800;
+    }
+    .action-secondary {
+      border:1px solid rgba(255,255,255,.2); border-radius:9px; padding:10px 14px;
+      background:rgba(255,255,255,.06); color:#fff; font-size:12px; font-weight:700;
+    }
+    .job-summary {
+      position:relative; z-index:1;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:13px;
+      padding:17px;
+      align-self:stretch;
+    }
+    .job-label { color:#86a995; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.09em; }
+    .job-title { font-size:14px; font-weight:800; margin:8px 0 2px; }
+    .job-company { color:#aac4b5; font-size:11px; }
+    .score-line { display:flex; align-items:center; gap:12px; margin-top:18px; }
+    .score {
+      width:48px; height:48px; border:3px solid #f0b84a; border-radius:50%;
+      display:grid; place-items:center; color:#ffd078; font-size:13px; font-weight:800;
+    }
+    .score-copy strong { font-size:11px; display:block; }
+    .score-copy span { font-size:10px; color:#aac4b5; }
+    .section-head { display:flex; align-items:end; justify-content:space-between; margin:27px 0 12px; }
+    .section-head h3 { font-size:15px; margin:0 0 2px; }
+    .section-head p { margin:0; color:var(--ink-3); font-size:11px; }
+    .section-head a { color:var(--green-700); font-size:11px; font-weight:700; text-decoration:none; }
+    .attention-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    .attention-card {
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:17px;
+      box-shadow:var(--shadow);
+    }
+    .attention-top { display:flex; justify-content:space-between; gap:10px; margin-bottom:13px; }
+    .attention-icon {
+      width:31px; height:31px; border-radius:9px; display:grid; place-items:center;
+      font-size:14px; font-weight:800;
+    }
+    .attention-icon.amber { background:var(--amber-bg); color:var(--amber); }
+    .attention-icon.blue { background:var(--blue-bg); color:var(--blue); }
+    .attention-icon.red { background:var(--red-bg); color:var(--red); }
+    .urgency {
+      align-self:start; font-size:9px; font-weight:800; border-radius:12px; padding:4px 7px;
+      background:#f5f7f5; color:var(--ink-3);
+    }
+    .attention-card h4 { margin:0 0 4px; font-size:13px; }
+    .attention-card p { margin:0 0 14px; color:var(--ink-2); font-size:11px; line-height:1.5; min-height:34px; }
+    .text-btn { border:0; background:none; color:var(--green-700); padding:0; font-size:11px; font-weight:800; }
+    .dashboard-grid { display:grid; grid-template-columns:minmax(0,1.65fr) minmax(280px,.75fr); gap:18px; }
+    .panel {
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:15px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .panel-header { padding:17px 19px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; }
+    .panel-header h3 { font-size:14px; margin:0 0 2px; }
+    .panel-header span { color:var(--ink-3); font-size:10px; }
+    .filters { display:flex; gap:5px; }
+    .filter {
+      border:1px solid var(--line); background:#fff; color:var(--ink-2);
+      font-size:9px; font-weight:700; border-radius:14px; padding:5px 8px;
+    }
+    .filter.active { background:var(--green-50); border-color:#c8ead8; color:var(--green-700); }
+    .job-row {
+      display:grid;
+      grid-template-columns:46px minmax(0,1.4fr) 100px minmax(120px,.7fr) 22px;
+      gap:13px;
+      align-items:center;
+      padding:15px 19px;
+      border-bottom:1px solid #edf1ee;
+    }
+    .job-row:last-child { border-bottom:0; }
+    .score-badge {
+      width:42px; height:42px; border-radius:11px;
+      display:grid; place-items:center; font-size:11px; font-weight:800;
+    }
+    .score-badge.mid { background:var(--amber-bg); color:var(--amber); }
+    .score-badge.high { background:var(--green-50); color:var(--green-700); }
+    .job-info strong { display:block; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .job-info span { color:var(--ink-3); font-size:10px; }
+    .status { font-size:9px; font-weight:800; border-radius:14px; padding:5px 8px; text-align:center; }
+    .status.applied { background:var(--blue-bg); color:var(--blue); }
+    .status.interview { background:var(--amber-bg); color:var(--amber); }
+    .status.analysis { background:#f1f3f2; color:var(--ink-2); }
+    .next-step strong { display:block; font-size:10px; }
+    .next-step span { font-size:9px; color:var(--ink-3); }
+    .chevron { color:var(--ink-3); }
+    .funnel { padding:19px; }
+    .funnel-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .funnel-row:last-child { margin-bottom:0; }
+    .funnel-label { display:flex; align-items:center; gap:9px; font-size:11px; color:var(--ink-2); }
+    .dot { width:8px; height:8px; border-radius:50%; }
+    .dot.green { background:var(--green-500); }
+    .dot.blue { background:var(--blue); }
+    .dot.amber { background:#e4a438; }
+    .dot.gray { background:#bdc5c0; }
+    .funnel-number { font-size:18px; font-weight:800; }
+    .mini-insight {
+      margin:0 19px 19px;
+      background:var(--green-50);
+      border:1px solid #d3eddf;
+      border-radius:11px;
+      padding:14px;
+      font-size:10px;
+      color:var(--green-800);
+      line-height:1.55;
+    }
+    .mini-insight strong { display:block; margin-bottom:3px; }
+    .bottom-nav { display:none; }
+    @media (max-width: 980px) {
+      .sidebar { width:76px; padding-inline:11px; }
+      .brand strong,.nav-label,.nav button span,.support,.profile div { display:none; }
+      .brand { padding-inline:12px; }
+      .nav button { justify-content:center; padding:12px; }
+      .main { margin-left:76px; width:calc(100% - 76px); }
+      .next-action,.dashboard-grid { grid-template-columns:1fr; }
+      .attention-grid { grid-template-columns:1fr 1fr; }
+      .job-summary { display:none; }
+    }
+    @media (max-width: 680px) {
+      .sidebar { display:none; }
+      .main { margin:0; width:100%; padding-bottom:68px; }
+      .topbar { height:60px; padding:0 17px; }
+      .breadcrumb,.plan { display:none; }
+      .topbar::before { content:"VagaAI"; font-family:Lora,serif; font-weight:700; color:var(--green-800); }
+      .content { padding:23px 16px 38px; }
+      .intro { display:block; }
+      .date { display:none; }
+      h1 { font-size:25px; }
+      .next-action { padding:23px 20px; border-radius:15px; }
+      .next-action h2 { font-size:19px; }
+      .attention-grid { grid-template-columns:1fr; }
+      .attention-card p { min-height:0; }
+      .dashboard-grid { display:block; }
+      .panel + .panel { margin-top:16px; }
+      .filters { display:none; }
+      .job-row { grid-template-columns:42px 1fr auto; padding:14px; }
+      .job-row .next-step,.job-row .chevron { display:none; }
+      .status { grid-column:3; }
+      .bottom-nav {
+        position:fixed; display:grid; grid-template-columns:repeat(3,1fr);
+        inset:auto 0 0; height:62px; z-index:20; background:#fff; border-top:1px solid var(--line);
+      }
+      .bottom-nav button { border:0; background:#fff; color:var(--ink-3); font-size:10px; font-weight:700; }
+      .bottom-nav button.active { color:var(--green-700); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><img src="/logo-icon.svg" alt=""><strong>Vaga<span>AI</span></strong></div>
+      <div class="nav-label">Seu espaço</div>
+      <nav class="nav">
+        <button class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Visão geral</span></button>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5h8v2"/></svg><span>Candidaturas</span></button>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg><span>Alertas</span></button>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6v.2h-4V21a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 00.3-1.9A1.7 1.7 0 003 14H2.8v-4H3a1.7 1.7 0 001.6-1 1.7 1.7 0 00-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 009 4.6 1.7 1.7 0 0010 3v-.2h4V3a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 00-.3 1.9 1.7 1.7 0 001.6 1h.2v4H21a1.7 1.7 0 00-1.6 1z"/></svg><span>Conta e plano</span></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="support"><strong>Precisa de ajuda?</strong><br>Veja dicas para melhorar suas candidaturas.</div>
+        <div class="profile"><div class="avatar">JV</div><div><strong>João Victor</strong><span>Plano Pro</span></div></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="breadcrumb"><strong>Visão geral</strong> &nbsp;/&nbsp; Sua busca de emprego</div>
+        <div class="top-actions"><span class="plan">Plano Pro ativo</span><button class="primary">+ Analisar nova vaga</button></div>
+      </header>
+
+      <div class="content">
+        <section class="intro">
+          <div><div class="eyebrow">Seu painel de candidaturas</div><h1>Bom dia, João</h1><p>Você tem 3 ações que podem aumentar suas chances esta semana.</p></div>
+          <div class="date">Quarta-feira, 10 de junho</div>
+        </section>
+
+        <section class="next-action">
+          <div>
+            <div class="action-kicker"><i></i> Próxima melhor ação</div>
+            <h2>Otimize seu CV para a vaga de Growth Manager</h2>
+            <p>Seu currículo tem boa experiência, mas ainda não menciona 4 requisitos importantes da vaga. Com esses ajustes, a estimativa de aderência pode subir de 58% para cerca de 76%.</p>
+            <div class="action-buttons"><button class="action-main">Otimizar CV agora →</button><button class="action-secondary">Ver análise completa</button></div>
+          </div>
+          <div class="job-summary">
+            <div class="job-label">Candidatura prioritária</div>
+            <div class="job-title">Growth Manager</div>
+            <div class="job-company">Loft · Remoto</div>
+            <div class="score-line"><div class="score">58%</div><div class="score-copy"><strong>Aderência moderada</strong><span>4 requisitos ainda ausentes</span></div></div>
+          </div>
+        </section>
+
+        <div class="section-head"><div><h3>Precisa da sua atenção</h3><p>Ações organizadas por urgência e impacto.</p></div><a href="#">Ver todas as tarefas →</a></div>
+        <section class="attention-grid">
+          <article class="attention-card"><div class="attention-top"><div class="attention-icon amber">↗</div><span class="urgency">Hoje</span></div><h4>Faça follow-up com a Hotmart</h4><p>Você se candidatou há 7 dias e ainda não registrou um retorno.</p><button class="text-btn">Registrar follow-up →</button></article>
+          <article class="attention-card"><div class="attention-top"><div class="attention-icon blue">◎</div><span class="urgency">Amanhã</span></div><h4>Prepare sua entrevista</h4><p>Entrevista de Marketing Lead marcada para quinta-feira, às 14h.</p><button class="text-btn">Treinar entrevista →</button></article>
+          <article class="attention-card"><div class="attention-top"><div class="attention-icon red">!</div><span class="urgency">Alto impacto</span></div><h4>Complete a candidatura</h4><p>Seu CV está pronto, mas a candidatura para a RD Station ainda não foi enviada.</p><button class="text-btn">Continuar candidatura →</button></article>
+        </section>
+
+        <div class="section-head"><div><h3>Suas candidaturas</h3><p>Score, etapa e próxima ação reunidos em uma única visão.</p></div><a href="#">Abrir rastreador completo →</a></div>
+        <section class="dashboard-grid">
+          <div class="panel">
+            <div class="panel-header"><div><h3>Em andamento</h3><span>4 candidaturas ativas</span></div><div class="filters"><button class="filter active">Todas</button><button class="filter">Aplicadas</button><button class="filter">Entrevistas</button></div></div>
+            <div class="job-row"><div class="score-badge mid">58%</div><div class="job-info"><strong>Growth Manager</strong><span>Loft · atualizada hoje</span></div><div class="status analysis">Só análise</div><div class="next-step"><strong>Otimizar CV</strong><span>Próxima ação</span></div><div class="chevron">›</div></div>
+            <div class="job-row"><div class="score-badge high">82%</div><div class="job-info"><strong>Head de Marketing</strong><span>Hotmart · há 7 dias</span></div><div class="status applied">Aplicado</div><div class="next-step"><strong>Fazer follow-up</strong><span>Vence hoje</span></div><div class="chevron">›</div></div>
+            <div class="job-row"><div class="score-badge high">76%</div><div class="job-info"><strong>Marketing Content Lead</strong><span>99Freelas · ontem</span></div><div class="status interview">Entrevista</div><div class="next-step"><strong>Treinar entrevista</strong><span>Amanhã, 14h</span></div><div class="chevron">›</div></div>
+            <div class="job-row"><div class="score-badge mid">67%</div><div class="job-info"><strong>Especialista de Growth</strong><span>RD Station · há 2 dias</span></div><div class="status analysis">CV pronto</div><div class="next-step"><strong>Enviar candidatura</strong><span>Sem prazo</span></div><div class="chevron">›</div></div>
+          </div>
+          <aside class="panel">
+            <div class="panel-header"><div><h3>Seu funil</h3><span>Últimos 30 dias</span></div></div>
+            <div class="funnel">
+              <div class="funnel-row"><div class="funnel-label"><i class="dot gray"></i>Analisadas</div><div class="funnel-number">12</div></div>
+              <div class="funnel-row"><div class="funnel-label"><i class="dot blue"></i>Candidaturas</div><div class="funnel-number">7</div></div>
+              <div class="funnel-row"><div class="funnel-label"><i class="dot amber"></i>Entrevistas</div><div class="funnel-number">2</div></div>
+              <div class="funnel-row"><div class="funnel-label"><i class="dot green"></i>Ofertas</div><div class="funnel-number">0</div></div>
+            </div>
+            <div class="mini-insight"><strong>Insight da VagaAI</strong>Você recebe mais entrevistas nas vagas com aderência acima de 75%. Priorize as duas candidaturas mais próximas desse nível.</div>
+          </aside>
+        </section>
+      </div>
+    </main>
+  </div>
+  <nav class="bottom-nav"><button class="active">Visão geral</button><button>Candidaturas</button><button>Alertas</button></nav>
+</body>
+</html>

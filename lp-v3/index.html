@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Compare seu currículo com a vaga, descubra o que está faltando e fortaleça sua candidatura antes de enviar. Teste grátis o VagaAI.">
+  <title>VagaAI | Entenda por que seu currículo não avança</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #071b11;
+      --ink-soft: #173b29;
+      --copy: #4d6356;
+      --muted: #778a7f;
+      --paper: #f5f8f5;
+      --paper-2: #edf4ef;
+      --card: #fff;
+      --line: #dbe7df;
+      --line-2: #c8dacf;
+      --forest: #062619;
+      --forest-2: #0b4930;
+      --green: #16875a;
+      --bright: #45d899;
+      --mint: #ddf7e9;
+      --mint-soft: #effaf4;
+      --amber: #d99022;
+      --amber-soft: #fff4df;
+      --red: #d95f65;
+      --shadow: 0 18px 55px rgba(6,38,25,.09);
+      --shadow-lg: 0 42px 110px rgba(6,38,25,.2);
+      --radius: 24px;
+      --max: 1180px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "Manrope", sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+      overflow-x: hidden;
+      text-rendering: optimizeLegibility;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      pointer-events: none;
+      opacity: .02;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    a { color: inherit; }
+    img { display: block; max-width: 100%; }
+    button { font: inherit; }
+    .container { width: min(var(--max), calc(100% - 48px)); margin: 0 auto; }
+    .section { position: relative; padding: 108px 0; }
+    .serif { font-family: "Lora", serif; }
+    .green { color: var(--green); }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--bright);
+      box-shadow: 0 0 0 5px rgba(69,216,153,.13);
+    }
+    .title {
+      margin-top: 17px;
+      font-family: "Lora", serif;
+      font-size: clamp(36px, 4.7vw, 60px);
+      line-height: 1.07;
+      letter-spacing: -.04em;
+      text-wrap: balance;
+    }
+    .lead {
+      margin-top: 18px;
+      color: var(--copy);
+      font-size: 17px;
+      line-height: 1.75;
+    }
+    .section-head { max-width: 720px; margin-bottom: 48px; }
+    .section-head.center { margin-left: auto; margin-right: auto; text-align: center; }
+    .section-head.center .lead { max-width: 640px; margin-left: auto; margin-right: auto; }
+    .icon { width: 18px; height: 18px; flex: 0 0 auto; }
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 150;
+      height: 3px;
+      width: 0;
+      background: linear-gradient(90deg, var(--green), var(--bright));
+      box-shadow: 0 0 18px rgba(69,216,153,.45);
+    }
+
+    /* NAV */
+    .nav-shell {
+      position: fixed;
+      top: 14px;
+      left: 0;
+      right: 0;
+      z-index: 90;
+      pointer-events: none;
+    }
+    .nav {
+      width: min(1160px, calc(100% - 30px));
+      height: 64px;
+      margin: auto;
+      padding: 0 10px 0 20px;
+      border: 1px solid rgba(201,218,208,.82);
+      border-radius: 18px;
+      background: rgba(255,255,255,.84);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 12px 40px rgba(6,38,25,.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: auto;
+    }
+    .brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; }
+    .brand img { width: 31px; height: 31px; }
+    .brand span { font-family: "Lora", serif; font-size: 18px; font-weight: 700; letter-spacing: -.03em; }
+    .brand i { color: var(--green); font-style: normal; }
+    .nav-links { display: flex; align-items: center; gap: 28px; }
+    .nav-links a { color: var(--copy); font-size: 12px; font-weight: 700; text-decoration: none; transition: color .2s; }
+    .nav-links a:hover { color: var(--green); }
+    .nav-actions { display: flex; align-items: center; gap: 8px; }
+    .btn {
+      min-height: 45px;
+      padding: 0 20px;
+      border: 1px solid transparent;
+      border-radius: 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s, background .2s, border-color .2s;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary { color: #fff; background: var(--green); box-shadow: 0 12px 28px rgba(22,135,90,.24); }
+    .btn-primary:hover { background: #10764d; box-shadow: 0 16px 36px rgba(22,135,90,.3); }
+    .btn-ghost { color: var(--ink-soft); border-color: var(--line); background: transparent; }
+    .btn-ghost:hover { border-color: var(--line-2); background: var(--mint-soft); }
+    .menu { width: 44px; height: 44px; padding: 0; display: none; border: 1px solid var(--line); border-radius: 11px; background: #fff; }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      min-height: 900px;
+      padding: 145px 0 78px;
+      color: #fff;
+      background:
+        radial-gradient(circle at 80% 18%, rgba(69,216,153,.14), transparent 28%),
+        radial-gradient(circle at 8% 80%, rgba(69,216,153,.08), transparent 25%),
+        var(--forest);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: .13;
+      background-image:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 54px 54px;
+      mask-image: linear-gradient(to bottom, #000, transparent 92%);
+    }
+    .hero-orb {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      right: -280px;
+      top: 70px;
+      border: 1px solid rgba(69,216,153,.12);
+      border-radius: 50%;
+      box-shadow: 0 0 0 80px rgba(69,216,153,.025), 0 0 0 160px rgba(69,216,153,.015);
+    }
+    .hero-grid {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: .92fr 1.08fr;
+      gap: 74px;
+      align-items: center;
+    }
+    .hero-tag {
+      width: max-content;
+      max-width: 100%;
+      margin-bottom: 24px;
+      padding: 8px 13px;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 999px;
+      color: rgba(255,255,255,.7);
+      background: rgba(255,255,255,.055);
+      font-size: 11px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0,0,0,.12);
+    }
+    .hero-tag strong { color: var(--bright); }
+    .hero h1 {
+      max-width: 620px;
+      font-family: "Lora", serif;
+      font-size: clamp(49px, 5.55vw, 74px);
+      line-height: 1.01;
+      letter-spacing: -.05em;
+      text-wrap: balance;
+    }
+    .hero h1 em { color: var(--bright); font-weight: 500; }
+    .hero-copy { max-width: 590px; margin: 24px 0 29px; color: rgba(255,255,255,.66); font-size: 18px; line-height: 1.75; }
+    .hero-copy strong { color: #fff; }
+    .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .hero-actions .btn { min-height: 53px; padding: 0 24px; font-size: 14px; }
+    .hero .btn-primary { color: var(--forest); background: var(--bright); box-shadow: 0 15px 38px rgba(69,216,153,.2); }
+    .hero .btn-primary:hover { background: #5ae2a6; }
+    .hero .btn-ghost { color: rgba(255,255,255,.82); border-color: rgba(255,255,255,.14); }
+    .hero .btn-ghost:hover { color: #fff; background: rgba(255,255,255,.06); }
+    .hero-proof { margin-top: 25px; display: flex; gap: 18px; flex-wrap: wrap; color: rgba(255,255,255,.46); font-size: 10px; font-weight: 700; }
+    .hero-proof span { display: inline-flex; align-items: center; gap: 7px; }
+    .hero-proof svg { color: var(--bright); }
+
+    .result-stage { position: relative; min-height: 590px; perspective: 1400px; }
+    .result-window {
+      position: absolute;
+      inset: 18px 0 0 18px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 25px;
+      background: #f3f7f4;
+      box-shadow: 0 50px 120px rgba(0,0,0,.38);
+      overflow: hidden;
+      transform: rotateY(-3deg) rotateX(1deg);
+      transition: transform .25s ease;
+    }
+    .window-top { height: 48px; padding: 0 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; background: #fff; }
+    .dots { display: flex; gap: 6px; }
+    .dots i { width: 7px; height: 7px; border-radius: 50%; background: #d9e3dc; }
+    .dots i:first-child { background: #eca1a1; }
+    .dots i:nth-child(2) { background: #efc97d; }
+    .dots i:nth-child(3) { background: #8bd9b1; }
+    .window-url { padding: 5px 58px; border: 1px solid var(--line); border-radius: 7px; color: var(--muted); background: #f7faf8; font-size: 8px; }
+    .result-body { height: calc(100% - 48px); padding: 24px; color: var(--ink); }
+    .result-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .result-heading small { color: var(--green); font-size: 8px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .result-heading h2 { margin-top: 3px; font-family: "Lora", serif; font-size: 24px; }
+    .done-pill { padding: 5px 9px; border: 1px solid rgba(22,135,90,.16); border-radius: 999px; color: var(--green); background: var(--mint-soft); font-size: 7px; font-weight: 800; }
+    .score-panel {
+      margin-top: 18px;
+      padding: 19px;
+      border-radius: 16px;
+      color: #fff;
+      background: linear-gradient(130deg, #0a3523, #12744c);
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 19px;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .score-panel::after {
+      content: "";
+      position: absolute;
+      top: -40%;
+      bottom: -40%;
+      left: -90px;
+      width: 64px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
+      transform: skewX(-18deg);
+      animation: scan 5s ease-in-out infinite;
+    }
+    @keyframes scan { 0%,48% { left:-90px; } 78%,100% { left:calc(100% + 90px); } }
+    .score-ring {
+      width: 92px;
+      height: 92px;
+      border: 8px solid rgba(255,255,255,.12);
+      border-top-color: var(--bright);
+      border-right-color: var(--bright);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      transform: rotate(12deg);
+    }
+    .score-ring b { font-size: 22px; transform: rotate(-12deg); }
+    .score-copy small { color: var(--bright); font-size: 7px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+    .score-copy h3 { margin: 4px 0 5px; font-size: 14px; }
+    .score-copy p { max-width: 310px; color: rgba(255,255,255,.62); font-size: 8px; line-height: 1.5; }
+    .result-grid { margin-top: 12px; display: grid; grid-template-columns: 1.06fr .94fr; gap: 11px; }
+    .result-card { padding: 15px; border: 1px solid var(--line); border-radius: 13px; background: #fff; }
+    .result-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .result-card-head b { font-size: 9px; }
+    .result-card-head span { color: var(--green); font-size: 7px; font-weight: 800; }
+    .factor { margin-top: 10px; }
+    .factor-top { display: flex; justify-content: space-between; color: var(--copy); font-size: 7px; font-weight: 700; }
+    .factor-top strong { color: var(--ink); }
+    .track { height: 5px; margin-top: 5px; border-radius: 5px; background: #e8efea; overflow: hidden; }
+    .track i { display: block; height: 100%; border-radius: inherit; background: var(--green); transform-origin: left; animation: grow 1.1s ease both; }
+    @keyframes grow { from { transform: scaleX(0); } }
+    .next-action { padding: 9px 0; border-top: 1px solid #edf2ee; display: flex; align-items: flex-start; gap: 8px; }
+    .next-action:first-of-type { border-top: 0; }
+    .next-number { width: 20px; height: 20px; border-radius: 7px; display: grid; place-items: center; color: var(--green); background: var(--mint); font-size: 7px; font-weight: 800; }
+    .next-action b { display: block; font-size: 8px; }
+    .next-action span { display: block; color: var(--muted); font-size: 6px; }
+    .float-result {
+      position: absolute;
+      z-index: 3;
+      padding: 13px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 14px;
+      color: var(--ink);
+      background: rgba(255,255,255,.95);
+      box-shadow: 0 20px 50px rgba(0,0,0,.24);
+      animation: float 5s ease-in-out infinite;
+    }
+    .float-result.one { top: 0; right: -28px; width: 188px; }
+    .float-result.two { bottom: 40px; left: -28px; width: 183px; animation-delay: -2.2s; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+    .float-row { display: flex; align-items: center; gap: 9px; }
+    .float-icon { width: 29px; height: 29px; border-radius: 9px; display: grid; place-items: center; color: var(--green); background: var(--mint); }
+    .float-result b { display: block; font-size: 8px; }
+    .float-result span { display: block; color: var(--muted); font-size: 6px; }
+
+    /* PAIN */
+    .signal-bar { border-bottom: 1px solid var(--line); background: #fff; }
+    .signals { min-height: 100px; display: grid; grid-template-columns: repeat(3,1fr); align-items: center; }
+    .signal { padding: 0 30px; border-right: 1px solid var(--line); }
+    .signal:last-child { border-right: 0; }
+    .signal b { display: block; font-family: "Lora", serif; font-size: 18px; }
+    .signal span { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .pain { background: #fff; }
+    .pain-grid { display: grid; grid-template-columns: .78fr 1.22fr; gap: 70px; align-items: center; }
+    .pain-list { display: grid; gap: 12px; }
+    .pain-item {
+      padding: 21px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      display: flex;
+      gap: 15px;
+      background: var(--paper);
+      transition: transform .25s, border-color .25s, box-shadow .25s;
+    }
+    .pain-item:hover { transform: translateX(7px); border-color: var(--line-2); box-shadow: var(--shadow); }
+    .pain-icon { width: 41px; height: 41px; border-radius: 12px; display: grid; place-items: center; color: var(--green); background: var(--mint); }
+    .pain-item h3 { font-family: "Lora", serif; font-size: 18px; }
+    .pain-item p { margin-top: 4px; color: var(--copy); font-size: 11px; }
+    .promise-note { margin-top: 26px; padding: 15px 17px; border-left: 3px solid var(--green); color: var(--ink-soft); background: var(--mint-soft); font-size: 12px; font-weight: 650; }
+
+    /* HOW */
+    .how { background: var(--paper-2); overflow: hidden; }
+    .how-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 15px; }
+    .how-card {
+      min-height: 370px;
+      padding: 27px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 12px 36px rgba(6,38,25,.045);
+      position: relative;
+      overflow: hidden;
+    }
+    .step-number { width: 35px; height: 35px; border-radius: 10px; display: grid; place-items: center; color: #fff; background: var(--forest); font-size: 11px; font-weight: 800; }
+    .how-card h3 { margin-top: 32px; font-family: "Lora", serif; font-size: 25px; line-height: 1.13; }
+    .how-card > p { margin-top: 10px; color: var(--copy); font-size: 12px; }
+    .how-demo { position: absolute; left: 20px; right: 20px; bottom: 20px; min-height: 128px; padding: 15px; border: 1px solid var(--line); border-radius: 13px; background: var(--paper); }
+    .demo-label { color: var(--muted); font-size: 7px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .input-line { height: 7px; margin-top: 10px; border-radius: 5px; background: #dde7e0; }
+    .input-line:nth-child(3) { width: 83%; }
+    .input-line:nth-child(4) { width: 61%; }
+    .mini-score { margin-top: 10px; display: flex; align-items: center; gap: 10px; }
+    .mini-score-ring { width: 42px; height: 42px; border: 5px solid #dce7df; border-top-color: var(--green); border-right-color: var(--green); border-radius: 50%; display: grid; place-items: center; color: var(--green); font-size: 9px; font-weight: 800; }
+    .mini-score b { display: block; font-size: 9px; }
+    .mini-score span { display: block; color: var(--muted); font-size: 7px; }
+    .mini-action { margin-top: 7px; padding: 8px 10px; border-radius: 8px; display: flex; justify-content: space-between; color: var(--ink-soft); background: #fff; font-size: 8px; font-weight: 750; }
+    .mini-action i { color: var(--green); font-style: normal; }
+
+    /* BENEFITS */
+    .benefits { background: #fff; }
+    .benefit-layout { display: grid; grid-template-columns: .72fr 1.28fr; gap: 68px; align-items: start; }
+    .benefit-aside { position: sticky; top: 110px; }
+    .benefit-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .benefit-card { min-height: 245px; padding: 25px; border: 1px solid var(--line); border-radius: 19px; background: var(--paper); transition: .25s; }
+    .benefit-card:hover { transform: translateY(-5px); border-color: var(--line-2); box-shadow: var(--shadow); }
+    .benefit-card.dark { color: #fff; background: var(--forest); border-color: var(--forest); }
+    .benefit-icon { width: 42px; height: 42px; margin-bottom: 31px; border-radius: 12px; display: grid; place-items: center; color: var(--green); background: var(--mint); }
+    .benefit-card.dark .benefit-icon { color: var(--bright); background: rgba(69,216,153,.12); }
+    .benefit-card h3 { font-family: "Lora", serif; font-size: 21px; }
+    .benefit-card p { margin-top: 8px; color: var(--copy); font-size: 11px; }
+    .benefit-card.dark p { color: rgba(255,255,255,.52); }
+    .benefit-card strong { display: inline-block; margin-top: 21px; color: var(--green); font-size: 9px; }
+    .benefit-card.dark strong { color: var(--bright); }
+
+    /* RESEARCH */
+    .market { color: #fff; background: var(--forest); overflow: hidden; }
+    .market::before { content: ""; position: absolute; width: 700px; height: 700px; right: -280px; top: -300px; border-radius: 50%; background: radial-gradient(circle, rgba(69,216,153,.13), transparent 68%); }
+    .market .eyebrow { color: var(--bright); }
+    .market .lead { color: rgba(255,255,255,.56); }
+    .market-grid { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+    .market-card { min-height: 260px; padding: 27px; border: 1px solid rgba(255,255,255,.1); border-radius: 18px; background: rgba(255,255,255,.05); }
+    .market-card b { display: block; color: var(--bright); font-family: "Lora", serif; font-size: 37px; line-height: 1; }
+    .market-card h3 { margin-top: 20px; font-size: 13px; }
+    .market-card p { margin-top: 8px; color: rgba(255,255,255,.5); font-size: 10px; line-height: 1.65; }
+    .source { margin-top: 22px; display: inline-flex; align-items: center; gap: 6px; color: rgba(255,255,255,.34); font-size: 8px; text-decoration: none; }
+    .source:hover { color: var(--bright); }
+    .market-note { position: relative; z-index: 1; margin-top: 20px; color: rgba(255,255,255,.36); font-size: 9px; text-align: center; }
+
+    /* PRODUCT */
+    .product { overflow: hidden; }
+    .product-showcase {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 27px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+    .product-tabs { width: max-content; max-width: 100%; margin: 0 auto 20px; padding: 5px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); display: flex; gap: 4px; overflow-x: auto; }
+    .product-tab { min-width: 132px; padding: 10px 15px; border: 0; border-radius: 8px; color: var(--muted); background: transparent; font-size: 10px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+    .product-tab.active { color: #fff; background: var(--forest); }
+    .product-window { position: relative; aspect-ratio: 16/8.4; min-height: 510px; border: 1px solid var(--line); border-radius: 18px; background: #edf3ef; overflow: hidden; }
+    .product-panel { position: absolute; inset: 0; opacity: 0; visibility: hidden; transform: translateY(10px); transition: opacity .35s, transform .35s, visibility .35s; }
+    .product-panel.active { opacity: 1; visibility: visible; transform: none; }
+    .product-panel img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+    .analysis-view { height: 100%; padding: 31px; display: grid; grid-template-columns: .88fr 1.12fr; gap: 20px; }
+    .analysis-summary { padding: 29px; border-radius: 17px; color: #fff; background: linear-gradient(140deg, var(--forest), var(--forest-2)); }
+    .analysis-summary small { color: var(--bright); font-size: 8px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .analysis-summary h3 { margin-top: 9px; font-family: "Lora", serif; font-size: 29px; line-height: 1.1; }
+    .analysis-summary p { margin-top: 8px; color: rgba(255,255,255,.55); font-size: 9px; }
+    .big-score { margin-top: 28px; display: flex; align-items: center; gap: 18px; }
+    .big-score-ring { width: 105px; height: 105px; border: 9px solid rgba(255,255,255,.1); border-top-color: var(--bright); border-right-color: var(--bright); border-bottom-color: var(--bright); border-radius: 50%; display: grid; place-items: center; font-size: 25px; font-weight: 800; }
+    .big-score b { display: block; font-size: 13px; }
+    .big-score span { display: block; color: rgba(255,255,255,.46); font-size: 8px; }
+    .analysis-factors { display: grid; gap: 12px; }
+    .analysis-factor { padding: 17px 19px; border: 1px solid var(--line); border-radius: 13px; background: #fff; }
+    .analysis-factor-top { display: flex; justify-content: space-between; font-size: 9px; font-weight: 750; }
+    .analysis-factor-top b { color: var(--green); }
+    .analysis-factor p { margin-top: 7px; color: var(--muted); font-size: 8px; }
+
+    /* COMPARISON */
+    .comparison { background: var(--paper-2); }
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .compare-card { padding: 31px; border: 1px solid var(--line); border-radius: 21px; background: #fff; }
+    .compare-card.after { color: #fff; background: var(--forest); border-color: var(--forest); }
+    .compare-label { color: var(--muted); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; }
+    .compare-card.after .compare-label { color: var(--bright); }
+    .compare-card h3 { margin: 8px 0 22px; font-family: "Lora", serif; font-size: 27px; }
+    .compare-list { display: grid; gap: 12px; }
+    .compare-item { display: flex; align-items: flex-start; gap: 10px; color: var(--copy); font-size: 11px; }
+    .compare-card.after .compare-item { color: rgba(255,255,255,.68); }
+    .compare-mark { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; flex: 0 0 auto; color: var(--muted); background: var(--paper); font-size: 9px; font-weight: 800; }
+    .compare-card.after .compare-mark { color: var(--forest); background: var(--bright); }
+
+    /* PRICING */
+    .pricing { background: #fff; }
+    .billing { width: max-content; margin: 0 auto 34px; padding: 5px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); display: flex; gap: 4px; }
+    .billing button { padding: 9px 14px; border: 0; border-radius: 8px; color: var(--muted); background: transparent; font-size: 10px; font-weight: 800; cursor: pointer; }
+    .billing button.active { color: #fff; background: var(--forest); }
+    .billing i { color: var(--green); font-style: normal; }
+    .plans { display: grid; grid-template-columns: repeat(3,1fr); gap: 15px; }
+    .plan { position: relative; padding: 29px; border: 1px solid var(--line); border-radius: 20px; background: var(--paper); }
+    .plan.featured { color: #fff; background: var(--forest); border-color: var(--forest); box-shadow: var(--shadow-lg); transform: translateY(-10px); }
+    .popular { position: absolute; top: 14px; right: 14px; padding: 5px 8px; border-radius: 999px; color: var(--forest); background: var(--bright); font-size: 7px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+    .plan-name { color: var(--green); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; }
+    .plan.featured .plan-name { color: var(--bright); }
+    .plan h3 { margin-top: 8px; font-family: "Lora", serif; font-size: 23px; }
+    .plan-desc { min-height: 48px; margin-top: 8px; color: var(--copy); font-size: 10px; }
+    .plan.featured .plan-desc { color: rgba(255,255,255,.52); }
+    .price { margin-top: 24px; font-family: "Lora", serif; font-size: 37px; line-height: 1; }
+    .price small { color: var(--muted); font-family: "Manrope", sans-serif; font-size: 9px; }
+    .plan.featured .price small { color: rgba(255,255,255,.38); }
+    .plan .btn { width: 100%; margin: 21px 0; }
+    .plan.featured .btn { color: var(--forest); background: var(--bright); }
+    .plan-features { padding-top: 19px; border-top: 1px solid var(--line); display: grid; gap: 10px; }
+    .plan.featured .plan-features { border-color: rgba(255,255,255,.1); }
+    .plan-feature { display: flex; gap: 8px; color: var(--ink-soft); font-size: 10px; }
+    .plan.featured .plan-feature { color: rgba(255,255,255,.7); }
+    .plan-feature svg { color: var(--green); }
+    .plan.featured .plan-feature svg { color: var(--bright); }
+    .plan-note { margin-top: 18px; color: var(--muted); font-size: 8px; text-align: center; }
+    .plan.featured .plan-note { color: rgba(255,255,255,.34); }
+
+    /* PROOF + FAQ */
+    .proof-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+    .quote { min-height: 260px; padding: 25px; border: 1px solid var(--line); border-radius: 18px; background: #fff; }
+    .stars { color: #e0a43d; font-size: 11px; letter-spacing: 2px; }
+    .quote blockquote { margin: 20px 0 28px; color: var(--ink-soft); font-family: "Lora", serif; font-size: 16px; line-height: 1.55; }
+    .person { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: var(--forest); background: var(--mint); font-size: 9px; font-weight: 800; }
+    .person b { display: block; font-size: 9px; }
+    .person span { display: block; color: var(--muted); font-size: 8px; }
+    .faq { background: #fff; }
+    .faq-grid { display: grid; grid-template-columns: .7fr 1.3fr; gap: 75px; }
+    .faq-side { position: sticky; top: 110px; align-self: start; }
+    .faq-list { border-top: 1px solid var(--line); }
+    .faq-item { border-bottom: 1px solid var(--line); }
+    .faq-question { width: 100%; padding: 22px 0; border: 0; display: flex; justify-content: space-between; gap: 16px; color: var(--ink); background: transparent; text-align: left; font-size: 13px; font-weight: 750; cursor: pointer; }
+    .faq-plus { width: 27px; height: 27px; border: 1px solid var(--line); border-radius: 50%; display: grid; place-items: center; color: var(--green); flex: 0 0 auto; transition: transform .25s; }
+    .faq-answer { max-height: 0; overflow: hidden; color: var(--copy); font-size: 11px; line-height: 1.75; transition: max-height .35s, padding .35s; }
+    .faq-item.open .faq-answer { max-height: 220px; padding: 0 40px 21px 0; }
+    .faq-item.open .faq-plus { transform: rotate(45deg); }
+
+    /* FINAL */
+    .final { padding: 0 0 34px; }
+    .final-card {
+      position: relative;
+      min-height: 460px;
+      padding: 65px;
+      border-radius: 28px;
+      color: #fff;
+      background:
+        radial-gradient(circle at 80% 20%, rgba(69,216,153,.14), transparent 30%),
+        var(--forest);
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+    .final-card::before { content: ""; position: absolute; width: 600px; height: 600px; left: -340px; top: -260px; border: 1px solid rgba(69,216,153,.15); border-radius: 50%; box-shadow: 0 0 0 85px rgba(69,216,153,.025); }
+    .final-inner { position: relative; z-index: 1; max-width: 760px; }
+    .final h2 { font-family: "Lora", serif; font-size: clamp(40px,5vw,63px); line-height: 1.06; letter-spacing: -.04em; }
+    .final h2 em { color: var(--bright); font-weight: 500; }
+    .final p { max-width: 590px; margin: 19px auto 28px; color: rgba(255,255,255,.58); font-size: 15px; }
+    .final .btn { min-height: 53px; color: var(--forest); background: var(--bright); }
+    .final small { display: block; margin-top: 16px; color: rgba(255,255,255,.34); font-size: 9px; }
+    footer { padding: 30px 0 38px; }
+    .footer-row { display: flex; align-items: center; justify-content: space-between; gap: 22px; }
+    .footer-links { display: flex; gap: 19px; }
+    .footer-links a { color: var(--muted); font-size: 9px; text-decoration: none; }
+    .copyright { color: var(--muted); font-size: 9px; }
+
+    /* MOTION */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .72s ease, transform .72s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+    .delay-1 { transition-delay: .08s; }
+    .delay-2 { transition-delay: .16s; }
+
+    @media (max-width: 1040px) {
+      .hero-grid, .pain-grid, .benefit-layout { grid-template-columns: 1fr; }
+      .hero { min-height: auto; }
+      .hero-copy { max-width: 720px; }
+      .result-stage { width: min(760px,100%); margin: 20px auto 0; }
+      .pain-grid, .benefit-layout { gap: 45px; }
+      .benefit-aside { position: static; }
+      .product-window { min-height: 470px; }
+    }
+    @media (max-width: 820px) {
+      .nav-links, .nav .btn-ghost { display: none; }
+      .menu { display: grid; place-items: center; }
+      .nav.open { height: auto; padding-top: 10px; padding-bottom: 14px; flex-wrap: wrap; }
+      .nav.open .nav-links { order: 3; width: 100%; margin-top: 10px; padding: 14px 4px 2px; border-top: 1px solid var(--line); display: grid; gap: 12px; }
+      .signals, .how-grid, .market-grid, .plans, .proof-grid { grid-template-columns: 1fr; }
+      .signal { padding: 18px; border-right: 0; border-bottom: 1px solid var(--line); text-align: center; }
+      .signal:last-child { border-bottom: 0; }
+      .benefit-cards { grid-template-columns: 1fr; }
+      .product-window { min-height: 650px; }
+      .analysis-view { grid-template-columns: 1fr; overflow: auto; }
+      .compare-grid { grid-template-columns: 1fr; }
+      .plan.featured { transform: none; }
+      .faq-grid { grid-template-columns: 1fr; gap: 38px; }
+      .faq-side { position: static; }
+    }
+    @media (max-width: 620px) {
+      .container { width: min(var(--max), calc(100% - 28px)); }
+      .section { padding: 78px 0; }
+      .nav { width: calc(100% - 20px); }
+      .nav .btn-primary { display: none; }
+      .hero { padding: 118px 0 60px; }
+      .hero h1 { font-size: 43px; }
+      .hero h1 em { display: block; }
+      .hero-copy { font-size: 15px; }
+      .hero-actions { display: grid; }
+      .hero-actions .btn { width: 100%; padding: 0 15px; }
+      .hero-proof { gap: 11px 16px; }
+      .result-stage { min-height: 470px; width: 116%; margin-left: -8%; margin-bottom: -50px; transform: scale(.86); transform-origin: top center; }
+      .float-result.one { right: -4px; }
+      .float-result.two { left: -4px; }
+      .title { font-size: 36px; }
+      .lead { font-size: 15px; }
+      .pain-item { padding: 17px; }
+      .how-card { min-height: 350px; }
+      .product-showcase { padding: 10px; border-radius: 20px; }
+      .product-tabs { width: 100%; justify-content: flex-start; }
+      .product-tab { min-width: 112px; }
+      .analysis-view { padding: 16px; }
+      .analysis-summary { padding: 22px; }
+      .final-card { min-height: 420px; padding: 48px 23px; }
+      .footer-row { flex-direction: column; text-align: center; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *,*::before,*::after { animation: none !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="scroll-progress" id="scrollProgress"></div>
+  <div class="nav-shell">
+    <nav class="nav" id="nav">
+      <a class="brand" href="#inicio" aria-label="VagaAI"><img src="/logo-icon.svg" alt=""><span>Vaga<i>AI</i></span></a>
+      <div class="nav-links">
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#beneficios">Benefícios</a>
+        <a href="#produto">Produto</a>
+        <a href="#planos">Planos</a>
+      </div>
+      <div class="nav-actions">
+        <a class="btn btn-ghost" href="/login">Entrar</a>
+        <a class="btn btn-primary" href="/app">Analisar grátis</a>
+        <button class="menu" aria-label="Abrir menu" onclick="toggleMenu()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      </div>
+    </nav>
+  </div>
+
+  <main>
+    <section class="hero" id="inicio">
+      <div class="hero-orb"></div>
+      <div class="container hero-grid">
+        <div>
+          <div class="hero-tag reveal"><strong>1 análise gratuita</strong> · sem cadastro e sem cartão</div>
+          <h1 class="reveal delay-1">Seu currículo pode ser bom. Mas ele precisa parecer <em>certo para a vaga.</em></h1>
+          <p class="hero-copy reveal delay-2">O VagaAI compara seu currículo com a oportunidade e mostra, em segundos, <strong>o que está forte, o que está faltando e o que corrigir antes de enviar.</strong></p>
+          <div class="hero-actions reveal delay-2">
+            <a class="btn btn-primary" href="/app"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg>Analisar meu currículo grátis</a>
+            <a class="btn btn-ghost" href="#como-funciona">Ver como funciona</a>
+          </div>
+          <div class="hero-proof reveal delay-2">
+            <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Resultado em segundos</span>
+            <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Sem inventar experiências</span>
+            <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Funciona com qualquer vaga</span>
+          </div>
+        </div>
+
+        <div class="result-stage reveal delay-1">
+          <div class="result-window">
+            <div class="window-top"><div class="dots"><i></i><i></i><i></i></div><span class="window-url">vagaai.app.br/análise</span><span style="font-size:7px;color:var(--muted)">Resultado</span></div>
+            <div class="result-body">
+              <div class="result-heading"><div><small>Análise concluída</small><h2>Head de Marketing</h2></div><span class="done-pill">Currículo analisado</span></div>
+              <div class="score-panel">
+                <div class="score-ring"><b>58%</b></div>
+                <div class="score-copy"><small>Boa base, mas ainda há lacunas</small><h3>Seu currículo não evidencia 3 requisitos importantes</h3><p>Você tem experiência compatível. Agora precisa mostrá-la com mais clareza para esta vaga.</p></div>
+              </div>
+              <div class="result-grid">
+                <div class="result-card">
+                  <div class="result-card-head"><b>Onde você perde pontos</b><span>4 fatores</span></div>
+                  <div class="factor"><div class="factor-top"><span>Experiência compatível</span><strong>82%</strong></div><div class="track"><i style="width:82%"></i></div></div>
+                  <div class="factor"><div class="factor-top"><span>Palavras-chave ATS</span><strong style="color:var(--amber)">46%</strong></div><div class="track"><i style="width:46%;background:var(--amber)"></i></div></div>
+                  <div class="factor"><div class="factor-top"><span>Força dos resultados</span><strong>71%</strong></div><div class="track"><i style="width:71%"></i></div></div>
+                  <div class="factor"><div class="factor-top"><span>Legibilidade</span><strong>88%</strong></div><div class="track"><i style="width:88%"></i></div></div>
+                </div>
+                <div class="result-card">
+                  <div class="result-card-head"><b>Corrija primeiro</b><span>3 ações</span></div>
+                  <div class="next-action"><span class="next-number">1</span><div><b>Inclua evidências reais</b><span>Mostre impacto com números</span></div></div>
+                  <div class="next-action"><span class="next-number">2</span><div><b>Reforce termos importantes</b><span>Sem copiar ou inventar</span></div></div>
+                  <div class="next-action"><span class="next-number">3</span><div><b>Adapte o resumo</b><span>Conecte sua história à vaga</span></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="float-result one"><div class="float-row"><span class="float-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="m8 12 3 3 5-6"/></svg></span><div><b>3 ajustes prioritários</b><span>Saiba o que corrigir primeiro</span></div></div></div>
+          <div class="float-result two"><div class="float-row"><span class="float-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></svg></span><div><b>CV otimizado</b><span>Pronto para baixar em PDF</span></div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="signal-bar">
+      <div class="container signals">
+        <div class="signal"><b>Entenda antes de aplicar</b><span>Veja se a vaga realmente combina com você.</span></div>
+        <div class="signal"><b>Corrija antes de enviar</b><span>Fortaleça o que o recrutador precisa encontrar.</span></div>
+        <div class="signal"><b>Acompanhe depois</b><span>Organize prazos, retornos e próximas ações.</span></div>
+      </div>
+    </div>
+
+    <section class="section pain">
+      <div class="container pain-grid">
+        <div>
+          <span class="eyebrow">O problema não é só seu currículo</span>
+          <h2 class="title reveal">Você pode ter experiência e ainda assim parecer <span class="green">pouco aderente.</span></h2>
+          <p class="lead reveal delay-1">Quando o currículo não conversa com a vaga, suas melhores experiências podem passar despercebidas — por sistemas de triagem ou por quem lê rapidamente.</p>
+          <div class="promise-note reveal delay-2">O VagaAI não promete contratação. Ele reduz o achismo e ajuda você a apresentar melhor o que já sabe fazer.</div>
+        </div>
+        <div class="pain-list">
+          <article class="pain-item reveal"><span class="pain-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="m4 7 8 6 8-6"/></svg></span><div><h3>“Envio currículos e não recebo retorno.”</h3><p>Sem um diagnóstico, você não sabe se o problema está na vaga escolhida, nas palavras usadas ou na forma como apresenta sua experiência.</p></div></article>
+          <article class="pain-item reveal delay-1"><span class="pain-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></svg></span><div><h3>“Uso o mesmo currículo para todas as vagas.”</h3><p>Cada oportunidade valoriza sinais diferentes. Um currículo genérico pode esconder justamente o que faria você se destacar.</p></div></article>
+          <article class="pain-item reveal delay-2"><span class="pain-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><h3>“Perco tempo em vagas que não combinam comigo.”</h3><p>O score ajuda a priorizar oportunidades e concentrar energia nas candidaturas que fazem mais sentido.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section how" id="como-funciona">
+      <div class="container">
+        <div class="section-head center">
+          <span class="eyebrow">Simples de usar</span>
+          <h2 class="title reveal">Três passos para sair do achismo.</h2>
+          <p class="lead reveal delay-1">Você traz a vaga e o currículo. O VagaAI transforma essa comparação em um diagnóstico fácil de entender.</p>
+        </div>
+        <div class="how-grid">
+          <article class="how-card reveal"><span class="step-number">01</span><h3>Cole a vaga</h3><p>Copie a descrição do LinkedIn, Gupy ou qualquer outro site.</p><div class="how-demo"><span class="demo-label">Descrição da oportunidade</span><div class="input-line"></div><div class="input-line"></div><div class="input-line"></div></div></article>
+          <article class="how-card reveal delay-1"><span class="step-number">02</span><h3>Adicione seu currículo</h3><p>Cole o texto do seu CV atual. Não precisa formatar nem reescrever antes.</p><div class="how-demo"><span class="demo-label">Seu currículo atual</span><div class="input-line" style="width:72%"></div><div class="input-line"></div><div class="input-line" style="width:55%"></div></div></article>
+          <article class="how-card reveal delay-2"><span class="step-number">03</span><h3>Receba um plano de ação</h3><p>Veja seu score, lacunas e os ajustes que merecem atenção primeiro.</p><div class="how-demo"><span class="demo-label">Seu resultado</span><div class="mini-score"><span class="mini-score-ring">58%</span><div><b>3 lacunas prioritárias</b><span>Keywords, evidências e resumo</span></div></div><div class="mini-action">Ver recomendações <i>→</i></div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section benefits" id="beneficios">
+      <div class="container benefit-layout">
+        <div class="benefit-aside">
+          <span class="eyebrow">O benefício é clareza</span>
+          <h2 class="title reveal">Saiba o que fazer em cada etapa da sua busca.</h2>
+          <p class="lead reveal delay-1">O VagaAI não entrega apenas um currículo novo. Ele ajuda você a escolher, preparar e acompanhar melhor cada candidatura.</p>
+          <a class="btn btn-primary" href="/app" style="margin-top:27px">Testar análise gratuita</a>
+        </div>
+        <div class="benefit-cards">
+          <article class="benefit-card dark reveal"><span class="benefit-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/></svg></span><h3>Escolha vagas com mais critério</h3><p>Compare a oportunidade com seu perfil antes de investir tempo na candidatura.</p><strong>Menos volume. Mais intenção.</strong></article>
+          <article class="benefit-card reveal delay-1"><span class="benefit-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></svg></span><h3>Mostre melhor sua experiência</h3><p>Adapte o currículo à vaga sem criar cargos, resultados ou competências que você não possui.</p><strong>CV específico e verdadeiro.</strong></article>
+          <article class="benefit-card reveal"><span class="benefit-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6V4h8v2M3 11h18"/></svg></span><h3>Não perca prazos e retornos</h3><p>Organize vagas, salários, links, documentos, etapas e follow-ups no mesmo lugar.</p><strong>Menos planilhas e esquecimentos.</strong></article>
+          <article class="benefit-card dark reveal delay-1"><span class="benefit-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></span><h3>Chegue mais preparado à entrevista</h3><p>Entenda a empresa, identifique o que destacar e pratique respostas com mais contexto.</p><strong>Mais preparo, menos improviso.</strong></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section market">
+      <div class="container">
+        <div class="section-head center">
+          <span class="eyebrow">Por que isso importa agora</span>
+          <h2 class="title reveal">O mercado ficou mais rápido, mais concorrido e mais orientado por habilidades.</h2>
+          <p class="lead reveal delay-1">Esses dados globais não garantem um resultado individual. Eles explicam por que clareza, aderência e autenticidade ganharam importância.</p>
+        </div>
+        <div class="market-grid">
+          <article class="market-card reveal"><b>~3×</b><h3>mais candidaturas por vaga</h3><p>Segundo a Greenhouse, recrutadores passaram a lidar com quase três vezes mais aplicações por posição do que em 2021.</p><a class="source" href="https://www.greenhouse.com/blog/how-recruiters-can-use-ai-in-hiring" target="_blank" rel="noopener">Greenhouse, 2025 →</a></article>
+          <article class="market-card reveal delay-1"><b>39%</b><h3>das habilidades devem mudar</h3><p>Empregadores estimam que uma parcela relevante das habilidades essenciais será transformada até 2030.</p><a class="source" href="https://www.weforum.org/stories/2025/01/future-of-jobs-report-2025-jobs-of-the-future-and-the-skills-you-need-to-get-them/" target="_blank" rel="noopener">Fórum Econômico Mundial, 2025 →</a></article>
+          <article class="market-card reveal delay-2"><b>Skills-first</b><h3>ganha espaço no recrutamento</h3><p>O LinkedIn aponta a contratação baseada em habilidades como uma prioridade estratégica em um mercado apoiado por IA.</p><a class="source" href="https://www.linkedin.com/business/talent/blog/talent-acquisition/future-of-recruiting-2025" target="_blank" rel="noopener">LinkedIn, Future of Recruiting 2025 →</a></article>
+        </div>
+        <p class="market-note">Fontes internacionais usadas apenas como contexto de mercado. O VagaAI não garante entrevistas ou contratação.</p>
+      </div>
+    </section>
+
+    <section class="section product" id="produto">
+      <div class="container">
+        <div class="section-head center">
+          <span class="eyebrow">Veja o produto por dentro</span>
+          <h2 class="title reveal">Uma análise que continua útil depois do score.</h2>
+          <p class="lead reveal delay-1">O resultado alimenta seu currículo, suas candidaturas, seus alertas e sua preparação para entrevista.</p>
+        </div>
+        <div class="product-showcase reveal">
+          <div class="product-tabs">
+            <button class="product-tab active" data-product="analysis">Análise</button>
+            <button class="product-tab" data-product="tracker">Candidaturas</button>
+            <button class="product-tab" data-product="alerts">Alertas</button>
+          </div>
+          <div class="product-window">
+            <div class="product-panel active" data-panel="analysis">
+              <div class="analysis-view">
+                <div class="analysis-summary"><small>Diagnóstico da candidatura</small><h3>Você sabe onde melhorar antes de enviar.</h3><p>O score é acompanhado de explicações e ações concretas.</p><div class="big-score"><span class="big-score-ring">75</span><div><b>Boa aderência</b><span>8 de 10 requisitos cobertos</span></div></div></div>
+                <div class="analysis-factors">
+                  <div class="analysis-factor"><div class="analysis-factor-top"><span>Compatibilidade com a vaga</span><b>82%</b></div><div class="track"><i style="width:82%"></i></div><p>Experiência e senioridade alinhadas.</p></div>
+                  <div class="analysis-factor"><div class="analysis-factor-top"><span>Palavras-chave ATS</span><b>71%</b></div><div class="track"><i style="width:71%"></i></div><p>Inclua termos verdadeiros que ainda não aparecem.</p></div>
+                  <div class="analysis-factor"><div class="analysis-factor-top"><span>Legibilidade</span><b>90%</b></div><div class="track"><i style="width:90%"></i></div><p>Estrutura clara para leitura rápida.</p></div>
+                  <div class="analysis-factor"><div class="analysis-factor-top"><span>Força das realizações</span><b>60%</b></div><div class="track"><i style="width:60%;background:var(--amber)"></i></div><p>Transforme tarefas em impacto mensurável.</p></div>
+                </div>
+              </div>
+            </div>
+            <div class="product-panel" data-panel="tracker"><img src="/mockup-ux-candidaturas/vagaai-candidaturas-desktop.png" alt="Rastreador de candidaturas VagaAI"></div>
+            <div class="product-panel" data-panel="alerts"><img src="/mockup-ux-alertas/vagaai-alertas-desktop-v2.png" alt="Alertas de vagas VagaAI"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section comparison">
+      <div class="container">
+        <div class="section-head center">
+          <span class="eyebrow">A diferença é a direção</span>
+          <h2 class="title reveal">Você continua sendo o candidato. Só deixa de decidir no escuro.</h2>
+        </div>
+        <div class="compare-grid">
+          <article class="compare-card reveal"><span class="compare-label">Sem o VagaAI</span><h3>Aplicações no automático</h3><div class="compare-list"><div class="compare-item"><span class="compare-mark">×</span>Usar o mesmo currículo para vagas diferentes</div><div class="compare-item"><span class="compare-mark">×</span>Não saber se a oportunidade combina com seu perfil</div><div class="compare-item"><span class="compare-mark">×</span>Perder links, prazos e follow-ups em planilhas</div><div class="compare-item"><span class="compare-mark">×</span>Chegar à entrevista sem saber o que destacar</div></div></article>
+          <article class="compare-card after reveal delay-1"><span class="compare-label">Com o VagaAI</span><h3>Candidaturas com intenção</h3><div class="compare-list"><div class="compare-item"><span class="compare-mark">✓</span>Entender a aderência antes de aplicar</div><div class="compare-item"><span class="compare-mark">✓</span>Adaptar o CV usando experiências reais</div><div class="compare-item"><span class="compare-mark">✓</span>Organizar toda a jornada em um só lugar</div><div class="compare-item"><span class="compare-mark">✓</span>Preparar-se com o contexto da vaga e da empresa</div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section pricing" id="planos">
+      <div class="container">
+        <div class="section-head center">
+          <span class="eyebrow">Escolha no seu ritmo</span>
+          <h2 class="title reveal">Comece grátis. Assine quando quiser ir além.</h2>
+          <p class="lead reveal delay-1">Teste o diagnóstico sem cartão. Os planos pagos liberam mais análises, documentos e preparação.</p>
+        </div>
+        <div class="billing reveal"><button class="active" data-billing="monthly">Mensal</button><button data-billing="annual">Anual <i>economize</i></button></div>
+        <div class="plans">
+          <article class="plan reveal"><span class="plan-name">Gratuito</span><h3>Para entender o problema</h3><p class="plan-desc">Descubra onde seu currículo perde força e receba oportunidades toda semana.</p><div class="price">R$0</div><a class="btn btn-ghost" href="/app">Começar grátis</a><div class="plan-features"><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>1 análise gratuita por mês</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Score e principais lacunas</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>1 alerta semanal com até 5 vagas</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Rastreador de candidaturas</div></div><div class="plan-note">Sem cartão · gratuito para começar</div></article>
+          <article class="plan reveal delay-1"><span class="plan-name">Starter</span><h3>Para adaptar cada candidatura</h3><p class="plan-desc">Mais análises e documentos para quem está em uma busca ativa.</p><div class="price" data-monthly="R$19,90" data-annual="R$14,92">R$19,90<small>/mês</small></div><a class="btn btn-ghost plan-link" href="https://buy.stripe.com/28E14n0WO2rne5Ff0P9k406" data-monthly-url="https://buy.stripe.com/28E14n0WO2rne5Ff0P9k406" data-annual-url="https://buy.stripe.com/5kQaEXaxo0jfd1B5qf9k407">Assinar Starter</a><div class="plan-features"><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>10 análises mensais</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>CV otimizado em PDF</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Briefing e carta de apresentação</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Alertas com filtros avançados</div></div><div class="plan-note billing-note">Cobrança mensal · cancele quando quiser</div></article>
+          <article class="plan featured reveal delay-2"><span class="popular">Mais escolhido</span><span class="plan-name">Pro</span><h3>Para acelerar sua busca</h3><p class="plan-desc">Análises ilimitadas e preparação completa para quem quer ganhar ritmo.</p><div class="price" data-monthly="R$39,90" data-annual="R$24,92">R$39,90<small>/mês</small></div><a class="btn plan-link" href="https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408" data-monthly-url="https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408" data-annual-url="https://buy.stripe.com/bJe5kDgVM0jf8Ll8Cr9k409">Assinar Pro</a><div class="plan-features"><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Análises ilimitadas</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Todos os recursos do Starter</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Simulador de entrevista com IA</div><div class="plan-feature"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Alertas prioritários</div></div><div class="plan-note billing-note">Cobrança mensal · cancele quando quiser</div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head center"><span class="eyebrow">Quem testou</span><h2 class="title reveal">Mais clareza para candidaturas melhores.</h2><p class="lead reveal delay-1">Percepções compartilhadas por usuários durante o beta do VagaAI.</p></div>
+        <div class="proof-grid">
+          <article class="quote reveal"><div class="stars">★★★★★</div><blockquote>“Ficou muito mais claro o que ajustar para cada vaga, sem transformar meu currículo em algo que não sou.”</blockquote><div class="person"><span class="avatar">AC</span><div><b>Ana Carolina S.</b><span>Desenvolvedora Full Stack</span></div></div></article>
+          <article class="quote reveal delay-1"><div class="stars">★★★★★</div><blockquote>“O briefing me ajudou a chegar mais preparado. Eu já sabia o que destacar e o que perguntar.”</blockquote><div class="person"><span class="avatar">RO</span><div><b>Ricardo O.</b><span>Gerente de Projetos</span></div></div></article>
+          <article class="quote reveal delay-2"><div class="stars">★★★★★</div><blockquote>“A maior diferença foi entender onde eu estava perdendo compatibilidade, não apenas receber um CV reescrito.”</blockquote><div class="person"><span class="avatar">JS</span><div><b>Juliana S.</b><span>Designer UX/UI</span></div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section faq">
+      <div class="container faq-grid">
+        <div class="faq-side"><span class="eyebrow">Dúvidas frequentes</span><h2 class="title reveal">O essencial antes de testar.</h2><p class="lead reveal delay-1">Como funciona a análise e o que o VagaAI faz — e não faz.</p></div>
+        <div class="faq-list reveal">
+          <div class="faq-item open"><button class="faq-question">Preciso criar uma conta?<span class="faq-plus">+</span></button><div class="faq-answer">Não para a primeira análise. Você pode testar sem cadastro. A conta é necessária para salvar histórico, candidaturas e alertas.</div></div>
+          <div class="faq-item"><button class="faq-question">O VagaAI garante que vou conseguir uma entrevista?<span class="faq-plus">+</span></button><div class="faq-answer">Não. Nenhuma ferramenta controla a decisão da empresa. O VagaAI ajuda a reduzir erros, mostrar melhor sua experiência e preparar uma candidatura mais alinhada.</div></div>
+          <div class="faq-item"><button class="faq-question">A ferramenta inventa experiências?<span class="faq-plus">+</span></button><div class="faq-answer">Não. O conteúdo é reorganizado e reescrito a partir das informações que você forneceu. Você deve revisar tudo antes de enviar.</div></div>
+          <div class="faq-item"><button class="faq-question">O que o score analisa?<span class="faq-plus">+</span></button><div class="faq-answer">Compatibilidade com a vaga, presença de palavras-chave relevantes, legibilidade e força das realizações descritas no currículo.</div></div>
+          <div class="faq-item"><button class="faq-question">Funciona com qualquer vaga?<span class="faq-plus">+</span></button><div class="faq-answer">Sim. Basta copiar a descrição da oportunidade de qualquer plataforma ou site de empresa.</div></div>
+          <div class="faq-item"><button class="faq-question">O plano gratuito recebe vagas?<span class="faq-plus">+</span></button><div class="faq-answer">Sim. Ele inclui um alerta semanal com uma seleção limitada de oportunidades e acesso ao link original da vaga.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="final">
+      <div class="container">
+        <div class="final-card reveal">
+          <div class="final-inner">
+            <h2>Antes de enviar o próximo currículo, descubra se ele está <em>mostrando o seu melhor.</em></h2>
+            <p>Compare seu CV com a vaga e receba um diagnóstico claro do que merece atenção.</p>
+            <a class="btn" href="/app"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg>Analisar meu currículo grátis</a>
+            <small>Sem cadastro · Sem cartão · Resultado em segundos</small>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-row">
+      <a class="brand" href="#inicio"><img src="/logo-icon.svg" alt=""><span>Vaga<i>AI</i></span></a>
+      <div class="footer-links"><a href="/termos">Termos</a><a href="/termos">Privacidade</a><a href="/blog">Conteúdos</a><a href="/login">Entrar</a></div>
+      <span class="copyright">© 2026 VagaAI · Candidaturas com mais clareza.</span>
+    </div>
+  </footer>
+
+  <script>
+    function toggleMenu() { document.getElementById('nav').classList.toggle('open'); }
+    document.querySelectorAll('.nav-links a').forEach(function(link) {
+      link.addEventListener('click', function() { document.getElementById('nav').classList.remove('open'); });
+    });
+
+    function updateProgress() {
+      var max = document.documentElement.scrollHeight - innerHeight;
+      document.getElementById('scrollProgress').style.width = (max > 0 ? scrollY / max * 100 : 0) + '%';
+    }
+    addEventListener('scroll', updateProgress, { passive: true });
+    updateProgress();
+
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: .12 });
+    document.querySelectorAll('.reveal').forEach(function(el) { observer.observe(el); });
+
+    var resultStage = document.querySelector('.result-stage');
+    var resultWindow = document.querySelector('.result-window');
+    if (matchMedia('(pointer:fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      resultStage.addEventListener('mousemove', function(event) {
+        var rect = resultStage.getBoundingClientRect();
+        var x = (event.clientX - rect.left) / rect.width - .5;
+        var y = (event.clientY - rect.top) / rect.height - .5;
+        resultWindow.style.transform = 'rotateY(' + (-3 + x * 5) + 'deg) rotateX(' + (1 - y * 4) + 'deg) translateY(-3px)';
+      });
+      resultStage.addEventListener('mouseleave', function() { resultWindow.style.transform = 'rotateY(-3deg) rotateX(1deg)'; });
+    }
+
+    var productTabs = Array.from(document.querySelectorAll('.product-tab'));
+    var productIndex = 0;
+    var productTimer;
+    function activateProduct(index) {
+      productIndex = index;
+      var id = productTabs[index].dataset.product;
+      productTabs.forEach(function(tab) { tab.classList.remove('active'); });
+      document.querySelectorAll('.product-panel').forEach(function(panel) { panel.classList.remove('active'); });
+      productTabs[index].classList.add('active');
+      document.querySelector('[data-panel="' + id + '"]').classList.add('active');
+    }
+    function startProductRotation() {
+      clearInterval(productTimer);
+      productTimer = setInterval(function() { activateProduct((productIndex + 1) % productTabs.length); }, 5500);
+    }
+    productTabs.forEach(function(tab,index) {
+      tab.addEventListener('click', function() { activateProduct(index); startProductRotation(); });
+    });
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) startProductRotation();
+
+    document.querySelectorAll('.billing button').forEach(function(button) {
+      button.addEventListener('click', function() {
+        var mode = button.dataset.billing;
+        document.querySelectorAll('.billing button').forEach(function(el) { el.classList.remove('active'); });
+        button.classList.add('active');
+        document.querySelectorAll('.price[data-monthly]').forEach(function(price) {
+          price.innerHTML = price.dataset[mode] + '<small>/mês</small>';
+        });
+        document.querySelectorAll('.plan-link').forEach(function(link) { link.href = link.dataset[mode + 'Url']; });
+        document.querySelectorAll('.billing-note').forEach(function(note) {
+          note.textContent = mode === 'annual' ? 'Cobrança anual · melhor valor mensal' : 'Cobrança mensal · cancele quando quiser';
+        });
+      });
+    });
+
+    document.querySelectorAll('.faq-question').forEach(function(button) {
+      button.addEventListener('click', function() {
+        var item = button.closest('.faq-item');
+        var open = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(function(el) { el.classList.remove('open'); });
+        if (!open) item.classList.add('open');
+      });
+    });
+  </script>
+</body>
+</html>

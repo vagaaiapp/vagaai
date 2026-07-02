@@ -2751,11 +2751,27 @@ function applySmartFix(type) {
   document.getElementById('photoFileInput').addEventListener('change', function(e) {
     var file = e.target.files[0];
     if (!file) return;
+    // Valida tipo e tamanho ANTES de ler: base64 grande estoura a quota do
+    // localStorage silenciosamente e a foto some ao recarregar, sem aviso.
+    if (!/^image\//.test(file.type)) {
+      showToast('Arquivo inválido — envie uma imagem (JPG ou PNG).', 'error');
+      this.value = '';
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      showToast('Foto muito grande (máx. 2MB). Reduza o tamanho e tente de novo.', 'error');
+      this.value = '';
+      return;
+    }
     var reader = new FileReader();
     reader.onload = function(ev) {
       renderPhoto(ev.target.result);
       updatePhotoUI(true);
-      try { localStorage.setItem('vagaai_cv_photo', ev.target.result); } catch(ex) {}
+      try {
+        localStorage.setItem('vagaai_cv_photo', ev.target.result);
+      } catch(ex) {
+        showToast('Não foi possível salvar a foto no navegador — ela pode sumir ao recarregar.', 'error');
+      }
     };
     reader.readAsDataURL(file);
     this.value = '';

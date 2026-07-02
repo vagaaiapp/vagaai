@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VagaAI — Painel</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ══════════════════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════════════════ */
+:root {
+  --gb-deep:    #071209;
+  --gb-forest:  #0a1a10;
+  --gb-dark:    #0d5a35;
+  --gb-emerald: #1a7a4a;
+  --gb-mid:     #2cba74;
+  --gb-bright:  #4ece91;
+  --gb-glow:    #50d393;
+
+  --bg:          #f5f7f5;
+  --bg-card:     #ffffff;
+  --bg-sub:      #f0f4f1;
+  --sidebar-bg:  #0a1a10;
+  --border:      #e4ebe6;
+  --border-soft: #eff3f0;
+
+  --t1: #071209;
+  --t2: #3d5c47;
+  --t3: #7a9886;
+
+  --s-red:    #d94f4f;
+  --s-red-bg: #fef0f0;
+  --s-amb:    #c47d0a;
+  --s-amb-bg: #fef9ee;
+  --s-grn:    #1a7a4a;
+  --s-grn-bg: #eaf5ef;
+
+  --sh-card:  0 1px 3px rgba(7,18,9,.05), 0 4px 16px rgba(7,18,9,.06);
+  --sh-hover: 0 8px 32px rgba(7,18,9,.12);
+  --sh-btn:   0 8px 24px rgba(26,122,74,.28);
+
+  --r: 18px;
+  --r-sm: 10px;
+  --r-xs: 6px;
+  --sb: 78px;
+}
+
+[data-theme="dark"] {
+  --bg:         #070d08;
+  --bg-card:    #0d1610;
+  --bg-sub:     #101a12;
+  --border:     #1a2b1d;
+  --border-soft:#152018;
+
+  --t1: #ddeae0;
+  --t2: #6d9b7a;
+  --t3: #3d5c47;
+
+  --s-red-bg: rgba(217,79,79,.12);
+  --s-amb-bg: rgba(196,125,10,.12);
+  --s-grn-bg: rgba(26,122,74,.15);
+
+  --sh-card:  0 2px 8px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.25);
+  --sh-hover: 0 16px 48px rgba(0,0,0,.5);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+  background: var(--bg);
+  color: var(--t1);
+  display: flex;
+  min-height: 100vh;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ══════════════════════════════════════════════════
+   SIDEBAR — always dark, brand signature
+══════════════════════════════════════════════════ */
+.sidebar {
+  width: var(--sb);
+  background: var(--gb-forest);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 22px 0 20px;
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 200;
+}
+.sidebar::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(78,206,145,.06) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.sb-logo {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 30px;
+  cursor: pointer;
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  position: relative; z-index: 1;
+}
+.sb-logo:hover { transform: scale(1.08); }
+.sb-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+.sb-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; position: relative; z-index: 1; }
+
+.sb-btn {
+  position: relative;
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,.3);
+  cursor: pointer;
+  border: none; background: transparent;
+  transition: all .2s ease;
+}
+.sb-btn svg { width: 19px; height: 19px; }
+.sb-btn:hover { background: rgba(78,206,145,.12); color: var(--gb-bright); }
+.sb-btn.active { background: rgba(78,206,145,.16); color: var(--gb-bright); }
+.sb-btn.active::before {
+  content: '';
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 22px;
+  background: var(--gb-bright);
+  border-radius: 0 3px 3px 0;
+}
+
+.sb-bottom { position: relative; z-index: 1; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.07); }
+.sb-avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--gb-emerald), var(--gb-mid));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff;
+  cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+
+.tooltip {
+  position: absolute; left: calc(100% + 14px);
+  background: #0a0f0b;
+  color: rgba(255,255,255,.88);
+  font-size: 11.5px; font-weight: 500;
+  padding: 6px 12px; border-radius: 7px;
+  white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity .15s;
+  box-shadow: 0 4px 14px rgba(0,0,0,.3);
+}
+.tooltip::before {
+  content: ''; position: absolute;
+  right: 100%; top: 50%; transform: translateY(-50%);
+  border: 5px solid transparent; border-right-color: #0a0f0b;
+}
+.sb-btn:hover .tooltip { opacity: 1; }
+
+/* ══════════════════════════════════════════════════
+   MAIN
+══════════════════════════════════════════════════ */
+.main { margin-left: var(--sb); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ══════════════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════════════ */
+.header {
+  height: 64px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 0 36px;
+  display: flex; align-items: center; gap: 18px;
+  position: sticky; top: 0; z-index: 100;
+  transition: background .3s, border-color .3s;
+}
+
+.header-logo img { height: 24px; display: block; }
+[data-theme="dark"] .header-logo img { filter: brightness(0) invert(1); }
+.header-sep { width: 1px; height: 22px; background: var(--border); }
+
+.breadcrumb {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13.5px; color: var(--t3);
+}
+.breadcrumb strong { color: var(--t1); font-weight: 600; }
+.breadcrumb svg { width: 12px; height: 12px; opacity: .3; }
+
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+.plan-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--s-grn-bg);
+  border: 1px solid rgba(26,122,74,.2);
+  border-radius: 20px; padding: 5px 12px 5px 8px;
+  font-size: 12px; font-weight: 600; color: var(--gb-emerald);
+}
+.plan-badge-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gb-bright); animation: blink 2s ease infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.icon-btn {
+  width: 36px; height: 36px; border: 1px solid var(--border);
+  border-radius: var(--r-sm); background: var(--bg-card);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--t2); transition: all .2s;
+}
+.icon-btn:hover { border-color: var(--gb-emerald); color: var(--gb-emerald); }
+.icon-btn svg { width: 16px; height: 16px; }
+
+.btn-cta {
+  background: var(--gb-emerald); color: #fff;
+  border: none; padding: 10px 20px; border-radius: var(--r-sm);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; gap: 7px;
+  transition: all .3s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap;
+}
+.btn-cta:hover { transform: translateY(-2px); box-shadow: var(--sh-btn); }
+.btn-cta svg { width: 13px; height: 13px; }
+
+/* ══════════════════════════════════════════════════
+   CONTENT
+══════════════════════════════════════════════════ */
+.content { flex: 1; padding: 32px 36px 48px; overflow-y: auto; scrollbar-width: none; }
+.content::-webkit-scrollbar { display: none; }
+.tab { display: none; }
+.tab.active { display: block; }
+
+/* ══════════════════════════════════════════════════
+   HERO
+══════════════════════════════════════════════════ */
+.hero {
+  background: linear-gradient(130deg, #0d3a22 0%, #0a2818 60%, #071a10 100%);
+  border-radius: var(--r);
+  padding: 40px 44px;
+  margin-bottom: 28px;
+  position: relative; overflow: hidden;
+  animation: fadeUp .4s ease both;
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 65% 90% at 100% 0%, rgba(78,206,145,.2) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+.hero-inner { position: relative; z-index: 1; display: flex; align-items: center; gap: 40px; }
+.hero-text { flex: 1; }
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(78,206,145,.13); border: 1px solid rgba(78,206,145,.22);
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 11.5px; font-weight: 600; color: var(--gb-bright); letter-spacing: .3px;
+  margin-bottom: 14px;
+}
+
+.hero-title {
+  font-size: 32px; font-weight: 800; color: #fff;
+  letter-spacing: -.7px; line-height: 1.15; margin-bottom: 10px;
+}
+.hero-sub {
+  font-size: 14px; color: rgba(255,255,255,.62);
+  line-height: 1.65; max-width: 480px; margin-bottom: 30px;
+}
+.hero-metrics { display: flex; gap: 36px; }
+.hm-val { font-size: 40px; font-weight: 800; color: #fff; letter-spacing: -1.5px; line-height: 1; }
+.hm-val.accent { color: var(--gb-bright); }
+.hm-lbl { font-size: 11.5px; color: rgba(255,255,255,.5); margin-top: 5px; letter-spacing: .2px; }
+
+/* Floating score card — LP style */
+.hero-card-wrap { position: relative; flex-shrink: 0; }
+.hero-card {
+  width: 260px;
+  background: rgba(255,255,255,.97);
+  border-radius: 16px; padding: 20px;
+  box-shadow: 0 24px 64px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.08);
+}
+[data-theme="dark"] .hero-card {
+  background: rgba(15,26,17,.96);
+  border: 1px solid rgba(78,206,145,.15);
+}
+.hc-chrome { display: flex; align-items: center; gap: 5px; margin-bottom: 14px; }
+.hc-dot { width: 9px; height: 9px; border-radius: 50%; }
+.hc-title-sm { font-size: 11px; color: var(--t3); margin-left: 8px; }
+
+.hc-center { display: flex; flex-direction: column; align-items: center; margin-bottom: 14px; }
+.hc-ring-wrap { position: relative; width: 84px; height: 84px; margin-bottom: 8px; }
+.hc-ring-wrap svg { width: 84px; height: 84px; transform: rotate(-90deg); }
+.hcr-bg   { fill: none; stroke: var(--border); stroke-width: 7; }
+.hcr-fill {
+  fill: none; stroke: url(#hcGrad); stroke-width: 7; stroke-linecap: round;
+  stroke-dasharray: 226; stroke-dashoffset: 170;
+}
+.hc-num {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.hc-num span { font-size: 22px; font-weight: 800; letter-spacing: -1px; color: var(--t1); }
+.hc-num small { font-size: 10px; color: var(--t3); }
+.hc-lbl { font-size: 9.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--t3); }
+
+.hc-bars { display: flex; flex-direction: column; gap: 9px; }
+.hcb-row {}
+.hcb-top { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.hcb-name { font-size: 11px; color: var(--t2); }
+.hcb-pct  { font-size: 11px; font-weight: 700; }
+.hcb-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.hcb-fill  { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--gb-emerald), var(--gb-bright)); animation: barGrow .9s cubic-bezier(.34,1.2,.64,1) both; }
+
+/* Floating badges */
+.f-badge {
+  position: absolute;
+  background: var(--bg-card);
+  border-radius: 22px; padding: 7px 14px;
+  font-size: 12px; font-weight: 600; color: var(--t1);
+  box-shadow: 0 4px 18px rgba(0,0,0,.13);
+  display: flex; align-items: center; gap: 7px; white-space: nowrap;
+}
+.f-badge.tr { top: -16px; right: -18px; }
+.f-badge.bl { bottom: -14px; left: -16px; }
+.f-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gb-bright); }
+
+/* ══════════════════════════════════════════════════
+   SECTION LABEL
+══════════════════════════════════════════════════ */
+.sec-label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--t3); margin-bottom: 14px;
+}
+
+/* ══════════════════════════════════════════════════
+   BASE CARD
+══════════════════════════════════════════════════ */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--r); box-shadow: var(--sh-card); overflow: hidden;
+  transition: border-color .25s, box-shadow .25s, transform .25s;
+}
+.card:hover { border-color: rgba(26,122,74,.2); box-shadow: var(--sh-hover); transform: translateY(-3px); }
+.card-pad { padding: 24px; }
+.card-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 22px; }
+.card-ico {
+  width: 42px; height: 42px; border-radius: var(--r-sm);
+  background: var(--s-grn-bg);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gb-emerald); flex-shrink: 0;
+}
+.card-ico svg { width: 20px; height: 20px; }
+.card-ttl { font-size: 15px; font-weight: 700; line-height: 1.2; margin-bottom: 4px; }
+.card-sub { font-size: 12.5px; color: var(--t3); line-height: 1.45; }
+
+/* ══════════════════════════════════════════════════
+   GOALS
+══════════════════════════════════════════════════ */
+.goals-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--r); box-shadow: var(--sh-card);
+  padding: 28px; margin-bottom: 28px;
+  animation: fadeUp .45s .08s ease both;
+  transition: border-color .25s, box-shadow .25s, transform .25s;
+}
+.goals-card:hover { border-color: rgba(26,122,74,.2); box-shadow: var(--sh-hover); transform: translateY(-3px); }
+
+.goals-row { display: grid; grid-template-columns: 110px 1fr 128px; gap: 36px; align-items: center; }
+
+.g-ring-wrap { position: relative; width: 110px; height: 110px; }
+.g-ring-wrap svg { width: 110px; height: 110px; transform: rotate(-90deg); }
+.g-ring-bg   { fill: none; stroke: var(--border); stroke-width: 9; }
+.g-ring-fill {
+  fill: none; stroke: url(#goalGrad); stroke-width: 9; stroke-linecap: round;
+  stroke-dasharray: 283; stroke-dashoffset: 94;
+  transition: stroke-dashoffset 1.1s cubic-bezier(.34,1.56,.64,1);
+}
+.g-ring-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.g-ring-num { font-size: 28px; font-weight: 800; letter-spacing: -1.2px; }
+.g-ring-den { font-size: 11px; color: var(--t3); margin-top: 1px; }
+
+.goals-ttl { font-size: 17px; font-weight: 700; letter-spacing: -.3px; margin-bottom: 5px; }
+.goals-sub { font-size: 13px; color: var(--t3); line-height: 1.55; margin-bottom: 20px; }
+
+.week-row { display: flex; gap: 8px; }
+.w-item { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.w-lbl { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--t3); }
+.w-dot { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.w-dot.done  { background: var(--gb-bright); color: #fff; box-shadow: 0 2px 8px rgba(78,206,145,.28); }
+.w-dot.today { background: var(--s-grn-bg); color: var(--gb-emerald); border: 1.5px solid var(--gb-emerald); }
+.w-dot.empty { background: var(--bg-sub); color: var(--t3); border: 1px solid var(--border); }
+
+.goals-right { text-align: right; }
+.streak-fire { font-size: 32px; display: block; line-height: 1; }
+.streak-num  { font-size: 48px; font-weight: 800; letter-spacing: -2.5px; color: #f59e0b; line-height: 1; }
+.streak-lbl  { font-size: 11.5px; color: var(--t3); margin-top: 2px; }
+.streak-chips { display: flex; flex-direction: column; gap: 5px; margin-top: 12px; align-items: flex-end; }
+.s-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--bg-sub); border: 1px solid var(--border);
+  border-radius: 20px; padding: 3px 11px;
+  font-size: 11.5px; font-weight: 500; color: var(--t2);
+}
+
+/* ══════════════════════════════════════════════════
+   SCORE CARD — LP style
+══════════════════════════════════════════════════ */
+.score-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--r); box-shadow: var(--sh-card);
+  margin-bottom: 28px; overflow: hidden;
+  animation: fadeUp .45s .14s ease both;
+  transition: border-color .25s, box-shadow .25s, transform .25s;
+}
+.score-card:hover { border-color: rgba(26,122,74,.18); box-shadow: var(--sh-hover); transform: translateY(-3px); }
+
+.score-card-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 22px 28px 0;
+  margin-bottom: 6px;
+}
+.score-card-body { display: grid; grid-template-columns: 1fr 1fr; }
+
+.score-col { padding: 20px 28px 28px; position: relative; }
+.score-col + .score-col::before {
+  content: ''; position: absolute; left: 0; top: 16px; bottom: 16px;
+  width: 1px; background: var(--border);
+}
+
+.sc-top { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 20px; }
+
+.sc-ring-wrap { position: relative; width: 88px; height: 88px; flex-shrink: 0; }
+.sc-ring-wrap svg { width: 88px; height: 88px; transform: rotate(-90deg); }
+.sc-bg   { fill: none; stroke: var(--border); stroke-width: 8; }
+.sc-fill { fill: none; stroke-width: 8; stroke-linecap: round; stroke-dasharray: 226; }
+.sc-fill.red   { stroke: #d94f4f; }
+.sc-fill.amber { stroke: #f59e0b; }
+.sc-fill.green { stroke: var(--gb-bright); }
+.sc-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.sc-num { font-size: 21px; font-weight: 800; letter-spacing: -1px; }
+.sc-den { font-size: 9.5px; color: var(--t3); }
+
+.sc-company { font-size: 16px; font-weight: 700; margin-bottom: 3px; }
+.sc-role    { font-size: 12px; color: var(--t3); margin-bottom: 10px; }
+.sc-status  {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11.5px; font-weight: 600;
+}
+.sc-status.bad  { background: var(--s-red-bg); color: var(--s-red);  }
+.sc-status.med  { background: var(--s-amb-bg); color: var(--s-amb);  }
+.sc-status.good { background: var(--s-grn-bg); color: var(--s-grn);  }
+
+.sc-metrics { display: flex; flex-direction: column; gap: 13px; }
+.sc-mrow-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.sc-mrow-name { font-size: 12px; color: var(--t2); }
+.sc-mrow-pct  { font-size: 12px; font-weight: 700; }
+.sc-mrow-pct.red   { color: var(--s-red); }
+.sc-mrow-pct.amber { color: var(--s-amb); }
+.sc-mrow-pct.green { color: var(--gb-emerald); }
+.sc-track { height: 6px; background: var(--bg-sub); border-radius: 3px; overflow: hidden; }
+.sc-bar { height: 100%; border-radius: 3px; animation: barGrow .9s cubic-bezier(.34,1.2,.64,1) both; }
+.sc-bar.red   { background: linear-gradient(90deg, #d94f4f, #f87171); }
+.sc-bar.amber { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.sc-bar.green { background: linear-gradient(90deg, var(--gb-emerald), var(--gb-bright)); }
+
+.sc-insight {
+  margin-top: 18px;
+  background: var(--bg-sub); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 12px 16px;
+  font-size: 12.5px; color: var(--t2); line-height: 1.55;
+}
+.sc-insight strong { color: var(--gb-emerald); }
+
+/* ══════════════════════════════════════════════════
+   GRID
+══════════════════════════════════════════════════ */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 28px; }
+
+/* ══════════════════════════════════════════════════
+   KEYWORDS
+══════════════════════════════════════════════════ */
+.kw-section { margin-bottom: 18px; }
+.kw-section:last-child { margin-bottom: 0; }
+.kw-sec-lbl {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
+  color: var(--t3); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.kw-sec-lbl::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.kw-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.kw-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px; border-radius: var(--r-xs);
+  font-size: 12px; font-weight: 600;
+}
+.kw-tag.miss { background: var(--s-red-bg); color: var(--s-red); border: 1px solid rgba(217,79,79,.14); }
+.kw-tag.pres { background: var(--s-grn-bg); color: var(--s-grn); border: 1px solid rgba(26,122,74,.14); }
+
+.kw-tip {
+  margin-top: 18px;
+  background: linear-gradient(135deg, rgba(78,206,145,.08), rgba(26,122,74,.04));
+  border: 1px solid rgba(78,206,145,.18); border-radius: var(--r-sm);
+  padding: 14px 16px; font-size: 12.5px; color: var(--t2); line-height: 1.55;
+}
+.kw-tip strong { color: var(--gb-emerald); }
+
+/* ══════════════════════════════════════════════════
+   JOURNEY
+══════════════════════════════════════════════════ */
+.journey { display: flex; flex-direction: column; }
+.j-step { display: flex; gap: 14px; position: relative; padding-bottom: 20px; }
+.j-step:last-child { padding-bottom: 0; }
+.j-step::after {
+  content: ''; position: absolute; left: 16px; top: 36px;
+  width: 2px; height: calc(100% - 20px); background: var(--border);
+}
+.j-step:last-child::after { display: none; }
+.j-dot {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; z-index: 1;
+}
+.j-done   { background: var(--gb-bright); color: #fff; box-shadow: 0 2px 8px rgba(78,206,145,.28); }
+.j-active { background: var(--s-amb-bg); color: var(--s-amb); border: 2px solid #f59e0b; animation: softPulse 2s ease infinite; }
+.j-todo   { background: var(--bg-sub); color: var(--t3); border: 2px solid var(--border); }
+.j-body { padding-top: 5px; }
+.j-name { font-size: 13.5px; font-weight: 600; }
+.j-desc { font-size: 12px; color: var(--t3); margin-top: 3px; line-height: 1.5; }
+.j-cta  { font-size: 12px; color: var(--gb-emerald); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; }
+.j-cta:hover { text-decoration: underline; }
+
+/* ══════════════════════════════════════════════════
+   INSIGHT AI CARD
+══════════════════════════════════════════════════ */
+.insight-ai {
+  background: linear-gradient(140deg, #081510 0%, #0d3a22 100%);
+  border: 1px solid rgba(78,206,145,.18); border-radius: var(--r);
+  padding: 24px; color: #fff; position: relative; overflow: hidden;
+  box-shadow: var(--sh-card); transition: transform .25s, box-shadow .25s;
+}
+.insight-ai:hover { transform: translateY(-3px); box-shadow: var(--sh-hover); }
+.insight-ai::before {
+  content: ''; position: absolute; top: -70px; right: -50px;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(78,206,145,.14) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.ai-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(78,206,145,.14); border: 1px solid rgba(78,206,145,.22);
+  border-radius: 20px; padding: 4px 11px;
+  font-size: 11px; font-weight: 700; color: var(--gb-bright); letter-spacing: .4px; text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.ai-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.ai-text  { font-size: 13px; color: rgba(255,255,255,.68); line-height: 1.65; margin-bottom: 16px; }
+.ai-text strong { color: var(--gb-bright); }
+.ai-tags  { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+.ai-tag   {
+  background: rgba(78,206,145,.13); border: 1px solid rgba(78,206,145,.22);
+  border-radius: 6px; padding: 4px 11px; font-size: 12px; font-weight: 600; color: var(--gb-bright);
+}
+.ai-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--gb-bright); color: var(--gb-forest);
+  border: none; border-radius: var(--r-sm); padding: 10px 18px;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: all .3s cubic-bezier(.34,1.56,.64,1);
+}
+.ai-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(78,206,145,.3); }
+
+/* ══════════════════════════════════════════════════
+   VAGAS PARA RASTREAR
+══════════════════════════════════════════════════ */
+.vaga-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 0; border-bottom: 1px solid var(--border-soft);
+}
+.vaga-item:last-child { border-bottom: none; }
+.vaga-score {
+  width: 48px; height: 48px; border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; flex-shrink: 0;
+}
+.vs-bad  { background: var(--s-red-bg); color: var(--s-red); }
+.vs-med  { background: var(--s-amb-bg); color: var(--s-amb); }
+.vs-good { background: var(--s-grn-bg); color: var(--s-grn); }
+.vaga-info { flex: 1; min-width: 0; }
+.vaga-name { font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vaga-role { font-size: 11.5px; color: var(--t3); margin-top: 2px; }
+.track-btn {
+  border: 1.5px solid var(--gb-emerald); background: transparent; color: var(--gb-emerald);
+  padding: 6px 14px; border-radius: var(--r-xs); font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all .2s; white-space: nowrap;
+}
+.track-btn:hover { background: var(--s-grn-bg); }
+
+/* ══════════════════════════════════════════════════
+   EMPTY / MISC
+══════════════════════════════════════════════════ */
+.empty-state { text-align: center; padding: 64px 32px; }
+.empty-ico {
+  width: 64px; height: 64px; border-radius: var(--r);
+  background: var(--s-grn-bg); margin: 0 auto 18px;
+  display: flex; align-items: center; justify-content: center;
+}
+.empty-ico svg { width: 30px; height: 30px; color: var(--gb-emerald); }
+.empty-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.empty-sub   { font-size: 13px; color: var(--t3); line-height: 1.6; max-width: 320px; margin: 0 auto; }
+
+.fld-label { font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--t3); margin-bottom: 6px; }
+.fld-input {
+  width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); background: var(--bg); color: var(--t1);
+  font-size: 13.5px; outline: none; transition: border-color .2s;
+}
+.fld-input:focus { border-color: var(--gb-emerald); }
+.freq-row { display: flex; gap: 8px; margin-top: 8px; }
+.freq-btn { flex: 1; padding: 10px; border: 1.5px solid var(--border); border-radius: var(--r-sm); background: var(--bg); color: var(--t2); font-size: 13px; cursor: pointer; transition: all .2s; }
+.freq-btn.on { background: var(--s-grn-bg); border-color: var(--gb-emerald); color: var(--gb-emerald); font-weight: 600; }
+.kw-chips-box { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--r-sm); background: var(--bg); min-height: 46px; }
+.kw-chip { display: flex; align-items: center; gap: 4px; background: var(--s-grn-bg); color: var(--gb-emerald); border: 1px solid rgba(26,122,74,.18); border-radius: 5px; padding: 3px 9px; font-size: 12px; font-weight: 500; }
+.kw-chip-x { opacity: .45; cursor: pointer; }
+.save-btn { margin-top: 20px; background: var(--gb-emerald); color: #fff; border: none; padding: 12px 28px; border-radius: var(--r-sm); font-size: 14px; font-weight: 600; cursor: pointer; transition: all .3s cubic-bezier(.34,1.56,.64,1); }
+.save-btn:hover { transform: translateY(-2px); box-shadow: var(--sh-btn); }
+
+.plan-tile { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 28px; box-shadow: var(--sh-card); transition: border-color .25s, box-shadow .25s, transform .25s; }
+.plan-tile:hover { border-color: rgba(26,122,74,.18); box-shadow: var(--sh-hover); transform: translateY(-3px); }
+.plan-tile.active { border: 2px solid var(--gb-emerald); }
+
+/* ══════════════════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes barGrow {
+  from { transform: scaleX(0); transform-origin: left; }
+  to   { transform: scaleX(1); transform-origin: left; }
+}
+@keyframes softPulse {
+  0%,100% { box-shadow: 0 0 0 3px rgba(245,158,11,.14); }
+  50%     { box-shadow: 0 0 0 7px rgba(245,158,11,.24); }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════ SIDEBAR ════════════ -->
+<aside class="sidebar">
+  <div class="sb-logo"><img src="/logo-icon.svg" alt="VagaAI"></div>
+  <nav class="sb-nav">
+    <button class="sb-btn active" onclick="showTab('painel',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+      </svg>
+      <span class="tooltip">Painel</span>
+    </button>
+    <button class="sb-btn" onclick="showTab('vagas',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="2" y="7" width="20" height="14" rx="2"/>
+        <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+      </svg>
+      <span class="tooltip">Candidaturas</span>
+    </button>
+    <button class="sb-btn" onclick="showTab('alertas',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 01-3.46 0"/>
+      </svg>
+      <span class="tooltip">Alertas de vagas</span>
+    </button>
+    <button class="sb-btn" onclick="showTab('plano',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>
+      <span class="tooltip">Meu Plano</span>
+    </button>
+  </nav>
+  <div class="sb-bottom"><div class="sb-avatar">JV</div></div>
+</aside>
+
+<!-- ════════════ MAIN ════════════ -->
+<main class="main">
+
+  <!-- HEADER -->
+  <header class="header">
+    <!-- SVG defs for gradients (global scope) -->
+    <svg width="0" height="0" style="position:absolute;overflow:hidden">
+      <defs>
+        <linearGradient id="hcGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#1a7a4a"/><stop offset="100%" stop-color="#4ece91"/>
+        </linearGradient>
+        <linearGradient id="goalGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#2cba74"/><stop offset="100%" stop-color="#4ece91"/>
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <div class="header-logo"><img src="/logo.svg" alt="VagaAI" id="header-logo"></div>
+    <div class="header-sep"></div>
+    <div class="breadcrumb">
+      <strong id="bc-sec">Painel</strong>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      <span id="bc-sub">Visão geral</span>
+    </div>
+    <div class="header-right">
+      <div class="plan-badge"><div class="plan-badge-dot"></div>Pro ativo</div>
+      <button class="icon-btn" onclick="toggleTheme()" title="Alternar tema">
+        <svg id="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        <svg id="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <button class="btn-cta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Analisar vaga
+      </button>
+    </div>
+  </header>
+
+  <div class="content">
+
+  <!-- ══ PAINEL ══ -->
+  <div id="tab-painel" class="tab active">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="hero-text">
+          <div class="hero-eyebrow">
+            <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
+            Plano Pro ativo
+          </div>
+          <h1 class="hero-title">Bem‑vindo, João Victor</h1>
+          <p class="hero-sub">Seu CV ainda não passa pelos filtros ATS da maioria das vagas. Com ajustes estratégicos de palavras‑chave, você pode dobrar seu score e chegar mais forte nas entrevistas.</p>
+          <div class="hero-metrics">
+            <div>
+              <div class="hm-val">17%</div>
+              <div class="hm-lbl">Score médio atual</div>
+            </div>
+            <div>
+              <div class="hm-val">2</div>
+              <div class="hm-lbl">Vagas analisadas</div>
+            </div>
+            <div>
+              <div class="hm-val accent">70%</div>
+              <div class="hm-lbl">Meta de score</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LP-style card illustration -->
+        <div class="hero-card-wrap">
+          <div class="hero-card">
+            <div class="hc-chrome">
+              <div class="hc-dot" style="background:#ff5f57"></div>
+              <div class="hc-dot" style="background:#febc2e"></div>
+              <div class="hc-dot" style="background:#28c840"></div>
+              <span class="hc-title-sm">Análise VagaAI</span>
+            </div>
+            <div class="hc-center">
+              <div class="hc-ring-wrap">
+                <svg viewBox="0 0 100 100">
+                  <circle class="hcr-bg" cx="50" cy="50" r="36"/>
+                  <circle class="hcr-fill" cx="50" cy="50" r="36"/>
+                </svg>
+                <div class="hc-num">
+                  <span>75</span>
+                  <small>/ 100</small>
+                </div>
+              </div>
+              <div class="hc-lbl">Índice de compatibilidade</div>
+            </div>
+            <div class="hc-bars">
+              <div class="hcb-row">
+                <div class="hcb-top"><span class="hcb-name">Compatibilidade</span><span class="hcb-pct" style="color:var(--gb-emerald)">82%</span></div>
+                <div class="hcb-track"><div class="hcb-fill" style="width:82%;animation-delay:.1s"></div></div>
+              </div>
+              <div class="hcb-row">
+                <div class="hcb-top"><span class="hcb-name">Keywords ATS</span><span class="hcb-pct" style="color:var(--gb-emerald)">71%</span></div>
+                <div class="hcb-track"><div class="hcb-fill" style="width:71%;animation-delay:.2s"></div></div>
+              </div>
+              <div class="hcb-row">
+                <div class="hcb-top"><span class="hcb-name">Legibilidade</span><span class="hcb-pct" style="color:var(--gb-emerald)">90%</span></div>
+                <div class="hcb-track"><div class="hcb-fill" style="width:90%;animation-delay:.3s"></div></div>
+              </div>
+              <div class="hcb-row">
+                <div class="hcb-top"><span class="hcb-name">Força dos bullets</span><span class="hcb-pct" style="color:#f59e0b">60%</span></div>
+                <div class="hcb-track"><div class="hcb-fill" style="width:60%;animation-delay:.4s;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="f-badge tr">
+            <span style="color:var(--gb-emerald)">⚡</span> Análise em 15s
+          </div>
+          <div class="f-badge bl">
+            <div class="f-badge-dot"></div> ATS-ready
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- METAS -->
+    <div class="sec-label">Progresso semanal</div>
+    <div class="goals-card">
+      <div class="goals-row">
+        <div class="g-ring-wrap">
+          <svg viewBox="0 0 120 120">
+            <circle class="g-ring-bg" cx="60" cy="60" r="45"/>
+            <circle class="g-ring-fill" cx="60" cy="60" r="45"/>
+          </svg>
+          <div class="g-ring-label">
+            <div class="g-ring-num">2</div>
+            <div class="g-ring-den">de 3</div>
+          </div>
+        </div>
+        <div>
+          <div class="goals-ttl">Meta semanal de análises</div>
+          <div class="goals-sub">Falta 1 análise para bater sua meta desta semana. Usuários que atingem a meta têm 2× mais entrevistas.</div>
+          <div class="week-row" id="weekDots"></div>
+        </div>
+        <div class="goals-right">
+          <span class="streak-fire">🔥</span>
+          <div class="streak-num">1</div>
+          <div class="streak-lbl">semana consecutiva</div>
+          <div class="streak-chips">
+            <span class="s-chip">🏆 Recorde pessoal</span>
+            <span class="s-chip">📅 Mês: 1 semana</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCORE CARD — LP style -->
+    <div class="sec-label">Resultados das análises</div>
+    <div class="score-card">
+      <div class="score-card-head">
+        <div>
+          <div style="font-size:16px;font-weight:700;">Como seu CV performou em cada vaga</div>
+          <div style="font-size:12.5px;color:var(--t3);margin-top:3px;">Score acima de 70% passa pelos filtros ATS · Análise detalhada dos critérios de seleção</div>
+        </div>
+        <button style="font-size:12.5px;color:var(--gb-emerald);background:none;border:none;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:5px;white-space:nowrap;">
+          Ver histórico
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+      <div class="score-card-body">
+        <!-- Coluna 1 -->
+        <div class="score-col">
+          <div class="sc-top">
+            <div class="sc-ring-wrap">
+              <svg viewBox="0 0 100 100">
+                <circle class="sc-bg" cx="50" cy="50" r="36"/>
+                <circle class="sc-fill red" cx="50" cy="50" r="36" style="stroke-dashoffset:163;"/>
+              </svg>
+              <div class="sc-label">
+                <div class="sc-num" style="color:var(--s-red)">28%</div>
+                <div class="sc-den">score</div>
+              </div>
+            </div>
+            <div>
+              <div class="sc-company">PRIMIZIE</div>
+              <div class="sc-role">Gerente de Marketing · R$10k+</div>
+              <span class="sc-status bad">Não passou nos filtros ATS</span>
+            </div>
+          </div>
+          <div class="sc-metrics">
+            <div>
+              <div class="sc-mrow-top"><span class="sc-mrow-name">Compatibilidade com a vaga</span><span class="sc-mrow-pct red">28%</span></div>
+              <div class="sc-track"><div class="sc-bar red" style="width:28%;animation-delay:.1s"></div></div>
+            </div>
+            <div>
+              <div class="sc-mrow-top"><span class="sc-mrow-name">Keywords ATS detectadas</span><span class="sc-mrow-pct red">20%</span></div>
+              <div class="sc-track"><div class="sc-bar red" style="width:20%;animation-delay:.15s"></div></div>
+            </div>
+            <div>
+              <div class="sc-mrow-top"><span class="sc-mrow-name">Legibilidade e estrutura</span><span class="sc-mrow-pct amber">65%</span></div>
+              <div class="sc-track"><div class="sc-bar amber" style="width:65%;animation-delay:.2s"></div></div>
+            </div>
+            <div>
+              <div class="sc-mrow-top"><span class="sc-mrow-name">Força dos bullet points</span><span class="sc-mrow-pct red">18%</span></div>
+              <div class="sc-track"><div class="sc-bar red" style="width:18%;animation-delay:.25s"></div></div>
+            </div>
+          </div>
+          <div class="sc-insight">
+            Adicionar <strong>Meta Ads, Facebook Ads e Google Ads</strong> ao CV pode elevar seu score de 28% para ~58% nessa vaga.
+          </div>
+        </div>
+        <!-- Coluna 2 -->
+        <div class="score-col">
+          <div class="sc-top">
+            <div class="sc-ring-wrap">
+              <svg viewBox="0 0 100 100">
+                <circle class="sc-bg" cx="50" cy="50" r="36"/>
+                <circle class="sc-fill red" cx="50" cy="50" r="36" style="stroke-dashoffset:215;"/>
+              </svg>
+              <div class="sc-label">
+                <div class="sc-num" style="color:var(--s-red)">5%</div>
+                <div class="sc-den">score</div>
+              </div>
+            </div>
+            <div>
+              <div class="sc-company">Empresa anônima</div>
+              <div class="sc-role">Verificação de Segurança</div>
+              <span class="sc-status bad">Área muito diferente do perfil</span>
+            </div>
+          </div>
+          <div class="sc-metrics">
+            <div>
+              <div class="sc-mrow-top"><span class="sc-mrow-name">Compatibilidade com a vaga</span><span class="sc-mrow-pct red">5%</span></div>
+              <div class="sc-track"><div class="sc-bar red" style="width:5%;animation-delay:.1s"></div></div>
+            </div>
+            <div>
+              <div class="sc-mrow-top"><span class="sc-mrow-name">Keywords ATS detectadas</span><span class="sc-mrow-pct red">3%</span></div>
+              <div class="sc-track"><div class="sc-bar red" style="width:3%;animation-delay:.15s"></div></div>
+            </div>
+            <div>
+              <div class="sc-mrow-top"><span class="sc-mrow-name">Legibilidade e estrutura</span><span class="sc-mrow-pct amber">65%</span></div>
+              <div class="sc-track"><div class="sc-bar amber" style="width:65%;animation-delay:.2s"></div></div>
+            </div>
+            <div>
+              <div class="sc-mrow-top"><span class="sc-mrow-name">Match de área de atuação</span><span class="sc-mrow-pct red">0%</span></div>
+              <div class="sc-track"><div class="sc-bar red" style="width:1%;animation-delay:.25s"></div></div>
+            </div>
+          </div>
+          <div class="sc-insight">
+            Vaga fora da sua área. <strong>Foque em vagas de Marketing</strong> para aumentar suas chances de entrevista e otimizar seu tempo.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRID: Keywords | Journey | Insight AI | Track -->
+    <div class="sec-label">Próximos passos</div>
+    <div class="grid-2">
+
+      <!-- Keywords -->
+      <div class="card">
+        <div class="card-pad">
+          <div class="card-head">
+            <div class="card-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <div>
+              <div class="card-ttl">Palavras-chave ATS</div>
+              <div class="card-sub">O que está faltando no seu CV para passar pelos filtros automáticos dos recrutadores</div>
+            </div>
+          </div>
+          <div class="kw-section">
+            <div class="kw-sec-lbl">Ausentes — adicione ao CV</div>
+            <div class="kw-tags">
+              <span class="kw-tag miss">✕ Meta Ads</span>
+              <span class="kw-tag miss">✕ Facebook Ads</span>
+              <span class="kw-tag miss">✕ Google Ads</span>
+              <span class="kw-tag miss">✕ Performance Mkt</span>
+              <span class="kw-tag miss">✕ Gestão de Budget</span>
+            </div>
+          </div>
+          <div class="kw-section">
+            <div class="kw-sec-lbl">Presentes no CV</div>
+            <div class="kw-tags">
+              <span class="kw-tag pres">✓ SEO</span>
+              <span class="kw-tag pres">✓ Copywriting</span>
+              <span class="kw-tag pres">✓ Email Marketing</span>
+              <span class="kw-tag pres">✓ Branding</span>
+            </div>
+          </div>
+          <div class="kw-tip">
+            Adicionar as <strong>5 palavras ausentes</strong> pode aumentar seu score médio de <strong>17% para ~48%</strong>, passando pelo filtro automático na maioria das vagas de Marketing.
+          </div>
+        </div>
+      </div>
+
+      <!-- Journey -->
+      <div class="card">
+        <div class="card-pad">
+          <div class="card-head">
+            <div class="card-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+              <div class="card-ttl">Sua jornada</div>
+              <div class="card-sub">Cada etapa concluída aumenta em 3× suas chances de receber uma oferta de emprego</div>
+            </div>
+          </div>
+          <div class="journey">
+            <div class="j-step">
+              <div class="j-dot j-done">✓</div>
+              <div class="j-body">
+                <div class="j-name">Diagnóstico do currículo</div>
+                <div class="j-desc">2 vagas analisadas · Score médio 17% · Ajustes identificados</div>
+              </div>
+            </div>
+            <div class="j-step">
+              <div class="j-dot j-active">→</div>
+              <div class="j-body">
+                <div class="j-name" style="color:var(--s-amb)">Otimizar o currículo</div>
+                <div class="j-desc">Adicione as keywords ausentes para superar o filtro ATS</div>
+                <a class="j-cta" href="#">Otimizar agora →</a>
+              </div>
+            </div>
+            <div class="j-step">
+              <div class="j-dot j-todo">3</div>
+              <div class="j-body">
+                <div class="j-name" style="color:var(--t3)">Enviar candidaturas</div>
+                <div class="j-desc">Rastreie cada aplicação e acompanhe retornos</div>
+              </div>
+            </div>
+            <div class="j-step">
+              <div class="j-dot j-todo">4</div>
+              <div class="j-body">
+                <div class="j-name" style="color:var(--t3)">Preparar para a entrevista</div>
+                <div class="j-desc">Simulador com perguntas baseadas na vaga específica</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insight AI -->
+      <div class="insight-ai" style="animation:fadeUp .45s .28s ease both;">
+        <div class="ai-eyebrow">✦ Insight da VagaAI</div>
+        <div class="ai-title">Seu CV pode chegar a 58% hoje</div>
+        <div class="ai-text">
+          Com apenas <strong>3 palavras-chave</strong> adicionadas ao seu CV, seu score na PRIMIZIE saltaria de <strong>28% → ~58%</strong> — passando pelos filtros automáticos e chegando à mesa do recrutador.
+        </div>
+        <div class="ai-tags">
+          <span class="ai-tag">Meta Ads</span>
+          <span class="ai-tag">Facebook Ads</span>
+          <span class="ai-tag">Google Ads</span>
+        </div>
+        <button class="ai-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Otimizar meu CV agora
+        </button>
+      </div>
+
+      <!-- Candidaturas -->
+      <div class="card" style="animation:fadeUp .45s .34s ease both;">
+        <div class="card-pad">
+          <div class="card-head">
+            <div class="card-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+            </div>
+            <div>
+              <div class="card-ttl">Candidaturas</div>
+              <div class="card-sub">Rastreie cada vaga para acompanhar retornos e não perder nenhuma oportunidade</div>
+            </div>
+          </div>
+
+          <div class="vaga-item">
+            <div class="vaga-score vs-bad">28</div>
+            <div class="vaga-info">
+              <div class="vaga-name">PRIMIZIE</div>
+              <div class="vaga-role">Gerente de Marketing · R$10k+ · Remoto</div>
+            </div>
+            <button class="track-btn">Rastrear</button>
+          </div>
+
+          <div class="vaga-item">
+            <div class="vaga-score vs-bad">5</div>
+            <div class="vaga-info">
+              <div class="vaga-name">Empresa anônima</div>
+              <div class="vaga-role">Verificação de Segurança · Fora da área</div>
+            </div>
+            <button class="track-btn">Rastrear</button>
+          </div>
+
+          <div style="margin-top:20px;padding:16px;background:var(--bg-sub);border-radius:var(--r-sm);text-align:center;">
+            <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Analise mais vagas para aumentar suas chances</div>
+            <button class="btn-cta" style="margin:0 auto;font-size:12.5px;padding:9px 18px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nova análise
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /grid-2 -->
+  </div><!-- /tab-painel -->
+
+
+  <!-- ══ VAGAS ══ -->
+  <div id="tab-vagas" class="tab">
+    <div class="hero" style="margin-bottom:28px;">
+      <div class="hero-inner">
+        <div class="hero-text">
+          <div class="hero-eyebrow">📋 Rastreador de candidaturas</div>
+          <h1 class="hero-title">Minhas Candidaturas</h1>
+          <p class="hero-sub">Acompanhe cada aplicação da análise até a oferta. Nunca mais perca o prazo ou esqueça o follow-up.</p>
+          <div class="hero-metrics">
+            <div><div class="hm-val">0</div><div class="hm-lbl">Em andamento</div></div>
+            <div><div class="hm-val">0</div><div class="hm-lbl">Em entrevista</div></div>
+            <div><div class="hm-val">2</div><div class="hm-lbl">Para rastrear</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="empty-state">
+        <div class="empty-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div>
+        <div class="empty-title">Nenhuma candidatura rastreada ainda</div>
+        <div class="empty-sub">Volte ao Painel e clique em "Rastrear" em qualquer vaga analisada para começar.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ ALERTAS ══ -->
+  <div id="tab-alertas" class="tab">
+    <div class="hero" style="margin-bottom:28px;">
+      <div class="hero-inner">
+        <div class="hero-text">
+          <div class="hero-eyebrow">🔔 Alertas personalizados</div>
+          <h1 class="hero-title">Vagas no seu e‑mail toda semana</h1>
+          <p class="hero-sub">Configure seu perfil uma vez e receba oportunidades compatíveis com sua área, salário e formato — sem ficar buscando manualmente.</p>
+          <div class="hero-metrics">
+            <div><div class="hm-val">8</div><div class="hm-lbl">Vagas recebidas</div></div>
+            <div><div class="hm-val">1</div><div class="hm-lbl">Candidatura enviada</div></div>
+            <div><div class="hm-val accent">Ativo</div><div class="hm-lbl">Status do alerta</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-pad">
+          <div class="card-head">
+            <div class="card-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+            <div><div class="card-ttl">Perfil de busca</div><div class="card-sub">Personalize quais vagas você quer receber na sua caixa de entrada</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+            <div><div class="fld-label">Cargo</div><input class="fld-input" value="Marketing"></div>
+            <div><div class="fld-label">Nível</div><select class="fld-input"><option>Qualquer</option><option>Júnior</option><option>Pleno</option><option>Sênior</option></select></div>
+            <div><div class="fld-label">Localização</div><input class="fld-input" value="Remoto"></div>
+            <div><div class="fld-label">Salário mínimo (R$)</div><input class="fld-input" type="number" value="6000"></div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div class="fld-label">Keywords do perfil</div>
+            <div class="kw-chips-box">
+              <span class="kw-chip">SEO<span class="kw-chip-x">×</span></span>
+              <span class="kw-chip">Copywriting<span class="kw-chip-x">×</span></span>
+              <span class="kw-chip">Mkt de Conteúdo<span class="kw-chip-x">×</span></span>
+              <span class="kw-chip">Email Marketing<span class="kw-chip-x">×</span></span>
+              <span class="kw-chip">Branding<span class="kw-chip-x">×</span></span>
+            </div>
+          </div>
+          <div>
+            <div class="fld-label">Frequência</div>
+            <div class="freq-row">
+              <button class="freq-btn on">Semanal</button>
+              <button class="freq-btn">Quinzenal</button>
+              <button class="freq-btn">Mensal</button>
+            </div>
+          </div>
+          <button class="save-btn">Salvar perfil de alerta</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-pad">
+          <div class="card-head">
+            <div class="card-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            <div><div class="card-ttl">Próximo envio</div><div class="card-sub">Sexta-feira, 13 de junho de 2026 · Previstas ~8 vagas</div></div>
+          </div>
+          <!-- Email preview card -->
+          <div style="background:var(--bg-sub);border-radius:var(--r-sm);padding:20px;margin-bottom:20px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+              <div style="width:34px;height:34px;border-radius:9px;background:var(--gb-emerald);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+              </div>
+              <div>
+                <div style="font-size:12.5px;font-weight:600;color:var(--t1);">Vagas da semana para você</div>
+                <div style="font-size:11px;color:var(--t3);">vagaai.com → joaovictor@email.com</div>
+              </div>
+            </div>
+            <div style="font-size:12.5px;color:var(--t2);line-height:1.6;margin-bottom:14px;">
+              <strong style="color:var(--t1);">8 vagas de Marketing</strong> compatíveis com seu perfil — remoto, salário a partir de R$6.000.
+            </div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:var(--gb-emerald);color:#fff;padding:8px 16px;border-radius:var(--r-xs);font-size:12.5px;font-weight:600;">
+              Ver vagas da semana →
+            </div>
+          </div>
+          <div style="font-size:12.5px;color:var(--t3);line-height:1.65;">
+            Recebendo vagas de <strong style="color:var(--t2);">Marketing</strong> · Formato remoto · Salário a partir de <strong style="color:var(--t2);">R$6.000</strong> · Toda sexta-feira.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ PLANO ══ -->
+  <div id="tab-plano" class="tab">
+    <div class="hero" style="margin-bottom:28px;">
+      <div class="hero-inner">
+        <div class="hero-text">
+          <div class="hero-eyebrow">⭐ Plano atual</div>
+          <h1 class="hero-title">Plano Pro ativo</h1>
+          <p class="hero-sub">Análises ilimitadas, simulador de entrevista e todos os recursos disponíveis. Renova em 07 de julho de 2026.</p>
+          <div class="hero-metrics">
+            <div><div class="hm-val accent">∞</div><div class="hm-lbl">Análises/mês</div></div>
+            <div><div class="hm-val">5</div><div class="hm-lbl">Funcionalidades</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="plan-tile">
+        <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;">Starter</div>
+        <div style="font-size:30px;font-weight:800;letter-spacing:-1.5px;margin-bottom:4px;">R$19<span style="font-size:15px;font-weight:400;color:var(--t3)">,90/mês</span></div>
+        <div style="font-size:12px;color:var(--t3);margin-bottom:22px;">Para quem está começando</div>
+        <ul style="list-style:none;font-size:13px;color:var(--t2);display:flex;flex-direction:column;gap:10px;margin-bottom:26px;">
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-emerald)">✓</span> 10 análises/mês</li>
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-emerald)">✓</span> CV otimizado</li>
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-emerald)">✓</span> Briefing da empresa</li>
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-emerald)">✓</span> Carta de apresentação</li>
+          <li style="display:flex;gap:8px;"><span style="color:var(--t3)">—</span><span style="color:var(--t3)">Simulador de entrevista</span></li>
+        </ul>
+        <button style="width:100%;padding:11px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--bg);color:var(--t1);font-size:13px;font-weight:600;cursor:pointer;">Mudar para Starter</button>
+      </div>
+      <div class="plan-tile active" style="position:relative;">
+        <div style="position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--gb-emerald);color:#fff;font-size:10px;font-weight:700;padding:3px 16px;border-radius:0 0 8px 8px;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;">Plano atual</div>
+        <div style="font-size:11px;font-weight:700;color:var(--gb-emerald);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;margin-top:16px;">Pro</div>
+        <div style="font-size:30px;font-weight:800;letter-spacing:-1.5px;margin-bottom:4px;">R$39<span style="font-size:15px;font-weight:400;color:var(--t3)">,90/mês</span></div>
+        <div style="font-size:12px;color:var(--t3);margin-bottom:22px;">Para quem leva a sério</div>
+        <ul style="list-style:none;font-size:13px;color:var(--t2);display:flex;flex-direction:column;gap:10px;margin-bottom:26px;">
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-bright)">✓</span> Análises ilimitadas</li>
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-bright)">✓</span> CV otimizado</li>
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-bright)">✓</span> Briefing da empresa</li>
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-bright)">✓</span> Carta de apresentação</li>
+          <li style="display:flex;gap:8px;"><span style="color:var(--gb-bright)">✓</span> Simulador de entrevista</li>
+        </ul>
+        <button style="width:100%;padding:11px;background:var(--s-grn-bg);border:none;border-radius:var(--r-sm);color:var(--gb-emerald);font-size:13px;font-weight:700;cursor:default;">Plano ativo ✓</button>
+      </div>
+      <div class="plan-tile">
+        <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:18px;">Análises avulsas</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);">
+            <div><div style="font-size:13px;font-weight:600;">1 análise</div><div style="font-size:11px;color:var(--t3)">Sem assinatura</div></div>
+            <div style="display:flex;align-items:center;gap:10px;"><strong>R$9,90</strong><button style="border:1.5px solid var(--border);background:var(--bg);padding:5px 12px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;">Comprar</button></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);">
+            <div><div style="font-size:13px;font-weight:600;">10 análises</div><div style="font-size:11px;color:var(--t3)">R$3,99 cada</div></div>
+            <div style="display:flex;align-items:center;gap:10px;"><strong>R$39,90</strong><button style="border:1.5px solid var(--border);background:var(--bg);padding:5px 12px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;">Comprar</button></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);">
+            <div><div style="font-size:13px;font-weight:600;">50 análises</div><div style="font-size:11px;color:var(--t3)">R$1,94 cada</div></div>
+            <div style="display:flex;align-items:center;gap:10px;"><strong>R$97,00</strong><button style="border:1.5px solid var(--border);background:var(--bg);padding:5px 12px;border-radius:var(--r-xs);font-size:12px;font-weight:600;cursor:pointer;">Comprar</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /content -->
+</main>
+
+<script>
+const tabs = {
+  painel:  ['Painel',        'Visão geral'],
+  vagas:   ['Candidaturas',  'Rastreamento'],
+  alertas: ['Alertas',       'Configuração'],
+  plano:   ['Meu Plano',     'Assinatura'],
+};
+
+function showTab(id, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sb-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  const [s, sub] = tabs[id] || [];
+  document.getElementById('bc-sec').textContent = s;
+  document.getElementById('bc-sub').textContent = sub;
+}
+
+function toggleTheme() {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
+  document.getElementById('ico-moon').style.display = dark ? 'block' : 'none';
+  document.getElementById('ico-sun').style.display  = dark ? 'none'  : 'block';
+}
+
+// Week dots
+(function() {
+  const days   = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  const states = ['done','done','today','empty','empty','empty','empty'];
+  const icons  = ['✓','✓','·','','','',''];
+  const wrap   = document.getElementById('weekDots');
+  days.forEach((d, i) => {
+    const el = document.createElement('div');
+    el.className = 'w-item';
+    el.innerHTML = `<div class="w-lbl">${d}</div><div class="w-dot ${states[i]}">${icons[i]}</div>`;
+    wrap.appendChild(el);
+  });
+})();
+
+document.querySelectorAll('.freq-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    this.closest('.freq-row').querySelectorAll('.freq-btn').forEach(b => b.classList.remove('on'));
+    this.classList.add('on');
+  });
+});
+</script>
+</body>
+</html>

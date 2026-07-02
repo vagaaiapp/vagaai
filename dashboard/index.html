@@ -1,6 +1,16 @@
 ﻿<!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
+<!-- Google Analytics 4 (com Consent Mode v2 — LGPD), mesmo setup do /app -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XCT8K58VWF"></script>
+<script>
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
+gtag('consent','default',{ad_storage:'denied',analytics_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
+try{if(localStorage.getItem('vagaai_cookie_consent')==='granted')gtag('consent','update',{analytics_storage:'granted'});}catch(e){}
+gtag('js',new Date());gtag('config','G-XCT8K58VWF');
+</script>
+<script src="/cookie-consent.js" defer></script>
+<script defer src="/_vercel/insights/script.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VagaAI — Painel</title>
@@ -1949,6 +1959,19 @@ body.cd-modal-open { overflow:hidden; }
   .al-clean-jobs .al-job-match { justify-self:start; }
   .al-clean-jobs .al-job-actions { min-width:0; }
 }
+
+/* Seu Plano (hero) e cards de plano — sem cobertura mobile no restante do
+   arquivo. Estilos inline (padding/flex) exigem !important para serem
+   sobrescritos aqui. */
+@media (max-width:600px) {
+  .hero { padding:24px 18px !important; }
+  .hero-inner { flex-direction:column !important; align-items:stretch !important; gap:20px !important; }
+  .hero-text { flex:0 0 auto !important; max-width:100% !important; }
+  .hero-inner > div:last-child { flex:0 0 auto !important; width:100% !important; }
+  .hero-metrics { flex-wrap:wrap !important; gap:16px 24px !important; }
+  .hm-val { font-size:26px !important; }
+  .grid-3 { grid-template-columns:1fr !important; }
+}
 </style>
 <script>
 if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');
@@ -1986,6 +2009,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     </div>
     <div id="perfilRows"></div>
     <button class="modal-btn" onclick="closePerfil();openSenha()">Alterar senha</button>
+    <button class="modal-btn" onclick="closePerfil();openEmail()" style="margin-top:8px">Alterar e-mail</button>
   </div>
 </div>
 
@@ -2034,6 +2058,20 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     </div>
     <button class="modal-btn" id="btnSalvarSenha" onclick="doAlterarSenha()">Salvar</button>
     <div class="modal-msg" id="senhaMsg"></div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modalEmail">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeEmail()">✕</button>
+    <div class="modal-title">Alterar e-mail</div>
+    <div class="modal-sub">Enviaremos um link de confirmação para o novo endereço.</div>
+    <div class="modal-field">
+      <label class="modal-label">Novo e-mail</label>
+      <input class="modal-input" type="email" id="newEmail" placeholder="novo@email.com" autocomplete="email">
+    </div>
+    <button class="modal-btn" id="btnSalvarEmail" onclick="doAlterarEmail()">Enviar confirmação</button>
+    <div class="modal-msg" id="emailMsg"></div>
   </div>
 </div>
 
@@ -6183,6 +6221,13 @@ function openRequestedDashboardTab() {
 
 /* ── Stripe helpers ─────────────────────────────────────────────── */
 function openAuthCheckout(baseUrl) {
+  // Já assinante: payment links não impedem 2ª assinatura paralela (dupla
+  // cobrança). Quem tem plano pago gerencia upgrade/downgrade pelo Portal.
+  var _sub = window._subscriptionData;
+  if (_sub && (_sub.plan === 'starter' || _sub.plan === 'pro')) {
+    openStripePortal(null);
+    return;
+  }
   var url = baseUrl;
   try {
     if (currentUserId && currentSession && currentSession.user) {
@@ -6246,6 +6291,12 @@ async function loadSubscriptionData() {
       var elB = document.getElementById('uaPlanBadge');     if (elB) elB.textContent = 'Grátis';
       var elN = document.getElementById('planoNome');       if (elN) elN.textContent = 'Grátis';
       var elS = document.getElementById('sbPlanLabel');     if (elS) elS.textContent = 'Grátis';
+      // Sem saber o plano real, os botões "Assinar" (onclick estático no HTML)
+      // poderiam gerar 2ª assinatura para quem já paga — desabilita até recarregar.
+      ['planBtnStarter', 'planBtnPro', 'upsellProBtn'].forEach(function(id) {
+        var b = document.getElementById(id);
+        if (b) { b.disabled = true; b.onclick = null; b.textContent = 'Recarregue a página'; b.style.opacity = '.55'; b.style.cursor = 'default'; }
+      });
       return;
     }
     var sub = await res.json();
@@ -6258,6 +6309,9 @@ async function loadSubscriptionData() {
     var anlabel = sub.plan === 'pro' ? '∞' : sub.plan === 'starter' ? (sub.analyses_used_this_month + '/10') : (sub.analyses_used_this_month || '0');
     el = document.getElementById('planoAnalises'); if (el) el.textContent = anlabel;
     el = document.getElementById('planoVagas'); if (el) el.textContent = Array.isArray(_kTracked) ? String(_kTracked.length) : '—';
+    // Badge de plano no topo (pill com pontinho) + badge da área da conta
+    el = document.getElementById('headerPlanLabel'); if (el) el.textContent = planLabel;
+    el = document.getElementById('uaPlanBadge');     if (el) el.textContent = planLabel;
     // Sidebar label
     el = document.getElementById('sbPlanLabel'); if (el) el.textContent = planLabel;
     el = document.getElementById('dmPlanLabel'); if (el) el.textContent = planLabel;
@@ -6576,6 +6630,35 @@ async function doAlterarSenha() {
   if (!error) {
     document.getElementById('senhaMsg').textContent = '✓ Senha alterada!';
     setTimeout(closeSenha, 2000);
+  } else {
+    document.getElementById('senhaMsg').textContent = 'Erro ao alterar a senha. Tente novamente.';
+  }
+}
+
+function openEmail() {
+  var m = document.getElementById('modalEmail');
+  if (m) { m.classList.remove('hidden'); var i = document.getElementById('newEmail'); if (i) { i.value = ''; i.focus(); } var msg = document.getElementById('emailMsg'); if (msg) msg.textContent = ''; }
+}
+function closeEmail() { document.getElementById('modalEmail').classList.add('hidden'); }
+
+async function doAlterarEmail() {
+  var email = (document.getElementById('newEmail').value || '').trim();
+  var msgEl = document.getElementById('emailMsg');
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    msgEl.textContent = 'Digite um e-mail válido.';
+    return;
+  }
+  var btn = document.getElementById('btnSalvarEmail');
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando…'; }
+  // O Supabase envia link de confirmação para o novo endereço (e, conforme a
+  // configuração, também para o atual). A troca só efetiva após confirmar.
+  var { error } = await sb.auth.updateUser({ email: email });
+  if (btn) { btn.disabled = false; btn.textContent = 'Enviar confirmação'; }
+  if (!error) {
+    msgEl.textContent = '✓ Confirmação enviada para ' + email + '. Abra o link para concluir a troca.';
+  } else {
+    var m = (error.message || '').toLowerCase();
+    msgEl.textContent = m.includes('already') ? 'Este e-mail já está em uso por outra conta.' : 'Erro ao solicitar a troca. Tente novamente.';
   }
 }
 

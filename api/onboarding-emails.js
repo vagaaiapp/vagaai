@@ -15,8 +15,15 @@ async function sendEmail(to, subject, html) {
   });
 }
 
+// Escapa valores dinâmicos antes de interpolar no HTML dos e-mails.
+// name vem de user_metadata (controlável pelo usuário no signup) e
+// empresa/cargo vêm do job_tracker — nunca interpolar sem escapar.
+function esc(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 const EMAILS = {
-  welcome: (name) => ({
+  welcome: (rawName) => { const name = esc(rawName); return {
     subject: 'Bem-vindo ao VagaAI! Veja o que você pode fazer agora 🎯',
     html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#0a0f0d;color:#e8ede9;border-radius:12px;overflow:hidden">
   <div style="background:#111814;padding:2rem;text-align:center;border-bottom:1px solid rgba(255,255,255,.07)">
@@ -42,9 +49,9 @@ const EMAILS = {
     <p style="color:#4d6e57;font-size:11px;margin-top:1.5rem;text-align:center">VagaAI · vagaai.app.br</p>
   </div>
 </div>`
-  }),
+  }; },
 
-  day2: (name) => ({
+  day2: (rawName) => { const name = esc(rawName); return {
     subject: '3 erros que fazem o ATS rejeitar seu currículo (e como corrigir)',
     html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#0a0f0d;color:#e8ede9;border-radius:12px;overflow:hidden">
   <div style="background:#111814;padding:1.5rem 2rem;border-bottom:1px solid rgba(255,255,255,.07)">
@@ -69,10 +76,10 @@ const EMAILS = {
     <p style="color:#4d6e57;font-size:11px;margin-top:1.5rem;text-align:center">VagaAI · <a href="https://vagaai.app.br" style="color:#3ecf8e;text-decoration:none">vagaai.app.br</a></p>
   </div>
 </div>`
-  }),
+  }; },
 
-  tracker_followup: (name, empresa, cargo) => ({
-    subject: `Já faz 7 dias desde que você aplicou para ${empresa} — e agora?`,
+  tracker_followup: (rawName, rawEmpresa, rawCargo) => { const name = esc(rawName), empresa = esc(rawEmpresa), cargo = esc(rawCargo); return {
+    subject: `Já faz 7 dias desde que você aplicou para ${String(rawEmpresa || 'a vaga')} — e agora?`,
     html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#0a0f0d;color:#e8ede9;border-radius:12px;overflow:hidden">
   <div style="background:#111814;padding:1.5rem 2rem;border-bottom:1px solid rgba(255,255,255,.07)">
     <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#3ecf8e">VagaAI</div>
@@ -96,12 +103,13 @@ const EMAILS = {
     <p style="color:#4d6e57;font-size:11px;margin-top:1.5rem;text-align:center">VagaAI · <a href="https://vagaai.app.br" style="color:#3ecf8e;text-decoration:none">vagaai.app.br</a></p>
   </div>
 </div>`
-  }),
+  }; },
 
-  day5: (name, creditsLeft) => ({
-    subject: creditsLeft > 0
-      ? `Você tem ${creditsLeft} análise${creditsLeft > 1 ? 's' : ''} disponíve${creditsLeft > 1 ? 'is' : 'l'} — use antes de precisar`
-      : 'Como está sua busca de emprego? 🎯',
+  // O 2º parâmetro (creditsLeft) é aceito por compatibilidade com call-sites
+  // antigos, mas ignorado — créditos avulsos foram descontinuados; a copy
+  // reflete o modelo atual (análise mensal grátis + assinaturas).
+  day5: (rawName) => { const name = esc(rawName); return {
+    subject: 'Como está sua busca de emprego? 🎯',
     html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#0a0f0d;color:#e8ede9;border-radius:12px;overflow:hidden">
   <div style="background:#111814;padding:1.5rem 2rem;border-bottom:1px solid rgba(255,255,255,.07)">
     <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#3ecf8e">VagaAI</div>
@@ -109,9 +117,7 @@ const EMAILS = {
   <div style="padding:2rem">
     <h1 style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">Olá, ${name}!</h1>
     <p style="color:#8a9e90;font-size:14px;line-height:1.7;margin-bottom:1.5rem">
-      ${creditsLeft > 0
-        ? `Você ainda tem <strong style="color:#3ecf8e">${creditsLeft} análise${creditsLeft > 1 ? 's' : ''}</strong> disponíve${creditsLeft > 1 ? 'is' : 'l'} na sua conta. Aproveite para otimizar suas próximas candidaturas.`
-        : 'Está em busca ativa? Cada candidatura sem análise ATS é uma chance perdida. Veja nossos planos.'}
+      Está em busca ativa? Seu plano gratuito inclui <strong style="color:#3ecf8e">1 análise completa por mês</strong> — e os planos Starter e Pro liberam mais análises, currículo otimizado e simulador de entrevista.
     </p>
     <div style="background:#161d19;border-radius:10px;padding:1.2rem;margin-bottom:1.5rem">
       <div style="font-size:13px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">💡 Dica da semana</div>
@@ -121,7 +127,7 @@ const EMAILS = {
     <p style="color:#4d6e57;font-size:11px;margin-top:1.5rem;text-align:center">VagaAI · <a href="https://vagaai.app.br" style="color:#3ecf8e;text-decoration:none">vagaai.app.br</a></p>
   </div>
 </div>`
-  }),
+  }; },
 };
 
 export default async function handler(req, res) {

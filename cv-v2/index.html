@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VagaAI — Editor de currículo (protótipo)</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --forest:#07170f;--forest-2:#0b2116;--emerald:#1a7a4a;--green:#2cba74;--bright:#4ece91;
+      --bg:#f4f7f5;--card:#fff;--sub:#f0f4f1;--border:#e2ebe5;--soft:#edf3ef;
+      --t1:#071209;--t2:#3d5c47;--t3:#789183;--red:#d94f4f;
+      --shadow:0 1px 3px rgba(7,18,9,.04),0 10px 32px rgba(7,18,9,.07);
+      --shadow-lg:0 24px 70px rgba(7,18,9,.16);--sidebar:230px;--editor:310px;
+    }
+    [data-theme="dark"]{
+      --bg:#070d08;--card:#0d1610;--sub:#101a12;--border:#1a2b1d;--soft:#152018;
+      --t1:#ddeae0;--t2:#86aa91;--t3:#55735e;
+      --shadow:0 2px 8px rgba(0,0,0,.34),0 12px 34px rgba(0,0,0,.23);
+      --shadow-lg:0 26px 80px rgba(0,0,0,.5);
+    }
+    html,body{min-height:100%}
+    body{font-family:Manrope,sans-serif;background:var(--bg);color:var(--t1);font-size:14px;display:flex;-webkit-font-smoothing:antialiased}
+    button{font:inherit;cursor:pointer}
+    svg{display:block}
+
+    .sidebar{position:fixed;inset:0 auto 0 0;width:var(--sidebar);padding:24px 16px 20px;background:linear-gradient(180deg,var(--forest),var(--forest-2));display:flex;flex-direction:column;color:#fff;z-index:20;overflow:hidden}
+    .sidebar::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 0,rgba(78,206,145,.12),transparent 34%);pointer-events:none}
+    .brand{position:relative;display:flex;align-items:center;gap:10px;padding:2px 6px 25px}
+    .brand img{width:31px;height:31px;border-radius:8px}.brand strong{font:700 18px Lora,serif}.brand strong span{color:var(--bright)}
+    .nav-label{position:relative;padding:0 10px;margin-bottom:7px;color:rgba(255,255,255,.3);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+    .nav{position:relative;display:grid;gap:3px}
+    .nav-item{display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;border:0;border-radius:10px;background:transparent;color:rgba(255,255,255,.48);font-size:13px;font-weight:600;text-decoration:none;transition:.18s}
+    .nav-item svg{width:17px;height:17px;flex:none}.nav-item:hover{background:rgba(78,206,145,.08);color:#fff}
+    .nav-item.active{background:rgba(78,206,145,.14);color:#fff;box-shadow:inset 3px 0 var(--bright)}
+    .side-bottom{position:relative;margin-top:auto;padding-top:13px;border-top:1px solid rgba(255,255,255,.08)}
+    .progress-card{padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:11px;background:rgba(255,255,255,.035)}
+    .progress-card strong{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.78);margin-bottom:8px}
+    .progress-card strong span{color:var(--bright)}.progress-track{height:5px;background:rgba(255,255,255,.08);border-radius:9px;overflow:hidden}
+    .progress-track i{display:block;width:86%;height:100%;background:linear-gradient(90deg,var(--green),var(--bright));border-radius:inherit}
+    .progress-card p{font-size:10px;line-height:1.5;color:rgba(255,255,255,.37);margin-top:8px}
+    .profile{display:flex;align-items:center;gap:9px;margin-top:9px;padding:6px}
+    .avatar{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,var(--emerald),var(--green));font-size:11px;font-weight:800}
+    .profile strong{display:block;font-size:11.5px}.profile span{font-size:10px;color:rgba(255,255,255,.4)}
+
+    .app{margin-left:var(--sidebar);min-width:0;flex:1}
+    .header{height:64px;padding:0 32px;display:flex;align-items:center;position:sticky;top:0;z-index:12;background:color-mix(in srgb,var(--card) 94%,transparent);border-bottom:1px solid var(--border);backdrop-filter:blur(18px)}
+    .crumb{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--t3)}.crumb strong{color:var(--t1)}
+    .actions{margin-left:auto;display:flex;align-items:center;gap:9px}
+    .saved{display:flex;align-items:center;gap:6px;color:var(--emerald);font-size:11px;font-weight:700;margin-right:4px}.saved i{width:7px;height:7px;border-radius:50%;background:var(--bright)}
+    .icon-btn,.outline-btn,.primary-btn{height:38px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700}
+    .icon-btn{width:38px;border:1px solid var(--border);background:var(--card);color:var(--t2)}
+    .outline-btn{padding:0 14px;border:1px solid var(--border);background:var(--card);color:var(--t2);font-size:12px}
+    .primary-btn{padding:0 17px;border:0;background:var(--emerald);color:#fff;font-size:12px;box-shadow:0 8px 20px rgba(26,122,74,.2)}
+    .primary-btn:hover{background:#176d42;transform:translateY(-1px)}
+
+    .workspace{min-height:calc(100vh - 64px);display:grid;grid-template-columns:var(--editor) minmax(760px,1fr)}
+    .editor{background:var(--card);border-right:1px solid var(--border);padding:22px 18px 30px;overflow-y:auto;max-height:calc(100vh - 64px);position:sticky;top:64px}
+    .editor-head{padding:2px 4px 18px;border-bottom:1px solid var(--border);margin-bottom:18px}
+    .eyebrow{display:flex;align-items:center;gap:7px;color:var(--emerald);font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px}
+    .eyebrow::before{content:"";width:7px;height:7px;border-radius:2px;background:var(--bright)}
+    .editor-head h1{font:700 22px/1.18 Lora,serif;letter-spacing:-.02em}.editor-head p{font-size:11px;line-height:1.55;color:var(--t3);margin-top:7px}
+    .section{padding:0 4px 18px;margin-bottom:18px;border-bottom:1px solid var(--border)}
+    .section:last-child{border:0}.section-title{display:flex;align-items:center;justify-content:space-between;font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-bottom:10px}
+    .section-title span{font-size:9px;color:var(--emerald);letter-spacing:0}
+    .templates{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .template{min-height:70px;padding:10px;border:1px solid var(--border);border-radius:11px;background:var(--bg);color:var(--t2);text-align:left;transition:.18s}
+    .template:hover{border-color:rgba(26,122,74,.35)}.template.active{border-color:var(--emerald);background:rgba(78,206,145,.075);box-shadow:0 0 0 2px rgba(78,206,145,.08)}
+    .tpl-preview{height:27px;margin-bottom:8px;border-radius:3px;background:linear-gradient(90deg,var(--t3) 24%,transparent 24% 28%,var(--border) 28%);opacity:.65}
+    .template:nth-child(2) .tpl-preview{background:linear-gradient(180deg,var(--t3) 0 5px,transparent 5px 9px,var(--border) 9px 12px,transparent 12px 16px,var(--border) 16px 19px)}
+    .template:nth-child(3) .tpl-preview{background:linear-gradient(90deg,var(--border) 0 33%,transparent 33% 37%,var(--t3) 37%)}.template:nth-child(4) .tpl-preview{background:repeating-linear-gradient(180deg,var(--border) 0 3px,transparent 3px 7px)}
+    .template strong{font-size:10.5px}.template small{display:block;font-size:8.5px;color:var(--t3);margin-top:2px}
+    .edit-list{display:grid;gap:7px}.edit-item{width:100%;height:42px;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);display:flex;align-items:center;gap:10px;color:var(--t2);font-size:11.5px;font-weight:700;text-align:left}
+    .edit-item svg{width:15px;color:var(--emerald)}.edit-item span{margin-left:auto;color:var(--t3);font-size:15px;font-weight:400}.edit-item:hover{background:var(--sub);border-color:rgba(26,122,74,.3)}
+    .photo-row{display:flex;align-items:center;gap:11px;padding:10px;border:1px solid var(--border);border-radius:11px;background:var(--bg)}
+    .photo{width:42px;height:42px;border-radius:11px;overflow:hidden;background:var(--forest);display:grid;place-items:center}.photo img{width:100%;height:100%;object-fit:cover}
+    .photo-copy{flex:1}.photo-copy strong{font-size:11px}.photo-copy span{display:block;font-size:9.5px;color:var(--t3);margin-top:2px}.mini-link{border:0;background:none;color:var(--emerald);font-size:10px;font-weight:800}
+    .ats-box{padding:12px;border-radius:11px;background:var(--sub);border:1px solid var(--border)}
+    .ats-top{display:flex;align-items:center;justify-content:space-between}.ats-top strong{font-size:11px}.ats-score{font-size:11px;color:var(--emerald);font-weight:800}
+    .ats-box p{font-size:9.5px;color:var(--t3);line-height:1.5;margin-top:7px}.ats-box .progress-track{background:var(--border);margin-top:9px}.ats-box .progress-track i{width:82%}
+    .job-summary{margin-top:10px;padding:13px;border-radius:11px;background:var(--sub);border:1px solid var(--border)}
+    .job-summary[hidden]{display:none}
+    .job-summary-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+    .job-summary-label{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
+    .job-summary-score{padding:3px 7px;border-radius:999px;background:rgba(78,206,145,.12);color:var(--emerald);font-size:8.5px;font-weight:800;white-space:nowrap}
+    [data-theme="dark"] .job-summary-score{color:var(--bright)}
+    .job-summary-role{font-size:11.5px;font-weight:800;color:var(--t1);line-height:1.35}
+    .job-summary-company{font-size:9.5px;color:var(--t3);margin-top:2px}
+    .job-summary-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+    .job-summary-chip{padding:3px 7px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--t2);font-size:8.5px;font-weight:700}
+    .job-summary-text{font-size:9.5px;color:var(--t3);line-height:1.5;margin-top:9px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    .job-summary-link{display:inline-flex;align-items:center;gap:4px;margin-top:9px;color:var(--emerald);font-size:9.5px;font-weight:800;text-decoration:none}
+    [data-theme="dark"] .job-summary-link{color:var(--bright)}
+    .job-summary-link:hover{text-decoration:underline}
+
+    .preview-area{background:radial-gradient(circle at 50% 0,rgba(78,206,145,.08),transparent 30%),var(--bg);padding:34px 38px 80px;overflow:auto;position:relative}
+    .preview-toolbar{max-width:820px;margin:0 auto 14px;display:flex;align-items:center;justify-content:space-between;color:var(--t3);font-size:10.5px}
+    .zoom{display:flex;align-items:center;gap:7px}.zoom button{width:28px;height:28px;border:1px solid var(--border);background:var(--card);border-radius:8px;color:var(--t2)}.zoom span{min-width:42px;text-align:center;font-weight:700}
+    .paper{width:794px;min-height:1123px;margin:auto;background:#fff;color:#18221b;box-shadow:var(--shadow-lg);padding:44px 52px 52px;position:relative;transform-origin:top center}
+    .paper::after{content:"ATS-ready";position:absolute;right:-18px;top:34px;padding:7px 11px;border-radius:999px;background:#edf9f2;color:#168250;border:1px solid #cbead8;font:700 9px Manrope,sans-serif;box-shadow:0 5px 18px rgba(7,18,9,.1)}
+    .cv-head{display:grid;grid-template-columns:1fr auto;gap:20px;padding-bottom:18px;border-bottom:3px solid #163c29}
+    .cv-head h2{font:700 28px/1.15 Lora,serif;color:#10291c;letter-spacing:-.02em}.cv-role{margin-top:8px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#355f48}
+    .contact{text-align:right;font-size:9px;line-height:1.8;color:#5b6f62}.cv-section{margin-top:22px}
+    .cv-section-title{display:flex;align-items:center;gap:10px;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#163c29;margin-bottom:9px}.cv-section-title::after{content:"";height:1px;background:#d9e2dc;flex:1}
+    .summary{font-size:10.5px;line-height:1.65;color:#36483c}.job{display:grid;grid-template-columns:1fr auto;gap:5px 18px;margin-top:12px}.job strong{font-size:11px}.period{font-size:9px;color:#6d7e72}.company{font-size:9px;color:#456351}
+    .bullets{grid-column:1/-1;list-style:none;margin:4px 0 0 15px;display:grid;gap:5px}.bullets li{font-size:9.5px;line-height:1.45;color:#35483b;position:relative}.bullets li::before{content:"–";position:absolute;left:-12px;color:#168250}
+    .bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:22px}.edu{display:grid;gap:10px}.edu strong{display:block;font-size:10px}.edu span{font-size:8.5px;color:#607467}
+    .skills{display:flex;flex-wrap:wrap;gap:5px}.skill{padding:4px 8px;border-radius:999px;border:1px solid #cbdad1;color:#355747;font-size:8.5px}
+    .page-mark{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);font-size:8px;color:#a1afa6}
+    .floating-tip{position:fixed;right:24px;bottom:24px;display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;background:var(--forest);color:#fff;box-shadow:0 12px 35px rgba(0,0,0,.2);font-size:10.5px;z-index:30}
+    .floating-tip i{width:25px;height:25px;border-radius:8px;background:rgba(78,206,145,.15);color:var(--bright);display:grid;place-items:center;font-style:normal}.floating-tip strong{display:block}.floating-tip span{color:rgba(255,255,255,.5)}
+
+    @media(max-width:1180px){:root{--sidebar:78px;--editor:290px}.brand strong,.nav-label,.nav-item span,.progress-card,.profile div{display:none}.brand,.nav-item,.profile{justify-content:center}.sidebar{padding-inline:12px}.workspace{grid-template-columns:var(--editor) minmax(720px,1fr)}}
+    @media(max-width:860px){.sidebar{display:none}.app{margin-left:0}.workspace{display:block}.editor{position:relative;top:0;max-height:none;border-right:0}.preview-area{padding:24px 15px 80px}.paper{transform:scale(.78);margin-bottom:-245px}.header{padding:0 16px}.saved,.outline-btn{display:none}.templates{grid-template-columns:repeat(4,1fr)}}
+    @media(max-width:620px){.templates{grid-template-columns:1fr 1fr}.paper{transform:scale(.5);margin-left:50%;translate:-50% 0;margin-bottom:-560px}.preview-area{overflow:hidden}.crumb span{display:none}.primary-btn{padding-inline:12px}.floating-tip{display:none}}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><img src="/logo-icon.svg" alt=""><strong>Vaga<span>AI</span></strong></div>
+    <div class="nav-label">Seu espaço</div>
+    <nav class="nav">
+      <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Visão geral</span></a>
+      <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg><span>Analisar vaga</span></a>
+      <a class="nav-item active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></svg><span>Currículo otimizado</span></a>
+      <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="18" height="15" rx="2"/><path d="M8 6V4h8v2M3 11h18"/></svg><span>Candidaturas</span></a>
+      <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span>Alertas</span></a>
+      <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Conta e plano</span></a>
+    </nav>
+    <div class="side-bottom">
+      <div class="progress-card"><strong>Currículo pronto <span>86%</span></strong><div class="progress-track"><i></i></div><p>Complete os dados pessoais para melhorar a apresentação.</p></div>
+      <div class="profile"><span class="avatar">JV</span><div><strong>João Victor</strong><span>Plano Pro</span></div></div>
+    </div>
+  </aside>
+
+  <main class="app">
+    <header class="header">
+      <div class="crumb"><strong>Currículo otimizado</strong><span>›</span><span>Editor e exportação</span></div>
+      <div class="actions">
+        <span class="saved"><i></i> Alterações salvas</span>
+        <button class="icon-btn" id="themeBtn" title="Alternar tema"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg></button>
+        <button class="outline-btn"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21H5a2 2 0 0 1-2-2V8h18v11a2 2 0 0 1-2 2zM7 3h10v5H7z"/></svg>Salvar versão</button>
+        <button class="primary-btn"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>Baixar PDF</button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <aside class="editor">
+        <div class="editor-head"><div class="eyebrow">Editor inteligente</div><h1>Seu currículo, pronto para esta vaga.</h1><p>Escolha o visual e ajuste as informações antes de baixar.</p></div>
+        <section class="section">
+          <div class="section-title">Modelo <span>4 opções</span></div>
+          <div class="templates">
+            <button class="template"><div class="tpl-preview"></div><strong>Profissional</strong><small>Clássico e claro</small></button>
+            <button class="template"><div class="tpl-preview"></div><strong>Moderno</strong><small>Visual marcante</small></button>
+            <button class="template"><div class="tpl-preview"></div><strong>Executivo</strong><small>Mais sofisticado</small></button>
+            <button class="template active"><div class="tpl-preview"></div><strong>Minimalista</strong><small>ATS-friendly</small></button>
+          </div>
+        </section>
+        <section class="section">
+          <div class="section-title">Foto</div>
+          <div class="photo-row"><span class="photo"><img src="/logo-icon.svg" alt=""></span><span class="photo-copy"><strong>Foto adicionada</strong><span>Aparência profissional</span></span><button class="mini-link">Trocar</button></div>
+        </section>
+        <section class="section">
+          <div class="section-title">Editar conteúdo <span>6 seções</span></div>
+          <div class="edit-list">
+            <button class="edit-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>Dados pessoais<span>›</span></button>
+            <button class="edit-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 2 3 6 7 .9-5 4.8 1.2 6.8L12 17.3 5.8 20.5 7 13.7 2 8.9 9 8z"/></svg>Resumo profissional<span>›</span></button>
+            <button class="edit-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="18" height="15" rx="2"/><path d="M8 6V4h8v2M3 11h18"/></svg>Experiências<span>›</span></button>
+            <button class="edit-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19.5V5l8-3 8 3v14.5M8 8h8M8 12h8M8 16h5"/></svg>Formação<span>›</span></button>
+            <button class="edit-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2v20M5 7h14M5 17h14"/></svg>Habilidades<span>›</span></button>
+          </div>
+        </section>
+        <section class="section">
+          <div class="section-title">Qualidade do currículo</div>
+          <div class="ats-box"><div class="ats-top"><strong>Compatibilidade ATS</strong><span class="ats-score">82%</span></div><div class="progress-track"><i></i></div><p>Seu currículo está bem estruturado e contém as principais palavras-chave da vaga.</p></div>
+          <article class="job-summary" id="jobSummaryCard" hidden>
+            <div class="job-summary-head">
+              <span class="job-summary-label">Resumo da vaga</span>
+              <span class="job-summary-score" id="jobSummaryScore"></span>
+            </div>
+            <div class="job-summary-role" id="jobSummaryRole"></div>
+            <div class="job-summary-company" id="jobSummaryCompany"></div>
+            <div class="job-summary-chips" id="jobSummaryChips"></div>
+            <p class="job-summary-text" id="jobSummaryText"></p>
+            <a class="job-summary-link" id="jobSummaryLink" href="#" target="_blank" rel="noopener noreferrer">Ver vaga original <span aria-hidden="true">↗</span></a>
+          </article>
+        </section>
+      </aside>
+
+      <section class="preview-area">
+        <div class="preview-toolbar"><span>Pré-visualização · Página 1 de 2</span><div class="zoom"><button>−</button><span>90%</span><button>+</button></div></div>
+        <article class="paper">
+          <header class="cv-head">
+            <div><h2>João Victor Heringer Rangel</h2><div class="cv-role">Gerente de Marketing Digital | Growth Marketing | Performance & Aquisição</div></div>
+            <div class="contact">joaoheringer@cybergal.com<br>+55 21 97980-1549<br>Rio de Janeiro, RJ</div>
+          </header>
+          <section class="cv-section"><div class="cv-section-title">Resumo profissional</div><p class="summary">Profissional de Marketing Digital com mentalidade de growth e foco em aquisição, conversão e performance. Experiência em estratégia e execução de campanhas, otimização de landing pages e análise de dados para tomada de decisão. Forte capacidade de copywriting e visão de negócio orientada a resultados mensuráveis.</p></section>
+          <section class="cv-section">
+            <div class="cv-section-title">Experiência profissional</div>
+            <div class="job"><strong>Web Designer e Marketing Digital Autônomo</strong><span class="period">2018 – Presente</span><span class="company">Autônomo</span><ul class="bullets"><li>Gerenciou campanhas de performance marketing para mais de 50 clientes, reduzindo em média 35% o custo por aquisição.</li><li>Implementou estratégias de SEO e marketing de conteúdo, aumentando em 60% o tráfego orgânico.</li><li>Desenvolveu landing pages orientadas à conversão e elevou a taxa média de 2,5% para 5,8%.</li><li>Executou campanhas de e-mail marketing com segmentação de funis e taxa de abertura de 35%.</li></ul></div>
+            <div class="job"><strong>Aprendiz de Serviços Administrativos</strong><span class="period">Ago 2015 – Jun 2016</span><span class="company">IURD – Igreja Universal do Reino de Deus</span><ul class="bullets"><li>Estruturou processos administrativos e organizacionais, desenvolvendo visão sistêmica de operações.</li><li>Gerenciou funis de vendas e campanhas de relacionamento, contribuindo para aumento de conversões.</li><li>Participou da elaboração de planos de negócio e materiais de branding corporativo.</li></ul></div>
+          </section>
+          <div class="bottom-grid">
+            <section><div class="cv-section-title">Formação</div><div class="edu"><div><strong>Graduação em Marketing</strong><span>Centro Universitário IBMR · Em andamento</span></div><div><strong>Técnico em Administração</strong><span>Senac · 2015</span></div><div><strong>Copywriting para Conversão</strong><span>Learncafe · 2018</span></div></div></section>
+            <section><div class="cv-section-title">Habilidades</div><div class="skills"><span class="skill">Meta Ads</span><span class="skill">Google Ads</span><span class="skill">Growth Marketing</span><span class="skill">Aquisição e Conversão</span><span class="skill">Copywriting</span><span class="skill">Google Analytics</span><span class="skill">SEO</span><span class="skill">Marketing de Conteúdo</span><span class="skill">ROAS e CPA</span><span class="skill">Web Design</span></div></section>
+          </div>
+          <span class="page-mark">1 / 2</span>
+        </article>
+      </section>
+    </div>
+  </main>
+  <div class="floating-tip"><i>✦</i><div><strong>Otimizado para a vaga</strong><span>7 melhorias aplicadas pela VagaAI</span></div></div>
+  <script>
+    function renderJobSummary(context){
+      var card=document.getElementById('jobSummaryCard');
+      if(!card)return;
+      var info=context&&context.job_info&&typeof context.job_info==='object'?context.job_info:{};
+      var role=String(info.cargo||'').trim();
+      var company=String(info.empresa||'').trim();
+      var summary=String(context&&context.resumo||'').trim();
+      var score=Number(context&&context.score);
+      var level=String(context&&context.nivel||'').trim();
+      var salary=String(info.salario||'').trim();
+      var benefits=Array.isArray(info.beneficios)?info.beneficios.filter(function(item){return String(item||'').trim()}).slice(0,2):[];
+      var url=String(info.job_url||'').trim();
+      var validUrl=/^https?:\/\//i.test(url);
+      if(!role&&!company&&!summary){
+        card.hidden=true;
+        return;
+      }
+      document.getElementById('jobSummaryRole').textContent=role||'Oportunidade analisada';
+      document.getElementById('jobSummaryCompany').textContent=company||'Empresa não informada';
+      document.getElementById('jobSummaryText').textContent=summary;
+      document.getElementById('jobSummaryText').hidden=!summary;
+      var scoreEl=document.getElementById('jobSummaryScore');
+      var scoreLabel=Number.isFinite(score)?Math.max(0,Math.min(100,Math.round(score)))+'% de aderência':level;
+      scoreEl.textContent=scoreLabel;
+      scoreEl.hidden=!scoreLabel;
+      var chips=[];
+      if(salary&&!/^n[aã]o informado$/i.test(salary))chips.push(salary);
+      benefits.forEach(function(item){chips.push(String(item).trim())});
+      if(level&&!chips.includes(level))chips.push(level);
+      var chipsEl=document.getElementById('jobSummaryChips');
+      chipsEl.replaceChildren();
+      chips.slice(0,3).forEach(function(label){
+        var chip=document.createElement('span');
+        chip.className='job-summary-chip';
+        chip.textContent=label;
+        chipsEl.appendChild(chip);
+      });
+      chipsEl.hidden=!chipsEl.childElementCount;
+      var link=document.getElementById('jobSummaryLink');
+      link.hidden=!validUrl;
+      if(validUrl)link.href=url;
+      else link.removeAttribute('href');
+      card.hidden=false;
+    }
+
+    document.getElementById('themeBtn').addEventListener('click',function(){
+      document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark';
+    });
+    document.querySelectorAll('.template').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        document.querySelectorAll('.template').forEach(function(el){el.classList.remove('active')});
+        btn.classList.add('active');
+      });
+    });
+    renderJobSummary({
+      score:30,
+      nivel:'Compatibilidade baixa',
+      resumo:'Esta oportunidade busca um profissional capaz de liderar a estratégia de marketing, acompanhar indicadores e desenvolver a equipe.',
+      job_info:{
+        cargo:'Head de Marketing',
+        empresa:'Empresa anônima',
+        salario:'Não informado',
+        beneficios:['Liderança','Gestão de equipes'],
+        job_url:'https://example.com/vaga'
+      }
+    });
+  </script>
+</body>
+</html>
