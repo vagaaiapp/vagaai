@@ -52,6 +52,7 @@ function makeUnsubToken(userId) {
 const BR_SOURCES = new Set([
   'gupy', 'google', 'greenhouse', 'lever',
   'trampos', 'sine', 'empregos_com_br', 'jobbol',
+  'catho', 'vagas_com', 'infojobs', 'bne', 'geekhunter', 'workday',
 ]);
 
 // Regex de palavras comuns em PT-BR para detectar idioma
@@ -1050,64 +1051,94 @@ async function fetchGupyJobs(profile) {
 }
 
 
-// ── FONTE 8: VAGAS.COM RSS ────────────────────────────────────────────────────
+// ── FONTE 8: VAGAS.COM (HTML da busca — o RSS foi descontinuado e passou a
+// devolver HTML; os cards têm classes estáveis: cargo/link-detalhes-vaga/emprVaga) ──
+function parseVagasComHTML(html) {
+  const jobs = [];
+  const re = /link-detalhes-vaga[^>]*title="([^"]+)"[^>]*href="(\/vagas\/v\d+\/[^"]+)"[\s\S]{0,900}?emprVaga">\s*([^<]+)/g;
+  let m;
+  while ((m = re.exec(String(html || ''))) !== null && jobs.length < 15) {
+    // A cidade fica após um <i> de ícone dentro da mesma div — pula tags intermediárias
+    const locM = String(html).slice(m.index, m.index + 1600).match(/vaga-local[^>]*>(?:\s*<[^>]+>)*\s*([^<]+)/);
+    jobs.push({
+      title: m[1].trim(),
+      company: m[3].trim() || 'Empresa',
+      location: locM ? locM[1].trim() : 'Brasil',
+      snippet: '',
+      salary: '',
+      link: 'https://www.vagas.com.br' + m[2],
+      _source: 'vagas_com',
+    });
+  }
+  return jobs;
+}
+
 async function fetchVagasComJobs(profile) {
   try {
-    const cargo = encodeURIComponent(profile.cargo_desejado || '');
-    const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
-    const cidade = isRemoto ? 'brasil' : encodeURIComponent(profile.cidade.toLowerCase());
-    const url = `https://www.vagas.com.br/vagas-de-${encodeURIComponent((profile.cargo_desejado||'').toLowerCase().replace(/\s+/g,'-'))}.rss`;
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)', Accept: 'application/rss+xml, text/xml' },
-      signal: AbortSignal.timeout(5000),
+    const slug = _norm(profile.cargo_desejado || '').replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+    if (!slug) return [];
+    const res = await fetch(`https://www.vagas.com.br/vagas-de-${slug}`, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)', Accept: 'text/html' },
+      signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) return [];
-    const xml = await res.text();
-    const items = parseRSSItems(xml);
-    return items.map(item => {
-      const parsed = splitTitleCompany(item.title);
-      return {
-        title: parsed.title,
-        company: item.company || parsed.company || 'Empresa',
-        location: profile.cidade || 'Brasil',
-        snippet: item.description,
-        salary: '',
-        link: item.link,
-        _source: 'vagas_com',
-      };
-    });
+    return parseVagasComHTML(await res.text());
   } catch(e) {
     console.warn('fetchVagasComJobs error:', e.message);
     return [];
   }
 }
 
-// ── FONTE 9: INFOJOBS RSS ─────────────────────────────────────────────────────
+// ── FONTE 9: INFOJOBS (HTML da busca — RSS descontinuado; cards com
+// js_vacancyTitle + data-href, cidade embutida na URL "-em-<cidade>__id") ─────
+function _decodeHtmlEntities(s) {
+  return String(s || '')
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(parseInt(d, 10)))
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ');
+}
+
+function parseInfoJobsHTML(html) {
+  const jobs = [];
+  const seenIds = new Set();
+  const re = /data-href="(\/vaga-de-[^"]+?__(\d+)(?:\.aspx)?)"[\s\S]{0,700}?js_vacancyTitle">\s*([^<]+)/g;
+  let m;
+  while ((m = re.exec(String(html || ''))) !== null && jobs.length < 15) {
+    if (seenIds.has(m[2])) continue;
+    seenIds.add(m[2]);
+    // Cidade embutida na URL: "...-em-sao-paulo__123.aspx" → "Sao Paulo"
+    const cityM = m[1].match(/-em-([a-z0-9\-]+?)__\d+/);
+    const location = cityM
+      ? cityM[1].split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+      : 'Brasil';
+    // Empresa: primeiro link "text-body text-decoration-none" após o título
+    // (guarda contra captura em branco — o mesmo padrão às vezes envolve só o ícone)
+    const tail = String(html).slice(m.index, m.index + 2200);
+    const compM = tail.match(/class="text-body text-decoration-none"[^>]*>\s*([^<]{2,70})</);
+    const compName = compM ? _decodeHtmlEntities(compM[1].trim()) : '';
+    jobs.push({
+      title: _decodeHtmlEntities(m[3].trim()),
+      company: compName || 'Empresa',
+      location,
+      snippet: '',
+      salary: '',
+      link: 'https://www.infojobs.com.br' + m[1],
+      _source: 'infojobs',
+    });
+  }
+  return jobs;
+}
+
 async function fetchInfoJobsJobs(profile) {
   try {
     const cargo = encodeURIComponent(profile.cargo_desejado || '');
-    const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
-    const cidade = isRemoto ? '' : encodeURIComponent(profile.cidade);
-    const url = `https://www.infojobs.com.br/vagas-de-emprego-em-${cidade || 'brasil'}.aspx?palabra=${cargo}&format=rss`;
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)', Accept: 'application/rss+xml, text/xml' },
-      signal: AbortSignal.timeout(5000),
+    if (!cargo) return [];
+    const res = await fetch(`https://www.infojobs.com.br/vagas-de-emprego-em-brasil.aspx?palabra=${cargo}`, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VagaAI/1.0)', Accept: 'text/html' },
+      signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) return [];
-    const xml = await res.text();
-    const items = parseRSSItems(xml);
-    return items.map(item => {
-      const parsed = splitTitleCompany(item.title);
-      return {
-        title: parsed.title,
-        company: item.company || parsed.company || 'Empresa',
-        location: profile.cidade || 'Brasil',
-        snippet: item.description,
-        salary: '',
-        link: item.link,
-        _source: 'infojobs',
-      };
-    });
+    return parseInfoJobsHTML(await res.text());
   } catch(e) {
     console.warn('fetchInfoJobsJobs error:', e.message);
     return [];
@@ -1160,103 +1191,56 @@ async function fetchTramposJobs(profile) {
 }
 
 
-// ── FONTE 17: CATHO (endpoints internos + RSS) ────────────────────────────────
+// ── FONTE 17: CATHO (via Jina Reader — o WAF da Catho bloqueia qualquer
+// cliente não-navegador, inclusive os antigos endpoints de API/RSS, todos 404.
+// O r.jina.ai renderiza como navegador real e devolve markdown parseável.) ───
+function parseCathoMarkdown(md) {
+  const jobs = [];
+  const lines = String(md || '').split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(/^##\s*\[([^\]]+)\]\((https:\/\/www\.catho\.com\.br\/vagas\/[a-z0-9\-]+\/\d{5,})[^)]*\)/);
+    if (!m) continue;
+    const job = { title: m[1].trim(), company: 'Empresa', location: 'Brasil', snippet: '', salary: '', link: m[2], _source: 'catho' };
+    // As ~8 linhas seguintes trazem empresa, "**N vaga(s)** - Cidade" e salário
+    for (let k = i + 1; k < Math.min(i + 9, lines.length); k++) {
+      const ln = lines[k].trim();
+      if (!ln || /^VAGA PATROCINADA/i.test(ln)) continue;
+      if (ln.startsWith('## ')) break; // próximo card
+      const cityM = ln.match(/^\*\*\d+\s+vagas?\*\*\s*-\s*(.+)$/i);
+      if (cityM) { job.location = cityM[1].replace(/\*/g, '').trim(); continue; }
+      const salM = ln.match(/R\$\s*[\d.,]+/);
+      if (salM && !job.salary) { job.salary = salM[0]; continue; }
+      // Primeira linha de texto puro (sem markdown) = nome da empresa
+      if (job.company === 'Empresa' && !/[*\[\]#!]/.test(ln) && ln.length > 1 && ln.length < 80
+          && !/^(atualizada|publicada|há vagas|enviando|quero me candidatar|recrutador)/i.test(ln)) {
+        job.company = ln.replace(/\s+Por que\?$/i, '').trim();
+      }
+    }
+    jobs.push(job);
+  }
+  return jobs;
+}
+
 async function fetchCathoJobs(profile) {
   try {
-    const cargo = (profile.cargo_desejado || '').toLowerCase().trim();
-    const cargoSlug = encodeURIComponent(cargo.replace(/\s+/g, '-'));
-    const cargoQ   = encodeURIComponent(cargo);
-    const isRemoto = !profile.cidade || profile.cidade.toLowerCase().includes('remoto');
-    const cidadeSlug = isRemoto ? '' : encodeURIComponent((profile.cidade || '').toLowerCase().replace(/\s+/g, '-'));
-
-    const headers = {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-      Accept: 'application/json, text/html, application/rss+xml, text/xml, */*',
-      'Accept-Language': 'pt-BR,pt;q=0.9',
-      Referer: 'https://www.catho.com.br/',
+    const slugOf = (s) => _norm(String(s || '')).replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+    const trySlug = async (slug) => {
+      if (!slug) return [];
+      const headers = { Accept: 'text/plain', 'X-Return-Format': 'markdown', 'User-Agent': 'VagaAI/1.0' };
+      if (process.env.JINA_API_KEY) headers.Authorization = `Bearer ${process.env.JINA_API_KEY}`;
+      const res = await fetch(`https://r.jina.ai/https://www.catho.com.br/vagas/${slug}/`, {
+        headers, signal: AbortSignal.timeout(12000),
+      });
+      if (!res.ok) return [];
+      return parseCathoMarkdown(await res.text());
     };
-
-    // Tenta múltiplos endpoints — Catho não tem API pública documentada
-    const attempts = [
-      // API interna (usada pelo site via XHR)
-      `https://www.catho.com.br/api/v1/search/jobs?q=${cargoQ}${cidadeSlug ? '&where=' + cidadeSlug : ''}&limit=20`,
-      `https://www.catho.com.br/api/jobs?keywords=${cargoQ}&limit=20`,
-      // RSS
-      `https://www.catho.com.br/vagas-de-emprego/${cargoSlug || 'emprego'}.rss`,
-      `https://www.catho.com.br/rss/vagas/${cargoSlug}/`,
-      // Endpoint SEO que retorna JSON-LD em algumas páginas
-      `https://www.catho.com.br/vagas-de-emprego/${cargoSlug}/`,
-    ];
-
-    for (const url of attempts) {
-      try {
-        const res = await fetch(url, { headers, signal: AbortSignal.timeout(5000) });
-        if (!res.ok) continue;
-        const ct = res.headers.get('content-type') || '';
-
-        // JSON response
-        if (ct.includes('json')) {
-          const data = await res.json();
-          const list = data.jobs || data.results || data.data || data.vagas || [];
-          if (Array.isArray(list) && list.length) {
-            return list.slice(0, 15).map(j => ({
-              title: j.title || j.titulo || j.nome || j.cargo || 'Vaga',
-              company: j.company || j.empresa || j.companyName || j.nomeEmpresa || 'Empresa',
-              location: j.location || j.cidade || j.localidade || profile.cidade || 'Brasil',
-              snippet: (j.description || j.descricao || j.resumo || '').replace(/<[^>]+>/g,'').slice(0,400),
-              salary: j.salary || j.salario || j.remuneracao || '',
-              link: j.url || j.link || j.redirect_url || `https://www.catho.com.br/vagas-de-emprego/${cargoSlug}/`,
-              _source: 'catho',
-            }));
-          }
-        }
-
-        // RSS/XML response
-        if (ct.includes('xml') || ct.includes('rss')) {
-          const xml = await res.text();
-          const items = parseRSSItems(xml);
-          if (items.length) {
-            return items.slice(0, 15).map(item => {
-              const parsed = splitTitleCompany(item.title);
-              return {
-                title: parsed.title,
-                company: item.company || parsed.company || 'Empresa',
-                location: profile.cidade || 'Brasil',
-                snippet: item.description,
-                salary: '',
-                link: item.link,
-                _source: 'catho',
-              };
-            });
-          }
-        }
-
-        // HTML com JSON-LD embutido (structured data)
-        if (ct.includes('html')) {
-          const html = await res.text();
-          const ldMatch = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi) || [];
-          for (const block of ldMatch) {
-            try {
-              const json = JSON.parse(block.replace(/<\/?script[^>]*>/gi,''));
-              const items = json['@graph'] || (Array.isArray(json) ? json : [json]);
-              const jobItems = items.filter(i => i['@type'] === 'JobPosting');
-              if (jobItems.length) {
-                return jobItems.slice(0,15).map(j => ({
-                  title: j.title || j.name || 'Vaga',
-                  company: j.hiringOrganization?.name || 'Empresa',
-                  location: j.jobLocation?.address?.addressLocality || profile.cidade || 'Brasil',
-                  snippet: (j.description || '').replace(/<[^>]+>/g,'').slice(0,400),
-                  salary: j.baseSalary?.value?.value ? `R$ ${j.baseSalary.value.value}` : '',
-                  link: j.url || j['@id'] || '',
-                  _source: 'catho',
-                }));
-              }
-            } catch(e) {}
-          }
-        }
-      } catch(e) { continue; }
+    let out = await trySlug(slugOf(profile.cargo_desejado));
+    // Slug exato sem resultados (cargo incomum) → tenta o cargo ampliado
+    if (!out.length) {
+      const broad = broadenJobTitle(profile.cargo_desejado);
+      if (broad && slugOf(broad) !== slugOf(profile.cargo_desejado)) out = await trySlug(slugOf(broad));
     }
-    return [];
+    return out.slice(0, 15);
   } catch(e) {
     console.warn('fetchCathoJobs error:', e.message);
     return [];
@@ -2043,7 +2027,7 @@ async function processUserAlert(profile, options = {}) {
   const settled = (r) => r && r.status === 'fulfilled' ? (r.value || []) : [];
 
   // FASE 1 — fontes gratuitas (ATS BR + agregadores sem custo por chamada).
-  const [gupy, greenhouse, lever, workday, geekhunter, bne, adzuna, jooble, trampos, talentCom, remotive, empregos, jobbol, sine] = await Promise.allSettled([
+  const [gupy, greenhouse, lever, workday, geekhunter, bne, adzuna, jooble, trampos, talentCom, remotive, empregos, jobbol, sine, catho, vagascom, infojobs] = await Promise.allSettled([
     fetchGupyJobs(profile),
     fetchGreenhouseBRJobs(profile),
     fetchLeverBRJobs(profile),
@@ -2058,11 +2042,15 @@ async function processUserAlert(profile, options = {}) {
     fetchEmpregosComBrJobs(profile),
     fetchJobbolJobs(profile),
     runSine ? fetchSineJobs(profile) : Promise.resolve([]),
+    fetchCathoJobs(profile),
+    fetchVagasComJobs(profile),
+    fetchInfoJobsJobs(profile),
   ]);
 
   const freeJobs = deduplicateJobs([
     ...settled(gupy), ...settled(greenhouse), ...settled(lever),
     ...settled(workday), ...settled(geekhunter), ...settled(bne),
+    ...settled(catho), ...settled(vagascom), ...settled(infojobs),
     ...settled(sine), ...settled(empregos), ...settled(jobbol),
     ...settled(trampos), ...settled(adzuna), ...settled(jooble),
     ...settled(talentCom), ...settled(remotive),
@@ -2090,6 +2078,9 @@ async function processUserAlert(profile, options = {}) {
     workday: settled(workday).length,
     geekhunter: settled(geekhunter).length,
     bne: settled(bne).length,
+    catho: settled(catho).length,
+    vagascom: settled(vagascom).length,
+    infojobs: settled(infojobs).length,
     serp: settled(serp).length,
     jsearch: settled(jsearch).length,
     adzuna: settled(adzuna).length,
@@ -2107,6 +2098,9 @@ async function processUserAlert(profile, options = {}) {
     ...settled(greenhouse), // Greenhouse: Nubank, VTEX, iFood, Mercado Livre
     ...settled(lever),      // Lever: Hotmart, Creditas, QuintoAndar
     ...settled(workday),    // Workday: Ambev, Vale, Embraer, Natura, Bosch
+    ...settled(catho),      // Catho via Jina Reader — maior job board BR
+    ...settled(vagascom),   // Vagas.com — grandes empresas BR
+    ...settled(infojobs),   // InfoJobs BR
     ...settled(geekhunter), // GeekHunter: tech jobs qualificados
     ...settled(bne),        // BNE: vagas regionais presenciais
     ...settled(serp),       // Google Jobs em PT-BR
@@ -2121,7 +2115,7 @@ async function processUserAlert(profile, options = {}) {
     ...settled(remotive),
   ]);
   const dedupCount = jobs.length;
-  console.log(`Sources: gupy=${sourceCounts.gupy} greenhouse=${sourceCounts.greenhouse} lever=${sourceCounts.lever} workday=${sourceCounts.workday} geekhunter=${sourceCounts.geekhunter} bne=${sourceCounts.bne} serp=${sourceCounts.serp} jsearch=${sourceCounts.jsearch} sine=${sourceCounts.sine}(${runSine ? detectUF(profile.cidade)||'?' : 'skip'}) empregos=${sourceCounts.empregos} jobbol=${sourceCounts.jobbol} trampos=${sourceCounts.trampos} adzuna=${sourceCounts.adzuna} jooble=${sourceCounts.jooble} talentCom=${sourceCounts.talentCom} remotive=${sourceCounts.remotive} paid=${callPaid ? 'yes' : 'skip'} → dedup=${jobs.length}`);
+  console.log(`Sources: gupy=${sourceCounts.gupy} greenhouse=${sourceCounts.greenhouse} lever=${sourceCounts.lever} workday=${sourceCounts.workday} catho=${sourceCounts.catho} vagascom=${sourceCounts.vagascom} infojobs=${sourceCounts.infojobs} geekhunter=${sourceCounts.geekhunter} bne=${sourceCounts.bne} serp=${sourceCounts.serp} jsearch=${sourceCounts.jsearch} sine=${sourceCounts.sine}(${runSine ? detectUF(profile.cidade)||'?' : 'skip'}) empregos=${sourceCounts.empregos} jobbol=${sourceCounts.jobbol} trampos=${sourceCounts.trampos} adzuna=${sourceCounts.adzuna} jooble=${sourceCounts.jooble} talentCom=${sourceCounts.talentCom} remotive=${sourceCounts.remotive} paid=${callPaid ? 'yes' : 'skip'} → dedup=${jobs.length}`);
 
   // Remove já enviadas (exceto em modo teste)
   if (!isTest) {
@@ -2520,4 +2514,5 @@ export default async function handler(req, res) {
 export {
   calcScore, applyExtendedFilters, userLevelRank, jobLevelRank, jobMatchesCargo, cargoGateTokens,
   primaryKeyword, cargoSynonymQuery, cargoQueryVariants, _postedAtMs, recencyBonus, parseAiScores,
+  parseCathoMarkdown, parseVagasComHTML, parseInfoJobsHTML,
 };
