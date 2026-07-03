@@ -1003,7 +1003,10 @@
       .demo-mock-card{border-radius:14px}
     }
     @media(max-width:620px){
-      .demo-mock-stage{min-height:auto}
+      /* .demo-mock-card é position:absolute — não contribui altura ao pai.
+         min-height:auto colapsava .demo-mock-stage para 0px, sumindo com
+         o mockup inteiro no mobile. Mantém uma altura explícita. */
+      .demo-mock-stage{min-height:320px}
       .demo-stage-wrap{margin-top:32px}
       .float-badge{display:none}
       .demo-arrow{display:none}
