@@ -1,0 +1,895 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Linha Editorial VagaAI - Pilares e Ideias</title>
+  <style>
+    :root {
+      --forest:#0A1A10; --deep:#0D5A35; --emerald:#1A7A4A; --bright:#4ECE91;
+      --paper:#F5F7F5; --card:#FFFFFF; --ink:#071209; --text:#254B34; --muted:#6E8A78;
+      --border:#DDE8E2; --amber:#C47D0A; --amber-bg:#FFF7E8; --shadow:0 18px 52px rgba(7,18,9,.10);
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height:1.48; }
+    a { color:inherit; text-decoration:none; }
+    .layout { display:grid; grid-template-columns:296px 1fr; min-height:100vh; }
+    aside { position:sticky; top:0; height:100vh; padding:30px 22px; background:radial-gradient(circle at 18% 0%, rgba(78,206,145,.18), transparent 26%), var(--forest); color:#fff; overflow:auto; }
+    .brand { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
+    .mark { width:36px; height:36px; border-radius:50%; background:#151515; display:grid; place-items:center; font-family:Georgia, serif; font-weight:900; }
+    .brand b { font-family:Georgia, serif; font-size:24px; letter-spacing:-.03em; }
+    .brand b span { color:var(--bright); }
+    .nav-label { font-size:10px; color:rgba(255,255,255,.42); text-transform:uppercase; letter-spacing:.16em; font-weight:900; margin:26px 0 10px; }
+    nav { display:grid; gap:6px; }
+    nav a { display:flex; align-items:center; gap:10px; padding:10px; border-radius:13px; color:rgba(255,255,255,.72); font-size:12.5px; }
+    nav a span { width:25px; height:25px; border-radius:8px; display:grid; place-items:center; background:rgba(255,255,255,.06); color:var(--bright); font-weight:900; font-size:11px; flex-shrink:0; }
+    nav a:hover { background:rgba(255,255,255,.08); color:#fff; }
+    .side-note { margin-top:28px; border:1px solid rgba(255,255,255,.1); border-radius:18px; padding:16px; background:rgba(255,255,255,.045); color:rgba(255,255,255,.68); font-size:12px; }
+    main { padding:42px clamp(28px,5vw,72px) 72px; }
+    h1,h2,h3 { font-family:Georgia, "Times New Roman", serif; letter-spacing:-.035em; line-height:1.03; }
+    .cover { border-radius:34px; padding:56px; color:#fff; background:linear-gradient(135deg,#080d09,#0a1a10 42%,#113f28); box-shadow:var(--shadow); overflow:hidden; position:relative; margin-bottom:32px; }
+    .cover:after { content:""; position:absolute; right:-110px; top:-120px; width:330px; height:330px; border-radius:50%; background:rgba(78,206,145,.15); }
+    .cover-grid { position:relative; z-index:1; display:grid; grid-template-columns:1.05fr .95fr; gap:44px; align-items:center; }
+    .kicker { display:flex; align-items:center; gap:9px; color:var(--bright); font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:.16em; }
+    .kicker:before { content:""; width:7px; height:7px; border-radius:2px; background:var(--bright); }
+    h1 { font-size:54px; margin:18px 0; max-width:760px; }
+    h1 em,h2 em { color:var(--bright); font-style:italic; }
+    .cover p { color:rgba(255,255,255,.76); font-size:17px; max-width:660px; }
+    .chips { display:flex; flex-wrap:wrap; gap:10px; margin-top:28px; }
+    .chip { border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.07); border-radius:999px; padding:9px 12px; font-size:12px; font-weight:800; }
+    .moodboard { display:grid; grid-template-columns:1fr 1fr; gap:14px; transform:rotate(-1deg); }
+    .mood { min-height:190px; border-radius:24px; padding:18px; background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.04)); border:1px solid rgba(255,255,255,.13); display:flex; flex-direction:column; justify-content:space-between; }
+    .mood:nth-child(2) { transform:translateY(28px); background:linear-gradient(145deg,#173f22,#08100a); }
+    .mood:nth-child(3) { background:#102815; }
+    .mood big { font-family:Georgia, serif; font-size:29px; line-height:1.02; letter-spacing:-.04em; }
+    .mood em { color:var(--bright); }
+    .mood small { color:rgba(255,255,255,.55); text-transform:uppercase; font-weight:800; letter-spacing:.1em; }
+    .section-card { background:var(--card); border:1px solid var(--border); border-radius:24px; box-shadow:var(--shadow); margin:28px 0; overflow:hidden; scroll-margin-top:24px; }
+    .section-head { padding:30px 34px 22px; background:linear-gradient(180deg,#fff,#fbfdfb); border-bottom:1px solid var(--border); }
+    .num { color:var(--emerald); font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:.13em; }
+    h2 { font-size:34px; margin:8px 0 10px; }
+    .lead { color:var(--text); font-size:16px; max-width:900px; margin:0; }
+    .meta { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+    .meta span { padding:9px 12px; border-radius:999px; background:#eef7f1; color:var(--text); font-size:12px; }
+    .section-body { padding:24px 34px 34px; }
+    .grid { display:grid; gap:16px; }
+    .grid.three { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .mini { background:var(--paper); border:1px solid var(--border); border-radius:18px; padding:18px; }
+    .mini b { display:block; margin-bottom:7px; }
+    .mini p { margin:0; color:var(--text); font-size:14px; }
+    table { width:100%; border-collapse:separate; border-spacing:0; border:1px solid var(--border); border-radius:18px; overflow:hidden; background:#fff; font-size:13px; }
+    th { text-align:left; background:#edf5f0; color:var(--emerald); font-size:11px; text-transform:uppercase; letter-spacing:.08em; padding:12px 14px; }
+    td { border-top:1px solid var(--border); padding:14px; vertical-align:top; color:var(--text); }
+    td:nth-child(1) { width:54px; color:var(--emerald); }
+    td:nth-child(2) { width:42%; }
+    td:nth-child(3) { width:145px; font-weight:800; color:var(--emerald); }
+    td strong { color:var(--ink); font-size:15px; line-height:1.22; display:block; margin-bottom:6px; }
+    td small { color:var(--muted); font-size:12px; line-height:1.35; }
+    .visual-card { width:210px; min-height:210px; color:#fff; padding:16px; border-radius:20px; display:flex; flex-direction:column; justify-content:space-between; background:
+      radial-gradient(circle at 80% 18%, rgba(78,206,145,.18), transparent 26%),
+      linear-gradient(145deg,#0A1A10,#15351E 55%,#0A1A10); box-shadow:0 18px 38px rgba(7,18,9,.18); }
+    .visual-card:nth-child(even) { background:linear-gradient(145deg,#28331d,#0A1A10); }
+    .vc-top,.vc-bottom { display:flex; justify-content:space-between; color:rgba(255,255,255,.58); font-size:9px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; }
+    .vc-title { font-family:Georgia, serif; font-size:24px; line-height:1.02; letter-spacing:-.055em; }
+    .vc-title em { color:var(--bright); font-style:italic; }
+    .formula { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-top:18px; }
+    .formula div { padding:16px; background:#fff; border:1px solid var(--border); border-radius:18px; }
+    .formula b { color:var(--emerald); font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
+    .formula p { margin:7px 0 0; color:var(--text); font-size:13px; }
+    .sources { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .source { display:block; background:#fff; border:1px solid var(--border); border-radius:16px; padding:14px 16px; }
+    .source b { display:block; font-size:13px; color:var(--ink); }
+    .source span { color:var(--muted); font-size:11px; overflow-wrap:anywhere; }
+    .footer { text-align:center; color:var(--muted); font-size:12px; margin-top:34px; }
+
+    .grid.two { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+    .prompt-box { background:var(--paper); border:1px solid var(--border); border-radius:22px; padding:22px; }
+    .prompt-box h3 { font-size:22px; margin-bottom:14px; }
+    .prompt-code { background:#0A1A10; color:#dfeee4; border-radius:18px; padding:18px; font:12px/1.65 Consolas, Menlo, monospace; max-height:620px; overflow:auto; border:1px solid rgba(78,206,145,.25); }
+    .conceptual-card { background:radial-gradient(circle at 20% 12%,rgba(245,247,245,.14),transparent 24%),linear-gradient(145deg,#163426,#0A1A10); }
+    .conceptual-card .vc-title { font-size:27px; }
+    .vc-foot { color:#9bc6a8; font-size:10px; letter-spacing:.14em; font-weight:800; text-transform:uppercase; }
+    @media(max-width:1000px){ .grid.two { grid-template-columns:1fr; } }
+
+    @media print { .prompt-code { max-height:none!important; overflow:visible!important; } .prompt-box { break-inside:avoid; } /* print-prompt-fix */ 
+      @page { size:A4; margin:10mm; }
+      body { background:#fff; }
+      .layout { display:block; }
+      aside { display:none; }
+      main { padding:0; }
+      .cover,.section-card { box-shadow:none; break-inside:avoid; }
+      table { page-break-inside:auto; }
+      tr { page-break-inside:avoid; }
+      .visual-card { width:172px; min-height:172px; }
+      .vc-title { font-size:19px; }
+    }
+    @media(max-width:1000px) {
+      .layout { grid-template-columns:1fr; }
+      aside { position:relative; height:auto; }
+      .cover-grid,.grid.three,.sources,.formula { grid-template-columns:1fr; }
+      .cover { padding:32px 24px; }
+      h1 { font-size:38px; }
+      table, thead, tbody, tr, th, td { display:block; width:100%!important; }
+      th { display:none; }
+      td { border-top:0; border-bottom:1px solid var(--border); }
+      .visual-card { width:100%; min-height:180px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <div class="brand"><div class="mark">V</div><b>Vaga<span>AI</span></b></div>
+      <div class="nav-label">Pilares editoriais</div>
+      <nav><a href="#p01"><span>01</span>ATS, filtros e bastidores da triagem</a>
+<a href="#p02"><span>02</span>Vaga certa, oportunidade errada e escolha estratégica</a>
+<a href="#p03"><span>03</span>Currículo que prova valor</a>
+<a href="#p04"><span>04</span>Candidatura acompanhada e rotina de busca</a>
+<a href="#p05"><span>05</span>Entrevista, narrativa e preparo</a>
+<a href="#p06"><span>06</span>IA, mercado e futuro do trabalho</a>
+<a href="#p07"><span>07</span>Produto em ação: vaga real, análise real</a>
+<a href="#p08"><span>08</span>Conceitual, emocional e carreira como jornada</a>
+<a href="#prompts"><span>+</span>Prompts de copy e imagem</a></nav>
+      <div class="side-note">Baseado nas dores do candidato, nas funcionalidades reais do VagaAI e em estruturas criativas observadas no Trello: AIDA, contraste, conflito, curiosidade, tela dividida, narrado e bastidores.</div>
+    </aside>
+    <main>
+      <div class="cover">
+        <div class="cover-grid">
+          <div>
+            <div class="kicker">Linha editorial VagaAI</div>
+            <h1>Pilares, temas e <em>primeiros cards</em> para conteúdo de alta retenção.</h1>
+            <p>Um banco de ideias para Instagram, Pinterest, Reels e carrosséis, com aberturas fortes, visual editorial premium e temas que tocam dores reais: currículo ignorado, vaga errada, ATS, entrevista, ansiedade e falta de direção.</p>
+            <div class="chips">
+              <span class="chip">8 pilares</span>
+              <span class="chip">80 ideias de primeiro card</span>
+              <span class="chip">Estruturas criativas do Trello</span>
+              <span class="chip">Atualizado em 03/07/2026</span>
+            </div>
+          </div>
+          <div class="moodboard">
+            <div class="mood"><small>Contraste</small><big>Você não precisa de mais vagas.<br><em>Precisa de direção.</em></big></div>
+            <div class="mood"><small>Curiosidade</small><big>O filtro viu seu CV antes do recrutador.</big></div>
+            <div class="mood"><small>Conflito</small><big>A vaga parecia perfeita.<br><em>O score discordou.</em></big></div>
+            <div class="mood"><small>Produto</small><big>Cole vaga + CV.<br>Receba clareza.</big></div>
+          </div>
+        </div>
+      </div>
+
+      <section class="section-card">
+        <div class="section-head">
+          <div class="num">Direção criativa</div>
+          <h2>Como deve começar cada conteúdo</h2>
+          <p class="lead">O primeiro card precisa ser uma afirmação com tensão. Não começa explicando. Começa abrindo uma ferida, uma contradição ou uma curiosidade que o candidato reconhece imediatamente.</p>
+        </div>
+        <div class="section-body">
+          <div class="formula">
+            <div><b>1. Afirmação</b><p>“Seu currículo não está sendo ignorado.”</p></div>
+            <div><b>2. Virada</b><p>“Ele está sendo mal lido.”</p></div>
+            <div><b>3. Dor</b><p>Enviar muito e não entender o retorno.</p></div>
+            <div><b>4. Autoridade</b><p>Explicar filtro, score, lacuna ou próxima ação.</p></div>
+            <div><b>5. CTA mental</b><p>“Talvez eu precise analisar antes de enviar.”</p></div>
+          </div>
+        </div>
+      </section>
+
+      
+            <section id="p01" class="section-card">
+              <div class="section-head">
+                <div class="num">01 / Pilar editorial</div>
+                <h2>ATS, filtros e bastidores da triagem</h2>
+                <p class="lead">Mostrar por que bons profissionais somem no processo seletivo antes de alguém ler o currículo.</p>
+                <div class="meta">
+                  <span><b>Dor:</b> A pessoa sente que envia currículo para um buraco negro.</span>
+                  <span><b>Estruturas:</b> Contraste, análise estratégica, curiosidade, jeito errado x jeito certo.</span>
+                </div>
+              </div>
+              <div class="section-body">
+                <table><thead><tr><th>#</th><th>Primeiro card / abertura</th><th>Estrutura</th><th>Prévia visual</th></tr></thead><tbody><tr><td><b>01</b></td><td><strong>Seu currículo não está sendo ignorado. Ele está sendo mal lido.</strong><br><small>O candidato acha que o problema é falta de experiência; muitas vezes é falta de sinal claro para a vaga.</small></td><td>Contraste</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>01</span></div>
+        <div class="vc-title">Seu currículo não está sendo<br><em>ignorado. Ele está sendo mal lido.</em></div>
+        <div class="vc-bottom"><span>Contraste</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>02</b></td><td><strong>O recrutador não começa lendo sua história. Ele começa procurando sinais.</strong><br><small>Explicar keywords, cargo, senioridade, localização, requisitos e coerência.</small></td><td>Análise estratégica</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>01</span></div>
+        <div class="vc-title">O recrutador não começa lendo<br><em>sua história. Ele começa procurando sinais.</em></div>
+        <div class="vc-bottom"><span>Análise estratégica</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>03</b></td><td><strong>Você pode ser bom para a vaga e ainda assim parecer errado no currículo.</strong><br><small>Mostrar que aderência real e aderência percebida são coisas diferentes.</small></td><td>Curiosidade</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>01</span></div>
+        <div class="vc-title">Você pode ser bom para a vaga<br><em>e ainda assim parecer errado no currículo.</em></div>
+        <div class="vc-bottom"><span>Curiosidade</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>04</b></td><td><strong>O filtro não rejeita pessoas. Ele rejeita currículos confusos.</strong><br><small>Quebrar medo de ATS e transformar em orientação prática.</small></td><td>Jeito errado x jeito certo</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>01</span></div>
+        <div class="vc-title">O filtro não rejeita<br><em>pessoas. Ele rejeita currículos confusos.</em></div>
+        <div class="vc-bottom"><span>Jeito errado x jeito certo</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>05</b></td><td><strong>A vaga pediu uma coisa. Seu currículo respondeu outra.</strong><br><small>Mostrar desalinhamento entre descrição da vaga e narrativa do CV.</small></td><td>Tela dividida</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>01</span></div>
+        <div class="vc-title">A vaga pediu uma<br><em>coisa. Seu currículo respondeu outra.</em></div>
+        <div class="vc-bottom"><span>Tela dividida</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>06</b></td><td><strong>Mandar currículo genérico é pedir para o sistema adivinhar seu valor.</strong><br><small>Dizer que clareza não é enfeite: é sinal de compatibilidade.</small></td><td>AIDA</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>01</span></div>
+        <div class="vc-title">Mandar currículo genérico é pedir<br><em>para o sistema adivinhar seu valor.</em></div>
+        <div class="vc-bottom"><span>AIDA</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>07</b></td><td><strong>A palavra certa no lugar certo muda a leitura do seu currículo.</strong><br><small>Ensinar uso ético de palavras-chave sem keyword stuffing.</small></td><td>I.H.C.</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>01</span></div>
+        <div class="vc-title">A palavra certa no lugar certo<br><em>muda a leitura do seu currículo.</em></div>
+        <div class="vc-bottom"><span>I.H.C.</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>08</b></td><td><strong>O erro não é ter pouca experiência. É deixar a experiência invisível.</strong><br><small>Tocar em profissionais com trajetória real, mas mal apresentada.</small></td><td>Relevância emocional</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>01</span></div>
+        <div class="vc-title">O erro não é ter pouca<br><em>experiência. É deixar a experiência invisível.</em></div>
+        <div class="vc-bottom"><span>Relevância emocional</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>09</b></td><td><strong>Seu currículo passa por um teste antes de virar conversa.</strong><br><small>Explicar triagem digital e humana em linguagem simples.</small></td><td>Palestrinha</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>01</span></div>
+        <div class="vc-title">Seu currículo passa por um<br><em>teste antes de virar conversa.</em></div>
+        <div class="vc-bottom"><span>Palestrinha</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>10</b></td><td><strong>O problema começa antes do &#x27;enviar candidatura&#x27;.</strong><br><small>Mostrar que decisão de vaga, aderência e CV vêm antes do envio.</small></td><td>Storytelling visual</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>01</span></div>
+        <div class="vc-title">O problema começa antes do &#x27;enviar candidatura&#x27;.</div>
+        <div class="vc-bottom"><span>Storytelling visual</span><span>@vagaai</span></div>
+      </div>
+    </td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section id="p02" class="section-card">
+              <div class="section-head">
+                <div class="num">02 / Pilar editorial</div>
+                <h2>Vaga certa, oportunidade errada e escolha estratégica</h2>
+                <p class="lead">Ensinar o público a parar de aplicar por impulso e começar a escolher vagas com inteligência.</p>
+                <div class="meta">
+                  <span><b>Dor:</b> A pessoa perde horas em vagas bonitas, mas desalinhadas.</span>
+                  <span><b>Estruturas:</b> Comparação, conflito, tela dividida, tema e moral da história.</span>
+                </div>
+              </div>
+              <div class="section-body">
+                <table><thead><tr><th>#</th><th>Primeiro card / abertura</th><th>Estrutura</th><th>Prévia visual</th></tr></thead><tbody><tr><td><b>01</b></td><td><strong>Nem toda vaga boa é uma boa vaga para você.</strong><br><small>Abrir discussão sobre aderência, senioridade e requisitos ocultos.</small></td><td>Contraste</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>02</span></div>
+        <div class="vc-title">Nem toda vaga boa é<br><em>uma boa vaga para você.</em></div>
+        <div class="vc-bottom"><span>Contraste</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>02</b></td><td><strong>A vaga parece perfeita. O seu perfil talvez esteja dizendo outra coisa.</strong><br><small>Mostrar choque entre desejo e compatibilidade real.</small></td><td>Conflito</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>02</span></div>
+        <div class="vc-title">A vaga parece perfeita. O seu<br><em>perfil talvez esteja dizendo outra coisa.</em></div>
+        <div class="vc-bottom"><span>Conflito</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>03</b></td><td><strong>Você não precisa se candidatar para todas. Precisa escolher melhor.</strong><br><small>Trocar volume por estratégia.</small></td><td>Tema e moral</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>02</span></div>
+        <div class="vc-title">Você não precisa se candidatar<br><em>para todas. Precisa escolher melhor.</em></div>
+        <div class="vc-bottom"><span>Tema e moral</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>04</b></td><td><strong>A vaga que empolga pode ser a mesma que drena sua energia.</strong><br><small>Falar de desalinhamento de cargo, cultura, salário e momento.</small></td><td>Relevância emocional</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>02</span></div>
+        <div class="vc-title">A vaga que empolga pode ser<br><em>a mesma que drena sua energia.</em></div>
+        <div class="vc-bottom"><span>Relevância emocional</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>05</b></td><td><strong>Se você não filtra vagas, o mercado filtra você.</strong><br><small>Criar senso de método sem medo exagerado.</small></td><td>AIDA</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>02</span></div>
+        <div class="vc-title">Se você não filtra<br><em>vagas, o mercado filtra você.</em></div>
+        <div class="vc-bottom"><span>AIDA</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>06</b></td><td><strong>O salário chama atenção. Os requisitos contam a verdade.</strong><br><small>Ensinar leitura de descrição de vaga além do título.</small></td><td>Curiosidade</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>02</span></div>
+        <div class="vc-title">O salário chama atenção.<br><em>Os requisitos contam a verdade.</em></div>
+        <div class="vc-bottom"><span>Curiosidade</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>07</b></td><td><strong>Aplicar no escuro parece produtividade. Mas é só ansiedade com botão verde.</strong><br><small>Tocar na dor do envio compulsivo.</small></td><td>Linguagem familiar</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>02</span></div>
+        <div class="vc-title">Aplicar no escuro parece produtividade. Mas<br><em>é só ansiedade com botão verde.</em></div>
+        <div class="vc-bottom"><span>Linguagem familiar</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>08</b></td><td><strong>A vaga certa não é a que aceita seu currículo. É a que entende seu valor.</strong><br><small>Elevar percepção de carreira e posicionamento.</small></td><td>Narrado</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>02</span></div>
+        <div class="vc-title">A vaga certa não é a que aceita<br><em>seu currículo. É a que entende seu valor.</em></div>
+        <div class="vc-bottom"><span>Narrado</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>09</b></td><td><strong>Uma candidatura fraca começa com uma escolha ruim.</strong><br><small>Conectar escolha de vaga ao resultado final.</small></td><td>Análise estratégica</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>02</span></div>
+        <div class="vc-title">Uma candidatura fraca começa com uma escolha ruim.</div>
+        <div class="vc-bottom"><span>Análise estratégica</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>10</b></td><td><strong>Antes de perguntar &#x27;como faço meu currículo?&#x27;, pergunte &#x27;essa vaga faz sentido?&#x27;</strong><br><small>Reposicionar o primeiro passo da jornada.</small></td><td>Jeito errado x jeito certo</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>02</span></div>
+        <div class="vc-title">Antes de perguntar &#x27;como faço meu<br><em>currículo?&#x27;, pergunte &#x27;essa vaga faz sentido?&#x27;</em></div>
+        <div class="vc-bottom"><span>Jeito errado x jeito certo</span><span>@vagaai</span></div>
+      </div>
+    </td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section id="p03" class="section-card">
+              <div class="section-head">
+                <div class="num">03 / Pilar editorial</div>
+                <h2>Currículo que prova valor</h2>
+                <p class="lead">Mostrar que currículo forte não é currículo bonito; é currículo que prova aderência para uma vaga específica.</p>
+                <div class="meta">
+                  <span><b>Dor:</b> A pessoa tem experiência, mas não sabe transformar isso em prova.</span>
+                  <span><b>Estruturas:</b> Jeito errado x jeito certo, análise estratégica, comparação, storytelling visual.</span>
+                </div>
+              </div>
+              <div class="section-body">
+                <table><thead><tr><th>#</th><th>Primeiro card / abertura</th><th>Estrutura</th><th>Prévia visual</th></tr></thead><tbody><tr><td><b>01</b></td><td><strong>Seu currículo não precisa parecer bonito. Precisa parecer relevante.</strong><br><small>Separar design de estratégia.</small></td><td>Contraste</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>03</span></div>
+        <div class="vc-title">Seu currículo não precisa<br><em>parecer bonito. Precisa parecer relevante.</em></div>
+        <div class="vc-bottom"><span>Contraste</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>02</b></td><td><strong>Experiência sem contexto vira uma lista de tarefas.</strong><br><small>Mostrar como transformar função em impacto.</small></td><td>Análise estratégica</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>03</span></div>
+        <div class="vc-title">Experiência sem contexto vira uma lista de tarefas.</div>
+        <div class="vc-bottom"><span>Análise estratégica</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>03</b></td><td><strong>O recrutador não quer sua vida profissional inteira. Quer a parte que explica essa vaga.</strong><br><small>Ensinar foco e edição.</small></td><td>I.H.C.</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>03</span></div>
+        <div class="vc-title">O recrutador não quer sua vida profissional<br><em>inteira. Quer a parte que explica essa vaga.</em></div>
+        <div class="vc-bottom"><span>I.H.C.</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>04</b></td><td><strong>Currículo genérico não mostra versatilidade. Mostra falta de direção.</strong><br><small>Mudar crença comum de que um CV serve para tudo.</small></td><td>Tema e moral</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>03</span></div>
+        <div class="vc-title">Currículo genérico não mostra<br><em>versatilidade. Mostra falta de direção.</em></div>
+        <div class="vc-bottom"><span>Tema e moral</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>05</b></td><td><strong>Você não precisa inventar experiência. Precisa organizar melhor a que já tem.</strong><br><small>Reforçar ética e valor do produto.</small></td><td>Relevância emocional</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>03</span></div>
+        <div class="vc-title">Você não precisa inventar experiência. Precisa<br><em>organizar melhor a que já tem.</em></div>
+        <div class="vc-bottom"><span>Relevância emocional</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>06</b></td><td><strong>O mesmo currículo pode ser forte para uma vaga e fraco para outra.</strong><br><small>Mostrar por que adaptar é necessário.</small></td><td>Comparação</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>03</span></div>
+        <div class="vc-title">O mesmo currículo pode ser forte<br><em>para uma vaga e fraco para outra.</em></div>
+        <div class="vc-bottom"><span>Comparação</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>07</b></td><td><strong>Se o seu currículo só descreve o que você fazia, ele ainda não vende o que você entrega.</strong><br><small>Ensinar métricas, resultados e evidências.</small></td><td>AIDA</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>03</span></div>
+        <div class="vc-title">Se o seu currículo só descreve o que você<br><em>fazia, ele ainda não vende o que você entrega.</em></div>
+        <div class="vc-bottom"><span>AIDA</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>08</b></td><td><strong>Habilidade solta não convence. Habilidade conectada à vaga convence.</strong><br><small>Falar de skills e requisitos.</small></td><td>Tela dividida</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>03</span></div>
+        <div class="vc-title">Habilidade solta não convence.<br><em>Habilidade conectada à vaga convence.</em></div>
+        <div class="vc-bottom"><span>Tela dividida</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>09</b></td><td><strong>Seu resumo profissional pode estar sabotando a primeira impressão.</strong><br><small>Tocar em uma seção específica do CV.</small></td><td>Curiosidade</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>03</span></div>
+        <div class="vc-title">Seu resumo profissional pode<br><em>estar sabotando a primeira impressão.</em></div>
+        <div class="vc-bottom"><span>Curiosidade</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>10</b></td><td><strong>O currículo ideal não é maior. É mais preciso.</strong><br><small>Defender clareza e compactação.</small></td><td>Lo-fi</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>03</span></div>
+        <div class="vc-title">O currículo ideal não<br><em>é maior. É mais preciso.</em></div>
+        <div class="vc-bottom"><span>Lo-fi</span><span>@vagaai</span></div>
+      </div>
+    </td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section id="p04" class="section-card">
+              <div class="section-head">
+                <div class="num">04 / Pilar editorial</div>
+                <h2>Candidatura acompanhada e rotina de busca</h2>
+                <p class="lead">Transformar a busca por emprego de tentativa solta em sistema organizado.</p>
+                <div class="meta">
+                  <span><b>Dor:</b> A pessoa não sabe onde aplicou, quando voltar, o que falta e qual próxima ação tomar.</span>
+                  <span><b>Estruturas:</b> Bastidores, trivial, dinamismo, análise estratégica.</span>
+                </div>
+              </div>
+              <div class="section-body">
+                <table><thead><tr><th>#</th><th>Primeiro card / abertura</th><th>Estrutura</th><th>Prévia visual</th></tr></thead><tbody><tr><td><b>01</b></td><td><strong>Sua busca por emprego não falha só no currículo. Falha na falta de sistema.</strong><br><small>Mostrar o papel do rastreador.</small></td><td>Análise estratégica</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>04</span></div>
+        <div class="vc-title">Sua busca por emprego não falha só<br><em>no currículo. Falha na falta de sistema.</em></div>
+        <div class="vc-bottom"><span>Análise estratégica</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>02</b></td><td><strong>Se você não sabe onde se candidatou, você não está buscando. Está improvisando.</strong><br><small>Abrir com incômodo real e organizado.</small></td><td>Contraste</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>04</span></div>
+        <div class="vc-title">Se você não sabe onde se<br><em>candidatou, você não está buscando. Está improvisando.</em></div>
+        <div class="vc-bottom"><span>Contraste</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>03</b></td><td><strong>A candidatura não termina no botão enviar.</strong><br><small>Falar de follow-up, status, entrevista e histórico.</small></td><td>Tema e moral</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>04</span></div>
+        <div class="vc-title">A candidatura não termina no botão enviar.</div>
+        <div class="vc-bottom"><span>Tema e moral</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>04</b></td><td><strong>O que parece organização é, na verdade, aumento de chance.</strong><br><small>Mostrar valor de rastreamento como ativo estratégico.</small></td><td>Curiosidade</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>04</span></div>
+        <div class="vc-title">O que parece organização é,<br><em>na verdade, aumento de chance.</em></div>
+        <div class="vc-bottom"><span>Curiosidade</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>05</b></td><td><strong>Aplicou e esqueceu? Talvez a vaga tenha esquecido você também.</strong><br><small>Chamar atenção para follow-up com cuidado.</small></td><td>Conflito</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>04</span></div>
+        <div class="vc-title">Aplicou e esqueceu? Talvez a<br><em>vaga tenha esquecido você também.</em></div>
+        <div class="vc-bottom"><span>Conflito</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>06</b></td><td><strong>O melhor candidato nem sempre é o mais qualificado. Às vezes é o mais preparado.</strong><br><small>Conectar organização com preparo.</small></td><td>Relevância emocional</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>04</span></div>
+        <div class="vc-title">O melhor candidato nem sempre é o<br><em>mais qualificado. Às vezes é o mais preparado.</em></div>
+        <div class="vc-bottom"><span>Relevância emocional</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>07</b></td><td><strong>Sua próxima ação vale mais do que mais uma candidatura aleatória.</strong><br><small>Direcionar foco para painel e tarefas.</small></td><td>AIDA</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>04</span></div>
+        <div class="vc-title">Sua próxima ação vale mais<br><em>do que mais uma candidatura aleatória.</em></div>
+        <div class="vc-bottom"><span>AIDA</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>08</b></td><td><strong>Planilha ajuda. Sistema com contexto ajuda mais.</strong><br><small>Comparar rastreador genérico com VagaAI.</small></td><td>Comparação</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>04</span></div>
+        <div class="vc-title">Planilha ajuda. Sistema com contexto ajuda mais.</div>
+        <div class="vc-bottom"><span>Comparação</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>09</b></td><td><strong>Toda vaga precisa de uma história: analisada, adaptada, enviada, acompanhada.</strong><br><small>Explicar jornada completa.</small></td><td>Storytelling visual</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>04</span></div>
+        <div class="vc-title">Toda vaga precisa de uma<br><em>história: analisada, adaptada, enviada, acompanhada.</em></div>
+        <div class="vc-bottom"><span>Storytelling visual</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>10</b></td><td><strong>Buscar emprego sem rotina transforma oportunidade em ruído.</strong><br><small>Criar percepção de método semanal.</small></td><td>Narrado</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>04</span></div>
+        <div class="vc-title">Buscar emprego sem rotina transforma oportunidade em ruído.</div>
+        <div class="vc-bottom"><span>Narrado</span><span>@vagaai</span></div>
+      </div>
+    </td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section id="p05" class="section-card">
+              <div class="section-head">
+                <div class="num">05 / Pilar editorial</div>
+                <h2>Entrevista, narrativa e preparo</h2>
+                <p class="lead">Preparar o candidato para transformar experiência em resposta convincente.</p>
+                <div class="meta">
+                  <span><b>Dor:</b> A pessoa chega na entrevista sem saber o que destacar ou como responder lacunas.</span>
+                  <span><b>Estruturas:</b> Diálogo, conflito situacional, storytelling visual, caixinha polêmica.</span>
+                </div>
+              </div>
+              <div class="section-body">
+                <table><thead><tr><th>#</th><th>Primeiro card / abertura</th><th>Estrutura</th><th>Prévia visual</th></tr></thead><tbody><tr><td><b>01</b></td><td><strong>A entrevista não começa quando ligam a câmera.</strong><br><small>Mostrar que preparo começa na análise da vaga.</small></td><td>Curiosidade</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>05</span></div>
+        <div class="vc-title">A entrevista não começa quando ligam a câmera.</div>
+        <div class="vc-bottom"><span>Curiosidade</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>02</b></td><td><strong>Você não perde entrevista só por responder mal. Às vezes perde por não saber o que provar.</strong><br><small>Tocar em prova, evidência e narrativa.</small></td><td>Análise estratégica</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>05</span></div>
+        <div class="vc-title">Você não perde entrevista só por responder mal.<br><em>Às vezes perde por não saber o que provar.</em></div>
+        <div class="vc-bottom"><span>Análise estratégica</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>03</b></td><td><strong>A pergunta parece simples. O recrutador está procurando outra coisa.</strong><br><small>Ensinar intenção por trás de perguntas.</small></td><td>Efeito ahaa</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>05</span></div>
+        <div class="vc-title">A pergunta parece simples. O<br><em>recrutador está procurando outra coisa.</em></div>
+        <div class="vc-bottom"><span>Efeito ahaa</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>04</b></td><td><strong>Falar sobre você é fácil. Conectar você à vaga é o difícil.</strong><br><small>Mostrar diferença entre autobiografia e posicionamento.</small></td><td>Contraste</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>05</span></div>
+        <div class="vc-title">Falar sobre você é fácil. Conectar<br><em>você à vaga é o difícil.</em></div>
+        <div class="vc-bottom"><span>Contraste</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>05</b></td><td><strong>A resposta perfeita não é decorada. É estruturada.</strong><br><small>Ensinar método STAR e exemplos.</small></td><td>Palestrinha</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>05</span></div>
+        <div class="vc-title">A resposta perfeita não é decorada. É estruturada.</div>
+        <div class="vc-bottom"><span>Palestrinha</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>06</b></td><td><strong>Se a vaga pede liderança, sua resposta precisa mostrar decisão.</strong><br><small>Conectar requisito a resposta.</small></td><td>Tela dividida</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>05</span></div>
+        <div class="vc-title">Se a vaga pede liderança,<br><em>sua resposta precisa mostrar decisão.</em></div>
+        <div class="vc-bottom"><span>Tela dividida</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>07</b></td><td><strong>O que você não explicou no currículo aparece na entrevista.</strong><br><small>Conectar lacunas de CV ao treino.</small></td><td>Conflito</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>05</span></div>
+        <div class="vc-title">O que você não explicou<br><em>no currículo aparece na entrevista.</em></div>
+        <div class="vc-bottom"><span>Conflito</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>08</b></td><td><strong>Toda entrevista tem uma pergunta escondida: por que você?</strong><br><small>Criar frase memorável.</small></td><td>I.H.C.</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>05</span></div>
+        <div class="vc-title">Toda entrevista tem uma<br><em>pergunta escondida: por que você?</em></div>
+        <div class="vc-bottom"><span>I.H.C.</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>09</b></td><td><strong>Você não precisa parecer confiante. Precisa estar preparado.</strong><br><small>Acolher ansiedade e redirecionar.</small></td><td>Relevância emocional</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>05</span></div>
+        <div class="vc-title">Você não precisa parecer confiante. Precisa estar preparado.</div>
+        <div class="vc-bottom"><span>Relevância emocional</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>10</b></td><td><strong>A empresa não quer ouvir tudo. Quer ouvir o que reduz dúvida.</strong><br><small>Ensinar foco na resposta.</small></td><td>Tema e moral</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>05</span></div>
+        <div class="vc-title">A empresa não quer ouvir tudo.<br><em>Quer ouvir o que reduz dúvida.</em></div>
+        <div class="vc-bottom"><span>Tema e moral</span><span>@vagaai</span></div>
+      </div>
+    </td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section id="p06" class="section-card">
+              <div class="section-head">
+                <div class="num">06 / Pilar editorial</div>
+                <h2>IA, mercado e futuro do trabalho</h2>
+                <p class="lead">Usar notícias e tendências para educar o público sem criar pânico.</p>
+                <div class="meta">
+                  <span><b>Dor:</b> A pessoa sente que o mercado mudou, mas não sabe como se adaptar.</span>
+                  <span><b>Estruturas:</b> Palestrinha, análise estratégica, narrado, tela verde.</span>
+                </div>
+              </div>
+              <div class="section-body">
+                <table><thead><tr><th>#</th><th>Primeiro card / abertura</th><th>Estrutura</th><th>Prévia visual</th></tr></thead><tbody><tr><td><b>01</b></td><td><strong>O mercado não ficou impossível. Ele ficou menos tolerante a candidatura genérica.</strong><br><small>Unir tendência e dor prática.</small></td><td>Análise estratégica</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>06</span></div>
+        <div class="vc-title">O mercado não ficou impossível. Ele<br><em>ficou menos tolerante a candidatura genérica.</em></div>
+        <div class="vc-bottom"><span>Análise estratégica</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>02</b></td><td><strong>A IA não vai disputar sua vaga. Mas alguém usando IA com estratégia talvez vá.</strong><br><small>Falar de vantagem competitiva sem terror.</small></td><td>Contraste</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>06</span></div>
+        <div class="vc-title">A IA não vai disputar sua vaga.<br><em>Mas alguém usando IA com estratégia talvez vá.</em></div>
+        <div class="vc-bottom"><span>Contraste</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>03</b></td><td><strong>Recrutamento com IA aumenta uma coisa: a necessidade de clareza.</strong><br><small>Traduzir tendência em ação concreta.</small></td><td>Palestrinha</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>06</span></div>
+        <div class="vc-title">Recrutamento com IA aumenta uma<br><em>coisa: a necessidade de clareza.</em></div>
+        <div class="vc-bottom"><span>Palestrinha</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>04</b></td><td><strong>O futuro do trabalho ainda precisa de gente que sabe contar o próprio valor.</strong><br><small>Humano + tecnologia.</small></td><td>Tema e moral</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>06</span></div>
+        <div class="vc-title">O futuro do trabalho ainda precisa de<br><em>gente que sabe contar o próprio valor.</em></div>
+        <div class="vc-bottom"><span>Tema e moral</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>05</b></td><td><strong>A disputa não é só por vaga. É por atenção.</strong><br><small>Falar de excesso de candidatos e sinais.</small></td><td>I.H.C.</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>06</span></div>
+        <div class="vc-title">A disputa não é só<br><em>por vaga. É por atenção.</em></div>
+        <div class="vc-bottom"><span>I.H.C.</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>06</b></td><td><strong>Quanto mais automático o processo, mais estratégico precisa ser o currículo.</strong><br><small>Conectar ATS/IA e CV.</small></td><td>Curiosidade</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>06</span></div>
+        <div class="vc-title">Quanto mais automático o processo,<br><em>mais estratégico precisa ser o currículo.</em></div>
+        <div class="vc-bottom"><span>Curiosidade</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>07</b></td><td><strong>O profissional que entende o filtro joga outro jogo.</strong><br><small>Dar sensação de insider sem prometer mágica.</small></td><td>Tela verde</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>06</span></div>
+        <div class="vc-title">O profissional que entende<br><em>o filtro joga outro jogo.</em></div>
+        <div class="vc-bottom"><span>Tela verde</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>08</b></td><td><strong>Vaga boa recebe volume. Candidatura boa precisa de direção.</strong><br><small>Mercado competitivo sem desespero.</small></td><td>AIDA</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>06</span></div>
+        <div class="vc-title">Vaga boa recebe volume.<br><em>Candidatura boa precisa de direção.</em></div>
+        <div class="vc-bottom"><span>AIDA</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>09</b></td><td><strong>Skills mudam. A forma de provar skills também.</strong><br><small>Gancho futuro do trabalho.</small></td><td>Palestrinha</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>06</span></div>
+        <div class="vc-title">Skills mudam. A forma de provar skills também.</div>
+        <div class="vc-bottom"><span>Palestrinha</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>10</b></td><td><strong>O mercado está usando dados para contratar. Você ainda está usando chute para aplicar?</strong><br><small>Contraste forte e memorável.</small></td><td>Dinamismo</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>06</span></div>
+        <div class="vc-title">O mercado está usando dados para contratar.<br><em>Você ainda está usando chute para aplicar?</em></div>
+        <div class="vc-bottom"><span>Dinamismo</span><span>@vagaai</span></div>
+      </div>
+    </td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section id="p07" class="section-card">
+              <div class="section-head">
+                <div class="num">07 / Pilar editorial</div>
+                <h2>Produto em ação: vaga real, análise real</h2>
+                <p class="lead">Mostrar o VagaAI funcionando em situações concretas para gerar desejo e confiança.</p>
+                <div class="meta">
+                  <span><b>Dor:</b> A pessoa precisa ver para acreditar que o produto entrega clareza prática.</span>
+                  <span><b>Estruturas:</b> Tela dividida, bastidores, comparação, dinamismo.</span>
+                </div>
+              </div>
+              <div class="section-body">
+                <table><thead><tr><th>#</th><th>Primeiro card / abertura</th><th>Estrutura</th><th>Prévia visual</th></tr></thead><tbody><tr><td><b>01</b></td><td><strong>Colei uma vaga de marketing. O currículo parecia bom até a análise mostrar isso.</strong><br><small>Abrir loop para revelar lacunas.</small></td><td>Bastidores</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>07</span></div>
+        <div class="vc-title">Colei uma vaga de marketing. O currículo<br><em>parecia bom até a análise mostrar isso.</em></div>
+        <div class="vc-bottom"><span>Bastidores</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>02</b></td><td><strong>Essa vaga parece para você. O score contou outra história.</strong><br><small>Mostrar diagnóstico realista.</small></td><td>Curiosidade</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>07</span></div>
+        <div class="vc-title">Essa vaga parece para você.<br><em>O score contou outra história.</em></div>
+        <div class="vc-bottom"><span>Curiosidade</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>03</b></td><td><strong>Antes do VagaAI: currículo genérico. Depois: candidatura com direção.</strong><br><small>Mostrar antes/depois sem exagero.</small></td><td>Comparação</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>07</span></div>
+        <div class="vc-title">Antes do VagaAI: currículo<br><em>genérico. Depois: candidatura com direção.</em></div>
+        <div class="vc-bottom"><span>Comparação</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>04</b></td><td><strong>A vaga pediu 8 sinais. O currículo mostrava 3.</strong><br><small>Hook concreto e visual.</small></td><td>Tela dividida</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>07</span></div>
+        <div class="vc-title">A vaga pediu 8<br><em>sinais. O currículo mostrava 3.</em></div>
+        <div class="vc-bottom"><span>Tela dividida</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>05</b></td><td><strong>O botão enviar deveria vir depois dessa pergunta.</strong><br><small>Levar para análise antes de aplicar.</small></td><td>I.H.C.</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>07</span></div>
+        <div class="vc-title">O botão enviar deveria vir depois dessa pergunta.</div>
+        <div class="vc-bottom"><span>I.H.C.</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>06</b></td><td><strong>Essa candidatura tinha um problema invisível.</strong><br><small>Revelar gap de keyword, senioridade ou contexto.</small></td><td>Storytelling visual</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>07</span></div>
+        <div class="vc-title">Essa candidatura tinha um problema invisível.</div>
+        <div class="vc-bottom"><span>Storytelling visual</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>07</b></td><td><strong>O VagaAI não muda sua experiência. Ele muda como ela aparece.</strong><br><small>Explicar valor central.</small></td><td>Tema e moral</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>07</span></div>
+        <div class="vc-title">O VagaAI não muda sua<br><em>experiência. Ele muda como ela aparece.</em></div>
+        <div class="vc-bottom"><span>Tema e moral</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>08</b></td><td><strong>Veja como uma vaga vira plano de ação em 30 segundos.</strong><br><small>Produto com ritmo e demonstração.</small></td><td>Dinamismo</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>07</span></div>
+        <div class="vc-title">Veja como uma vaga vira<br><em>plano de ação em 30 segundos.</em></div>
+        <div class="vc-bottom"><span>Dinamismo</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>09</b></td><td><strong>A melhor parte da análise não é o score. É saber o que fazer depois.</strong><br><small>Reposicionar valor além do número.</small></td><td>Análise estratégica</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>07</span></div>
+        <div class="vc-title">A melhor parte da análise não é<br><em>o score. É saber o que fazer depois.</em></div>
+        <div class="vc-bottom"><span>Análise estratégica</span><span>@vagaai</span></div>
+      </div>
+    </td></tr>
+<tr><td><b>10</b></td><td><strong>Uma candidatura mais forte começa antes do currículo otimizado.</strong><br><small>Mostrar sequência: vaga, score, CV, carta, rastreador, entrevista.</small></td><td>Narrado</td><td>
+      <div class="visual-card">
+        <div class="vc-top"><span>VagaAI</span><span>07</span></div>
+        <div class="vc-title">Uma candidatura mais forte<br><em>começa antes do currículo otimizado.</em></div>
+        <div class="vc-bottom"><span>Narrado</span><span>@vagaai</span></div>
+      </div>
+    </td></tr></tbody></table>
+              </div>
+            </section>
+            
+
+
+      <section class="section-card" id="p08">
+        <div class="section-head">
+          <div class="num">Pilar 08</div>
+          <h2>Conceitual, emocional e carreira como jornada</h2>
+          <p class="lead"><b>Promessa editorial:</b> Criar identifica&ccedil;&atilde;o profunda com o p&uacute;blico usando met&aacute;foras de rota, pausa, coragem, dire&ccedil;&atilde;o e reconstru&ccedil;&atilde;o profissional, sem parecer autoajuda gen&eacute;rica.</p>
+        </div>
+        <div class="section-body meta-grid">
+          <div><span>Dor central</span><strong>A pessoa sabe que precisa mudar, mas n&atilde;o sabe se o problema &eacute; curr&iacute;culo, vaga, posicionamento ou falta de dire&ccedil;&atilde;o.</strong></div>
+          <div><span>Formatos recomendados</span><strong>Narrativa conceitual, relev&acirc;ncia emocional, linguagem familiar, contraste, tema e moral da hist&oacute;ria.</strong></div>
+        </div>
+        <table><thead><tr><th>#</th><th>Primeiro card / headline</th><th>Estrutura</th><th>Pr&eacute;via visual</th></tr></thead><tbody><tr>
+  <td class="idx">01</td>
+  <td><b>Voc&ecirc; n&atilde;o est&aacute; perdido. Voc&ecirc; s&oacute; est&aacute; tentando decidir sem mapa.</b><small>Para falar com quem est&aacute; cansado da busca sem dire&ccedil;&atilde;o.</small></td>
+  <td><span class="tag">Relev&acirc;ncia emocional</span></td>
+  <td><div class="visual-card conceptual-card">
+  <div class="vc-top"><span>VAGAAI</span><span>Relev&acirc;ncia emocional</span></div>
+  <div class="vc-title">Voc&ecirc; n&atilde;o est&aacute; perdido. Voc&ecirc; s&oacute; est&aacute; tentando decidir sem mapa.</div>
+  <div class="vc-foot">@vagaai</div>
+</div></td>
+</tr><tr>
+  <td class="idx">02</td>
+  <td><b>Às vezes, procurar emprego n&atilde;o exige mais pressa. Exige mais clareza.</b><small>Conceitual sobre ansiedade, pausa e estrat&eacute;gia.</small></td>
+  <td><span class="tag">Contraste</span></td>
+  <td><div class="visual-card conceptual-card">
+  <div class="vc-top"><span>VAGAAI</span><span>Contraste</span></div>
+  <div class="vc-title">Às vezes, procurar emprego n&atilde;o exige mais pressa. Exige mais clareza.</div>
+  <div class="vc-foot">@vagaai</div>
+</div></td>
+</tr><tr>
+  <td class="idx">03</td>
+  <td><b>Recalcular a rota profissional tamb&eacute;m &eacute; um ato de coragem.</b><small>Conecta transi&ccedil;&atilde;o de carreira com reposicionamento.</small></td>
+  <td><span class="tag">Tema e moral</span></td>
+  <td><div class="visual-card conceptual-card">
+  <div class="vc-top"><span>VAGAAI</span><span>Tema e moral</span></div>
+  <div class="vc-title">Recalcular a rota profissional tamb&eacute;m &eacute; um ato de coragem.</div>
+  <div class="vc-foot">@vagaai</div>
+</div></td>
+</tr><tr>
+  <td class="idx">04</td>
+  <td><b>A vaga certa n&atilde;o aparece para quem corre mais. Aparece para quem sabe olhar.</b><small>Valoriza escolha, filtro e leitura de oportunidade.</small></td>
+  <td><span class="tag">Curiosidade</span></td>
+  <td><div class="visual-card conceptual-card">
+  <div class="vc-top"><span>VAGAAI</span><span>Curiosidade</span></div>
+  <div class="vc-title">A vaga certa n&atilde;o aparece para quem corre mais. Aparece para quem sabe olhar.</div>
+  <div class="vc-foot">@vagaai</div>
+</div></td>
+</tr><tr>
+  <td class="idx">05</td>
+  <td><b>Tem fases em que o curr&iacute;culo carrega mais d&uacute;vida do que hist&oacute;ria.</b><small>Toca na inseguran&ccedil;a de n&atilde;o saber se apresentar.</small></td>
+  <td><span class="tag">Imagem mental</span></td>
+  <td><div class="visual-card conceptual-card">
+  <div class="vc-top"><span>VAGAAI</span><span>Imagem mental</span></div>
+  <div class="vc-title">Tem fases em que o curr&iacute;culo carrega mais d&uacute;vida do que hist&oacute;ria.</div>
+  <div class="vc-foot">@vagaai</div>
+</div></td>
+</tr><tr>
+  <td class="idx">06</td>
+  <td><b>Voc&ecirc; n&atilde;o precisa provar tudo. Precisa mostrar o que importa agora.</b><small>Conecta foco e narrativa profissional.</small></td>
+  <td><span class="tag">Contraste</span></td>
+  <td><div class="visual-card conceptual-card">
+  <div class="vc-top"><span>VAGAAI</span><span>Contraste</span></div>
+  <div class="vc-title">Voc&ecirc; n&atilde;o precisa provar tudo. Precisa mostrar o que importa agora.</div>
+  <div class="vc-foot">@vagaai</div>
+</div></td>
+</tr><tr>
+  <td class="idx">07</td>
+  <td><b>O sil&ecirc;ncio depois do envio n&atilde;o define seu valor. Mas mostra que algo precisa mudar.</b><small>Acolhe frustra&ccedil;&atilde;o sem prometer contrata&ccedil;&atilde;o.</small></td>
+  <td><span class="tag">Relev&acirc;ncia emocional</span></td>
+  <td><div class="visual-card conceptual-card">
+  <div class="vc-top"><span>VAGAAI</span><span>Relev&acirc;ncia emocional</span></div>
+  <div class="vc-title">O sil&ecirc;ncio depois do envio n&atilde;o define seu valor. Mas mostra que algo precisa mudar.</div>
+  <div class="vc-foot">@vagaai</div>
+</div></td>
+</tr><tr>
+  <td class="idx">08</td>
+  <td><b>Toda candidatura tem uma pergunta escondida: por que voc&ecirc; para essa vaga?</b><small>Ponte entre curr&iacute;culo, entrevista e estrat&eacute;gia.</small></td>
+  <td><span class="tag">Curiosidade</span></td>
+  <td><div class="visual-card conceptual-card">
+  <div class="vc-top"><span>VAGAAI</span><span>Curiosidade</span></div>
+  <div class="vc-title">Toda candidatura tem uma pergunta escondida: por que voc&ecirc; para essa vaga?</div>
+  <div class="vc-foot">@vagaai</div>
+</div></td>
+</tr><tr>
+  <td class="idx">09</td>
+  <td><b>A rotina continua. Mas a busca por emprego pede inten&ccedil;&atilde;o.</b><small>Para posts mais contemplativos sobre consist&ecirc;ncia.</small></td>
+  <td><span class="tag">Narrado</span></td>
+  <td><div class="visual-card conceptual-card">
+  <div class="vc-top"><span>VAGAAI</span><span>Narrado</span></div>
+  <div class="vc-title">A rotina continua. Mas a busca por emprego pede inten&ccedil;&atilde;o.</div>
+  <div class="vc-foot">@vagaai</div>
+</div></td>
+</tr><tr>
+  <td class="idx">10</td>
+  <td><b>Nem toda mudan&ccedil;a come&ccedil;a com uma resposta. Algumas come&ccedil;am com um diagn&oacute;stico.</b><small>Liga conceito ao produto sem ficar vendedor demais.</small></td>
+  <td><span class="tag">AIDA conceitual</span></td>
+  <td><div class="visual-card conceptual-card">
+  <div class="vc-top"><span>VAGAAI</span><span>AIDA conceitual</span></div>
+  <div class="vc-title">Nem toda mudan&ccedil;a come&ccedil;a com uma resposta. Algumas come&ccedil;am com um diagn&oacute;stico.</div>
+  <div class="vc-foot">@vagaai</div>
+</div></td>
+</tr></tbody></table>
+      </section>
+
+      <section class="section-card" id="prompts">
+        <div class="section-head">
+          <div class="num">Prompts reutiliz&aacute;veis</div>
+          <h2>Do tema ao carrossel: copy e dire&ccedil;&atilde;o visual</h2>
+          <p class="lead">Use estes dois prompts como sistema de produ&ccedil;&atilde;o. O primeiro transforma um tema em copy de carrossel. O segundo transforma a copy em dire&ccedil;&atilde;o visual, respeitando identidade, margem segura, fontes e cores da marca.</p>
+        </div>
+        <div class="section-body">
+          <div class="grid two">
+            <div class="prompt-box"><h3>Prompt 1 &mdash; criar a copy do post</h3><div class="prompt-code">PROMPT 1 &mdash; COPY DO CARROSSEL VAGAAI<br><br>Voc&ecirc; &eacute; estrategista de conte&uacute;do e copywriter do VagaAI, uma plataforma que ajuda profissionais a buscar emprego com mais clareza, estrat&eacute;gia e preparo: escolher vagas melhores, entender ader&ecirc;ncia, otimizar curr&iacute;culo, acompanhar candidaturas, criar carta para vaga e treinar entrevista.<br><br>TEMA DO POST: [COLE O TEMA AQUI]<br>REFERÊNCIA DE ESTILO/COPY: [DESCREVA OU ANEXE A REFERÊNCIA]<br>OBJETIVO DO POST: [educar / gerar identifica&ccedil;&atilde;o / vender recurso / quebrar obje&ccedil;&atilde;o / gerar desejo / explicar funcionalidade]<br>P&Uacute;BLICO: profissionais buscando trocar ou conseguir emprego, cansados de enviar curr&iacute;culo sem retorno, inseguros sobre ader&ecirc;ncia, curr&iacute;culo, ATS e entrevista.<br><br>Crie um carrossel com no m&aacute;ximo 10 slides, usando apenas os slides necess&aacute;rios. O estilo deve ser conceitual, inteligente, direto e com reten&ccedil;&atilde;o alta.<br><br>Regras de copy:<br>1. O slide 1 deve come&ccedil;ar com uma afirma&ccedil;&atilde;o forte, curiosa ou emocional. N&atilde;o comece explicando.<br>2. Use tens&atilde;o: contraste, virada, conflito, frase memor&aacute;vel ou imagem mental.<br>3. N&atilde;o prometa contrata&ccedil;&atilde;o. Prometa clareza, dire&ccedil;&atilde;o, preparo e candidatura mais forte.<br>4. Evite linguagem gen&eacute;rica como &ldquo;dicas para melhorar seu curr&iacute;culo&rdquo;. Prefira frases com dor real.<br>5. Use frases curtas, com bastante respiro visual.<br>6. Cada slide deve ter uma fun&ccedil;&atilde;o: abrir dor, ampliar consci&ecirc;ncia, explicar, provar, mostrar caminho e fechar com CTA.<br>7. Mantenha o tom do VagaAI: mentor estrat&eacute;gico, premium, humano, direto e respons&aacute;vel.<br><br>Entregue neste formato:<br>- T&iacute;tulo do carrossel<br>- Objetivo estrat&eacute;gico<br>- Estrutura usada: AIDA / contraste / IHC / jeito errado x jeito certo / an&aacute;lise estrat&eacute;gica / narrativa conceitual<br>- Slide 1: texto exato do primeiro card<br>- Slide 2...<br>- CTA final<br>- Legenda curta para Instagram<br>- 3 varia&ccedil;&otilde;es de headline para testar<br><br>Dire&ccedil;&atilde;o visual do texto:<br>- Slide 1 com uma frase grande, editorial, forte.<br>- Palavras-chave podem ser destacadas em it&aacute;lico ou caixa alta.<br>- Evite blocos longos.<br>- Escreva pensando em um design com fonte serifada grande + fonte sans para apoio.<br><br>Exemplo de estilo desejado:<br>&ldquo;Voc&ecirc; n&atilde;o est&aacute; perdido. Voc&ecirc; s&oacute; est&aacute; tentando decidir sem mapa.&rdquo;<br>&ldquo;Às vezes, procurar emprego n&atilde;o exige mais pressa. Exige mais clareza.&rdquo;<br>&ldquo;Seu curr&iacute;culo n&atilde;o est&aacute; sendo ignorado. Ele est&aacute; sendo mal lido.&rdquo;</div></div>
+            <div class="prompt-box"><h3>Prompt 2 &mdash; criar as imagens do carrossel</h3><div class="prompt-code">PROMPT 2 &mdash; GERA&Ccedil;&Atilde;O DAS IMAGENS DO CARROSSEL VAGAAI<br><br>Voc&ecirc; &eacute; diretor de arte do VagaAI. Crie as imagens de um carrossel com base na copy abaixo e na refer&ecirc;ncia visual anexada.<br><br>COPY DO CARROSSEL:<br>[COLE A COPY COMPLETA AQUI]<br><br>REFERÊNCIA VISUAL:<br>[ANEXE UMA IMAGEM OU DESCREVA O ESTILO]<br><br>Identidade VagaAI:<br>- Verde escuro institucional: #0A1A10<br>- Verde principal: #1A7A4A<br>- Verde brilho/acento: #4ECE91<br>- Fundo claro: #F5F7F5<br>- Texto principal: #071209<br>- Apoio: #617568<br>- Estilo: premium, editorial, sofisticado, moderno, com profundidade sutil.<br>- Tipografia: usar uma combina&ccedil;&atilde;o visual de serif editorial para frases grandes e sans-serif limpa para textos de apoio. N&atilde;o usar fontes infantis, gen&eacute;ricas ou futuristas demais.<br><br>Regras de layout:<br>1. Formato 4:5 vertical para Instagram, 1080x1350.<br>2. Manter margem segura de pelo menos 110px nas laterais e 130px no topo/rodap&eacute;.<br>3. Texto nunca pode encostar nas bordas.<br>4. Slide 1 deve ter impacto editorial: frase grande, hierarquia clara e alto contraste.<br>5. Use poucos elementos. O visual deve respirar.<br>6. Pode usar textura sutil, fundo verde escuro, fundo off-white, mockup abstrato, linha de rota, caminho, card de vaga, score, curr&iacute;culo ou elementos simb&oacute;licos do produto.<br>7. N&atilde;o use imagens gen&eacute;ricas de escrit&oacute;rio sorrindo. Prefira met&aacute;foras visuais: caminho, mapa, janela, papel, linha, cursor, card, score, alerta, entrevista.<br>8. N&atilde;o distorcer a logo. Se usar marca, usar &ldquo;VagaAI&rdquo; discreto no topo ou rodap&eacute;.<br>9. Criar consist&ecirc;ncia entre todos os slides: mesma paleta, mesma margem, mesma hierarquia.<br>10. Quando houver muito texto, divida em blocos e destaque apenas 1 frase por slide.<br><br>Resultado esperado:<br>- Gerar uma dire&ccedil;&atilde;o visual para cada slide.<br>- Cada imagem deve parecer parte de uma campanha premium do VagaAI.<br>- Manter legibilidade perfeita em mobile.<br>- A composi&ccedil;&atilde;o deve lembrar a refer&ecirc;ncia anexada, mas adaptada ao branding VagaAI.<br><br>Entregue:<br>- Descri&ccedil;&atilde;o visual slide a slide<br>- Prompt individual de imagem para cada slide<br>- Sugest&atilde;o de posi&ccedil;&atilde;o do texto em cada slide<br>- Observa&ccedil;&atilde;o de seguran&ccedil;a de margem e legibilidade</div></div>
+          </div>
+        </div>
+      </section>
+      <section class="section-card">
+        <div class="section-head">
+          <div class="num">Fontes e referências</div>
+          <h2>Base usada</h2>
+          <p class="lead">Dados e referências usados para orientar os ângulos. As headlines foram adaptadas ao VagaAI e não copiam os materiais de referência.</p>
+        </div>
+        <div class="section-body"><div class="sources"><a class="source" href="https://www.ibge.gov.br/explica/desemprego.php"><b>IBGE - Desemprego</b><span>https://www.ibge.gov.br/explica/desemprego.php</span></a><a class="source" href="https://business.linkedin.com/hire/resources/future-of-recruiting"><b>LinkedIn - Future of Recruiting 2025</b><span>https://business.linkedin.com/hire/resources/future-of-recruiting</span></a><a class="source" href="https://www.weforum.org/publications/the-future-of-jobs-report-2025/"><b>World Economic Forum - Future of Jobs 2025</b><span>https://www.weforum.org/publications/the-future-of-jobs-report-2025/</span></a><a class="source" href="https://www.library.hbs.edu/working-knowledge/how-to-tap-the-talent-automated-hr-platforms-miss"><b>Harvard Business School - Hidden Workers / ATS</b><span>https://www.library.hbs.edu/working-knowledge/how-to-tap-the-talent-automated-hr-platforms-miss</span></a><a class="source" href="https://trello.com/b/VOx6su53/formatos-criativos-de-conteudo-alunos"><b>Trello - Formatos criativos de conteúdo</b><span>https://trello.com/b/VOx6su53/formatos-criativos-de-conteudo-alunos</span></a></div></div>
+      </section>
+
+      <div class="footer">VagaAI — Linha editorial, pilares e primeiros cards.</div>
+    </main>
+  </div>
+</body>
+</html>
