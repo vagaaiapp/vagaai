@@ -884,8 +884,13 @@
       .trust-item:last-child{border-bottom:0}
       .benefit-grid,.market-grid,.plans,.proof-grid{grid-template-columns:1fr}
       .benefit-grid>*,.market-grid>*,.plans>*,.proof-grid>*{min-width:0}
-      .step-panel{grid-template-columns:1fr}
-      .step-visual{display:none}
+      /* Mobile/tablet: .step-panel era position:absolute (empilhado no .step-stage
+         de altura fixa) e .step-visual ficava display:none — o mockup de
+         comparação sumia inteiro. Mesmo padrão já usado em .product-panel logo
+         abaixo: painel ativo em fluxo normal (position:static), altura do
+         .step-stage se ajusta ao conteúdo em vez de cortar. */
+      .step-panel{position:static;grid-template-columns:1fr;opacity:1;visibility:visible;transform:none;display:none;transition:none;padding:28px 24px}
+      .step-panel.active{display:grid}
       .analysis-product{grid-template-columns:1fr;height:auto;overflow:visible}
       .analysis-summary,.analysis-detail{min-width:0}
       .product-window{aspect-ratio:auto;min-height:0}
@@ -925,9 +930,10 @@
       .section-title,.pain-title{font-size:clamp(28px,8vw,34px)!important;letter-spacing:-.03em}
       .section-copy{font-size:15px}
 
-      /* Step tabs: scroll natural, sem forçar largura igual */
-      .step-tabs{width:100%;max-width:100%;overflow-x:auto;overflow-y:visible;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:2px;justify-content:flex-start}
-      .step-tab{flex:none;min-height:44px;scroll-snap-align:start;font-size:13px;padding:10px 16px;white-space:nowrap}
+      /* Step tabs: sem scroll lateral — quebra linha e centraliza, mesmo padrão
+         das pills da seção "Veja o sistema funcionando" (.demo-pills). */
+      .step-tabs{width:100%;max-width:100%;flex-wrap:wrap;justify-content:center;overflow:visible}
+      .step-tab{flex:none;min-height:44px;font-size:12px;padding:8px 14px;white-space:nowrap}
 
       /* Product tabs: mesmo padrão */
       .product-shell{padding:8px}
