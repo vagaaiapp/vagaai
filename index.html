@@ -574,6 +574,8 @@
       transition:color .2s,background .2s,border-color .2s;
     }
     .step-tab.active{color:var(--ink);background:var(--green-dim);border-color:var(--line-green)}
+    .step-tab-ic{display:none}
+    .step-tab-short{display:none}
     .step-stage{
       border:1px solid var(--line);border-radius:20px;background:var(--panel);
       overflow:hidden;min-height:360px;position:relative;
@@ -930,10 +932,19 @@
       .section-title,.pain-title{font-size:clamp(28px,8vw,34px)!important;letter-spacing:-.03em}
       .section-copy{font-size:15px}
 
-      /* Step tabs: sem scroll lateral — quebra linha e centraliza, mesmo padrão
-         das pills da seção "Veja o sistema funcionando" (.demo-pills). */
-      .step-tabs{width:100%;max-width:100%;flex-wrap:wrap;justify-content:center;overflow:visible}
-      .step-tab{flex:none;min-height:44px;font-size:12px;padding:8px 14px;white-space:nowrap}
+      /* Step tabs: visual idêntico às pills de "Veja o sistema funcionando"
+         (.demo-pills) — pílulas individuais com ícone e texto curto, sem a
+         caixa agrupada nem scroll lateral. */
+      .step-tabs{width:100%;max-width:100%;flex-wrap:wrap;justify-content:center;overflow:visible;
+        border:none;background:none;padding:0;gap:6px}
+      .step-tab{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:40px;
+        font-size:11px;font-weight:600;padding:7px 14px 7px 11px;border-radius:30px;
+        border:1px solid var(--line);white-space:nowrap}
+      .step-tab.active{border-color:var(--line-green)}
+      .step-tab-ic{display:inline-flex;width:13px;height:13px;flex:0 0 auto;opacity:.75}
+      .step-tab.active .step-tab-ic{opacity:1}
+      .step-tab-full{display:none}
+      .step-tab-short{display:inline}
 
       /* Product tabs: mesmo padrão */
       .product-shell{padding:8px}
@@ -1291,9 +1302,21 @@
           <h2 class="section-title reveal">Escolha a vaga. Entenda o que falta. <span class="green italic">Envie uma candidatura melhor.</span></h2>
         </div>
         <div class="step-tabs reveal delay-1" id="stepTabs">
-          <button class="step-tab active" data-step="s1">01 — Escolha a vaga</button>
-          <button class="step-tab" data-step="s2">02 — Compare com seu CV</button>
-          <button class="step-tab" data-step="s3">03 — Envie com mais força</button>
+          <button class="step-tab active" data-step="s1">
+            <svg class="step-tab-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <span class="step-tab-full">01 — Escolha a vaga</span>
+            <span class="step-tab-short">Escolher vaga</span>
+          </button>
+          <button class="step-tab" data-step="s2">
+            <svg class="step-tab-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+            <span class="step-tab-full">02 — Compare com seu CV</span>
+            <span class="step-tab-short">Comparar CV</span>
+          </button>
+          <button class="step-tab" data-step="s3">
+            <svg class="step-tab-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <span class="step-tab-full">03 — Envie com mais força</span>
+            <span class="step-tab-short">Enviar melhor</span>
+          </button>
         </div>
         <div class="step-stage reveal delay-2">
           <!-- Step 1 -->
