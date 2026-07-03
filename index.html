@@ -989,14 +989,17 @@
       transition:background .2s,color .2s,border-color .2s,box-shadow .2s;
     }
     .demo-arrow:hover{background:var(--green-dim);border-color:var(--line-green);color:var(--green);box-shadow:0 0 16px var(--green-glow)}
-    .demo-pills{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
+    .demo-pills{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
     .demo-pill{
-      padding:7px 15px;border-radius:30px;border:1px solid var(--line);
+      display:inline-flex;align-items:center;gap:6px;
+      padding:7px 14px 7px 11px;border-radius:30px;border:1px solid var(--line);
       background:transparent;color:var(--muted);
-      font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;
+      font-size:11px;font-weight:600;letter-spacing:.01em;cursor:pointer;white-space:nowrap;
       transition:background .2s,color .2s,border-color .2s;
     }
+    .demo-pill svg{width:13px;height:13px;flex:0 0 auto;opacity:.75;transition:opacity .2s}
     .demo-pill.active{background:var(--green-dim);border-color:var(--line-green);color:var(--green)}
+    .demo-pill.active svg{opacity:1}
     .demo-pill:hover:not(.active){color:var(--copy);border-color:var(--line-2)}
     @media(max-width:860px){
       .demo-mock-stage{min-height:360px;animation:none;perspective:none}
@@ -1566,11 +1569,11 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <div class="demo-pills">
-            <button class="demo-pill active" data-demo="0">🔔 Alertas</button>
-            <button class="demo-pill" data-demo="1">🎯 Análise</button>
-            <button class="demo-pill" data-demo="2">📄 Currículo</button>
-            <button class="demo-pill" data-demo="3">📋 Candidaturas</button>
-            <button class="demo-pill" data-demo="4">🎤 Entrevista</button>
+            <button class="demo-pill active" data-demo="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Alertas</button>
+            <button class="demo-pill" data-demo="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Análise</button>
+            <button class="demo-pill" data-demo="2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>Currículo</button>
+            <button class="demo-pill" data-demo="3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>Candidaturas</button>
+            <button class="demo-pill" data-demo="4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>Entrevista</button>
           </div>
           <button class="demo-arrow" id="demoNext" aria-label="Próximo">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 6 15 12 9 18"/></svg>
