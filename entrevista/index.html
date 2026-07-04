@@ -629,7 +629,7 @@ function renderQuestion() {
     '<div class="question-card">'
     + '<div class="question-meta">'
     + '<span class="q-num">Pergunta ' + (q.id || (_currentQ + 1)) + '</span>'
-    + '<span class="q-cat ' + q.categoria + '">' + q.categoria + '</span>'
+    + '<span class="q-cat ' + String(q.categoria||'').replace(/[^\p{L}]/gu,'') + '">' + escHtml(q.categoria) + '</span>'
     + '<span class="q-nivel">' + nivelStars + '</span>'
     + '</div>'
     + '<div class="question-text">' + escHtml(q.pergunta) + '</div>'

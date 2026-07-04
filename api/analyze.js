@@ -1,5 +1,6 @@
 import { createHash } from 'crypto';
 import { resolvePlan } from '../lib/entitlements.js';
+import { checkAndCountLimit } from '../lib/ratelimit.js';
 
 // ─── Score breakdown determinístico ──────────────────────────────────────────
 
@@ -201,9 +202,28 @@ async function getUserFromToken(token) {
 // Chamado quando a IA falha APÓS o crédito já ter sido debitado.
 // Nunca lança erro — falha de estorno é logada mas não propaga.
 
+// Chave do marcador de análise grátis mensal em ip_rate_limits (PK ip:text).
+const freeMonthlyKey = (userId) => `freemonthly:${userId}`;
+const FREE_MONTHLY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+
 async function refundAnalysisCredit(userId, deductResult) {
   if (!userId || !deductResult || !deductResult.ok) return;
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return;
+
+  // Estorno da análise grátis mensal: remove o marcador para que uma falha de
+  // IA não consuma a gratuidade do usuário. O claim foi feito ANTES da IA
+  // (fecha a corrida), então o estorno restaura o estado "pode usar de novo".
+  if (deductResult.via === 'free_monthly') {
+    try {
+      await fetch(
+        `${SUPABASE_URL}/rest/v1/ip_rate_limits?ip=eq.${encodeURIComponent(freeMonthlyKey(userId))}`,
+        { method: 'DELETE', headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+      );
+    } catch (err) {
+      console.error('refundAnalysisCredit free_monthly error:', err.message);
+    }
+    return;
+  }
 
   // Estorno de crédito avulso — RPC atômica (credits + 1), sem race condition
   if (deductResult.via === 'credits') {
@@ -244,7 +264,63 @@ async function refundAnalysisCredit(userId, deductResult) {
     }
   }
   // Pro: ilimitado, não há cota a estornar
-  // free_monthly / fail-open: nenhuma dedução real, nada a estornar
+  // fail-open: nenhuma dedução real, nada a estornar
+}
+
+// Reivindica a análise grátis mensal (1 por 30 dias/usuário) de forma ATÔMICA,
+// fail-closed. Substitui a checagem na tabela `analyses`, que só era populada
+// DEPOIS da chamada de IA — deixando ~10s em que 2 requisições simultâneas
+// passavam. Aqui o marcador é gravado ANTES da IA, então a corrida fecha na
+// janela de milissegundos entre GET e INSERT (e o INSERT ignore-duplicates /
+// PATCH com optimistic-lock garante que só uma requisição vença).
+// Retorno: { ok } concede; { infra:true } = erro de infra → fail-closed.
+async function claimFreeMonthly(userId) {
+  const key = freeMonthlyKey(userId);
+  const headers = {
+    apikey: SUPABASE_SERVICE_KEY,
+    Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+    'Content-Type': 'application/json',
+  };
+  const nowIso = new Date().toISOString();
+  try {
+    const getRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/ip_rate_limits?ip=eq.${encodeURIComponent(key)}&select=first_seen`,
+      { headers }
+    );
+    if (!getRes.ok) return { infra: true };
+    const rows = await getRes.json();
+    const row = Array.isArray(rows) ? rows[0] : null;
+
+    if (row) {
+      // Ainda dentro dos 30 dias → já usou a gratuidade deste período.
+      if (Date.now() - new Date(row.first_seen).getTime() < FREE_MONTHLY_WINDOW_MS) {
+        return { ok: false };
+      }
+      // Janela expirou → reabre com optimistic-lock no first_seen antigo.
+      const patchRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/ip_rate_limits?ip=eq.${encodeURIComponent(key)}&first_seen=eq.${encodeURIComponent(row.first_seen)}`,
+        { method: 'PATCH', headers: { ...headers, Prefer: 'return=representation' },
+          body: JSON.stringify({ count: 1, first_seen: nowIso, last_seen: nowIso }) }
+      );
+      if (!patchRes.ok) return { infra: true };
+      const updated = await patchRes.json().catch(() => []);
+      return { ok: Array.isArray(updated) && updated.length > 0 }; // 0 linhas = outra req venceu
+    }
+
+    // Sem marcador → tenta criar. ignore-duplicates cobre a corrida: só quem
+    // realmente inserir recebe a linha de volta.
+    const insRes = await fetch(`${SUPABASE_URL}/rest/v1/ip_rate_limits?on_conflict=ip`, {
+      method: 'POST',
+      headers: { ...headers, Prefer: 'resolution=ignore-duplicates,return=representation' },
+      body: JSON.stringify({ ip: key, count: 1, first_seen: nowIso, last_seen: nowIso }),
+    });
+    if (!insRes.ok) return { infra: true };
+    const inserted = await insRes.json().catch(() => []);
+    return { ok: Array.isArray(inserted) && inserted.length > 0 };
+  } catch (err) {
+    console.error('claimFreeMonthly error:', err.message);
+    return { infra: true };
+  }
 }
 
 // ─── Check e incremento atômico via RPC ──────────────────────────────────────
@@ -322,26 +398,33 @@ async function checkAndDeductCredit(userId) {
   }
 
   if (!credRows.length || credRows[0].credits <= 0) {
-    // Plano gratuito: 1 análise gratuita por usuário a cada 30 dias
+    // Plano gratuito: 1 análise gratuita por usuário a cada 30 dias.
+    // Portão 1 (preserva a semântica original): QUALQUER análise nos últimos
+    // 30 dias — de qualquer origem — bloqueia a gratuidade.
     try {
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const thirtyDaysAgo = new Date(Date.now() - FREE_MONTHLY_WINDOW_MS).toISOString();
       const freeCheckRes = await fetch(
         `${SUPABASE_URL}/rest/v1/analyses?user_id=eq.${encodeURIComponent(userId)}&created_at=gte.${encodeURIComponent(thirtyDaysAgo)}&select=id&limit=1`,
         { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
       );
       if (!freeCheckRes.ok) {
-        // Não conseguiu verificar uso gratuito — FAIL-CLOSED
         console.error('free monthly check HTTP error:', freeCheckRes.status);
         return { ok: false, reason: 'infrastructure_error', detail: 'free_check_' + freeCheckRes.status };
       }
       const freeRows = await freeCheckRes.json();
-      if (Array.isArray(freeRows) && freeRows.length === 0) {
-        return { ok: true, via: 'free_monthly', plan: 'free' };
+      if (!Array.isArray(freeRows) || freeRows.length > 0) {
+        return { ok: false, reason: 'no_credits' };
       }
     } catch (freeErr) {
       console.error('free monthly check exception:', freeErr.message);
       return { ok: false, reason: 'infrastructure_error', detail: 'free_check_exception' };
     }
+    // Portão 2 (fecha a corrida): claim ATÔMICO antes da IA. A tabela analyses
+    // só é populada DEPOIS da IA (~10s), então 2 requisições simultâneas
+    // passavam o portão 1 juntas; aqui só uma vence o marcador.
+    const claim = await claimFreeMonthly(userId);
+    if (claim.ok) return { ok: true, via: 'free_monthly', plan: 'free' };
+    if (claim.infra) return { ok: false, reason: 'infrastructure_error', detail: 'free_claim' };
     return { ok: false, reason: 'no_credits' };
   }
 
@@ -536,18 +619,13 @@ async function checkAndAwardMilestones(userId) {
 }
 
 // ─── Rate limit por usuário autenticado (create_cv) ──────────────────────────
-// Em memória — suficiente por instância serverless; combina com a cota do plano.
-const _cvUserHits = new Map();
+// Persistente (lib/ratelimit.js) — o Map em memória anterior zerava a cada cold
+// start do serverless. Defesa secundária; o portão real é a cota do plano.
 const CV_USER_LIMIT = 5;       // max CVs gerados por janela
 const CV_USER_WINDOW_MS = 60 * 60 * 1000; // 1 hora
 
 function checkCvRateLimit(userId) {
-  const now = Date.now();
-  const entry = _cvUserHits.get(userId) || { count: 0, resetAt: now + CV_USER_WINDOW_MS };
-  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + CV_USER_WINDOW_MS; }
-  entry.count++;
-  _cvUserHits.set(userId, entry);
-  return entry.count <= CV_USER_LIMIT;
+  return checkAndCountLimit({ key: `u:${userId}:cv`, limit: CV_USER_LIMIT, windowMs: CV_USER_WINDOW_MS });
 }
 
 // ─── Dedução de crédito exclusiva para create_cv ─────────────────────────────
@@ -763,7 +841,7 @@ export default async function handler(req, res) {
     if (!cvUser?.id) return res.status(401).json({ error: 'Token inválido. Faça login novamente.' });
 
     // 2. Rate limit por usuário
-    if (!checkCvRateLimit(cvUser.id)) {
+    if (!(await checkCvRateLimit(cvUser.id))) {
       return res.status(429).json({ error: 'Limite de geração de CVs atingido. Aguarde antes de tentar novamente.' });
     }
 
