@@ -361,7 +361,7 @@ var _audioMode = '';
 (async function() {
   var r = await sb.auth.getSession();
   _session = r.data.session;
-  if (!_session) { window.location.href = '/login'; return; }
+  if (!_session) { window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname + window.location.search); return; }
 
   try {
     var res = await fetch('/api/subscription', { headers: { Authorization: 'Bearer ' + _session.access_token } });

@@ -686,7 +686,7 @@ function initials(email) {
 
 async function init() {
   var { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = '/login'; return; }
+  if (!session) { window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname); return; }
   if (!ADMIN_EMAILS.includes(session.user.email)) { window.location.href = '/dashboard'; return; }
 
   // Auth ok — exibe a página
@@ -702,7 +702,7 @@ async function loadData(tokenOverride) {
   if (btn) btn.classList.add('spinning');
 
   var { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = '/login'; return; }
+  if (!session) { window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname); return; }
   var token = tokenOverride || session.access_token;
   _ga4Token = token; // disponibiliza para loadGA4()
 

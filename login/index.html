@@ -242,6 +242,18 @@ var _SB = window.supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA'
 );
 
+// ── Destino pós-login ────────────────────────────────────────────────────────
+// /login?next=/carta preserva a página que o usuário tentou acessar antes de
+// ser mandado para o login. Só aceita caminho interno (começa com "/", não
+// "//" e sem ":") — evita open redirect. Fluxos via e-mail (Google OAuth,
+// magic link, confirmação) continuam indo para /dashboard: o redirect deles
+// passa pela whitelist do Supabase.
+function _nextDest() {
+  var n = new URLSearchParams(window.location.search).get('next') || '';
+  if (n.charAt(0) === '/' && n.charAt(1) !== '/' && n.indexOf(':') === -1) return n;
+  return '/dashboard';
+}
+
 // ── Detecção de recovery via onAuthStateChange ───────────────────────────────
 // NÃO limpar o hash manualmente — o Supabase SDK precisa processar o token
 // O evento PASSWORD_RECOVERY é disparado pelo SDK após processar o hash
@@ -254,7 +266,7 @@ _SB.auth.onAuthStateChange(function(event, session) {
     // Só limpa o hash depois que o SDK processou
     history.replaceState(null, '', window.location.pathname);
   } else if (event === 'SIGNED_IN' && !_isRecovery) {
-    window.location.href = '/dashboard';
+    window.location.href = _nextDest();
   }
 });
 
@@ -263,7 +275,7 @@ _SB.auth.onAuthStateChange(function(event, session) {
 var _hashHasRecovery = (window.location.hash || '').indexOf('type=recovery') !== -1;
 if (!_hashHasRecovery) {
   _SB.auth.getSession().then(function(r){
-    if (r.data.session && !_isRecovery) window.location.href = '/dashboard';
+    if (r.data.session && !_isRecovery) window.location.href = _nextDest();
   });
 }
 
@@ -329,7 +341,7 @@ async function handleAuth() {
       btn.disabled = false; btn.textContent = 'Criar conta';
     } else if (data.session) {
       // Email confirmation disabled — logged in directly
-      window.location.href = '/dashboard';
+      window.location.href = _nextDest();
     } else {
       sucEl.innerHTML = '✓ Conta criada! Verifique seu e-mail para confirmar o cadastro.<br><small style="opacity:.8">Não encontrou? Verifique o spam.</small>';
       sucEl.classList.add('show');
@@ -343,7 +355,7 @@ async function handleAuth() {
       errEl.textContent = msg; errEl.classList.add('show');
       btn.disabled = false; btn.textContent = 'Entrar';
     } else {
-      window.location.href = '/dashboard';
+      window.location.href = _nextDest();
     }
   }
 }

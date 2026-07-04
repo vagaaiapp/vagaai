@@ -348,6 +348,9 @@
     }
     .form-input::placeholder{color:var(--muted)}
     .form-input:focus,.form-select:focus{border-color:var(--green);background:var(--panel-2)}
+    .form-input.input-error{border-color:#e05555!important;box-shadow:0 0 0 3px rgba(224,85,85,.12)}
+    .form-error{display:none;font-size:12.5px;font-weight:600;color:#e05555;padding:12px 40px 0;text-align:right}
+    .form-error.show{display:block}
     .form-select{appearance:none;cursor:pointer}
     .form-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
     .form-option{
@@ -850,6 +853,8 @@
         <p>Nossa equipe ativará sua conta e entrará em contato no e-mail informado em até 48h. Bem-vinda ao VagaAI Hire.</p>
       </div>
 
+      <div class="form-error" id="form-error"></div>
+
       <div class="form-footer" id="form-footer">
         <button class="form-back" id="form-back" style="visibility:hidden">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
@@ -943,6 +948,7 @@ var totalSteps = 3;
 var formData = {};
 
 function showStep(n){
+  clearFormError();
   for(var i=1;i<=totalSteps;i++){
     var el = document.getElementById('step-'+i);
     if(el) el.classList.toggle('active', i===n);
@@ -960,18 +966,35 @@ function showStep(n){
   currentStep = n;
 }
 
+function markInvalid(id, msg){
+  var el = document.getElementById(id);
+  el.classList.add('input-error');
+  el.focus();
+  var err = document.getElementById('form-error');
+  err.textContent = msg;
+  err.classList.add('show');
+  return false;
+}
+function clearFormError(){
+  document.getElementById('form-error').classList.remove('show');
+}
+document.querySelectorAll('.form-input').forEach(function(inp){
+  inp.addEventListener('input', function(){ inp.classList.remove('input-error'); clearFormError(); });
+});
+
 function validateStep(n){
+  clearFormError();
   if(n===1){
     var emp = document.getElementById('f-empresa').value.trim();
-    if(!emp){ document.getElementById('f-empresa').focus(); return false; }
+    if(!emp) return markInvalid('f-empresa', 'Informe o nome da empresa para continuar.');
   }
   if(n===2){
     var nome = document.getElementById('f-nome').value.trim();
     var cargo = document.getElementById('f-cargo').value.trim();
     var email = document.getElementById('f-email').value.trim();
-    if(!nome){ document.getElementById('f-nome').focus(); return false; }
-    if(!cargo){ document.getElementById('f-cargo').focus(); return false; }
-    if(!email || !email.includes('@')){ document.getElementById('f-email').focus(); return false; }
+    if(!nome) return markInvalid('f-nome', 'Informe seu nome para continuar.');
+    if(!cargo) return markInvalid('f-cargo', 'Informe seu cargo para continuar.');
+    if(!email || !email.includes('@')) return markInvalid('f-email', 'Informe um e-mail válido para continuar.');
   }
   return true;
 }
@@ -1009,6 +1032,7 @@ async function submitForm(){
   btn.disabled = true;
   btn.style.opacity = '.6';
   var data = {
+    type: 'company-lead', // roteado dentro de /api/support (limite de 12 funções do Hobby)
     empresa: document.getElementById('f-empresa').value,
     site: document.getElementById('f-site').value,
     linkedin: document.getElementById('f-linkedin').value,
@@ -1019,7 +1043,7 @@ async function submitForm(){
     area: document.getElementById('f-area').value,
   };
   try {
-    var res = await fetch('/api/company-lead', {
+    var res = await fetch('/api/support', {
       method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)
     });
     if(!res.ok) throw new Error('erro');
@@ -1031,7 +1055,9 @@ async function submitForm(){
   } catch(e) {
     btn.disabled = false;
     btn.style.opacity = '1';
-    alert('Erro ao enviar. Tente novamente ou escreva para contato@vagaai.app.br');
+    var err = document.getElementById('form-error');
+    err.textContent = 'Erro ao enviar. Tente novamente ou escreva para contato@vagaai.app.br';
+    err.classList.add('show');
   }
 }
 

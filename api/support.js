@@ -32,6 +32,81 @@ function checkRateLimit(ip) {
   return entry.count <= SUPPORT_LIMIT;
 }
 
+// ── Lead B2B (/paraempresas) ─────────────────────────────────────────────────
+async function handleCompanyLead(body, res) {
+  const { empresa, site, linkedin, nome, cargo, email, vagas_mes, area } = body;
+
+  if (!empresa || !nome || !cargo || !email) {
+    return res.status(400).json({ error: 'Preencha os campos obrigatórios.' });
+  }
+  if (typeof email !== 'string' || email.length > 254 || !EMAIL_RE.test(email)) {
+    return res.status(400).json({ error: 'E-mail inválido.' });
+  }
+  for (const [k, v] of Object.entries({ empresa, site, linkedin, nome, cargo, vagas_mes, area })) {
+    if (v != null && (typeof v !== 'string' || v.length > 200)) {
+      return res.status(400).json({ error: `Campo inválido: ${k}` });
+    }
+  }
+
+  if (!RESEND_API_KEY) {
+    return res.status(500).json({ error: 'Serviço de e-mail não configurado.' });
+  }
+
+  const row = (label, value) => value
+    ? `<tr><td style="padding:8px 0;font-size:13px;color:#666;width:150px">${label}</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#0a0f0d">${esc(value)}</td></tr>`
+    : '';
+
+  const html = `
+    <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto">
+      <div style="background:#0a0f0d;padding:20px 28px;border-radius:12px 12px 0 0">
+        <span style="font-family:Georgia,serif;font-style:italic;font-size:22px;font-weight:700;color:#3ecf8e">VagaAI</span>
+        <span style="font-size:12px;color:#8a9e90;margin-left:10px">Hire — Novo lead</span>
+      </div>
+      <div style="background:#ffffff;padding:28px;border:1px solid #e5e5e5;border-top:none;border-radius:0 0 12px 12px">
+        <h2 style="margin:0 0 20px;font-size:18px;color:#0a0f0d">Nova empresa interessada</h2>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+          ${row('Empresa', empresa)}
+          ${row('Site', site)}
+          ${row('LinkedIn', linkedin)}
+          ${row('Responsável', nome)}
+          ${row('Cargo', cargo)}
+          ${row('E-mail', email)}
+          ${row('Vagas/mês', vagas_mes)}
+          ${row('Área principal', area)}
+        </table>
+        <p style="margin:20px 0 0;font-size:12px;color:#999">Responda diretamente para este e-mail: ${esc(email)}</p>
+      </div>
+    </div>`;
+
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'VagaAI Hire <noreply@vagaai.app.br>',
+        to: ['contato@vagaai.app.br'],
+        reply_to: email,
+        subject: `[Hire] Novo lead — ${empresa}`,
+        html,
+      }),
+    });
+
+    if (!r.ok) {
+      const err = await r.text();
+      console.error('Resend error (company-lead):', err);
+      return res.status(500).json({ error: 'Erro ao enviar. Tente novamente.' });
+    }
+
+    return res.status(200).json({ ok: true });
+  } catch (err) {
+    console.error('Company lead handler error:', err);
+    return res.status(500).json({ error: 'Erro interno. Tente novamente.' });
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -42,6 +117,12 @@ export default async function handler(req, res) {
     || 'unknown';
   if (!checkRateLimit(clientIp)) {
     return res.status(429).json({ error: 'Muitas mensagens. Tente novamente mais tarde.' });
+  }
+
+  // Lead B2B do formulário /paraempresas — atendido pelo mesmo endpoint para
+  // respeitar o limite de 12 funções serverless do plano Hobby do Vercel.
+  if (req.body && req.body.type === 'company-lead') {
+    return handleCompanyLead(req.body, res);
   }
 
   const { email, motivo, mensagem } = req.body || {};

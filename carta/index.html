@@ -397,7 +397,7 @@ async function getFreshToken() {
 (async function() {
   var r = await sb.auth.getSession();
   _session = r.data.session;
-  if (!_session) { window.location.href = '/login'; return; }
+  if (!_session) { window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname + window.location.search); return; }
 
   // Update sidebar user info
   try {
