@@ -461,43 +461,70 @@ async function checkAndAwardMilestones(userId) {
     const toAward = MILESTONES.filter(m => totalAnalyses >= m.count && !awardedSet.has(m.count));
 
     for (const m of toAward) {
-      // Registra marco
-      await fetch(`${SUPABASE_URL}/rest/v1/user_milestones`, {
+      // Registra marco. ignore-duplicates + UNIQUE(user_id, milestone): se duas
+      // análises concorrentes chegarem aqui, só a que inserir de fato credita o
+      // bônus — a outra recebe [] e pula (evita prêmio em dobro).
+      const insRes = await fetch(`${SUPABASE_URL}/rest/v1/user_milestones`, {
         method: 'POST',
         headers: {
           apikey: SUPABASE_SERVICE_KEY,
           Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
           'Content-Type': 'application/json',
-          Prefer: 'return=minimal',
+          Prefer: 'resolution=ignore-duplicates,return=representation',
         },
         body: JSON.stringify({ user_id: userId, milestone: m.count, credits_awarded: m.credits }),
       });
+      const inserted = insRes.ok ? await insRes.json().catch(() => []) : [];
+      if (!Array.isArray(inserted) || inserted.length === 0) continue;
       totalBonusCredits += m.credits;
       // Guarda o marco mais alto para retornar ao front-end
       newMilestone = { milestone: m.count, credits: m.credits, label: m.label, totalAnalyses };
     }
 
-    // Adiciona todos os créditos bônus de uma só vez (uma única PATCH)
+    // Credita o bônus. Usuário pode não ter linha em user_credits (free que nunca
+    // comprou crédito — o público-alvo dos marcos): PATCH em linha inexistente
+    // atualiza 0 linhas e perderia o bônus, então tenta criar a linha primeiro e,
+    // se ela já existir, soma com lock otimista (mesmo padrão do webhook).
     if (totalBonusCredits > 0) {
-      const credRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&select=credits`,
-        { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
-      );
-      const credRows = await credRes.json();
-      const current = credRows[0]?.credits || 0;
-      await fetch(
-        `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}`,
-        {
-          method: 'PATCH',
+      let credited = false;
+      for (let attempt = 0; attempt < 4 && !credited; attempt++) {
+        const postRes = await fetch(`${SUPABASE_URL}/rest/v1/user_credits`, {
+          method: 'POST',
           headers: {
             apikey: SUPABASE_SERVICE_KEY,
             Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
             'Content-Type': 'application/json',
-            Prefer: 'return=minimal',
+            Prefer: 'resolution=ignore-duplicates,return=representation',
           },
-          body: JSON.stringify({ credits: current + totalBonusCredits, updated_at: new Date().toISOString() }),
-        }
-      );
+          body: JSON.stringify({ user_id: userId, credits: totalBonusCredits, updated_at: new Date().toISOString() }),
+        });
+        const created = postRes.ok ? await postRes.json().catch(() => []) : [];
+        if (Array.isArray(created) && created.length > 0) { credited = true; break; }
+
+        const credRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&select=credits`,
+          { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+        );
+        const credRows = await credRes.json().catch(() => []);
+        if (!Array.isArray(credRows) || !credRows.length) continue; // linha sumiu? retenta o POST
+        const current = credRows[0].credits || 0;
+        const patchRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/user_credits?user_id=eq.${encodeURIComponent(userId)}&credits=eq.${current}`,
+          {
+            method: 'PATCH',
+            headers: {
+              apikey: SUPABASE_SERVICE_KEY,
+              Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+              'Content-Type': 'application/json',
+              Prefer: 'return=representation',
+            },
+            body: JSON.stringify({ credits: current + totalBonusCredits, updated_at: new Date().toISOString() }),
+          }
+        );
+        const updated = patchRes.ok ? await patchRes.json().catch(() => []) : [];
+        if (Array.isArray(updated) && updated.length > 0) credited = true;
+      }
+      if (!credited) console.error('checkAndAwardMilestones: bonus credit failed for user', userId, 'credits', totalBonusCredits);
       if (newMilestone) newMilestone.totalCredits = totalBonusCredits;
     }
 

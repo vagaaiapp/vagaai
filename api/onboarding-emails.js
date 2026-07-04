@@ -151,9 +151,12 @@ export default async function handler(req, res) {
       const email = user.email;
       if (!email) return res.status(400).json({ error: 'Usuário sem email' });
 
-      // Verifica se já enviou welcome (evita duplicatas)
+      // Verifica se já enviou welcome (evita duplicatas). webhook_events NÃO tem
+      // coluna "type" — usa a chave sintética em stripe_session_id, o mesmo
+      // padrão do cron-onboarding (onboarding_dayN_USERID).
+      const welcomeKey = `onboarding_welcome_${user.id}`;
       const evtRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/webhook_events?user_id=eq.${user.id}&type=eq.onboarding_welcome&select=id&limit=1`,
+        `${SUPABASE_URL}/rest/v1/webhook_events?stripe_session_id=eq.${encodeURIComponent(welcomeKey)}&select=id&limit=1`,
         { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
       );
       const evts = await evtRes.json();
@@ -166,7 +169,7 @@ export default async function handler(req, res) {
       const emailData = EMAILS.welcome(name);
       const r = await sendEmail(email, emailData.subject, emailData.html);
 
-      // Registra envio
+      // Registra envio (colunas reais da tabela: stripe_session_id, user_id, amount, processed_at)
       await fetch(`${SUPABASE_URL}/rest/v1/webhook_events`, {
         method: 'POST',
         headers: {
@@ -175,7 +178,7 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json',
           Prefer: 'resolution=ignore-duplicates',
         },
-        body: JSON.stringify({ user_id: user.id, type: 'onboarding_welcome', payload: { email, source: 'signup' }, created_at: new Date().toISOString() }),
+        body: JSON.stringify({ stripe_session_id: welcomeKey, user_id: user.id, amount: 0, processed_at: new Date().toISOString() }),
       });
 
       return res.status(200).json({ sent: r?.ok || false, to: email });
@@ -191,8 +194,11 @@ export default async function handler(req, res) {
     console.error('onboarding-emails: CRON_SECRET não configurado');
     return res.status(500).json({ error: 'CRON_SECRET não configurado' });
   }
-  // Comparação timing-safe: impede ataques de timing
-  const authBuf = Buffer.from(authHeader.slice('Bearer '.length) || '', 'utf8');
+  // Comparação timing-safe: impede ataques de timing.
+  // authHeader já vem sem o prefixo "Bearer " (removido no topo do handler) —
+  // um .slice() extra aqui cortava 7 chars do segredo e fazia TODA chamada
+  // legítima do cron/webhook receber 401 (e-mails de onboarding nunca saíam).
+  const authBuf = Buffer.from(authHeader || '', 'utf8');
   const secretBuf = Buffer.from(secret, 'utf8');
   const validLength = authBuf.length === secretBuf.length;
   // Usa buffers de igual comprimento para timingSafeEqual (padding se necessário)
