@@ -2,6 +2,7 @@
 // Disponível a partir do plano Starter
 
 import { resolvePlan } from '../lib/entitlements.js';
+import { checkAndCountLimit } from '../lib/ratelimit.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
@@ -18,17 +19,12 @@ async function getUserFromToken(token) {
   } catch { return null; }
 }
 
-// Rate limit por usuário (em memória) — limita custo de IA por conta paga.
-const _userHits = new Map();
+// Rate limit por usuário — persistente (lib/ratelimit.js). O Map em memória
+// anterior zerava a cada cold start do serverless e não segurava custo de IA.
 const USER_LIMIT = 20;                 // máx 20 cartas/hora por usuário
 const USER_WINDOW_MS = 60 * 60 * 1000;
 function checkUserRateLimit(userId) {
-  const now = Date.now();
-  const entry = _userHits.get(userId) || { count: 0, resetAt: now + USER_WINDOW_MS };
-  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + USER_WINDOW_MS; }
-  entry.count++;
-  _userHits.set(userId, entry);
-  return entry.count <= USER_LIMIT;
+  return checkAndCountLimit({ key: `u:${userId}:carta`, limit: USER_LIMIT, windowMs: USER_WINDOW_MS });
 }
 
 async function getUserPlan(userId) {
@@ -60,7 +56,7 @@ export default async function handler(req, res) {
     });
   }
 
-  if (!checkUserRateLimit(user.id)) {
+  if (!(await checkUserRateLimit(user.id))) {
     return res.status(429).json({ error: 'Limite de uso atingido. Tente novamente mais tarde.' });
   }
 

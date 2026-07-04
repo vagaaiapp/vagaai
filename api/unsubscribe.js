@@ -56,7 +56,11 @@ export default async function handler(req, res) {
     return res.status(500).send(page('Erro de configuração', 'O serviço está temporariamente indisponível.', false));
   }
 
-  const { uid, tok } = req.method === 'GET' ? req.query : (req.body || {});
+  // Aceita uid/tok por query (links de e-mail, inclusive antigos) ou body (form).
+  const q = req.query || {};
+  const b = req.body || {};
+  const uid = q.uid || b.uid;
+  const tok = q.tok || b.tok;
 
   if (!uid || !tok) {
     return res.status(400).send(page('Erro', 'Link inválido ou expirado.', false));
@@ -64,6 +68,17 @@ export default async function handler(req, res) {
 
   if (!verifyToken(uid, tok)) {
     return res.status(403).send(page('Erro', 'Token inválido ou expirado. Abra o dashboard para gerenciar seus alertas.', false));
+  }
+
+  // GET só CONFIRMA — a desativação exige POST (clique no botão). Scanners de
+  // e-mail corporativos seguem links GET automaticamente; sem isso, abririam o
+  // link e desativariam os alertas do usuário sem ele saber.
+  if (req.method === 'GET') {
+    return res.status(200).send(confirmPage(uid, tok));
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).send(page('Erro', 'Método não permitido.', false));
   }
 
   try {
@@ -86,6 +101,36 @@ export default async function handler(req, res) {
     console.error('unsubscribe error:', e.message);
     return res.status(500).send(page('Erro', 'Não foi possível processar sua solicitação. Tente novamente ou acesse o painel.', false));
   }
+}
+
+// Escapa valor para atributo HTML (uid/tok já foram validados pelo HMAC,
+// mas nunca injetamos entrada crua em markup).
+function escAttr(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Página de confirmação (GET): botão que faz o POST de fato.
+function confirmPage(uid, tok) {
+  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Cancelar alertas — VagaAI</title>
+<style>body{margin:0;font-family:Arial,sans-serif;background:#f2f6f3;display:flex;align-items:center;justify-content:center;min-height:100vh}
+.box{background:#fff;border-radius:12px;padding:40px 32px;max-width:420px;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,.08)}
+.ico{font-size:40px;margin-bottom:16px}.h{font-size:20px;font-weight:700;color:#0a0f0d;margin-bottom:12px}
+.p{font-size:14px;color:#555;line-height:1.6;margin-bottom:24px}
+.btn{display:inline-block;background:#c0392b;color:#fff;border:none;cursor:pointer;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:600}
+.alt{display:inline-block;margin-top:14px;font-size:13px;color:#1a7a4a;text-decoration:none}</style>
+</head><body><div class="box">
+<div class="ico">📭</div>
+<div class="h">Cancelar alertas de vagas?</div>
+<div class="p">Você deixará de receber e-mails com vagas compatíveis com seu perfil. Pode reativar quando quiser no painel.</div>
+<form method="POST" action="/api/unsubscribe">
+<input type="hidden" name="uid" value="${escAttr(uid)}">
+<input type="hidden" name="tok" value="${escAttr(tok)}">
+<button class="btn" type="submit">Sim, cancelar alertas</button>
+</form>
+<a class="alt" href="https://vagaai.app.br/dashboard">Prefiro gerenciar no painel →</a>
+</div></body></html>`;
 }
 
 function page(title, msg, success) {

@@ -3,6 +3,7 @@
 // action=generate: gera perguntas | action=evaluate: avalia resposta | action=transcribe: transcreve audio
 
 import { resolvePlan } from '../lib/entitlements.js';
+import { checkAndCountLimit } from '../lib/ratelimit.js';
 
 export const config = {
   api: {
@@ -30,20 +31,13 @@ async function getUserFromToken(token) {
   }
 }
 
-const _userHits = new Map();
+// Rate limit por usuário — persistente (lib/ratelimit.js). O Map em memória
+// anterior zerava a cada cold start do serverless e não segurava custo de IA.
 const USER_LIMIT = 40;
 const USER_WINDOW_MS = 60 * 60 * 1000;
 
 function checkUserRateLimit(userId) {
-  const now = Date.now();
-  const entry = _userHits.get(userId) || { count: 0, resetAt: now + USER_WINDOW_MS };
-  if (now > entry.resetAt) {
-    entry.count = 0;
-    entry.resetAt = now + USER_WINDOW_MS;
-  }
-  entry.count++;
-  _userHits.set(userId, entry);
-  return entry.count <= USER_LIMIT;
+  return checkAndCountLimit({ key: `u:${userId}:entrevista`, limit: USER_LIMIT, windowMs: USER_WINDOW_MS });
 }
 
 async function getUserPlan(userId) {
@@ -204,9 +198,10 @@ async function transcribeAudio(audioBase64, mimeType) {
   }
   const { id } = await transcriptRes.json();
 
-  // 3. Polling até concluir (max ~7s)
+  // 3. Polling até concluir (max ~15s — a função tem maxDuration:60 no
+  // vercel.json; os ~7s anteriores estouravam os 10s default em áudios longos)
   const pollingUrl = `https://api.assemblyai.com/v2/transcript/${id}`;
-  for (let i = 0; i < 14; i++) {
+  for (let i = 0; i < 30; i++) {
     await new Promise(r => setTimeout(r, 500));
     const pollRes = await fetch(pollingUrl, { headers: { 'Authorization': ASSEMBLYAI_KEY } });
     const result = await pollRes.json();
@@ -244,7 +239,7 @@ export default async function handler(req, res) {
     });
   }
 
-  if (!checkUserRateLimit(user.id)) {
+  if (!(await checkUserRateLimit(user.id))) {
     return res.status(429).json({ error: 'Limite de uso atingido. Tente novamente mais tarde.' });
   }
 

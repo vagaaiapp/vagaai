@@ -190,6 +190,11 @@ export default async function handler(req, res) {
   );
 
   // ── Upsert subscription no Supabase ──────────────────────────────────────────
+  // on_conflict=user_id é obrigatório: sem ele o PostgREST resolve o merge pelo
+  // PK (id, que nunca é enviado) → cada evento inseriria linha nova, e eventos
+  // seguintes da mesma assinatura estourariam a UNIQUE(stripe_subscription_id)
+  // com 409 silencioso — cancelamentos e renovações nunca persistiriam.
+  // Requer a UNIQUE(user_id) criada na migração 021.
   async function upsertSubscription(userId, stripeSubId, stripeCustomerId, plan, status, periodEnd, periodStart, isNew = false) {
     const now = new Date();
     const body = {
@@ -208,7 +213,7 @@ export default async function handler(req, res) {
       body.analyses_used_this_month = 0;
       body.analyses_reset_at = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
     }
-    await fetch(`${SUPABASE_URL}/rest/v1/subscriptions`, {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?on_conflict=user_id`, {
       method: 'POST',
       headers: {
         apikey: SUPABASE_SERVICE_KEY,
@@ -218,6 +223,9 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify(body),
     });
+    if (!r.ok) {
+      throw new Error(`upsertSubscription: Supabase ${r.status} — ${await r.text()}`);
+    }
   }
 
   // ── Busca user_id pelo customer_id ou email ───────────────────────────────────
@@ -285,7 +293,11 @@ export default async function handler(req, res) {
       return res.status(200).json({ received: true, note: 'unknown_price' });
     }
     const customerId = sub.customer;
-    const email = sub.customer_email || sub.metadata?.email;
+    // O objeto Subscription do Stripe NÃO carrega customer_email — resolve o
+    // e-mail aqui (via API do Stripe) para o lookup de usuário E para o e-mail
+    // de boas-vindas abaixo, que antes era silenciosamente pulado por falta dele.
+    let email = sub.customer_email || sub.metadata?.email || null;
+    if (!email) email = await getStripeCustomerEmail(customerId);
     const userId = await getUserIdByCustomerOrEmail(customerId, email);
     if (!userId) {
       // FAIL-OPEN seria perigoso: o cliente pagou e ficaria sem o plano.
@@ -295,7 +307,14 @@ export default async function handler(req, res) {
       console.warn(`Webhook: no user found for customer ${customerId} — pedindo retry ao Stripe`);
       return res.status(503).json({ error: 'user_not_resolved_yet', customer: customerId });
     }
-    await upsertSubscription(userId, sub.id, customerId, planInfo.plan, sub.status, sub.current_period_end, sub.current_period_start, eventType === 'customer.subscription.created');
+    try {
+      await upsertSubscription(userId, sub.id, customerId, planInfo.plan, sub.status, sub.current_period_end, sub.current_period_start, eventType === 'customer.subscription.created');
+    } catch (e) {
+      // 5xx → Stripe re-tenta; sem isso uma falha do Supabase perderia o evento
+      // (plano não provisionado, renovação/past_due não registrado).
+      console.error('Webhook: upsert subscription falhou:', e.message);
+      return res.status(500).json({ error: 'subscription_upsert_failed' });
+    }
     // Email de boas-vindas (apenas na criação)
     if (eventType === 'customer.subscription.created' && email && process.env.CRON_SECRET) {
       fetch(`https://www.vagaai.app.br/api/onboarding-emails`, {
@@ -314,7 +333,14 @@ export default async function handler(req, res) {
     const customerId = sub.customer;
     const userId = await getUserIdByCustomerOrEmail(customerId, null);
     if (userId) {
-      await upsertSubscription(userId, sub.id, customerId, 'free', 'canceled', null, null);
+      try {
+        await upsertSubscription(userId, sub.id, customerId, 'free', 'canceled', null, null);
+      } catch (e) {
+        // O downgrade TEM que persistir — senão o usuário cancela e mantém o
+        // plano pago. 5xx → Stripe re-tenta até conseguir.
+        console.error('Webhook: downgrade (deleted) falhou:', e.message);
+        return res.status(500).json({ error: 'downgrade_failed' });
+      }
       console.log(`Webhook: subscription canceled → user=${userId} downgraded to free`);
     }
     return res.status(200).json({ received: true, note: 'subscription_canceled' });
@@ -344,25 +370,56 @@ export default async function handler(req, res) {
       if (email2) userId2 = await getUserIdByCustomerOrEmail(null, email2);
     }
     if (userId2 && customerId2) {
+      // Este evento só garante o MAPEAMENTO user↔customer — nunca escreve
+      // plan/status. A ordem dos eventos do Stripe não é garantida: se
+      // customer.subscription.created já gravou o plano real, um upsert com
+      // plan:'free'/status:'pending' aqui sobrescreveria e o pagante veria free.
       const now = new Date().toISOString();
-      // UPSERT: cria a linha se não existir, atualiza se existir
-      await fetch(`${SUPABASE_URL}/rest/v1/subscriptions`, {
-        method: 'POST',
-        headers: {
-          apikey: SUPABASE_SERVICE_KEY,
-          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-          'Content-Type': 'application/json',
-          Prefer: 'resolution=merge-duplicates,return=minimal',
-        },
-        body: JSON.stringify({
-          user_id: userId2,
-          stripe_customer_id: customerId2,
-          stripe_subscription_id: subId2 || null,
-          plan: 'free',       // placeholder — customer.subscription.created atualiza para o plano real
-          status: 'pending',
-          updated_at: now,
-        }),
-      }).catch((e) => console.error('Webhook: upsert sub mapping failed', e.message));
+      const sbHeaders = {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+      };
+      try {
+        const existRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${encodeURIComponent(userId2)}&select=id`,
+          { headers: sbHeaders }
+        );
+        if (!existRes.ok) throw new Error(`GET subscriptions ${existRes.status}`);
+        const existRows = await existRes.json();
+
+        if (existRows.length > 0) {
+          // Linha já existe (plano real ou placeholder): atualiza só o mapeamento.
+          const mapping = { stripe_customer_id: customerId2, updated_at: now };
+          if (subId2) mapping.stripe_subscription_id = subId2;
+          const patchRes = await fetch(
+            `${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${encodeURIComponent(userId2)}`,
+            { method: 'PATCH', headers: sbHeaders, body: JSON.stringify(mapping) }
+          );
+          if (!patchRes.ok) throw new Error(`PATCH mapping ${patchRes.status}`);
+        } else {
+          // Sem linha ainda: cria placeholder. ignore-duplicates cobre a corrida
+          // com subscription.created (se ele inserir primeiro, não sobrescrevemos).
+          const insRes = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?on_conflict=user_id`, {
+            method: 'POST',
+            headers: { ...sbHeaders, Prefer: 'resolution=ignore-duplicates,return=minimal' },
+            body: JSON.stringify({
+              user_id: userId2,
+              stripe_customer_id: customerId2,
+              stripe_subscription_id: subId2 || null,
+              plan: 'free',       // placeholder — customer.subscription.created grava o plano real
+              status: 'pending',
+              updated_at: now,
+            }),
+          });
+          if (!insRes.ok) throw new Error(`POST placeholder ${insRes.status}`);
+        }
+      } catch (e) {
+        // Sem o mapeamento, o subscription.created ainda resolve por e-mail,
+        // mas é mais seguro pedir retry ao Stripe (evento é idempotente aqui).
+        console.error('Webhook: upsert sub mapping failed', e.message);
+        return res.status(500).json({ error: 'mapping_failed' });
+      }
       console.log(`Webhook: checkout subscription → mapped user=${userId2} customer=${customerId2}`);
     } else {
       console.warn(`Webhook: checkout subscription sem client_reference_id session=${session.id}`);
