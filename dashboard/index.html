@@ -2938,6 +2938,20 @@ var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 var currentSession = null, currentUserId = null;
+
+// Mantém currentSession sincronizado com o token renovado em background.
+// O client renova o access_token (~1h de validade) sozinho, mas as ~16 chamadas
+// diretas ao PostgREST usam currentSession.access_token — sem este listener,
+// esse token ficava congelado no valor do init() e expirava após 1h de aba
+// aberta, fazendo leituras/escritas (candidaturas, alertas, cv) tomarem 401.
+sb.auth.onAuthStateChange(function(event, session) {
+  if (session) {
+    currentSession = session;
+    currentUserId = session.user.id;
+  } else if (event === 'SIGNED_OUT') {
+    window.location.href = '/login';
+  }
+});
 var _kTracked = [];
 var _alertKeywords = [];
 var _interviewFilter = 'marcadas';
