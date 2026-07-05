@@ -1710,6 +1710,12 @@ async function filterSentJobs(userId, jobs) {
     `${SUPABASE_URL}/rest/v1/job_alert_sent?user_id=eq.${userId}&job_hash=in.(${hashes.join(',')})&or=(sent_at.gte.${encodeURIComponent(sinceIso)},dismissed_reason.not.is.null)&select=job_hash`,
     { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
   );
+  if (!res.ok) {
+    // FAIL-CLOSED: sem o dedup, enviaríamos vagas repetidas (inclusive as que o
+    // usuário dispensou). Erro aborta só este usuário (allSettled isola) e o
+    // próximo ciclo do cron re-tenta.
+    throw new Error(`filterSentJobs: Supabase ${res.status}`);
+  }
   const sent = await res.json();
   const sentSet = new Set((Array.isArray(sent) ? sent : []).map(s => s.job_hash));
   return jobs.filter(j => !sentSet.has(jobHash(j.title, j.company, j.location)));
@@ -1726,11 +1732,16 @@ async function markJobsSent(userId, jobs) {
     job_url: j.link,
     sent_at: new Date().toISOString(),
   }));
-  await fetch(`${SUPABASE_URL}/rest/v1/job_alert_sent`, {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/job_alert_sent`, {
     method: 'POST',
     headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'resolution=ignore-duplicates' },
     body: JSON.stringify(rows),
   });
+  // O e-mail já saiu — não dá para desfazer. Se o registro falhar, o próximo
+  // ciclo reenviaria as mesmas vagas; loga alto para a falha não passar batida.
+  if (!res.ok) {
+    console.error(`markJobsSent: Supabase ${res.status} — user=${userId} jobs=${rows.length} (risco de reenvio no próximo ciclo)`);
+  }
 }
 
 // Gera HTML do email

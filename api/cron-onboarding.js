@@ -50,21 +50,30 @@ async function isEmailSent(userId, type) {
 
 async function markEmailSent(userId, type) {
   const key = `onboarding_${type}_${userId}`;
-  await fetch(`${SUPABASE_URL}/rest/v1/webhook_events`, {
-    method: 'POST',
-    headers: {
-      apikey: SUPABASE_SERVICE_KEY,
-      Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-      'Content-Type': 'application/json',
-      Prefer: 'resolution=ignore-duplicates',
-    },
-    body: JSON.stringify({
-      stripe_session_id: key,
-      user_id: userId,
-      amount: 0,
-      processed_at: new Date().toISOString(),
-    }),
-  }).catch(() => {});
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/webhook_events`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=ignore-duplicates',
+      },
+      body: JSON.stringify({
+        stripe_session_id: key,
+        user_id: userId,
+        amount: 0,
+        processed_at: new Date().toISOString(),
+      }),
+    });
+    // E-mail já saiu; se o marcador falhar, amanhã o cron reenvia o mesmo
+    // e-mail — loga alto em vez de engolir a falha.
+    if (!res.ok) {
+      console.error(`markEmailSent: Supabase ${res.status} — key=${key} (risco de e-mail duplicado no próximo ciclo)`);
+    }
+  } catch (e) {
+    console.error(`markEmailSent: ${e.message} — key=${key} (risco de e-mail duplicado no próximo ciclo)`);
+  }
 }
 
 async function getUserCredits(userId) {
