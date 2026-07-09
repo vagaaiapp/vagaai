@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Estratégia de E-mail Marketing VagaAI</title>
+  <style>
+:root {
+  --forest:#0A1A10; --deep:#0D5A35; --emerald:#1A7A4A; --bright:#4ECE91;
+  --paper:#F5F7F5; --card:#FFFFFF; --ink:#071209; --text:#254B34;
+  --muted:#6E8A78; --border:#DDE8E2; --amber:#C47D0A; --amber-bg:#FFF7E8;
+  --red:#D94F4F; --shadow:0 18px 50px rgba(7,18,9,.10); --r:24px; --r-sm:14px;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height:1.55; }
+a { color:var(--emerald); font-weight:800; text-decoration:none; }
+.layout { display:grid; grid-template-columns:292px 1fr; min-height:100vh; }
+aside { position:sticky; top:0; height:100vh; padding:30px 24px; background:radial-gradient(circle at 20% 0%, rgba(78,206,145,.16), transparent 28%), var(--forest); color:#fff; overflow:auto; }
+.brand { display:flex; gap:12px; align-items:center; margin-bottom:30px; }
+.mark { width:36px; height:36px; border-radius:50%; background:#151515; display:grid; place-items:center; color:#fff; font-weight:900; font-family:Georgia, serif; box-shadow:0 0 0 1px rgba(255,255,255,.08); }
+.brand b { font-family:Georgia, serif; font-size:22px; letter-spacing:-.02em; }
+.brand b span { color:var(--bright); }
+.nav-label { font-size:10px; color:rgba(255,255,255,.42); text-transform:uppercase; letter-spacing:.16em; font-weight:800; margin:18px 0 10px; }
+nav { display:grid; gap:5px; }
+nav a { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:12px; color:rgba(255,255,255,.72); font-size:13px; font-weight:600; }
+nav a span { width:24px; height:24px; border-radius:8px; display:grid; place-items:center; background:rgba(255,255,255,.06); color:var(--bright); font-size:11px; font-weight:800; }
+nav a:hover { background:rgba(255,255,255,.07); color:#fff; }
+.side-note { margin-top:28px; border:1px solid rgba(255,255,255,.10); border-radius:18px; padding:16px; background:rgba(255,255,255,.045); }
+.side-note b { color:var(--bright); font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
+.side-note p { margin:8px 0 0; color:rgba(255,255,255,.67); font-size:12.5px; }
+main { padding:42px clamp(28px, 5vw, 72px) 72px; }
+.cover { position:relative; overflow:hidden; border-radius:32px; padding:56px; min-height:500px; background:linear-gradient(135deg,#081510,#0E3D26 58%,#177247); color:#fff; box-shadow:var(--shadow); margin-bottom:34px; display:grid; grid-template-columns:1.08fr .92fr; gap:40px; align-items:center; }
+.cover:before { content:""; position:absolute; right:-130px; top:-130px; width:360px; height:360px; border-radius:50%; background:rgba(78,206,145,.16); }
+.cover-copy, .cover-panel { position:relative; z-index:1; }
+.kicker, .sec-label { color:var(--emerald); font-size:11px; text-transform:uppercase; letter-spacing:.15em; font-weight:900; margin-bottom:14px; }
+.cover .kicker { color:var(--bright); }
+h1, h2, h3 { font-family:Georgia, "Times New Roman", serif; letter-spacing:-.035em; }
+h1 { font-size:56px; line-height:1.02; margin:0 0 18px; max-width:820px; }
+h2 { font-size:38px; line-height:1.08; margin:0 0 14px; }
+h3 { font-size:22px; line-height:1.15; margin:24px 0 8px; }
+h4 { font-size:16px; margin:0 0 8px; }
+p { color:var(--text); margin:0 0 14px; }
+.cover p { color:#d8efe0; font-size:18px; max-width:760px; }
+.cover-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:26px; }
+.cover-actions span { border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.08); color:#d7f2df; padding:9px 12px; border-radius:999px; font-size:12px; font-weight:700; }
+.cover-panel { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); border-radius:24px; padding:24px; box-shadow:0 24px 70px rgba(0,0,0,.22); backdrop-filter:blur(10px); }
+.panel-top { display:flex; align-items:center; gap:7px; color:#aacdb7; font-size:12px; margin-bottom:22px; }
+.panel-top span { width:9px; height:9px; border-radius:50%; background:#ff6b5f; }
+.panel-top span:nth-child(2) { background:#f5bd4f; }
+.panel-top span:nth-child(3) { background:#42d37b; }
+.panel-top b { margin-left:auto; color:#cfe8d7; }
+.flow { display:grid; gap:12px; }
+.flow div { display:flex; gap:12px; align-items:center; padding:12px; border-radius:14px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.09); }
+.flow b { width:30px; height:30px; display:grid; place-items:center; border-radius:50%; background:var(--bright); color:#062012; }
+.flow span { color:#e5f7eb; font-weight:800; }
+.panel-note { margin-top:20px; color:#b9d8c5; font-size:13px; border-top:1px solid rgba(255,255,255,.1); padding-top:14px; }
+.section { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:34px; margin-bottom:22px; box-shadow:0 8px 30px rgba(10,26,16,.06); break-inside:avoid; }
+.lead { font-size:17px; color:var(--text); max-width:980px; }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:34px; }
+.grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:22px; }
+.metric { background:linear-gradient(180deg,#fff,#f4faf6); border:1px solid var(--border); border-radius:18px; padding:18px; }
+.metric b { display:block; font-size:17px; color:var(--ink); }
+.metric span { display:block; margin-top:4px; color:var(--muted); font-size:13px; }
+.callout, .priority-box { border:1px solid rgba(26,122,74,.20); background:#ebf8f1; color:var(--text); border-radius:18px; padding:18px 20px; margin-top:22px; }
+.callout.amber { background:#fff7e8; border-color:rgba(196,125,10,.25); }
+table { width:100%; border-collapse:separate; border-spacing:0; margin:20px 0 0; overflow:hidden; border:1px solid var(--border); border-radius:16px; font-size:13px; }
+th, td { padding:13px 14px; border-bottom:1px solid var(--border); vertical-align:top; text-align:left; }
+th { background:#eef6f1; color:var(--forest); text-transform:uppercase; letter-spacing:.08em; font-size:10px; }
+tr:last-child td { border-bottom:none; }
+td:first-child { font-weight:800; color:var(--ink); }
+.cards-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:18px; }
+.mini-card { background:linear-gradient(180deg,#fff,#f7fbf8); border:1px solid var(--border); border-radius:18px; padding:20px; min-height:150px; }
+.tag { display:inline-flex; align-items:center; height:24px; padding:0 9px; border-radius:999px; background:#e5f5ed; color:var(--emerald); font-size:10px; text-transform:uppercase; letter-spacing:.08em; font-weight:900; margin-bottom:12px; }
+.email-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-top:20px; }
+.email-card { border:1px solid var(--border); border-radius:18px; background:#fff; padding:20px; break-inside:avoid; }
+.email-line { color:var(--text); font-size:13px; margin:7px 0; }
+.email-card p { margin-top:12px; font-size:13px; }
+.cta-pill { display:inline-flex; margin-top:8px; border-radius:999px; background:var(--emerald); color:#fff; padding:8px 12px; font-size:12px; font-weight:800; }
+.check-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:18px; }
+.check-grid span { background:#f6faf8; border:1px solid var(--border); border-radius:14px; padding:13px 14px; color:var(--text); font-weight:700; }
+ul { margin:10px 0 0; padding-left:20px; color:var(--text); }
+li { margin:7px 0; }
+@media (max-width: 980px) {
+  .layout { grid-template-columns:1fr; }
+  aside { position:relative; height:auto; }
+  .cover, .two-col, .grid-4, .cards-3, .email-grid, .check-grid { grid-template-columns:1fr; }
+  main { padding:24px; }
+  h1 { font-size:40px; }
+  h2 { font-size:30px; }
+}
+@media print {
+  @page { size:A4; margin:12mm; }
+  body { background:#fff; }
+  .layout { display:block; }
+  aside { display:none; }
+  main { padding:0; }
+  .cover, .section, .email-card { box-shadow:none; break-inside:avoid; page-break-inside:avoid; }
+  .cover { min-height:auto; margin-bottom:14px; }
+}
+</style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <div class="brand"><div class="mark">V</div><b>Vaga<span>AI</span></b></div>
+      <div class="nav-label">E-mail marketing</div>
+      <nav><a href="#resumo"><span>00</span>Resumo</a>
+<a href="#estado-atual"><span>01</span>Estado atual</a>
+<a href="#segmentacao"><span>02</span>Segmentacao</a>
+<a href="#pilares"><span>03</span>Pilares</a>
+<a href="#automacoes"><span>04</span>Automacoes</a>
+<a href="#sequencia-free"><span>05</span>Free</a>
+<a href="#pos-analise"><span>06</span>Pos-analise</a>
+<a href="#conteudos-semanais"><span>07</span>Campanhas</a>
+<a href="#templates"><span>08</span>Templates</a>
+<a href="#copy"><span>09</span>Copy</a>
+<a href="#metricas"><span>10</span>KPIs</a>
+<a href="#implementacao"><span>11</span>Implementacao</a>
+<a href="#plano-30"><span>12</span>30 dias</a>
+<a href="#checklist"><span>13</span>Checklist</a></nav>
+      <div class="side-note">
+        <b>Direcao</b>
+        <p>Nutrir por dor real, ativar pelo proximo passo e converter quando o usuario ja percebeu valor.</p>
+      </div>
+    </aside>
+    <main>
+<section class="cover" id="inicio">
+  <div class="cover-copy">
+    <div class="kicker">E-mail marketing para conversao</div>
+    <h1>Conteudo que educa, ativa e converte o candidato.</h1>
+    <p>Planejamento editorial completo para transformar contatos do VagaAI em usuarios ativos, candidatos recorrentes e assinantes pagos sem prometer emprego, sem exagero e sem parecer spam.</p>
+    <div class="cover-actions">
+      <span>Lifecycle marketing</span>
+      <span>Converseo Free -> Starter -> Pro</span>
+      <span>Conteudo + produto</span>
+    </div>
+  </div>
+  <div class="cover-panel">
+    <div class="panel-top"><span></span><span></span><span></span><b>Régua VagaAI</b></div>
+    <div class="flow">
+      <div><b>1</b><span>Entrou</span></div>
+      <div><b>2</b><span>Analisou</span></div>
+      <div><b>3</b><span>Otimizou</span></div>
+      <div><b>4</b><span>Rastreou</span></div>
+      <div><b>5</b><span>Assinou</span></div>
+    </div>
+    <div class="panel-note">A melhor venda do VagaAI nao e “compre agora”. E mostrar o proximo passo certo para a vaga que o usuario ja quer.</div>
+  </div>
+</section>
+
+<section class="section" id="resumo">
+  <div class="sec-label">00 / Resumo executivo</div>
+  <h2>A tese da estratégia</h2>
+  <p class="lead">O e-mail do VagaAI deve funcionar como um copiloto de busca de emprego: ajuda o usuario a voltar, entender o que fazer em seguida e perceber que a plataforma resolve uma jornada inteira, nao apenas uma tarefa isolada.</p>
+  <div class="grid-4">
+    <div class="metric"><b>Educar</b><span>Mostrar por que curriculo generico, vaga errada e falta de preparo custam oportunidades.</span></div>
+    <div class="metric"><b>Ativar</b><span>Levar o usuario para a primeira analise, primeiro CV, primeiro alerta e primeira candidatura rastreada.</span></div>
+    <div class="metric"><b>Converter</b><span>Usar limites, urgencia e valor percebido para vender Starter, Pro ou creditos.</span></div>
+    <div class="metric"><b>Reter</b><span>Trazer o usuario de volta com alertas, follow-ups, proximas acoes e rotina semanal.</span></div>
+  </div>
+  <div class="callout"><b>Principio central:</b> cada e-mail precisa responder a uma pergunta simples: “qual e o proximo passo mais util para esse candidato agora?”</div>
+</section>
+
+<section class="section" id="estado-atual">
+  <div class="sec-label">01 / Estado atual</div>
+  <h2>O que ja existe no produto</h2>
+  <p class="lead">O app ja possui uma base funcional de e-mails transacionais e de onboarding. A estrategia abaixo expande essa base para uma régua de conversao, nutricao e retencao.</p>
+  <table><thead><tr><th>Fluxo atual</th><th>Momento</th><th>Objetivo</th><th>Oportunidade de melhoria</th></tr></thead><tbody><tr><td>Welcome</td><td>Apos cadastro ou primeiro login</td><td>Apresentar primeiras acoes</td><td>Transformar em e-mail mais curto, com CTA unico e segmentacao por origem.</td></tr><tr><td>Day 2 - dica ATS</td><td>2 dias apos cadastro</td><td>Educar sobre erros de curriculo</td><td>Conectar com a ultima vaga analisada quando houver contexto.</td></tr><tr><td>Day 5 - lembrete</td><td>5 dias apos cadastro</td><td>Trazer usuario de volta</td><td>Trocar lembrete generico por proximo passo personalizado.</td></tr><tr><td>Tracker follow-up</td><td>Candidatura aplicada ha cerca de 7 dias</td><td>Sugerir follow-up</td><td>Adicionar contexto da vaga, status e modelo pronto de mensagem.</td></tr></tbody></table>
+  <div class="callout amber"><b>Leitura:</b> hoje a base existe. O ganho esta em segmentar melhor e fazer cada e-mail conversar com a jornada real: vaga analisada, score, CV otimizado, candidatura, alerta e entrevista.</div>
+</section>
+
+<section class="section" id="segmentacao">
+  <div class="sec-label">02 / Segmentacao</div>
+  <h2>Quem recebe o que</h2>
+  <p class="lead">A conversao melhora quando o VagaAI para de mandar a mesma mensagem para todos e passa a enviar e-mails com base no comportamento do usuario.</p>
+  <table><thead><tr><th>Segmento</th><th>Sinal comportamental</th><th>Mensagem principal</th><th>CTA</th></tr></thead><tbody><tr><td>Novo usuario sem analise</td><td>Criou conta, nao analisou vaga</td><td>Comece por uma vaga real; nao tente melhorar o CV no escuro.</td><td>Analisar minha primeira vaga</td></tr><tr><td>Fez analise com score baixo</td><td>Score abaixo de 50</td><td>Agora voce sabe o que esta travando sua candidatura.</td><td>Gerar CV otimizado</td></tr><tr><td>Fez analise com score medio</td><td>Score entre 50 e 74</td><td>Alguns ajustes podem aumentar sua aderencia.</td><td>Ver prioridades de melhoria</td></tr><tr><td>Fez analise com score alto</td><td>Score acima de 75</td><td>Essa vaga merece uma candidatura mais forte agora.</td><td>Baixar CV e rastrear vaga</td></tr><tr><td>Otimizou CV, nao rastreou</td><td>PDF gerado, sem candidatura</td><td>Nao deixe a vaga solta; acompanhe a proxima acao.</td><td>Adicionar em candidaturas</td></tr><tr><td>Tem candidatura parada</td><td>Status aplicado sem atualizacao</td><td>Hora de fazer follow-up ou preparar entrevista.</td><td>Gerenciar candidatura</td></tr><tr><td>Recebe alertas, nao analisa</td><td>Clica/abre alerta mas nao analisa</td><td>Veja se a oportunidade realmente combina antes de aplicar.</td><td>Analisar vaga do alerta</td></tr><tr><td>Free no limite</td><td>Usou cota mensal</td><td>Voce ja viu valor; agora destrave a rotina.</td><td>Ver plano Starter</td></tr><tr><td>Starter ativo</td><td>Uso recorrente, sem simulador</td><td>Pro ajuda a fechar a jornada com entrevista.</td><td>Conhecer Pro</td></tr><tr><td>Pro ativo</td><td>Assinante completo</td><td>Aumentar uso e retencao por rotina semanal.</td><td>Ver proximas acoes</td></tr></tbody></table>
+</section>
+
+<section class="section" id="pilares">
+  <div class="sec-label">03 / Pilares editoriais</div>
+  <h2>Conteudos que vendem sem parecer venda</h2>
+  <div class="cards-3">
+    <div class="mini-card"><div class="tag">Diagnostico</div><h4>1. Clareza antes de aplicar</h4><p>Conteudos que ensinam o usuario a parar de enviar curriculo no escuro e avaliar se a vaga merece energia.</p></div>
+    <div class="mini-card"><div class="tag">Produto</div><h4>2. Curriculo especifico</h4><p>Conteudos sobre por que um CV generico perde forca e como adaptar sem inventar experiencia.</p></div>
+    <div class="mini-card"><div class="tag">Educacional</div><h4>3. ATS e filtros</h4><p>Conteudos simples sobre triagem, palavras-chave, legibilidade e estrutura de curriculo.</p></div>
+    <div class="mini-card"><div class="tag">Retencao</div><h4>4. Rotina de candidatura</h4><p>Conteudos sobre acompanhar vagas, follow-up, timing e proximas acoes.</p></div>
+    <div class="mini-card"><div class="tag">Pro</div><h4>5. Entrevista com contexto</h4><p>Conteudos sobre narrativa, perguntas provaveis, briefing e preparo por vaga.</p></div>
+    <div class="mini-card"><div class="tag">Relacionamento</div><h4>6. Mercado e carreira</h4><p>Conteudos de dor real: silencio apos envio, ansiedade, mudanca de rota, decisao e estrategia.</p></div>
+  </div>
+</section>
+
+<section class="section" id="automacoes">
+  <div class="sec-label">04 / Automacoes recomendadas</div>
+  <h2>Reguas de e-mail por jornada</h2>
+  <table><thead><tr><th>Régua</th><th>Gatilho</th><th>Sequencia</th><th>Objetivo</th></tr></thead><tbody><tr><td>Onboarding Free</td><td>Cadastro sem uso</td><td>D0 boas-vindas, D1 primeira vaga, D2 erro ATS, D4 exemplo real, D7 limite/plano</td><td>Levar a primeira analise e mostrar valor rapido.</td></tr><tr><td>Pos-analise</td><td>Analise concluida</td><td>Imediato resultado, +6h prioridade, D1 CV otimizado, D3 candidatura</td><td>Transformar diagnostico em acao.</td></tr><tr><td>CV otimizado</td><td>PDF gerado</td><td>Imediato download, D1 carta, D2 rastreador, D5 entrevista se status avancar</td><td>Completar candidatura.</td></tr><tr><td>Alertas</td><td>Novo alerta enviado</td><td>Resumo de vagas, melhor oportunidade, lembrete de analise</td><td>Retorno recorrente ao app.</td></tr><tr><td>Candidaturas</td><td>Status aplicado</td><td>D3 checklist, D7 follow-up, D14 proxima decisao</td><td>Evitar abandono e dar rotina.</td></tr><tr><td>Entrevista</td><td>Status entrevista ou botao treinar</td><td>Preparacao, perguntas, resposta modelo, reforco Pro</td><td>Vender valor premium e aumentar sucesso percebido.</td></tr><tr><td>Winback</td><td>14 dias sem uso</td><td>Diagnostico da busca, nova vaga, credito/analise, plano</td><td>Reativar sem parecer cobranca.</td></tr><tr><td>Upgrade</td><td>Limite atingido ou uso alto</td><td>Comparativo plano, caso de uso, oferta anual</td><td>Converter no momento de dor.</td></tr></tbody></table>
+</section>
+
+<section class="section" id="sequencia-free">
+  <div class="sec-label">05 / Sequencia de conversao Free</div>
+  <h2>Do cadastro ao primeiro upgrade</h2>
+  <p class="lead">Essa régua deve ser curta, objetiva e muito conectada ao produto. O usuario precisa sentir que cada e-mail ajuda a buscar emprego melhor, nao que esta recebendo uma newsletter generica.</p>
+  <div class="email-grid">
+
+    <div class="email-card">
+      <div class="tag">D0</div>
+      <h4>Boas-vindas com proximo passo</h4>
+      <div class="email-line"><b>Assunto:</b> Sua busca pode ficar mais clara a partir de uma vaga real</div>
+      <div class="email-line"><b>Preheader:</b> Cole uma vaga e veja onde seu curriculo ganha ou perde pontos.</div>
+      <p>Você não precisa começar tentando reescrever o currículo inteiro. Comece por uma vaga real. O VagaAI compara a oportunidade com seu perfil e mostra o que vale priorizar antes de enviar.</p>
+      <div class="cta-pill">Analisar minha primeira vaga</div>
+    </div>
+    
+    <div class="email-card">
+      <div class="tag">D1</div>
+      <h4>Primeira dor</h4>
+      <div class="email-line"><b>Assunto:</b> Mandar mais currículos não resolve se eles dizem a coisa errada</div>
+      <div class="email-line"><b>Preheader:</b> Veja o erro que mais faz bons profissionais passarem despercebidos.</div>
+      <p>Muitos candidatos têm experiência, mas apresentam essa experiência de forma genérica. O problema não é só o currículo. É a falta de alinhamento entre a vaga e o que o currículo destaca.</p>
+      <div class="cta-pill">Ver meu score de aderência</div>
+    </div>
+    
+    <div class="email-card">
+      <div class="tag">D2</div>
+      <h4>Educacional ATS</h4>
+      <div class="email-line"><b>Assunto:</b> 3 sinais de que seu CV pode estar perdendo pontos no filtro</div>
+      <div class="email-line"><b>Preheader:</b> Palavras-chave, legibilidade e foco importam mais do que parece.</div>
+      <p>O VagaAI olha para compatibilidade, palavras-chave, legibilidade e força dos bullets para mostrar onde seu material pode estar enfraquecendo sua candidatura.</p>
+      <div class="cta-pill">Analisar uma vaga agora</div>
+    </div>
+    
+    <div class="email-card">
+      <div class="tag">D4</div>
+      <h4>Prova de valor</h4>
+      <div class="email-line"><b>Assunto:</b> Antes de enviar, descubra se essa vaga vale seu tempo</div>
+      <div class="email-line"><b>Preheader:</b> Uma análise simples evita candidaturas no escuro.</div>
+      <p>A pergunta não é apenas 'eu consigo me candidatar?'. A pergunta melhor é: 'essa vaga combina com meu perfil e meu currículo mostra isso?'.</p>
+      <div class="cta-pill">Testar com uma vaga real</div>
+    </div>
+    
+    <div class="email-card">
+      <div class="tag">D7</div>
+      <h4>Converseo suave</h4>
+      <div class="email-line"><b>Assunto:</b> Se você está aplicando com frequência, o plano grátis vai te limitar</div>
+      <div class="email-line"><b>Preheader:</b> Starter e Pro foram feitos para quem está em busca ativa.</div>
+      <p>Se você quer analisar mais vagas, gerar currículos direcionados e acompanhar candidaturas com mais consistência, faz sentido destravar uma rotina de busca.</p>
+      <div class="cta-pill">Comparar planos</div>
+    </div>
+    
+  </div>
+</section>
+
+<section class="section" id="pos-analise">
+  <div class="sec-label">06 / Sequencia pos-analise</div>
+  <h2>Transformar score em acao</h2>
+  <div class="email-grid">
+
+    <div class="email-card">
+      <div class="tag">Score &lt; 50</div>
+      <h4>Score baixo</h4>
+      <div class="email-line"><b>Assunto:</b> Seu score não é uma sentença. É um mapa.</div>
+      <div class="email-line"><b>Preheader:</b> Veja o que ajustar antes de enviar essa candidatura.</div>
+      <p>Um score baixo não significa que você não serve para a vaga. Significa que, do jeito que seu currículo está hoje, a conexão não aparece com força suficiente.</p>
+      <div class="cta-pill">Gerar versão otimizada</div>
+    </div>
+    
+    <div class="email-card">
+      <div class="tag">Score 50-74</div>
+      <h4>Score médio</h4>
+      <div class="email-line"><b>Assunto:</b> Você está perto, mas alguns detalhes podem custar retorno</div>
+      <div class="email-line"><b>Preheader:</b> Ajustes pequenos podem deixar a candidatura mais específica.</div>
+      <p>Quando a aderência está no meio do caminho, normalmente faltam palavras-chave, métricas ou uma narrativa mais alinhada ao cargo.</p>
+      <div class="cta-pill">Ver prioridades</div>
+    </div>
+    
+    <div class="email-card">
+      <div class="tag">Score 75+</div>
+      <h4>Score alto</h4>
+      <div class="email-line"><b>Assunto:</b> Essa vaga merece uma candidatura bem feita</div>
+      <div class="email-line"><b>Preheader:</b> Seu perfil parece promissor. Agora envie com mais força.</div>
+      <p>Quando a vaga combina, o melhor próximo passo é baixar o CV otimizado, gerar a carta se fizer sentido e rastrear a candidatura para não perder timing.</p>
+      <div class="cta-pill">Concluir candidatura</div>
+    </div>
+    
+    <div class="email-card">
+      <div class="tag">+6h</div>
+      <h4>Sem CV otimizado</h4>
+      <div class="email-line"><b>Assunto:</b> Você viu o diagnóstico. Falta transformar em material.</div>
+      <div class="email-line"><b>Preheader:</b> A análise mostra o problema; o currículo otimizado vira a ação.</div>
+      <p>O VagaAI pode adaptar resumo, palavras-chave e experiências para a vaga sem inventar informações.</p>
+      <div class="cta-pill">Otimizar meu currículo</div>
+    </div>
+    
+    <div class="email-card">
+      <div class="tag">D1</div>
+      <h4>Não rastreou</h4>
+      <div class="email-line"><b>Assunto:</b> Não deixe essa vaga perdida depois da análise</div>
+      <div class="email-line"><b>Preheader:</b> Adicione ao rastreador e acompanhe a próxima ação.</div>
+      <p>A busca por emprego melhora quando cada vaga tem status, prazo e próximo passo. Isso evita esquecimento e ajuda a manter ritmo.</p>
+      <div class="cta-pill">Adicionar em candidaturas</div>
+    </div>
+    
+  </div>
+</section>
+
+<section class="section" id="conteudos-semanais">
+  <div class="sec-label">07 / Campanhas semanais</div>
+  <h2>Calendario editorial de 8 semanas</h2>
+  <p class="lead">Além das automações, o VagaAI pode ter uma newsletter curta, altamente prática, com foco em conversão indireta. Uma vez por semana é suficiente no começo.</p>
+  <table><thead><tr><th>Semana</th><th>Tema</th><th>Assunto sugerido</th><th>CTA</th></tr></thead><tbody><tr><td>1</td><td>Curriculo generico</td><td>Seu currículo parece feito para qualquer vaga?</td><td>Analisar uma vaga real</td></tr><tr><td>2</td><td>Escolha de vaga</td><td>A vaga certa não é sempre a mais bonita do LinkedIn</td><td>Configurar alertas</td></tr><tr><td>3</td><td>ATS sem mito</td><td>O ATS não odeia seu currículo. Ele só não entende o que não está claro.</td><td>Ver score ATS</td></tr><tr><td>4</td><td>Rotina</td><td>Buscar emprego sem rastreador vira memória solta</td><td>Abrir candidaturas</td></tr><tr><td>5</td><td>Carta</td><td>Quando uma carta de apresentação vale a pena?</td><td>Gerar carta para vaga</td></tr><tr><td>6</td><td>Entrevista</td><td>A entrevista começa antes da entrevista</td><td>Treinar perguntas</td></tr><tr><td>7</td><td>Mercado</td><td>O silêncio depois do envio também é um dado</td><td>Rever candidaturas</td></tr><tr><td>8</td><td>Upgrade</td><td>Se você está aplicando toda semana, precisa de sistema</td><td>Ver plano Pro</td></tr></tbody></table>
+</section>
+
+<section class="section" id="templates">
+  <div class="sec-label">08 / Templates prontos</div>
+  <h2>Exemplos de e-mails de conversao</h2>
+  <div class="email-grid">
+
+    <div class="email-card">
+      <div class="tag">Upgrade</div>
+      <h4>Limite Free</h4>
+      <div class="email-line"><b>Assunto:</b> Você usou sua análise grátis. Agora vem a parte importante.</div>
+      <div class="email-line"><b>Preheader:</b> Transforme o diagnóstico em rotina de candidatura.</div>
+      <p>Se você está realmente em busca de emprego, uma única análise mostra valor, mas não sustenta a rotina. O Starter libera mais análises para comparar oportunidades e adaptar seu material com frequência.</p>
+      <div class="cta-pill">Desbloquear Starter</div>
+    </div>
+    
+    <div class="email-card">
+      <div class="tag">Upsell</div>
+      <h4>Starter para Pro</h4>
+      <div class="email-line"><b>Assunto:</b> Você já analisa vagas. Falta se preparar para a entrevista.</div>
+      <div class="email-line"><b>Preheader:</b> O Pro fecha a jornada com simulador e uso completo.</div>
+      <p>Analisar e otimizar ajuda você a enviar melhor. Mas quando a vaga avança, o diferencial passa a ser a entrevista. O Pro foi pensado para quem quer preparar a candidatura inteira.</p>
+      <div class="cta-pill">Conhecer Pro</div>
+    </div>
+    
+    <div class="email-card">
+      <div class="tag">Alertas</div>
+      <h4>Alerta com oportunidade</h4>
+      <div class="email-line"><b>Assunto:</b> Encontramos vagas que parecem combinar com seu perfil</div>
+      <div class="email-line"><b>Preheader:</b> Antes de aplicar, veja qual delas realmente vale seu tempo.</div>
+      <p>Selecionamos oportunidades com base no seu perfil. A melhor próxima ação é analisar a vaga mais promissora antes de adaptar o currículo.</p>
+      <div class="cta-pill">Analisar melhor oportunidade</div>
+    </div>
+    
+    <div class="email-card">
+      <div class="tag">Retencao</div>
+      <h4>Follow-up de candidatura</h4>
+      <div class="email-line"><b>Assunto:</b> Já faz 7 dias desde sua candidatura. Vale fazer follow-up?</div>
+      <div class="email-line"><b>Preheader:</b> Uma mensagem curta pode reabrir a conversa.</div>
+      <p>Se você já enviou o currículo e ainda não teve retorno, um follow-up objetivo ajuda a reforçar interesse sem parecer insistente.</p>
+      <div class="cta-pill">Ver modelo de follow-up</div>
+    </div>
+    
+    <div class="email-card">
+      <div class="tag">Reativacao</div>
+      <h4>Winback</h4>
+      <div class="email-line"><b>Assunto:</b> Sua busca ficou parada ou só saiu do radar?</div>
+      <div class="email-line"><b>Preheader:</b> Volte por uma vaga. Não por uma lista de tarefas.</div>
+      <p>Às vezes a busca por emprego cansa porque tudo vira tentativa. Recomece com uma vaga específica: o VagaAI mostra aderência, lacunas e próximo passo.</p>
+      <div class="cta-pill">Retomar minha busca</div>
+    </div>
+    
+    <div class="email-card">
+      <div class="tag">Objeção</div>
+      <h4>Objeção preço</h4>
+      <div class="email-line"><b>Assunto:</b> Vale pagar por algo que não garante emprego?</div>
+      <div class="email-line"><b>Preheader:</b> A resposta honesta: não pague por promessa, pague por clareza.</div>
+      <p>O VagaAI não garante contratação. Ele ajuda você a evitar erros evitáveis: vaga sem aderência, currículo genérico, candidatura sem acompanhamento e entrevista sem preparo.</p>
+      <div class="cta-pill">Ver como funciona</div>
+    </div>
+    
+  </div>
+</section>
+
+<section class="section" id="copy">
+  <div class="sec-label">09 / Guia de copy para e-mails</div>
+  <h2>Como escrever sem soar agressivo</h2>
+  <div class="two-col">
+    <div>
+      <h3>Usar mais</h3>
+      <ul><li>Entenda se essa vaga vale seu tempo.</li><li>Veja o que falta antes de enviar.</li><li>Adapte seu currículo para esta oportunidade.</li><li>Sua candidatura fica mais forte quando tem contexto.</li><li>Acompanhe o próximo passo para não perder timing.</li><li>Treine com base na vaga real.</li></ul>
+    </div>
+    <div>
+      <h3>Evitar</h3>
+      <ul><li>Garanta sua aprovação.</li><li>Passe em qualquer processo.</li><li>Currículo perfeito em segundos.</li><li>A IA consegue seu emprego.</li><li>Nunca mais seja rejeitado.</li><li>Aumente 10x suas chances sem esforço.</li></ul>
+    </div>
+  </div>
+  <div class="callout"><b>Tom recomendado:</b> direto, adulto, estrategico e acolhedor. O usuario precisa sentir que esta sendo orientado, nao pressionado.</div>
+</section>
+
+<section class="section" id="metricas">
+  <div class="sec-label">10 / KPIs e testes</div>
+  <h2>Como medir se a estrategia funciona</h2>
+  <table><thead><tr><th>Camada</th><th>Indicador</th><th>Meta inicial</th><th>O que fazer se estiver baixo</th></tr></thead><tbody><tr><td>Entrega</td><td>Delivery rate</td><td>> 97%</td><td>Revisar dominio, SPF/DKIM/DMARC, bounce e lista.</td></tr><tr><td>Abertura</td><td>Open rate</td><td>35%+ em onboarding; 25%+ em campanhas</td><td>Melhorar assunto, segmentacao e timing.</td></tr><tr><td>Clique</td><td>CTR</td><td>4% a 10%</td><td>CTA unico, conteudo mais curto e proximo passo claro.</td></tr><tr><td>Ativacao</td><td>Analise iniciada apos e-mail</td><td>10%+ dos cliques</td><td>Levar para tela certa com contexto preenchido.</td></tr><tr><td>Converseo</td><td>Upgrade apos e-mail</td><td>1% a 4% em fluxos de limite</td><td>Testar oferta, comparativo e urgencia real.</td></tr><tr><td>Retencao</td><td>Retorno ao app em 7 dias</td><td>15%+ para usuarios ativos</td><td>Usar alertas e proximas acoes mais personalizadas.</td></tr><tr><td>Descadastro</td><td>Unsubscribe</td><td>< 0,5%</td><td>Reduzir frequencia e melhorar relevancia.</td></tr></tbody></table>
+  <table><thead><tr><th>Teste A/B</th><th>Versao A</th><th>Versao B</th><th>Deciseo</th></tr></thead><tbody><tr><td>Assunto</td><td>Dor direta</td><td>Beneficio pratico</td><td>Manter maior abertura com clique saudavel.</td></tr><tr><td>CTA</td><td>Analisar vaga</td><td>Ver meu score</td><td>Escolher por ativacao real, nao clique bruto.</td></tr><tr><td>Timing</td><td>D+1</td><td>D+2</td><td>Comparar uso do app apos 48h.</td></tr><tr><td>Oferta</td><td>Starter</td><td>Pro</td><td>Ofertar plano conforme intensidade de uso.</td></tr><tr><td>Conteudo</td><td>Educacional</td><td>Exemplo concreto</td><td>Manter o que gera clique para produto.</td></tr></tbody></table>
+</section>
+
+<section class="section" id="implementacao">
+  <div class="sec-label">11 / Implementacao tecnica</div>
+  <h2>Como tirar do papel sem quebrar o app</h2>
+  <p class="lead">A implementação deve respeitar LGPD, descadastro e histórico de envios. O VagaAI já usa Resend e Supabase; o próximo passo é organizar eventos e filas por jornada.</p>
+  <table><thead><tr><th>Necessidade</th><th>Como implementar</th><th>Observacao</th></tr></thead><tbody><tr><td>Eventos de produto</td><td>Registrar analysis_completed, cv_generated, tracker_added, alert_clicked, plan_limit_hit.</td><td>Sem evento, a segmentacao vira chute.</td></tr><tr><td>Tabela de e-mails</td><td>Criar email_events ou reaproveitar com cuidado chave sintética por campanha.</td><td>Evitar duplicidade e medir clique/conversao.</td></tr><tr><td>Preferencias</td><td>Guardar opt-in, unsubscribe e categorias: produto, alertas, conteudo.</td><td>Transacional pode ser separado de marketing.</td></tr><tr><td>UTMs</td><td>Adicionar utm_source=email, utm_medium=lifecycle, utm_campaign=nome.</td><td>Ajuda GA4 e funil.</td></tr><tr><td>Templates</td><td>Criar componentes HTML consistentes com marca.</td><td>Evitar copiar HTML gigante em cada rota.</td></tr><tr><td>Frequencia</td><td>No maximo 1 campanha semanal + automacoes comportamentais relevantes.</td><td>Candidato em busca ativa tem ansiedade; excesso queima marca.</td></tr></tbody></table>
+  <div class="priority-box"><b>Prioridade tecnica:</b> antes de aumentar volume, garantir autenticação de domínio, unsubscribe funcional, dedupe de envio e tracking mínimo de clique/conversão.</div>
+</section>
+
+<section class="section" id="plano-30">
+  <div class="sec-label">12 / Plano de 30 dias</div>
+  <h2>Execucao prática</h2>
+  <table><thead><tr><th>Semana</th><th>Entregas</th><th>Resultado esperado</th></tr></thead><tbody><tr><td>Semana 1</td><td>Reescrever welcome, day2, day5; configurar UTMs; revisar descadastro.</td><td>Onboarding mais direto e mensurável.</td></tr><tr><td>Semana 2</td><td>Criar pos-analise por score e limite Free.</td><td>Primeiros e-mails de conversao comportamental.</td></tr><tr><td>Semana 3</td><td>Criar régua de candidaturas e alertas.</td><td>Retencao e retorno ao app.</td></tr><tr><td>Semana 4</td><td>Enviar newsletter semanal piloto + medir abertura/clique/conversao.</td><td>Baseline editorial para repetir ou ajustar.</td></tr></tbody></table>
+  <div class="callout amber"><b>Sequência recomendada:</b> comece por e-mails que já têm contexto de produto. Eles convertem melhor que newsletter ampla.</div>
+</section>
+
+<section class="section" id="checklist">
+  <div class="sec-label">13 / Checklist final</div>
+  <h2>Antes de disparar</h2>
+  <div class="check-grid">
+    <span>Assunto promete algo realista?</span>
+    <span>Existe um CTA principal?</span>
+    <span>O link leva para a tela certa?</span>
+    <span>O e-mail usa contexto real do usuario?</span>
+    <span>Tem opt-out quando for marketing?</span>
+    <span>Tem UTM?</span>
+    <span>Evita prometer emprego?</span>
+    <span>Está alinhado ao plano do usuário?</span>
+    <span>Tem dedupe para nao enviar duplicado?</span>
+    <span>Foi testado em mobile?</span>
+  </div>
+</section>
+</main>
+  </div>
+</body>
+</html>

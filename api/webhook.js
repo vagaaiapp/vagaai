@@ -135,6 +135,37 @@ async function upsertCredits(userId, creditsToAdd) {
   throw new Error('upsertCredits: optimistic lock falhou após retries');
 }
 
+// Reivindica um marcador único em webhook_events (INSERT ignore-duplicates).
+// true = primeira vez (pode enviar e-mail); false = já processado ou erro
+// (não envia — fail-safe contra duplicata em retries do Stripe).
+async function claimMarker(key, userId) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/webhook_events`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=ignore-duplicates,return=representation',
+      },
+      body: JSON.stringify({ stripe_session_id: key, user_id: userId, amount: 0, processed_at: new Date().toISOString() }),
+    });
+    if (!r.ok) return false;
+    const rows = await r.json().catch(() => []);
+    return Array.isArray(rows) && rows.length > 0;
+  } catch { return false; }
+}
+
+// Dispara e-mail da régua via onboarding-emails (fire-and-forget).
+function sendLifecycleEmail(email, type, extra = {}) {
+  if (!email || !process.env.CRON_SECRET) return;
+  fetch('https://www.vagaai.app.br/api/onboarding-emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${process.env.CRON_SECRET}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, name: '', type, ...extra }),
+  }).catch((e) => console.error(`Webhook: e-mail ${type} falhou:`, e.message));
+}
+
 export const config = {
   api: { bodyParser: false },
 };
@@ -315,13 +346,20 @@ export default async function handler(req, res) {
       console.error('Webhook: upsert subscription falhou:', e.message);
       return res.status(500).json({ error: 'subscription_upsert_failed' });
     }
-    // Email de boas-vindas (apenas na criação)
-    if (eventType === 'customer.subscription.created' && email && process.env.CRON_SECRET) {
-      fetch(`https://www.vagaai.app.br/api/onboarding-emails`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${process.env.CRON_SECRET}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name: '', type: 'welcome' }),
-      }).catch(() => {});
+    // "Seu plano X está ativo" — específico por plano (substitui o welcome
+    // genérico aqui; o welcome de conta continua saindo no primeiro login).
+    if (eventType === 'customer.subscription.created' && email) {
+      if (await claimMarker(`sub_activated_${sub.id}`, userId)) {
+        sendLifecycleEmail(email, 'sub_activated', { plan: planInfo.plan });
+      }
+    }
+    // Pagamento falhou → past_due (período de graça): aviso com CTA de
+    // atualizar cartão. Dedup por período — um novo past_due em outra fatura
+    // (outro current_period_end) gera novo aviso.
+    if (eventType === 'customer.subscription.updated' && sub.status === 'past_due' && email) {
+      if (await claimMarker(`payfail_${sub.id}_${sub.current_period_end || 'x'}`, userId)) {
+        sendLifecycleEmail(email, 'payment_failed');
+      }
     }
     console.log(`Webhook: subscription ${sub.id} → plan=${planInfo.plan} user=${userId}`);
     return res.status(200).json({ received: true, plan: planInfo.plan });
@@ -342,6 +380,11 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'downgrade_failed' });
       }
       console.log(`Webhook: subscription canceled → user=${userId} downgraded to free`);
+      // "Cancelamento confirmado" — o que permanece no grátis + porta aberta.
+      const cancelEmail = await getStripeCustomerEmail(customerId);
+      if (cancelEmail && await claimMarker(`subcancel_${sub.id}`, userId)) {
+        sendLifecycleEmail(cancelEmail, 'sub_canceled');
+      }
     }
     return res.status(200).json({ received: true, note: 'subscription_canceled' });
   }

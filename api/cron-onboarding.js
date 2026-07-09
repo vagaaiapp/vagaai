@@ -87,6 +87,48 @@ async function getUserCredits(userId) {
   } catch { return 0; }
 }
 
+const _sbHeaders = () => ({ apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` });
+
+// Condições da régua nova. Em erro de consulta, retornam o valor que SUPRIME o
+// envio (fail-safe: melhor não enviar do que enviar errado).
+async function hasActiveAlert(userId) {
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/job_alert_profiles?user_id=eq.${encodeURIComponent(userId)}&ativo=eq.true&select=user_id&limit=1`,
+      { headers: _sbHeaders() }
+    );
+    if (!r.ok) return true;
+    const rows = await r.json();
+    return Array.isArray(rows) && rows.length > 0;
+  } catch { return true; }
+}
+
+async function hasAnalysisSince(userId, sinceIso) {
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/analyses?user_id=eq.${encodeURIComponent(userId)}&created_at=gte.${encodeURIComponent(sinceIso)}&select=id&limit=1`,
+      { headers: _sbHeaders() }
+    );
+    if (!r.ok) return true;
+    const rows = await r.json();
+    return Array.isArray(rows) && rows.length > 0;
+  } catch { return true; }
+}
+
+async function isPaidPlan(userId) {
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${encodeURIComponent(userId)}&order=created_at.desc&limit=1&select=plan,status`,
+      { headers: _sbHeaders() }
+    );
+    if (!r.ok) return true;
+    const rows = await r.json();
+    const sub = rows?.[0];
+    if (!sub) return false;
+    return ['starter', 'pro'].includes(sub.plan) && ['active', 'trialing', 'past_due'].includes(sub.status);
+  } catch { return true; }
+}
+
 async function callOnboardingEmail(email, name, type, creditsLeft) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
@@ -205,6 +247,77 @@ export default async function handler(req, res) {
         await markEmailSent(user.id, type);
         results[type].sent++;
       }
+    }
+  }
+
+  // ── D7: "ligue seu radar" — só para quem NÃO tem alerta ativo ─────────────
+  {
+    const users = await getUsersCreatedAround(7);
+    results.day7_alerts = { processed: users.length, sent: 0 };
+    for (const user of users) {
+      if (await isEmailSent(user.id, 'day7_alerts')) continue;
+      if (!user.email) continue;
+      if (await hasActiveAlert(user.id)) continue;
+      const name = user.user_metadata?.full_name || user.email.split('@')[0];
+      const sent = await callOnboardingEmail(user.email, name, 'day7_alerts', 0);
+      if (sent) {
+        await markEmailSent(user.id, 'day7_alerts');
+        results.day7_alerts.sent++;
+      }
+    }
+  }
+
+  // ── D21: win-back único — sem análise há 14d e sem alerta ativo ───────────
+  {
+    const users = await getUsersCreatedAround(21);
+    results.winback = { processed: users.length, sent: 0 };
+    const since14d = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+    for (const user of users) {
+      if (await isEmailSent(user.id, 'winback')) continue;
+      if (!user.email) continue;
+      if (await hasActiveAlert(user.id)) continue;
+      if (await hasAnalysisSince(user.id, since14d)) continue;
+      const name = user.user_metadata?.full_name || user.email.split('@')[0];
+      const sent = await callOnboardingEmail(user.email, name, 'winback', 0);
+      if (sent) {
+        await markEmailSent(user.id, 'winback');
+        results.winback.sent++;
+      }
+    }
+  }
+
+  // ── Ciclo do grátis: janela mensal reabriu e não foi usada ────────────────
+  // Candidatos: última análise entre 40 e 30 dias atrás (janela de 30d reabriu
+  // há pouco). Quem continua inativo além dos 40d NÃO recebe de novo — 1 nudge
+  // por lapso, sem virar spam recorrente para dormentes.
+  {
+    results.free_renewed = { processed: 0, sent: 0 };
+    const from40 = new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString();
+    const to30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    try {
+      const r = await fetch(
+        `${SUPABASE_URL}/rest/v1/analyses?created_at=gte.${encodeURIComponent(from40)}&created_at=lte.${encodeURIComponent(to30)}&select=user_id`,
+        { headers: _sbHeaders() }
+      );
+      const rows = r.ok ? await r.json() : [];
+      const candidates = [...new Set((Array.isArray(rows) ? rows : []).map(x => x.user_id).filter(Boolean))];
+      results.free_renewed.processed = candidates.length;
+      const monthKey = `freecycle_${new Date().toISOString().slice(0, 7).replace('-', '')}`;
+      for (const uid of candidates) {
+        if (await isEmailSent(uid, monthKey)) continue;
+        if (await hasAnalysisSince(uid, to30)) continue;  // usou nos últimos 30d → janela não reabriu
+        if (await isPaidPlan(uid)) continue;              // pago não depende da gratuidade
+        if ((await getUserCredits(uid)) > 0) continue;    // com créditos, o gate não é a análise grátis
+        const info = await getUserEmail(uid);
+        if (!info?.email) continue;
+        const sent = await callOnboardingEmail(info.email, info.name, 'free_renewed', 0);
+        if (sent) {
+          await markEmailSent(uid, monthKey);
+          results.free_renewed.sent++;
+        }
+      }
+    } catch (e) {
+      console.error('free_renewed cycle error:', e.message);
     }
   }
 

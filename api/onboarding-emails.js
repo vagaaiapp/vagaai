@@ -6,12 +6,14 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
-async function sendEmail(to, subject, html) {
+async function sendEmail(to, subject, html, replyTo = null) {
   if (!RESEND_API_KEY) return;
+  const payload = { from: 'VagaAI <ola@vagaai.app.br>', to: [to], subject, html };
+  if (replyTo) payload.reply_to = replyTo;
   return fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: 'VagaAI <ola@vagaai.app.br>', to: [to], subject, html }),
+    body: JSON.stringify(payload),
   });
 }
 
@@ -101,6 +103,138 @@ const EMAILS = {
     </div>
     <a href="https://www.vagaai.app.br/dashboard" style="display:block;background:#3ecf8e;color:#0a0f0d;font-weight:700;font-size:14px;text-align:center;padding:.9rem;border-radius:9px;text-decoration:none">→ Ver rastreador de candidaturas</a>
     <p style="color:#4d6e57;font-size:11px;margin-top:1.5rem;text-align:center">VagaAI · <a href="https://vagaai.app.br" style="color:#3ecf8e;text-decoration:none">vagaai.app.br</a></p>
+  </div>
+</div>`
+  }; },
+
+  // ── Régua 2026-07: D7 radar, D21 win-back, ciclo free, ciclo de assinatura ──
+
+  // D7 — só para quem NÃO tem alerta ativo. Objetivo: ligar o motor de retenção.
+  day7_alerts: (rawName) => { const name = esc(rawName); return {
+    subject: 'Ligue seu radar de vagas — leva 1 minuto 🔔',
+    html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#0a0f0d;color:#e8ede9;border-radius:12px;overflow:hidden">
+  <div style="background:#111814;padding:1.5rem 2rem;border-bottom:1px solid rgba(255,255,255,.07)">
+    <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#3ecf8e">VagaAI</div>
+  </div>
+  <div style="padding:2rem">
+    <h1 style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">Olá, ${name}!</h1>
+    <p style="color:#8a9e90;font-size:14px;line-height:1.7;margin-bottom:1.2rem">
+      As melhores vagas fecham em dias. Em vez de procurar todo dia, deixe o radar procurar por você:
+      diga o cargo e a cidade, e você recebe por e-mail só as vagas compatíveis com seu perfil — com score estimado.
+    </p>
+    <div style="background:#161d19;border-radius:10px;padding:1.2rem;margin-bottom:1.5rem">
+      <div style="font-size:13px;color:#8a9e90;line-height:1.6">🔔 Grátis, direto no seu e-mail, cancela quando quiser. Leva 1 minuto para configurar.</div>
+    </div>
+    <a href="https://www.vagaai.app.br/dashboard?tab=alertas" style="display:block;background:#3ecf8e;color:#0a0f0d;font-weight:700;font-size:14px;text-align:center;padding:.9rem;border-radius:9px;text-decoration:none">→ Configurar meu alerta de vagas</a>
+    <p style="color:#4d6e57;font-size:11px;margin-top:1.5rem;text-align:center">VagaAI · <a href="https://vagaai.app.br" style="color:#3ecf8e;text-decoration:none">vagaai.app.br</a></p>
+  </div>
+</div>`
+  }; },
+
+  // D21 — win-back único, texto simples e pessoal; convida a responder o e-mail
+  // (reply chega em contato@ — configurado no envio com reply_to).
+  winback: (rawName) => { const name = esc(rawName); return {
+    subject: 'Posso te perguntar uma coisa?',
+    html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;color:#222;line-height:1.7;font-size:14px;padding:1rem">
+  <p>Olá, ${name}!</p>
+  <p>Vi que você criou sua conta no VagaAI há algumas semanas, mas acabou não voltando. Tudo bem — mas sua resposta me ajudaria muito a melhorar o produto:</p>
+  <p style="font-weight:700">O que te travou? Faltou alguma coisa, o resultado não ajudou, ou a busca de emprego mudou?</p>
+  <p>É só responder este e-mail — eu leio todas as respostas pessoalmente.</p>
+  <p>Abraço,<br>Equipe VagaAI · <a href="https://vagaai.app.br" style="color:#1a7a4a">vagaai.app.br</a></p>
+</div>`
+  }; },
+
+  // Ciclo mensal do grátis — a janela de análise reabriu e não foi usada.
+  free_renewed: (rawName) => { const name = esc(rawName); return {
+    subject: 'Sua análise grátis do mês voltou ✅',
+    html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#0a0f0d;color:#e8ede9;border-radius:12px;overflow:hidden">
+  <div style="background:#111814;padding:1.5rem 2rem;border-bottom:1px solid rgba(255,255,255,.07)">
+    <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#3ecf8e">VagaAI</div>
+  </div>
+  <div style="padding:2rem">
+    <h1 style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">Olá, ${name}!</h1>
+    <p style="color:#8a9e90;font-size:14px;line-height:1.7;margin-bottom:1.5rem">
+      Sua <strong style="color:#3ecf8e">análise completa grátis</strong> deste mês já está disponível.
+      Escolha a vaga mais importante da sua semana e veja exatamente onde seu currículo perde pontos antes de aplicar.
+    </p>
+    <a href="https://www.vagaai.app.br/app" style="display:block;background:#3ecf8e;color:#0a0f0d;font-weight:700;font-size:14px;text-align:center;padding:.9rem;border-radius:9px;text-decoration:none">⚡ Usar minha análise grátis</a>
+    <p style="color:#4d6e57;font-size:11px;margin-top:1.5rem;text-align:center">VagaAI · <a href="https://vagaai.app.br" style="color:#3ecf8e;text-decoration:none">vagaai.app.br</a></p>
+  </div>
+</div>`
+  }; },
+
+  // Assinatura ativada — específico por plano; substitui o welcome genérico
+  // no fluxo do webhook de assinatura (o welcome de conta continua no signup).
+  sub_activated: (rawName, plan) => {
+    const name = esc(rawName);
+    const isPro = plan === 'pro';
+    const label = isPro ? 'Pro' : 'Starter';
+    const items = isPro
+      ? [['⚡ Análises ilimitadas', 'Analise todas as vagas que quiser, sem contador.'],
+         ['🎤 Simulador de entrevista', 'Treine com perguntas geradas para a SUA vaga e receba feedback da IA.'],
+         ['🔔 Alertas diários sem limite', 'Todas as vagas compatíveis, com análise da IA no topo do e-mail.']]
+      : [['⚡ 10 análises por mês', 'Analise as vagas mais importantes antes de aplicar.'],
+         ['📄 Currículo otimizado em PDF', 'Gere a versão otimizada pronta para enviar.'],
+         ['✉️ Carta de apresentação', 'Uma carta personalizada para cada vaga, em segundos.']];
+    return {
+      subject: `Seu plano ${label} está ativo 🎉 Comece por aqui`,
+      html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#0a0f0d;color:#e8ede9;border-radius:12px;overflow:hidden">
+  <div style="background:#111814;padding:2rem;text-align:center;border-bottom:1px solid rgba(255,255,255,.07)">
+    <div style="font-family:Georgia,serif;font-size:24px;font-weight:700;color:#3ecf8e">VagaAI ${label}</div>
+  </div>
+  <div style="padding:2rem">
+    <h1 style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">Obrigado, ${name}! 🎉</h1>
+    <p style="color:#8a9e90;font-size:14px;line-height:1.7;margin-bottom:1.5rem">Seu plano ${label} já está ativo. Isto é o que ele libera:</p>
+    ${items.map(([t, d]) => `<div style="background:#161d19;border-radius:10px;padding:1.2rem;margin-bottom:1rem">
+      <div style="font-size:13px;font-weight:700;color:#3ecf8e;margin-bottom:.4rem">${t}</div>
+      <div style="font-size:13px;color:#8a9e90">${d}</div>
+    </div>`).join('')}
+    <a href="https://www.vagaai.app.br/dashboard" style="display:block;background:#3ecf8e;color:#0a0f0d;font-weight:700;font-size:14px;text-align:center;padding:.9rem;border-radius:9px;text-decoration:none;margin-top:.5rem">→ Ir para o meu painel</a>
+    <p style="color:#4d6e57;font-size:11px;margin-top:1.5rem;text-align:center">Gerencie sua assinatura a qualquer momento no painel · VagaAI</p>
+  </div>
+</div>`
+    };
+  },
+
+  // Pagamento falhou — período de graça ativo; tom tranquilo, 1 CTA.
+  payment_failed: (rawName) => { const name = esc(rawName); return {
+    subject: 'Não conseguimos renovar sua assinatura — seu acesso continua ativo',
+    html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#0a0f0d;color:#e8ede9;border-radius:12px;overflow:hidden">
+  <div style="background:#111814;padding:1.5rem 2rem;border-bottom:1px solid rgba(255,255,255,.07)">
+    <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#3ecf8e">VagaAI</div>
+  </div>
+  <div style="padding:2rem">
+    <h1 style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">Olá, ${name}!</h1>
+    <p style="color:#8a9e90;font-size:14px;line-height:1.7;margin-bottom:1rem">
+      A renovação da sua assinatura não foi aprovada pelo banco — isso é comum (limite, cartão vencido ou bloqueio temporário).
+    </p>
+    <p style="color:#8a9e90;font-size:14px;line-height:1.7;margin-bottom:1.5rem">
+      <strong style="color:#e8ede9">Seu acesso continua ativo</strong> enquanto tentamos novamente. Para não perder seus recursos, atualize a forma de pagamento:
+    </p>
+    <a href="https://www.vagaai.app.br/dashboard?tab=plano" style="display:block;background:#3ecf8e;color:#0a0f0d;font-weight:700;font-size:14px;text-align:center;padding:.9rem;border-radius:9px;text-decoration:none">→ Atualizar forma de pagamento</a>
+    <p style="color:#4d6e57;font-size:11px;margin-top:1.5rem;text-align:center">Dúvida de cobrança? Responda este e-mail. · VagaAI</p>
+  </div>
+</div>`
+  }; },
+
+  // Cancelamento confirmado — sem culpa; lista o que permanece no grátis.
+  sub_canceled: (rawName) => { const name = esc(rawName); return {
+    subject: 'Cancelamento confirmado — você continua com o plano gratuito',
+    html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#0a0f0d;color:#e8ede9;border-radius:12px;overflow:hidden">
+  <div style="background:#111814;padding:1.5rem 2rem;border-bottom:1px solid rgba(255,255,255,.07)">
+    <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#3ecf8e">VagaAI</div>
+  </div>
+  <div style="padding:2rem">
+    <h1 style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">Olá, ${name}</h1>
+    <p style="color:#8a9e90;font-size:14px;line-height:1.7;margin-bottom:1.2rem">
+      Sua assinatura foi cancelada e você não será mais cobrado. Obrigado por ter feito parte — e boa sorte na sua busca! 🍀
+    </p>
+    <div style="background:#161d19;border-radius:10px;padding:1.2rem;margin-bottom:1.5rem">
+      <div style="font-size:13px;font-weight:700;color:#3ecf8e;margin-bottom:.5rem">Você continua com o plano gratuito:</div>
+      <div style="font-size:13px;color:#8a9e90;line-height:1.8">✓ 1 análise completa por mês<br>✓ Alerta semanal com até 5 vagas<br>✓ Rastreador de candidaturas com seu histórico intacto</div>
+    </div>
+    <a href="https://www.vagaai.app.br/dashboard" style="display:block;background:#3ecf8e;color:#0a0f0d;font-weight:700;font-size:14px;text-align:center;padding:.9rem;border-radius:9px;text-decoration:none">→ Continuar no plano gratuito</a>
+    <p style="color:#4d6e57;font-size:11px;margin-top:1.5rem;text-align:center">Mudou de ideia? É só reassinar pelo painel. · VagaAI</p>
   </div>
 </div>`
   }; },
@@ -210,20 +344,27 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const { email, name, type, credits_left, empresa, cargo } = req.body || {};
+  const { email, name, type, credits_left, empresa, cargo, plan } = req.body || {};
   if (!email || !type) return res.status(400).json({ error: 'email e type obrigatórios' });
 
   const displayName = name || email.split('@')[0];
 
   try {
     let emailData;
+    let replyTo = null;
     if (type === 'welcome') emailData = EMAILS.welcome(displayName);
     else if (type === 'day2') emailData = EMAILS.day2(displayName);
     else if (type === 'day5') emailData = EMAILS.day5(displayName, credits_left || 0);
+    else if (type === 'day7_alerts') emailData = EMAILS.day7_alerts(displayName);
+    else if (type === 'winback') { emailData = EMAILS.winback(displayName); replyTo = 'contato@vagaai.app.br'; }
+    else if (type === 'free_renewed') emailData = EMAILS.free_renewed(displayName);
+    else if (type === 'sub_activated') emailData = EMAILS.sub_activated(displayName, plan === 'pro' ? 'pro' : 'starter');
+    else if (type === 'payment_failed') { emailData = EMAILS.payment_failed(displayName); replyTo = 'contato@vagaai.app.br'; }
+    else if (type === 'sub_canceled') emailData = EMAILS.sub_canceled(displayName);
     else if (type === 'tracker_followup') emailData = EMAILS.tracker_followup(displayName, empresa || 'empresa', cargo || 'vaga');
     else return res.status(400).json({ error: 'type inválido' });
 
-    const r = await sendEmail(email, emailData.subject, emailData.html);
+    const r = await sendEmail(email, emailData.subject, emailData.html, replyTo);
     if (!r?.ok) throw new Error('Resend error');
     return res.status(200).json({ sent: true, type, to: email });
   } catch (e) {

@@ -19,6 +19,38 @@ function esc(s) {
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
+// Auto-confirmação para o cliente ("recebemos sua mensagem") — fire-and-forget:
+// falha aqui nunca derruba o envio principal para o inbox de suporte.
+function sendAutoReply(to, isCompanyLead) {
+  const subject = isCompanyLead
+    ? 'Recebemos seu interesse — VagaAI Hire'
+    : 'Recebemos sua mensagem — Suporte VagaAI';
+  const intro = isCompanyLead
+    ? 'Obrigado pelo interesse no VagaAI Hire! Recebemos os dados da sua empresa e vamos retornar em até <strong>1 dia útil</strong> com os próximos passos.'
+    : 'Sua mensagem chegou à nossa equipe de suporte. Respondemos em até <strong>1 dia útil</strong> — normalmente bem antes.';
+  fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: 'VagaAI <ola@vagaai.app.br>',
+      to: [to],
+      reply_to: 'contato@vagaai.app.br',
+      subject,
+      html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#0a0f0d;color:#e8ede9;border-radius:12px;overflow:hidden">
+  <div style="background:#111814;padding:1.5rem 2rem;border-bottom:1px solid rgba(255,255,255,.07)">
+    <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#3ecf8e">VagaAI</div>
+  </div>
+  <div style="padding:2rem">
+    <h1 style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">Mensagem recebida ✅</h1>
+    <p style="color:#8a9e90;font-size:14px;line-height:1.7;margin-bottom:1.5rem">${intro}</p>
+    <p style="color:#8a9e90;font-size:13px;line-height:1.6">Se precisar acrescentar algo, é só responder este e-mail.</p>
+    <p style="color:#4d6e57;font-size:11px;margin-top:1.5rem;text-align:center">VagaAI · <a href="https://vagaai.app.br" style="color:#3ecf8e;text-decoration:none">vagaai.app.br</a></p>
+  </div>
+</div>`,
+    }),
+  }).catch((e) => console.error('support auto-reply failed:', e.message));
+}
+
 // Rate limit por IP em memória — anti email-bombing do inbox de suporte.
 const _ipHits = new Map();
 const SUPPORT_LIMIT = 5;            // máx 5 mensagens
@@ -100,6 +132,7 @@ async function handleCompanyLead(body, res) {
       return res.status(500).json({ error: 'Erro ao enviar. Tente novamente.' });
     }
 
+    sendAutoReply(email, true);
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('Company lead handler error:', err);
@@ -202,6 +235,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Erro ao enviar. Tente novamente.' });
     }
 
+    sendAutoReply(email, false);
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('Support handler error:', err);
