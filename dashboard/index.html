@@ -2302,6 +2302,10 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         Suporte
       </button>
+      <button class="dropdown-item" role="menuitem" onclick="closeDropdown();startDashTour('manual')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+        Ver tour do painel
+      </button>
       <div class="ua-divider"></div>
       <button class="dropdown-item danger" role="menuitem" onclick="logout()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -2988,6 +2992,7 @@ async function init() {
   }
   document.getElementById('pageLoading').classList.add('hidden');
   openRequestedDashboardTab();
+  maybeStartDashTour();
 }
 
 function getWeekStart(date, weeksAgo) {
@@ -6779,6 +6784,146 @@ function showConfirm(title, sub, onConfirm, okLabel, icon) {
 window.addEventListener('load', function() {
   setTimeout(init, 100);
 });
+</script>
+
+<!-- ── Tour do painel: 4 passos, 1ª visita, skippável, re-acessível no menu ── -->
+<style>
+.tour-spot { position: fixed; z-index: 12000; border-radius: 12px; pointer-events: none;
+  box-shadow: 0 0 0 9999px rgba(4, 12, 7, .58); transition: all .28s ease; }
+.tour-balloon { position: fixed; z-index: 12001; width: 300px; max-width: calc(100vw - 24px);
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+  padding: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.22); transition: all .28s ease; }
+.tour-title { font-size: 15px; font-weight: 700; color: var(--t1); margin-bottom: 6px; }
+.tour-text { font-size: 13px; color: var(--t2); line-height: 1.55; margin-bottom: 14px; }
+.tour-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.tour-skip { background: none; border: none; font-size: 12px; color: var(--t3); cursor: pointer; padding: 6px 2px; }
+.tour-skip:hover { color: var(--t1); }
+.tour-dots { display: flex; gap: 5px; }
+.tour-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+.tour-dot.on { background: var(--gb-emerald); }
+.tour-next { background: var(--gb-emerald); color: #fff; border: none; border-radius: 8px;
+  font-size: 12.5px; font-weight: 700; padding: 8px 16px; cursor: pointer; min-height: 34px; }
+.tour-next:hover { filter: brightness(1.08); }
+@media (max-width: 768px) {
+  .tour-balloon { left: 12px !important; right: 12px; width: auto; bottom: 84px !important; top: auto !important; }
+}
+</style>
+<script>
+var TOUR_KEY = 'vagaai_tour_done';
+var TOUR_STEPS = [
+  { tab: 'painel',  title: 'Sua visão geral',            text: 'Aqui você acompanha suas análises, seu progresso e as próximas ações da sua busca — tudo em um só lugar.' },
+  { tab: 'alertas', title: 'Ligue seu radar de vagas 🔔', text: 'Configure cargo e cidade uma vez e receba vagas compatíveis direto no seu e-mail, com score estimado. É o jeito mais fácil de não perder oportunidade.' },
+  { tab: 'vagas',   title: 'Rastreie suas candidaturas',  text: 'Organize tudo em um quadro: Quero aplicar → Apliquei → Entrevista. Nenhuma candidatura se perde no caminho.' },
+  { tab: 'plano',   title: 'Seu plano e limites',         text: 'Veja o que seu plano inclui, acompanhe seus limites do mês e gerencie sua assinatura quando quiser.' }
+];
+var _tourStep = -1, _tourEls = null;
+
+function maybeStartDashTour() {
+  try {
+    if (localStorage.getItem(TOUR_KEY)) return;
+    // Deep-link (?tab= ou #aba): o usuário veio fazer algo específico — não interrompe.
+    if (/[?&]tab=/.test(window.location.search) || window.location.hash) return;
+  } catch (e) { return; }
+  setTimeout(function () { startDashTour('auto'); }, 700);
+}
+
+function startDashTour(mode) {
+  if (_tourEls) return; // já ativo
+  var spot = document.createElement('div'); spot.className = 'tour-spot';
+  var bal = document.createElement('div'); bal.className = 'tour-balloon';
+  bal.setAttribute('role', 'dialog'); bal.setAttribute('aria-label', 'Tour do painel');
+  document.body.appendChild(spot); document.body.appendChild(bal);
+  _tourEls = { spot: spot, bal: bal };
+  _tourStep = 0;
+  try { gtag('event', 'dash_tour_started', { mode: mode || 'auto' }); } catch (e) {}
+  window.addEventListener('resize', _tourReposition);
+  document.addEventListener('keydown', _tourKeydown);
+  _tourRender();
+}
+
+function _tourKeydown(e) { if (e.key === 'Escape') endDashTour(false); }
+
+// Âncora visível para a aba: sidebar (desktop) ou barra inferior (mobile).
+// Visibilidade por dimensões do rect (não offsetParent, que é null em
+// elementos dentro de containers position:fixed como a sidebar).
+function _tourAnchor(tab) {
+  var sels = ['.sb-btn[data-tab="' + tab + '"]', '.dm-bottom-btn[data-tab="' + tab + '"]'];
+  for (var i = 0; i < sels.length; i++) {
+    var el = document.querySelector(sels[i]);
+    if (el) {
+      var r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) return el;
+    }
+  }
+  return null;
+}
+
+function _tourRender() {
+  if (!_tourEls) return;
+  var step = TOUR_STEPS[_tourStep];
+  try { switchDashTab(step.tab); } catch (e) {}
+  var last = _tourStep === TOUR_STEPS.length - 1;
+  _tourEls.bal.innerHTML =
+    '<div class="tour-title">' + step.title + '</div>' +
+    '<div class="tour-text">' + step.text + '</div>' +
+    '<div class="tour-foot">' +
+      '<button class="tour-skip" onclick="endDashTour(false)">Pular tour</button>' +
+      '<div class="tour-dots">' + TOUR_STEPS.map(function (_, i) {
+        return '<span class="tour-dot' + (i === _tourStep ? ' on' : '') + '"></span>';
+      }).join('') + '</div>' +
+      '<button class="tour-next" onclick="' + (last ? 'endDashTour(true)' : 'nextDashTourStep()') + '">' +
+        (last ? 'Concluir ✓' : 'Próximo →') + '</button>' +
+    '</div>';
+  // Reposiciona após o switch de aba assentar o layout
+  setTimeout(_tourReposition, 60);
+}
+
+function _tourReposition() {
+  if (!_tourEls) return;
+  var step = TOUR_STEPS[_tourStep];
+  var anchor = _tourAnchor(step.tab);
+  var spot = _tourEls.spot, bal = _tourEls.bal;
+  var isMobile = window.innerWidth <= 768;
+  if (anchor) {
+    var r = anchor.getBoundingClientRect(), pad = 6;
+    spot.style.display = 'block';
+    spot.style.left = (r.left - pad) + 'px';
+    spot.style.top = (r.top - pad) + 'px';
+    spot.style.width = (r.width + pad * 2) + 'px';
+    spot.style.height = (r.height + pad * 2) + 'px';
+  } else {
+    spot.style.display = 'none'; // âncora sumiu (UI mudou) — segue sem spotlight
+  }
+  if (isMobile) return; // CSS fixa o balão como sheet na base
+  var bw = 300, bh = bal.offsetHeight || 170, gap = 16;
+  var left, top;
+  if (anchor) {
+    var ar = anchor.getBoundingClientRect();
+    left = ar.right + gap;                          // ao lado da sidebar
+    if (left + bw > window.innerWidth - 12) left = window.innerWidth - bw - 12;
+    top = Math.min(Math.max(ar.top - 10, 12), window.innerHeight - bh - 12);
+  } else {
+    left = (window.innerWidth - bw) / 2;            // fallback: centralizado
+    top = (window.innerHeight - bh) / 2;
+  }
+  bal.style.left = left + 'px';
+  bal.style.top = top + 'px';
+}
+
+function nextDashTourStep() { _tourStep++; _tourRender(); }
+
+function endDashTour(completed) {
+  if (!_tourEls) return;
+  try { localStorage.setItem(TOUR_KEY, '1'); } catch (e) {}
+  try {
+    gtag('event', completed ? 'dash_tour_completed' : 'dash_tour_skipped', { step: _tourStep + 1 });
+  } catch (e) {}
+  _tourEls.spot.remove(); _tourEls.bal.remove();
+  _tourEls = null; _tourStep = -1;
+  window.removeEventListener('resize', _tourReposition);
+  document.removeEventListener('keydown', _tourKeydown);
+  if (completed) { try { switchDashTab('painel'); } catch (e) {} }
+}
 </script>
 </body>
 </html>
