@@ -1343,7 +1343,16 @@ body.frame-fullscreen .sidebar { display: none !important; }
 @media (max-width: 768px) {
   .sidebar { display: none; }
   :root { --sb: 0px; }
-  .main { margin-left: 0; }
+  /* .main tem flex:1 mas o padrão min-width:auto de flex item faz o navegador
+     recusar encolher abaixo do conteúdo mais largo de QUALQUER aba — a de
+     Candidaturas tem vários elementos white-space:nowrap (status pill, chips,
+     botão "Nova candidatura") que juntos exigem ~700px, empurrando .main (e a
+     página inteira) para essa largura mesmo em telas de 375px. Resultado:
+     scroll horizontal, botões fora da tela, layout todo deslocado — a raiz do
+     "tour quebra em candidaturas" (o tour força a visita a essa aba). Correção
+     estrutural: min-width:0 permite o flex item encolher para o viewport real;
+     o conteúdo interno then wrap/trunca normalmente em vez de estourar a página. */
+  .main { margin-left: 0; min-width: 0; }
   .header { display: none; }
   .content { padding: 82px 16px 104px; }
   .psa-grid { grid-template-columns: 1fr; }
@@ -1645,10 +1654,16 @@ body.cd-modal-open { overflow:hidden; }
 @media (max-width:768px) {
   .cand-page { gap:16px; }
   .cand-header { gap:12px; }
-  .cand-header-right { width:100%; justify-content:space-between; align-items:stretch; }
+  /* view-switcher (Lista/Kanban/Calendário) + "Nova candidatura" não cabem
+     lado a lado em telas estreitas (~375px) sem encolher — flex-wrap:nowrap
+     forçava a linha a crescer além do viewport, estourando .content/.main
+     para ~700px e quebrando o layout inteiro da aba (raiz do "tour quebra em
+     candidaturas": o tour força a visita a esta aba, expondo o overflow).
+     Com wrap, o botão cai para a linha de baixo quando não há espaço. */
+  .cand-header-right { width:100%; flex-wrap:wrap; justify-content:space-between; align-items:stretch; }
   .cand-view-switcher { flex:1; min-width:0; }
   .cvs-btn { flex:1; padding:12px 9px; font-size:12px; min-height:44px; }
-  .cand-new-btn { padding:9px 12px; white-space:nowrap; }
+  .cand-new-btn { width:100%; justify-content:center; padding:11px 12px; white-space:nowrap; }
   .cand-summary { grid-template-columns:1fr; gap:10px; }
   .cand-priority,
   .cand-metric { padding:16px; }
