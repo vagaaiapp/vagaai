@@ -226,34 +226,56 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Missing Supabase config' });
   }
 
-  const results = { day2: { processed: 0, sent: 0 }, day5: { processed: 0, sent: 0 }, tracker_followup: { processed: 0, sent: 0 } };
-
-  // ── Onboarding day2 / day5 ────────────────────────────────────────────────
-  for (const { type, daysAgo } of [{ type: 'day2', daysAgo: 2 }, { type: 'day5', daysAgo: 5 }]) {
-    const users = await getUsersCreatedAround(daysAgo);
-    results[type].processed = users.length;
-
-    for (const user of users) {
-      if (await isEmailSent(user.id, type)) continue;
-
-      const email = user.email;
-      if (!email) continue;
-
-      const name = user.user_metadata?.full_name || email.split('@')[0];
-      const credits = type === 'day5' ? await getUserCredits(user.id) : 0;
-
-      const sent = await callOnboardingEmail(email, name, type, credits);
-      if (sent) {
-        await markEmailSent(user.id, type);
-        results[type].sent++;
-      }
+  const results = {
+    day2: { processed: 0, sent: 0 }, day5: { processed: 0, sent: 0 },
+    day7_alerts: { processed: 0, sent: 0 }, winback: { processed: 0, sent: 0 },
+    free_renewed: { processed: 0, sent: 0 }, tracker_followup: { processed: 0, sent: 0 },
+    block_errors: [],
+  };
+  // Isola cada bloco da régua: um erro transitório (ex.: fetch de rede lançando
+  // em getUsersCreatedAround) não pode derrubar o handler inteiro e silenciar
+  // os blocos seguintes — em 2026-07-07 o D7 tinha 3 usuários elegíveis e nada
+  // saiu, sem rastro (logs do Hobby duram 1h). Com o isolamento, o erro fica
+  // registrado em results.block_errors e o resto do run continua.
+  async function runBlock(name, fn) {
+    try { await fn(); } catch (e) {
+      console.error(`cron-onboarding: bloco ${name} falhou:`, e.message);
+      results.block_errors.push(name + ': ' + e.message);
     }
   }
 
+  // ── Onboarding day2 / day5 ────────────────────────────────────────────────
+  // Janela de 36h (±18h... na prática 1,5 dia): cobre 2 runs do cron — se um
+  // dia falhar, o seguinte reenvia (o marcador de dedup impede duplicata).
+  // A janela original de ±12h transformava 1 run perdido em usuário perdido.
+  for (const { type, daysAgo } of [{ type: 'day2', daysAgo: 2 }, { type: 'day5', daysAgo: 5 }]) {
+    await runBlock(type, async () => {
+      const users = await getUsersCreatedAround(daysAgo, 18);
+      results[type].processed = users.length;
+
+      for (const user of users) {
+        if (await isEmailSent(user.id, type)) continue;
+
+        const email = user.email;
+        if (!email) continue;
+
+        const name = user.user_metadata?.full_name || email.split('@')[0];
+        const credits = type === 'day5' ? await getUserCredits(user.id) : 0;
+
+        const sent = await callOnboardingEmail(email, name, type, credits);
+        if (sent) {
+          await markEmailSent(user.id, type);
+          results[type].sent++;
+        }
+      }
+    });
+  }
+
   // ── D7: "ligue seu radar" — só para quem NÃO tem alerta ativo ─────────────
-  {
-    const users = await getUsersCreatedAround(7);
-    results.day7_alerts = { processed: users.length, sent: 0 };
+  // Janela de ±36h (5,5–8,5 dias): cobre 3 runs. Chegar no D8 é melhor que nunca.
+  await runBlock('day7_alerts', async () => {
+    const users = await getUsersCreatedAround(7, 36);
+    results.day7_alerts.processed = users.length;
     for (const user of users) {
       if (await isEmailSent(user.id, 'day7_alerts')) continue;
       if (!user.email) continue;
@@ -265,12 +287,13 @@ export default async function handler(req, res) {
         results.day7_alerts.sent++;
       }
     }
-  }
+  });
 
   // ── D21: win-back único — sem análise há 14d e sem alerta ativo ───────────
-  {
-    const users = await getUsersCreatedAround(21);
-    results.winback = { processed: users.length, sent: 0 };
+  // Janela de ±60h (18,5–23,5 dias): timing exato importa pouco num win-back.
+  await runBlock('winback', async () => {
+    const users = await getUsersCreatedAround(21, 60);
+    results.winback.processed = users.length;
     const since14d = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
     for (const user of users) {
       if (await isEmailSent(user.id, 'winback')) continue;
@@ -284,60 +307,57 @@ export default async function handler(req, res) {
         results.winback.sent++;
       }
     }
-  }
+  });
 
   // ── Ciclo do grátis: janela mensal reabriu e não foi usada ────────────────
   // Candidatos: última análise entre 40 e 30 dias atrás (janela de 30d reabriu
   // há pouco). Quem continua inativo além dos 40d NÃO recebe de novo — 1 nudge
   // por lapso, sem virar spam recorrente para dormentes.
-  {
-    results.free_renewed = { processed: 0, sent: 0 };
+  await runBlock('free_renewed', async () => {
     const from40 = new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString();
     const to30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    try {
-      const r = await fetch(
-        `${SUPABASE_URL}/rest/v1/analyses?created_at=gte.${encodeURIComponent(from40)}&created_at=lte.${encodeURIComponent(to30)}&select=user_id`,
-        { headers: _sbHeaders() }
-      );
-      const rows = r.ok ? await r.json() : [];
-      const candidates = [...new Set((Array.isArray(rows) ? rows : []).map(x => x.user_id).filter(Boolean))];
-      results.free_renewed.processed = candidates.length;
-      const monthKey = `freecycle_${new Date().toISOString().slice(0, 7).replace('-', '')}`;
-      for (const uid of candidates) {
-        if (await isEmailSent(uid, monthKey)) continue;
-        if (await hasAnalysisSince(uid, to30)) continue;  // usou nos últimos 30d → janela não reabriu
-        if (await isPaidPlan(uid)) continue;              // pago não depende da gratuidade
-        if ((await getUserCredits(uid)) > 0) continue;    // com créditos, o gate não é a análise grátis
-        const info = await getUserEmail(uid);
-        if (!info?.email) continue;
-        const sent = await callOnboardingEmail(info.email, info.name, 'free_renewed', 0);
-        if (sent) {
-          await markEmailSent(uid, monthKey);
-          results.free_renewed.sent++;
-        }
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/analyses?created_at=gte.${encodeURIComponent(from40)}&created_at=lte.${encodeURIComponent(to30)}&select=user_id`,
+      { headers: _sbHeaders() }
+    );
+    const rows = r.ok ? await r.json() : [];
+    const candidates = [...new Set((Array.isArray(rows) ? rows : []).map(x => x.user_id).filter(Boolean))];
+    results.free_renewed.processed = candidates.length;
+    const monthKey = `freecycle_${new Date().toISOString().slice(0, 7).replace('-', '')}`;
+    for (const uid of candidates) {
+      if (await isEmailSent(uid, monthKey)) continue;
+      if (await hasAnalysisSince(uid, to30)) continue;  // usou nos últimos 30d → janela não reabriu
+      if (await isPaidPlan(uid)) continue;              // pago não depende da gratuidade
+      if ((await getUserCredits(uid)) > 0) continue;    // com créditos, o gate não é a análise grátis
+      const info = await getUserEmail(uid);
+      if (!info?.email) continue;
+      const sent = await callOnboardingEmail(info.email, info.name, 'free_renewed', 0);
+      if (sent) {
+        await markEmailSent(uid, monthKey);
+        results.free_renewed.sent++;
       }
-    } catch (e) {
-      console.error('free_renewed cycle error:', e.message);
     }
-  }
+  });
 
   // ── Follow-up de candidaturas (~7 dias sem retorno) ───────────────────────
-  const cards = await getTrackerFollowupCards();
-  results.tracker_followup.processed = cards.length;
+  await runBlock('tracker_followup', async () => {
+    const cards = await getTrackerFollowupCards();
+    results.tracker_followup.processed = cards.length;
 
-  for (const card of cards) {
-    const dedupeKey = `tracker_followup_${card.id}`;
-    if (await isEmailSent(card.user_id, dedupeKey)) continue;
+    for (const card of cards) {
+      const dedupeKey = `tracker_followup_${card.id}`;
+      if (await isEmailSent(card.user_id, dedupeKey)) continue;
 
-    const userInfo = await getUserEmail(card.user_id);
-    if (!userInfo || !userInfo.email) continue;
+      const userInfo = await getUserEmail(card.user_id);
+      if (!userInfo || !userInfo.email) continue;
 
-    const sent = await callFollowupEmail(userInfo.email, userInfo.name, card.empresa, card.cargo);
-    if (sent) {
-      await markEmailSent(card.user_id, dedupeKey);
-      results.tracker_followup.sent++;
+      const sent = await callFollowupEmail(userInfo.email, userInfo.name, card.empresa, card.cargo);
+      if (sent) {
+        await markEmailSent(card.user_id, dedupeKey);
+        results.tracker_followup.sent++;
+      }
     }
-  }
+  });
 
   console.log('cron-onboarding:', JSON.stringify(results));
   return res.status(200).json({ ok: true, results });
