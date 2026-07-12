@@ -1413,8 +1413,13 @@ body.frame-fullscreen .sidebar { display: none !important; }
   .dm-menu-btn svg { width:21px; height:21px; }
   .dm-brand { display:flex; align-items:center; gap:8px; text-decoration:none; }
   .dm-brand img:first-child { width:28px; height:28px; border-radius:8px; }
-  .dm-brand img:last-child { height:30px; width:auto; }
-  [data-theme="dark"] .dm-brand img:last-child { filter:brightness(0) invert(1); }
+  .dm-brand .logo-for-light, .dm-brand .logo-for-dark { height:30px; width:auto; }
+  /* Logo por tema: logo-light.svg (texto escuro) no claro; logo.svg (texto
+     branco) no escuro. O filter invert anterior deixava o wordmark invisível
+     no tema claro (logo.svg é feito para fundo escuro). */
+  .dm-brand .logo-for-dark { display:none; }
+  [data-theme="dark"] .dm-brand .logo-for-light { display:none; }
+  [data-theme="dark"] .dm-brand .logo-for-dark { display:block; }
   .dm-top-spacer { width:40px; }
 
   .dm-overlay {
@@ -1433,8 +1438,10 @@ body.frame-fullscreen .sidebar { display: none !important; }
   .dm-drawer-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
   .dm-drawer-logo { display:flex; align-items:center; gap:9px; }
   .dm-drawer-logo img:first-child { width:30px; height:30px; border-radius:9px; }
-  .dm-drawer-logo img:last-child { height:34px; width:auto; }
-  [data-theme="dark"] .dm-drawer-logo img:last-child { filter:brightness(0) invert(1); }
+  .dm-drawer-logo .logo-for-light, .dm-drawer-logo .logo-for-dark { height:34px; width:auto; }
+  .dm-drawer-logo .logo-for-dark { display:none; }
+  [data-theme="dark"] .dm-drawer-logo .logo-for-light { display:none; }
+  [data-theme="dark"] .dm-drawer-logo .logo-for-dark { display:block; }
   .dm-close { width:36px; height:36px; border:1px solid var(--border); border-radius:11px; background:var(--bg-sub); color:var(--t1); display:grid; place-items:center; cursor:pointer; }
   .dm-drawer-label { font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--t3); margin:8px 4px 10px; }
   .dm-drawer-nav { display:grid; gap:5px; }
@@ -1445,7 +1452,11 @@ body.frame-fullscreen .sidebar { display: none !important; }
   }
   .dm-drawer-btn svg { width:18px; height:18px; flex-shrink:0; }
   .dm-drawer-btn.active { background:rgba(78,206,145,.14); color:var(--t1); box-shadow:inset 3px 0 0 var(--gb-bright); }
-  .dm-drawer-foot { margin-top:auto; padding-top:16px; border-top:1px solid var(--border); display:flex; align-items:center; gap:10px; color:var(--t2); }
+  .dm-drawer-foot { margin-top:auto; padding-top:16px; border-top:1px solid var(--border); display:flex; align-items:center; gap:10px; color:var(--t2);
+    background:transparent; border-left:0; border-right:0; border-bottom:0; width:100%; text-align:left; cursor:pointer; font:inherit; }
+  .dm-drawer-foot:active { opacity:.75; }
+  .dm-drawer-user { flex:1; min-width:0; }
+  .dm-foot-chevron { width:16px; height:16px; color:var(--t3); flex-shrink:0; }
   .dm-drawer-user strong { display:block; font-size:12px; color:var(--t1); }
   .dm-drawer-user span { font-size:11px; color:var(--t3); }
 
@@ -2199,7 +2210,8 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     </button>
     <button class="dm-brand" onclick="switchDashTab('painel')" aria-label="Ir para visão geral" style="border:0;background:transparent;cursor:pointer">
       <img src="/logo-icon.svg" alt="">
-      <img src="/logo.svg" alt="VagaAI">
+      <img src="/logo-light.svg" alt="VagaAI" class="logo-for-light">
+      <img src="/logo.svg" alt="VagaAI" class="logo-for-dark">
     </button>
     <span class="dm-top-spacer" aria-hidden="true"></span>
   </div>
@@ -2208,7 +2220,8 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     <div class="dm-drawer-head">
       <div class="dm-drawer-logo">
         <img src="/logo-icon.svg" alt="">
-        <img src="/logo.svg" alt="VagaAI">
+        <img src="/logo-light.svg" alt="VagaAI" class="logo-for-light">
+        <img src="/logo.svg" alt="VagaAI" class="logo-for-dark">
       </div>
       <button class="dm-close" onclick="closeMobileDrawer()" aria-label="Fechar menu">×</button>
     </div>
@@ -2243,13 +2256,14 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         <span>Conta e plano</span>
       </button>
     </nav>
-    <div class="dm-drawer-foot">
+    <button class="dm-drawer-foot" onclick="closeMobileDrawer();toggleDropdown()" aria-label="Abrir menu da conta">
       <div class="sb-avatar"><span id="dmAvatarInitials">?</span></div>
       <div class="dm-drawer-user">
         <strong id="dmDisplayName">—</strong>
         <span id="dmPlanLabel">VagaAI</span>
       </div>
-    </div>
+      <svg class="dm-foot-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
   </aside>
   <nav class="dm-bottom" aria-label="Navegação principal mobile">
     <button class="dm-bottom-btn active" data-tab="painel" onclick="switchDashTab('painel')" aria-label="Visão geral">
