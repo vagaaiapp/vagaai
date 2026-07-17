@@ -147,28 +147,28 @@ async function callOnboardingEmail(email, name, type, creditsLeft) {
 }
 
 // ─── Follow-up: candidaturas "aplicada" ou "aplicado" há ~7 dias ─────────────
+// job_tracker NUNCA teve coluna applied_at (só stage_moved_at) — o select
+// abaixo pedia as duas, o que fazia o PostgREST devolver 400 em TODO run
+// ("column job_tracker.applied_at does not exist", visto nos logs do
+// Postgres) e o !res.ok engolia silenciosamente, retornando [] sem log
+// algum. Resultado: este e-mail de follow-up nunca saiu para ninguém desde
+// que a feature existe. Corrigido: só stage_moved_at, e falha agora propaga
+// (runBlock captura em block_errors) em vez de sumir silenciosa de novo.
 async function getTrackerFollowupCards() {
   const now = Date.now();
   const minMs = now - 8 * 24 * 60 * 60 * 1000; // 8 dias atrás
   const maxMs = now - 6 * 24 * 60 * 60 * 1000; // 6 dias atrás
-  const minISO = new Date(minMs).toISOString();
-  const maxISO = new Date(maxMs).toISOString();
 
-  // Busca candidaturas com status aplicada ou aplicado (legado)
-  // Sem filtro de data no DB pois usamos applied_at com fallback para stage_moved_at
-  // e aplicamos o filtro em código para maior precisão
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/job_tracker?status=in.(aplicada,aplicado)&select=id,user_id,empresa,cargo,applied_at,stage_moved_at`,
+    `${SUPABASE_URL}/rest/v1/job_tracker?status=in.(aplicada,aplicado)&select=id,user_id,empresa,cargo,stage_moved_at`,
     { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
   );
-  if (!res.ok) return [];
+  if (!res.ok) throw new Error(`getTrackerFollowupCards: PostgREST ${res.status} — ${await res.text()}`);
   const cards = await res.json();
 
-  // Filtra em código usando applied_at como referência (fallback: stage_moved_at)
   return cards.filter(card => {
-    const ref = card.applied_at || card.stage_moved_at;
-    if (!ref) return false;
-    const t = new Date(ref).getTime();
+    if (!card.stage_moved_at) return false;
+    const t = new Date(card.stage_moved_at).getTime();
     return t >= minMs && t <= maxMs;
   });
 }
