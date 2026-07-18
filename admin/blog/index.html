@@ -588,7 +588,10 @@ function switchTab(tab) {
     tV.classList.add('active'); tC.classList.remove('active');
   } else {
     code.value = visual.innerHTML;
-    code.style.display = ''; visual.style.display = 'none';
+    // .code-editor tem display:none no CSS base — display='' apenas remove o
+    // override inline e volta pro valor da folha de estilo (none), então o
+    // textarea nunca aparecia. Precisa de um valor explícito.
+    code.style.display = 'block'; visual.style.display = 'none';
     tC.classList.add('active'); tV.classList.remove('active');
   }
 }
