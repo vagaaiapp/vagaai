@@ -425,12 +425,26 @@ var _gpDevice = 'desktop';
   loadPosts();
 })();
 
+// Tokens Supabase expiram em ~1h. _session era capturado uma única vez no load
+// e reusado direto — em posts longos (editar, revisar, subir imagens ao longo
+// de mais de 1h), o token expirava e toda ação passava a falhar com
+// "JWT expired" (PGRST303) ou "exp claim timestamp check failed" no upload.
+// getFreshToken() renova a sessão antes de cada chamada autenticada.
+async function getFreshToken() {
+  try {
+    var r = await sb.auth.getSession();
+    var session = r && r.data && r.data.session;
+    if (session) { _session = session; return session.access_token; }
+  } catch(e) {}
+  return (_session && _session.access_token) || '';
+}
+
 // ── Load posts ────────────────────────────────────────────────────────────────
 async function loadPosts() {
   var grid = document.getElementById('postsGrid');
   try {
     var res = await fetch(SUPABASE_URL + '/rest/v1/blog_posts?select=id,title,slug,published,created_at,updated_at&order=created_at.desc', {
-      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + _session.access_token }
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + (await getFreshToken()) }
     });
     var posts = await res.json();
     if (!Array.isArray(posts) || !posts.length) {
@@ -480,7 +494,7 @@ function newPost() {
 async function editPost(id) {
   try {
     var res = await fetch(SUPABASE_URL + '/rest/v1/blog_posts?id=eq.' + id + '&select=*', {
-      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + _session.access_token }
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + (await getFreshToken()) }
     });
     var rows = await res.json();
     if (!rows.length) return;
@@ -534,7 +548,7 @@ async function savePost(publish) {
       ? SUPABASE_URL + '/rest/v1/blog_posts?id=eq.' + _currentPost.id
       : SUPABASE_URL + '/rest/v1/blog_posts';
     var res = await fetch(url, {
-      method, headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + _session.access_token,
+      method, headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + (await getFreshToken()),
         'Content-Type': 'application/json', Prefer: 'return=representation' },
       body: JSON.stringify(body)
     });
@@ -556,7 +570,7 @@ async function deletePost() {
   if (!confirm('Excluir "' + (_currentPost.title || 'este post') + '"? Não é possível desfazer.')) return;
   try {
     await fetch(SUPABASE_URL + '/rest/v1/blog_posts?id=eq.' + _currentPost.id, {
-      method: 'DELETE', headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + _session.access_token }
+      method: 'DELETE', headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + (await getFreshToken()) }
     });
     toast('Post excluído'); backToList();
   } catch(e) { toast('Erro ao excluir', true); }
@@ -637,7 +651,7 @@ async function uploadImageFile(file) {
   try {
     var res = await fetch(SUPABASE_URL + '/storage/v1/object/blog-images/' + path, {
       method: 'POST',
-      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + _session.access_token, 'Content-Type': file.type },
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + (await getFreshToken()), 'Content-Type': file.type },
       body: file,
     });
     if (!res.ok) throw new Error((await res.text()).slice(0, 200));
