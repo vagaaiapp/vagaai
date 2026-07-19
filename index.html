@@ -859,6 +859,17 @@
     .footer-links{display:flex;gap:18px}
     .footer-links a,.copyright{color:var(--muted);font-size:12px;text-decoration:none}
 
+    /* ===== BLOG PREVIEW ===== */
+    .blog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;max-width:980px;margin:0 auto}
+    .blog-card{border:1px solid var(--line);border-radius:20px;background:var(--panel);overflow:hidden;text-decoration:none;color:var(--ink);display:flex;flex-direction:column;transition:transform .25s,border-color .25s,box-shadow .25s}
+    .blog-card:hover{transform:translateY(-4px);border-color:var(--line-green);box-shadow:var(--shadow-sm)}
+    .blog-card-cover{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--panel-2);display:block}
+    .blog-card-body{padding:20px;display:flex;flex-direction:column;gap:8px}
+    .blog-card-cat{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--green)}
+    .blog-card-title{font-family:"Lora",serif;font-size:17px;font-weight:700;line-height:1.32;letter-spacing:-.01em}
+    .blog-card-excerpt{font-size:13px;color:var(--copy);line-height:1.6}
+    .blog-card-date{font-size:11px;color:var(--muted)}
+
     /* ===== RESPONSIVE ===== */
     @media(max-width:1040px){
       .hero-grid,.pain-grid,.objection-layout{grid-template-columns:1fr}
@@ -1082,6 +1093,7 @@
         <a href="#como-funciona">Como funciona</a>
         <a href="#demo">Produto</a>
         <a href="#planos">Planos</a>
+        <a href="/blog">Blog</a>
         <a href="/paraempresas" style="color:var(--green);font-weight:700">Para empresas</a>
       </div>
       <div class="nav-actions">
@@ -1665,6 +1677,21 @@
       </div>
     </section>
 
+    <!-- BLOG -->
+    <section class="section blog-preview" id="blog" style="display:none">
+      <div class="container">
+        <div class="center reveal" style="margin-bottom:48px">
+          <span class="eyebrow">Do blog</span>
+          <h2 class="section-title">Dicas para vencer o ATS <span class="green italic">e chegar à entrevista.</span></h2>
+          <p class="section-copy">Currículo, entrevista e estratégia de candidatura — direto do nosso blog.</p>
+        </div>
+        <div class="blog-grid reveal delay-1" id="blogPreviewGrid"></div>
+        <div class="center" style="margin-top:36px">
+          <a class="btn btn-secondary" href="/blog">Ver todos os posts →</a>
+        </div>
+      </div>
+    </section>
+
     <!-- FINAL -->
     <section class="final">
       <div class="container">
@@ -1714,6 +1741,45 @@
     document.querySelectorAll('.nav-links a').forEach(function(a) {
       a.addEventListener('click', function() { document.getElementById('nav').classList.remove('open'); });
     });
+
+    /* ===== BLOG PREVIEW =====
+       Seção fica display:none por padrão (ver HTML) e só aparece se houver
+       ao menos 1 post publicado — nunca mostra estado vazio/erro na landing,
+       que é a página de maior conversão do site. Cards não levam .reveal
+       (são injetados depois que o observer de scroll-reveal já rodou uma vez
+       só no carregamento — aplicar a classe neles os deixaria invisíveis
+       para sempre, já que nunca seriam observados). */
+    (function() {
+      var SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
+      var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
+      function escBlog(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+      function parseCats(raw) {
+        if (!raw) return [];
+        if (Array.isArray(raw)) return raw;
+        try { var v = JSON.parse(raw); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+      }
+      fetch(SUPABASE_URL + '/rest/v1/blog_posts?published=eq.true&select=title,slug,excerpt,cover_url,categories,created_at&order=created_at.desc&limit=3', { headers: { apikey: SUPABASE_ANON } })
+        .then(function(r) { return r.ok ? r.json() : []; })
+        .then(function(posts) {
+          if (!Array.isArray(posts) || !posts.length) return;
+          var grid = document.getElementById('blogPreviewGrid');
+          grid.innerHTML = posts.map(function(p) {
+            var date = new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+            var cats = parseCats(p.categories);
+            var cover = p.cover_url ? '<img class="blog-card-cover" src="' + escBlog(p.cover_url) + '" alt="' + escBlog(p.title) + '" loading="lazy">' : '';
+            return '<a class="blog-card" href="/blog/post?s=' + encodeURIComponent(p.slug) + '">'
+              + cover
+              + '<div class="blog-card-body">'
+              + (cats.length ? '<div class="blog-card-cat">' + escBlog(cats[0]) + '</div>' : '')
+              + '<div class="blog-card-title">' + escBlog(p.title) + '</div>'
+              + (p.excerpt ? '<div class="blog-card-excerpt">' + escBlog(p.excerpt) + '</div>' : '')
+              + '<div class="blog-card-date">' + date + '</div>'
+              + '</div></a>';
+          }).join('');
+          document.getElementById('blog').style.display = '';
+        })
+        .catch(function() { /* fail silencioso — seção continua oculta */ });
+    })();
 
     /* ===== SCROLL PROGRESS ===== */
     var prog = document.getElementById('scrollProgress');
