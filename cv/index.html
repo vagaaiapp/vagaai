@@ -1774,13 +1774,9 @@ async function cvSaveToCloud() {
       photo: photo,
       updated_at: new Date().toISOString()
     };
-    // Check if a save with this user_id already exists with same name → upsert
-    var existing = await _sb.from('cv_saves').select('id').eq('user_id', _sbSession.user.id).eq('name', nome).maybeSingle();
-    if (existing && existing.data && existing.data.id) {
-      await _sb.from('cv_saves').update(payload).eq('id', existing.data.id);
-    } else {
-      await _sb.from('cv_saves').insert([payload]);
-    }
+    // Modelo "1 currículo por pessoa": sempre atualiza o mesmo registro do
+    // usuário (upsert por user_id), nunca cria um segundo currículo salvo.
+    await _sb.from('cv_saves').upsert(payload, { onConflict: 'user_id' });
     if (lbl) lbl.textContent = '✓ Salvo!';
     setTimeout(function(){ if (lbl) lbl.textContent = 'Salvar currículo'; }, 2200);
     cvLoadCloudList();
@@ -3513,13 +3509,10 @@ async function s4SaveCloud(btn) {
     var tpl = (function(){ try { return localStorage.getItem('vagaai_cv_tpl') || 'modern'; } catch(e){ return 'classic'; } })();
     var photo = (function(){ try { var p = localStorage.getItem('vagaai_cv_photo'); return (p && p !== 'none') ? p : null; } catch(e){ return null; } })();
     var nome = (_cvData.nome || 'Currículo').trim();
+    // Modelo "1 currículo por pessoa": sempre atualiza o mesmo registro do
+    // usuário (upsert por user_id), nunca cria um segundo currículo salvo.
     var payload = { user_id: _sbSession.user.id, name: nome, cv_data: _cvData, template: tpl, photo: photo, updated_at: new Date().toISOString() };
-    var existing = await _sb.from('cv_saves').select('id').eq('user_id', _sbSession.user.id).eq('name', nome).maybeSingle();
-    if (existing && existing.data && existing.data.id) {
-      await _sb.from('cv_saves').update(payload).eq('id', existing.data.id);
-    } else {
-      await _sb.from('cv_saves').insert([payload]);
-    }
+    await _sb.from('cv_saves').upsert(payload, { onConflict: 'user_id' });
     if (btn) btn.innerHTML = btn.innerHTML.replace('Salvando…', '✓ Salvo na nuvem!');
     setTimeout(function() { if (btn) { btn.disabled = false; btn.innerHTML = orig; } }, 2500);
     showToast('Currículo salvo na nuvem!', 'success');

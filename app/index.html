@@ -723,21 +723,18 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
     <div class="field">
       <label>Seu currículo <span>— Cole, envie um arquivo ou crie do zero com IA</span></label>
 
-      <!-- Tabs: Tenho CV / Currículo salvo / Criar CV -->
+      <!-- Tabs: Tenho CV / Meu currículo / Criar CV -->
       <div class="cv-mode-tabs">
         <button class="cv-mode-tab active" id="tabTenhoCV" onclick="switchCvMode('tenho')">Já tenho currículo</button>
-        <button class="cv-mode-tab" id="tabSalvoCV" onclick="switchCvMode('salvo')" style="display:none">Currículo salvo</button>
+        <button class="cv-mode-tab" id="tabSalvoCV" onclick="switchCvMode('salvo')" style="display:none">Meu currículo</button>
         <button class="cv-mode-tab" id="tabCriarCV" onclick="switchCvMode('criar')">Criar do zero</button>
       </div>
 
-      <!-- Painel: Currículo salvo (só aparece se o usuário tiver ao menos 1 salvo) -->
+      <!-- Painel: Meu currículo (só aparece se o usuário já tiver um salvo) -->
       <div id="panelSalvoCV" style="display:none">
-        <div class="cv-builder-field">
-          <label>Escolha um currículo salvo</label>
-          <select id="savedCvSelect" onchange="onSavedCvPick()" style="width:100%;padding:.6rem .7rem;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:'Manrope',sans-serif;font-size:13.5px"></select>
-        </div>
-        <div id="savedCvPreview" style="display:none;margin-top:.7rem;padding:.8rem .9rem;border:1px solid var(--border);border-radius:9px;background:var(--surface2);font-size:12.5px;color:var(--muted);max-height:140px;overflow:auto;white-space:pre-wrap"></div>
-        <button class="btn-gerar-cv" id="btnUsarSalvo" style="margin-top:.8rem" onclick="useSavedCv()">Usar este currículo</button>
+        <div id="savedCvPreview" style="padding:.8rem .9rem;border:1px solid var(--border);border-radius:9px;background:var(--surface2);font-size:12.5px;color:var(--muted);max-height:160px;overflow:auto;white-space:pre-wrap"></div>
+        <button class="btn-gerar-cv" id="btnUsarSalvo" style="margin-top:.8rem" onclick="useSavedCv()">Usar meu currículo</button>
+        <div style="margin-top:.5rem"><a href="#" onclick="goCreateFullCv();return false;" style="font-size:12px;color:var(--muted);text-decoration:underline">Editar meu currículo →</a></div>
       </div>
 
       <!-- Painel: Já tenho CV (original) -->
@@ -1318,8 +1315,6 @@ function switchCvMode(mode) {
 /* ── Currículos salvos (cv_saves) ──────────────────────────────────────────
    Elimina a fricção de recolar o currículo a cada vaga: se o usuário já tem
    currículo(s) salvos no hub "Meu Currículo", oferece usar direto aqui. */
-var _savedCvs = [];
-
 function cvToText(d) {
   if (!d) return '';
   if (typeof d === 'string') return d;
@@ -1349,56 +1344,36 @@ function cvToText(d) {
   return L.join('\n');
 }
 
+var _myCv = null; // registro único cv_saves do usuário (modelo "1 currículo por pessoa")
+
 async function loadSavedCvsForApp(session) {
   try {
-    var r = await sb.from('cv_saves').select('id,name,cv_data,is_default,updated_at')
-      .eq('user_id', session.user.id)
-      .order('is_default', { ascending: false })
-      .order('updated_at', { ascending: false })
-      .limit(10);
-    _savedCvs = (r && r.data) || [];
-    if (!_savedCvs.length) return;
+    var r = await sb.from('cv_saves').select('id,name,cv_data,updated_at').eq('user_id', session.user.id).maybeSingle();
+    _myCv = r && r.data;
+    if (!_myCv) return;
 
     var tab = document.getElementById('tabSalvoCV');
-    var sel = document.getElementById('savedCvSelect');
     tab.style.display = '';
-    sel.innerHTML = _savedCvs.map(function(cv, i){
-      return '<option value="' + i + '">' + (cv.name || 'Currículo') + (cv.is_default ? ' (padrão)' : '') + '</option>';
-    }).join('');
-
-    // Currículo padrão pré-selecionado — se só tem 1, fricção zero: já mostra pronto pra usar
-    var defaultIdx = _savedCvs.findIndex(function(cv){ return cv.is_default; });
-    sel.value = String(defaultIdx > -1 ? defaultIdx : 0);
-    onSavedCvPick();
+    var text = cvToText(_myCv.cv_data);
+    var box = document.getElementById('savedCvPreview');
+    box.textContent = text.slice(0, 700) + (text.length > 700 ? '…' : '');
 
     // Nunca troca a aba automaticamente — só oferece a opção; quem decide é o usuário
   } catch(e) { /* silencioso — o fluxo original (colar/upload) continua funcionando normalmente */ }
 }
 
-function onSavedCvPick() {
-  var sel = document.getElementById('savedCvSelect');
-  var cv = _savedCvs[Number(sel.value)];
-  var box = document.getElementById('savedCvPreview');
-  if (!cv) { box.style.display = 'none'; return; }
-  var text = cvToText(cv.cv_data);
-  box.textContent = text.slice(0, 600) + (text.length > 600 ? '…' : '');
-  box.style.display = '';
-}
-
 function useSavedCv() {
-  var sel = document.getElementById('savedCvSelect');
-  var cv = _savedCvs[Number(sel.value)];
-  if (!cv) return;
-  var text = cvToText(cv.cv_data);
+  if (!_myCv) return;
+  var text = cvToText(_myCv.cv_data);
   cvEl.value = text;
   cvEl.dispatchEvent(new Event('input'));
   switchCvMode('tenho');
-  appToast('✓ Currículo "' + (cv.name || 'salvo') + '" aplicado', 'success');
+  appToast('✓ Seu currículo foi aplicado', 'success');
 }
 
-/* ── Criar currículo completo (editor /cv) e voltar pra esta vaga ─────────
-   Preserva a vaga que o usuário já estava analisando: ao salvar o CV na
-   nuvem em /cv, ele retorna aqui com a vaga e o currículo já preenchidos. */
+/* ── Editar/criar currículo em /curriculo e voltar pra esta vaga ──────────
+   Preserva a vaga que o usuário já estava analisando: ao salvar o currículo
+   em /curriculo, ele retorna aqui com a vaga e o currículo já preenchidos. */
 function goCreateFullCv() {
   try {
     localStorage.setItem('vagaai_job_return', JSON.stringify({
@@ -1408,9 +1383,9 @@ function goCreateFullCv() {
     }));
   } catch(e) {}
   if (_isEmbedded && window.parent !== window) {
-    try { window.parent.postMessage({ type: 'vagaai-nav', frame: true, href: '/cv', id: 'curriculo' }, '*'); return; } catch(e) {}
+    try { window.parent.postMessage({ type: 'vagaai-nav', frame: true, href: '/curriculo', id: 'curriculo' }, '*'); return; } catch(e) {}
   }
-  location.href = '/cv';
+  location.href = '/curriculo';
 }
 
 // Se o usuário voltou de /cv com um currículo recém-criado, restaura a vaga

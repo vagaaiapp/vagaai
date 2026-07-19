@@ -4,12 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VagaAI — Meu Currículo</title>
-<meta name="description" content="Gerencie seus currículos salvos, defina o currículo padrão e receba um Raio-X completo do seu perfil profissional.">
+<meta name="description" content="Seu currículo, sempre atualizado. Preencha seus dados e veja o que o mercado espera de você.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<!-- Vercel Analytics -->
 <script defer src="/_vercel/insights/script.js"></script>
-<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,116 +15,105 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0a0f0d;
-  --surface:#111814;
-  --surface2:#161d19;
-  --border:rgba(255,255,255,0.07);
-  --text:#e8ede9;
-  --muted:#8a9e90;
-  --green:#3ecf8e;
-  --green-dim:rgba(62,207,142,0.12);
-  --green-border:rgba(62,207,142,0.25);
-  --red:#ff6b6b;
-  --red-dim:rgba(255,107,107,0.12);
-  --yellow:#ffd166;
-  --yellow-dim:rgba(255,209,102,0.12);
+  --bg:#0a0f0d;--surface:#111814;--surface2:#161d19;--border:rgba(255,255,255,0.07);
+  --text:#e8ede9;--muted:#8a9e90;--green:#3ecf8e;--green-dim:rgba(62,207,142,0.12);
+  --green-border:rgba(62,207,142,0.25);--red:#ff6b6b;--red-dim:rgba(255,107,107,0.12);
+  --yellow:#ffd166;--yellow-dim:rgba(255,209,102,0.12);
 }
 [data-theme="light"]{--bg:#f2f6f3;--surface:#ffffff;--surface2:#eaf0ec;--border:rgba(0,0,0,0.09);--text:#0d1a11;--muted:#4d6e57;--green:#1a8f5c;--green-dim:rgba(26,143,92,0.1);--green-border:rgba(26,143,92,0.25);--red:#c0392b;--red-dim:rgba(192,57,43,0.08);--yellow:#b07d1a;--yellow-dim:rgba(176,125,26,0.08)}
 body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
-.container{max-width:960px;margin:0 auto;padding:2.5rem 1.5rem 4rem}
-.page-title{font-family:'Lora',serif;font-size:clamp(24px,4vw,36px);font-weight:700;line-height:1.15;margin-bottom:.4rem}
-.page-sub{color:var(--muted);font-size:14px;margin-bottom:2rem;max-width:640px}
+.container{max-width:820px;margin:0 auto;padding:2.5rem 1.5rem 5rem}
+.page-title{font-family:'Lora',serif;font-size:clamp(22px,4vw,32px);font-weight:700;line-height:1.15}
+.page-sub{color:var(--muted);font-size:14px;margin-top:.35rem;max-width:600px}
 
-.top-actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-bottom:2rem}
-.btn{display:inline-flex;align-items:center;gap:.45rem;font-family:'Manrope',sans-serif;font-size:13.5px;font-weight:700;padding:.65rem 1.1rem;border-radius:10px;border:1px solid transparent;cursor:pointer;transition:all .2s;text-decoration:none}
-.btn-primary{background:var(--green);color:#06130b;border-color:var(--green)}
-.btn-primary:hover{filter:brightness(1.08)}
-.btn-ghost{background:var(--surface);color:var(--text);border-color:var(--border)}
-.btn-ghost:hover{border-color:var(--green-border);color:var(--green)}
-.btn[disabled]{opacity:.55;cursor:not-allowed}
+/* Draft banner (anônimo) */
+.draft-banner{background:var(--yellow-dim);border:1px solid var(--yellow);border-radius:12px;padding:.9rem 1.1rem;font-size:13px;margin:1.2rem 0;display:none}
+.draft-banner.show{display:block}
 
-/* CARDS */
-.cv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.cv-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem;display:flex;flex-direction:column;gap:.7rem;transition:border-color .2s}
-.cv-card:hover{border-color:var(--green-border)}
-.cv-card.is-default{border-color:var(--green-border);box-shadow:0 0 0 1px var(--green-border)}
-.cv-card-head{display:flex;align-items:flex-start;gap:.6rem}
-.cv-card-ic{width:38px;height:38px;flex-shrink:0;border-radius:10px;background:var(--green-dim);border:1px solid var(--green-border);display:flex;align-items:center;justify-content:center;color:var(--green)}
-.cv-card-name{font-weight:800;font-size:15px;line-height:1.3;word-break:break-word}
-.cv-card-meta{font-size:11.5px;color:var(--muted);margin-top:2px}
-.cv-badges{display:flex;gap:.4rem;flex-wrap:wrap}
-.badge{font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:20px}
-.badge-default{background:var(--green-dim);border:1px solid var(--green-border);color:var(--green)}
-.badge-tpl{background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
-.badge-xray{background:var(--yellow-dim);border:1px solid var(--yellow);color:var(--yellow)}
-.cv-card-actions{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:auto;padding-top:.5rem}
-.card-btn{font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;padding:.42rem .75rem;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:all .2s}
-.card-btn:hover{border-color:var(--green-border);color:var(--green)}
-.card-btn.primary{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
-.card-btn.danger:hover{border-color:var(--red);color:var(--red)}
+/* Header / completude */
+.profile-head{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.4rem 1.5rem;margin:1.4rem 0;display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap}
+.profile-avatar{width:52px;height:52px;border-radius:50%;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0}
+.profile-name{font-weight:800;font-size:18px}
+.profile-role{color:var(--muted);font-size:13px;margin-top:2px}
+.completude-wrap{flex:1;min-width:180px}
+.completude-bar{height:7px;background:var(--surface2);border-radius:20px;overflow:hidden;margin-top:.4rem}
+.completude-fill{height:100%;background:var(--green);border-radius:20px;transition:width .4s}
+.completude-label{font-size:11.5px;color:var(--muted);display:flex;justify-content:space-between}
+.save-btn{background:var(--green);color:#06130b;border:none;font-weight:800;font-size:13.5px;padding:.7rem 1.3rem;border-radius:10px;cursor:pointer;white-space:nowrap;transition:filter .2s}
+.save-btn:hover{filter:brightness(1.08)}
+.save-btn[disabled]{opacity:.6;cursor:not-allowed}
+.save-status{font-size:12px;color:var(--muted);margin-left:.6rem}
 
-/* EMPTY STATE */
-.empty{background:var(--surface);border:1px dashed var(--green-border);border-radius:16px;padding:3rem 1.5rem;text-align:center;max-width:560px;margin:2rem auto}
-.empty h2{font-family:'Lora',serif;font-size:21px;margin-bottom:.5rem}
-.empty p{color:var(--muted);font-size:14px;margin-bottom:1.4rem}
-.empty .btns{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap}
+/* Gap panel */
+.gap-panel{background:var(--surface);border:1px solid var(--green-border);border-radius:16px;padding:1.4rem 1.5rem;margin-bottom:1.4rem}
+.gap-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:.8rem}
+.gap-title{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--green)}
+.gap-sub{font-size:12.5px;color:var(--muted);margin-top:.3rem;max-width:480px}
+.gap-empty{font-size:13.5px;color:var(--muted)}
+.gap-chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.7rem}
+.gap-chip{font-size:12.5px;font-weight:600;background:var(--yellow-dim);border:1px solid var(--yellow);color:var(--yellow);padding:.32rem .8rem;border-radius:20px}
+.gap-chip b{font-weight:800}
+.ai-btn{font-size:12.5px;font-weight:700;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.5rem .9rem;border-radius:9px;cursor:pointer;white-space:nowrap}
+.ai-btn:hover{border-color:var(--green-border);color:var(--green)}
 
-/* MODAL (Raio-X) */
+/* Section cards */
+.sec-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:.9rem}
+.sec-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem}
+.sec-title{font-size:14px;font-weight:800;display:flex;align-items:center;gap:.4rem}
+.sec-title svg{color:var(--green)}
+.sec-edit{font-size:12.5px;font-weight:700;color:var(--green);background:none;border:none;cursor:pointer}
+.sec-edit:hover{text-decoration:underline}
+.sec-empty{color:var(--muted);font-size:13px;margin-top:.4rem}
+.sec-item{padding:.5rem 0;border-top:1px solid var(--border)}
+.sec-item:first-of-type{border-top:none;padding-top:.6rem}
+.sec-item-title{font-weight:700;font-size:13.5px}
+.sec-item-sub{font-size:12px;color:var(--muted);margin-top:1px}
+.sec-item ul{margin:.35rem 0 0 1.1rem;font-size:12.5px;color:var(--text)}
+.tag-row{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}
+.tag{font-size:12px;font-weight:600;background:var(--surface2);border:1px solid var(--border);padding:.28rem .7rem;border-radius:20px}
+
+/* Modal */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;justify-content:center;z-index:200;padding:2rem 1rem;overflow-y:auto}
 .modal-bg.open{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:680px;width:100%;padding:1.8rem;position:relative}
-.modal-close{position:absolute;top:14px;right:14px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;line-height:1}
-.modal-close:hover{color:var(--text)}
-.xr-title{font-family:'Lora',serif;font-size:22px;margin-bottom:.2rem}
-.xr-sub{font-size:12.5px;color:var(--muted);margin-bottom:1.2rem}
-.xr-sec{margin-bottom:1.2rem}
-.xr-sec h3{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--green);margin-bottom:.5rem}
-.xr-sec p{font-size:14px}
-.chips{display:flex;gap:.4rem;flex-wrap:wrap}
-.chip{font-size:12px;font-weight:600;background:var(--surface2);border:1px solid var(--border);padding:.25rem .7rem;border-radius:20px}
-.chip.gr{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
-.xr-list{list-style:none}
-.xr-list li{font-size:13.5px;padding:.3rem 0 .3rem 1.3rem;position:relative}
-.xr-list li::before{content:'';position:absolute;left:0;top:.72em;width:7px;height:7px;border-radius:50%;background:var(--green)}
-.xr-list.gaps li::before{background:var(--yellow)}
-.xr-grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
-@media(max-width:640px){.xr-grid2{grid-template-columns:1fr}}
-.xr-badge-sen{display:inline-block;font-size:12px;font-weight:800;text-transform:capitalize;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:.3rem .9rem;border-radius:20px}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:600px;width:100%;padding:1.6rem;position:relative}
+.modal-close{position:absolute;top:14px;right:14px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer}
+.modal h3{font-family:'Lora',serif;font-size:19px;margin-bottom:1rem;padding-right:2rem}
+.f-row{margin-bottom:.8rem}
+.f-row label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:.3rem}
+.f-row input,.f-row textarea,.f-row select{width:100%;padding:.6rem .7rem;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:'Manrope',sans-serif;font-size:13.5px}
+.f-row textarea{resize:vertical;min-height:70px}
+.f-grid2{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.list-row{border:1px solid var(--border);border-radius:10px;padding:.9rem;margin-bottom:.7rem;position:relative}
+.list-row-remove{position:absolute;top:.6rem;right:.6rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px}
+.list-row-remove:hover{color:var(--red)}
+.add-row-btn{width:100%;padding:.6rem;border:1px dashed var(--border);border-radius:9px;background:none;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer}
+.add-row-btn:hover{border-color:var(--green-border);color:var(--green)}
+.modal-actions{display:flex;gap:.6rem;margin-top:1.2rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;font-family:'Manrope',sans-serif;font-size:13.5px;font-weight:700;padding:.65rem 1.1rem;border-radius:10px;border:1px solid transparent;cursor:pointer}
+.btn-primary{background:var(--green);color:#06130b}
+.btn-ghost{background:var(--surface2);color:var(--text);border-color:var(--border)}
 
-/* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--green-border);color:var(--text);padding:.7rem 1.2rem;border-radius:10px;font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:300;max-width:90vw;text-align:center}
 .toast.vis{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.err{border-color:var(--red)}
-
-/* AUTH GATE */
-.gate{max-width:440px;margin:4rem auto;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2.5rem 1.8rem;text-align:center}
-.gate h2{font-family:'Lora',serif;font-size:20px;margin-bottom:.5rem}
-.gate p{color:var(--muted);font-size:14px;margin-bottom:1.3rem}
-
-/* LOADING */
 .loading{text-align:center;padding:4rem 0;color:var(--muted);font-size:14px}
 .spinner{display:inline-block;width:22px;height:22px;border:2.5px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:.5rem}
 @keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:560px){.f-grid2{grid-template-columns:1fr}.profile-head{flex-direction:column;align-items:flex-start}.save-btn{width:100%}}
 </style>
 </head>
 <body>
 <div class="container">
   <h1 class="page-title">Meu Currículo</h1>
-  <p class="page-sub">Seus currículos salvos em um só lugar. Defina um padrão para usar direto nas análises de vaga e gere o Raio-X completo do seu perfil profissional.</p>
+  <p class="page-sub">Um currículo só, sempre atualizado. Preencha as seções abaixo e veja o que o mercado espera do seu perfil.</p>
 
-  <div id="mainArea">
-    <div class="loading" id="loadingBox"><span class="spinner"></span>Carregando seus currículos...</div>
-  </div>
+  <div class="draft-banner" id="draftBanner">Você está editando sem estar logado — nada será perdido, mas <b>salve para não perder seu progresso</b> e poder usar esse currículo nas análises de vaga.</div>
 
-  <input type="file" id="uploadInput" accept=".txt,.pdf,.doc,.docx" style="display:none" onchange="handleUploadFile(this)">
+  <div id="mainArea"><div class="loading"><span class="spinner"></span>Carregando...</div></div>
 </div>
 
-<!-- Modal Raio-X -->
-<div class="modal-bg" id="xrModal" onclick="if(event.target===this)closeXr()">
-  <div class="modal">
-    <button class="modal-close" onclick="closeXr()" aria-label="Fechar">✕</button>
-    <div id="xrContent"></div>
-  </div>
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal"><button class="modal-close" onclick="closeModal()">✕</button><div id="modalContent"></div></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -135,212 +122,64 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;fon
 var SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
 var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+var DRAFT_KEY = 'vagaai_cv_draft';
 
-/* ── Tema (mesma chave dos módulos do painel) ── */
-(function(){
-  var saved = null;
-  try { saved = localStorage.getItem('vagaai_theme'); } catch(e){}
-  if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
-})();
-
-var _isEmbedded = window.self !== window.top || new URLSearchParams(location.search).get('embedded') === '1';
+(function(){ var t=null; try{ t=localStorage.getItem('vagaai_theme'); }catch(e){} if(t==='dark'||t==='light') document.documentElement.setAttribute('data-theme', t); })();
 
 var _session = null;
-var _cvs = [];
-var _busy = false;
-
-function toast(msg, isErr) {
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.toggle('err', !!isErr);
-  t.classList.add('vis');
-  clearTimeout(t._tm);
-  t._tm = setTimeout(function(){ t.classList.remove('vis'); }, 3200);
-}
+var _cv = null;          // { id, cv_data, ... } | null se ainda não existe registro
+var _cvData = null;      // atalho pro objeto de dados em edição
+var _isEmbedded = window.self !== window.top || new URLSearchParams(location.search).get('embedded') === '1';
+var _saveTimer = null;
+var _dirty = false;
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-function goTo(href) {
-  // Dentro do painel, pede pro shell navegar (mantém sidebar/histórico corretos)
-  if (_isEmbedded && window.parent !== window) {
-    try { window.parent.postMessage({ type: 'vagaai-nav', frame: true, href: href, id: href.indexOf('/cv') === 0 ? 'curriculo' : 'curriculo' }, '*'); return; } catch(e){}
-  }
-  location.href = href;
-}
+function toast(msg, isErr){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.toggle('err',!!isErr); t.classList.add('vis'); clearTimeout(t._tm); t._tm=setTimeout(function(){t.classList.remove('vis');},3000); }
+function emptyCv(){ return { nome:'', contato:{email:'',telefone:'',linkedin:'',cidade:''}, titulo_profissional:'', resumo_profissional:'', experiencias:[], formacao:[], cursos:[], idiomas:[], habilidades:[] }; }
 
 /* ── Init ── */
 (async function init(){
   var s = await sb.auth.getSession();
   _session = s && s.data && s.data.session;
-  if (!_session) {
-    document.getElementById('mainArea').innerHTML =
-      '<div class="gate"><h2>Entre para acessar seus currículos</h2>' +
-      '<p>Seus currículos ficam salvos na nuvem, prontos para usar em qualquer análise de vaga.</p>' +
-      '<a class="btn btn-primary" href="/login">Entrar na minha conta</a></div>';
-    return;
+  if (_session) {
+    var r = await sb.from('cv_saves').select('*').eq('user_id', _session.user.id).maybeSingle();
+    _cv = r && r.data;
+    if (_cv) { _cvData = normalize(_cv.cv_data); }
   }
-  await loadCvs();
+  if (!_cvData) {
+    // sem sessão, ou sessão sem currículo salvo ainda: tenta retomar rascunho local
+    var draft = null;
+    try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch(e) {}
+    _cvData = draft ? normalize(draft) : emptyCv();
+    if (!_session) document.getElementById('draftBanner').classList.add('show');
+  }
+  render();
 })();
 
-async function loadCvs() {
-  var r = await sb.from('cv_saves')
-    .select('id,name,template,updated_at,is_default,profile_analysis,profile_analysis_at')
-    .eq('user_id', _session.user.id)
-    .order('is_default', { ascending: false })
-    .order('updated_at', { ascending: false });
-  _cvs = (r && r.data) || [];
-  render();
-}
-
-function fmtDate(iso) {
-  try { return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }); } catch(e){ return ''; }
-}
-
-var TPL_LABELS = { classic:'Clássico', modern:'Moderno', exec:'Executivo', compact:'Compacto', minimal:'Minimalista', focus:'Focus', upload:'Enviado' };
-
-function render() {
-  var area = document.getElementById('mainArea');
-  if (!_cvs.length) {
-    area.innerHTML =
-      '<div class="empty"><h2>Você ainda não tem currículos salvos</h2>' +
-      '<p>Crie um currículo profissional do zero com ajuda da IA, ou envie o que você já tem — ele fica salvo e pronto para otimizar em qualquer vaga.</p>' +
-      '<div class="btns">' +
-      '<button class="btn btn-primary" onclick="goTo(\'/cv\')">Criar currículo do zero</button>' +
-      '<button class="btn btn-ghost" onclick="document.getElementById(\'uploadInput\').click()">Enviar meu currículo</button>' +
-      '</div></div>';
-    return;
+function normalize(d) {
+  d = d || {};
+  if (d.raw_text && !d.nome && !(d.experiencias && d.experiencias.length)) {
+    // currículo enviado como arquivo (upload) — sem estrutura ainda
+    var base = emptyCv();
+    base.raw_text = d.raw_text;
+    return base;
   }
-  var DOC_IC = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
-  var html = '<div class="top-actions">' +
-    '<button class="btn btn-primary" onclick="goTo(\'/cv\')">+ Criar do zero</button>' +
-    '<button class="btn btn-ghost" onclick="document.getElementById(\'uploadInput\').click()">Enviar currículo pronto</button>' +
-    '</div><div class="cv-grid">';
-  _cvs.forEach(function(cv){
-    var badges = '';
-    if (cv.is_default) badges += '<span class="badge badge-default">Padrão</span>';
-    badges += '<span class="badge badge-tpl">' + esc(TPL_LABELS[cv.template] || cv.template || 'CV') + '</span>';
-    if (cv.profile_analysis) badges += '<span class="badge badge-xray">Raio-X pronto</span>';
-    var actions = '';
-    actions += '<button class="card-btn primary" onclick="openXr(\'' + cv.id + '\')">' + (cv.profile_analysis ? 'Ver Raio-X' : 'Gerar Raio-X') + '</button>';
-    if (!cv.is_default) actions += '<button class="card-btn" onclick="setDefault(\'' + cv.id + '\')">Definir padrão</button>';
-    if (cv.template !== 'upload') actions += '<button class="card-btn" onclick="goTo(\'/cv\')">Editar</button>';
-    actions += '<button class="card-btn" onclick="renameCv(\'' + cv.id + '\')">Renomear</button>';
-    actions += '<button class="card-btn danger" onclick="deleteCv(\'' + cv.id + '\')">Excluir</button>';
-    html += '<div class="cv-card' + (cv.is_default ? ' is-default' : '') + '">' +
-      '<div class="cv-card-head"><div class="cv-card-ic">' + DOC_IC + '</div><div>' +
-      '<div class="cv-card-name">' + esc(cv.name || 'Currículo') + '</div>' +
-      '<div class="cv-card-meta">Atualizado em ' + fmtDate(cv.updated_at) + '</div>' +
-      '</div></div>' +
-      '<div class="cv-badges">' + badges + '</div>' +
-      '<div class="cv-card-actions">' + actions + '</div></div>';
-  });
-  html += '</div>';
-  area.innerHTML = html;
+  var base = emptyCv();
+  base.nome = d.nome || '';
+  base.contato = Object.assign({email:'',telefone:'',linkedin:'',cidade:''}, d.contato || {});
+  base.titulo_profissional = d.titulo_profissional || '';
+  base.resumo_profissional = d.resumo_profissional || '';
+  base.experiencias = Array.isArray(d.experiencias) ? d.experiencias : [];
+  base.formacao = Array.isArray(d.formacao) ? d.formacao : [];
+  base.cursos = Array.isArray(d.cursos) ? d.cursos : [];
+  base.idiomas = Array.isArray(d.idiomas) ? d.idiomas : [];
+  base.habilidades = Array.isArray(d.habilidades) ? d.habilidades.map(function(s){ return typeof s === 'string' ? s : (s && s.nome) || ''; }).filter(Boolean) : [];
+  return base;
 }
 
-/* ── Ações dos cards ── */
-async function setDefault(id) {
-  if (_busy) return; _busy = true;
-  try {
-    // limpa o padrão anterior antes de setar o novo (índice único garante 1 por usuário)
-    await sb.from('cv_saves').update({ is_default: false }).eq('user_id', _session.user.id).eq('is_default', true);
-    var r = await sb.from('cv_saves').update({ is_default: true }).eq('id', id).eq('user_id', _session.user.id);
-    if (r.error) throw r.error;
-    toast('✓ Currículo definido como padrão');
-    await loadCvs();
-  } catch(e) { toast('Erro ao definir padrão: ' + (e.message || e), true); }
-  _busy = false;
-}
-
-async function renameCv(id) {
-  var cv = _cvs.find(function(c){ return c.id === id; });
-  var name = prompt('Novo nome do currículo:', (cv && cv.name) || 'Currículo');
-  if (!name || !name.trim()) return;
-  var r = await sb.from('cv_saves').update({ name: name.trim().slice(0, 80) }).eq('id', id).eq('user_id', _session.user.id);
-  if (r.error) { toast('Erro ao renomear: ' + r.error.message, true); return; }
-  toast('✓ Renomeado');
-  await loadCvs();
-}
-
-async function deleteCv(id) {
-  var cv = _cvs.find(function(c){ return c.id === id; });
-  if (!confirm('Excluir "' + ((cv && cv.name) || 'Currículo') + '"? Essa ação não pode ser desfeita.')) return;
-  var r = await sb.from('cv_saves').delete().eq('id', id).eq('user_id', _session.user.id);
-  if (r.error) { toast('Erro ao excluir: ' + r.error.message, true); return; }
-  toast('Currículo excluído');
-  await loadCvs();
-}
-
-/* ── Upload de currículo pronto ── */
-async function loadScript(src) {
-  return new Promise(function(resolve, reject){
-    var s = document.createElement('script');
-    s.src = src; s.onload = resolve; s.onerror = reject;
-    document.head.appendChild(s);
-  });
-}
-
-async function extractPdfText(file) {
-  if (!window.pdfjsLib) {
-    await loadScript('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js');
-    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
-  }
-  var ab = await file.arrayBuffer();
-  var pdf = await pdfjsLib.getDocument({ data: ab }).promise;
-  var out = [];
-  for (var i = 1; i <= pdf.numPages; i++) {
-    var page = await pdf.getPage(i);
-    var tc = await page.getTextContent();
-    out.push(tc.items.map(function(it){ return it.str; }).join(' '));
-  }
-  return out.join('\n\n');
-}
-
-async function handleUploadFile(input) {
-  var file = input.files && input.files[0];
-  input.value = '';
-  if (!file) return;
-  if (file.size > 8 * 1024 * 1024) { toast('Arquivo muito grande (máx. 8MB).', true); return; }
-  toast('Lendo arquivo...');
-  var text = '';
-  try {
-    var ext = (file.name.split('.').pop() || '').toLowerCase();
-    if (ext === 'pdf') {
-      text = await extractPdfText(file);
-    } else if (ext === 'doc' || ext === 'docx') {
-      if (!window.mammoth) await loadScript('https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js');
-      var result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
-      text = result.value || '';
-    } else {
-      text = await file.text();
-    }
-  } catch(e) {
-    toast('Não foi possível ler o arquivo. Tente PDF, Word ou TXT.', true);
-    return;
-  }
-  text = (text || '').trim();
-  if (text.length < 120) { toast('Não encontramos texto suficiente no arquivo. Verifique se o currículo não é uma imagem escaneada.', true); return; }
-
-  var baseName = file.name.replace(/\.[^.]+$/, '').slice(0, 60) || 'Meu currículo';
-  var payload = {
-    user_id: _session.user.id,
-    name: baseName,
-    cv_data: { raw_text: text.slice(0, 30000) },
-    template: 'upload',
-    is_default: _cvs.length === 0, // primeiro currículo já vira o padrão
-    updated_at: new Date().toISOString()
-  };
-  var r = await sb.from('cv_saves').insert([payload]);
-  if (r.error) { toast('Erro ao salvar: ' + r.error.message, true); return; }
-  toast('✓ Currículo salvo! Agora você pode usá-lo nas análises.');
-  await loadCvs();
-}
-
-/* ── Conversor cv_data → texto (estruturado do criador OU raw_text de upload) ── */
 function cvToText(d) {
   if (!d) return '';
-  if (typeof d === 'string') return d;
-  if (d.raw_text) return String(d.raw_text);
+  if (d.raw_text && !d.nome) return d.raw_text;
   var L = [];
   if (d.nome) L.push(d.nome);
   if (d.titulo_profissional) L.push(d.titulo_profissional);
@@ -348,116 +187,424 @@ function cvToText(d) {
   var ct = [c.email, c.telefone, c.linkedin, c.cidade].filter(Boolean).join(' | ');
   if (ct) L.push(ct);
   if (d.resumo_profissional) { L.push(''); L.push('RESUMO PROFISSIONAL'); L.push(d.resumo_profissional); }
-  var exps = d.experiencias || [];
-  if (exps.length) {
+  if ((d.experiencias||[]).length) {
     L.push(''); L.push('EXPERIÊNCIA PROFISSIONAL');
-    exps.forEach(function(e){
+    d.experiencias.forEach(function(e){
       L.push([e.cargo, e.empresa].filter(Boolean).join(' — ') + (e.periodo ? ' (' + e.periodo + ')' : ''));
-      (e.bullets || []).forEach(function(b){ L.push('- ' + b); });
+      (e.bullets || []).forEach(function(b){ if(b) L.push('- ' + b); });
     });
   }
-  var edu = d.formacao || [];
-  if (edu.length) {
+  if ((d.formacao||[]).length) {
     L.push(''); L.push('FORMAÇÃO ACADÊMICA');
-    edu.forEach(function(e){ L.push([e.curso, e.instituicao].filter(Boolean).join(' — ') + (e.periodo ? ' (' + e.periodo + ')' : '')); });
+    d.formacao.forEach(function(e){ L.push([e.curso, e.instituicao].filter(Boolean).join(' — ') + (e.periodo ? ' (' + e.periodo + ')' : '')); });
   }
-  var sk = d.habilidades || [];
-  if (sk.length) { L.push(''); L.push('HABILIDADES'); L.push(sk.map(function(s){ return typeof s === 'string' ? s : (s && s.nome) || ''; }).filter(Boolean).join(', ')); }
+  if ((d.cursos||[]).length) {
+    L.push(''); L.push('CURSOS E ESPECIALIZAÇÕES');
+    d.cursos.forEach(function(e){ L.push([e.nome, e.instituicao].filter(Boolean).join(' — ') + (e.periodo ? ' (' + e.periodo + ')' : '')); });
+  }
+  if ((d.idiomas||[]).length) {
+    L.push(''); L.push('IDIOMAS');
+    d.idiomas.forEach(function(e){ L.push([e.idioma, e.nivel].filter(Boolean).join(' — ')); });
+  }
+  if ((d.habilidades||[]).length) { L.push(''); L.push('HABILIDADES'); L.push(d.habilidades.join(', ')); }
   return L.join('\n');
 }
 
-/* ── Raio-X ── */
-async function openXr(id) {
-  var cv = _cvs.find(function(c){ return c.id === id; });
-  if (!cv) return;
-  if (cv.profile_analysis) { renderXr(cv, cv.profile_analysis); return; }
-  await generateXr(id);
+function completude(d) {
+  var checks = [!!d.nome, !!d.titulo_profissional, !!d.resumo_profissional, (d.experiencias||[]).length>0, (d.formacao||[]).length>0, (d.habilidades||[]).length>0];
+  var done = checks.filter(Boolean).length;
+  return Math.round(done / checks.length * 100);
 }
 
-async function generateXr(id) {
-  if (_busy) return; _busy = true;
-  var modal = document.getElementById('xrModal');
-  var box = document.getElementById('xrContent');
-  modal.classList.add('open');
-  box.innerHTML = '<div class="loading" style="padding:2.5rem 0"><span class="spinner"></span>Analisando seu perfil... isso leva alguns segundos.</div>';
+/* ── Persistência (rascunho local sempre; nuvem só se logado) ── */
+function markDirty() {
+  _dirty = true;
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(_cvData)); } catch(e) {}
+  updateSaveUI();
+}
+
+function updateSaveUI() {
+  var btn = document.getElementById('saveBtn');
+  var st = document.getElementById('saveStatus');
+  if (!btn) return;
+  btn.textContent = _session ? 'Salvar' : 'Salvar (criar conta)';
+  st.textContent = _dirty ? 'Alterações não salvas' : (_cv ? 'Salvo' : '');
+}
+
+async function saveProfile() {
+  if (!_session) {
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(_cvData)); } catch(e) {}
+    location.href = '/login?next=' + encodeURIComponent('/curriculo');
+    return;
+  }
+  var btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  var orig = btn.textContent;
+  btn.textContent = 'Salvando...';
   try {
-    // busca o cv_data completo só agora (a listagem não traz o conteúdo)
-    var full = await sb.from('cv_saves').select('cv_data').eq('id', id).eq('user_id', _session.user.id).single();
-    var text = cvToText(full.data && full.data.cv_data);
-    if (text.length < 120) { box.innerHTML = xrError('Este currículo tem pouco conteúdo para análise. Complete-o no criador primeiro.'); _busy = false; return; }
-
-    var fresh = await sb.auth.getSession();
-    var token = fresh && fresh.data && fresh.data.session && fresh.data.session.access_token;
-    var res = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ action: 'profile_cv', cv: text.slice(0, 20000) })
-    });
-    var data = null;
-    try { data = await res.json(); } catch(e){}
-    if (res.status === 402) { box.innerHTML = xrError('Você não tem créditos disponíveis. O Raio-X consome 1 crédito, como uma análise de vaga.', '/dashboard#plano', 'Ver planos e créditos'); _busy = false; return; }
-    if (!res.ok || !data || !data.profile) { box.innerHTML = xrError((data && (data.message || data.error)) || 'Erro ao gerar a análise. Tente novamente.'); _busy = false; return; }
-
-    // salva no próprio registro (RLS: só o dono consegue)
-    var now = new Date().toISOString();
-    await sb.from('cv_saves').update({ profile_analysis: data.profile, profile_analysis_at: now }).eq('id', id).eq('user_id', _session.user.id);
-    var cv = _cvs.find(function(c){ return c.id === id; });
-    if (cv) { cv.profile_analysis = data.profile; cv.profile_analysis_at = now; }
-    renderXr(cv || { name: 'Currículo', profile_analysis_at: now }, data.profile);
-    render(); // atualiza badges na grade
+    var payload = { user_id: _session.user.id, name: (_cvData.nome || 'Meu currículo').slice(0,80), cv_data: _cvData, template: (_cv && _cv.template) || 'perfil', updated_at: new Date().toISOString() };
+    var r = await sb.from('cv_saves').upsert(payload, { onConflict: 'user_id' }).select().single();
+    if (r.error) throw r.error;
+    _cv = r.data;
+    _dirty = false;
+    try { localStorage.removeItem(DRAFT_KEY); } catch(e) {}
+    toast('✓ Currículo salvo');
+    updateSaveUI();
+    loadGapPanel();
+    maybeReturnToPendingJob();
   } catch(e) {
-    box.innerHTML = xrError('Erro inesperado: ' + (e.message || e));
+    toast('Erro ao salvar: ' + (e.message || e), true);
   }
-  _busy = false;
+  btn.disabled = false;
+  if (btn.textContent === 'Salvando...') btn.textContent = orig;
 }
 
-function xrError(msg, linkHref, linkLabel) {
-  return '<div style="text-align:center;padding:1.5rem 0"><p style="color:var(--red);font-weight:600;margin-bottom:1rem">' + esc(msg) + '</p>' +
-    (linkHref ? '<a class="btn btn-primary" href="' + esc(linkHref) + '" target="_top">' + esc(linkLabel) + '</a>' : '<button class="btn btn-ghost" onclick="closeXr()">Fechar</button>') + '</div>';
+// Se o usuário veio de "Analisar vaga" sem currículo pronto, volta pra lá
+// com a vaga e o currículo recém-salvo já aplicados.
+function maybeReturnToPendingJob() {
+  var pending = null;
+  try { pending = JSON.parse(localStorage.getItem('vagaai_job_return') || 'null'); } catch(e) {}
+  if (!pending || (Date.now() - (pending.ts || 0)) > 2*60*60*1000) return;
+  try { localStorage.setItem('vagaai_return_cv_data', JSON.stringify(_cvData)); } catch(e) {}
+  setTimeout(function(){
+    if (_isEmbedded && window.parent && window.parent !== window) {
+      try { window.parent.postMessage({ type: 'vagaai-nav', frame: true, href: '/app', id: 'app' }, '*'); return; } catch(e) {}
+    }
+    location.href = '/app';
+  }, 900);
 }
 
-var SEN_LABELS = { estagio:'Estágio', junior:'Júnior', pleno:'Pleno', senior:'Sênior', especialista:'Especialista', lideranca:'Liderança' };
+/* ── Render principal ── */
+function render() {
+  var d = _cvData;
+  var pct = completude(d);
+  var initials = (d.nome || '?').trim().split(/\s+/).slice(0,2).map(function(w){return w[0]||'';}).join('').toUpperCase() || '?';
 
-function renderXr(cv, p) {
-  var modal = document.getElementById('xrModal');
-  var box = document.getElementById('xrContent');
-  modal.classList.add('open');
-  function chips(arr, cls) {
-    return '<div class="chips">' + (arr || []).map(function(x){ return '<span class="chip ' + (cls || '') + '">' + esc(x) + '</span>'; }).join('') + '</div>';
+  var html = '';
+  html += '<div class="profile-head">';
+  html += '<div class="profile-avatar">' + esc(initials) + '</div>';
+  html += '<div style="flex:1;min-width:160px"><div class="profile-name">' + esc(d.nome || 'Seu nome aqui') + '</div><div class="profile-role">' + esc(d.titulo_profissional || 'Adicione seu objetivo profissional') + '</div></div>';
+  html += '<div class="completude-wrap"><div class="completude-label"><span>Perfil completo</span><span>' + pct + '%</span></div><div class="completude-bar"><div class="completude-fill" style="width:' + pct + '%"></div></div></div>';
+  html += '<div><button class="save-btn" id="saveBtn" onclick="saveProfile()">Salvar</button><div class="save-status" id="saveStatus" style="margin-top:.3rem;text-align:right"></div></div>';
+  html += '</div>';
+
+  html += '<div class="gap-panel" id="gapPanel"><div class="gap-title">Posicionamento de mercado</div><div class="gap-empty">Carregando...</div></div>';
+
+  if (d.raw_text) {
+    html += '<div class="sec-card"><div class="sec-head"><div class="sec-title">Currículo enviado</div><button class="sec-edit" onclick="startFromScratch()">Preencher campos manualmente</button></div>' +
+      '<p class="sec-empty">Você enviou um arquivo pronto. Pra ativar o diagnóstico de mercado e edição por seção, prencha os campos estruturados abaixo.</p>' +
+      '<pre style="white-space:pre-wrap;font-size:12px;color:var(--muted);max-height:160px;overflow:auto;margin-top:.6rem;font-family:inherit">' + esc(d.raw_text.slice(0,1200)) + (d.raw_text.length>1200?'…':'') + '</pre></div>';
   }
-  function list(arr, cls) {
-    return '<ul class="xr-list ' + (cls || '') + '">' + (arr || []).map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
-  }
-  var m = p.mercado || {};
-  box.innerHTML =
-    '<div class="xr-title">Raio-X do perfil</div>' +
-    '<div class="xr-sub">' + esc(cv.name || 'Currículo') + (cv.profile_analysis_at ? ' · gerado em ' + fmtDate(cv.profile_analysis_at) : '') + '</div>' +
-    '<div class="xr-sec"><p>' + esc(p.resumo_perfil || '') + '</p></div>' +
-    '<div class="xr-sec"><h3>Senioridade</h3><span class="xr-badge-sen">' + esc(SEN_LABELS[p.senioridade] || p.senioridade || '—') + '</span>' +
-    ((p.areas_atuacao || []).length ? '<div style="margin-top:.6rem">' + chips(p.areas_atuacao, 'gr') + '</div>' : '') + '</div>' +
-    '<div class="xr-sec"><h3>Competências técnicas</h3>' + chips(p.competencias_tecnicas) + '</div>' +
-    ((p.competencias_comportamentais || []).length ? '<div class="xr-sec"><h3>Competências comportamentais</h3>' + chips(p.competencias_comportamentais) + '</div>' : '') +
-    '<div class="xr-grid2">' +
-    '<div class="xr-sec"><h3>Pontos fortes</h3>' + list(p.pontos_fortes) + '</div>' +
-    '<div class="xr-sec"><h3>Pontos a desenvolver</h3>' + list(p.lacunas, 'gaps') + '</div>' +
-    '</div>' +
-    '<div class="xr-sec"><h3>Seu posicionamento no mercado</h3><p>' + esc(m.posicionamento || '') + '</p>' +
-    ((m.cargos_alvo || []).length ? '<div style="margin-top:.6rem"><h3 style="margin-top:.8rem">Cargos que você pode disputar</h3>' + chips(m.cargos_alvo, 'gr') + '</div>' : '') + '</div>' +
-    ((m.recomendacoes || []).length ? '<div class="xr-sec"><h3>Recomendações práticas</h3>' + list(m.recomendacoes) + '</div>' : '') +
-    '<div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.4rem">' +
-    '<button class="btn btn-ghost" onclick="closeXr()">Fechar</button>' +
-    '<button class="btn btn-ghost" onclick="regenXr(\'' + esc(cv.id || '') + '\')">Refazer análise (1 crédito)</button>' +
+
+  html += secDadosPessoais(d);
+  html += secObjetivo(d);
+  html += secExperiencias(d);
+  html += secFormacao(d);
+  html += secCursos(d);
+  html += secIdiomas(d);
+  html += secHabilidades(d);
+  html += secResumo(d);
+
+  document.getElementById('mainArea').innerHTML = html;
+  updateSaveUI();
+  loadGapPanel();
+}
+
+function startFromScratch() {
+  delete _cvData.raw_text;
+  markDirty();
+  render();
+}
+
+var ICON = {
+  user:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>',
+  target:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>',
+  briefcase:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+  grad:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1 3 3 6 3s6-2 6-3v-5"/></svg>',
+  award:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="m9 13-2 8 5-3 5 3-2-8"/></svg>',
+  globe:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z"/></svg>',
+  tool:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a4 4 0 1 1-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 1 1 5.4-5.4Z"/></svg>',
+  doc:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>'
+};
+
+function secHead(icon, title, editFn) {
+  return '<div class="sec-head"><div class="sec-title">' + ICON[icon] + esc(title) + '</div><button class="sec-edit" onclick="' + editFn + '">Editar</button></div>';
+}
+
+function secDadosPessoais(d) {
+  var c = d.contato || {};
+  var items = [c.email, c.telefone, c.linkedin, c.cidade].filter(Boolean);
+  return '<div class="sec-card">' + secHead('user','Dados pessoais','editDadosPessoais()') +
+    (items.length ? '<div class="tag-row">' + items.map(function(i){return '<span class="tag">'+esc(i)+'</span>';}).join('') + '</div>' : '<div class="sec-empty">Adicione seu e-mail, telefone, LinkedIn e cidade.</div>') +
     '</div>';
 }
 
-function regenXr(id) {
-  if (!id) return;
-  if (!confirm('Refazer o Raio-X consome 1 crédito. Continuar?')) return;
-  generateXr(id);
+function secObjetivo(d) {
+  return '<div class="sec-card">' + secHead('target','Objetivo profissional','editObjetivo()') +
+    (d.titulo_profissional ? '<div class="sec-item-title">' + esc(d.titulo_profissional) + '</div>' : '<div class="sec-empty">Qual cargo ou área você está buscando?</div>') +
+    '</div>';
 }
 
-function closeXr() {
-  document.getElementById('xrModal').classList.remove('open');
+function secExperiencias(d) {
+  var exps = d.experiencias || [];
+  var body = exps.length ? exps.map(function(e){
+    return '<div class="sec-item"><div class="sec-item-title">' + esc(e.cargo||'') + (e.empresa?' — '+esc(e.empresa):'') + '</div>' +
+      (e.periodo ? '<div class="sec-item-sub">' + esc(e.periodo) + '</div>' : '') +
+      ((e.bullets||[]).filter(Boolean).length ? '<ul>' + e.bullets.filter(Boolean).map(function(b){return '<li>'+esc(b)+'</li>';}).join('') + '</ul>' : '') +
+      '</div>';
+  }).join('') : '<div class="sec-empty">Adicione suas experiências profissionais.</div>';
+  return '<div class="sec-card">' + secHead('briefcase','Experiências profissionais','editExperiencias()') + body + '</div>';
+}
+
+function secFormacao(d) {
+  var arr = d.formacao || [];
+  var body = arr.length ? arr.map(function(e){
+    return '<div class="sec-item"><div class="sec-item-title">' + esc(e.curso||'') + '</div><div class="sec-item-sub">' + [esc(e.instituicao||''), esc(e.periodo||'')].filter(Boolean).join(' · ') + '</div></div>';
+  }).join('') : '<div class="sec-empty">Adicione sua formação acadêmica.</div>';
+  return '<div class="sec-card">' + secHead('grad','Formação acadêmica','editFormacao()') + body + '</div>';
+}
+
+function secCursos(d) {
+  var arr = d.cursos || [];
+  var body = arr.length ? arr.map(function(e){
+    return '<div class="sec-item"><div class="sec-item-title">' + esc(e.nome||'') + '</div><div class="sec-item-sub">' + [esc(e.instituicao||''), esc(e.periodo||'')].filter(Boolean).join(' · ') + '</div></div>';
+  }).join('') : '<div class="sec-empty">Cursos livres ou especializações que valem destaque.</div>';
+  return '<div class="sec-card">' + secHead('award','Cursos e especializações','editCursos()') + body + '</div>';
+}
+
+function secIdiomas(d) {
+  var arr = d.idiomas || [];
+  return '<div class="sec-card">' + secHead('globe','Idiomas','editIdiomas()') +
+    (arr.length ? '<div class="tag-row">' + arr.map(function(e){return '<span class="tag">'+esc(e.idioma||'')+(e.nivel?' — '+esc(e.nivel):'')+'</span>';}).join('') + '</div>' : '<div class="sec-empty">Quais idiomas você fala?</div>') +
+    '</div>';
+}
+
+function secHabilidades(d) {
+  var arr = d.habilidades || [];
+  return '<div class="sec-card">' + secHead('tool','Habilidades','editHabilidades()') +
+    (arr.length ? '<div class="tag-row">' + arr.map(function(h){return '<span class="tag">'+esc(h)+'</span>';}).join('') + '</div>' : '<div class="sec-empty">Ferramentas, competências técnicas e comportamentais.</div>') +
+    '</div>';
+}
+
+function secResumo(d) {
+  return '<div class="sec-card">' + secHead('doc','Resumo das qualificações','editResumo()') +
+    (d.resumo_profissional ? '<p style="font-size:13.5px">' + esc(d.resumo_profissional) + '</p>' : '<div class="sec-empty">Um resumo de 3-4 linhas sobre sua trajetória.</div>') +
+    '</div>';
+}
+
+/* ── Modal genérico ── */
+function openModal(html) { document.getElementById('modalContent').innerHTML = html; document.getElementById('modalBg').classList.add('open'); }
+function closeModal() { document.getElementById('modalBg').classList.remove('open'); }
+
+function saveAndClose(applyFn) {
+  applyFn();
+  markDirty();
+  closeModal();
+  render();
+}
+
+/* ── Editores simples (campo único / poucos campos) ── */
+function editDadosPessoais() {
+  var c = _cvData.contato || {};
+  openModal(
+    '<h3>Dados pessoais</h3>' +
+    '<div class="f-row"><label>Nome completo</label><input id="mNome" value="' + esc(_cvData.nome) + '"></div>' +
+    '<div class="f-grid2"><div class="f-row"><label>E-mail</label><input id="mEmail" value="' + esc(c.email) + '"></div>' +
+    '<div class="f-row"><label>Telefone</label><input id="mTel" value="' + esc(c.telefone) + '"></div></div>' +
+    '<div class="f-grid2"><div class="f-row"><label>LinkedIn</label><input id="mLinkedin" value="' + esc(c.linkedin) + '"></div>' +
+    '<div class="f-row"><label>Cidade</label><input id="mCidade" value="' + esc(c.cidade) + '"></div></div>' +
+    '<div class="modal-actions"><button class="btn btn-primary" onclick="saveDadosPessoais()">Salvar</button><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button></div>'
+  );
+}
+function saveDadosPessoais() {
+  saveAndClose(function(){
+    _cvData.nome = document.getElementById('mNome').value.trim();
+    _cvData.contato = { email: document.getElementById('mEmail').value.trim(), telefone: document.getElementById('mTel').value.trim(), linkedin: document.getElementById('mLinkedin').value.trim(), cidade: document.getElementById('mCidade').value.trim() };
+  });
+}
+
+function editObjetivo() {
+  openModal(
+    '<h3>Objetivo profissional</h3>' +
+    '<div class="f-row"><label>Cargo ou área desejada</label><input id="mObj" placeholder="Ex: Analista de Marketing Pleno" value="' + esc(_cvData.titulo_profissional) + '"></div>' +
+    '<div class="modal-actions"><button class="btn btn-primary" onclick="saveObjetivo()">Salvar</button><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button></div>'
+  );
+}
+function saveObjetivo() { saveAndClose(function(){ _cvData.titulo_profissional = document.getElementById('mObj').value.trim(); }); }
+
+function editResumo() {
+  openModal(
+    '<h3>Resumo das qualificações</h3>' +
+    '<div class="f-row"><label>3-4 linhas sobre sua trajetória</label><textarea id="mResumo" rows="5">' + esc(_cvData.resumo_profissional) + '</textarea></div>' +
+    '<div class="modal-actions"><button class="btn btn-primary" onclick="saveResumo()">Salvar</button><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button></div>'
+  );
+}
+function saveResumo() { saveAndClose(function(){ _cvData.resumo_profissional = document.getElementById('mResumo').value.trim(); }); }
+
+function editHabilidades() {
+  openModal(
+    '<h3>Habilidades</h3>' +
+    '<div class="f-row"><label>Separe por vírgula</label><textarea id="mHab" rows="3">' + esc((_cvData.habilidades||[]).join(', ')) + '</textarea></div>' +
+    '<div class="modal-actions"><button class="btn btn-primary" onclick="saveHabilidades()">Salvar</button><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button></div>'
+  );
+}
+function saveHabilidades() { saveAndClose(function(){ _cvData.habilidades = document.getElementById('mHab').value.split(',').map(function(s){return s.trim();}).filter(Boolean); }); }
+
+/* ── Editores de lista (experiências, formação, cursos, idiomas) ── */
+function editExperiencias() {
+  var rows = (_cvData.experiencias || []).map(function(e,i){ return expRowHtml(i, e); }).join('');
+  openModal('<h3>Experiências profissionais</h3><div id="listRows">' + rows + '</div>' +
+    '<button class="add-row-btn" onclick="addExpRow()">+ Adicionar experiência</button>' +
+    '<div class="modal-actions"><button class="btn btn-primary" onclick="saveExperiencias()">Salvar</button><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button></div>');
+}
+function expRowHtml(i, e) {
+  e = e || {};
+  return '<div class="list-row" data-i="' + i + '"><button class="list-row-remove" onclick="this.closest(\'.list-row\').remove()">✕ remover</button>' +
+    '<div class="f-grid2"><div class="f-row"><label>Cargo</label><input class="e-cargo" value="' + esc(e.cargo) + '"></div>' +
+    '<div class="f-row"><label>Empresa</label><input class="e-empresa" value="' + esc(e.empresa) + '"></div></div>' +
+    '<div class="f-row"><label>Período</label><input class="e-periodo" placeholder="Ex: 2021 — 2024" value="' + esc(e.periodo) + '"></div>' +
+    '<div class="f-row"><label>Principais atividades (uma por linha)</label><textarea class="e-bullets" rows="3">' + esc((e.bullets||[]).join('\n')) + '</textarea></div></div>';
+}
+function addExpRow() { document.getElementById('listRows').insertAdjacentHTML('beforeend', expRowHtml(Date.now(), {})); }
+function saveExperiencias() {
+  saveAndClose(function(){
+    var rows = document.querySelectorAll('#listRows .list-row');
+    _cvData.experiencias = Array.from(rows).map(function(r){
+      return {
+        cargo: r.querySelector('.e-cargo').value.trim(),
+        empresa: r.querySelector('.e-empresa').value.trim(),
+        periodo: r.querySelector('.e-periodo').value.trim(),
+        bullets: r.querySelector('.e-bullets').value.split('\n').map(function(s){return s.trim();}).filter(Boolean)
+      };
+    }).filter(function(e){ return e.cargo || e.empresa; });
+  });
+}
+
+function editFormacao() {
+  var rows = (_cvData.formacao || []).map(function(e,i){ return simpleRowHtml('f', i, e, 'curso', 'Curso', 'instituicao', 'Instituição'); }).join('');
+  openModal('<h3>Formação acadêmica</h3><div id="listRows">' + rows + '</div>' +
+    '<button class="add-row-btn" onclick="addSimpleRow(\'f\',\'curso\',\'Curso\',\'instituicao\',\'Instituição\')">+ Adicionar formação</button>' +
+    '<div class="modal-actions"><button class="btn btn-primary" onclick="saveSimpleList(\'formacao\',\'f\',\'curso\',\'instituicao\')">Salvar</button><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button></div>');
+}
+function editCursos() {
+  var rows = (_cvData.cursos || []).map(function(e,i){ return simpleRowHtml('c', i, e, 'nome', 'Curso / especialização', 'instituicao', 'Instituição'); }).join('');
+  openModal('<h3>Cursos e especializações</h3><div id="listRows">' + rows + '</div>' +
+    '<button class="add-row-btn" onclick="addSimpleRow(\'c\',\'nome\',\'Curso / especialização\',\'instituicao\',\'Instituição\')">+ Adicionar curso</button>' +
+    '<div class="modal-actions"><button class="btn btn-primary" onclick="saveSimpleList(\'cursos\',\'c\',\'nome\',\'instituicao\')">Salvar</button><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button></div>');
+}
+function simpleRowHtml(ns, i, e, k1, l1, k2, l2) {
+  e = e || {};
+  return '<div class="list-row" data-i="' + i + '"><button class="list-row-remove" onclick="this.closest(\'.list-row\').remove()">✕ remover</button>' +
+    '<div class="f-row"><label>' + l1 + '</label><input class="' + ns + '-k1" value="' + esc(e[k1]) + '"></div>' +
+    '<div class="f-grid2"><div class="f-row"><label>' + l2 + '</label><input class="' + ns + '-k2" value="' + esc(e[k2]) + '"></div>' +
+    '<div class="f-row"><label>Período</label><input class="' + ns + '-periodo" placeholder="Ex: 2019 — 2023" value="' + esc(e.periodo) + '"></div></div></div>';
+}
+function addSimpleRow(ns, k1, l1, k2, l2) { document.getElementById('listRows').insertAdjacentHTML('beforeend', simpleRowHtml(ns, Date.now(), {}, k1, l1, k2, l2)); }
+function saveSimpleList(field, ns, k1, k2) {
+  saveAndClose(function(){
+    var rows = document.querySelectorAll('#listRows .list-row');
+    _cvData[field] = Array.from(rows).map(function(r){
+      var o = {}; o[k1] = r.querySelector('.'+ns+'-k1').value.trim(); o[k2] = r.querySelector('.'+ns+'-k2').value.trim(); o.periodo = r.querySelector('.'+ns+'-periodo').value.trim();
+      return o;
+    }).filter(function(o){ return o[k1]; });
+  });
+}
+
+function editIdiomas() {
+  var rows = (_cvData.idiomas || []).map(function(e,i){ return idiomaRowHtml(i, e); }).join('');
+  openModal('<h3>Idiomas</h3><div id="listRows">' + rows + '</div>' +
+    '<button class="add-row-btn" onclick="addIdiomaRow()">+ Adicionar idioma</button>' +
+    '<div class="modal-actions"><button class="btn btn-primary" onclick="saveIdiomas()">Salvar</button><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button></div>');
+}
+function idiomaRowHtml(i, e) {
+  e = e || {};
+  var niveis = ['Básico','Intermediário','Avançado','Fluente','Nativo'];
+  return '<div class="list-row" data-i="' + i + '"><button class="list-row-remove" onclick="this.closest(\'.list-row\').remove()">✕ remover</button>' +
+    '<div class="f-grid2"><div class="f-row"><label>Idioma</label><input class="i-idioma" value="' + esc(e.idioma) + '"></div>' +
+    '<div class="f-row"><label>Nível</label><select class="i-nivel">' + niveis.map(function(n){return '<option'+(e.nivel===n?' selected':'')+'>'+n+'</option>';}).join('') + '</select></div></div></div>';
+}
+function addIdiomaRow() { document.getElementById('listRows').insertAdjacentHTML('beforeend', idiomaRowHtml(Date.now(), {})); }
+function saveIdiomas() {
+  saveAndClose(function(){
+    var rows = document.querySelectorAll('#listRows .list-row');
+    _cvData.idiomas = Array.from(rows).map(function(r){ return { idioma: r.querySelector('.i-idioma').value.trim(), nivel: r.querySelector('.i-nivel').value }; }).filter(function(o){ return o.idioma; });
+  });
+}
+
+/* ── Painel de posicionamento de mercado ──────────────────────────────────
+   v1 usa dado real: cruza keywords_faltando das análises de vaga que o
+   usuário já fez na plataforma com o texto do currículo atual — sem custo
+   de IA. O diagnóstico completo com IA (profile_cv) fica como opção à parte,
+   sob demanda, pra quem quer uma leitura mais profunda (consome 1 crédito). */
+async function loadGapPanel() {
+  var panel = document.getElementById('gapPanel');
+  if (!_session) {
+    panel.innerHTML = '<div class="gap-title">Posicionamento de mercado</div><div class="gap-empty">Salve seu currículo (crie uma conta grátis) pra ver o que as vagas que você analisar pedem e seu currículo ainda não tem.</div>';
+    return;
+  }
+  try {
+    var r = await sb.from('analyses').select('result').eq('user_id', _session.user.id).order('created_at', { ascending: false }).limit(50);
+    var rows = (r && r.data) || [];
+    if (!rows.length) {
+      panel.innerHTML = '<div class="gap-head"><div><div class="gap-title">Posicionamento de mercado</div><div class="gap-sub">Analise pelo menos 1 vaga pra começarmos a te mostrar o que o mercado espera do seu perfil.</div></div>' +
+        '<button class="ai-btn" onclick="runAiDiagnosis()">Diagnóstico com IA (1 crédito)</button></div>';
+      return;
+    }
+    var freq = {};
+    rows.forEach(function(row){
+      var res = row.result || {};
+      (res.keywords_faltando || []).forEach(function(k){
+        var key = String(k).trim();
+        if (!key) return;
+        freq[key] = (freq[key] || 0) + 1;
+      });
+    });
+    var cvText = cvToText(_cvData).toLowerCase();
+    var gaps = Object.keys(freq)
+      .filter(function(k){ return cvText.indexOf(k.toLowerCase()) === -1; })
+      .sort(function(a,b){ return freq[b] - freq[a]; })
+      .slice(0, 8);
+
+    if (!gaps.length) {
+      panel.innerHTML = '<div class="gap-head"><div><div class="gap-title">Posicionamento de mercado</div><div class="gap-sub">Seu currículo já cobre as competências mais pedidas nas vagas que você analisou. 👏</div></div>' +
+        '<button class="ai-btn" onclick="runAiDiagnosis()">Diagnóstico com IA (1 crédito)</button></div>';
+      return;
+    }
+    panel.innerHTML = '<div class="gap-head"><div><div class="gap-title">Posicionamento de mercado</div><div class="gap-sub">Baseado nas ' + rows.length + ' vaga(s) que você já analisou, seu currículo ainda não menciona:</div></div>' +
+      '<button class="ai-btn" onclick="runAiDiagnosis()">Diagnóstico com IA (1 crédito)</button></div>' +
+      '<div class="gap-chips">' + gaps.map(function(k){ return '<span class="gap-chip">' + esc(k) + (freq[k]>1 ? ' <b>×' + freq[k] + '</b>' : '') + '</span>'; }).join('') + '</div>';
+  } catch(e) {
+    panel.innerHTML = '<div class="gap-title">Posicionamento de mercado</div><div class="gap-empty">Não foi possível carregar agora.</div>';
+  }
+}
+
+async function runAiDiagnosis() {
+  var text = cvToText(_cvData);
+  if (text.trim().length < 120) { toast('Preencha mais o currículo antes de gerar o diagnóstico.', true); return; }
+  var panel = document.getElementById('gapPanel');
+  var prevHtml = panel.innerHTML;
+  panel.innerHTML = '<div class="gap-title">Posicionamento de mercado</div><div class="gap-empty"><span class="spinner"></span>Analisando com IA...</div>';
+  try {
+    var fresh = await sb.auth.getSession();
+    var token = fresh && fresh.data && fresh.data.session && fresh.data.session.access_token;
+    var res = await fetch('/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ action: 'profile_cv', cv: text.slice(0,20000) }) });
+    var data = null; try { data = await res.json(); } catch(e){}
+    if (res.status === 402) { panel.innerHTML = '<div class="gap-title">Posicionamento de mercado</div><div class="gap-empty">Sem créditos disponíveis. <a href="/dashboard#plano" target="_top" style="color:var(--green)">Ver planos →</a></div>'; return; }
+    if (!res.ok || !data || !data.profile) { panel.innerHTML = prevHtml; toast((data && (data.message||data.error)) || 'Erro ao gerar diagnóstico.', true); return; }
+    renderAiDiagnosis(data.profile);
+  } catch(e) { panel.innerHTML = prevHtml; toast('Erro inesperado.', true); }
+}
+
+var SEN_LABELS = { estagio:'Estágio', junior:'Júnior', pleno:'Pleno', senior:'Sênior', especialista:'Especialista', lideranca:'Liderança' };
+function renderAiDiagnosis(p) {
+  var panel = document.getElementById('gapPanel');
+  var m = p.mercado || {};
+  function chips(arr){ return (arr||[]).map(function(x){return '<span class="gap-chip">'+esc(x)+'</span>';}).join(''); }
+  panel.innerHTML = '<div class="gap-title">Diagnóstico de IA</div>' +
+    '<p style="font-size:13.5px;margin-top:.5rem">' + esc(p.resumo_perfil||'') + '</p>' +
+    (m.posicionamento ? '<p style="font-size:13px;color:var(--muted);margin-top:.6rem">' + esc(m.posicionamento) + '</p>' : '') +
+    ((m.recomendacoes||[]).length ? '<div style="font-size:12px;font-weight:800;text-transform:uppercase;color:var(--green);margin-top:.9rem">Recomendações</div><div class="gap-chips">' + chips(m.recomendacoes) + '</div>' : '') +
+    '<button class="ai-btn" style="margin-top:.9rem" onclick="loadGapPanel()">← Voltar pro painel padrão</button>';
 }
 </script>
 </body>
