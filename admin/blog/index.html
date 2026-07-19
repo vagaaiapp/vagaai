@@ -268,6 +268,7 @@ nav{position:sticky;top:0;z-index:200;background:var(--surface);border-bottom:1p
               <button class="tb-btn" onclick="insertImage()" title="Imagem">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               </button>
+              <input type="file" id="bodyFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" onchange="handleBodyFileSelect(this.files[0]);this.value=''">
               <button class="tb-btn" onclick="insertHR()" title="Linha divisória">—</button>
               <div class="tb-sep"></div>
               <button class="tb-btn" onclick="fmt('undo')" title="Desfazer">↩</button>
@@ -367,12 +368,14 @@ nav{position:sticky;top:0;z-index:200;background:var(--surface);border-bottom:1p
         <div class="sidebar-card">
           <div class="sidebar-card-header">Imagem destacada</div>
           <div class="sidebar-card-body">
-            <div class="featured-img-placeholder" id="imgPlaceholder" onclick="setCoverImage()">
+            <div class="featured-img-placeholder" id="imgPlaceholder" onclick="document.getElementById('coverFileInput').click()">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              Definir imagem destacada
+              <span id="imgPlaceholderLabel">Definir imagem destacada</span>
             </div>
+            <input type="file" id="coverFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" onchange="handleCoverFileSelect(this.files[0])">
             <img class="featured-img-preview" id="imgPreview" style="display:none" alt="Capa">
-            <input type="text" class="img-url-input" id="postCover" placeholder="URL da imagem (https://...)">
+            <button class="btn ghost" style="width:100%;justify-content:center;font-size:12px;margin-bottom:.5rem" onclick="event.stopPropagation();document.getElementById('coverFileInput').click()">📤 Enviar do computador</button>
+            <input type="text" class="img-url-input" id="postCover" placeholder="ou cole uma URL (https://...)">
             <button class="btn ghost" style="width:100%;justify-content:center;font-size:12px" onclick="removeCover()">Remover imagem</button>
           </div>
         </div>
@@ -463,6 +466,11 @@ function newPost() {
   document.getElementById('deleteWrap').style.display = 'none';
   setPublishUI(false);
   renderCatTags();
+  // Bug pré-existente: postCover.value era limpo mas a prévia visual (imagem
+  // vs. placeholder) nunca era resetada — "Novo post" depois de editar um post
+  // com capa continuava mostrando a imagem antiga na tela, mesmo com o campo
+  // vazio por baixo (salvaria sem capa, mas a UI mentia).
+  updateCoverPreview('');
   updatePreview();
   updateWordCount();
   showEditor();
@@ -573,8 +581,64 @@ function setPublishUI(pub) {
 function fmt(cmd) { document.execCommand(cmd, false, null); document.getElementById('editorContent').focus(); updateWordCount(); }
 function fmtBlock(tag) { document.getElementById('editorContent').focus(); document.execCommand('formatBlock', false, tag); }
 function insertLink() { var url = prompt('URL do link:'); if (url) document.execCommand('createLink', false, url); }
-function insertImage() { var url = prompt('URL da imagem:'); if (url) document.execCommand('insertHTML', false, '<img src="' + url + '" alt="">'); }
+
+// Salva a seleção atual do editor visual antes de abrir o seletor de arquivo
+// (o foco vai para o <input type=file> e a seleção de texto se perde).
+var _savedBodyRange = null;
+function insertImage() {
+  var sel = window.getSelection();
+  _savedBodyRange = sel.rangeCount ? sel.getRangeAt(0) : null;
+  document.getElementById('bodyFileInput').click();
+}
+async function handleBodyFileSelect(file) {
+  if (!file) return;
+  var url = await uploadImageFile(file);
+  if (!url) return;
+  var alt = prompt('Texto alternativo da imagem (para SEO e acessibilidade):', '') || '';
+  var editor = document.getElementById('editorContent');
+  editor.focus();
+  if (_savedBodyRange) {
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(_savedBodyRange);
+  }
+  document.execCommand('insertHTML', false, '<img src="' + url + '" alt="' + escAttr(alt) + '">');
+  updateWordCount();
+}
 function insertHR() { document.execCommand('insertHTML', false, '<hr>'); }
+function escAttr(s) { return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Upload de imagem (Supabase Storage, bucket blog-images) ────────────────────
+// Valida tipo/tamanho no cliente (o bucket também aplica no servidor via RLS +
+// file_size_limit/allowed_mime_types — dupla checagem, cliente só evita round-trip
+// desnecessário). Retorna a URL pública ou null em falha (mostra toast do erro).
+var ALLOWED_IMG_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+var MAX_IMG_BYTES = 5 * 1024 * 1024;
+async function uploadImageFile(file) {
+  if (!ALLOWED_IMG_TYPES.includes(file.type)) {
+    toast('Formato não suportado. Use JPG, PNG, WEBP ou GIF.', true);
+    return null;
+  }
+  if (file.size > MAX_IMG_BYTES) {
+    toast('Imagem muito grande (máx. 5MB).', true);
+    return null;
+  }
+  var safeName = file.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9.]+/g, '-').replace(/-+/g, '-').slice(-60);
+  var path = Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '-' + safeName;
+  try {
+    var res = await fetch(SUPABASE_URL + '/storage/v1/object/blog-images/' + path, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + _session.access_token, 'Content-Type': file.type },
+      body: file,
+    });
+    if (!res.ok) throw new Error((await res.text()).slice(0, 200));
+    return SUPABASE_URL + '/storage/v1/object/public/blog-images/' + path;
+  } catch (e) {
+    toast('Erro no upload: ' + e.message, true);
+    return null;
+  }
+}
 
 // ── Tab Visual / Código ───────────────────────────────────────────────────────
 function switchTab(tab) {
@@ -605,12 +669,18 @@ function updateWordCount() {
 
 // ── Cover image ───────────────────────────────────────────────────────────────
 // O clique no placeholder só dava focus() no input de URL abaixo — sem nenhuma
-// mudança visual, parecia não fazer nada. Agora abre um prompt de verdade
-// (mesmo padrão do insertImage() do corpo do post) e já atualiza a prévia.
-function setCoverImage() {
-  var url = prompt('URL da imagem de capa (https://...):', document.getElementById('postCover').value);
-  if (url === null) return; // cancelou
-  url = url.trim();
+// mudança visual, parecia não fazer nada. Agora abre o seletor de arquivo do
+// sistema e sobe pro bucket blog-images do Supabase Storage. O campo de URL
+// abaixo continua editável direto, para quem preferir colar um link externo.
+async function handleCoverFileSelect(file) {
+  if (!file) return;
+  var label = document.getElementById('imgPlaceholderLabel');
+  var originalLabel = label.textContent;
+  label.textContent = 'Enviando...';
+  var url = await uploadImageFile(file);
+  label.textContent = originalLabel;
+  document.getElementById('coverFileInput').value = ''; // permite re-selecionar o mesmo arquivo depois
+  if (!url) return;
   document.getElementById('postCover').value = url;
   updateCoverPreview(url);
 }
