@@ -3485,6 +3485,23 @@ function s4DownloadDoc(btn) {
   }
 }
 
+// Se o usuário chegou aqui a partir de "Analisar vaga" (sem currículo pronto,
+// clicou em "criar um agora"), volta pra lá com a vaga e o CV recém-salvo
+// já preenchidos — fecha o loop sem ele perder o contexto da vaga.
+function maybeReturnToPendingJob() {
+  var pending = null;
+  try { pending = JSON.parse(localStorage.getItem('vagaai_job_return') || 'null'); } catch(e) {}
+  if (!pending || (Date.now() - (pending.ts || 0)) > 2 * 60 * 60 * 1000) return;
+  try { localStorage.setItem('vagaai_return_cv_data', JSON.stringify(_cvData)); } catch(e) {}
+  var embedded = window.__VAGAAI_EMBEDDED__ || window.self !== window.top || new URLSearchParams(location.search).get('embedded') === '1';
+  setTimeout(function() {
+    if (embedded && window.parent && window.parent !== window) {
+      try { window.parent.postMessage({ type: 'vagaai-nav', frame: true, href: '/app', id: 'app' }, '*'); return; } catch(e) {}
+    }
+    location.href = '/app';
+  }, 900); // pequeno atraso pra o usuário ver o toast "Salvo na nuvem!" antes de sair
+}
+
 async function s4SaveCloud(btn) {
   if (!_cvData) { showToast('Preencha o currículo antes de salvar', 'warn'); return; }
   if (!_sb) { showToast('Faça login para salvar na nuvem', 'warn'); return; }
@@ -3506,6 +3523,7 @@ async function s4SaveCloud(btn) {
     if (btn) btn.innerHTML = btn.innerHTML.replace('Salvando…', '✓ Salvo na nuvem!');
     setTimeout(function() { if (btn) { btn.disabled = false; btn.innerHTML = orig; } }, 2500);
     showToast('Currículo salvo na nuvem!', 'success');
+    maybeReturnToPendingJob();
   } catch(err) {
     if (btn) { btn.disabled = false; btn.innerHTML = orig; }
     showToast('Erro ao salvar. Tente novamente.', 'error');
