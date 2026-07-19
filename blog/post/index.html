@@ -1,125 +1,287 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blog — VagaAI</title>
-<meta name="robots" content="index, follow">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script defer src="/_vercel/insights/script.js"></script>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0a0f0d;--surface:#111814;--surface2:#161d19;--border:rgba(255,255,255,0.07);--text:#e8ede9;--muted:#8a9e90;--green:#3ecf8e;--green-dim:rgba(62,207,142,0.12);--green-border:rgba(62,207,142,0.25)}
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
-nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between}
-.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
-.nav-badge{font-size:9px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:1px 7px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
-.nav-cta{font-size:13px;font-weight:700;background:var(--green);color:#0a0f0d;padding:.4rem .9rem;border-radius:8px;text-decoration:none;transition:background .2s}
-.nav-cta:hover{background:#4ddb9e}
-.container{max-width:720px;margin:0 auto;padding:3rem 1.5rem 5rem}
-.back-link{font-size:13px;color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;margin-bottom:2rem;transition:color .2s}
-.back-link:hover{color:var(--text)}
-.post-cover{width:100%;border-radius:14px;object-fit:cover;max-height:400px;margin-bottom:2rem;display:block}
-.post-title{font-family:'Lora',serif;font-size:clamp(24px,5vw,38px);font-weight:700;line-height:1.2;margin-bottom:.75rem}
-.post-meta{font-size:13px;color:var(--muted);margin-bottom:2.5rem;display:flex;align-items:center;gap:1rem}
-.post-content{font-size:15px;line-height:1.8;color:var(--text)}
-.post-content h2{font-family:'Lora',serif;font-size:22px;font-weight:700;margin:2rem 0 .75rem;color:var(--text)}
-.post-content h3{font-size:17px;font-weight:700;margin:1.5rem 0 .6rem;color:var(--text)}
-.post-content p{margin-bottom:1.1rem;color:rgba(232,237,233,0.88)}
-.post-content ul,.post-content ol{padding-left:1.4rem;margin-bottom:1rem}
-.post-content li{margin-bottom:.4rem;color:rgba(232,237,233,0.88)}
-.post-content a{color:var(--green);text-decoration:underline}
-.post-content a:hover{opacity:.8}
-.post-content blockquote{border-left:3px solid var(--green-border);padding:1rem 1.2rem;background:var(--green-dim);border-radius:0 8px 8px 0;margin:1.2rem 0;color:var(--muted);font-style:italic}
-.post-content strong{color:var(--text);font-weight:700}
-.post-content img{max-width:100%;border-radius:10px;margin:1rem 0;display:block}
-.post-content hr{border:none;border-top:1px solid var(--border);margin:2rem 0}
-.post-cta{background:var(--surface);border:1px solid var(--green-border);border-radius:14px;padding:2rem;text-align:center;margin-top:3rem}
-.post-cta h3{font-family:'Lora',serif;font-size:20px;font-weight:700;margin-bottom:.5rem}
-.post-cta p{color:var(--muted);font-size:14px;margin-bottom:1.2rem}
-.post-cta a{display:inline-block;background:var(--green);color:#0a0f0d;font-weight:700;font-size:14px;padding:.75rem 1.5rem;border-radius:9px;text-decoration:none}
-.post-cta a:hover{background:#4ddb9e}
-.loading{text-align:center;padding:5rem;color:var(--muted);font-size:14px}
-.not-found{text-align:center;padding:5rem 2rem}
-.not-found h2{font-family:'Lora',serif;font-size:24px;font-weight:700;margin-bottom:.5rem}
-.not-found p{color:var(--muted);margin-bottom:1.5rem}
-footer{text-align:center;padding:2rem;font-size:13px;color:var(--muted);border-top:1px solid var(--border)}
-footer a{color:var(--green);text-decoration:none}
-[data-theme="light"]{--bg:#f2f6f3;--surface:#fff;--surface2:#eaf0ec;--border:rgba(0,0,0,.09);--text:#0d1a11;--muted:#4d6e57;--green:#1a8f5c;--green-dim:rgba(26,143,92,.1);--green-border:rgba(26,143,92,.25)}
-[data-theme="light"] nav{background:rgba(242,246,243,0.95)!important}
-[data-theme="light"] .post-content p,[data-theme="light"] .post-content li{color:var(--text)}
-</style>
-<script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XCT8K58VWF"></script>
+  <script>
+  window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
+  gtag('consent','default',{ad_storage:'denied',analytics_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
+  try{if(localStorage.getItem('vagaai_cookie_consent')==='granted')gtag('consent','update',{analytics_storage:'granted'});}catch(e){}
+  gtag('js',new Date());gtag('config','G-XCT8K58VWF');
+  </script>
+  <script src="/cookie-consent.js" defer></script>
+  <script defer src="/_vercel/insights/script.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Tag estática presente desde o início: o bug anterior era o JS tentar
+       .setAttribute() numa <meta name="description"> que não existia no head,
+       o que quebrava (throw) e derrubava o carregamento inteiro do post com
+       "Erro ao carregar post". A tag agora sempre existe; o JS abaixo também
+       ficou defensivo (checa null) como segunda camada de proteção. -->
+  <meta name="description" content="Blog VagaAI — dicas de carreira e currículo.">
+  <title>Blog — VagaAI</title>
+  <link rel="canonical" id="canonicalLink" href="https://www.vagaai.app.br/blog">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta property="og:type" content="article">
+  <meta property="og:url" id="ogUrl" content="https://www.vagaai.app.br/blog">
+  <meta property="og:title" id="ogTitle" content="Blog VagaAI">
+  <meta property="og:description" id="ogDesc" content="Blog VagaAI — dicas de carreira e currículo.">
+  <meta property="og:image" id="ogImage" content="https://www.vagaai.app.br/og.png">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:site_name" content="VagaAI">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&display=swap" rel="stylesheet">
+  <script>
+    (function(){
+      var s=localStorage.getItem('vagaai-theme');
+      var p=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';
+      document.documentElement.dataset.theme=s||p;
+    })();
+  </script>
+  <style>
+    /* ===== VARIABLES (mesmo sistema da landing) ===== */
+    :root,[data-theme="dark"]{
+      --bg:#080808;--panel:#111;--panel-2:#181818;
+      --line:rgba(255,255,255,.07);--line-2:rgba(255,255,255,.13);--line-green:rgba(62,207,142,.22);
+      --ink:#f0ece4;--copy:rgba(240,236,228,.55);--muted:rgba(240,236,228,.28);
+      --green:#3ecf8e;--green-2:#28b97c;--green-dim:rgba(62,207,142,.09);--green-glow:rgba(62,207,142,.16);
+      --nav-bg:rgba(8,8,8,.84);
+      --shadow-sm:0 6px 28px rgba(0,0,0,.35);
+      color-scheme:dark;
+    }
+    [data-theme="light"]{
+      --bg:#f3f8f4;--panel:#fff;--panel-2:#f0f8f3;
+      --line:rgba(6,38,25,.08);--line-2:rgba(6,38,25,.15);--line-green:rgba(20,140,90,.28);
+      --ink:#09201a;--copy:rgba(9,32,26,.6);--muted:rgba(9,32,26,.38);
+      --green:#1a9e6e;--green-2:#138558;--green-dim:rgba(26,158,110,.1);--green-glow:rgba(26,158,110,.12);
+      --nav-bg:rgba(243,248,244,.93);
+      --shadow-sm:0 4px 18px rgba(6,38,25,.08);
+      color-scheme:light;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{color:var(--ink);background:var(--bg);font-family:"Inter",sans-serif;font-size:15px;line-height:1.65;transition:background .3s,color .3s}
+    a{color:inherit}button{font:inherit;cursor:pointer}img{max-width:100%;display:block}
+    .container{width:min(720px,calc(100% - 48px));margin:auto}
+
+    /* ===== NAV (idêntico à landing) ===== */
+    .nav-shell{position:fixed;left:0;right:0;top:14px;z-index:90;pointer-events:none}
+    .nav{width:min(1160px,calc(100% - 28px));height:62px;margin:auto;padding:0 10px 0 18px;border:1px solid var(--line);border-radius:16px;display:flex;align-items:center;justify-content:space-between;background:var(--nav-bg);backdrop-filter:blur(20px);box-shadow:var(--shadow-sm);pointer-events:auto;transition:background .3s,border-color .3s}
+    .brand{display:inline-flex;align-items:center;gap:9px;text-decoration:none}
+    .brand img{height:36px;width:auto}
+    .brand .logo-light{display:none}.brand .logo-dark{display:block}
+    [data-theme="light"] .brand .logo-dark{display:none}[data-theme="light"] .brand .logo-light{display:block}
+    .nav-badge{font-size:9px;background:var(--green-dim);border:1px solid var(--line-green);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-left:4px}
+    .nav-links{display:flex;align-items:center;gap:27px}
+    .nav-links a{color:var(--copy);font-size:13px;font-weight:600;text-decoration:none;transition:color .2s}
+    .nav-links a:hover{color:var(--ink)}
+    .nav-actions{display:flex;align-items:center;gap:8px}
+    .theme-toggle{width:44px;height:44px;border:1px solid var(--line);border-radius:9px;display:grid;place-items:center;background:transparent;color:var(--copy);transition:border-color .2s,color .2s,background .2s}
+    .theme-toggle:hover{border-color:var(--line-green);color:var(--green);background:var(--green-dim)}
+    .icon{width:18px;height:18px;flex:0 0 auto}
+    .icon-sun{display:none}.icon-moon{display:block}
+    [data-theme="light"] .icon-sun{display:block}[data-theme="light"] .icon-moon{display:none}
+    .btn{min-height:46px;padding:0 20px;border:1px solid transparent;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-size:12px;font-weight:800;text-decoration:none;transition:transform .2s,box-shadow .2s,background .2s,border-color .2s,color .2s}
+    .btn:hover{transform:translateY(-2px)}
+    .btn-primary{color:#080808;background:var(--green);box-shadow:0 12px 32px var(--green-glow)}
+    [data-theme="light"] .btn-primary{color:#fff}
+    .btn-primary:hover{box-shadow:0 16px 44px var(--green-glow)}
+    .btn-secondary{color:var(--ink);border-color:var(--line);background:transparent}
+    .btn-secondary:hover{border-color:var(--line-green);background:var(--green-dim)}
+    .menu{width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:10px;color:var(--ink);background:var(--panel);display:none}
+    @media(max-width:900px){
+      .nav-links,.nav .btn-secondary{display:none}
+      .menu{display:grid;place-items:center}
+      .nav.open{height:auto;padding:10px 10px 14px;flex-wrap:wrap}
+      .nav.open .nav-links{order:3;width:100%;margin-top:10px;padding:14px 3px 2px;border-top:1px solid var(--line);display:grid;gap:12px}
+      .nav.open .btn-secondary{display:flex;order:4;width:100%;justify-content:center;margin-top:8px}
+      .nav.open .btn-primary{display:flex;order:5;width:100%;justify-content:center;margin-top:8px}
+    }
+
+    /* ===== POST ===== */
+    main{padding-top:128px}
+    .back-link{font-size:13px;color:var(--copy);text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;margin-bottom:2rem;transition:color .2s}
+    .back-link:hover{color:var(--ink)}
+    .post-cat{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--green);background:var(--green-dim);border:1px solid var(--line-green);border-radius:20px;padding:4px 12px;margin-bottom:14px}
+    .post-cover{width:100%;border-radius:18px;object-fit:cover;max-height:420px;margin-bottom:2rem;border:1px solid var(--line)}
+    .post-title{font-family:"Lora",serif;font-size:clamp(26px,5vw,42px);font-weight:700;line-height:1.14;letter-spacing:-.02em;margin-bottom:.75rem}
+    .post-meta{font-size:13px;color:var(--muted);margin-bottom:2.5rem;display:flex;align-items:center;gap:1rem}
+    .post-content{font-size:16px;line-height:1.85;color:var(--copy)}
+    .post-content h2{font-family:"Lora",serif;font-size:24px;font-weight:700;margin:2.2rem 0 .8rem;color:var(--ink);letter-spacing:-.01em}
+    .post-content h3{font-size:18px;font-weight:700;margin:1.6rem 0 .6rem;color:var(--ink)}
+    .post-content p{margin-bottom:1.2rem}
+    .post-content ul,.post-content ol{padding-left:1.4rem;margin-bottom:1.2rem}
+    .post-content li{margin-bottom:.4rem}
+    .post-content a{color:var(--green);text-decoration:underline}
+    .post-content a:hover{opacity:.8}
+    .post-content blockquote{border-left:3px solid var(--line-green);padding:1rem 1.2rem;background:var(--green-dim);border-radius:0 10px 10px 0;margin:1.4rem 0;color:var(--copy);font-style:italic}
+    .post-content strong{color:var(--ink);font-weight:700}
+    .post-content img{max-width:100%;border-radius:12px;margin:1.2rem 0;border:1px solid var(--line)}
+    .post-content hr{border:none;border-top:1px solid var(--line);margin:2.2rem 0}
+    .post-cta{position:relative;border:1px solid var(--line-green);border-radius:20px;padding:2.4rem 2rem;text-align:center;margin-top:3.5rem;overflow:hidden;background:radial-gradient(circle at 50% 0,var(--green-dim),transparent 60%),var(--panel)}
+    .post-cta h3{font-family:"Lora",serif;font-size:22px;font-weight:700;margin-bottom:.5rem;color:var(--ink)}
+    .post-cta p{color:var(--copy);font-size:14px;margin-bottom:1.4rem}
+    .loading-state{text-align:center;padding:5rem;color:var(--muted);font-size:14px}
+    .not-found{text-align:center;padding:5rem 1.5rem}
+    .not-found h2{font-family:"Lora",serif;font-size:24px;font-weight:700;margin-bottom:.5rem;color:var(--ink)}
+    .not-found p{color:var(--copy);margin-bottom:1.5rem}
+
+    /* ===== FOOTER (idêntico à landing) ===== */
+    footer{padding:34px 0 40px;border-top:1px solid var(--line);background:var(--bg);margin-top:40px}
+    .footer-row{display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .footer-row .brand img{height:30px}
+    .footer-links{display:flex;gap:18px;flex-wrap:wrap}
+    .footer-links a,.copyright{color:var(--muted);font-size:12px;text-decoration:none}
+    @media(max-width:620px){.footer-row{flex-direction:column;text-align:center}.footer-links{justify-content:center}}
+  </style>
 </head>
 <body>
-<nav>
-  <a href="/" class="nav-logo">
-    <img src="/logo.svg" alt="VagaAI" height="38" style="display:block;">
-    <span class="nav-badge">Blog</span>
-  </a>
-  <a href="/app" class="nav-cta">Analisar minha vaga →</a>
-</nav>
 
-<div class="container">
-  <a href="/blog" class="back-link">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-    Voltar ao blog
-  </a>
-  <div id="postContent" class="loading">Carregando...</div>
-</div>
+  <div class="nav-shell">
+    <nav class="nav" id="nav">
+      <a class="brand" href="/" aria-label="VagaAI — ir para o início">
+        <img src="/logo.svg" alt="VagaAI" class="logo-dark">
+        <img src="/logo-light.svg" alt="VagaAI" class="logo-light">
+        <span class="nav-badge">Blog</span>
+      </a>
+      <div class="nav-links">
+        <a href="/#recursos">Benefícios</a>
+        <a href="/#planos">Planos</a>
+        <a href="/blog">Blog</a>
+        <a href="/paraempresas" style="color:var(--green);font-weight:700">Para empresas</a>
+      </div>
+      <div class="nav-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">
+          <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <a class="btn btn-secondary" href="https://www.vagaai.app.br/login">Entrar</a>
+        <a class="btn btn-primary" href="https://www.vagaai.app.br/app">Analisar vaga grátis</a>
+        <button class="menu" aria-label="Abrir menu" onclick="toggleMenu()">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </nav>
+  </div>
 
-<footer>© 2026 VagaAI · <a href="/">Início</a> · <a href="/blog">Blog</a> · <a href="/termos">Termos</a></footer>
+  <main>
+    <div class="container">
+      <a href="/blog" class="back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Voltar ao blog
+      </a>
+      <div id="postContent" class="loading-state">Carregando…</div>
+    </div>
+  </main>
 
-<script>
-var SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
-var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
+  <footer>
+    <div class="container footer-row">
+      <a class="brand" href="/" aria-label="VagaAI">
+        <img src="/logo.svg" alt="VagaAI" class="logo-dark">
+        <img src="/logo-light.svg" alt="VagaAI" class="logo-light">
+      </a>
+      <div class="footer-links">
+        <a href="https://www.vagaai.app.br/termos">Termos</a>
+        <a href="https://www.vagaai.app.br/termos#privacidade">Privacidade</a>
+        <a href="https://www.vagaai.app.br/blog">Conteúdos</a>
+        <a href="https://www.vagaai.app.br/login">Entrar</a>
+        <a href="/paraempresas" style="color:var(--green);font-weight:600">Para empresas</a>
+      </div>
+      <span class="copyright">© 2026 VagaAI · Candidaturas mais fortes.</span>
+    </div>
+  </footer>
 
-(async function() {
-  var container = document.getElementById('postContent');
-  var slug = new URLSearchParams(window.location.search).get('s');
-  if (!slug) { showNotFound(container); return; }
+  <script>
+    /* ===== THEME (idêntico à landing) ===== */
+    var themeBtn = document.getElementById('themeToggle');
+    themeBtn.addEventListener('click', function() {
+      var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      localStorage.setItem('vagaai-theme', next);
+      themeBtn.setAttribute('aria-label', next === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro');
+    });
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function(e) {
+      if (!localStorage.getItem('vagaai-theme')) {
+        document.documentElement.dataset.theme = e.matches ? 'light' : 'dark';
+      }
+    });
+    function toggleMenu() { document.getElementById('nav').classList.toggle('open'); }
+    document.querySelectorAll('.nav-links a').forEach(function(a) {
+      a.addEventListener('click', function() { document.getElementById('nav').classList.remove('open'); });
+    });
 
-  try {
-    var res = await fetch(
-      SUPABASE_URL + '/rest/v1/blog_posts?slug=eq.' + encodeURIComponent(slug) + '&published=eq.true&select=*',
-      { headers: { apikey: SUPABASE_ANON } }
-    );
-    var rows = await res.json();
-    if (!rows.length) { showNotFound(container); return; }
-    var p = rows[0];
+    /* ===== POST ===== */
+    var SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
+    var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
 
-    // Update page meta
-    document.title = p.title + ' — Blog VagaAI';
-    if (p.excerpt) document.querySelector('meta[name="description"]').setAttribute('content', p.excerpt);
+    function parseCategories(raw) {
+      if (!raw) return [];
+      if (Array.isArray(raw)) return raw;
+      try { var v = JSON.parse(raw); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+    }
 
-    var date = new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
-    var coverHtml = p.cover_url ? '<img class="post-cover" src="' + esc(p.cover_url) + '" alt="' + esc(p.title) + '">' : '';
+    // Atualiza <meta>/<link> só se o elemento existir — nunca mais derruba a
+    // página inteira por causa de uma tag ausente no <head>.
+    function setMeta(id, attr, value) {
+      var el = document.getElementById(id);
+      if (el && value) el.setAttribute(attr, value);
+    }
 
-    container.className = '';
-    container.innerHTML = coverHtml
-      + '<h1 class="post-title">' + esc(p.title) + '</h1>'
-      + '<div class="post-meta">'
-      + '<span>📅 ' + date + '</span>'
-      + '</div>'
-      + '<div class="post-content">' + (p.content || '') + '</div>'
-      + '<div class="post-cta">'
-      + '<h3>Teste o VagaAI gratuitamente</h3>'
-      + '<p>Cole a vaga e seu currículo. Receba score ATS, falhas e sugestões em 30 segundos.</p>'
-      + '<a href="/app">Analisar minha vaga →</a>'
-      + '</div>';
-  } catch(e) {
-    container.innerHTML = '<div class="not-found"><p>Erro ao carregar post.</p></div>';
-  }
-})();
+    (async function() {
+      var container = document.getElementById('postContent');
+      var slug = new URLSearchParams(window.location.search).get('s');
+      if (!slug) { showNotFound(container); return; }
 
-function showNotFound(el) {
-  el.className = '';
-  el.innerHTML = '<div class="not-found"><h2>Post não encontrado</h2><p>Este post não existe ou foi removido.</p><a href="/blog" style="color:var(--green)">← Ver todos os posts</a></div>';
-}
+      try {
+        var res = await fetch(
+          SUPABASE_URL + '/rest/v1/blog_posts?slug=eq.' + encodeURIComponent(slug) + '&published=eq.true&select=*',
+          { headers: { apikey: SUPABASE_ANON } }
+        );
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var rows = await res.json();
+        if (!Array.isArray(rows) || !rows.length) { showNotFound(container); return; }
+        var p = rows[0];
+        var cats = parseCategories(p.categories);
+        var postUrl = 'https://www.vagaai.app.br/blog/post?s=' + encodeURIComponent(p.slug);
 
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-</script>
+        document.title = (p.title || 'Post') + ' — Blog VagaAI';
+        setMeta('canonicalLink', 'href', postUrl);
+        setMeta('ogUrl', 'content', postUrl);
+        setMeta('ogTitle', 'content', p.seo_title || p.title);
+        if (p.excerpt) {
+          document.querySelector('meta[name="description"]').setAttribute('content', p.excerpt);
+          setMeta('ogDesc', 'content', p.excerpt);
+        }
+        if (p.cover_url) setMeta('ogImage', 'content', p.cover_url);
+
+        var date = new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+        var coverHtml = p.cover_url ? '<img class="post-cover" src="' + esc(p.cover_url) + '" alt="' + esc(p.title) + '">' : '';
+        var catHtml = cats.length ? '<div class="post-cat">' + esc(cats[0]) + '</div>' : '';
+
+        container.className = '';
+        container.innerHTML = catHtml
+          + coverHtml
+          + '<h1 class="post-title">' + esc(p.title) + '</h1>'
+          + '<div class="post-meta"><span>📅 ' + date + '</span></div>'
+          + '<div class="post-content">' + (p.content || '') + '</div>'
+          + '<div class="post-cta">'
+          + '<h3>Teste o VagaAI gratuitamente</h3>'
+          + '<p>Cole a vaga e seu currículo. Receba score ATS, falhas e sugestões em 30 segundos.</p>'
+          + '<a class="btn btn-primary" href="/app">Analisar minha vaga →</a>'
+          + '</div>';
+      } catch (e) {
+        container.className = '';
+        container.innerHTML = '<div class="not-found"><h2>Erro ao carregar o post</h2><p>Tente recarregar a página. Se persistir, volte ao blog.</p><a href="/blog" class="btn btn-secondary">← Ver todos os posts</a></div>';
+      }
+    })();
+
+    function showNotFound(el) {
+      el.className = '';
+      el.innerHTML = '<div class="not-found"><h2>Post não encontrado</h2><p>Este post não existe ou foi removido.</p><a href="/blog" class="btn btn-secondary">← Ver todos os posts</a></div>';
+    }
+
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  </script>
 </body>
 </html>
