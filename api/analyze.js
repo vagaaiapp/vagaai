@@ -957,6 +957,106 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
     }
   }
 
+  // ── Modo: Raio-X do currículo (análise de perfil, sem vaga-alvo) ────────────
+  if (action === 'profile_cv') {
+    const pAuthHeader = req.headers['authorization'] || '';
+    const pToken = pAuthHeader.startsWith('Bearer ') ? pAuthHeader.slice(7).trim() : null;
+    if (!pToken) return res.status(401).json({ error: 'Autenticação necessária.' });
+    const pUser = await getUserFromToken(pToken);
+    if (!pUser?.id) return res.status(401).json({ error: 'Token inválido. Faça login novamente.' });
+
+    if (!(await checkCvRateLimit(pUser.id))) {
+      return res.status(429).json({ error: 'Limite de análises atingido. Aguarde antes de tentar novamente.' });
+    }
+
+    const pCv = typeof req.body.cv === 'string' ? req.body.cv.trim() : '';
+    if (pCv.length < 120) {
+      return res.status(400).json({ error: 'Currículo muito curto para análise (mínimo ~120 caracteres).' });
+    }
+    if (pCv.length > 20000) {
+      return res.status(400).json({ error: 'Currículo muito longo (máx. 20.000 caracteres).' });
+    }
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(500).json({ error: 'Chave de API não configurada.' });
+    }
+
+    const pDeduct = await checkAndDeductCredit(pUser.id);
+    if (!pDeduct.ok) {
+      if (pDeduct.reason === 'no_credits' || pDeduct.reason === 'plan_limit') {
+        return res.status(402).json({ error: 'sem_creditos', message: 'Você não tem créditos disponíveis para o Raio-X do currículo.' });
+      }
+      if (pDeduct.reason === 'invalid_plan') {
+        return res.status(403).json({ error: 'invalid_plan', message: 'Plano não reconhecido.' });
+      }
+      console.error('profile_cv: deduction failed (infrastructure):', pDeduct.detail);
+      return res.status(503).json({ error: 'service_unavailable', message: 'Serviço temporariamente indisponível. Tente novamente em instantes.' });
+    }
+
+    const profilePrompt = `Você é um especialista sênior em recrutamento e mercado de trabalho brasileiro. Analise o currículo abaixo e devolva um "Raio-X" completo do perfil profissional — SEM comparar com nenhuma vaga específica.
+
+⚠️ REGRA ABSOLUTA: baseie-se SOMENTE no que está no currículo. Não invente experiências, competências ou números. Se algo não está claro, trate como lacuna.
+
+CURRÍCULO:
+${pCv}
+
+Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste formato:
+{
+  "resumo_perfil": "2-3 frases resumindo quem é este profissional",
+  "senioridade": "estagio|junior|pleno|senior|especialista|lideranca",
+  "areas_atuacao": ["área principal", "área secundária"],
+  "competencias_tecnicas": ["até 12 competências técnicas identificadas"],
+  "competencias_comportamentais": ["até 6 competências comportamentais evidenciadas"],
+  "pontos_fortes": ["3-5 pontos fortes concretos do currículo"],
+  "lacunas": ["3-5 lacunas ou pontos a desenvolver — no currículo ou no perfil"],
+  "mercado": {
+    "posicionamento": "2-3 frases: como este perfil se posiciona no mercado de trabalho brasileiro hoje",
+    "cargos_alvo": ["3-5 cargos que este perfil pode disputar de forma realista"],
+    "recomendacoes": ["3-5 ações práticas para aumentar a competitividade deste perfil"]
+  }
+}`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 2500,
+          temperature: 0.2,
+          messages: [{ role: 'user', content: profilePrompt }],
+        }),
+      });
+      if (!response.ok) {
+        await refundAnalysisCredit(pUser.id, pDeduct);
+        return res.status(500).json({ error: 'Erro ao analisar currículo. Tente novamente.' });
+      }
+      const data = await response.json();
+      let raw = data.content?.[0]?.text || '';
+      raw = raw.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+      let profile;
+      try {
+        profile = JSON.parse(raw);
+      } catch {
+        // fallback: extrai o primeiro objeto JSON do texto
+        const m = raw.match(/\{[\s\S]*\}/);
+        try { profile = m ? JSON.parse(m[0]) : null; } catch { profile = null; }
+      }
+      if (!profile || typeof profile !== 'object' || !profile.resumo_perfil) {
+        await refundAnalysisCredit(pUser.id, pDeduct);
+        return res.status(500).json({ error: 'Resposta inválida da IA. Tente novamente.' });
+      }
+      return res.status(200).json({ profile });
+    } catch (err) {
+      console.error('profile_cv error:', err.message);
+      await refundAnalysisCredit(pUser.id, pDeduct).catch(() => {});
+      return res.status(500).json({ error: 'Erro interno. Tente novamente.' });
+    }
+  }
+
   const { cv, job, job_url: requestedJobUrl } = req.body || {};
   const jobUrl = normalizeJobUrl(requestedJobUrl);
 
