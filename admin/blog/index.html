@@ -512,6 +512,14 @@ async function savePost(publish) {
   var excerpt = document.getElementById('postExcerpt').value.trim();
   var cover_url = document.getElementById('postCover').value.trim();
   var seo_title = document.getElementById('seoTitle').value.trim();
+  // O conteúdo sempre era lido do editor VISUAL, mesmo com a aba Código ativa.
+  // Editar/colar HTML na aba Código e publicar sem voltar pra "Visual" salvava
+  // o post com o conteúdo visual antigo (ou vazio, num post novo) — o texto
+  // "sumia" ao reabrir. Sincroniza da aba realmente ativa antes de ler.
+  var codeEditorEl = document.getElementById('codeEditor');
+  if (getComputedStyle(codeEditorEl).display !== 'none') {
+    document.getElementById('editorContent').innerHTML = codeEditorEl.value;
+  }
   var content = document.getElementById('editorContent').innerHTML;
   var published = publish ? true : _isPublished;
   if (!title) { toast('Adicione um título', true); return; }
