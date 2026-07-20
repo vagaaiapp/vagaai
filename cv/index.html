@@ -2240,6 +2240,12 @@ function downloadWordDoc() {
       (e.instituicao ? '<br><span style="color:#666;">' + _esc(e.instituicao) + '</span>' : '') +
       (e.periodo ? ' &middot; ' + _esc(e.periodo) : '') + '</p>';
   }).join('');
+  var cursosHtml = (d.cursos || []).map(function(e) {
+    return '<p style="margin:0 0 6pt"><strong>' + _esc(e.nome||'') + '</strong>' +
+      (e.instituicao ? '<br><span style="color:#666;">' + _esc(e.instituicao) + '</span>' : '') +
+      (e.periodo ? ' &middot; ' + _esc(e.periodo) : '') + '</p>';
+  }).join('');
+  var idiomasLine = (d.idiomas || []).map(function(e) { return _esc(e.nivel ? (e.idioma + ' (' + e.nivel + ')') : e.idioma); }).join(' &middot; ');
   var skills = (d.habilidades || []).map(_esc).join(' &middot; ');
   var sec = function(title, content) { return content ? '<h2 style="font-size:9.5pt;text-transform:uppercase;letter-spacing:.1em;color:#555;margin:14pt 0 4pt;border-bottom:1pt solid #ccc;padding-bottom:2pt">' + title + '</h2>' + content : ''; };
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#111;margin:2cm;line-height:1.4}ul{margin:2pt 0 8pt 18pt}li{margin:1pt 0}p{margin:0 0 4pt}</style></head><body>' +
@@ -2249,6 +2255,8 @@ function downloadWordDoc() {
     sec('Resumo Profissional', d.resumo_profissional ? '<p>' + _esc(d.resumo_profissional) + '</p>' : '') +
     sec('Experiência Profissional', expHtml) +
     sec('Formação', eduHtml) +
+    sec('Cursos e Especializações', cursosHtml) +
+    sec('Idiomas', idiomasLine ? '<p>' + idiomasLine + '</p>' : '') +
     sec('Habilidades', skills ? '<p>' + skills + '</p>' : '') +
     '</body></html>';
   var blob = new Blob([html], { type: 'application/msword' });
@@ -2551,7 +2559,7 @@ function applySmartFix(type) {
     var kws = getMissingKeywordsForInsert();
     if (kws.length) {
       _cvData.habilidades = (_cvData.habilidades || []).concat(kws).filter(function(v, i, arr) { return arr.indexOf(v) === i; });
-      reRenderSkills(_cvData.habilidades);
+      reRenderSkills(mergedSkillsTags(_cvData));
     }
   } else if (type === 'metrics') {
     var exps = _cvData.experiencias || [];
@@ -3094,7 +3102,7 @@ function applyFullCvData(data) {
   reRenderRole(data.titulo_profissional);
   reRenderResumo(data.resumo_profissional);
   reRenderContact(data.contato || {});
-  reRenderSkills(data.habilidades || []);
+  reRenderSkills(mergedSkillsTags(data));
   reRenderExp(data.experiencias || []);
   reRenderEdu(data.formacao || []);
   renderCvContext(_cvContext);
@@ -3243,7 +3251,7 @@ function s3ReforcarIA() {
       _cvData.habilidades = (_cvData.habilidades || []).concat(missing).filter(function(v, i, arr) {
         return v && arr.indexOf(v) === i;
       });
-      reRenderSkills(_cvData.habilidades);
+      reRenderSkills(mergedSkillsTags(_cvData));
       changes.push(missing.length + ' keyword' + (missing.length > 1 ? 's' : '') + ' adicionada' + (missing.length > 1 ? 's' : ''));
     }
 
@@ -3765,6 +3773,18 @@ function reRenderContact(c) {
   var foC=document.getElementById('foContatos'); if(foC) foC.innerHTML=foCI.join('');
 }
 
+// Cursos e Idiomas (seções novas, preenchidas em /curriculo) não tinham
+// bloco visual próprio nos 6 templates — a exportação (PDF/Word) simplesmente
+// os descartava. Em vez de duplicar HTML/CSS em cada template, reaproveita
+// o bloco de Habilidades (já presente e testado nos 6) como lista de tags
+// combinada: habilidades + cursos + idiomas, cada um identificável.
+function mergedSkillsTags(cv) {
+  var out = (cv.habilidades || []).slice();
+  (cv.cursos || []).forEach(function(c) { if (c && c.nome) out.push(c.nome); });
+  (cv.idiomas || []).forEach(function(i) { if (i && i.idioma) out.push(i.nivel ? (i.idioma + ' (' + i.nivel + ')') : i.idioma); });
+  return out;
+}
+
 function reRenderSkills(skills) {
   var cl=document.getElementById('clSkills'); if(cl) cl.innerHTML=skills.slice(0,18).map(function(s){return '<span class="sb-tag">'+_esc(s)+'</span>';}).join('');
   var ms=document.getElementById('modSkills'); if(ms) ms.innerHTML=skills.slice(0,20).map(function(s){return '<span class="mod-tag">'+_esc(s)+'</span>';}).join('');
@@ -3921,7 +3941,7 @@ function saveEdit() {
         function(el){ return el.firstChild?el.firstChild.nodeValue.trim():''; }
       ).filter(Boolean);
     }
-    reRenderSkills(_cvData.habilidades||[]);
+    reRenderSkills(mergedSkillsTags(_cvData));
   } else if(_editSection==='exp') {
     saveExpEditor();
     reRenderExp(_cvData.experiencias||[]);
@@ -3953,7 +3973,7 @@ function efRemoveTag(idx) {
   if(!Array.isArray(_cvData.habilidades)) return;
   _cvData.habilidades.splice(idx,1);
   _rebuildTagWrap();
-  reRenderSkills(_cvData.habilidades);
+  reRenderSkills(mergedSkillsTags(_cvData));
   saveCvData();
 }
 function efAddTag() {
@@ -3964,7 +3984,7 @@ function efAddTag() {
   if(_cvData.habilidades.indexOf(val)===-1) _cvData.habilidades.push(val);
   inp.value='';
   _rebuildTagWrap();
-  reRenderSkills(_cvData.habilidades);
+  reRenderSkills(mergedSkillsTags(_cvData));
   saveCvData();
 }
 
