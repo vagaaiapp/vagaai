@@ -59,12 +59,9 @@
     "mainEntity": [
       {"@type":"Question","name":"Preciso pagar para usar a VagaAI?","acceptedAnswer":{"@type":"Answer","text":"Não. Você pode começar pelo plano gratuito, sem cadastrar cartão de crédito. Os planos pagos liberam mais análises e recursos avançados."}},
       {"@type":"Question","name":"Preciso criar uma conta?","acceptedAnswer":{"@type":"Answer","text":"Você pode iniciar uma análise gratuitamente. Para manter seu currículo, histórico, candidaturas e alertas acessíveis em diferentes dispositivos, é necessário criar uma conta gratuita."}},
-      {"@type":"Question","name":"Posso usar um currículo que já tenho?","acceptedAnswer":{"@type":"Answer","text":"Sim. Você pode enviar um arquivo em PDF, Word ou TXT, ou colar o conteúdo diretamente na plataforma."}},
-      {"@type":"Question","name":"A VagaAI cria um currículo do zero?","acceptedAnswer":{"@type":"Answer","text":"Sim. O editor orienta o preenchimento de dados pessoais, objetivo, experiências, formação, cursos, idiomas, habilidades e resumo profissional."}},
-      {"@type":"Question","name":"O que é o score de compatibilidade?","acceptedAnswer":{"@type":"Answer","text":"É uma análise da relação entre as informações do currículo e os requisitos identificados na vaga. Ajuda a visualizar pontos fortes e lacunas, mas não representa garantia de entrevista ou contratação."}},
-      {"@type":"Question","name":"A VagaAI garante que meu currículo passe pelo ATS?","acceptedAnswer":{"@type":"Answer","text":"Não existe garantia de aprovação, pois cada empresa utiliza critérios e sistemas diferentes. A VagaAI ajuda a organizar o currículo, identificar palavras-chave relevantes e evitar problemas comuns de leitura."}},
+      {"@type":"Question","name":"Posso usar um currículo que já tenho, ou criar do zero?","acceptedAnswer":{"@type":"Answer","text":"Os dois. Envie um arquivo em PDF, Word ou TXT, ou use o editor guiado por seções para montar um currículo novo."}},
+      {"@type":"Question","name":"A VagaAI garante que meu currículo passe pelo ATS?","acceptedAnswer":{"@type":"Answer","text":"Não existe garantia de aprovação, pois cada empresa usa critérios próprios. A VagaAI ajuda a organizar o currículo e identificar palavras-chave relevantes."}},
       {"@type":"Question","name":"A inteligência artificial inventa experiências?","acceptedAnswer":{"@type":"Answer","text":"Não. A VagaAI trabalha com as informações fornecidas por você. Todas as sugestões devem ser revisadas antes de serem utilizadas."}},
-      {"@type":"Question","name":"A VagaAI envia candidaturas automaticamente?","acceptedAnswer":{"@type":"Answer","text":"Não. Você continua no controle e decide onde e quando deseja se candidatar."}},
       {"@type":"Question","name":"Posso cancelar meu plano?","acceptedAnswer":{"@type":"Answer","text":"Sim. Os planos mensais podem ser cancelados a qualquer momento. O acesso permanece disponível até o fim do período já pago."}}
     ]
   }
@@ -193,18 +190,6 @@
     .pipeline-node:nth-child(7) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:5.75s}
     @keyframes node-glow{0%,88%,100%{border-color:var(--line);color:var(--muted);transform:scale(1)}92%{border-color:var(--green);color:var(--green);transform:scale(1.12);box-shadow:0 0 0 6px var(--mint)}}
     @media(prefers-reduced-motion:reduce){.pipeline-pulse{animation:none;opacity:0}.pipeline-ic{animation:none!important}}
-    .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:56px}
-    .feature{position:relative;overflow:hidden;min-height:150px;padding:26px;border:1px solid var(--line);border-radius:20px;background:var(--panel);transition:transform .25s,border-color .25s}
-    .feature::before{content:"";position:absolute;top:-60%;right:-30%;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,var(--mint),transparent 70%);opacity:0;transition:opacity .35s}
-    .feature:hover{transform:translateY(-4px);border-color:var(--green2)}
-    .feature:hover::before{opacity:1}
-    .feature>*{position:relative;z-index:1}
-    .feature-icon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--mint);color:var(--green);transition:transform .3s}
-    .feature-icon svg{width:19px;height:19px}
-    .feature:hover .feature-icon{transform:scale(1.1) rotate(-4deg)}
-    .feature h3{margin-top:16px;font:700 16.5px Lora;letter-spacing:-.01em}
-    .feature p{margin-top:6px;color:var(--copy);font-size:12.5px}
-    .howworks .btn{margin:44px auto 0;width:max-content}
 
     /* DETAIL */
     .detail{border-top:1px solid var(--line);background:var(--bg)}
@@ -303,17 +288,8 @@
     .compare tbody tr:hover{background:var(--panel-2)}
 
     /* RESPONSIBLE */
-    .responsible-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:56px;align-items:start}
-    .responsible-list{display:grid;gap:11px}
-    .responsible-item{padding:19px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
-    .responsible-item b{display:block;font:700 16px Lora}
-    .responsible-item p{margin-top:5px;color:var(--copy);font-size:12.5px}
-
-    /* PERSONA */
+    .responsible-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
     .persona{background:var(--panel-2)}
-    .persona-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:40px}
-    .persona-item{padding:15px 17px;border:1px solid var(--line);border-radius:14px;background:var(--panel);font-size:13px;color:var(--copy);display:flex;gap:9px;align-items:flex-start;line-height:1.4}
-    .persona-item:before{content:"✓";color:var(--green);font-weight:900}
 
     /* TESTIMONIALS */
     .testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:44px}
@@ -401,12 +377,11 @@
       .paths,.plans{grid-template-columns:1fr}
       .pipeline{grid-template-columns:repeat(3,1fr);row-gap:34px}
       .pipeline-line{display:none}
-      .feature-grid{grid-template-columns:1fr 1fr}
       .responsible-grid{grid-template-columns:1fr;gap:32px}
       .plan.featured{transform:none}
       .detail-row{grid-template-columns:1fr;padding:52px 0;gap:28px}
       .detail-row.rev .dmock{order:0}
-      .persona-grid,.testi-grid{grid-template-columns:1fr 1fr}
+      .testi-grid{grid-template-columns:1fr 1fr}
       .footer-grid{grid-template-columns:1fr 1fr;gap:32px}
       .final-paths{grid-template-columns:1fr}
     }
@@ -422,9 +397,8 @@
       .trust-item:nth-child(2){border-right:0}
       .trust-item:nth-child(-n+2){border-bottom:1px solid var(--line)}
       .pipeline{grid-template-columns:1fr 1fr}
-      .feature-grid{grid-template-columns:1fr}
       .plans{gap:12px}
-      .persona-grid,.testi-grid,.footer-grid{grid-template-columns:1fr}
+      .testi-grid,.footer-grid,.responsible-grid{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -467,8 +441,8 @@
         <span><b>4,8</b> · mais de 1.200 profissionais já usam a VagaAI</span>
       </div>
       <span class="eyebrow reveal">Seu currículo no centro da busca</span>
-      <h1 class="reveal">Seu currículo encontra a vaga certa.<br>Ou a vaga encontra <span class="green">seu currículo.</span></h1>
-      <p class="hero-copy reveal">Comece pela oportunidade que você já encontrou ou prepare seu currículo para receber vagas mais compatíveis. A VagaAI conecta análise, currículo, candidaturas e entrevista em uma única jornada.</p>
+      <h1 class="reveal">Currículo certo. <span class="green">Vaga certa.</span> Sem adivinhação.</h1>
+      <p class="hero-copy reveal">Análise, currículo, candidaturas e entrevista, numa jornada só.</p>
       <div class="paths reveal">
         <article class="path primary-path"><span class="path-num">01</span><div class="path-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg></div><h3>Já tenho uma vaga em vista</h3><p>Compare seu currículo com a vaga, veja o que falta para o ATS e prepare uma candidatura mais direcionada.</p><a class="btn primary" href="https://www.vagaai.app.br/app">Analisar esta vaga grátis →</a></article>
         <article class="path"><span class="path-num">02</span><div class="path-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><h3>Ainda não tenho currículo pronto</h3><p>Crie ou importe seu currículo, entenda o que o mercado procura e encontre oportunidades mais compatíveis.</p><a class="btn" href="https://www.vagaai.app.br/curriculo">Criar meu currículo grátis →</a></article>
@@ -484,11 +458,10 @@
       <div class="trust-item"><b>Você no controle</b>revise tudo antes de enviar</div>
     </div></section>
 
-    <!-- COMO FUNCIONA + RECURSOS (fundido, sem repetir os 2 caminhos do hero) -->
+    <!-- COMO FUNCIONA (pipeline, sem repetir os 2 caminhos do hero nem os recursos que vem a seguir) -->
     <section class="section howworks" id="como-funciona"><div class="wrap">
-      <div class="center reveal"><span class="eyebrow">Como funciona</span><h2>Currículo e vaga, <span class="green">na mesma direção.</span></h2><p class="lead">Prepare seu currículo, encontre a vaga certa e avance com clareza até a entrevista. Tudo conectado num painel só.</p></div>
-
-      <div class="pipeline reveal">
+      <div class="center reveal"><span class="eyebrow">Como funciona</span><h2>Currículo e vaga, <span class="green">na mesma direção.</span></h2></div>
+      <div class="pipeline reveal" id="recursos">
         <div class="pipeline-line"><div class="pipeline-pulse"></div></div>
         <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><span>Currículo</span></div>
         <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg></div><span>Vagas</span></div>
@@ -497,16 +470,6 @@
         <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="12" rx="1"/></svg></div><span>Candidatura</span></div>
         <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><span>Entrevista</span></div>
       </div>
-
-      <div class="feature-grid reveal" id="recursos">
-        <article class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div><h3>Análise de compatibilidade</h3><p>Score, keywords do ATS e prioridades antes de se candidatar.</p></article>
-        <article class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><h3>Currículo principal e direcionado</h3><p>Uma versão sempre atualizada, adaptada para cada vaga.</p></article>
-        <article class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg></div><h3>Alertas de vagas</h3><p>Filtros por cargo, localização e formato de trabalho.</p></article>
-        <article class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="12" rx="1"/></svg></div><h3>Rastreador de candidaturas</h3><p>Status e próximos passos em um painel único.</p></article>
-        <article class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg></div><h3>Carta para a vaga</h3><p>Apresentação contextualizada pela vaga e sua trajetória.</p></article>
-        <article class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><h3>Simulador de entrevista</h3><p>Perguntas e orientação para respostas mais claras.</p></article>
-      </div>
-      <a class="btn primary reveal" href="https://www.vagaai.app.br/app">Começar minha jornada grátis</a>
     </div></section>
 
     <!-- 7. ANÁLISE DE COMPATIBILIDADE -->
@@ -516,9 +479,7 @@
         <h3>Entenda a oportunidade antes de enviar seu currículo.</h3>
         <p>Cole a vaga e o currículo. Em segundos, você recebe:</p>
         <div class="capability-list">
-          <span>Score de compatibilidade com a vaga</span>
-          <span>Palavras-chave que faltam para o ATS</span>
-          <span>Lacunas e prioridades de ajuste</span>
+          <span>Score e palavras-chave que faltam para o ATS</span>
           <span>Currículo direcionado, pronto para revisar</span>
         </div>
         <div class="detail-callout">Sem inventar experiências: a VagaAI fortalece o que já existe. Você revisa tudo antes de usar.</div>
@@ -556,10 +517,8 @@
         <h3>Um currículo principal. Uma versão melhor para cada oportunidade.</h3>
         <p>Uma versão principal sempre atualizada, adaptada para cada vaga.</p>
         <div class="capability-list">
-          <span>Editor por seções, do objetivo aos idiomas</span>
-          <span>Importação de PDF, Word ou TXT</span>
-          <span>Pronto para leitura por ATS, com download em PDF</span>
-          <span>Posicionamento de mercado conforme você analisa vagas</span>
+          <span>Editor por seções, importa PDF ou Word</span>
+          <span>Pronto para ATS, com download em PDF</span>
         </div>
         <a class="btn primary" href="https://www.vagaai.app.br/curriculo">Criar ou importar meu currículo</a>
       </div>
@@ -595,10 +554,8 @@
         <h3>Pare de procurar em todos os lugares.</h3>
         <p>Configure seus critérios uma vez. A VagaAI seleciona as oportunidades e mostra quais merecem atenção primeiro.</p>
         <div class="capability-list">
-          <span>Cargo, localização e formato: remoto, híbrido ou presencial</span>
+          <span>Cargo, localização e formato de trabalho</span>
           <span>Vagas por e-mail e no painel</span>
-          <span>Salvar direto nas candidaturas</span>
-          <span>Analisar a vaga com um clique</span>
         </div>
         <a class="btn primary" href="https://www.vagaai.app.br/app">Configurar meus alertas</a>
       </div>
@@ -634,10 +591,8 @@
         <h3>Nenhuma candidatura perdida no caminho.</h3>
         <p>Da intenção à oferta: cada candidatura com status, datas e próximo passo em um painel único.</p>
         <div class="capability-list">
-          <span>Status: quero aplicar, enviada, em processo, entrevista, oferta</span>
-          <span>Datas e entrevistas registradas</span>
-          <span>Análise e currículo da vaga a um clique</span>
-          <span>Carta e treino de entrevista integrados</span>
+          <span>Status de quero aplicar até oferta</span>
+          <span>Currículo e carta da vaga a um clique</span>
         </div>
         <a class="btn primary" href="https://www.vagaai.app.br/app">Organizar minhas candidaturas</a>
       </div>
@@ -672,9 +627,7 @@
         <p>Use o contexto da vaga e da empresa para se preparar para as próximas etapas.</p>
         <div class="capability-list">
           <span>Carta conectada aos requisitos da vaga</span>
-          <span>Perguntas personalizadas por cargo e empresa</span>
-          <span>Orientação para estruturar respostas</span>
-          <span>Pontos fortes e pontos de atenção</span>
+          <span>Perguntas por cargo e empresa</span>
         </div>
         <a class="btn primary" href="https://www.vagaai.app.br/app">Preparar minha candidatura</a>
       </div>
@@ -718,26 +671,26 @@
     </div></section>
 
     <!-- 13. POSICIONAMENTO RESPONSÁVEL -->
-    <section class="section"><div class="wrap responsible-grid reveal">
-      <div><span class="eyebrow">Clareza, não atalho</span><h2>Tecnologia para fortalecer sua trajetória, não para inventá-la.</h2><p class="lead">A inteligência artificial pode ajudar você a organizar informações, identificar oportunidades e comunicar melhor suas experiências. Mas sua trajetória continua sendo sua.</p></div>
-      <div class="responsible-list">
-        <article class="responsible-item"><b>Não inventamos experiências</b><p>Fortalecemos a apresentação das experiências e competências que você realmente possui.</p></article>
-        <article class="responsible-item"><b>Não garantimos entrevista ou contratação</b><p>O score é um diagnóstico de compatibilidade, não uma promessa de aprovação. A decisão final pertence à empresa.</p></article>
-        <article class="responsible-item"><b>Não enviamos nada sem sua revisão</b><p>Você confere e edita os materiais antes de utilizá-los em uma candidatura.</p></article>
-        <article class="responsible-item"><b>Não somos um chat genérico</b><p>Seu currículo, suas vagas, suas análises e suas candidaturas permanecem conectados dentro da mesma jornada.</p></article>
+    <section class="section persona"><div class="wrap responsible-grid reveal">
+      <div>
+        <span class="eyebrow">Clareza, não atalho</span>
+        <h2>Fortalece sua trajetória, <span class="green">não inventa uma nova.</span></h2>
+        <div class="capability-list" style="border:0;margin-top:20px;padding-top:0">
+          <span>Não inventamos experiências</span>
+          <span>Não garantimos entrevista ou contratação</span>
+          <span>Nada é enviado sem sua revisão</span>
+          <span>Não somos um chat genérico</span>
+        </div>
       </div>
-    </div></section>
-
-    <!-- 14. PARA QUEM É -->
-    <section class="section persona"><div class="wrap">
-      <div class="center reveal"><span class="eyebrow">A VagaAI é para você que...</span><h2>Quer buscar oportunidades <span class="green">com mais clareza e menos improviso.</span></h2></div>
-      <div class="persona-grid reveal">
-        <div class="persona-item">Está procurando o primeiro emprego</div>
-        <div class="persona-item">Quer mudar de empresa ou de carreira</div>
-        <div class="persona-item">Envia muitos currículos e recebe poucos retornos</div>
-        <div class="persona-item">Não sabe se o currículo passa no ATS</div>
-        <div class="persona-item">Quer encontrar vagas mais compatíveis</div>
-        <div class="persona-item">Deseja chegar mais preparado às entrevistas</div>
+      <div>
+        <span class="eyebrow">Pra quem é</span>
+        <h2>Se você reconhece <span class="green">alguma dessas.</span></h2>
+        <div class="capability-list" style="border:0;margin-top:20px;padding-top:0">
+          <span>Primeiro emprego ou troca de carreira</span>
+          <span>Envia muitos currículos, recebe poucos retornos</span>
+          <span>Não sabe se o currículo passa no ATS</span>
+          <span>Quer chegar mais preparado às entrevistas</span>
+        </div>
       </div>
     </div></section>
 
@@ -808,14 +761,10 @@
       <div class="faq-grid reveal">
         <div class="faq open"><button>Preciso pagar para usar a VagaAI?<span>−</span></button><div class="faq-answer">Não. Você pode começar pelo plano gratuito, sem cadastrar cartão de crédito. Os planos pagos liberam mais análises e recursos avançados.</div></div>
         <div class="faq"><button>Preciso criar uma conta?<span>+</span></button><div class="faq-answer">Você pode iniciar uma análise gratuitamente. Para manter seu currículo, histórico, candidaturas e alertas acessíveis em diferentes dispositivos, é necessário criar uma conta gratuita.</div></div>
-        <div class="faq"><button>Posso usar um currículo que já tenho?<span>+</span></button><div class="faq-answer">Sim. Você pode enviar um arquivo em PDF, Word ou TXT, ou colar o conteúdo diretamente na plataforma.</div></div>
-        <div class="faq"><button>A VagaAI cria um currículo do zero?<span>+</span></button><div class="faq-answer">Sim. O editor orienta o preenchimento de dados pessoais, objetivo, experiências, formação, cursos, idiomas, habilidades e resumo profissional.</div></div>
-        <div class="faq"><button>O que é o score de compatibilidade?<span>+</span></button><div class="faq-answer">É uma análise da relação entre as informações do currículo e os requisitos identificados na vaga. Ajuda a visualizar pontos fortes e lacunas, mas não representa garantia de entrevista ou contratação.</div></div>
-        <div class="faq"><button>A VagaAI garante que meu currículo passe pelo ATS?<span>+</span></button><div class="faq-answer">Não existe garantia de aprovação, pois cada empresa utiliza critérios e sistemas diferentes. A VagaAI ajuda a organizar o currículo, identificar palavras-chave relevantes e evitar problemas comuns de leitura.</div></div>
+        <div class="faq"><button>Posso usar um currículo que já tenho, ou criar do zero?<span>+</span></button><div class="faq-answer">Os dois. Envie um arquivo em PDF, Word ou TXT, ou use o editor guiado por seções para montar um currículo novo.</div></div>
+        <div class="faq"><button>A VagaAI garante que meu currículo passe pelo ATS?<span>+</span></button><div class="faq-answer">Não existe garantia de aprovação, pois cada empresa usa critérios próprios. A VagaAI ajuda a organizar o currículo e identificar palavras-chave relevantes.</div></div>
         <div class="faq"><button>A inteligência artificial inventa experiências?<span>+</span></button><div class="faq-answer">Não. A VagaAI trabalha com as informações fornecidas por você. Todas as sugestões devem ser revisadas antes de serem utilizadas.</div></div>
-        <div class="faq"><button>A VagaAI envia candidaturas automaticamente?<span>+</span></button><div class="faq-answer">Não. Você continua no controle e decide onde e quando deseja se candidatar.</div></div>
         <div class="faq"><button>Posso cancelar meu plano?<span>+</span></button><div class="faq-answer">Sim. Os planos mensais podem ser cancelados a qualquer momento. O acesso permanece disponível até o fim do período já pago.</div></div>
-        <div class="faq"><button>Meus dados ficam protegidos?<span>+</span></button><div class="faq-answer">A VagaAI utiliza seus dados para fornecer os recursos solicitados. Consulte a Política de Privacidade para entender como as informações são tratadas e armazenadas.</div></div>
       </div>
     </div></section>
 
