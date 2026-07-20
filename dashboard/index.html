@@ -5009,6 +5009,7 @@ function _cvTextFromData(d) {
   (d.experiencias || []).forEach(function(e){ parts.push(e.cargo, e.empresa); (e.bullets||[]).forEach(function(b){ parts.push(b); }); });
   (d.formacao || []).forEach(function(e){ parts.push(e.curso, e.instituicao); });
   (d.cursos || []).forEach(function(e){ parts.push(e.nome, e.instituicao); });
+  (d.idiomas || []).forEach(function(e){ parts.push(e.idioma); });
   (d.habilidades || []).forEach(function(h){ parts.push(h); });
   return parts.filter(Boolean).join(' ');
 }

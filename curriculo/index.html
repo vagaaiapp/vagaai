@@ -110,6 +110,21 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;fon
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--green-border);color:var(--text);padding:.7rem 1.2rem;border-radius:10px;font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:300;max-width:90vw;text-align:center}
 .toast.vis{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.err{border-color:var(--red)}
+/* Nav mínima quando a página é acessada fora do painel (funil público) */
+.standalone-nav{display:none;align-items:center;justify-content:space-between;gap:1rem;padding:.9rem 1.5rem;border-bottom:1px solid var(--border);background:var(--surface)}
+.standalone-nav.show{display:flex}
+.sn-brand img{height:30px;width:auto;display:block}
+.sn-brand .logo-light{display:none}
+[data-theme="light"] .sn-brand .logo-dark{display:none}
+[data-theme="light"] .sn-brand .logo-light{display:block}
+.sn-link{font-size:13px;font-weight:700;color:var(--green);text-decoration:none}
+.sn-link:hover{text-decoration:underline}
+
+/* Card de importação (estado vazio) */
+.import-card{background:var(--surface);border:1px dashed var(--green-border);border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:.9rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.import-card p{font-size:13.5px;color:var(--muted);max-width:420px}
+.import-card p b{color:var(--text)}
+
 .loading{text-align:center;padding:4rem 0;color:var(--muted);font-size:14px}
 .spinner{display:inline-block;width:22px;height:22px;border:2.5px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:.5rem}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -117,6 +132,13 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;fon
 </style>
 </head>
 <body>
+<div class="standalone-nav" id="standaloneNav">
+  <a class="sn-brand" href="/" aria-label="VagaAI — página inicial">
+    <img src="/logo.svg" alt="VagaAI" class="logo-dark">
+    <img src="/logo-light.svg" alt="VagaAI" class="logo-light">
+  </a>
+  <a class="sn-link" id="snRight" href="/dashboard">Ir para o painel →</a>
+</div>
 <div class="container">
   <h1 class="page-title">Meu Currículo</h1>
   <p class="page-sub">Um currículo só, sempre atualizado. Preencha as seções abaixo e veja o que o mercado espera do seu perfil.</p>
@@ -124,6 +146,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;fon
   <div class="draft-banner" id="draftBanner">Você está editando sem estar logado — nada será perdido, mas <b>salve para não perder seu progresso</b> e poder usar esse currículo nas análises de vaga.</div>
 
   <div id="mainArea"><div class="loading"><span class="spinner"></span>Carregando...</div></div>
+  <input type="file" id="uploadInput" accept=".txt,.pdf,.doc,.docx" style="display:none" onchange="handleUploadFile(this)">
 </div>
 
 <div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
@@ -155,6 +178,13 @@ function emptyCv(){ return { nome:'', contato:{email:'',telefone:'',linkedin:'',
 (async function init(){
   var s = await sb.auth.getSession();
   _session = s && s.data && s.data.session;
+  // Fora do painel (funil público /criar-curriculo, link direto), mostra uma
+  // nav mínima — sem ela o visitante ficava numa página sem logo nem saída.
+  if (!_isEmbedded) {
+    document.getElementById('standaloneNav').classList.add('show');
+    var snRight = document.getElementById('snRight');
+    if (!_session) { snRight.href = '/login?next=%2Fcurriculo'; snRight.textContent = 'Entrar'; }
+  }
   if (_session) {
     var r = await sb.from('cv_saves').select('*').eq('user_id', _session.user.id).maybeSingle();
     _cv = r && r.data;
@@ -304,6 +334,13 @@ function render() {
 
   html += '<div class="gap-panel" id="gapPanel"><div class="gap-title">Posicionamento de mercado</div><div class="gap-empty">Carregando...</div></div>';
 
+  // Perfil ainda vazio: oferece importar um currículo pronto em vez de
+  // obrigar a digitar tudo — caminho rápido pra quem já tem o arquivo.
+  if (!d.raw_text && completude(d) === 0) {
+    html += '<div class="import-card"><p><b>Já tem um currículo pronto?</b> Envie o arquivo e a gente aproveita o conteúdo — ou preencha as seções abaixo do zero.</p>' +
+      '<button class="btn btn-ghost" onclick="document.getElementById(\'uploadInput\').click()">Enviar arquivo (PDF, Word ou TXT)</button></div>';
+  }
+
   if (d.raw_text) {
     html += '<div class="sec-card"><div class="sec-head"><div class="sec-title">Currículo enviado</div><button class="sec-edit" onclick="startFromScratch()">Preencher campos manualmente</button></div>' +
       '<p class="sec-empty">Você enviou um arquivo pronto. Pra ativar o diagnóstico de mercado e edição por seção, prencha os campos estruturados abaixo.</p>' +
@@ -328,6 +365,61 @@ function startFromScratch() {
   delete _cvData.raw_text;
   markDirty();
   render();
+}
+
+/* ── Upload de currículo pronto (PDF/Word/TXT → texto) ── */
+function loadScript(src) {
+  return new Promise(function(resolve, reject){
+    var s = document.createElement('script');
+    s.src = src; s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+async function extractPdfText(file) {
+  if (!window.pdfjsLib) {
+    await loadScript('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js');
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+  }
+  var ab = await file.arrayBuffer();
+  var pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+  var out = [];
+  for (var i = 1; i <= pdf.numPages; i++) {
+    var page = await pdf.getPage(i);
+    var tc = await page.getTextContent();
+    out.push(tc.items.map(function(it){ return it.str; }).join(' '));
+  }
+  return out.join('\n\n');
+}
+
+async function handleUploadFile(input) {
+  var file = input.files && input.files[0];
+  input.value = '';
+  if (!file) return;
+  if (file.size > 8 * 1024 * 1024) { toast('Arquivo muito grande (máx. 8MB).', true); return; }
+  toast('Lendo arquivo...');
+  var text = '';
+  try {
+    var ext = (file.name.split('.').pop() || '').toLowerCase();
+    if (ext === 'pdf') {
+      text = await extractPdfText(file);
+    } else if (ext === 'doc' || ext === 'docx') {
+      if (!window.mammoth) await loadScript('https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js');
+      var result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+      text = result.value || '';
+    } else {
+      text = await file.text();
+    }
+  } catch(e) {
+    toast('Não foi possível ler o arquivo. Tente PDF, Word ou TXT.', true);
+    return;
+  }
+  text = (text || '').trim();
+  if (text.length < 120) { toast('Não encontramos texto suficiente no arquivo. Verifique se o currículo não é uma imagem escaneada.', true); return; }
+  _cvData.raw_text = text.slice(0, 30000);
+  markDirty();
+  render();
+  toast('✓ Currículo importado — salve para não perder');
 }
 
 var ICON = {

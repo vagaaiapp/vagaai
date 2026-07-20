@@ -1339,9 +1339,38 @@ function cvToText(d) {
     L.push(''); L.push('FORMAÇÃO ACADÊMICA');
     edu.forEach(function(e){ L.push([e.curso, e.instituicao].filter(Boolean).join(' — ') + (e.periodo ? ' (' + e.periodo + ')' : '')); });
   }
+  var cursos = d.cursos || [];
+  if (cursos.length) {
+    L.push(''); L.push('CURSOS E ESPECIALIZAÇÕES');
+    cursos.forEach(function(e){ L.push([e.nome, e.instituicao].filter(Boolean).join(' — ') + (e.periodo ? ' (' + e.periodo + ')' : '')); });
+  }
+  var idiomas = d.idiomas || [];
+  if (idiomas.length) {
+    L.push(''); L.push('IDIOMAS');
+    idiomas.forEach(function(e){ L.push([e.idioma, e.nivel].filter(Boolean).join(' — ')); });
+  }
   var sk = d.habilidades || [];
   if (sk.length) { L.push(''); L.push('HABILIDADES'); L.push(sk.map(function(s){ return typeof s === 'string' ? s : (s && s.nome) || ''; }).filter(Boolean).join(', ')); }
   return L.join('\n');
+}
+
+// Todo currículo usado numa análise autenticada fica salvo no perfil (só o
+// 1º — nunca sobrescreve um currículo já salvo). É o elo que liga o funil
+// de análise ao hub "Meu Currículo" e ao painel de posicionamento: sem isso,
+// quem só analisa vagas nunca teria perfil salvo e essas telas ficariam
+// vazias pra sempre. Aviso claro via toast, não silencioso.
+async function saveCvToProfileIfFirst(cvText) {
+  if (!authSession || _myCv || !cvText || cvText.length < 100) return;
+  try {
+    var payload = { user_id: authSession.user.id, name: 'Meu currículo', cv_data: { raw_text: cvText.slice(0, 30000) }, template: 'upload', updated_at: new Date().toISOString() };
+    var r = await sb.from('cv_saves').upsert(payload, { onConflict: 'user_id' }).select().single();
+    if (r && r.data) {
+      _myCv = r.data;
+      var tab = document.getElementById('tabSalvoCV');
+      if (tab) tab.style.display = '';
+      appToast('✓ Currículo salvo no seu perfil — nas próximas análises é só usar "Meu currículo"', 'success');
+    }
+  } catch(e) { /* silencioso — não pode atrapalhar a exibição do resultado */ }
 }
 
 var _myCv = null; // registro único cv_saves do usuário (modelo "1 currículo por pessoa")
@@ -2124,6 +2153,7 @@ async function doAnalyze(job, cv) {
       showResult(data);
       setStep(3);
       try { window.parent.postMessage({ type: 'vagaai-analysis-complete' }, '*'); } catch(e) {}
+      saveCvToProfileIfFirst(cv);
     }
 
   } catch (err) {
