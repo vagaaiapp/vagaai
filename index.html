@@ -140,20 +140,60 @@
     .menu{width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:10px;color:var(--ink);background:var(--panel);display:none}
 
     /* ===== HERO ===== */
-    .hero{position:relative;padding:150px 0 90px;overflow:hidden;background:radial-gradient(circle at 80% 10%,rgba(62,207,142,.1),transparent 32%),var(--hero-bg)}
+    .hero{position:relative;padding:150px 0 70px;overflow:hidden;background:radial-gradient(circle at 80% 10%,rgba(62,207,142,.1),transparent 32%),var(--hero-bg)}
     [data-theme="light"] .hero{background:radial-gradient(circle at 80% 10%,rgba(26,158,110,.09),transparent 32%),var(--hero-bg)}
-    .hero-inner{position:relative;z-index:2;max-width:780px;margin:0 auto;text-align:center}
+    .hero-grid{position:relative;z-index:2;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+    .hero-inner{text-align:left}
     .hero-social{display:inline-flex;align-items:center;gap:10px;margin-bottom:26px;padding:8px 14px;border:1px solid var(--line-green);border-radius:999px;background:var(--green-dim)}
     .hero-stars{color:var(--green);font-size:12px;letter-spacing:2px}
     .hero-social span{font-size:11px;color:var(--copy)}
     .hero-social span b{color:var(--ink)}
-    .hero h1{font-family:"Lora",serif;font-size:var(--title-hero);line-height:1.05;letter-spacing:-.03em;color:var(--ink)}
+    .hero h1{max-width:560px;font-family:"Lora",serif;font-size:var(--title-hero);line-height:1.06;letter-spacing:-.03em;color:var(--ink)}
     .hero h1 em{color:var(--green);font-style:italic}
-    .hero-copy{max-width:560px;margin:22px auto 0;color:var(--copy);font-size:17px;line-height:1.7}
-    .hero-actions{display:flex;gap:12px;justify-content:center;margin-top:34px;flex-wrap:wrap}
-    .hero-proof{margin-top:24px;display:flex;gap:20px;justify-content:center;flex-wrap:wrap;color:var(--muted);font-size:12.5px;font-weight:600}
+    .hero-copy{max-width:520px;margin:22px 0 0;color:var(--copy);font-size:17px;line-height:1.7}
+    .hero-actions{display:flex;gap:12px;justify-content:flex-start;margin-top:34px;flex-wrap:wrap}
+    .hero-proof{margin-top:24px;display:flex;gap:20px;flex-wrap:wrap;color:var(--muted);font-size:12.5px;font-weight:600}
     .hero-proof span{display:inline-flex;align-items:center;gap:6px}
     .hero-proof svg{color:var(--green)}
+
+    /* ===== HERO MOCKUP (produto real, estático) ===== */
+    .hero-mockup{position:relative}
+    .hm-card{border:1px solid rgba(255,255,255,.1);border-radius:18px;background:#0b120d;overflow:hidden;box-shadow:var(--shadow),0 0 60px var(--green-glow)}
+    [data-theme="light"] .hm-card{background:#fff;border-color:rgba(6,38,25,.14);box-shadow:0 18px 60px rgba(6,38,25,.13),0 0 40px rgba(26,158,110,.1)}
+    .hm-bar{height:38px;padding:0 14px;display:flex;align-items:center;gap:9px;background:#0a1a10;border-bottom:1px solid rgba(255,255,255,.06)}
+    [data-theme="light"] .hm-bar{background:#f0f8f3;border-bottom-color:rgba(6,38,25,.08)}
+    .hm-dots{display:flex;gap:5px}
+    .hm-dots i{width:8px;height:8px;border-radius:50%;display:block}
+    .hm-dots i:nth-child(1){background:#ff5f57}.hm-dots i:nth-child(2){background:#febc2e}.hm-dots i:nth-child(3){background:#28c840}
+    .hm-bar span{font-size:10.5px;font-weight:700;color:rgba(255,255,255,.4)}
+    [data-theme="light"] .hm-bar span{color:rgba(9,32,26,.4)}
+    .hm-body{padding:24px 26px;display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center}
+    .hm-ring{position:relative;width:88px;height:88px;flex:0 0 auto}
+    .hm-ring svg{transform:rotate(-90deg)}
+    .hm-ring-track{fill:none;stroke:rgba(255,255,255,.08);stroke-width:8}
+    [data-theme="light"] .hm-ring-track{stroke:rgba(6,38,25,.08)}
+    .hm-ring-arc{fill:none;stroke:#4ece91;stroke-width:8;stroke-linecap:round;stroke-dasharray:245;stroke-dashoffset:64}
+    .hm-ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Lora",serif;font-size:22px;font-weight:800;color:#4ece91}
+    .hm-title{font-size:13px;font-weight:700;color:#e8f5ee}
+    [data-theme="light"] .hm-title{color:var(--ink)}
+    .hm-sub{font-size:11.5px;color:rgba(255,255,255,.4);margin-top:2px}
+    [data-theme="light"] .hm-sub{color:var(--muted)}
+    .hm-divider{margin:0 26px;border-top:1px solid rgba(255,255,255,.07)}
+    [data-theme="light"] .hm-divider{border-color:rgba(6,38,25,.08)}
+    .hm-kw{padding:20px 26px 24px}
+    .hm-kw-label{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:10px}
+    [data-theme="light"] .hm-kw-label{color:var(--muted)}
+    .hm-pills{display:flex;flex-wrap:wrap;gap:6px}
+    .hm-pill{font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:20px}
+    .hm-pill.ok{background:rgba(78,206,145,.14);color:#4ece91;border:1px solid rgba(78,206,145,.25)}
+    .hm-pill.miss{background:rgba(248,113,113,.09);color:#f87171;border:1px solid rgba(248,113,113,.22)}
+    .hm-footer{display:flex;align-items:center;gap:8px;padding:12px 26px;background:rgba(78,206,145,.08);border-top:1px solid rgba(78,206,145,.18);font-size:11.5px;font-weight:700;color:#4ece91}
+    .hm-badge{position:absolute;background:var(--panel);border:1px solid var(--line-2);border-radius:12px;padding:9px 13px;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:8px}
+    .hm-badge-one{top:-16px;right:-14px}
+    .hm-badge-ic{width:26px;height:26px;border-radius:7px;background:var(--green);color:#080808;display:grid;place-items:center;flex:0 0 auto}
+    [data-theme="light"] .hm-badge-ic{color:#fff}
+    .hm-badge b{display:block;font-size:10px;color:var(--ink)}
+    .hm-badge span{display:block;font-size:8.5px;color:var(--muted)}
 
     /* ===== PATHS (os dois funis) ===== */
     .paths{margin-top:64px;display:grid;grid-template-columns:1fr 1fr;gap:18px;position:relative;z-index:2}
@@ -255,7 +295,13 @@
 
     /* ===== RESPONSIVE ===== */
     @media(max-width:1040px){
-      .paths,.objection-layout{grid-template-columns:1fr}
+      .paths,.objection-layout,.hero-grid{grid-template-columns:1fr}
+      .hero-inner{text-align:center}
+      .hero h1{max-width:none;margin:0 auto}
+      .hero-copy{margin:22px auto 0}
+      .hero-actions,.hero-proof{justify-content:center}
+      .hero-mockup{max-width:480px;margin:44px auto 0}
+      .hm-badge-one{right:6px}
       .steps-grid,.feature-grid,.plans{grid-template-columns:repeat(2,1fr)}
       .trust-grid{grid-template-columns:repeat(2,1fr)}
       .trust-item:nth-child(2){border-right:0}
@@ -310,27 +356,64 @@
     <!-- HERO -->
     <section class="hero" id="inicio">
       <div class="container">
-        <div class="hero-inner">
-          <div class="hero-social reveal">
-            <span class="hero-stars">★★★★★</span>
-            <span><b>4,8</b> · mais de 1.200 profissionais já usam o VagaAI</span>
+        <div class="hero-grid">
+          <div class="hero-inner">
+            <div class="hero-social reveal">
+              <span class="hero-stars">★★★★★</span>
+              <span><b>4,8</b> · mais de 1.200 profissionais já usam o VagaAI</span>
+            </div>
+            <h1 class="reveal delay-1">Pare de enviar o mesmo currículo <em>para todas as vagas.</em></h1>
+            <p class="hero-copy reveal delay-2">O VagaAI mostra sua compatibilidade real com cada vaga, aponta o que falta para passar no ATS e ajusta seu currículo em minutos. Sem inventar experiência, sem achismo.</p>
+            <div class="hero-actions reveal delay-2">
+              <a class="btn btn-primary btn-lg" href="https://www.vagaai.app.br/app">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg>
+                Analisar minha vaga grátis
+              </a>
+              <a class="btn btn-outline btn-lg" href="https://www.vagaai.app.br/curriculo">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                Criar meu currículo
+              </a>
+            </div>
+            <div class="hero-proof reveal delay-3">
+              <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Grátis para começar, sem cartão</span>
+              <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Sem inventar experiências</span>
+              <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Resultado em segundos</span>
+            </div>
           </div>
-          <h1 class="reveal delay-1">Currículo pronto. Vaga certa. <em>Candidatura que se destaca.</em></h1>
-          <p class="hero-copy reveal delay-2">Analise sua compatibilidade com qualquer vaga, corrija o que falta para passar no ATS e monte um currículo profissional em minutos. Tudo em um só lugar, com IA.</p>
-          <div class="hero-actions reveal delay-2">
-            <a class="btn btn-primary btn-lg" href="https://www.vagaai.app.br/app">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg>
-              Analisar minha vaga grátis
-            </a>
-            <a class="btn btn-outline btn-lg" href="https://www.vagaai.app.br/curriculo">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-              Criar meu currículo
-            </a>
-          </div>
-          <div class="hero-proof reveal delay-3">
-            <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Grátis para começar, sem cartão</span>
-            <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Sem inventar experiências</span>
-            <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Resultado em segundos</span>
+
+          <div class="hero-mockup reveal delay-2">
+            <div class="hm-card">
+              <div class="hm-bar"><div class="hm-dots"><i></i><i></i><i></i></div><span>VagaAI · Análise da vaga</span></div>
+              <div class="hm-body">
+                <div class="hm-ring">
+                  <svg viewBox="0 0 90 90" width="88" height="88"><circle class="hm-ring-track" cx="45" cy="45" r="39"/><circle class="hm-ring-arc" cx="45" cy="45" r="39"/></svg>
+                  <div class="hm-ring-num">74</div>
+                </div>
+                <div>
+                  <div class="hm-title">Analista de Marketing Pleno</div>
+                  <div class="hm-sub">Compatibilidade com a vaga · Empresa X</div>
+                </div>
+              </div>
+              <div class="hm-divider"></div>
+              <div class="hm-kw">
+                <div class="hm-kw-label">Palavras-chave do ATS</div>
+                <div class="hm-pills">
+                  <span class="hm-pill ok">Google Ads ✓</span>
+                  <span class="hm-pill ok">SEO ✓</span>
+                  <span class="hm-pill ok">CRM ✓</span>
+                  <span class="hm-pill miss">Growth Marketing</span>
+                  <span class="hm-pill miss">Análise de Dados</span>
+                </div>
+              </div>
+              <div class="hm-footer">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 6"/></svg>
+                Currículo otimizado, pronto para enviar
+              </div>
+            </div>
+            <div class="hm-badge hm-badge-one">
+              <div class="hm-badge-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg></div>
+              <div><b>Meu Currículo</b><span>salvo, pronto para reusar</span></div>
+            </div>
           </div>
         </div>
 
