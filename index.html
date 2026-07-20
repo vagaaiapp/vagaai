@@ -84,7 +84,7 @@
   }
   </script>
   <style>
-    :root,[data-theme="dark"]{--bg:#080808;--panel:#111;--panel-2:#161616;--soft:#0e0e0e;--ink:#f0ece4;--copy:rgba(240,236,228,.6);--muted:rgba(240,236,228,.36);--line:rgba(255,255,255,.08);--line-2:rgba(255,255,255,.14);--green:#3ecf8e;--green2:#28b97c;--mint:rgba(62,207,142,.1);--dark:#050505;--shadow:0 22px 60px rgba(0,0,0,.4);--nav-bg:rgba(10,10,10,.78);--max:1160px}
+    :root,[data-theme="dark"]{--bg:#0a130e;--panel:#101b14;--panel-2:#0d1711;--soft:#0c1510;--ink:#eaf2ec;--copy:rgba(214,230,221,.62);--muted:rgba(214,230,221,.38);--line:rgba(134,204,167,.1);--line-2:rgba(134,204,167,.18);--green:#4ccd92;--green2:#2fae76;--mint:rgba(76,205,146,.09);--dark:#081109;--shadow:0 22px 60px rgba(2,10,6,.5);--nav-bg:rgba(10,19,14,.8);--max:1160px}
     [data-theme="light"]{--bg:#f4f8f5;--panel:#fff;--panel-2:#f0f8f3;--soft:#e8f3ed;--ink:#0b211a;--copy:rgba(9,32,26,.62);--muted:rgba(9,32,26,.4);--line:#d8e4dc;--line-2:rgba(6,38,25,.16);--green:#119764;--green2:#08774d;--mint:#dff3e8;--dark:#0b211a;--shadow:0 22px 60px rgba(16,64,43,.11);--nav-bg:rgba(255,255,255,.82)}
     *{box-sizing:border-box;margin:0;padding:0}
     html{scroll-behavior:smooth}
@@ -102,11 +102,18 @@
     .lead{max-width:660px;margin-top:18px;color:var(--copy);font-size:16.5px;line-height:1.7}
     .btn{min-height:52px;padding:0 22px;border:1px solid var(--line);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:9px;text-decoration:none;font-weight:800;font-size:13px;background:var(--panel);color:var(--ink);transition:.2s}
     .btn:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
-    .btn.primary{background:var(--green);border-color:var(--green);color:#080808}
+    .btn.primary{background:var(--green);border-color:var(--green);color:#071009}
     .btn.dark{background:var(--ink);border-color:var(--ink);color:var(--bg)}
     .icon{width:20px;height:20px}
     .reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease}
     .reveal.in{opacity:1;transform:none}
+
+    /* GLOW: luz verde suave que segue o cursor dentro do card */
+    .glow{position:relative;overflow:hidden}
+    .glow::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(260px circle at var(--mx,50%) var(--my,20%),var(--mint),transparent 65%);opacity:0;transition:opacity .35s;pointer-events:none}
+    .glow:hover::before{opacity:1}
+    .glow>*{position:relative;z-index:1}
+    @media(hover:none){.glow::before{display:none}}
 
     /* NAV */
     .scroll-progress{position:fixed;left:0;top:0;z-index:200;height:3px;width:0;background:linear-gradient(90deg,var(--green2),var(--green))}
@@ -137,7 +144,7 @@
 
     /* HERO */
     .hero{position:relative;padding:170px 0 78px;background:radial-gradient(circle at 15% 15%,var(--mint),transparent 26%),radial-gradient(circle at 88% 35%,var(--mint),transparent 24%),var(--soft);overflow:hidden}
-    .hero:after{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:60px 60px;mask-image:linear-gradient(to bottom,black,transparent 80%);opacity:.5;pointer-events:none}
+    .hero:after{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line-2) 1px,transparent 1px),linear-gradient(90deg,var(--line-2) 1px,transparent 1px);background-size:60px 60px;mask-image:linear-gradient(to bottom,black,transparent 80%);opacity:.5;pointer-events:none}
     .hero-content{position:relative;z-index:1;text-align:center}
     .hero-social{display:inline-flex;align-items:center;gap:10px;margin-bottom:20px;padding:8px 14px;border:1px solid var(--line-2);border-radius:999px;background:var(--panel)}
     .hero-stars{color:var(--green);font-size:12px;letter-spacing:2px}
@@ -146,12 +153,9 @@
     .hero h1{max-width:920px;margin:20px auto 0;font:700 clamp(38px,6vw,68px)/1.04 Lora,serif;letter-spacing:-.03em;text-wrap:balance}
     .hero-copy{max-width:660px;margin:22px auto 0;color:var(--copy);font-size:17px}
     .paths{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:44px;text-align:left}
-    .path{position:relative;padding:28px;border:1px solid var(--line);border-radius:22px;background:var(--panel);box-shadow:var(--shadow);overflow:hidden;transition:transform .25s,border-color .25s,box-shadow .25s}
-    .path::before{content:"";position:absolute;top:-60%;right:-30%;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,var(--mint),transparent 70%);opacity:0;transition:opacity .35s}
+    .path{padding:28px;border:1px solid var(--line);border-radius:22px;background:var(--panel);box-shadow:var(--shadow);transition:transform .25s,border-color .25s,box-shadow .25s}
     .path:hover{transform:translateY(-5px);border-color:var(--green2)}
-    .path:hover::before{opacity:1}
     .path.primary-path{border-color:var(--green2)}
-    .path>*{position:relative;z-index:1}
     .path-num{position:absolute;right:22px;top:14px;font:700 52px Lora;color:var(--line-2)}
     .path-icon{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:var(--mint);color:var(--green)}
     .path h3{margin-top:20px;font:700 22px Lora;letter-spacing:-.02em}
@@ -291,11 +295,8 @@
     /* RESPONSIBLE + PERSONA */
     .responsible-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:stretch}
     .persona{background:var(--panel-2)}
-    .trust-panel{position:relative;overflow:hidden;padding:32px;border:1px solid var(--line);border-radius:22px;background:var(--panel);transition:transform .25s,border-color .25s,box-shadow .25s}
-    .trust-panel::before{content:"";position:absolute;top:-50%;left:-20%;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,var(--mint),transparent 70%);opacity:0;transition:opacity .4s}
+    .trust-panel{padding:32px;border:1px solid var(--line);border-radius:22px;background:var(--panel);transition:transform .25s,border-color .25s,box-shadow .25s}
     .trust-panel:hover{transform:translateY(-4px);border-color:var(--green2);box-shadow:var(--shadow)}
-    .trust-panel:hover::before{opacity:1}
-    .trust-panel>*{position:relative;z-index:1}
     .trust-panel h2{font-size:clamp(22px,2.6vw,27px)}
     .trust-list{margin-top:20px;display:grid;gap:11px}
     .trust-list-item{display:flex;align-items:flex-start;gap:11px;padding:12px 14px;border:1px solid var(--line);border-radius:13px;background:var(--bg);transition:border-color .25s,transform .2s}
@@ -307,7 +308,8 @@
 
     /* TESTIMONIALS */
     .testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:44px}
-    .testi{padding:24px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
+    .testi{padding:24px;border:1px solid var(--line);border-radius:18px;background:var(--panel);transition:transform .25s,border-color .25s}
+    .testi:hover{transform:translateY(-3px)}
     .testi-stars{color:var(--green);font-size:12px;letter-spacing:2px}
     .testi p{margin-top:12px;font-size:13.5px;color:var(--ink);line-height:1.6}
     .testi footer{margin-top:18px;display:flex;align-items:center;gap:10px}
@@ -320,10 +322,12 @@
     .pricing{background:var(--panel-2)}
     .billing-toggle{margin:24px auto 0;width:max-content;display:flex;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
     .billing-toggle button{padding:9px 18px;border:0;background:transparent;border-radius:9px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
-    .billing-toggle button.active{background:var(--green);color:#080808}
+    .billing-toggle button.active{background:var(--green);color:#071009}
     .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:32px}
-    .plan{position:relative;padding:28px;border:1px solid var(--line);border-radius:22px;background:var(--panel)}
+    .plan{position:relative;padding:28px;border:1px solid var(--line);border-radius:22px;background:var(--panel);transition:transform .25s,border-color .25s,box-shadow .25s}
+    .plan:hover{transform:translateY(-4px);border-color:var(--line-2);box-shadow:var(--shadow)}
     .plan.featured{border:2px solid var(--green);transform:translateY(-8px)}
+    .plan.featured:hover{transform:translateY(-11px)}
     .popular{position:absolute;right:18px;top:16px;padding:5px 9px;border-radius:99px;background:var(--mint);color:var(--green);font-size:9px;font-weight:800;text-transform:uppercase}
     .plan-name{color:var(--green);font-size:11px;font-weight:800;text-transform:uppercase}
     .plan h3{margin-top:9px;font:700 20px Lora}
@@ -352,14 +356,12 @@
     .final h2 .green{color:#5be3a4}
     .final p{max-width:620px;margin:16px auto 0;text-align:center;color:rgba(255,255,255,.62)}
     .final-paths{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:800px;margin:34px auto 0}
-    .final-path{position:relative;overflow:hidden;padding:24px;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.04);text-align:left;transition:transform .25s,border-color .25s,box-shadow .25s}
-    .final-path::before{content:"";position:absolute;top:-60%;right:-30%;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(62,207,142,.28),transparent 70%);opacity:0;transition:opacity .4s}
+    .final-path{padding:24px;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.04);text-align:left;transition:transform .25s,border-color .25s,box-shadow .25s}
+    .final-path.glow::before{background:radial-gradient(260px circle at var(--mx,50%) var(--my,20%),rgba(76,205,146,.22),transparent 65%)}
     .final-path:hover{transform:translateY(-5px);border-color:var(--green2);box-shadow:0 20px 44px rgba(0,0,0,.35)}
-    .final-path:hover::before{opacity:1}
-    .final-path>*{position:relative;z-index:1}
     .final-path h4{font:700 16px Lora;color:#fff}
     .final-path p{margin-top:6px;color:rgba(255,255,255,.6);font-size:12.5px}
-    .final-path .btn{width:100%;margin-top:16px;background:var(--green);border-color:var(--green);color:#080808}
+    .final-path .btn{width:100%;margin-top:16px;background:var(--green);border-color:var(--green);color:#071009}
     .final-path .btn:hover{box-shadow:0 12px 28px rgba(62,207,142,.35)}
     .final-line{margin-top:28px;text-align:center;color:rgba(255,255,255,.5);font-size:12px;font-weight:600}
 
@@ -407,7 +409,12 @@
     }
     @media(max-width:580px){
       .wrap{width:min(100% - 26px,var(--max))}
-      .nav{height:58px}
+      .nav{height:58px;padding:0 8px 0 14px}
+      .brand img{height:28px}
+      .nav-actions{gap:6px}
+      .nav a.btn:not(.primary){display:none}
+      .nav .btn{min-height:40px;padding:0 14px;font-size:12px}
+      .theme-toggle,.menu{width:38px;height:38px}
       .hero{padding:132px 0 56px}
       .hero-copy{font-size:15.5px}
       .paths{margin-top:30px}
@@ -419,6 +426,12 @@
       .pipeline{grid-template-columns:1fr 1fr}
       .plans{gap:12px}
       .testi-grid,.footer-grid,.responsible-grid{grid-template-columns:1fr}
+      .trust-panel{padding:24px}
+      .dmock-float{padding:6px 9px;gap:6px}
+      .dmock-float i{width:20px;height:20px;font-size:10px}
+      .dmock-float b{font-size:9px}
+      .dmock-float span{font-size:7.5px}
+      .to-top{right:12px;bottom:12px;width:42px;height:42px}
     }
   </style>
 </head>
@@ -464,8 +477,8 @@
       <h1 class="reveal">Currículo certo. <span class="green">Vaga certa.</span> Sem adivinhação.</h1>
       <p class="hero-copy reveal">Análise, currículo, candidaturas e entrevista, numa jornada só.</p>
       <div class="paths reveal">
-        <article class="path primary-path"><span class="path-num">01</span><div class="path-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg></div><h3>Já tenho uma vaga em vista</h3><p>Compare seu currículo com a vaga, veja o que falta para o ATS e prepare uma candidatura mais direcionada.</p><a class="btn primary" href="https://www.vagaai.app.br/app">Analisar esta vaga grátis →</a></article>
-        <article class="path"><span class="path-num">02</span><div class="path-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><h3>Ainda não tenho currículo pronto</h3><p>Crie ou importe seu currículo, entenda o que o mercado procura e encontre oportunidades mais compatíveis.</p><a class="btn" href="https://www.vagaai.app.br/curriculo">Criar meu currículo grátis →</a></article>
+        <article class="path glow primary-path"><span class="path-num">01</span><div class="path-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg></div><h3>Já tenho uma vaga em vista</h3><p>Compare seu currículo com a vaga, veja o que falta para o ATS e prepare uma candidatura mais direcionada.</p><a class="btn primary" href="https://www.vagaai.app.br/app">Analisar esta vaga grátis →</a></article>
+        <article class="path glow"><span class="path-num">02</span><div class="path-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><h3>Ainda não tenho currículo pronto</h3><p>Crie ou importe seu currículo, entenda o que o mercado procura e encontre oportunidades mais compatíveis.</p><a class="btn" href="https://www.vagaai.app.br/curriculo">Criar meu currículo grátis →</a></article>
       </div>
       <div class="micro reveal"><span>Grátis para começar</span><span>Sem cartão de crédito</span><span>Você revisa tudo antes de usar</span><span>Sem inventar experiências</span></div>
     </div></section>
@@ -692,7 +705,7 @@
 
     <!-- 13. POSICIONAMENTO RESPONSÁVEL -->
     <section class="section persona"><div class="wrap responsible-grid reveal">
-      <article class="trust-panel">
+      <article class="trust-panel glow">
         <span class="eyebrow">Clareza, não atalho</span>
         <h2>Fortalece sua trajetória, <span class="green">não inventa uma nova.</span></h2>
         <div class="trust-list">
@@ -702,7 +715,7 @@
           <div class="trust-list-item"><span class="trust-list-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span>Não somos um chat genérico</span></div>
         </div>
       </article>
-      <article class="trust-panel">
+      <article class="trust-panel glow">
         <span class="eyebrow">Pra quem é</span>
         <h2>Se você reconhece <span class="green">alguma dessas.</span></h2>
         <div class="trust-list">
@@ -718,9 +731,9 @@
     <section class="section"><div class="wrap">
       <div class="center reveal"><span class="eyebrow">Histórias reais</span><h2>Pessoas reais. <span class="green">Buscas mais bem preparadas.</span></h2></div>
       <div class="testi-grid reveal">
-        <article class="testi"><div class="testi-stars">★★★★★</div><p>"Eu enviava praticamente o mesmo currículo para todas as vagas. Com a análise, consegui entender quais experiências precisavam aparecer com mais clareza."</p><footer><div class="testi-av">AC</div><div><b>Ana Carolina S.</b><span>Desenvolvedora Full Stack</span></div></footer></article>
-        <article class="testi"><div class="testi-stars">★★★★★</div><p>"O score me ajudou a perceber que eu estava me candidatando sem destacar competências que já tinha."</p><footer><div class="testi-av">RO</div><div><b>Ricardo O.</b><span>Gerente de Projetos</span></div></footer></article>
-        <article class="testi"><div class="testi-stars">★★★★★</div><p>"Passei a organizar melhor minhas candidaturas e cheguei muito mais preparado para a entrevista."</p><footer><div class="testi-av">JS</div><div><b>Juliana S.</b><span>Designer UX/UI</span></div></footer></article>
+        <article class="testi glow"><div class="testi-stars">★★★★★</div><p>"Eu enviava praticamente o mesmo currículo para todas as vagas. Com a análise, consegui entender quais experiências precisavam aparecer com mais clareza."</p><footer><div class="testi-av">AC</div><div><b>Ana Carolina S.</b><span>Desenvolvedora Full Stack</span></div></footer></article>
+        <article class="testi glow"><div class="testi-stars">★★★★★</div><p>"O score me ajudou a perceber que eu estava me candidatando sem destacar competências que já tinha."</p><footer><div class="testi-av">RO</div><div><b>Ricardo O.</b><span>Gerente de Projetos</span></div></footer></article>
+        <article class="testi glow"><div class="testi-stars">★★★★★</div><p>"Passei a organizar melhor minhas candidaturas e cheguei muito mais preparado para a entrevista."</p><footer><div class="testi-av">JS</div><div><b>Juliana S.</b><span>Designer UX/UI</span></div></footer></article>
       </div>
     </div></section>
 
@@ -729,7 +742,7 @@
       <div class="center reveal"><span class="eyebrow">Planos</span><h2>Comece grátis. <span class="green">Acelere quando fizer sentido.</span></h2><p class="lead">Teste a experiência sem cartão de crédito. Escolha um plano quando precisar analisar mais oportunidades e avançar com mais recursos.</p></div>
       <div class="billing reveal billing-toggle"><button class="active" data-billing="monthly">Mensal</button><button data-billing="annual">Anual</button></div>
       <div class="plans reveal">
-        <article class="plan">
+        <article class="plan glow">
           <span class="plan-name">Gratuito</span><h3>Para dar o primeiro passo</h3>
           <p>Entenda uma oportunidade, organize seu currículo e conheça a plataforma.</p>
           <div class="price">R$0</div>
@@ -744,7 +757,7 @@
             <span>Rastreador de candidaturas</span>
           </div>
         </article>
-        <article class="plan">
+        <article class="plan glow">
           <span class="plan-name">Starter</span><h3>Para quem está buscando ativamente</h3>
           <p>Analise diferentes oportunidades e mantenha suas candidaturas organizadas.</p>
           <div class="price" data-monthly="R$19,90" data-annual="R$14,92">R$19,90<small>/mês</small></div>
@@ -758,7 +771,7 @@
             <span>Alertas com filtros avançados, até 15 vagas</span>
           </div>
         </article>
-        <article class="plan featured">
+        <article class="plan featured glow">
           <span class="popular">Mais escolhido</span>
           <span class="plan-name">Pro</span><h3>Para acelerar sua mudança</h3>
           <p>Tenha liberdade para analisar mais oportunidades e se preparar para todas as etapas.</p>
@@ -794,8 +807,8 @@
       <h2 class="reveal">Sua busca pode começar por uma vaga. Ou pelo seu currículo.</h2>
       <p class="reveal">Escolha o caminho que representa melhor o seu momento. A VagaAI conecta as próximas etapas para que você avance com mais clareza.</p>
       <div class="final-paths reveal">
-        <article class="final-path"><h4>Já encontrei uma oportunidade</h4><p>Compare a vaga com seu currículo e descubra o que melhorar antes de se candidatar.</p><a class="btn" href="https://www.vagaai.app.br/app">Analisar esta vaga grátis</a></article>
-        <article class="final-path"><h4>Ainda não tenho currículo pronto</h4><p>Crie ou importe seu currículo e comece a construir uma busca mais direcionada.</p><a class="btn" href="https://www.vagaai.app.br/curriculo">Criar meu currículo grátis</a></article>
+        <article class="final-path glow"><h4>Já encontrei uma oportunidade</h4><p>Compare a vaga com seu currículo e descubra o que melhorar antes de se candidatar.</p><a class="btn" href="https://www.vagaai.app.br/app">Analisar esta vaga grátis</a></article>
+        <article class="final-path glow"><h4>Ainda não tenho currículo pronto</h4><p>Crie ou importe seu currículo e comece a construir uma busca mais direcionada.</p><a class="btn" href="https://www.vagaai.app.br/curriculo">Criar meu currículo grátis</a></article>
       </div>
       <div class="final-line">Grátis para começar · Sem cartão · Você revisa tudo antes de usar</div>
     </div></section>
@@ -864,6 +877,17 @@
     }, { threshold: 0.1 });
     document.querySelectorAll('.reveal').forEach(function(el) { revealObs.observe(el); });
 
+    /* ===== GLOW SEGUE O CURSOR =====
+       Delegado no documento para cobrir tambem cards injetados depois
+       (posts do blog). Atualiza --mx/--my usados no radial do .glow. */
+    document.addEventListener('pointermove', function(e) {
+      var c = e.target && e.target.closest ? e.target.closest('.glow') : null;
+      if (!c) return;
+      var r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    }, { passive: true });
+
     /* ===== FAQ ACCORDION ===== */
     document.querySelectorAll('.faq button').forEach(function(btn) {
       btn.addEventListener('click', function() {
@@ -930,7 +954,7 @@
             var date = new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
             var cats = parseCats(p.categories);
             var cover = p.cover_url ? '<img class="blog-card-cover" src="' + escBlog(p.cover_url) + '" alt="' + escBlog(p.title) + '" loading="lazy">' : '';
-            return '<a class="blog-card" href="/blog/post?s=' + encodeURIComponent(p.slug) + '">'
+            return '<a class="blog-card glow" href="/blog/post?s=' + encodeURIComponent(p.slug) + '">'
               + cover
               + '<div class="blog-card-body">'
               + (cats.length ? '<div class="blog-card-cat">' + escBlog(cats[0]) + '</div>' : '')
