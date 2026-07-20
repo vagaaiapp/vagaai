@@ -116,7 +116,7 @@
     .nav-shell{position:fixed;z-index:100;top:18px;left:0;right:0}
     .nav{width:min(1160px,calc(100% - 28px));height:64px;margin:auto;padding:0 10px 0 20px;border:1px solid var(--line);border-radius:16px;display:flex;align-items:center;justify-content:space-between;background:var(--nav-bg);backdrop-filter:blur(18px);box-shadow:var(--shadow);position:relative}
     .brand{display:flex;align-items:center}
-    .brand img{height:26px}
+    .brand img{height:34px}
     .logo-dark{display:none}
     [data-theme="dark"] .logo-dark{display:block}
     [data-theme="dark"] .logo-light{display:none}
@@ -149,8 +149,12 @@
     .hero h1{max-width:920px;margin:20px auto 0;font:700 clamp(38px,6vw,68px)/1.04 Lora,serif;letter-spacing:-.03em;text-wrap:balance}
     .hero-copy{max-width:660px;margin:22px auto 0;color:var(--copy);font-size:17px}
     .paths{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:44px;text-align:left}
-    .path{position:relative;padding:28px;border:1px solid var(--line);border-radius:22px;background:var(--panel);box-shadow:var(--shadow);overflow:hidden}
+    .path{position:relative;padding:28px;border:1px solid var(--line);border-radius:22px;background:var(--panel);box-shadow:var(--shadow);overflow:hidden;transition:transform .25s,border-color .25s,box-shadow .25s}
+    .path::before{content:"";position:absolute;top:-60%;right:-30%;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,var(--mint),transparent 70%);opacity:0;transition:opacity .35s}
+    .path:hover{transform:translateY(-5px);border-color:var(--green2)}
+    .path:hover::before{opacity:1}
     .path.primary-path{border-color:var(--green2)}
+    .path>*{position:relative;z-index:1}
     .path-num{position:absolute;right:22px;top:14px;font:700 52px Lora;color:var(--line-2)}
     .path-icon{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:var(--mint);color:var(--green)}
     .path h3{margin-top:20px;font:700 22px Lora;letter-spacing:-.02em}
@@ -166,46 +170,41 @@
     .trust-item:last-child{border:0}
     .trust-item b{display:block;color:var(--ink);font:700 19px Lora}
 
-    /* JOURNEYS */
-    .journeys{background:var(--panel-2)}
-    .journey-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:44px}
-    .journey{padding:32px;border:1px solid var(--line);border-radius:22px;background:var(--panel);display:flex;flex-direction:column}
-    .journey-tag{display:inline-block;padding:6px 10px;border-radius:99px;background:var(--mint);color:var(--green);font-size:10px;font-weight:800;text-transform:uppercase;align-self:flex-start}
-    .journey h3{margin-top:16px;font:700 22px/1.25 Lora;letter-spacing:-.02em}
-    .journey>p{margin-top:11px;color:var(--copy);font-size:13.5px}
-    .journey .btn{width:100%;margin-top:20px}
+    /* CAPABILITY LIST (reutilizado nos blocos de detalhe) */
     .capability-list{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);display:grid;gap:9px;flex:1}
     .capability-list span{font-size:13px;color:var(--copy);padding-left:20px;position:relative;line-height:1.5}
     .capability-list span:before{content:"✓";position:absolute;left:0;top:0;color:var(--green);font-weight:900}
-    .journey-note{margin-top:14px;font-size:12px;color:var(--muted)}
 
-    /* CONNECTION */
-    .connection{padding:70px 0;background:var(--dark);color:#f2f2f2}
-    .connection h2{max-width:760px;margin:auto;text-align:center;color:#fff}
-    .connection h2 .green{color:#5be3a4}
-    .connection p{max-width:640px;margin:16px auto 0;text-align:center;color:rgba(255,255,255,.62);font-size:15px}
-    .rail{margin-top:38px;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-    .rail-item{position:relative;padding:16px 8px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.04);text-align:center;font-size:10.5px;font-weight:700;color:#fff}
-    .rail-item:not(:last-child):after{content:"→";position:absolute;z-index:2;right:-11px;color:#5be3a4}
-    .rail-icon{font-size:20px;display:block;margin-bottom:6px}
-    .connection .btn{margin:32px auto 0;width:max-content;border-color:rgba(255,255,255,.22)}
-
-    /* STEPS */
-    .steps{background:var(--bg)}
-    .steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:44px}
-    .step-card{padding:24px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
-    .step-num{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--mint);color:var(--green);font:800 13px Lora}
-    .step-card h3{margin-top:14px;font:700 16px Lora;letter-spacing:-.01em}
-    .step-card p{margin-top:6px;color:var(--copy);font-size:12.5px}
-    .steps .btn{margin:40px auto 0;width:max-content}
-
-    /* FEATURES */
-    .features{background:var(--panel-2)}
-    .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:44px}
-    .feature{min-height:180px;padding:26px;border:1px solid var(--line);border-radius:20px;background:var(--panel)}
-    .feature-icon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--mint);color:var(--green);font-size:18px}
-    .feature h3{margin-top:18px;font:700 18px Lora}
-    .feature p{margin-top:7px;color:var(--copy);font-size:12.5px}
+    /* COMO FUNCIONA + RECURSOS (pipeline animado + cards, secao unica) */
+    .howworks{background:var(--panel-2)}
+    .pipeline{margin-top:52px;display:grid;grid-template-columns:repeat(6,1fr);gap:0;position:relative}
+    .pipeline-line{position:absolute;top:23px;left:calc(100%/12);right:calc(100%/12);height:2px;background:var(--line);z-index:0}
+    .pipeline-pulse{position:absolute;top:-3px;left:0;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px 3px var(--green);animation:pulse-travel 7s linear infinite}
+    @keyframes pulse-travel{0%{left:0;opacity:0}5%{opacity:1}95%{opacity:1}100%{left:calc(100% - 8px);opacity:0}}
+    .pipeline-node{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 6px}
+    .pipeline-ic{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--panel);border:2px solid var(--line);color:var(--muted);transition:border-color .3s,color .3s,transform .3s}
+    .pipeline-ic svg{width:19px;height:19px}
+    .pipeline-node span{margin-top:10px;font-size:10.5px;font-weight:700;color:var(--copy)}
+    .pipeline-node:nth-child(2) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:0s}
+    .pipeline-node:nth-child(3) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:1.15s}
+    .pipeline-node:nth-child(4) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:2.3s}
+    .pipeline-node:nth-child(5) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:3.45s}
+    .pipeline-node:nth-child(6) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:4.6s}
+    .pipeline-node:nth-child(7) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:5.75s}
+    @keyframes node-glow{0%,88%,100%{border-color:var(--line);color:var(--muted);transform:scale(1)}92%{border-color:var(--green);color:var(--green);transform:scale(1.12);box-shadow:0 0 0 6px var(--mint)}}
+    @media(prefers-reduced-motion:reduce){.pipeline-pulse{animation:none;opacity:0}.pipeline-ic{animation:none!important}}
+    .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:56px}
+    .feature{position:relative;overflow:hidden;min-height:150px;padding:26px;border:1px solid var(--line);border-radius:20px;background:var(--panel);transition:transform .25s,border-color .25s}
+    .feature::before{content:"";position:absolute;top:-60%;right:-30%;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,var(--mint),transparent 70%);opacity:0;transition:opacity .35s}
+    .feature:hover{transform:translateY(-4px);border-color:var(--green2)}
+    .feature:hover::before{opacity:1}
+    .feature>*{position:relative;z-index:1}
+    .feature-icon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--mint);color:var(--green);transition:transform .3s}
+    .feature-icon svg{width:19px;height:19px}
+    .feature:hover .feature-icon{transform:scale(1.1) rotate(-4deg)}
+    .feature h3{margin-top:16px;font:700 16.5px Lora;letter-spacing:-.01em}
+    .feature p{margin-top:6px;color:var(--copy);font-size:12.5px}
+    .howworks .btn{margin:44px auto 0;width:max-content}
 
     /* DETAIL */
     .detail{border-top:1px solid var(--line);background:var(--bg)}
@@ -360,10 +359,12 @@
     .final h2{max-width:820px;margin:auto;text-align:center;color:#062017}
     .final p{max-width:620px;margin:16px auto 0;text-align:center;color:rgba(6,32,23,.72)}
     .final-paths{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:800px;margin:34px auto 0}
-    .final-path{padding:20px;border:1px solid rgba(6,32,23,.16);border-radius:18px;background:rgba(255,255,255,.35);text-align:left}
-    .final-path h4{font:700 15px Lora;color:#062017}
-    .final-path p{margin-top:5px;color:rgba(6,32,23,.7);font-size:12.5px}
-    .final-path .btn{width:100%;margin-top:15px}
+    .final-path{padding:22px;border:1px solid rgba(6,32,23,.1);border-radius:18px;background:#fff;text-align:left;transition:transform .25s,box-shadow .25s}
+    .final-path:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(6,32,23,.18)}
+    .final-path h4{font:700 16px Lora;color:#062017}
+    .final-path p{margin-top:6px;color:rgba(6,32,23,.65);font-size:12.5px}
+    .final-path .btn{width:100%;margin-top:16px;background:#062017;border-color:#062017;color:#fff}
+    .final-path .btn:hover{box-shadow:0 12px 28px rgba(6,32,23,.3)}
     .final-line{margin-top:28px;text-align:center;color:rgba(6,32,23,.65);font-size:12px;font-weight:600}
 
     /* FOOTER */
@@ -385,9 +386,9 @@
     @media(max-width:860px){
       .section{padding:68px 0}
       .hero{padding-top:150px}
-      .paths,.journey-grid,.plans,.steps-grid{grid-template-columns:1fr}
-      .rail{grid-template-columns:repeat(3,1fr)}
-      .rail-item:nth-child(3):after{display:none}
+      .paths,.plans{grid-template-columns:1fr}
+      .pipeline{grid-template-columns:repeat(3,1fr);row-gap:34px}
+      .pipeline-line{display:none}
       .feature-grid{grid-template-columns:1fr 1fr}
       .responsible-grid{grid-template-columns:1fr;gap:32px}
       .plan.featured{transform:none}
@@ -408,9 +409,7 @@
       .trust-grid{grid-template-columns:1fr 1fr}
       .trust-item:nth-child(2){border-right:0}
       .trust-item:nth-child(-n+2){border-bottom:1px solid var(--line)}
-      .rail{grid-template-columns:1fr 1fr}
-      .rail-item:nth-child(2n):after{display:none}
-      .rail-item:nth-child(3):after{display:block}
+      .pipeline{grid-template-columns:1fr 1fr}
       .feature-grid{grid-template-columns:1fr}
       .plans{gap:12px}
       .persona-grid,.testi-grid,.footer-grid{grid-template-columns:1fr}
@@ -473,79 +472,29 @@
       <div class="trust-item"><b>Você no controle</b>revise tudo antes de enviar</div>
     </div></section>
 
-    <!-- 4. INTRODUÇÃO DOS DOIS FUNIS -->
-    <section class="section journeys"><div class="wrap">
-      <div class="center reveal"><span class="eyebrow">Escolha por onde começar</span><h2>Dois caminhos. <span class="green">Uma busca mais inteligente.</span></h2><p class="lead">Não importa se você já encontrou uma vaga ou ainda está preparando seu currículo. A VagaAI organiza os próximos passos e conecta toda a sua jornada.</p></div>
-      <div class="journey-grid reveal">
-        <article class="journey">
-          <span class="journey-tag">Jornada 1 · Candidatura ativa</span>
-          <h3>Você encontrou uma vaga. Agora precisa mostrar por que combina com ela.</h3>
-          <p>Cole o link ou a descrição da oportunidade e compare com o currículo que pretende enviar.</p>
-          <div class="capability-list">
-            <span>Score de compatibilidade e lacunas do currículo</span>
-            <span>Palavras-chave que faltam para o ATS</span>
-            <span>Currículo direcionado para a vaga</span>
-            <span>Carta de apresentação e treino de entrevista</span>
-          </div>
-          <a class="btn primary" href="https://www.vagaai.app.br/app">Analisar uma vaga agora</a>
-        </article>
-        <article class="journey">
-          <span class="journey-tag">Jornada 2 · Preparação de carreira</span>
-          <h3>Ainda está se preparando? Comece pelo currículo.</h3>
-          <p>Crie um currículo do zero ou importe o documento que já possui.</p>
-          <div class="capability-list">
-            <span>Currículo criado do zero ou importado</span>
-            <span>Posicionamento frente ao mercado</span>
-            <span>Alertas de vagas personalizados</span>
-            <span>Candidaturas organizadas no painel</span>
-          </div>
-          <a class="btn" href="https://www.vagaai.app.br/curriculo">Criar meu currículo</a>
-        </article>
-      </div>
-      <p class="journey-note center">Já possui um currículo? Você também pode importar o arquivo (PDF, Word ou TXT) e continuar a partir dele.</p>
-    </div></section>
+    <!-- COMO FUNCIONA + RECURSOS (fundido, sem repetir os 2 caminhos do hero) -->
+    <section class="section howworks" id="como-funciona"><div class="wrap">
+      <div class="center reveal"><span class="eyebrow">Como funciona</span><h2>Currículo e vaga, <span class="green">na mesma direção.</span></h2><p class="lead">Prepare seu currículo, encontre a vaga certa e avance com clareza até a entrevista. Tudo conectado num painel só.</p></div>
 
-    <!-- 5. COMO FUNCIONA -->
-    <section class="section steps" id="como-funciona"><div class="wrap">
-      <div class="center reveal"><span class="eyebrow">Como funciona</span><h2>Do primeiro passo <span class="green">à próxima entrevista.</span></h2><p class="lead">A VagaAI transforma uma busca desorganizada em uma jornada clara, conectada e fácil de acompanhar.</p></div>
-      <div class="steps-grid reveal">
-        <article class="step-card"><span class="step-num">1</span><h3>Prepare seu currículo</h3><p>Crie ou importe seu currículo e mantenha experiências, habilidades e objetivos organizados em um só lugar.</p></article>
-        <article class="step-card"><span class="step-num">2</span><h3>Encontre ou adicione uma vaga</h3><p>Use uma oportunidade que você já encontrou ou receba vagas selecionadas conforme seus interesses.</p></article>
-        <article class="step-card"><span class="step-num">3</span><h3>Analise sua compatibilidade</h3><p>Veja o quanto seu perfil combina com a oportunidade, quais requisitos você atende e o que merece atenção.</p></article>
-        <article class="step-card"><span class="step-num">4</span><h3>Direcione sua candidatura</h3><p>Ajuste seu currículo, gere uma carta de apresentação e prepare os materiais para aquela vaga.</p></article>
-        <article class="step-card"><span class="step-num">5</span><h3>Acompanhe o processo</h3><p>Salve a candidatura, atualize o status e organize entrevistas e próximos passos no rastreador.</p></article>
-        <article class="step-card"><span class="step-num">6</span><h3>Prepare-se para a entrevista</h3><p>Treine perguntas relacionadas à oportunidade e receba orientações para construir respostas mais claras.</p></article>
+      <div class="pipeline reveal">
+        <div class="pipeline-line"><div class="pipeline-pulse"></div></div>
+        <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><span>Currículo</span></div>
+        <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg></div><span>Vagas</span></div>
+        <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div><span>Análise</span></div>
+        <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg></div><span>Direcionado</span></div>
+        <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="12" rx="1"/></svg></div><span>Candidatura</span></div>
+        <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><span>Entrevista</span></div>
+      </div>
+
+      <div class="feature-grid reveal" id="recursos">
+        <article class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div><h3>Análise de compatibilidade</h3><p>Score, keywords do ATS e prioridades antes de se candidatar.</p></article>
+        <article class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><h3>Currículo principal e direcionado</h3><p>Uma versão sempre atualizada, adaptada para cada vaga.</p></article>
+        <article class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg></div><h3>Alertas de vagas</h3><p>Filtros por cargo, localização e formato de trabalho.</p></article>
+        <article class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="12" rx="1"/></svg></div><h3>Rastreador de candidaturas</h3><p>Status e próximos passos em um painel único.</p></article>
+        <article class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg></div><h3>Carta para a vaga</h3><p>Apresentação contextualizada pela vaga e sua trajetória.</p></article>
+        <article class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><h3>Simulador de entrevista</h3><p>Perguntas e orientação para respostas mais claras.</p></article>
       </div>
       <a class="btn primary reveal" href="https://www.vagaai.app.br/app">Começar minha jornada grátis</a>
-    </div></section>
-
-    <!-- 6. DEMONSTRAÇÃO PRINCIPAL -->
-    <section class="connection"><div class="wrap">
-      <span class="eyebrow reveal" style="justify-content:center;display:flex">Tudo conectado</span>
-      <h2 class="reveal">Sua busca de emprego <span class="green">em um único lugar.</span></h2>
-      <p class="reveal">Currículo, vagas, análises e candidaturas não deveriam ficar espalhados entre arquivos, planilhas, anotações e diferentes ferramentas. Na VagaAI, cada etapa alimenta a próxima.</p>
-      <div class="rail reveal">
-        <div class="rail-item"><span class="rail-icon">◫</span>Seu currículo</div>
-        <div class="rail-item"><span class="rail-icon">⌕</span>Vagas compatíveis</div>
-        <div class="rail-item"><span class="rail-icon">◎</span>Análise</div>
-        <div class="rail-item"><span class="rail-icon">✦</span>Currículo direcionado</div>
-        <div class="rail-item"><span class="rail-icon">✓</span>Candidatura</div>
-        <div class="rail-item"><span class="rail-icon">◉</span>Entrevista</div>
-      </div>
-      <a class="btn dark reveal" href="#recursos">Conhecer os recursos</a>
-    </div></section>
-
-    <!-- MAPA DOS RECURSOS -->
-    <section class="section features" id="recursos"><div class="wrap">
-      <div class="center reveal"><span class="eyebrow">Recursos</span><h2>Tudo o que sua busca <span class="green">precisa, conectado.</span></h2></div>
-      <div class="feature-grid reveal">
-        <article class="feature"><div class="feature-icon">◎</div><h3>Análise de compatibilidade</h3><p>Score, requisitos, keywords do ATS e prioridades antes de se candidatar.</p></article>
-        <article class="feature"><div class="feature-icon">◫</div><h3>Currículo principal e direcionado</h3><p>Uma versão sempre atualizada, adaptada para cada oportunidade.</p></article>
-        <article class="feature"><div class="feature-icon">⌕</div><h3>Alertas de vagas</h3><p>Oportunidades filtradas por cargo, localização, formato de trabalho e preferências.</p></article>
-        <article class="feature"><div class="feature-icon">✓</div><h3>Rastreador de candidaturas</h3><p>Status, datas, entrevistas e próximos passos em um painel único.</p></article>
-        <article class="feature"><div class="feature-icon">✦</div><h3>Carta para a vaga</h3><p>Apresentação contextualizada pela oportunidade e pela sua trajetória.</p></article>
-        <article class="feature"><div class="feature-icon">◉</div><h3>Simulador de entrevista</h3><p>Perguntas relacionadas à vaga e orientação para respostas mais claras.</p></article>
-      </div>
     </div></section>
 
     <!-- 7. ANÁLISE DE COMPATIBILIDADE -->
@@ -772,12 +721,9 @@
       <div class="center reveal"><span class="eyebrow">A VagaAI é para você que...</span><h2>Quer buscar oportunidades <span class="green">com mais clareza e menos improviso.</span></h2></div>
       <div class="persona-grid reveal">
         <div class="persona-item">Está procurando o primeiro emprego</div>
-        <div class="persona-item">Quer mudar de empresa</div>
-        <div class="persona-item">Está em transição de carreira</div>
+        <div class="persona-item">Quer mudar de empresa ou de carreira</div>
         <div class="persona-item">Envia muitos currículos e recebe poucos retornos</div>
-        <div class="persona-item">Não sabe se o currículo está adequado para o ATS</div>
-        <div class="persona-item">Quer adaptar o currículo sem reescrever tudo</div>
-        <div class="persona-item">Precisa organizar diferentes processos seletivos</div>
+        <div class="persona-item">Não sabe se o currículo passa no ATS</div>
         <div class="persona-item">Quer encontrar vagas mais compatíveis</div>
         <div class="persona-item">Deseja chegar mais preparado às entrevistas</div>
       </div>
@@ -867,8 +813,8 @@
       <h2 class="reveal">Sua busca pode começar por uma vaga. Ou pelo seu currículo.</h2>
       <p class="reveal">Escolha o caminho que representa melhor o seu momento. A VagaAI conecta as próximas etapas para que você avance com mais clareza.</p>
       <div class="final-paths reveal">
-        <article class="final-path"><h4>Já encontrei uma oportunidade</h4><p>Compare a vaga com seu currículo e descubra o que melhorar antes de se candidatar.</p><a class="btn dark" href="https://www.vagaai.app.br/app">Analisar esta vaga grátis</a></article>
-        <article class="final-path"><h4>Ainda não tenho currículo pronto</h4><p>Crie ou importe seu currículo e comece a construir uma busca mais direcionada.</p><a class="btn" style="background:#062017;border-color:#062017;color:#fff" href="https://www.vagaai.app.br/curriculo">Criar meu currículo grátis</a></article>
+        <article class="final-path"><h4>Já encontrei uma oportunidade</h4><p>Compare a vaga com seu currículo e descubra o que melhorar antes de se candidatar.</p><a class="btn" href="https://www.vagaai.app.br/app">Analisar esta vaga grátis</a></article>
+        <article class="final-path"><h4>Ainda não tenho currículo pronto</h4><p>Crie ou importe seu currículo e comece a construir uma busca mais direcionada.</p><a class="btn" href="https://www.vagaai.app.br/curriculo">Criar meu currículo grátis</a></article>
       </div>
       <div class="final-line">Grátis para começar · Sem cartão · Você revisa tudo antes de usar</div>
     </div></section>
