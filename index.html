@@ -367,6 +367,18 @@
     .final-path .btn:hover{box-shadow:0 12px 28px rgba(6,32,23,.3)}
     .final-line{margin-top:28px;text-align:center;color:rgba(6,32,23,.65);font-size:12px;font-weight:600}
 
+    /* BLOG */
+    .blog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+    .blog-card{border:1px solid var(--line);border-radius:20px;background:var(--panel);overflow:hidden;text-decoration:none;color:var(--ink);display:flex;flex-direction:column;transition:transform .25s,border-color .25s,box-shadow .25s}
+    .blog-card:hover{transform:translateY(-4px);border-color:var(--green2);box-shadow:var(--shadow)}
+    .blog-card-cover{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--panel-2);display:block}
+    .blog-card-body{padding:19px;display:flex;flex-direction:column;gap:7px}
+    .blog-card-cat{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--green)}
+    .blog-card-title{font:700 16.5px Lora,serif;line-height:1.32;letter-spacing:-.01em;color:var(--ink)}
+    .blog-card-excerpt{font-size:12.5px;color:var(--copy);line-height:1.6}
+    .blog-card-date{font-size:11px;color:var(--muted)}
+    @media(max-width:860px){.blog-grid{grid-template-columns:1fr}}
+
     /* FOOTER */
     .footer{padding:56px 0 28px;background:var(--dark);color:#fff}
     .footer-grid{display:grid;grid-template-columns:1.3fr repeat(4,1fr);gap:28px}
@@ -819,6 +831,13 @@
       <div class="final-line">Grátis para começar · Sem cartão · Você revisa tudo antes de usar</div>
     </div></section>
 
+    <!-- BLOG -->
+    <section class="section" id="blog" style="display:none"><div class="wrap">
+      <div class="center reveal"><span class="eyebrow">Do blog</span><h2>Dicas para vencer o ATS <span class="green">e chegar à entrevista.</span></h2><p class="lead">Currículo, entrevista e estratégia de candidatura, direto do nosso blog.</p></div>
+      <div class="blog-grid" id="blogPreviewGrid"></div>
+      <div class="center" style="margin-top:32px"><a class="btn" href="/blog">Ver todos os posts →</a></div>
+    </div></section>
+
   </main>
   <footer class="footer"><div class="wrap">
     <div class="footer-grid">
@@ -919,6 +938,42 @@
         window.location.href = '/login';
       });
     });
+
+    /* ===== BLOG PREVIEW =====
+       Seção fica display:none por padrão e só aparece se houver ao menos 1
+       post publicado, a landing nunca mostra estado vazio ou de erro, já que
+       é a página de maior conversão do site. */
+    (function() {
+      var SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
+      var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
+      function escBlog(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+      function parseCats(raw) {
+        if (!raw) return [];
+        if (Array.isArray(raw)) return raw;
+        try { var v = JSON.parse(raw); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+      }
+      fetch(SUPABASE_URL + '/rest/v1/blog_posts?published=eq.true&select=title,slug,excerpt,cover_url,categories,created_at&order=created_at.desc&limit=3', { headers: { apikey: SUPABASE_ANON } })
+        .then(function(r) { return r.ok ? r.json() : []; })
+        .then(function(posts) {
+          if (!Array.isArray(posts) || !posts.length) return;
+          var grid = document.getElementById('blogPreviewGrid');
+          grid.innerHTML = posts.map(function(p) {
+            var date = new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+            var cats = parseCats(p.categories);
+            var cover = p.cover_url ? '<img class="blog-card-cover" src="' + escBlog(p.cover_url) + '" alt="' + escBlog(p.title) + '" loading="lazy">' : '';
+            return '<a class="blog-card" href="/blog/post?s=' + encodeURIComponent(p.slug) + '">'
+              + cover
+              + '<div class="blog-card-body">'
+              + (cats.length ? '<div class="blog-card-cat">' + escBlog(cats[0]) + '</div>' : '')
+              + '<div class="blog-card-title">' + escBlog(p.title) + '</div>'
+              + (p.excerpt ? '<div class="blog-card-excerpt">' + escBlog(p.excerpt) + '</div>' : '')
+              + '<div class="blog-card-date">' + date + '</div>'
+              + '</div></a>';
+          }).join('');
+          document.getElementById('blog').style.display = '';
+        })
+        .catch(function() { /* falha silenciosa, seção continua oculta */ });
+    })();
   </script>
 </body>
 </html>
