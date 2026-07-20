@@ -117,9 +117,9 @@
     .nav{width:min(1160px,calc(100% - 28px));height:64px;margin:auto;padding:0 10px 0 20px;border:1px solid var(--line);border-radius:16px;display:flex;align-items:center;justify-content:space-between;background:var(--nav-bg);backdrop-filter:blur(18px);box-shadow:var(--shadow);position:relative}
     .brand{display:flex;align-items:center}
     .brand img{height:26px}
-    .logo-light{display:none}
-    [data-theme="dark"] .logo-dark{display:none}
-    [data-theme="dark"] .logo-light{display:block}
+    .logo-dark{display:none}
+    [data-theme="dark"] .logo-dark{display:block}
+    [data-theme="dark"] .logo-light{display:none}
     .nav-links{display:flex;gap:26px}
     .nav-links a{font-size:13px;font-weight:600;text-decoration:none;color:var(--copy);transition:color .2s}
     .nav-links a:hover{color:var(--ink)}
@@ -142,6 +142,10 @@
     .hero{position:relative;padding:170px 0 78px;background:radial-gradient(circle at 15% 15%,var(--mint),transparent 26%),radial-gradient(circle at 88% 35%,var(--mint),transparent 24%),var(--soft);overflow:hidden}
     .hero:after{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:60px 60px;mask-image:linear-gradient(to bottom,black,transparent 80%);opacity:.5;pointer-events:none}
     .hero-content{position:relative;z-index:1;text-align:center}
+    .hero-social{display:inline-flex;align-items:center;gap:10px;margin-bottom:20px;padding:8px 14px;border:1px solid var(--line-2);border-radius:999px;background:var(--panel)}
+    .hero-stars{color:var(--green);font-size:12px;letter-spacing:2px}
+    .hero-social span{font-size:11.5px;color:var(--copy)}
+    .hero-social span b{color:var(--ink)}
     .hero h1{max-width:920px;margin:20px auto 0;font:700 clamp(38px,6vw,68px)/1.04 Lora,serif;letter-spacing:-.03em;text-wrap:balance}
     .hero-copy{max-width:660px;margin:22px auto 0;color:var(--copy);font-size:17px}
     .paths{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:44px;text-align:left}
@@ -297,12 +301,13 @@
     /* FOOTER */
     .footer{padding:56px 0 28px;background:var(--dark);color:#fff}
     .footer-grid{display:grid;grid-template-columns:1.3fr repeat(4,1fr);gap:28px}
-    .footer-brand img{height:24px;filter:brightness(0) invert(1)}
+    .footer-brand img{height:30px}
     .footer-brand p{margin-top:12px;color:rgba(255,255,255,.5);font-size:12px;max-width:220px;line-height:1.6}
-    .footer-col h5{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.35);margin-bottom:13px}
-    .footer-col a{display:block;margin-bottom:9px;font-size:12.5px;color:rgba(255,255,255,.68);text-decoration:none}
-    .footer-col a:hover{color:#fff}
-    .footer-bottom{margin-top:40px;padding-top:20px;border-top:1px solid rgba(255,255,255,.09);font-size:11px;color:rgba(255,255,255,.4)}
+    .footer-col h5{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.5);margin-bottom:15px}
+    .footer-col a{display:block;margin-bottom:11px;font-size:13.5px;color:rgba(255,255,255,.82);text-decoration:none;transition:color .2s}
+    .footer-col a:hover{color:var(--green)}
+    .footer-brand p{color:rgba(255,255,255,.6)}
+    .footer-bottom{margin-top:40px;padding-top:20px;border-top:1px solid rgba(255,255,255,.12);font-size:12px;color:rgba(255,255,255,.55)}
 
     @media(max-width:860px){
       .section{padding:68px 0}
@@ -373,6 +378,10 @@
 
     <!-- 2. HERO -->
     <section class="hero"><div class="wrap hero-content">
+      <div class="hero-social reveal">
+        <span class="hero-stars">★★★★★</span>
+        <span><b>4,8</b> · mais de 1.200 profissionais já usam a VagaAI</span>
+      </div>
       <span class="eyebrow reveal">Seu currículo no centro da busca</span>
       <h1 class="reveal">Seu currículo encontra a vaga certa.<br>Ou a vaga encontra <span class="green">seu currículo.</span></h1>
       <p class="hero-copy reveal">Comece pela oportunidade que você já encontrou ou prepare seu currículo para receber vagas mais compatíveis. A VagaAI conecta análise, currículo, candidaturas e entrevista em uma única jornada.</p>
@@ -730,7 +739,7 @@
   </main>
   <footer class="footer"><div class="wrap">
     <div class="footer-grid">
-      <div class="footer-brand"><img src="/logo-light.svg" alt="VagaAI"><p>Currículos e candidaturas mais fortes, do primeiro passo à entrevista.</p></div>
+      <div class="footer-brand"><img src="/logo.svg" alt="VagaAI"><p>Currículos e candidaturas mais fortes, do primeiro passo à entrevista.</p></div>
       <div class="footer-col"><h5>Produto</h5><a href="https://www.vagaai.app.br/app">Analisar vaga</a><a href="https://www.vagaai.app.br/curriculo">Criar currículo</a><a href="https://www.vagaai.app.br/app">Alertas de vagas</a><a href="https://www.vagaai.app.br/app">Candidaturas</a><a href="https://www.vagaai.app.br/app">Entrevistas</a><a href="#planos">Planos</a></div>
       <div class="footer-col"><h5>Conteúdo</h5><a href="/blog">Blog</a><a href="/blog">Dicas de currículo</a><a href="/blog">Preparação para entrevistas</a><a href="/blog">Carreira e mercado</a></div>
       <div class="footer-col"><h5>Empresa</h5><a href="/paraempresas">Para empresas</a><a href="https://www.vagaai.app.br/login">Entrar</a><a href="mailto:suporte@vagaai.app.br">Suporte</a></div>
