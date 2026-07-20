@@ -239,12 +239,72 @@
 
     /* ===== FEATURES ===== */
     .feature-grid{margin-top:52px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .feature-card{position:relative;padding:26px;border:1px solid var(--line);border-radius:20px;background:var(--panel);overflow:hidden;transition:transform .25s,border-color .25s,box-shadow .25s}
+    .feature-card{position:relative;padding:18px 18px 24px;border:1px solid var(--line);border-radius:20px;background:var(--panel);overflow:hidden;transition:transform .25s,border-color .25s,box-shadow .25s}
     .feature-card:hover{transform:translateY(-6px);border-color:var(--line-green);box-shadow:0 20px 58px var(--green-glow)}
-    .feature-icon{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;color:var(--green);background:var(--green-dim)}
-    .feature-card h3{margin-top:22px;font-family:"Lora",serif;font-size:18px;line-height:1.2;letter-spacing:-.01em;color:var(--ink)}
+    .feature-icon{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;color:var(--green);background:var(--green-dim);margin-top:16px}
+    .feature-card h3{margin-top:16px;font-family:"Lora",serif;font-size:18px;line-height:1.2;letter-spacing:-.01em;color:var(--ink)}
     .feature-card p{margin-top:9px;color:var(--copy);font-size:13.5px;line-height:1.65}
     .feature-tag{display:inline-block;margin-top:14px;padding:3px 9px;border-radius:20px;background:var(--green-dim);color:var(--green);font-size:10.5px;font-weight:800;letter-spacing:.02em}
+
+    /* ── Mini mockups por funcionalidade (CSS puro, reage no hover) ── */
+    .fmock{position:relative;height:96px;border-radius:12px;background:var(--bg);border:1px solid var(--line);overflow:hidden;padding:12px}
+    [data-theme="light"] .fmock{background:#f6faf7}
+
+    /* 1. Análise de compatibilidade - ring + pills */
+    .fmock-score{display:flex;align-items:center;gap:12px;height:100%}
+    .fmock-ring{position:relative;width:56px;height:56px;flex:0 0 auto}
+    .fmock-ring svg{transform:rotate(-90deg)}
+    .fmock-ring-track{fill:none;stroke:var(--line-2);stroke-width:6}
+    .fmock-ring-arc{fill:none;stroke:var(--green);stroke-width:6;stroke-linecap:round;stroke-dasharray:151;stroke-dashoffset:96;transition:stroke-dashoffset .5s ease}
+    .feature-card:hover .fmock-ring-arc{stroke-dashoffset:56}
+    .fmock-ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Lora",serif;font-size:13px;font-weight:800;color:var(--green)}
+    .fmock-pillcol{display:flex;flex-direction:column;gap:5px}
+    .fmock-pill{font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:20px;width:max-content}
+    .fmock-pill.ok{background:var(--green-dim);color:var(--green);border:1px solid var(--line-green)}
+    .fmock-pill.miss{background:rgba(248,113,113,.08);color:#f87171;border:1px solid rgba(248,113,113,.2);opacity:.5;transition:opacity .4s}
+    .feature-card:hover .fmock-pill.miss{opacity:1}
+
+    /* 2. Currículo otimizado - mini documento */
+    .fmock-doc{height:100%;display:flex;flex-direction:column;justify-content:center;gap:6px}
+    .fmock-doc-line{height:5px;border-radius:3px;background:var(--line-2);transition:background .3s}
+    .fmock-doc-line.w1{width:70%}.fmock-doc-line.w2{width:92%}.fmock-doc-line.w3{width:55%}
+    .feature-card:hover .fmock-doc-line{background:var(--green-dim)}
+    .fmock-doc-badge{margin-top:6px;display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:800;color:var(--green);width:max-content}
+    .fmock-doc-badge svg{transform:scale(.85);transition:transform .3s}
+    .feature-card:hover .fmock-doc-badge svg{transform:scale(1.15)}
+
+    /* 3. Meu Currículo - chips de lacuna */
+    .fmock-gaps{height:100%;display:flex;flex-direction:column;justify-content:center;gap:8px}
+    .fmock-gaps-label{font-size:8.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+    .fmock-gaps-row{display:flex;gap:6px;flex-wrap:wrap}
+    .fmock-gap-chip{font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:20px;background:rgba(255,209,102,.12);color:#c99a1f;border:1px solid rgba(255,209,102,.4);transform:translateY(0);transition:transform .3s}
+    [data-theme="dark"] .fmock-gap-chip{color:#ffd166}
+    .feature-card:hover .fmock-gap-chip:nth-child(1){transform:translateY(-2px)}
+    .feature-card:hover .fmock-gap-chip:nth-child(2){transform:translateY(-2px);transition-delay:.05s}
+
+    /* 4. Alertas de vagas - mini job rows */
+    .fmock-alerts{height:100%;display:flex;flex-direction:column;justify-content:center;gap:6px}
+    .fmock-arow{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:8px;background:var(--panel);border:1px solid var(--line);transition:transform .3s,border-color .3s}
+    .feature-card:hover .fmock-arow{transform:translateX(4px);border-color:var(--line-green)}
+    .feature-card:hover .fmock-arow:nth-child(2){transition-delay:.06s}
+    .fmock-adot{width:6px;height:6px;border-radius:50%;background:var(--green);flex:0 0 auto}
+    .fmock-atext{font-size:9.5px;font-weight:700;color:var(--ink)}
+    .fmock-atext span{display:block;font-size:8.5px;font-weight:600;color:var(--muted)}
+
+    /* 5. Rastreador - pipeline de status */
+    .fmock-pipeline{height:100%;display:flex;flex-direction:column;justify-content:center;gap:10px}
+    .fmock-pipe-track{height:4px;border-radius:3px;background:var(--line-2);position:relative;overflow:hidden}
+    .fmock-pipe-fill{position:absolute;inset:0;width:35%;border-radius:3px;background:var(--green);transition:width .5s ease}
+    .feature-card:hover .fmock-pipe-fill{width:72%}
+    .fmock-pipe-stages{display:flex;justify-content:space-between}
+    .fmock-pipe-stage{font-size:8.5px;font-weight:700;color:var(--muted)}
+    .fmock-pipe-stage.on{color:var(--green)}
+
+    /* 6. Carta e entrevista - bolha de pergunta */
+    .fmock-chat{height:100%;display:flex;align-items:center}
+    .fmock-bubble{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:9.5px;color:var(--copy);line-height:1.5;transform:scale(1);transition:transform .3s,border-color .3s}
+    .feature-card:hover .fmock-bubble{transform:scale(1.03);border-color:var(--line-green)}
+    .fmock-bubble b{display:block;color:var(--ink);font-size:9.5px;margin-bottom:3px}
 
     /* ===== FOR WHO / OBJECTIONS ===== */
     .pain{overflow:hidden;background:var(--panel)}
@@ -500,32 +560,82 @@
         </div>
         <div class="feature-grid">
           <div class="feature-card reveal">
+            <div class="fmock">
+              <div class="fmock-score">
+                <div class="fmock-ring">
+                  <svg viewBox="0 0 60 60" width="56" height="56"><circle class="fmock-ring-track" cx="30" cy="30" r="24"/><circle class="fmock-ring-arc" cx="30" cy="30" r="24"/></svg>
+                  <div class="fmock-ring-num">74</div>
+                </div>
+                <div class="fmock-pillcol">
+                  <span class="fmock-pill ok">SEO ✓</span>
+                  <span class="fmock-pill miss">Growth</span>
+                </div>
+              </div>
+            </div>
             <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div>
             <h3>Análise de compatibilidade</h3>
             <p>Score de aderência, keywords do ATS e prioridades, em segundos.</p>
           </div>
           <div class="feature-card reveal delay-1">
+            <div class="fmock">
+              <div class="fmock-doc">
+                <div class="fmock-doc-line w1"></div>
+                <div class="fmock-doc-line w2"></div>
+                <div class="fmock-doc-line w3"></div>
+                <span class="fmock-doc-badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 4 4L19 6"/></svg>Otimizado pro ATS</span>
+              </div>
+            </div>
             <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
             <h3>Currículo otimizado</h3>
             <p>Versão ajustada pra cada vaga, sem inventar experiência.</p>
           </div>
           <div class="feature-card reveal delay-2">
+            <div class="fmock">
+              <div class="fmock-gaps">
+                <span class="fmock-gaps-label">Ainda falta no seu perfil</span>
+                <div class="fmock-gaps-row">
+                  <span class="fmock-gap-chip">Análise de Dados</span>
+                  <span class="fmock-gap-chip">Growth</span>
+                </div>
+              </div>
+            </div>
             <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg></div>
             <h3>Meu Currículo</h3>
             <p>Salvo na conta, com painel do que o mercado pede e você ainda não tem.</p>
             <span class="feature-tag">Diferencial VagaAI</span>
           </div>
           <div class="feature-card reveal">
+            <div class="fmock">
+              <div class="fmock-alerts">
+                <div class="fmock-arow"><span class="fmock-adot"></span><span class="fmock-atext">Analista de Marketing<span>Empresa X · SP</span></span></div>
+                <div class="fmock-arow"><span class="fmock-adot"></span><span class="fmock-atext">Coord. de Growth<span>Empresa Y · Remoto</span></span></div>
+              </div>
+            </div>
             <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
             <h3>Alertas de vagas</h3>
             <p>Filtradas por cargo, local e salário, toda semana.</p>
           </div>
           <div class="feature-card reveal delay-1">
+            <div class="fmock">
+              <div class="fmock-pipeline">
+                <div class="fmock-pipe-track"><div class="fmock-pipe-fill"></div></div>
+                <div class="fmock-pipe-stages">
+                  <span class="fmock-pipe-stage on">Aplicada</span>
+                  <span class="fmock-pipe-stage on">Entrevista</span>
+                  <span class="fmock-pipe-stage">Oferta</span>
+                </div>
+              </div>
+            </div>
             <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
             <h3>Rastreador de candidaturas</h3>
             <p>Status, datas e próximos passos, em um painel único.</p>
           </div>
           <div class="feature-card reveal delay-2">
+            <div class="fmock">
+              <div class="fmock-chat">
+                <div class="fmock-bubble"><b>“Conte sobre um desafio que você resolveu.”</b>Resposta modelo + nota 8/10</div>
+              </div>
+            </div>
             <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
             <h3>Carta e simulador de entrevista</h3>
             <p>Carta por vaga e treino de entrevista com IA.</p>
