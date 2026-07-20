@@ -1750,6 +1750,15 @@ body.cd-modal-open { overflow:hidden; }
 .al-metric-lbl { font-size:11px; color:var(--t3); margin-bottom:2px; }
 .al-metric-sub { font-size:11px; color:var(--gb-emerald); font-weight:700; }
 .al-metric-na { font-size:11px; color:var(--t3); font-style:italic; }
+.cv-gap-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); padding:18px 20px; box-shadow:var(--sh-card); margin-bottom:20px; }
+.cv-gap-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:10px; }
+.cv-gap-title { font-size:13px; font-weight:800; color:var(--t1); }
+.cv-gap-sub { font-size:12px; color:var(--t3); margin-top:3px; max-width:520px; }
+.cv-gap-link { font-size:12px; font-weight:700; color:var(--gb-emerald); text-decoration:none; white-space:nowrap; }
+.cv-gap-link:hover { text-decoration:underline; }
+.cv-gap-chips { display:flex; flex-wrap:wrap; gap:7px; }
+.cv-gap-chip { font-size:11.5px; font-weight:700; background:#fffbf2; border:1px solid rgba(196,125,10,.28); color:#a5680c; padding:4px 10px; border-radius:20px; }
+[data-theme="dark"] .cv-gap-chip { background:rgba(255,209,102,.1); border-color:rgba(255,209,102,.35); color:#ffd166; }
 .al-main-grid { display:grid; grid-template-columns:520px minmax(0,1fr); gap:16px; align-items:start; }
 .al-summary-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); overflow:hidden; }
 .al-sum-head { padding:15px 18px 13px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; }
@@ -2749,6 +2758,18 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         </div>
       </div>
 
+      <!-- Seu currículo x o mercado -->
+      <div class="cv-gap-card" id="cvGapCard" style="display:none">
+        <div class="cv-gap-head">
+          <div>
+            <div class="cv-gap-title">Seu currículo × o mercado</div>
+            <div class="cv-gap-sub" id="cvGapSub">Carregando…</div>
+          </div>
+          <a class="cv-gap-link" href="#" onclick="switchDashTab('curriculo');return false;">Editar currículo →</a>
+        </div>
+        <div class="cv-gap-chips" id="cvGapChips"></div>
+      </div>
+
       <!-- Main grid -->
       <div class="al-clean-grid">
         <div class="al-clean-main">
@@ -3029,7 +3050,7 @@ async function init() {
     window._perfilData = { email, displayName };
     window._userName = displayName;
 
-    await Promise.all([loadSubscriptionData(), loadAnalyses(), loadKanban(), loadAlerts()]);
+    await Promise.all([loadSubscriptionData(), loadAnalyses(), loadKanban(), loadAlerts(), loadCvGapCard()]);
   } catch(e) {
     console.error('init error:', e);
     var loadEl = document.getElementById('pageLoading');
@@ -4974,6 +4995,62 @@ function _alLoadExt() {
 }
 function _alSaveExt() {
   localStorage.setItem('vagaai_alert_ext', JSON.stringify(_alertExtended));
+}
+
+/* ── Seu currículo x o mercado (aba Alertas) ──────────────────────
+   Mesmo cálculo do hero card de /curriculo: cruza keywords_faltando de
+   TODAS as análises de vaga do usuário com o texto do currículo salvo —
+   gratuito, sem IA. Reaproveita o dado real da própria plataforma pra
+   lembrar, dentro de Alertas, que o currículo também pode ser ajustado. */
+function _cvTextFromData(d) {
+  if (!d) return '';
+  if (d.raw_text && !d.nome) return String(d.raw_text);
+  var parts = [d.nome, d.titulo_profissional, d.resumo_profissional].filter(Boolean);
+  (d.experiencias || []).forEach(function(e){ parts.push(e.cargo, e.empresa); (e.bullets||[]).forEach(function(b){ parts.push(b); }); });
+  (d.formacao || []).forEach(function(e){ parts.push(e.curso, e.instituicao); });
+  (d.cursos || []).forEach(function(e){ parts.push(e.nome, e.instituicao); });
+  (d.habilidades || []).forEach(function(h){ parts.push(h); });
+  return parts.filter(Boolean).join(' ');
+}
+
+async function loadCvGapCard() {
+  var card = document.getElementById('cvGapCard');
+  if (!card || !currentUserId) return;
+  try {
+    var cvRes = await sb.from('cv_saves').select('cv_data').eq('user_id', currentUserId).maybeSingle();
+    var cvData = cvRes && cvRes.data && cvRes.data.cv_data;
+    if (!cvData) return; // sem currículo salvo ainda — não mostra o card (evita empurrar algo que não dá pra agir)
+
+    var anRes = await sb.from('analyses').select('result').eq('user_id', currentUserId).order('created_at', { ascending: false }).limit(50);
+    var rows = (anRes && anRes.data) || [];
+    if (!rows.length) return;
+
+    var freq = {};
+    rows.forEach(function(row){
+      var res = row.result || {};
+      (res.keywords_faltando || []).forEach(function(k){
+        var key = String(k).trim();
+        if (!key) return;
+        freq[key] = (freq[key] || 0) + 1;
+      });
+    });
+    var cvText = _cvTextFromData(cvData).toLowerCase();
+    var gaps = Object.keys(freq)
+      .filter(function(k){ return cvText.indexOf(k.toLowerCase()) === -1; })
+      .sort(function(a,b){ return freq[b] - freq[a]; })
+      .slice(0, 6);
+
+    var sub = document.getElementById('cvGapSub');
+    var chips = document.getElementById('cvGapChips');
+    if (!gaps.length) {
+      sub.textContent = 'Baseado nas ' + rows.length + ' vaga(s) analisadas, seu currículo já cobre as competências mais pedidas. 👏';
+      chips.innerHTML = '';
+    } else {
+      sub.textContent = 'Baseado nas ' + rows.length + ' vaga(s) que você analisou, seu currículo ainda não menciona:';
+      chips.innerHTML = gaps.map(function(k){ return '<span class="cv-gap-chip">' + escHtml(k) + (freq[k]>1 ? ' ×' + freq[k] : '') + '</span>'; }).join('');
+    }
+    card.style.display = '';
+  } catch(e) { /* silencioso — card só reforça info, não é crítico pro resto da aba */ }
 }
 
 /* ── Load & render ────────────────────────────────────────────── */

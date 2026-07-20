@@ -44,17 +44,31 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;fon
 .save-btn[disabled]{opacity:.6;cursor:not-allowed}
 .save-status{font-size:12px;color:var(--muted);margin-left:.6rem}
 
-/* Gap panel */
-.gap-panel{background:var(--surface);border:1px solid var(--green-border);border-radius:16px;padding:1.4rem 1.5rem;margin-bottom:1.4rem}
-.gap-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:.8rem}
-.gap-title{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--green)}
-.gap-sub{font-size:12.5px;color:var(--muted);margin-top:.3rem;max-width:480px}
-.gap-empty{font-size:13.5px;color:var(--muted)}
-.gap-chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.7rem}
-.gap-chip{font-size:12.5px;font-weight:600;background:var(--yellow-dim);border:1px solid var(--yellow);color:var(--yellow);padding:.32rem .8rem;border-radius:20px}
+/* Gap panel — hero card, mesmo padrão visual do topo de Entrevistas */
+.gap-panel{
+  background:linear-gradient(125deg,#07170f 0%,#0f3b25 60%,#155a37 100%);
+  border-radius:18px;padding:2rem 2.2rem;margin-bottom:1.4rem;color:#fff;
+  display:grid;grid-template-columns:minmax(0,1.15fr) minmax(240px,.85fr);
+  gap:1.8rem;align-items:center;position:relative;overflow:hidden;
+  box-shadow:0 18px 45px rgba(7,32,19,.18);
+}
+.gap-panel::before{content:'';position:absolute;right:-110px;top:-120px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(78,206,145,.24),transparent 68%)}
+.gap-copy{position:relative;z-index:1}
+.gap-title{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#7ff0b7;margin-bottom:12px}
+.gap-title::before{content:'';width:7px;height:7px;border-radius:50%;background:#4ece91}
+.gap-h2{font-family:'Lora',serif;font-size:26px;line-height:1.16;letter-spacing:-.4px;margin-bottom:10px}
+.gap-sub{font-size:13px;line-height:1.7;color:rgba(230,247,236,.72);max-width:460px}
+.gap-metrics{display:flex;gap:26px;flex-wrap:wrap;margin-top:20px}
+.gap-metrics div{min-width:82px}
+.gap-metrics strong{display:block;font-size:26px;line-height:1;font-weight:800;color:#fff;letter-spacing:-.5px}
+.gap-metrics span{display:block;margin-top:4px;font-size:11px;color:rgba(230,247,236,.58)}
+.gap-side{position:relative;z-index:1;background:rgba(13,22,16,.55);border:1px solid rgba(78,206,145,.22);border-radius:14px;padding:1.1rem 1.2rem}
+.gap-side-label{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:rgba(230,247,236,.6);margin-bottom:.7rem}
+.gap-empty{font-size:13.5px;color:rgba(230,247,236,.8)}
+.gap-chips{display:flex;flex-wrap:wrap;gap:.45rem}
+.gap-chip{font-size:12px;font-weight:700;background:rgba(255,209,102,.14);border:1px solid rgba(255,209,102,.5);color:#ffd166;padding:.3rem .7rem;border-radius:20px}
 .gap-chip b{font-weight:800}
-.ai-btn{font-size:12.5px;font-weight:700;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.5rem .9rem;border-radius:9px;cursor:pointer;white-space:nowrap}
-.ai-btn:hover{border-color:var(--green-border);color:var(--green)}
+@media(max-width:720px){.gap-panel{grid-template-columns:1fr;padding:1.6rem}}
 
 /* Section cards */
 .sec-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:.9rem}
@@ -532,22 +546,37 @@ function saveIdiomas() {
 }
 
 /* ── Painel de posicionamento de mercado ──────────────────────────────────
-   v1 usa dado real: cruza keywords_faltando das análises de vaga que o
-   usuário já fez na plataforma com o texto do currículo atual — sem custo
-   de IA. O diagnóstico completo com IA (profile_cv) fica como opção à parte,
-   sob demanda, pra quem quer uma leitura mais profunda (consome 1 crédito). */
+   Hero card sempre gratuito e automático — sem custo de IA, sem crédito.
+   Cruza keywords_faltando de TODAS as análises de vaga que o usuário já
+   fez na plataforma com o texto do currículo atual: mostra o que o
+   mercado dele pede com frequência e o currículo ainda não cobre. */
+function gapHeroShell(sub, metricsHtml, sideHtml) {
+  return '<div class="gap-copy"><div class="gap-title">Posicionamento de mercado</div>' +
+    '<h2 class="gap-h2">Veja como seu currículo se compara ao que o mercado pede.</h2>' +
+    '<p class="gap-sub">' + sub + '</p>' +
+    (metricsHtml ? '<div class="gap-metrics">' + metricsHtml + '</div>' : '') +
+    '</div><div class="gap-side">' + sideHtml + '</div>';
+}
+function metric(val, label) { return '<div><strong>' + esc(String(val)) + '</strong><span>' + esc(label) + '</span></div>'; }
+
 async function loadGapPanel() {
   var panel = document.getElementById('gapPanel');
   if (!_session) {
-    panel.innerHTML = '<div class="gap-title">Posicionamento de mercado</div><div class="gap-empty">Salve seu currículo (crie uma conta grátis) pra ver o que as vagas que você analisar pedem e seu currículo ainda não tem.</div>';
+    panel.innerHTML = gapHeroShell(
+      'Salve seu currículo (crie uma conta grátis) e, conforme você for analisando vagas, esse painel vai mostrando o que o mercado pede e seu currículo ainda não tem.',
+      '', '<div class="gap-side-label">Lacunas identificadas</div><div class="gap-empty">Disponível após salvar seu currículo</div>'
+    );
     return;
   }
   try {
     var r = await sb.from('analyses').select('result').eq('user_id', _session.user.id).order('created_at', { ascending: false }).limit(50);
     var rows = (r && r.data) || [];
     if (!rows.length) {
-      panel.innerHTML = '<div class="gap-head"><div><div class="gap-title">Posicionamento de mercado</div><div class="gap-sub">Analise pelo menos 1 vaga pra começarmos a te mostrar o que o mercado espera do seu perfil.</div></div>' +
-        '<button class="ai-btn" onclick="runAiDiagnosis()">Diagnóstico com IA (1 crédito)</button></div>';
+      panel.innerHTML = gapHeroShell(
+        'Analise pelo menos 1 vaga pra começarmos a te mostrar o que o mercado espera do seu perfil — esse painel se atualiza sozinho conforme você usa a plataforma.',
+        metric(0, 'vagas analisadas') + metric('—', 'lacunas identificadas'),
+        '<div class="gap-side-label">Lacunas identificadas</div><div class="gap-empty">Analise sua primeira vaga pra começar</div>'
+      );
       return;
     }
     var freq = {};
@@ -560,51 +589,30 @@ async function loadGapPanel() {
       });
     });
     var cvText = cvToText(_cvData).toLowerCase();
-    var gaps = Object.keys(freq)
+    var allKeys = Object.keys(freq);
+    var gaps = allKeys
       .filter(function(k){ return cvText.indexOf(k.toLowerCase()) === -1; })
-      .sort(function(a,b){ return freq[b] - freq[a]; })
-      .slice(0, 8);
+      .sort(function(a,b){ return freq[b] - freq[a]; });
+    var covered = allKeys.length - gaps.length;
+    var metricsHtml = metric(rows.length, 'vagas analisadas') + metric(covered, 'competências em comum') + metric(gaps.length, 'lacunas identificadas');
 
     if (!gaps.length) {
-      panel.innerHTML = '<div class="gap-head"><div><div class="gap-title">Posicionamento de mercado</div><div class="gap-sub">Seu currículo já cobre as competências mais pedidas nas vagas que você analisou. 👏</div></div>' +
-        '<button class="ai-btn" onclick="runAiDiagnosis()">Diagnóstico com IA (1 crédito)</button></div>';
+      panel.innerHTML = gapHeroShell(
+        'Baseado nas ' + rows.length + ' vaga(s) que você já analisou, seu currículo já cobre as competências mais pedidas pelo mercado. 👏',
+        metricsHtml,
+        '<div class="gap-side-label">Lacunas identificadas</div><div class="gap-empty">Nenhuma lacuna no momento</div>'
+      );
       return;
     }
-    panel.innerHTML = '<div class="gap-head"><div><div class="gap-title">Posicionamento de mercado</div><div class="gap-sub">Baseado nas ' + rows.length + ' vaga(s) que você já analisou, seu currículo ainda não menciona:</div></div>' +
-      '<button class="ai-btn" onclick="runAiDiagnosis()">Diagnóstico com IA (1 crédito)</button></div>' +
-      '<div class="gap-chips">' + gaps.map(function(k){ return '<span class="gap-chip">' + esc(k) + (freq[k]>1 ? ' <b>×' + freq[k] + '</b>' : '') + '</span>'; }).join('') + '</div>';
+    var top = gaps.slice(0, 8);
+    panel.innerHTML = gapHeroShell(
+      'Baseado nas ' + rows.length + ' vaga(s) que você já analisou, seu currículo ainda não menciona estas competências — conforme você analisa mais vagas, esse painel fica mais preciso.',
+      metricsHtml,
+      '<div class="gap-side-label">Lacunas identificadas</div><div class="gap-chips">' + top.map(function(k){ return '<span class="gap-chip">' + esc(k) + (freq[k]>1 ? ' <b>×' + freq[k] + '</b>' : '') + '</span>'; }).join('') + '</div>'
+    );
   } catch(e) {
-    panel.innerHTML = '<div class="gap-title">Posicionamento de mercado</div><div class="gap-empty">Não foi possível carregar agora.</div>';
+    panel.innerHTML = gapHeroShell('Não foi possível carregar agora.', '', '');
   }
-}
-
-async function runAiDiagnosis() {
-  var text = cvToText(_cvData);
-  if (text.trim().length < 120) { toast('Preencha mais o currículo antes de gerar o diagnóstico.', true); return; }
-  var panel = document.getElementById('gapPanel');
-  var prevHtml = panel.innerHTML;
-  panel.innerHTML = '<div class="gap-title">Posicionamento de mercado</div><div class="gap-empty"><span class="spinner"></span>Analisando com IA...</div>';
-  try {
-    var fresh = await sb.auth.getSession();
-    var token = fresh && fresh.data && fresh.data.session && fresh.data.session.access_token;
-    var res = await fetch('/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ action: 'profile_cv', cv: text.slice(0,20000) }) });
-    var data = null; try { data = await res.json(); } catch(e){}
-    if (res.status === 402) { panel.innerHTML = '<div class="gap-title">Posicionamento de mercado</div><div class="gap-empty">Sem créditos disponíveis. <a href="/dashboard#plano" target="_top" style="color:var(--green)">Ver planos →</a></div>'; return; }
-    if (!res.ok || !data || !data.profile) { panel.innerHTML = prevHtml; toast((data && (data.message||data.error)) || 'Erro ao gerar diagnóstico.', true); return; }
-    renderAiDiagnosis(data.profile);
-  } catch(e) { panel.innerHTML = prevHtml; toast('Erro inesperado.', true); }
-}
-
-var SEN_LABELS = { estagio:'Estágio', junior:'Júnior', pleno:'Pleno', senior:'Sênior', especialista:'Especialista', lideranca:'Liderança' };
-function renderAiDiagnosis(p) {
-  var panel = document.getElementById('gapPanel');
-  var m = p.mercado || {};
-  function chips(arr){ return (arr||[]).map(function(x){return '<span class="gap-chip">'+esc(x)+'</span>';}).join(''); }
-  panel.innerHTML = '<div class="gap-title">Diagnóstico de IA</div>' +
-    '<p style="font-size:13.5px;margin-top:.5rem">' + esc(p.resumo_perfil||'') + '</p>' +
-    (m.posicionamento ? '<p style="font-size:13px;color:var(--muted);margin-top:.6rem">' + esc(m.posicionamento) + '</p>' : '') +
-    ((m.recomendacoes||[]).length ? '<div style="font-size:12px;font-weight:800;text-transform:uppercase;color:var(--green);margin-top:.9rem">Recomendações</div><div class="gap-chips">' + chips(m.recomendacoes) + '</div>' : '') +
-    '<button class="ai-btn" style="margin-top:.9rem" onclick="loadGapPanel()">← Voltar pro painel padrão</button>';
 }
 </script>
 </body>
