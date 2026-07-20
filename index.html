@@ -291,6 +291,23 @@
     .compare tbody tr{transition:background .2s}
     .compare tbody tr:hover td:not(:last-child){background:var(--panel-2)}
     .compare-rail{position:absolute;top:0;bottom:0;right:0;width:2px;background:linear-gradient(var(--green2),var(--green));pointer-events:none}
+    /* MOBILE: tabela vira cards empilhados (sem scroll horizontal escondido) */
+    @media(max-width:680px){
+      .compare-wrap{overflow:visible}
+      .compare-scroll{overflow-x:visible}
+      .compare-rail{display:none}
+      table.compare{min-width:0;width:100%;display:block}
+      table.compare thead{display:none}
+      table.compare tbody{display:block}
+      table.compare tr{display:block;padding:14px 18px;border-bottom:1px solid var(--line)}
+      table.compare tr:last-child{border-bottom:0}
+      table.compare td{display:block;padding:5px 0;font-size:13px;border-bottom:0}
+      table.compare td:last-child{background:transparent;padding-top:9px}
+      table.compare td:first-child:before,
+      table.compare td:last-child:before{display:block;width:auto;height:auto;margin:0 0 4px;padding:0;border-radius:0;background:transparent;font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;vertical-align:baseline}
+      table.compare td:first-child:before{content:"✗ Tradicional"}
+      table.compare td:last-child:before{content:"✓ Com a VagaAI"}
+    }
 
     /* RESPONSIBLE + PERSONA */
     .responsible-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:stretch}
