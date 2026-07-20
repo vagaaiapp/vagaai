@@ -210,29 +210,98 @@
     /* DETAIL */
     .detail{border-top:1px solid var(--line);background:var(--bg)}
     .detail-row{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;padding:76px 0}
-    .detail-row.rev .detail-panel{order:-1}
+    .detail-row.rev .dmock{order:-1}
     .detail-tag{display:inline-flex;padding:6px 10px;border-radius:99px;background:var(--mint);color:var(--green);font-size:10px;font-weight:800;text-transform:uppercase}
     .detail-text h3{margin-top:15px;font:700 clamp(22px,2.8vw,29px)/1.2 Lora;letter-spacing:-.02em}
     .detail-text>p{margin-top:11px;color:var(--copy);font-size:14.5px}
     .detail-text .capability-list{border-top:1px solid var(--line);margin-top:16px;padding-top:16px}
     .detail-text .btn{margin-top:22px}
     .detail-callout{margin-top:16px;padding:13px 15px;border-radius:14px;background:var(--mint);color:var(--green);font-size:12.5px;font-weight:600}
-    .detail-panel{padding:8px;border:1px solid var(--line);border-radius:22px;background:var(--panel-2);box-shadow:var(--shadow)}
-    .detail-panel-inner{padding:20px}
-    .detail-block{padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel);margin-bottom:9px}
-    .detail-block:last-child{margin-bottom:0}
-    .detail-block b{display:block;font:700 13.5px Lora;margin-bottom:4px}
-    .detail-block p{color:var(--copy);font-size:12px}
+    /* MOCKUPS DO PAINEL (adaptam ao tema via variáveis) */
+    .dmock{position:relative;padding:16px 8px}
+    .dmock-window{border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--panel);box-shadow:var(--shadow);transition:transform .3s,box-shadow .3s}
+    .detail-row:hover .dmock-window{transform:translateY(-4px)}
+    .dmock-bar{height:32px;padding:0 12px;display:flex;align-items:center;gap:8px;background:#0a1f15}
+    .dmock-dots{display:flex;gap:5px}
+    .dmock-dots i{width:8px;height:8px;border-radius:50%}
+    .dmock-dots i:nth-child(1){background:#ff5f57}.dmock-dots i:nth-child(2){background:#febc2e}.dmock-dots i:nth-child(3){background:#28c840}
+    .dmock-bar b{flex:1;text-align:center;font-size:10.5px;font-weight:700;color:rgba(255,255,255,.5);margin-right:26px}
+    .dmock-body{display:flex;min-height:230px}
+    .dmock-side{width:44px;flex:0 0 auto;background:#0d2418;padding:12px 0;display:flex;flex-direction:column;align-items:center;gap:10px}
+    .dmock-side i{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;color:rgba(255,255,255,.35)}
+    .dmock-side i.on{background:rgba(78,206,145,.2);color:#4ece91}
+    .dmock-side svg{width:14px;height:14px}
+    .dmock-main{flex:1;min-width:0;padding:14px 15px}
+    .dmock-crumb{font-size:9.5px;color:var(--muted);margin-bottom:10px}
+    .dmock-crumb b{color:var(--copy);font-weight:700}
+    .dmock-note{margin-top:10px;padding:7px 10px;border-radius:9px;background:var(--mint);font-size:10.5px;font-weight:700;color:var(--green);text-align:center}
+    .dmock-banner{display:flex;justify-content:space-between;align-items:center;padding:8px 11px;border-radius:10px;background:var(--mint);border:1px solid var(--line);margin-bottom:8px;font-size:10.5px;font-weight:700;color:var(--ink)}
+    .dmock-banner i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:6px}
+    .dmock-banner em{font-style:normal;font-size:9px;color:var(--muted);font-weight:600;white-space:nowrap}
+    .dmock-job{display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);margin-bottom:6px;transition:transform .25s,border-color .25s}
+    .detail-row:hover .dmock-job{transform:translateX(3px)}
+    .dmock-job.best{border-color:var(--green);background:var(--mint)}
+    .dmock-job>b{width:26px;height:26px;border-radius:7px;flex:0 0 auto;display:grid;place-items:center;font-size:10.5px;font-weight:800}
+    .dmock-job>b.g{background:rgba(26,158,110,.15);color:var(--green)}
+    .dmock-job>b.a{background:rgba(191,141,42,.15);color:#bf8d2a}
+    .dmock-job div{flex:1;min-width:0}
+    .dmock-job div b{display:block;font-size:11px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dmock-job div span{display:block;font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dmock-job em{font-style:normal;font-size:9px;font-weight:800;color:var(--green);border:1px solid var(--line-2);border-radius:7px;padding:4px 8px;white-space:nowrap}
+    .dmock-job.best em{border-color:var(--green)}
+    .dmock-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:9px}
+    .dmock-stats div{padding:8px;border:1px solid var(--line);border-radius:9px;text-align:center}
+    .dmock-stats b{display:block;font:700 14px Lora;color:var(--ink)}
+    .dmock-stats span{font-size:8.5px;color:var(--muted)}
+    .dmock-score{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+    .dmock-ring{width:56px;height:56px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;font:800 15px Lora;color:var(--green);background:conic-gradient(var(--green) 313deg,var(--line) 0);position:relative}
+    .dmock-ring::before{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--panel)}
+    .dmock-ring span{position:relative;z-index:1}
+    .dmock-score div b{display:block;font-size:12px;color:var(--ink)}
+    .dmock-score div span{font-size:9.5px;color:var(--muted)}
+    .dmock-pills{display:flex;flex-wrap:wrap;gap:5px}
+    .dmock-pills span{font-size:9px;font-weight:700;padding:4px 8px;border-radius:8px;border:1px solid var(--line);color:var(--copy)}
+    .dmock-pills .ok{background:var(--mint);color:var(--green);border-color:var(--line-2)}
+    .dmock-pills .miss{color:#bf8d2a;border-color:rgba(191,141,42,.35);background:rgba(191,141,42,.08)}
+    .dmock-doc{padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+    .dmock-doc>b{display:block;font:700 13px Lora;color:var(--ink)}
+    .dmock-doc>span{display:block;font-size:9.5px;color:var(--muted);margin-bottom:8px}
+    .dmock-doc i{display:block;height:6px;border-radius:4px;background:var(--line);margin-top:5px;transition:width .4s}
+    .dmock-doc i.l1{width:90%}.dmock-doc i.l2{width:72%}.dmock-doc i.l3{width:83%}
+    .detail-row:hover .dmock-doc i.l2{width:86%}
+    .dmock-track{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;transition:transform .25s}
+    .detail-row:hover .dmock-track{transform:translateX(3px)}
+    .dmock-track div b{display:block;font-size:11px;color:var(--ink)}
+    .dmock-track div span{display:block;font-size:9px;color:var(--muted)}
+    .dmock-track i{font-style:normal;font-size:9px;font-weight:800;padding:4px 9px;border-radius:20px;white-space:nowrap}
+    .dmock-track .s1{background:var(--line);color:var(--copy)}
+    .dmock-track .s2{background:var(--mint);color:var(--green)}
+    .dmock-track .s3{background:rgba(191,141,42,.14);color:#bf8d2a}
+    .dmock-chat{max-width:88%;padding:9px 12px;border-radius:12px;font-size:10.5px;line-height:1.5;margin-bottom:7px}
+    .dmock-chat.q{background:var(--panel-2);border:1px solid var(--line);color:var(--copy);border-bottom-left-radius:4px}
+    .dmock-chat.a{margin-left:auto;background:var(--mint);border:1px solid var(--line-2);color:var(--ink);border-bottom-right-radius:4px}
+    .dmock-float{position:absolute;display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line-2);border-radius:12px;padding:8px 12px;box-shadow:var(--shadow);z-index:2;animation:floaty 4.5s ease-in-out infinite}
+    .dmock-float.tr{top:2px;right:0}
+    .dmock-float.bl{bottom:4px;left:0;animation-delay:1.4s}
+    .dmock-float i{width:26px;height:26px;flex:0 0 auto;border-radius:8px;background:var(--green);color:#fff;display:grid;place-items:center;font-size:12px;font-style:normal}
+    .dmock-float b{display:block;font-size:10px;color:var(--ink)}
+    .dmock-float span{display:block;font-size:8.5px;color:var(--muted)}
+    @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+    @media(prefers-reduced-motion:reduce){.dmock-float{animation:none}.reveal{transition:none;opacity:1;transform:none}}
 
     /* COMPARE */
     .compare-wrap{margin-top:40px;overflow-x:auto;border:1px solid var(--line);border-radius:20px;background:var(--panel)}
     table.compare{width:100%;border-collapse:collapse;min-width:600px}
     .compare th{text-align:left;padding:15px 22px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
     .compare th:last-child{color:var(--green)}
-    .compare td{padding:14px 22px;font-size:13.5px;border-bottom:1px solid var(--line);color:var(--copy)}
+    .compare td{padding:13px 22px;font-size:13.5px;border-bottom:1px solid var(--line);color:var(--muted)}
     .compare tr:last-child td{border:0}
+    .compare th:last-child,.compare td:last-child{background:var(--mint);border-left:2px solid var(--green)}
     .compare td:last-child{color:var(--ink);font-weight:600}
-    .compare td:last-child:before{content:"✓ ";color:var(--green);font-weight:900}
+    .compare td:first-child:before{content:"✗";display:inline-grid;place-items:center;width:19px;height:19px;margin-right:10px;border-radius:6px;background:rgba(224,93,93,.14);color:#e05d5d;font-size:10px;font-weight:900;vertical-align:-4px}
+    .compare td:last-child:before{content:"✓";display:inline-grid;place-items:center;width:19px;height:19px;margin-right:10px;border-radius:6px;background:var(--panel);color:var(--green);font-size:10px;font-weight:900;vertical-align:-4px}
+    .compare tbody tr{transition:background .2s}
+    .compare tbody tr:hover{background:var(--panel-2)}
 
     /* RESPONSIBLE */
     .responsible-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:56px;align-items:start}
@@ -256,8 +325,7 @@
     .testi-av{width:36px;height:36px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;background:var(--mint);color:var(--green);font:800 12px Inter}
     .testi footer b{display:block;color:var(--ink);font-size:12.5px}
     .testi footer span{display:block;font-size:11px;color:var(--muted)}
-    .testi footer small{display:block;margin-top:1px;font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.04em}
-    .testi-note{margin-top:14px;text-align:center;font-size:11px;color:var(--muted)}
+    .testi:hover{border-color:var(--line-2)}
 
     /* PRICING */
     .pricing{background:var(--panel-2)}
@@ -309,6 +377,11 @@
     .footer-brand p{color:rgba(255,255,255,.6)}
     .footer-bottom{margin-top:40px;padding-top:20px;border-top:1px solid rgba(255,255,255,.12);font-size:12px;color:rgba(255,255,255,.55)}
 
+    /* VOLTAR AO TOPO */
+    .to-top{position:fixed;right:18px;bottom:18px;z-index:150;width:46px;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--panel);color:var(--green);display:grid;place-items:center;cursor:pointer;opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .25s,transform .25s,border-color .2s;box-shadow:var(--shadow)}
+    .to-top.show{opacity:1;pointer-events:auto;transform:none}
+    .to-top:hover{border-color:var(--green)}
+
     @media(max-width:860px){
       .section{padding:68px 0}
       .hero{padding-top:150px}
@@ -319,7 +392,7 @@
       .responsible-grid{grid-template-columns:1fr;gap:32px}
       .plan.featured{transform:none}
       .detail-row{grid-template-columns:1fr;padding:52px 0;gap:28px}
-      .detail-row.rev .detail-panel{order:0}
+      .detail-row.rev .dmock{order:0}
       .persona-grid,.testi-grid{grid-template-columns:1fr 1fr}
       .footer-grid{grid-template-columns:1fr 1fr;gap:32px}
       .final-paths{grid-template-columns:1fr}
@@ -409,13 +482,10 @@
           <h3>Você encontrou uma vaga. Agora precisa mostrar por que combina com ela.</h3>
           <p>Cole o link ou a descrição da oportunidade e compare com o currículo que pretende enviar.</p>
           <div class="capability-list">
-            <span>Entender sua compatibilidade com a vaga</span>
-            <span>Identificar requisitos e palavras-chave importantes</span>
-            <span>Encontrar lacunas no currículo</span>
-            <span>Priorizar os ajustes que mais importam</span>
-            <span>Criar uma versão direcionada do currículo</span>
-            <span>Preparar uma carta de apresentação</span>
-            <span>Treinar para uma possível entrevista</span>
+            <span>Score de compatibilidade e lacunas do currículo</span>
+            <span>Palavras-chave que faltam para o ATS</span>
+            <span>Currículo direcionado para a vaga</span>
+            <span>Carta de apresentação e treino de entrevista</span>
           </div>
           <a class="btn primary" href="https://www.vagaai.app.br/app">Analisar uma vaga agora</a>
         </article>
@@ -424,13 +494,10 @@
           <h3>Ainda está se preparando? Comece pelo currículo.</h3>
           <p>Crie um currículo do zero ou importe o documento que já possui.</p>
           <div class="capability-list">
-            <span>Criar e organizar seu currículo</span>
-            <span>Manter uma versão principal sempre atualizada</span>
-            <span>Entender seu posicionamento profissional</span>
-            <span>Identificar competências recorrentes nas vagas</span>
-            <span>Configurar alertas personalizados</span>
-            <span>Encontrar oportunidades mais compatíveis</span>
-            <span>Organizar candidaturas e próximos passos</span>
+            <span>Currículo criado do zero ou importado</span>
+            <span>Posicionamento frente ao mercado</span>
+            <span>Alertas de vagas personalizados</span>
+            <span>Candidaturas organizadas no painel</span>
           </div>
           <a class="btn" href="https://www.vagaai.app.br/curriculo">Criar meu currículo</a>
         </article>
@@ -486,25 +553,39 @@
       <div class="detail-text reveal">
         <span class="detail-tag">Antes de se candidatar</span>
         <h3>Entenda a oportunidade antes de enviar seu currículo.</h3>
-        <p>Cole o link ou o texto completo da vaga e adicione o currículo que pretende utilizar. Em segundos, você recebe:</p>
+        <p>Cole a vaga e o currículo. Em segundos, você recebe:</p>
         <div class="capability-list">
-          <span>Score de compatibilidade</span>
-          <span>Requisitos identificados na vaga</span>
-          <span>Pontos fortes do seu perfil</span>
-          <span>Lacunas prioritárias</span>
-          <span>Palavras-chave importantes para o ATS</span>
-          <span>Sugestões práticas de melhoria</span>
-          <span>Contexto sobre a oportunidade e a empresa</span>
-          <span>Uma versão direcionada do currículo</span>
+          <span>Score de compatibilidade com a vaga</span>
+          <span>Palavras-chave que faltam para o ATS</span>
+          <span>Lacunas e prioridades de ajuste</span>
+          <span>Currículo direcionado, pronto para revisar</span>
         </div>
-        <div class="detail-callout">Clareza para decidir o que melhorar, sem inventar experiências. A VagaAI fortalece o que já existe na sua trajetória. Você revisa e decide o que faz sentido usar.</div>
+        <div class="detail-callout">Sem inventar experiências: a VagaAI fortalece o que já existe. Você revisa tudo antes de usar.</div>
         <a class="btn primary" href="https://www.vagaai.app.br/app">Analisar minha vaga grátis</a>
       </div>
-      <div class="detail-panel reveal"><div class="detail-panel-inner">
-        <div class="detail-block"><b>Score de compatibilidade</b><p>Aderência entre seu currículo e os requisitos da vaga.</p></div>
-        <div class="detail-block"><b>Palavras-chave do ATS</b><p>O que aparece na vaga e ainda falta no seu currículo.</p></div>
-        <div class="detail-block"><b>Currículo direcionado</b><p>Versão ajustada, pronta para revisar e baixar.</p></div>
-      </div></div>
+      <div class="dmock reveal">
+        <div class="dmock-window">
+          <div class="dmock-bar"><span class="dmock-dots"><i></i><i></i><i></i></span><b>VagaAI · Painel</b></div>
+          <div class="dmock-body">
+            <div class="dmock-side">
+              <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></i>
+              <i class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg></i>
+              <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></i>
+              <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg></i>
+            </div>
+            <div class="dmock-main">
+              <div class="dmock-crumb">Painel <b>› Analisar vaga</b></div>
+              <div class="dmock-score">
+                <div class="dmock-ring"><span>87</span></div>
+                <div><b>Analista de Marketing Pleno</b><span>Compatibilidade com a vaga · Empresa X</span></div>
+              </div>
+              <div class="dmock-pills"><span class="ok">SEO ✓</span><span class="ok">CRM ✓</span><span class="ok">Inbound ✓</span><span class="miss">Growth · faltando</span><span class="miss">Power BI · faltando</span></div>
+              <div class="dmock-note">✓ Currículo direcionado gerado</div>
+            </div>
+          </div>
+        </div>
+        <div class="dmock-float tr"><i>✓</i><div><b>Análise pronta</b><span>em 28 segundos</span></div></div>
+      </div>
     </div></section>
 
     <!-- 8. CURRÍCULO PRINCIPAL E DIRECIONADO -->
@@ -512,23 +593,38 @@
       <div class="detail-text reveal">
         <span class="detail-tag">Seu currículo</span>
         <h3>Um currículo principal. Uma versão melhor para cada oportunidade.</h3>
-        <p>Mantenha suas informações profissionais organizadas em uma versão principal e adapte a apresentação conforme a vaga.</p>
+        <p>Uma versão principal sempre atualizada, adaptada para cada vaga.</p>
         <div class="capability-list">
-          <span>Editor organizado por seções: dados, objetivo, experiências, formação, cursos, idiomas, habilidades e resumo</span>
+          <span>Editor por seções, do objetivo aos idiomas</span>
           <span>Importação de PDF, Word ou TXT</span>
-          <span>Salvamento automático na conta</span>
-          <span>Currículo preparado para leitura por ATS</span>
-          <span>Download em PDF</span>
-          <span>Ajustes sem inventar informações</span>
-          <span>Posicionamento de mercado, conforme você analisa vagas</span>
+          <span>Pronto para leitura por ATS, com download em PDF</span>
+          <span>Posicionamento de mercado conforme você analisa vagas</span>
         </div>
         <a class="btn primary" href="https://www.vagaai.app.br/curriculo">Criar ou importar meu currículo</a>
       </div>
-      <div class="detail-panel reveal"><div class="detail-panel-inner">
-        <div class="detail-block"><b>Currículo principal</b><p>Experiências, formação, cursos, idiomas, habilidades e objetivos, tudo em um único perfil.</p></div>
-        <div class="detail-block"><b>Currículo direcionado</b><p>Usa a análise da vaga para destacar o que mais importa em cada candidatura.</p></div>
-        <div class="detail-block"><b>Posicionamento de mercado</b><p>Mostra quais competências aparecem com frequência nas vagas que você analisa.</p></div>
-      </div></div>
+      <div class="dmock reveal">
+        <div class="dmock-window">
+          <div class="dmock-bar"><span class="dmock-dots"><i></i><i></i><i></i></span><b>VagaAI · Painel</b></div>
+          <div class="dmock-body">
+            <div class="dmock-side">
+              <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></i>
+              <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg></i>
+              <i class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></i>
+              <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg></i>
+            </div>
+            <div class="dmock-main">
+              <div class="dmock-crumb">Painel <b>› Meu Currículo</b></div>
+              <div class="dmock-doc">
+                <b>Maria Silva</b><span>Analista de Marketing · São Paulo</span>
+                <i class="l1"></i><i class="l2"></i><i class="l3"></i>
+              </div>
+              <div class="dmock-pills"><span class="ok">Experiências</span><span class="ok">Formação</span><span class="ok">Cursos</span><span class="ok">Idiomas</span><span class="ok">Habilidades</span></div>
+              <div class="dmock-note">✓ Pronto para leitura por ATS</div>
+            </div>
+          </div>
+        </div>
+        <div class="dmock-float bl"><i>✓</i><div><b>Salvo na conta</b><span>sempre atualizado</span></div></div>
+      </div>
     </div></section>
 
     <!-- 9. ALERTAS DE VAGAS -->
@@ -536,23 +632,38 @@
       <div class="detail-text reveal">
         <span class="detail-tag">Oportunidades para o seu perfil</span>
         <h3>Pare de procurar em todos os lugares.</h3>
-        <p>Configure cargo, localização, formato de trabalho e outros critérios importantes para sua busca. A VagaAI seleciona oportunidades e ajuda você a identificar quais merecem atenção primeiro.</p>
+        <p>Configure seus critérios uma vez. A VagaAI seleciona as oportunidades e mostra quais merecem atenção primeiro.</p>
         <div class="capability-list">
-          <span>Configurar cargo e localização</span>
-          <span>Escolher remoto, híbrido ou presencial</span>
-          <span>Definir preferências de contratação</span>
-          <span>Receber oportunidades por e-mail</span>
-          <span>Visualizar vagas no painel</span>
-          <span>Salvar oportunidades nas candidaturas</span>
-          <span>Analisar uma vaga diretamente</span>
+          <span>Cargo, localização e formato: remoto, híbrido ou presencial</span>
+          <span>Vagas por e-mail e no painel</span>
+          <span>Salvar direto nas candidaturas</span>
+          <span>Analisar a vaga com um clique</span>
         </div>
         <a class="btn primary" href="https://www.vagaai.app.br/app">Configurar meus alertas</a>
       </div>
-      <div class="detail-panel reveal"><div class="detail-panel-inner">
-        <div class="detail-block"><b>Filtros do alerta</b><p>Cargo, senioridade, localização, formato e faixa salarial mínima.</p></div>
-        <div class="detail-block"><b>Resumo por e-mail</b><p>Destaca as vagas com maior aderência e leva direto para a análise completa.</p></div>
-        <div class="detail-block"><b>Filtros avançados</b><p>Empresas, setores e competências prioritárias nos planos pagos.</p></div>
-      </div></div>
+      <div class="dmock reveal">
+        <div class="dmock-window">
+          <div class="dmock-bar"><span class="dmock-dots"><i></i><i></i><i></i></span><b>VagaAI · Painel</b></div>
+          <div class="dmock-body">
+            <div class="dmock-side">
+              <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></i>
+              <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg></i>
+              <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></i>
+              <i class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg></i>
+            </div>
+            <div class="dmock-main">
+              <div class="dmock-crumb">Painel <b>› Alertas de vagas</b></div>
+              <div class="dmock-banner"><span><i></i>3 oportunidades compatíveis</span><em>Hoje, 08:17</em></div>
+              <div class="dmock-job"><b class="a">71</b><div><b>SEO Manager</b><span>São Paulo · Remoto · CLT</span></div><em>Analisar</em></div>
+              <div class="dmock-job"><b class="g">82</b><div><b>Head de Marketing</b><span>Remoto · Salário informado</span></div><em>Ver vaga</em></div>
+              <div class="dmock-job best"><b class="g">90</b><div><b>Product Marketing Manager</b><span>Brasil · Remoto · CLT</span></div><em>★ Melhor match</em></div>
+              <div class="dmock-stats"><div><b>165</b><span>oportunidades</span></div><div><b>14</b><span>alertas enviados</span></div><div><b>70%</b><span>precisão</span></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="dmock-float tr"><i>✉</i><div><b>Alertas semanais</b><span>Hoje, 08:17</span></div></div>
+        <div class="dmock-float bl"><i>★</i><div><b>90 de match</b><span>melhor vaga da semana</span></div></div>
+      </div>
     </div></section>
 
     <!-- 10. RASTREADOR DE CANDIDATURAS -->
@@ -560,23 +671,36 @@
       <div class="detail-text reveal">
         <span class="detail-tag">Organização</span>
         <h3>Nenhuma candidatura perdida no caminho.</h3>
-        <p>Acompanhe todas as oportunidades em um único painel e saiba exatamente qual é o próximo passo. Status possíveis: quero aplicar, candidatura enviada, em processo, entrevista, oferta e encerrada.</p>
+        <p>Da intenção à oferta: cada candidatura com status, datas e próximo passo em um painel único.</p>
         <div class="capability-list">
-          <span>Salvar o link da oportunidade</span>
-          <span>Registrar datas importantes</span>
-          <span>Agendar entrevistas</span>
-          <span>Abrir novamente a análise</span>
-          <span>Acessar o currículo utilizado</span>
-          <span>Gerar carta de apresentação</span>
-          <span>Treinar para a entrevista</span>
+          <span>Status: quero aplicar, enviada, em processo, entrevista, oferta</span>
+          <span>Datas e entrevistas registradas</span>
+          <span>Análise e currículo da vaga a um clique</span>
+          <span>Carta e treino de entrevista integrados</span>
         </div>
         <a class="btn primary" href="https://www.vagaai.app.br/app">Organizar minhas candidaturas</a>
       </div>
-      <div class="detail-panel reveal"><div class="detail-panel-inner">
-        <div class="detail-block"><b>Quero aplicar → Candidatura enviada</b><p>Do interesse inicial até o envio.</p></div>
-        <div class="detail-block"><b>Em processo → Entrevista</b><p>Acompanhe cada etapa do processo seletivo.</p></div>
-        <div class="detail-block"><b>Oferta → Encerrada</b><p>Registre o resultado final de cada candidatura.</p></div>
-      </div></div>
+      <div class="dmock reveal">
+        <div class="dmock-window">
+          <div class="dmock-bar"><span class="dmock-dots"><i></i><i></i><i></i></span><b>VagaAI · Painel</b></div>
+          <div class="dmock-body">
+            <div class="dmock-side">
+              <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></i>
+              <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg></i>
+              <i class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="12" rx="1"/></svg></i>
+              <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg></i>
+            </div>
+            <div class="dmock-main">
+              <div class="dmock-crumb">Painel <b>› Candidaturas</b></div>
+              <div class="dmock-track"><div><b>Analista de Marketing</b><span>Empresa X · aplicada há 5 dias</span></div><i class="s1">Enviada</i></div>
+              <div class="dmock-track"><div><b>Coordenador de Growth</b><span>Empresa Y · quinta, 10h</span></div><i class="s2">Entrevista</i></div>
+              <div class="dmock-track"><div><b>Analista de CRM</b><span>Empresa Z · aguardando resposta</span></div><i class="s3">Oferta</i></div>
+              <div class="dmock-note">✓ Próximo passo: preparar a entrevista de quinta</div>
+            </div>
+          </div>
+        </div>
+        <div class="dmock-float tr"><i>◷</i><div><b>Entrevista marcada</b><span>quinta, 10h</span></div></div>
+      </div>
     </div></section>
 
     <!-- 11. CARTA E PREPARAÇÃO PARA ENTREVISTA -->
@@ -584,21 +708,35 @@
       <div class="detail-text reveal">
         <span class="detail-tag">Avance mais preparado</span>
         <h3>A candidatura não termina quando você envia o currículo.</h3>
-        <p>Use o contexto da vaga e da empresa para se preparar para as próximas etapas do processo.</p>
+        <p>Use o contexto da vaga e da empresa para se preparar para as próximas etapas.</p>
         <div class="capability-list">
-          <span>Carta de apresentação direcionada à oportunidade</span>
-          <span>Simulador com perguntas relacionadas à vaga</span>
-          <span>Orientações para estruturar respostas</span>
-          <span>Pontos fortes que merecem destaque</span>
-          <span>Aspectos que precisam de mais preparação</span>
-          <span>Apoio para respostas mais claras e objetivas</span>
+          <span>Carta conectada aos requisitos da vaga</span>
+          <span>Perguntas personalizadas por cargo e empresa</span>
+          <span>Orientação para estruturar respostas</span>
+          <span>Pontos fortes e pontos de atenção</span>
         </div>
         <a class="btn primary" href="https://www.vagaai.app.br/app">Preparar minha candidatura</a>
       </div>
-      <div class="detail-panel reveal"><div class="detail-panel-inner">
-        <div class="detail-block"><b>Carta para a vaga</b><p>Conecta os requisitos da empresa com suas experiências reais.</p></div>
-        <div class="detail-block"><b>Simulador de entrevista</b><p>Perguntas personalizadas com base no cargo, empresa e pontos fracos da análise.</p></div>
-      </div></div>
+      <div class="dmock reveal">
+        <div class="dmock-window">
+          <div class="dmock-bar"><span class="dmock-dots"><i></i><i></i><i></i></span><b>VagaAI · Painel</b></div>
+          <div class="dmock-body">
+            <div class="dmock-side">
+              <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></i>
+              <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg></i>
+              <i class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></i>
+              <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg></i>
+            </div>
+            <div class="dmock-main">
+              <div class="dmock-crumb">Painel <b>› Entrevistas</b></div>
+              <div class="dmock-chat q">Por que você é a pessoa certa para esta vaga?</div>
+              <div class="dmock-chat a">Resposta estruturada conectando sua experiência real aos requisitos da empresa…</div>
+              <div class="dmock-note">✓ Resposta avaliada · nota 8/10</div>
+            </div>
+          </div>
+        </div>
+        <div class="dmock-float bl"><i>✦</i><div><b>Carta gerada</b><span>direcionada à vaga</span></div></div>
+      </div>
     </div></section>
 
     <!-- 12. DIFERENCIAL COMPETITIVO -->
@@ -649,11 +787,10 @@
     <section class="section"><div class="wrap">
       <div class="center reveal"><span class="eyebrow">Histórias reais</span><h2>Pessoas reais. <span class="green">Buscas mais bem preparadas.</span></h2></div>
       <div class="testi-grid reveal">
-        <article class="testi"><div class="testi-stars">★★★★★</div><p>"Eu enviava praticamente o mesmo currículo para todas as vagas. Com a análise, consegui entender quais experiências precisavam aparecer com mais clareza."</p><footer><div class="testi-av">AC</div><div><b>Ana Carolina S.</b><span>Desenvolvedora Full Stack</span><small>Usuária do beta</small></div></footer></article>
-        <article class="testi"><div class="testi-stars">★★★★★</div><p>"O score me ajudou a perceber que eu estava me candidatando sem destacar competências que já tinha."</p><footer><div class="testi-av">RO</div><div><b>Ricardo O.</b><span>Gerente de Projetos</span><small>Usuário do beta</small></div></footer></article>
-        <article class="testi"><div class="testi-stars">★★★★★</div><p>"Passei a organizar melhor minhas candidaturas e cheguei muito mais preparado para a entrevista."</p><footer><div class="testi-av">JS</div><div><b>Juliana S.</b><span>Designer UX/UI</span><small>Usuária do beta</small></div></footer></article>
+        <article class="testi"><div class="testi-stars">★★★★★</div><p>"Eu enviava praticamente o mesmo currículo para todas as vagas. Com a análise, consegui entender quais experiências precisavam aparecer com mais clareza."</p><footer><div class="testi-av">AC</div><div><b>Ana Carolina S.</b><span>Desenvolvedora Full Stack</span></div></footer></article>
+        <article class="testi"><div class="testi-stars">★★★★★</div><p>"O score me ajudou a perceber que eu estava me candidatando sem destacar competências que já tinha."</p><footer><div class="testi-av">RO</div><div><b>Ricardo O.</b><span>Gerente de Projetos</span></div></footer></article>
+        <article class="testi"><div class="testi-stars">★★★★★</div><p>"Passei a organizar melhor minhas candidaturas e cheguei muito mais preparado para a entrevista."</p><footer><div class="testi-av">JS</div><div><b>Juliana S.</b><span>Designer UX/UI</span></div></footer></article>
       </div>
-      <p class="testi-note">Depoimentos de usuários do período beta da VagaAI.</p>
     </div></section>
 
     <!-- 16. PLANOS -->
@@ -748,6 +885,10 @@
     <div class="footer-bottom">© 2026 VagaAI. Todos os direitos reservados.</div>
   </div></footer>
 
+  <button class="to-top" id="toTop" aria-label="Voltar ao topo">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 15-6-6-6 6"/></svg>
+  </button>
+
   <script>
     /* ===== THEME ===== */
     var themeBtn = document.getElementById('themeToggle');
@@ -769,14 +910,17 @@
       a.addEventListener('click', function() { document.getElementById('nav').classList.remove('open'); });
     });
 
-    /* ===== SCROLL PROGRESS ===== */
+    /* ===== SCROLL PROGRESS + VOLTAR AO TOPO ===== */
     var prog = document.getElementById('scrollProgress');
+    var toTop = document.getElementById('toTop');
     function updateProg() {
       var max = document.documentElement.scrollHeight - innerHeight;
       prog.style.width = (max > 0 ? scrollY / max * 100 : 0) + '%';
+      toTop.classList.toggle('show', scrollY > 600);
     }
     addEventListener('scroll', updateProg, { passive: true });
     updateProg();
+    toTop.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
     /* ===== REVEAL ===== */
     var revealObs = new IntersectionObserver(function(entries) {
