@@ -13,7 +13,7 @@
   <script defer src="/_vercel/insights/script.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Analise sua compatibilidade com a vaga, otimize seu currículo para o ATS e receba oportunidades toda semana. Crie seu currículo grátis e comece agora, sem cartão.">
+  <meta name="description" content="Analise sua compatibilidade com a vaga, otimize seu currículo para o ATS e receba oportunidades toda semana. Crie seu currículo grátis, sem cartão.">
   <title>VagaAI: Otimize seu Currículo e Encontre a Vaga Certa com IA</title>
   <link rel="canonical" href="https://www.vagaai.app.br/">
   <meta name="robots" content="index, follow">
@@ -911,12 +911,7 @@
       <div class="final-line">Grátis para começar · Sem cartão · Você revisa tudo antes de usar</div>
     </div></section>
 
-    <!-- BLOG -->
-    <section class="section" id="blog" style="display:none"><div class="wrap">
-      <div class="center reveal"><span class="eyebrow">Do blog</span><h2>Dicas para vencer o ATS <span class="green">e chegar à entrevista.</span></h2><p class="lead">Currículo, entrevista e estratégia de candidatura, direto do nosso blog.</p></div>
-      <div class="blog-grid" id="blogPreviewGrid"></div>
-      <div class="center" style="margin-top:32px"><a class="btn" href="/blog">Ver todos os posts →</a></div>
-    </div></section>
+    <!--BLOG_SECTION-->
 
   </main>
   <footer class="footer"><div class="wrap">
@@ -1029,42 +1024,6 @@
         window.location.href = '/login';
       });
     });
-
-    /* ===== BLOG PREVIEW =====
-       Seção fica display:none por padrão e só aparece se houver ao menos 1
-       post publicado, a landing nunca mostra estado vazio ou de erro, já que
-       é a página de maior conversão do site. */
-    (function() {
-      var SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
-      var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
-      function escBlog(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-      function parseCats(raw) {
-        if (!raw) return [];
-        if (Array.isArray(raw)) return raw;
-        try { var v = JSON.parse(raw); return Array.isArray(v) ? v : []; } catch (e) { return []; }
-      }
-      fetch(SUPABASE_URL + '/rest/v1/blog_posts?published=eq.true&select=title,slug,excerpt,cover_url,categories,created_at&order=created_at.desc&limit=3', { headers: { apikey: SUPABASE_ANON } })
-        .then(function(r) { return r.ok ? r.json() : []; })
-        .then(function(posts) {
-          if (!Array.isArray(posts) || !posts.length) return;
-          var grid = document.getElementById('blogPreviewGrid');
-          grid.innerHTML = posts.map(function(p) {
-            var date = new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
-            var cats = parseCats(p.categories);
-            var cover = p.cover_url ? '<img class="blog-card-cover" src="' + escBlog(p.cover_url) + '" alt="' + escBlog(p.title) + '" loading="lazy">' : '';
-            return '<a class="blog-card glow" href="/blog/post?s=' + encodeURIComponent(p.slug) + '">'
-              + cover
-              + '<div class="blog-card-body">'
-              + (cats.length ? '<div class="blog-card-cat">' + escBlog(cats[0]) + '</div>' : '')
-              + '<div class="blog-card-title">' + escBlog(p.title) + '</div>'
-              + (p.excerpt ? '<div class="blog-card-excerpt">' + escBlog(p.excerpt) + '</div>' : '')
-              + '<div class="blog-card-date">' + date + '</div>'
-              + '</div></a>';
-          }).join('');
-          document.getElementById('blog').style.display = '';
-        })
-        .catch(function() { /* falha silenciosa, seção continua oculta */ });
-    })();
   </script>
 </body>
 </html>
