@@ -5531,10 +5531,59 @@ async function saveRecommendedJob(job, hash) {
   } catch(e) { showToast('Erro ao salvar.', 'error'); }
 }
 
+function _alertJobKey(job, hash) {
+  var base = String(hash || (job && (job.link || job.id || job.title || '')) || '');
+  if (!base && job) base = [job.company, job.title, job.location, job.salary].join('|');
+  var h = 0;
+  for (var i = 0; i < base.length; i++) h = ((h << 5) - h + base.charCodeAt(i)) | 0;
+  return 'al_' + Math.abs(h || Date.now()).toString(36);
+}
+
+function _alertJobText(job) {
+  if (!job) return '';
+  var parts = [];
+  if (job.company) parts.push('Empresa: ' + job.company);
+  if (job.title) parts.push('Cargo: ' + job.title);
+  if (job.location) parts.push('Localização: ' + job.location);
+  if (job.salary) parts.push('Salário: ' + job.salary);
+  if (job.link) parts.push('Link da vaga: ' + job.link);
+  var desc = job.description || job.snippet || job.summary || job.text || job.requirements || '';
+  if (desc) parts.push('Resumo da oportunidade: ' + desc);
+  if (job._score != null) parts.push('Compatibilidade estimada pelo alerta: ' + job._score + '%');
+  var text = parts.join('\n');
+  if (text.length < 80 && job.title) {
+    text += '\n\nDescrição inicial: oportunidade para ' + job.title + (job.company ? ' na ' + job.company : '') + '. Use este contexto inicial e complemente com o anúncio original quando disponível.';
+  }
+  return text;
+}
+
+function _storeAlertJobPrefill(job, key) {
+  if (!job || !key) return;
+  try {
+    localStorage.setItem('vagaai_alert_prefill_' + key, JSON.stringify({
+      key: key,
+      title: job.title || '',
+      company: job.company || '',
+      location: job.location || '',
+      salary: job.salary || '',
+      link: job.link || '',
+      score: job._score || null,
+      text: _alertJobText(job),
+      ts: Date.now()
+    }));
+  } catch(e) {}
+}
+
 function buildAlertAnalyzeUrl(job, hash) {
   var params = [];
+  var key = _alertJobKey(job, hash);
+  _storeAlertJobPrefill(job, key);
   if (job && job.link) params.push('vaga=' + encodeURIComponent(job.link));
-  if (hash) params.push('alert_job=' + encodeURIComponent(hash));
+  if (key) params.push('alert_job=' + encodeURIComponent(key));
+  if (job && job.title) params.push('job_title=' + encodeURIComponent(job.title));
+  if (job && job.company) params.push('job_company=' + encodeURIComponent(job.company));
+  if (job && job.location) params.push('job_location=' + encodeURIComponent(job.location));
+  if (job && job.salary) params.push('job_salary=' + encodeURIComponent(job.salary));
   params.push('from=alertas');
   return '/app' + (params.length ? '?' + params.join('&') : '');
 }
@@ -6324,7 +6373,7 @@ async function _showShellFrame(href, activeId) {
     // embedded app can read query params such as ?vaga=...
     var embeddedHref = location.origin + embeddedUrl;
     var embedScript = '<script>window.__VAGAAI_EMBEDDED__=true;window.__VAGAAI_EMBEDDED_URL__=' + JSON.stringify(embeddedHref) + ';try{history.replaceState(null,"",' + JSON.stringify(embeddedHref) + ')}catch(e){}<\/script>';
-    var shellNavGuard = '<script>(function(){document.addEventListener("click",function(ev){var a=ev.target&&ev.target.closest?ev.target.closest("a[href]"):null;if(!a)return;var raw=a.getAttribute("href")||"";if(!raw||raw.charAt(0)==="#")return;var url;try{url=new URL(raw,location.origin)}catch(e){return}if(url.origin!==location.origin)return;var id=null;var href=null;if(url.pathname==="/app"||(url.pathname==="/dashboard"&&url.hash==="#app")){id="app";href="/app"+url.search}else if(url.pathname==="/carta"||(url.pathname==="/dashboard"&&url.hash==="#carta")){id="carta";href="/carta"+url.search}else if(url.pathname==="/entrevista"||(url.pathname==="/dashboard"&&url.hash==="#entrevista")){id="entrevistas";href="/entrevista"+url.search}if(!id)return;ev.preventDefault();parent.postMessage({type:"vagaai-nav",frame:true,id:id,href:href},location.origin)},true)})();<\/script>';
+    var shellNavGuard = '<script>(function(){document.addEventListener("click",function(ev){var a=ev.target&&ev.target.closest?ev.target.closest("a[href]"):null;if(!a)return;var raw=a.getAttribute("href")||"";if(!raw||raw.charAt(0)==="#")return;var url;try{url=new URL(raw,location.origin)}catch(e){return}if(url.origin!==location.origin)return;var id=null;var href=null;if(url.pathname==="/app"||(url.pathname==="/dashboard"&&url.hash==="#app")){id="app";href="/app"+url.search}else if(url.pathname==="/cv"||(url.pathname==="/dashboard"&&url.hash==="#curriculo")){id="curriculo";href="/cv"+url.search}else if(url.pathname==="/carta"||(url.pathname==="/dashboard"&&url.hash==="#carta")){id="carta";href="/carta"+url.search}else if(url.pathname==="/entrevista"||(url.pathname==="/dashboard"&&url.hash==="#entrevista")){id="entrevistas";href="/entrevista"+url.search}if(!id)return;ev.preventDefault();parent.postMessage({type:"vagaai-nav",frame:true,id:id,href:href},location.origin)},true)})();<\/script>';
     html = html.replace(/(<head[^>]*>)/i, '$1<base href="' + location.origin + '">' + embedScript + shellNavGuard);
     var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
     if (doc) { doc.open(); doc.write(html); doc.close(); }
@@ -6339,7 +6388,7 @@ function switchDashTab(tab, href) {
   closeMobileDrawer();
   // Frame-based sections
   if (tab === 'app')        { _showShellFrame(href || '/app',        'app');         return; }
-  if (tab === 'curriculo')  { _showShellFrame(href || '/curriculo',  'curriculo');   return; }
+  if (tab === 'curriculo')  { _showShellFrame(href || '/cv',         'curriculo');   return; }
   if (tab === 'carta')      { _showShellFrame(href || '/carta',      'carta');       return; }
   if (tab === 'entrevista') { _showShellFrame(href || '/entrevista', 'entrevistas'); return; }
   // Native dashboard tabs
@@ -6417,6 +6466,7 @@ function openRequestedDashboardTab() {
   } catch (e) {}
 
   if (requestedTab === 'app')        { switchDashTab('app');   return; }
+  if (requestedTab === 'curriculo' || requestedTab === 'cv') { switchDashTab('curriculo'); return; }
   if (requestedTab === 'carta')      { switchDashTab('carta'); return; }
   if (requestedTab === 'entrevista') { switchDashTab('entrevista'); return; }
   if (['painel', 'vagas', 'entrevistas', 'alertas', 'plano'].indexOf(requestedTab) !== -1) {

@@ -1094,6 +1094,7 @@ async function loadUserCredits(session) {
     if (subRes.ok) {
       userPlanSub = await subRes.json();
       userPlan = userPlanSub.plan || 'free';
+      freeMonthlyAvailable = !!(userPlanSub.free_monthly_available || (userPlanSub.entitlements && userPlanSub.entitlements.free_monthly_available));
     }
 
     // 2. Busca créditos avulsos (legado — free/avulso)
@@ -1400,9 +1401,9 @@ function useSavedCv() {
   appToast('✓ Seu currículo foi aplicado', 'success');
 }
 
-/* ── Editar/criar currículo em /curriculo e voltar pra esta vaga ──────────
+/* ── Editar/criar currículo em /cv e voltar pra esta vaga ─────────────────
    Preserva a vaga que o usuário já estava analisando: ao salvar o currículo
-   em /curriculo, ele retorna aqui com a vaga e o currículo já preenchidos. */
+   em /cv, ele retorna aqui com a vaga e o currículo já preenchidos. */
 function goCreateFullCv() {
   try {
     localStorage.setItem('vagaai_job_return', JSON.stringify({
@@ -1412,9 +1413,9 @@ function goCreateFullCv() {
     }));
   } catch(e) {}
   if (_isEmbedded && window.parent !== window) {
-    try { window.parent.postMessage({ type: 'vagaai-nav', frame: true, href: '/curriculo', id: 'curriculo' }, '*'); return; } catch(e) {}
+    try { window.parent.postMessage({ type: 'vagaai-nav', frame: true, href: '/cv', id: 'curriculo' }, '*'); return; } catch(e) {}
   }
-  location.href = '/curriculo';
+  location.href = '/cv';
 }
 
 // Se o usuário voltou de /cv com um currículo recém-criado, restaura a vaga
@@ -2102,6 +2103,10 @@ async function doAnalyze(job, cv) {
     }
     if (res.status === 402 || data.error === 'sem_creditos') {
       document.getElementById('loadingSection').classList.remove('show');
+      if (userPlan === 'pro') {
+        restoreForm('Seu plano Pro aparece como ilimitado, mas não conseguimos validar a autorização da análise agora. Atualize a página e tente novamente. Se persistir, fale com o suporte.');
+        return;
+      }
       userCredits = 0;
       showLimitReached();
       return;
@@ -2795,19 +2800,64 @@ function getRuntimeSearchParams() {
 async function checkVagaParam() {
   var params = getRuntimeSearchParams();
   var vagaUrl = params.get('vaga') || params.get('prefill_url');
-  if (!vagaUrl) return;
+  var alertKey = params.get('alert_job') || '';
+  var alertPrefill = null;
+  if (alertKey) {
+    try { alertPrefill = JSON.parse(localStorage.getItem('vagaai_alert_prefill_' + alertKey) || 'null'); } catch(e) {}
+  }
+  var fallbackText = alertPrefill && alertPrefill.text ? alertPrefill.text : '';
+  if (!fallbackText) {
+    var title = params.get('job_title') || '';
+    var company = params.get('job_company') || '';
+    var location = params.get('job_location') || '';
+    var salary = params.get('job_salary') || '';
+    var parts = [];
+    if (company) parts.push('Empresa: ' + company);
+    if (title) parts.push('Cargo: ' + title);
+    if (location) parts.push('Localização: ' + location);
+    if (salary) parts.push('Salário: ' + salary);
+    if (vagaUrl) parts.push('Link da vaga: ' + vagaUrl);
+    if (title) parts.push('Descrição inicial: oportunidade para ' + title + (company ? ' na ' + company : '') + '. Complemente com o anúncio original quando disponível.');
+    fallbackText = parts.join('\n');
+    alertPrefill = { title: title, company: company, location: location, salary: salary, link: vagaUrl, text: fallbackText };
+  }
+  if (!vagaUrl && (!fallbackText || fallbackText.length < 20)) return;
   // Marca que esta sessão de análise veio de um alerta (deep-link do e-mail),
   // para que a candidatura salva no rastreador receba origem='alerta'.
-  window._fromAlertVaga = true;
+  window._fromAlertVaga = params.get('from') === 'alertas' || !!alertKey;
   var jobUrlEl = document.getElementById('jobUrl');
   if (jobUrlEl) jobUrlEl.value = vagaUrl;
   // Mostra banner de alerta
+  var oldNotice = document.getElementById('alertVagaNotice');
+  if (oldNotice && oldNotice.parentNode) oldNotice.parentNode.removeChild(oldNotice);
   var notice = document.createElement('div');
   notice.id = 'alertVagaNotice';
   notice.style.cssText = 'background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px;padding:.75rem 1rem;font-size:13px;color:var(--green);display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;font-weight:600';
   notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Vaga do seu alerta carregando…';
   var formSection = document.getElementById('formSection');
   formSection.insertBefore(notice, formSection.firstChild);
+
+  function applyFallbackPrefill(message) {
+    if (!fallbackText || fallbackText.length < 20) return false;
+    var usableText = fallbackText.length >= 50 ? fallbackText : (fallbackText + '\n\nUse o anúncio original para complementar requisitos, responsabilidades e qualificações da vaga.');
+    document.getElementById('jobInput').value = usableText;
+    document.getElementById('jobCount').textContent = usableText.length + ' caracteres';
+    var preview = extractJobPreview(usableText, vagaUrl || (alertPrefill && alertPrefill.link) || '');
+    if (alertPrefill) {
+      preview.cargo = alertPrefill.title || preview.cargo;
+      preview.empresa = alertPrefill.company || preview.empresa;
+      preview.cidade = alertPrefill.location || preview.cidade;
+      preview.salario = alertPrefill.salary || preview.salario;
+      preview.excerpt = preview.excerpt || usableText.split('\n').slice(0, 4).join(' · ');
+    }
+    showJobPreview(preview, usableText.length);
+    notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ' + (message || 'Vaga do alerta carregada. Cole seu currículo abaixo e analise.');
+    return true;
+  }
+
+  var hadFallback = applyFallbackPrefill(vagaUrl ? 'Vaga do alerta carregada. Estamos tentando enriquecer com o anúncio original…' : 'Vaga do alerta carregada. Cole seu currículo abaixo e analise.');
+  if (!vagaUrl) return;
+
   try {
     var res = await fetch('/api/fetch-job?url=' + encodeURIComponent(vagaUrl));
     var data = await res.json();
@@ -2819,15 +2869,27 @@ async function checkVagaParam() {
       showJobPreview(preview, data.text.length);
       notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Vaga do alerta carregada! Cole seu currículo abaixo e analise.';
     } else if (data.error === 'scraping_blocked' || res.status === 422) {
+      if (hadFallback) {
+        notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Vaga do alerta carregada com os dados disponíveis. O site original bloqueou leitura automática.';
+        return;
+      }
       // Plataforma bloqueia scraping — pede texto manual com UX clara
       notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Esta plataforma bloqueia leitura automática. Cole o texto da vaga manualmente abaixo para continuar.';
       notice.style.background = 'var(--yellow-dim)'; notice.style.borderColor = 'var(--yellow-border,#c47d0a44)'; notice.style.color = 'var(--yellow)';
       document.getElementById('jobInput').focus();
     } else {
+      if (hadFallback) {
+        notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Vaga do alerta carregada com os dados disponíveis. Revise antes de analisar.';
+        return;
+      }
       notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Não foi possível carregar a vaga automaticamente. Cole o texto manualmente.';
       notice.style.background = 'var(--yellow-dim)'; notice.style.borderColor = 'var(--yellow-border,#c47d0a44)'; notice.style.color = 'var(--yellow)';
     }
   } catch(e) {
+    if (hadFallback) {
+      notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Vaga do alerta carregada com os dados disponíveis. Revise antes de analisar.';
+      return;
+    }
     notice.style.display = 'none';
   }
 }
@@ -2873,10 +2935,16 @@ initAuth().then(function() {
     }
   } catch(e) {}
 
+  var runtimeParams = getRuntimeSearchParams();
+  var hasIncomingJob = !!(runtimeParams.get('vaga') || runtimeParams.get('prefill_url') || runtimeParams.get('alert_job') || runtimeParams.get('from') === 'alertas');
+
   // Feature 3: carregar análise salva vinda do tracker ("Ver análise" ou "CV")
   try {
     var viewAnalysis = localStorage.getItem('vagaai_view_analysis');
-    if (viewAnalysis) {
+    if (viewAnalysis && hasIncomingJob) {
+      localStorage.removeItem('vagaai_view_analysis');
+      localStorage.removeItem('vagaai_scroll_to');
+    } else if (viewAnalysis) {
       localStorage.removeItem('vagaai_view_analysis');
       var scrollTo = localStorage.getItem('vagaai_scroll_to');
       localStorage.removeItem('vagaai_scroll_to');

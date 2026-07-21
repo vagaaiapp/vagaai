@@ -1041,7 +1041,7 @@ html.no-photo .mod-header{display:block}
   <div class="app-header-actions">
     <span class="app-saved"><i></i> Alterações salvas</span>
     <button class="app-icon-btn" type="button" onclick="toggleAppTheme()" aria-label="Alternar tema" title="Alternar tema"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg></button>
-    <a class="app-outline-btn" href="/dashboard#vagas" style="text-decoration:none">Voltar às candidaturas</a>
+    <a class="app-outline-btn" href="/dashboard#vagas" onclick="return goBackToDashboardTab(event,'vagas')" style="text-decoration:none">Voltar às candidaturas</a>
     <button class="app-primary-btn" type="button" onclick="mobPrint()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>Baixar PDF</button>
   </div>
 </header>
@@ -1864,6 +1864,20 @@ function goBackToDashboardApp(event) {
     }
   } catch(e) {}
   window.location.href = '/dashboard#app';
+  return false;
+}
+
+function goBackToDashboardTab(event, tab) {
+  if (event) event.preventDefault();
+  tab = tab || 'painel';
+  try {
+    var embedded = window.__VAGAAI_EMBEDDED__ || window.self !== window.top || new URLSearchParams(location.search).get('embedded') === '1';
+    if (embedded && window.parent) {
+      window.parent.postMessage({ type: 'vagaai-nav', frame: false, id: tab }, window.location.origin);
+      return false;
+    }
+  } catch(e) {}
+  window.location.href = '/dashboard#' + tab;
   return false;
 }
 

@@ -15,6 +15,24 @@ const ALLOWED_ORIGINS = [
   'https://vagaai.vercel.app',
 ];
 
+const FREE_MONTHLY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+
+async function getFreeMonthlyAvailable(userId) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !userId) return false;
+  try {
+    const thirtyDaysAgo = new Date(Date.now() - FREE_MONTHLY_WINDOW_MS).toISOString();
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/analyses?user_id=eq.${encodeURIComponent(userId)}&created_at=gte.${encodeURIComponent(thirtyDaysAgo)}&select=id&limit=1`,
+      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+    );
+    if (!r.ok) return false;
+    const rows = await r.json();
+    return Array.isArray(rows) && rows.length === 0;
+  } catch {
+    return false;
+  }
+}
+
 export default async function handler(req, res) {
   const origin = req.headers.origin || '';
   if (ALLOWED_ORIGINS.includes(origin)) {
@@ -94,6 +112,9 @@ export default async function handler(req, res) {
     const rawStatus = sub?.status || '';
     const effectivePlan = resolvePlan(sub);     // free|starter|pro (past_due = graça)
     const isActiveSub = effectivePlan !== 'free';
+    const freeMonthlyAvailable = effectivePlan === 'free' && credits <= 0
+      ? await getFreeMonthlyAvailable(user.id)
+      : false;
 
     // Status normalizado — nunca mostrar "active" para planos cancelados/inválidos
     let effectiveStatus;
@@ -116,7 +137,8 @@ export default async function handler(req, res) {
       advanced_filters:      ent.advanced_filters,
       compatibility_details: ent.compatibility_details,
       // Features existentes (mantidas para o dashboard) + créditos avulsos
-      can_analyze:           effectivePlan !== 'free' || credits > 0,
+      can_analyze:           effectivePlan !== 'free' || credits > 0 || freeMonthlyAvailable,
+      free_monthly_available: freeMonthlyAvailable,
       unlimited_analyses:    ent.can_analyze_unlimited,
       analyses_limit:        ent.analyses_limit,
       cv_otimizado:          ent.cv_otimizado || credits > 0,
@@ -139,6 +161,7 @@ export default async function handler(req, res) {
       analyses_reset_at: sub?.analyses_reset_at || null,
       credits_legacy: credits,
       total_purchased_legacy: totalPurchased,
+      free_monthly_available: freeMonthlyAvailable,
       preco: isActiveSub ? (precos[effectivePlan] || null) : null,
       entitlements,
     });

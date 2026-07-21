@@ -334,6 +334,16 @@ async function checkAndDeductCredit(userId) {
   }
 
   // 1. Verifica plano via RPC atômica (check + increment em uma transação)
+  // Pro é ilimitado e não deve depender do contador/RPC legado. Em produção,
+  // usuários Pro podem ter RPC defasada ou créditos avulsos zerados; validar o
+  // plano direto antes evita mostrar "Seus créditos acabaram" para quem paga.
+  try {
+    const proPrecheck = await checkSubscriptionDirect(userId, 'analysis');
+    if (proPrecheck && proPrecheck.ok && proPrecheck.plan === 'pro') return proPrecheck;
+  } catch (err) {
+    console.error('checkAndDeductCredit pro precheck exception:', err.message);
+  }
+
   let rpcResult;
   try {
     const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/check_and_increment_analyses`, {
@@ -727,6 +737,16 @@ async function checkSubscriptionDirect(userId, context = 'analysis') {
 async function checkAndDeductCreditForCV(userId) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
     return { ok: false, reason: 'infrastructure_error', detail: 'missing_config' };
+  }
+
+  // Pro também é ilimitado para geração/otimização de currículo. Fazemos a
+  // validação direta antes da RPC legada para evitar bloqueio por contador
+  // defasado quando o usuário já está com plano ativo.
+  try {
+    const proPrecheck = await checkSubscriptionDirect(userId, 'create_cv');
+    if (proPrecheck && proPrecheck.ok && proPrecheck.plan === 'pro') return proPrecheck;
+  } catch (err) {
+    console.error('create_cv pro precheck exception:', err.message);
   }
 
   // 1. Verifica plano via RPC atômica
