@@ -215,6 +215,7 @@
     /* COMO FUNCIONA + RECURSOS (pipeline animado + cards, secao unica) */
     .howworks{background:var(--soft)}
     .pipeline{margin-top:52px;display:grid;grid-template-columns:repeat(6,1fr);gap:0;position:relative}
+    .pipeline-mobile-path{display:none}
     .pipeline-line{position:absolute;top:23px;left:calc(100%/12);right:calc(100%/12);height:2px;background:var(--line);z-index:0}
     .pipeline-pulse{position:absolute;top:-3px;left:0;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px 3px var(--green);animation:pulse-travel 7s linear infinite}
     @keyframes pulse-travel{0%{left:0;opacity:0}5%{opacity:1}95%{opacity:1}100%{left:calc(100% - 8px);opacity:0}}
@@ -229,7 +230,7 @@
     .pipeline-node:nth-child(6) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:4.6s}
     .pipeline-node:nth-child(7) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:5.75s}
     @keyframes node-glow{0%,88%,100%{border-color:var(--line);color:var(--muted);transform:scale(1)}92%{border-color:var(--green);color:var(--green);transform:scale(1.12);box-shadow:0 0 0 6px var(--mint)}}
-    @media(prefers-reduced-motion:reduce){.pipeline-pulse{animation:none;opacity:0}.pipeline-ic{animation:none!important}}
+    @media(prefers-reduced-motion:reduce){.pipeline-pulse{animation:none;opacity:0}.pipeline-ic{animation:none!important}.pipeline-mobile-path .flow-path-active{animation:none;opacity:.25}}
 
     /* DETAIL */
     .detail{border-top:1px solid var(--line);background:var(--bg)}
@@ -453,15 +454,24 @@
       .section{padding:68px 0}
       .hero{padding-top:150px}
       .paths,.plans{grid-template-columns:1fr}
-      /* Timeline vertical: a linha reta horizontal não cabe com os ícones
-         quebrando em várias linhas, então no mobile o pipeline vira uma
-         coluna única com a linha e a bolinha de pulso descendo. */
-      .pipeline{display:flex;flex-direction:column;gap:8px;max-width:300px;margin:52px auto 0}
-      .pipeline-line{display:block;left:22px;right:auto;top:32px;bottom:32px;width:2px;height:auto}
-      .pipeline-pulse{left:-3px;top:0;animation-name:pulse-travel-v}
-      @keyframes pulse-travel-v{0%{top:0;opacity:0}5%{opacity:1}95%{opacity:1}100%{top:calc(100% - 8px);opacity:0}}
-      .pipeline-node{flex-direction:row;text-align:left;padding:9px 0;gap:16px}
-      .pipeline-node span{margin-top:0}
+      /* No mobile, o pipeline vira um mapa central em zigue-zague para ocupar
+         melhor a largura da tela e manter a ideia de fluxo em movimento. */
+      .pipeline{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,104px);gap:14px 22px;width:min(100%,360px);min-height:340px;margin:42px auto 0;padding:12px 6px 4px}
+      .pipeline-line{display:none}
+      .pipeline-mobile-path{display:block;position:absolute;inset:0;z-index:0;pointer-events:none;overflow:visible}
+      .pipeline-mobile-path path{fill:none;stroke:var(--line);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+      .pipeline-mobile-path .flow-path-active{stroke:var(--green);stroke-dasharray:34 430;stroke-dashoffset:0;filter:drop-shadow(0 0 7px rgba(56,211,139,.5));animation:flow-zigzag 5.8s linear infinite}
+      @keyframes flow-zigzag{to{stroke-dashoffset:-464}}
+      .pipeline-node{align-self:center;justify-self:center;width:128px;min-height:92px;padding:0;gap:8px}
+      .pipeline-node:nth-of-type(2){grid-column:1;grid-row:1}
+      .pipeline-node:nth-of-type(3){grid-column:2;grid-row:1;transform:translateY(16px)}
+      .pipeline-node:nth-of-type(4){grid-column:1;grid-row:2;transform:translateY(-2px)}
+      .pipeline-node:nth-of-type(5){grid-column:2;grid-row:2;transform:translateY(16px)}
+      .pipeline-node:nth-of-type(6){grid-column:1;grid-row:3;transform:translateY(-2px)}
+      .pipeline-node:nth-of-type(7){grid-column:2;grid-row:3;transform:translateY(16px)}
+      .pipeline-ic{width:58px;height:58px;border-radius:20px;background:var(--panel);background:color-mix(in srgb,var(--panel) 84%,var(--green) 16%);box-shadow:0 14px 34px rgba(0,0,0,.12),0 0 0 8px color-mix(in srgb,var(--green) 8%,transparent)}
+      .pipeline-ic svg{width:22px;height:22px}
+      .pipeline-node span{margin-top:2px;font-size:11px}
       .responsible-grid{grid-template-columns:1fr;gap:32px}
       .plan.featured{transform:none}
       .detail-row{grid-template-columns:1fr;padding:52px 0;gap:28px}
@@ -604,6 +614,10 @@
       <div class="center reveal"><span class="eyebrow">Como funciona</span><h2>Currículo e vaga, <span class="green">na mesma direção.</span></h2></div>
       <div class="pipeline reveal" id="recursos">
         <div class="pipeline-line"><div class="pipeline-pulse"></div></div>
+        <svg class="pipeline-mobile-path" viewBox="0 0 320 330" aria-hidden="true" focusable="false">
+          <path d="M78 58 C118 30 204 30 242 76 C276 118 236 148 168 164 C92 182 58 218 92 252 C126 286 204 284 242 260" />
+          <path class="flow-path-active" d="M78 58 C118 30 204 30 242 76 C276 118 236 148 168 164 C92 182 58 218 92 252 C126 286 204 284 242 260" />
+        </svg>
         <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><span>Currículo</span></div>
         <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg></div><span>Vagas</span></div>
         <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div><span>Análise</span></div>
