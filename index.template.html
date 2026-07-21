@@ -452,8 +452,15 @@
       .section{padding:68px 0}
       .hero{padding-top:150px}
       .paths,.plans{grid-template-columns:1fr}
-      .pipeline{grid-template-columns:repeat(3,1fr);row-gap:34px}
-      .pipeline-line{display:none}
+      /* Timeline vertical: a linha reta horizontal não cabe com os ícones
+         quebrando em várias linhas, então no mobile o pipeline vira uma
+         coluna única com a linha e a bolinha de pulso descendo. */
+      .pipeline{display:flex;flex-direction:column;gap:8px;max-width:300px;margin:52px auto 0}
+      .pipeline-line{display:block;left:22px;right:auto;top:23px;bottom:23px;width:2px;height:auto}
+      .pipeline-pulse{left:-3px;top:0;animation-name:pulse-travel-v}
+      @keyframes pulse-travel-v{0%{top:0;opacity:0}5%{opacity:1}95%{opacity:1}100%{top:calc(100% - 8px);opacity:0}}
+      .pipeline-node{flex-direction:row;text-align:left;padding:9px 0;gap:16px}
+      .pipeline-node span{margin-top:0}
       .responsible-grid{grid-template-columns:1fr;gap:32px}
       .plan.featured{transform:none}
       .detail-row{grid-template-columns:1fr;padding:52px 0;gap:28px}
@@ -489,7 +496,7 @@
       .trust-item{min-width:0;padding:24px 10px}
       .trust-item:nth-child(2){border-right:0}
       .trust-item:nth-child(-n+2){border-bottom:1px solid var(--line)}
-      .pipeline{grid-template-columns:1fr 1fr}
+      .pipeline{max-width:100%}
       .pipeline-node{min-width:0}
       .plans{gap:12px}
       .testi-grid,.footer-grid,.responsible-grid{grid-template-columns:1fr}
