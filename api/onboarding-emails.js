@@ -251,7 +251,7 @@ const EMAILS = {
   <div style="padding:2rem">
     <h1 style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">Olá, ${name}!</h1>
     <p style="color:#8a9e90;font-size:14px;line-height:1.7;margin-bottom:1.5rem">
-      Está em busca ativa? Seu plano gratuito inclui <strong style="color:#3ecf8e">1 análise completa por mês</strong> — e os planos Starter e Pro liberam mais análises, currículo otimizado e simulador de entrevista.
+      Está em busca ativa? Seu plano gratuito inclui <strong style="color:#3ecf8e">1 análise completa por mês</strong> — e o plano Pro libera análises ilimitadas, currículo otimizado e simulador de entrevista.
     </p>
     <div style="background:#161d19;border-radius:10px;padding:1.2rem;margin-bottom:1.5rem">
       <div style="font-size:13px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">💡 Dica da semana</div>

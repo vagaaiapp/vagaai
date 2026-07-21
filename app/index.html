@@ -378,7 +378,7 @@ textarea::placeholder{color:var(--muted)}
 .upsell-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
 .upsell-title{font-family:'Lora',serif;font-size:clamp(18px,3vw,24px);font-weight:700;margin-bottom:.4rem}
 .upsell-sub{font-size:13px;color:var(--muted);margin-bottom:1.4rem}
-.upsell-plans{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
+.upsell-plans{display:grid;grid-template-columns:1fr;max-width:300px;gap:.8rem;margin:0 auto}
 @media(max-width:580px){.upsell-plans{grid-template-columns:1fr}}
 .upsell-plan{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem;display:flex;flex-direction:column;gap:.5rem;transition:border-color .2s}
 .upsell-plan:hover{border-color:var(--green-border)}
@@ -399,7 +399,7 @@ textarea::placeholder{color:var(--muted)}
 .limit-icon{font-size:48px;margin-bottom:1rem}
 .limit-title{font-family:'Lora',serif;font-size:clamp(20px,4vw,28px);font-weight:700;margin-bottom:.6rem}
 .limit-sub{font-size:14px;color:var(--muted);max-width:440px;margin:0 auto 2rem}
-.limit-plans{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;max-width:680px;margin:0 auto}
+.limit-plans{display:grid;grid-template-columns:1fr;gap:.8rem;max-width:300px;margin:0 auto}
 @media(max-width:580px){.limit-plans{grid-template-columns:1fr}}
 [data-theme="light"]{--bg:#f2f6f3;--surface:#ffffff;--surface2:#eaf0ec;--border:rgba(0,0,0,0.09);--text:#0d1a11;--muted:#4d6e57;--green:#1a8f5c;--green-dim:rgba(26,143,92,0.1);--green-border:rgba(26,143,92,0.25);--red:#c0392b;--red-dim:rgba(192,57,43,0.08);--yellow:#b07d1a;--yellow-dim:rgba(176,125,26,0.08)}
 .logo-light{display:none}
@@ -1194,22 +1194,12 @@ function showLimitReachedStarter() {
 // mantém compatibilidade com compras antigas, mas a UI só oferece assinaturas)
 var PLANS = [
   {
-    name: 'Starter',
-    badge: null,
-    price: 'R$19',
-    cents: ',90/mês',
-    brl: 19.90,
-    desc: '10 análises por mês, currículo otimizado e carta de apresentação.',
-    url: 'https://buy.stripe.com/28E14n0WO2rne5Ff0P9k406',
-    featured: false
-  },
-  {
     name: 'Pro',
-    badge: 'Mais escolhido',
+    badge: 'Recomendado',
     price: 'R$39',
     cents: ',90/mês',
     brl: 39.90,
-    desc: 'Análises ilimitadas, briefing completo e simulador de entrevista.',
+    desc: 'Análises ilimitadas, currículo e carta para cada vaga, briefing completo e simulador de entrevista.',
     url: 'https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408',
     featured: true
   }

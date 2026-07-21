@@ -914,11 +914,11 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .save-btn { margin-top: 20px; background: var(--gb-emerald); color: #fff; border: none; padding: 12px 28px; border-radius: var(--r-sm); font-size: 14px; font-weight: 600; cursor: pointer; transition: all .3s cubic-bezier(.34,1.56,.64,1); font-family: inherit; }
 .save-btn:hover { transform: translateY(-2px); box-shadow: var(--sh-btn); }
 
-.plan-tile { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 28px; box-shadow: var(--sh-card); transition: border-color .25s, box-shadow .25s, transform .25s; }
+.plan-tile { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 28px; box-shadow: var(--sh-card); transition: border-color .25s, box-shadow .25s, transform .25s; max-width: 380px; }
 .plan-tile:hover { border-color: rgba(26,122,74,.18); box-shadow: var(--sh-hover); transform: translateY(-3px); }
 .plan-tile.active { border: 2px solid var(--gb-emerald); }
 
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 28px; }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-bottom: 28px; }
 
 /* ── Entrevistas ─────────────────────────────────────────────── */
 .interview-page { display:flex; flex-direction:column; gap:20px; }
@@ -2928,8 +2928,9 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     </div>
 
     <div class="grid-3">
-      <!-- Starter -->
-      <div class="plan-tile" id="planTileStarter" style="position:relative;">
+      <!-- Starter: oculto por padrão, plano comercial "fallback" (não vendido publicamente).
+           Só aparece se o usuário logado já estiver nele (ver renderPlanTiles). -->
+      <div class="plan-tile" id="planTileStarter" style="position:relative;display:none">
         <div id="planBadgeStarter" style="display:none;position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--gb-emerald);color:#fff;font-size:11px;font-weight:700;padding:3px 16px;border-radius:4px;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;">Plano atual</div>
         <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;" id="planLabelStarter">Starter</div>
         <div style="font-size:30px;font-weight:800;letter-spacing:-1.5px;margin-bottom:4px;">R$19<span style="font-size:15px;font-weight:400;color:var(--t3)">,90/mês</span></div>
@@ -5904,12 +5905,15 @@ function openAlertEditModal() {
   var allowedFreq = Array.isArray(_ent.allowed_frequencies) ? _ent.allowed_frequencies : ['semanal'];
   var curFreq    = allowedFreq.indexOf(p.frequencia) >= 0 ? p.frequencia : allowedFreq[0]; // coage p/ UI
   var advAttr    = adv ? '' : ' disabled';
-  var advBadge   = adv ? '' : ' <span class="al-lock-hint" title="Disponível no Starter e Pro">Starter+</span>';
+  var advBadge   = adv ? '' : ' <span class="al-lock-hint" title="Disponível no plano Pro">Pro</span>';
   var advLock    = adv ? '' : ' al-locked';
-  var freqHelp   = (allowedFreq.indexOf('diario') < 0)
-    ? (allowedFreq.indexOf('quinzenal') < 0
-        ? 'No plano gratuito o envio é semanal. Starter adiciona quinzenal; Pro adiciona diário.'
-        : 'Frequência diária é exclusiva do plano Pro.')
+  // "Starter" é plano comercial oculto (fallback) — na UI pública só Free/Pro
+  // aparecem. isStarterTier identifica o caso raro de quem já está no
+  // fallback (tem quinzenal mas não diário), pra não quebrar a experiência
+  // de quem eventualmente entrar por ele.
+  var isStarterTier = allowedFreq.indexOf('quinzenal') >= 0 && allowedFreq.indexOf('diario') < 0;
+  var freqHelp   = (allowedFreq.indexOf('diario') < 0 && !isStarterTier)
+    ? 'No plano gratuito o envio é semanal. O Pro libera frequência diária.'
     : '';
   var html =
     '<div class="al-modal-overlay" id="alModal" role="dialog" aria-modal="true" aria-labelledby="alModalTitle">'+
@@ -5985,7 +5989,10 @@ function openAlertEditModal() {
           '<div class="al-modal-section-title">Frequência e dia do envio</div>'+
           '<div class="al-field"><label>Frequência</label>'+
           '<div class="al-freq-row" id="alMFreq">'+
-            [['diario','Diário','Pro'],['semanal','Semanal',''],['quinzenal','Quinzenal','Starter+']].map(function(fv){
+            (isStarterTier
+              ? [['diario','Diário','Pro'],['semanal','Semanal',''],['quinzenal','Quinzenal','']]
+              : [['diario','Diário','Pro'],['semanal','Semanal','']]
+            ).map(function(fv){
               var val=fv[0],lbl=fv[1],tier=fv[2];
               var ok = allowedFreq.indexOf(val) >= 0;
               return '<button class="al-freq-btn'+((curFreq===val)?' on':'')+(ok?'':' locked')+'" data-value="'+val+'"'+(ok?'':' disabled title="Disponível no '+tier+'"')+' onclick="'+(ok?'_alSetFreq(\''+val+'\')':'return false')+'">' + lbl + '</button>';
@@ -6693,8 +6700,11 @@ function renderPlanTiles(sub) {
   if (lblP) lblP.style.color = 'var(--t3)';
   if (tileUpsell) tileUpsell.style.display = 'none';
   if (tileUs) tileUs.style.display = 'none';
+  // Starter é plano comercial oculto (fallback) — só some visível pra quem já está nele.
+  tileS.style.display = 'none';
 
   if (plan === 'starter') {
+    tileS.style.display = '';
     tileS.classList.add('active'); tileS.style.border = '2px solid var(--gb-emerald)';
     badgeS.style.display = '';
     if (lblS) lblS.style.color = 'var(--gb-emerald)';
