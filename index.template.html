@@ -223,14 +223,14 @@
     .pipeline-ic{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--panel);border:2px solid var(--line);color:var(--muted);transition:border-color .3s,color .3s,transform .3s}
     .pipeline-ic svg{width:19px;height:19px}
     .pipeline-node span{margin-top:10px;font-size:10.5px;font-weight:700;color:var(--copy)}
-    .pipeline-node:nth-child(2) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:0s}
-    .pipeline-node:nth-child(3) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:1.15s}
-    .pipeline-node:nth-child(4) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:2.3s}
-    .pipeline-node:nth-child(5) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:3.45s}
-    .pipeline-node:nth-child(6) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:4.6s}
-    .pipeline-node:nth-child(7) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:5.75s}
+    .pipeline-node:nth-of-type(2) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:0s}
+    .pipeline-node:nth-of-type(3) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:1.15s}
+    .pipeline-node:nth-of-type(4) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:2.3s}
+    .pipeline-node:nth-of-type(5) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:3.45s}
+    .pipeline-node:nth-of-type(6) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:4.6s}
+    .pipeline-node:nth-of-type(7) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:5.75s}
     @keyframes node-glow{0%,88%,100%{border-color:var(--line);color:var(--muted);transform:scale(1)}92%{border-color:var(--green);color:var(--green);transform:scale(1.12);box-shadow:0 0 0 6px var(--mint)}}
-    @media(prefers-reduced-motion:reduce){.pipeline-pulse{animation:none;opacity:0}.pipeline-ic{animation:none!important}.pipeline-mobile-path .flow-path-active{animation:none;opacity:.25}}
+    @media(prefers-reduced-motion:reduce){.pipeline-pulse{animation:none;opacity:0}.pipeline-ic{animation:none!important}.pipeline-mobile-pulse{display:none}}
 
     /* DETAIL */
     .detail{border-top:1px solid var(--line);background:var(--bg)}
@@ -460,8 +460,7 @@
       .pipeline-line{display:none}
       .pipeline-mobile-path{display:block;position:absolute;inset:0;z-index:0;pointer-events:none;overflow:visible}
       .pipeline-mobile-path path{fill:none;stroke:var(--line);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-      .pipeline-mobile-path .flow-path-active{stroke:var(--green);stroke-dasharray:34 430;stroke-dashoffset:0;filter:drop-shadow(0 0 7px rgba(56,211,139,.5));animation:flow-zigzag 5.8s linear infinite}
-      @keyframes flow-zigzag{to{stroke-dashoffset:-464}}
+      .pipeline-mobile-pulse{fill:var(--green);filter:drop-shadow(0 0 8px rgba(56,211,139,.85)) drop-shadow(0 0 14px rgba(56,211,139,.35))}
       .pipeline-node{align-self:center;justify-self:center;width:128px;min-height:92px;padding:0;gap:8px}
       .pipeline-node:nth-of-type(2){grid-column:1;grid-row:1}
       .pipeline-node:nth-of-type(3){grid-column:2;grid-row:1;transform:translateY(16px)}
@@ -469,8 +468,8 @@
       .pipeline-node:nth-of-type(5){grid-column:2;grid-row:2;transform:translateY(16px)}
       .pipeline-node:nth-of-type(6){grid-column:1;grid-row:3;transform:translateY(-2px)}
       .pipeline-node:nth-of-type(7){grid-column:2;grid-row:3;transform:translateY(16px)}
-      .pipeline-ic{width:58px;height:58px;border-radius:20px;background:var(--panel);background:color-mix(in srgb,var(--panel) 84%,var(--green) 16%);box-shadow:0 14px 34px rgba(0,0,0,.12),0 0 0 8px color-mix(in srgb,var(--green) 8%,transparent)}
-      .pipeline-ic svg{width:22px;height:22px}
+      .pipeline-ic{width:50px;height:50px;border-radius:50%;background:var(--panel);border:2px solid var(--line);box-shadow:none}
+      .pipeline-ic svg{width:20px;height:20px}
       .pipeline-node span{margin-top:2px;font-size:11px}
       .responsible-grid{grid-template-columns:1fr;gap:32px}
       .plan.featured{transform:none}
@@ -615,8 +614,10 @@
       <div class="pipeline reveal" id="recursos">
         <div class="pipeline-line"><div class="pipeline-pulse"></div></div>
         <svg class="pipeline-mobile-path" viewBox="0 0 320 330" aria-hidden="true" focusable="false">
-          <path d="M78 58 C118 30 204 30 242 76 C276 118 236 148 168 164 C92 182 58 218 92 252 C126 286 204 284 242 260" />
-          <path class="flow-path-active" d="M78 58 C118 30 204 30 242 76 C276 118 236 148 168 164 C92 182 58 218 92 252 C126 286 204 284 242 260" />
+          <path id="pipelineMobilePath" d="M78 58 C118 30 204 30 242 76 C276 118 236 148 168 164 C92 182 58 218 92 252 C126 286 204 284 242 260" />
+          <circle class="pipeline-mobile-pulse" r="4">
+            <animateMotion dur="7s" repeatCount="indefinite" path="M78 58 C118 30 204 30 242 76 C276 118 236 148 168 164 C92 182 58 218 92 252 C126 286 204 284 242 260" />
+          </circle>
         </svg>
         <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><span>Currículo</span></div>
         <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg></div><span>Vagas</span></div>
