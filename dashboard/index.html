@@ -3032,6 +3032,15 @@ async function init() {
   try {
     var { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname + window.location.search); return; }
+    // getSession() só lê o token salvo no navegador — se a conta foi
+    // excluída (ex: pelo admin), esse token guardado ainda "parece" válido
+    // até expirar (~1h). getUser() valida de verdade contra o servidor.
+    var { data: userData, error: userErr } = await sb.auth.getUser();
+    if (userErr || !userData || !userData.user) {
+      await sb.auth.signOut();
+      window.location.href = '/login';
+      return;
+    }
     currentSession = session;
     currentUserId = session.user.id;
     var email = session.user.email || '';
