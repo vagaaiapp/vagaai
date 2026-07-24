@@ -240,6 +240,44 @@ async function fetchGA4Data(days = 30) {
   return { overview, funnel, pages, countries, cities, devices, sources, days: d };
 }
 
+// Pageviews do blog agrupados por slug — reaproveita a mesma autenticação e o
+// mesmo runReport genérico do fetchGA4Data acima, só que filtrado em
+// pagePathPlusQueryString (a versão do pagePath que preserva "?s=slug",
+// necessária porque o blog usa querystring pra identificar o post, não uma
+// rota própria por post).
+async function fetchBlogPostViews(days = 30) {
+  if (!GA4_PROPERTY_ID || !GA4_SA_JSON) {
+    throw new Error('GA4 não configurado (GA4_PROPERTY_ID ou GA4_SA_JSON ausente)');
+  }
+  const d = parseInt(days) || 30;
+  const ga4Token = await getGA4AccessToken();
+  const report = await runGA4Report(ga4Token, {
+    dateRanges: [{ startDate: `${d}daysAgo`, endDate: 'today' }],
+    dimensions: [{ name: 'pagePathPlusQueryString' }],
+    metrics: [{ name: 'screenPageViews' }, { name: 'activeUsers' }],
+    dimensionFilter: {
+      filter: { fieldName: 'pagePathPlusQueryString', stringFilter: { matchType: 'BEGINS_WITH', value: '/blog/post' } },
+    },
+    limit: 500,
+  });
+
+  const bySlug = {};
+  for (const row of (report.rows || [])) {
+    const path = row.dimensionValues[0].value; // ex: /blog/post?s=como-colocar-cursos-no-curriculo
+    const m = path.match(/[?&]s=([^&]+)/);
+    if (!m) continue;
+    let slug;
+    try { slug = decodeURIComponent(m[1]); } catch { slug = m[1]; }
+    const views = parseInt(row.metricValues[0]?.value || 0);
+    const users = parseInt(row.metricValues[1]?.value || 0);
+    // Um mesmo slug pode aparecer com querystrings diferentes (utm etc.) —
+    // soma em vez de sobrescrever.
+    if (bySlug[slug]) { bySlug[slug].views += views; bySlug[slug].users += users; }
+    else bySlug[slug] = { views, users };
+  }
+  return bySlug;
+}
+
 // ─── Stripe helpers ───────────────────────────────────────────────────────────
 
 async function fetchStripeData() {
@@ -364,6 +402,17 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, dismissed, reason_counts: reasonCounts, history, profiles });
     } catch (err) {
       return res.status(500).json({ error: err.message });
+    }
+  }
+
+  // ── GET: views por post do blog (Blog Admin) ──────────────────────────────────
+  if (req.query.action === 'blog_views') {
+    try {
+      const views = await fetchBlogPostViews(req.query.days || 30);
+      return res.status(200).json({ ok: true, views, days: parseInt(req.query.days) || 30 });
+    } catch (err) {
+      console.error('blog_views error:', err);
+      return res.status(500).json({ error: err.message || 'Erro ao buscar views do blog' });
     }
   }
 

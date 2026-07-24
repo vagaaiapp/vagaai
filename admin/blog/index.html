@@ -171,6 +171,9 @@ nav{position:sticky;top:0;z-index:200;background:var(--surface);border-bottom:1p
 .badge{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1px solid;white-space:nowrap}
 .badge.green{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
 .badge.yellow{background:var(--yellow-dim);color:var(--yellow);border-color:var(--yellow-border)}
+.views-badge{font-size:11px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:4px;white-space:nowrap;min-width:64px}
+.views-badge svg{flex-shrink:0;opacity:.7}
+.range-select{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Inter',sans-serif;font-size:12px;padding:.35rem .6rem;border-radius:6px;cursor:pointer;outline:none}
 .btn-sm{font-size:12px;font-weight:600;padding:.3rem .7rem;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Inter',sans-serif;transition:all .15s}
 .btn-sm:hover{border-color:var(--green-border);color:var(--green)}
 .empty-state{text-align:center;padding:4rem 2rem;color:var(--muted)}
@@ -199,10 +202,17 @@ nav{position:sticky;top:0;z-index:200;background:var(--surface);border-bottom:1p
 <div id="listView" style="max-width:1200px;margin:0 auto;padding:1.5rem 1.5rem 4rem">
   <div class="list-header">
     <h1>Posts do Blog</h1>
-    <button class="btn primary" onclick="newPost()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Novo post
-    </button>
+    <div style="display:flex;align-items:center;gap:.6rem">
+      <select class="range-select" id="viewsRangeSelect" onchange="loadBlogViews(this.value)">
+        <option value="7">Views: 7 dias</option>
+        <option value="30" selected>Views: 30 dias</option>
+        <option value="90">Views: 90 dias</option>
+      </select>
+      <button class="btn primary" onclick="newPost()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Novo post
+      </button>
+    </div>
   </div>
   <div class="posts-grid" id="postsGrid">
     <div style="text-align:center;padding:2rem;color:var(--muted);font-size:13px">Carregando...</div>
@@ -440,6 +450,10 @@ async function getFreshToken() {
 }
 
 // ── Load posts ────────────────────────────────────────────────────────────────
+var _posts = [];
+var _viewsData = null; // null = ainda não carregou; {} = carregou mas sem dados
+var _viewsLoading = false;
+
 async function loadPosts() {
   var grid = document.getElementById('postsGrid');
   try {
@@ -448,21 +462,65 @@ async function loadPosts() {
     });
     var posts = await res.json();
     if (!Array.isArray(posts) || !posts.length) {
+      _posts = [];
       grid.innerHTML = '<div class="empty-state"><h3>Nenhum post ainda</h3><p>Clique em "Novo post" para começar.</p></div>';
       return;
     }
-    grid.innerHTML = posts.map(function(p) {
-      var date = new Date(p.updated_at || p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
-      return '<div class="post-card">'
-        + '<div class="post-card-info" onclick="editPost(\'' + p.id + '\')">'
-        + '<div class="post-card-title">' + esc(p.title || '(sem título)') + '</div>'
-        + '<div class="post-card-meta">' + esc(p.slug || '—') + ' · Atualizado ' + date + '</div>'
-        + '</div>'
-        + '<span class="badge ' + (p.published ? 'green' : 'yellow') + '">' + (p.published ? 'Publicado' : 'Rascunho') + '</span>'
-        + '<button class="btn-sm" onclick="editPost(\'' + p.id + '\')">Editar</button>'
-        + '</div>';
-    }).join('');
+    _posts = posts;
+    renderPostsGrid();
+    loadBlogViews(document.getElementById('viewsRangeSelect').value);
   } catch(e) { grid.innerHTML = '<div style="padding:1rem;color:var(--muted);font-size:13px">Erro ao carregar.</div>'; }
+}
+
+function renderPostsGrid() {
+  var grid = document.getElementById('postsGrid');
+  if (!_posts.length) return;
+  grid.innerHTML = _posts.map(function(p) {
+    var date = new Date(p.updated_at || p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+    return '<div class="post-card">'
+      + '<div class="post-card-info" onclick="editPost(\'' + p.id + '\')">'
+      + '<div class="post-card-title">' + esc(p.title || '(sem título)') + '</div>'
+      + '<div class="post-card-meta">' + esc(p.slug || '—') + ' · Atualizado ' + date + '</div>'
+      + '</div>'
+      + viewsBadgeHtml(p)
+      + '<span class="badge ' + (p.published ? 'green' : 'yellow') + '">' + (p.published ? 'Publicado' : 'Rascunho') + '</span>'
+      + '<button class="btn-sm" onclick="editPost(\'' + p.id + '\')">Editar</button>'
+      + '</div>';
+  }).join('');
+}
+
+// Views/pageviews do GA4, por post — separado do carregamento da lista pra não
+// atrasar a exibição dos posts (a lista aparece na hora, o número de views
+// preenche assim que a chamada ao GA4 volta, alguns segundos depois).
+function viewsBadgeHtml(p) {
+  if (!p.published) return '<span class="views-badge" title="Rascunhos não têm tráfego">—</span>';
+  if (_viewsLoading) return '<span class="views-badge">…</span>';
+  if (_viewsData == null) return '<span class="views-badge">—</span>';
+  var v = _viewsData[p.slug];
+  var eyeIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>';
+  if (!v || !v.views) return '<span class="views-badge" title="Sem visualizações no período">' + eyeIcon + '0</span>';
+  var label = v.views >= 1000 ? (v.views / 1000).toFixed(1).replace('.0', '') + 'k' : String(v.views);
+  return '<span class="views-badge" title="' + v.views + ' visualizações · ' + v.users + ' visitantes únicos">' + eyeIcon + label + '</span>';
+}
+
+async function loadBlogViews(days) {
+  _viewsLoading = true;
+  _viewsData = _viewsData || null;
+  renderPostsGrid();
+  try {
+    var res = await fetch('/api/admin?action=blog_views&days=' + (days || 30), {
+      headers: { Authorization: 'Bearer ' + (await getFreshToken()) }
+    });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro ao buscar views');
+    _viewsData = data.views || {};
+  } catch(e) {
+    console.error('loadBlogViews:', e.message);
+    _viewsData = {}; // falha não pode travar a lista — só mostra sem dados de tráfego
+  } finally {
+    _viewsLoading = false;
+    renderPostsGrid();
+  }
 }
 
 // ── New post ──────────────────────────────────────────────────────────────────
