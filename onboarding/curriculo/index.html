@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<!-- Google Analytics 4 (com Consent Mode v2 — LGPD) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XCT8K58VWF"></script>
+<script>
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
+gtag('consent','default',{ad_storage:'denied',analytics_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
+try{if(localStorage.getItem('vagaai_cookie_consent')==='granted')gtag('consent','update',{analytics_storage:'granted'});}catch(e){}
+gtag('js',new Date());gtag('config','G-XCT8K58VWF');
+</script>
+<script src="/cookie-consent.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VagaAI — Criar meu currículo grátis</title>
+<meta name="description" content="Monte um currículo profissional em 3 minutos com ajuda da IA. Escolha o modelo e baixe grátis.">
+<!-- Etapas do funil não devem competir com /criar-curriculo nem duplicar conteúdo -->
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://www.vagaai.app.br/criar-curriculo">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script defer src="/_vercel/insights/script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f7f5;--surface:#fff;--surface2:#f0f4f1;--border:#e2eae4;
+  --text:#071209;--muted:#6d8877;--green:#1a7a4a;--green-bright:#2cba74;
+  --green-dim:rgba(78,206,145,.1);--green-border:rgba(26,122,74,.24);
+  --red:#d94f4f;--shadow:0 1px 3px rgba(7,18,9,.06),0 8px 24px rgba(7,18,9,.05);
+}
+[data-theme="dark"]{
+  --bg:#0a0f0d;--surface:#111814;--surface2:#161d19;--border:rgba(255,255,255,.08);
+  --text:#e8ede9;--muted:#8a9e90;--green:#3ecf8e;--green-bright:#4ddb9e;
+  --green-dim:rgba(62,207,142,.12);--green-border:rgba(62,207,142,.28);
+  --red:#ff6b6b;--shadow:0 1px 3px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:'Manrope',system-ui,sans-serif;
+  min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;
+  -webkit-font-smoothing:antialiased;line-height:1.5;
+}
+
+.ob-top{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface);
+  position:sticky;top:0;z-index:20;
+}
+.ob-brand{font-family:'Lora',serif;font-weight:700;font-size:17px;color:var(--text);text-decoration:none;letter-spacing:-.2px}
+.ob-brand span{color:var(--green)}
+.ob-back{background:none;border:none;color:var(--muted);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:8px 10px;margin-left:-10px;border-radius:8px;min-height:40px}
+.ob-back:hover{color:var(--text);background:var(--surface2)}
+.ob-back[hidden]{display:none}
+.ob-dots{display:flex;gap:6px;align-items:center}
+.ob-dot{width:18px;height:4px;border-radius:99px;background:var(--border);transition:background .3s}
+.ob-dot.done{background:var(--green-bright)}
+.ob-dot.now{background:var(--green)}
+@media(max-width:420px){.ob-dot{width:13px}}
+
+.ob-main{flex:1;width:100%;max-width:620px;margin:0 auto;padding:32px 20px 48px;display:flex;flex-direction:column}
+.ob-main.wide{max-width:760px}
+.ob-step{display:none;animation:obIn .32s cubic-bezier(.22,.9,.3,1)}
+.ob-step.active{display:block}
+@keyframes obIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.ob-step{animation:none}}
+
+.ob-eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--green);margin-bottom:12px}
+.ob-eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--green)}
+h1{font-family:'Lora',serif;font-size:clamp(23px,5.6vw,31px);font-weight:700;line-height:1.2;letter-spacing:-.5px;margin-bottom:8px}
+.ob-sub{color:var(--muted);font-size:14.5px;margin-bottom:26px;max-width:46ch}
+
+.ob-choices{display:flex;flex-direction:column;gap:10px}
+.ob-choice{
+  display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+  background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:16px 18px;
+  cursor:pointer;font-family:inherit;color:var(--text);min-height:64px;
+  transition:border-color .18s,transform .18s,box-shadow .18s;
+}
+.ob-choice:hover{border-color:var(--green-border);transform:translateY(-2px);box-shadow:var(--shadow)}
+.ob-choice-ic{flex-shrink:0;width:42px;height:42px;border-radius:11px;background:var(--green-dim);display:grid;place-items:center;font-size:19px}
+.ob-choice-t{font-size:14.5px;font-weight:700;line-height:1.3}
+.ob-choice-d{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.4}
+.ob-choice-arrow{margin-left:auto;color:var(--muted);flex-shrink:0}
+
+label{display:block;font-size:12.5px;font-weight:700;margin-bottom:7px;color:var(--text)}
+label small{font-weight:500;color:var(--muted);font-size:11.5px}
+.ob-field{margin-bottom:18px}
+textarea,input[type="text"]{
+  width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;
+  padding:13px 15px;color:var(--text);font-family:inherit;font-size:16px;line-height:1.55;transition:border-color .18s;
+}
+textarea{resize:vertical;min-height:120px}
+textarea:focus,input[type="text"]:focus{outline:none;border-color:var(--green-border)}
+textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
+.ob-hint{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.45}
+
+.ob-btn{
+  width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:15px 20px;
+  font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-top:20px;min-height:52px;
+  transition:background .18s,opacity .18s;
+}
+.ob-btn:hover:not(:disabled){background:var(--green-bright)}
+.ob-btn:disabled{opacity:.45;cursor:not-allowed}
+.ob-btn.ghost{background:transparent;border:1.5px solid var(--border);color:var(--text);margin-top:10px}
+.ob-btn.ghost:hover{border-color:var(--green-border);background:var(--surface)}
+.ob-link{display:block;width:100%;background:none;border:none;color:var(--muted);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:14px;margin-top:6px;text-decoration:underline;min-height:44px}
+.ob-link:hover{color:var(--text)}
+.ob-micro{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:center;margin-top:18px;font-size:11.5px;color:var(--muted);font-weight:600}
+.ob-err{background:rgba(217,79,79,.08);border:1px solid rgba(217,79,79,.28);color:var(--red);border-radius:11px;padding:12px 14px;font-size:13px;margin-top:12px;line-height:1.45}
+.ob-ok{display:flex;align-items:center;gap:10px;background:var(--green-dim);border:1px solid var(--green-border);border-radius:11px;padding:12px 14px;font-size:13px;font-weight:600;color:var(--green);margin-top:12px;line-height:1.4}
+.ob-note{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--muted);margin-top:14px;line-height:1.45}
+
+/* ── Templates ────────────────────────────────────────────────────────── */
+.tpl-group{font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:22px 0 12px}
+.tpl-group:first-of-type{margin-top:0}
+.tpl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:560px){.tpl-grid{grid-template-columns:repeat(2,1fr)}}
+.tpl-card{
+  background:var(--surface);border:1.5px solid var(--border);border-radius:13px;padding:11px;
+  cursor:pointer;font-family:inherit;color:var(--text);transition:border-color .18s,transform .18s;text-align:left;
+}
+.tpl-card:hover{border-color:var(--green-border);transform:translateY(-2px)}
+.tpl-card.on{border-color:var(--green);box-shadow:0 0 0 3px var(--green-dim)}
+/* Miniatura desenhada em CSS — dá a forma do layout sem baixar imagem */
+.tpl-thumb{background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:7px;height:76px;padding:7px;display:flex;gap:5px;overflow:hidden;margin-bottom:9px}
+.tpl-thumb i{display:block;background:#d9e2dc;border-radius:2px;height:3px}
+.tpl-thumb .col{display:flex;flex-direction:column;gap:3.5px;flex:1;min-width:0}
+.tpl-thumb .side{width:30%;background:#e8efea;border-radius:4px;padding:5px;display:flex;flex-direction:column;gap:3.5px}
+.tpl-thumb .hd{height:6px;background:#1a7a4a;width:60%;border-radius:2px}
+.tpl-thumb .hd2{height:4px;background:#9db3a6;width:40%;border-radius:2px}
+.tpl-name{font-size:12.5px;font-weight:700;line-height:1.2}
+.tpl-badge{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.03em;padding:2px 6px;border-radius:4px;margin-top:5px}
+.tpl-badge.ats{background:var(--green-dim);color:var(--green)}
+.tpl-badge.vis{background:var(--surface2);color:var(--muted)}
+
+/* ── Preview do currículo (documento real, dados reais) ───────────────── */
+.cv-paper{
+  background:#fff;color:#1a1a1a;border-radius:12px;box-shadow:0 4px 24px rgba(7,18,9,.12);
+  padding:30px 28px;font-size:13px;line-height:1.55;overflow-wrap:break-word;
+}
+@media(max-width:520px){.cv-paper{padding:22px 18px;font-size:12.5px}}
+.cv-paper h2{font-family:'Lora',serif;font-size:23px;font-weight:700;color:#111;line-height:1.2;margin-bottom:3px}
+.cv-role{font-size:13.5px;color:#1a7a4a;font-weight:700;margin-bottom:9px}
+.cv-contact{font-size:11.5px;color:#666;display:flex;flex-wrap:wrap;gap:4px 12px;padding-bottom:13px;border-bottom:1px solid #e5e5e5;margin-bottom:15px}
+.cv-sec{font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#1a7a4a;margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid #eee}
+.cv-sec:first-of-type{margin-top:0}
+.cv-txt{font-size:12.5px;color:#333;line-height:1.6}
+.cv-exp{margin-bottom:13px}
+.cv-exp-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.cv-exp-cargo{font-weight:700;color:#111;font-size:13px}
+.cv-exp-per{font-size:11px;color:#777;white-space:nowrap}
+.cv-exp-emp{font-size:12px;color:#555;margin-bottom:5px}
+.cv-exp ul{margin-left:16px}
+.cv-exp li{font-size:12.5px;color:#333;margin-bottom:3px;line-height:1.5}
+.cv-tags{display:flex;flex-wrap:wrap;gap:5px}
+.cv-tag{background:#f0f4f1;color:#2c4a3a;font-size:11px;font-weight:600;padding:3px 9px;border-radius:5px}
+.cv-edu{margin-bottom:9px}
+.cv-edu-c{font-weight:700;font-size:12.5px;color:#111}
+.cv-edu-i{font-size:11.5px;color:#666}
+
+/* ── Processando ──────────────────────────────────────────────────────── */
+.ob-loading{text-align:center;padding:40px 0}
+.ob-spin{width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:obSpin .8s linear infinite;margin:0 auto 20px}
+@keyframes obSpin{to{transform:rotate(360deg)}}
+.ob-tip{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;font-size:13.5px;color:var(--muted);line-height:1.55;min-height:80px;display:flex;align-items:center;justify-content:center;text-align:center;margin-top:22px}
+
+/* ── Gate / planos ────────────────────────────────────────────────────── */
+.ob-gate{background:linear-gradient(160deg,var(--green-dim),var(--surface));border:1.5px solid var(--green-border);border-radius:18px;padding:22px;margin-top:18px}
+.ob-plan-note{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);text-align:center}
+.ob-plan-note b{color:var(--text);font-weight:700}
+.ob-cross{display:block;width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-top:10px;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;text-align:left;line-height:1.4}
+.ob-cross:hover{border-color:var(--green-border)}
+
+/* ── Modal ────────────────────────────────────────────────────────────── */
+.ob-modal{position:fixed;inset:0;background:rgba(7,18,9,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px;z-index:100}
+.ob-modal.show{display:flex}
+.ob-modal-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 24px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:92vh;overflow-y:auto}
+.ob-modal-t{font-family:'Lora',serif;font-size:21px;font-weight:700;margin-bottom:8px;line-height:1.3}
+.ob-modal-d{font-size:13.5px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.ob-gbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1.5px solid #dadce0;border-radius:12px;padding:13px;font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer;margin-bottom:14px;min-height:50px}
+.ob-gbtn:hover{background:#f8f9fa}
+.ob-or{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:11.5px;margin:14px 0;font-weight:600}
+.ob-or::before,.ob-or::after{content:"";flex:1;height:1px;background:var(--border)}
+.ob-sent{background:var(--green-dim);border:1px solid var(--green-border);border-radius:12px;padding:18px;text-align:center;font-size:13.5px;line-height:1.55}
+.ob-close{background:none;border:none;color:var(--muted);font-family:inherit;font-size:13px;cursor:pointer;width:100%;padding:12px;margin-top:6px;min-height:44px}
+.ob-close:hover{color:var(--text)}
+</style>
+</head>
+<body>
+
+<header class="ob-top">
+  <button class="ob-back" id="backBtn" onclick="goBack()" hidden>← Voltar</button>
+  <a href="/" class="ob-brand">Vaga<span>ai.</span></a>
+  <div class="ob-dots" id="dots" aria-hidden="true">
+    <div class="ob-dot now"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div>
+  </div>
+</header>
+
+<main class="ob-main" id="obMain">
+
+  <!-- ETAPA 1 — Qualificação -->
+  <section class="ob-step active" id="step1">
+    <div class="ob-eyebrow">Criar currículo · Grátis</div>
+    <h1>Qual sua situação hoje?</h1>
+    <p class="ob-sub">Assim a gente adapta as próximas perguntas ao seu momento.</p>
+    <div class="ob-choices">
+      <button class="ob-choice" onclick="pickSit('atualizar')">
+        <span class="ob-choice-ic">📄</span>
+        <span class="ob-choice-tx">
+          <span class="ob-choice-t">Tenho um currículo, mas quero atualizar</span>
+          <span class="ob-choice-d">Importe o arquivo e a gente moderniza</span>
+        </span>
+        <span class="ob-choice-arrow">→</span>
+      </button>
+      <button class="ob-choice" onclick="pickSit('primeiro')">
+        <span class="ob-choice-ic">🆕</span>
+        <span class="ob-choice-tx">
+          <span class="ob-choice-t">Nunca fiz um currículo formal</span>
+          <span class="ob-choice-d">A gente monta do zero, passo a passo</span>
+        </span>
+        <span class="ob-choice-arrow">→</span>
+      </button>
+      <button class="ob-choice" onclick="pickSit('migrando')">
+        <span class="ob-choice-ic">🔄</span>
+        <span class="ob-choice-tx">
+          <span class="ob-choice-t">Estou migrando de área/carreira</span>
+          <span class="ob-choice-d">Vamos reposicionar sua experiência atual</span>
+        </span>
+        <span class="ob-choice-arrow">→</span>
+      </button>
+    </div>
+    <div class="ob-micro"><span>⏱ 3 minutos</span><span>🆓 Grátis</span><span>💳 Sem cartão</span></div>
+  </section>
+
+  <!-- ETAPA 2 — Importar ou do zero -->
+  <section class="ob-step" id="step2">
+    <div class="ob-eyebrow">Etapa 2</div>
+    <h1>Vamos começar pelo que você já tem</h1>
+    <p class="ob-sub" id="step2Sub">Se você já tem um currículo em PDF, importe — a gente aproveita tudo e você só revisa.</p>
+    <div class="ob-choices">
+      <button class="ob-choice" onclick="document.getElementById('cvFile').click()">
+        <span class="ob-choice-ic">📎</span>
+        <span class="ob-choice-tx">
+          <span class="ob-choice-t">Importar currículo existente</span>
+          <span class="ob-choice-d">PDF, Word ou TXT — a gente extrai os dados</span>
+        </span>
+        <span class="ob-choice-arrow">→</span>
+      </button>
+    </div>
+    <input type="file" id="cvFile" accept=".txt,.pdf,.doc,.docx" style="display:none" onchange="handleImport(this)">
+    <div id="impOk" class="ob-ok" style="display:none"></div>
+    <div id="impErr" class="ob-err" style="display:none"></div>
+    <button class="ob-link" onclick="skipImport()">Prefiro montar do zero</button>
+    <div class="ob-note"><span>🔒</span><span>Seus dados não treinam nenhuma IA — usados só para montar o seu currículo.</span></div>
+  </section>
+
+  <!-- ETAPA 3 — Captura rápida -->
+  <section class="ob-step" id="step3">
+    <div class="ob-eyebrow">Etapa 3</div>
+    <h1>Só o essencial por enquanto</h1>
+    <p class="ob-sub" id="step3Sub">Escreva do seu jeito — a IA deixa profissional na hora de montar.</p>
+
+    <div class="ob-field">
+      <label for="fNome">Nome completo</label>
+      <input type="text" id="fNome" placeholder="Ex: Maria Silva Santos" oninput="onFormInput()">
+    </div>
+    <div class="ob-field">
+      <label for="fCargo">Cargo desejado</label>
+      <input type="text" id="fCargo" placeholder="Ex: Analista de Marketing" oninput="onFormInput()">
+    </div>
+    <div class="ob-field">
+      <label for="fExp">Experiência profissional <small>— conte com suas palavras</small></label>
+      <textarea id="fExp" placeholder="Ex: trabalhei 2 anos na Loja X como vendedora, atendia clientes, organizava o estoque e batia a meta quase todo mês..." oninput="onFormInput()"></textarea>
+      <div class="ob-hint" id="expHint">Pode escrever corrido, sem formatar. A IA transforma em tópicos profissionais.</div>
+    </div>
+    <div class="ob-field">
+      <label for="fForm">Formação <small>— opcional</small></label>
+      <input type="text" id="fForm" placeholder="Ex: Administração — Universidade X, 2020">
+    </div>
+    <div class="ob-field">
+      <label for="fSkills">Habilidades <small>— opcional, separadas por vírgula</small></label>
+      <input type="text" id="fSkills" placeholder="Ex: Excel, atendimento ao cliente, inglês intermediário">
+    </div>
+    <div class="ob-field">
+      <label for="fEmail">Contato <small>— opcional, aparece no currículo</small></label>
+      <input type="text" id="fEmail" placeholder="E-mail" inputmode="email" style="margin-bottom:9px">
+      <input type="text" id="fTel" placeholder="Telefone" inputmode="tel" style="margin-bottom:9px">
+      <input type="text" id="fCidade" placeholder="Cidade / Estado">
+    </div>
+
+    <div id="formErr" class="ob-err" style="display:none"></div>
+    <button class="ob-btn" id="formNext" onclick="goStep(4)" disabled>Escolher o modelo →</button>
+  </section>
+
+  <!-- ETAPA 4 — Modelo -->
+  <section class="ob-step" id="step4">
+    <div class="ob-eyebrow">Etapa 4</div>
+    <h1>Escolha o estilo do seu currículo</h1>
+    <p class="ob-sub">Todos os modelos são escritos para leitura clara — a diferença está no layout.</p>
+
+    <div class="tpl-group">✓ Compatíveis com ATS — recomendados para candidaturas online</div>
+    <div class="tpl-grid">
+      <button class="tpl-card on" id="tplModern" onclick="pickTpl('modern')">
+        <span class="tpl-thumb"><span class="col"><span class="hd"></span><span class="hd2"></span><i></i><i></i><i style="width:70%"></i><i></i><i style="width:85%"></i></span></span>
+        <span class="tpl-name">Moderno</span><br><span class="tpl-badge ats">ATS ✓</span>
+      </button>
+      <button class="tpl-card" id="tplFocus" onclick="pickTpl('focus')">
+        <span class="tpl-thumb"><span class="col"><span class="hd" style="width:75%"></span><i style="margin-top:3px"></i><i></i><i style="width:60%"></i><i></i><i style="width:80%"></i></span></span>
+        <span class="tpl-name">Focado</span><br><span class="tpl-badge ats">ATS ✓</span>
+      </button>
+      <button class="tpl-card" id="tplMinimal" onclick="pickTpl('minimal')">
+        <span class="tpl-thumb"><span class="col"><span class="hd" style="background:#555;width:50%"></span><i></i><i></i><i style="width:75%"></i><i></i><i style="width:65%"></i></span></span>
+        <span class="tpl-name">Minimalista</span><br><span class="tpl-badge ats">ATS ✓</span>
+      </button>
+    </div>
+
+    <div class="tpl-group">Com design visual — ideais para enviar direto ao recrutador</div>
+    <div class="tpl-grid">
+      <button class="tpl-card" id="tplClassic" onclick="pickTpl('classic')">
+        <span class="tpl-thumb"><span class="side"><i style="background:#b9cdc1"></i><i style="background:#b9cdc1;width:70%"></i><i style="background:#b9cdc1"></i></span><span class="col"><span class="hd"></span><i></i><i style="width:80%"></i><i></i></span></span>
+        <span class="tpl-name">Profissional</span><br><span class="tpl-badge vis">Sidebar</span>
+      </button>
+      <button class="tpl-card" id="tplExec" onclick="pickTpl('exec')">
+        <span class="tpl-thumb"><span class="col"><span class="hd" style="width:100%;height:12px"></span><i style="margin-top:4px"></i><i style="width:70%"></i><i></i></span></span>
+        <span class="tpl-name">Executivo</span><br><span class="tpl-badge vis">Sidebar</span>
+      </button>
+      <button class="tpl-card" id="tplCompact" onclick="pickTpl('compact')">
+        <span class="tpl-thumb"><span class="col"><span class="hd2"></span><i></i><i></i></span><span class="col"><span class="hd2"></span><i></i><i></i></span></span>
+        <span class="tpl-name">Compacto</span><br><span class="tpl-badge vis">Sidebar</span>
+      </button>
+    </div>
+
+    <div class="ob-note"><span>💡</span><span>Vai se candidatar por site de vagas (LinkedIn, Gupy, Indeed)? Prefira um modelo <b>ATS ✓</b> — são lidos com mais precisão por filtros automáticos.</span></div>
+    <button class="ob-btn" onclick="generateCv()">Montar meu currículo →</button>
+  </section>
+
+  <!-- ETAPA 4b — Gerando -->
+  <section class="ob-step" id="stepGen">
+    <div class="ob-loading">
+      <div class="ob-spin"></div>
+      <h1 style="font-size:20px;margin-bottom:8px">Montando seu currículo...</h1>
+      <p class="ob-sub" style="margin-inline:auto">A IA está organizando suas experiências em formato profissional.</p>
+      <div class="ob-tip" id="genTip">Dica: currículos de 1 página têm mais chance de serem lidos por inteiro.</div>
+    </div>
+  </section>
+
+  <!-- ETAPA 5 — Pronto -->
+  <section class="ob-step" id="step5">
+    <div class="ob-eyebrow">Pronto 🎉</div>
+    <h1>Seu currículo está pronto!</h1>
+    <p class="ob-sub">Revise abaixo. Você pode trocar o modelo ou ajustar qualquer detalhe depois.</p>
+
+    <div class="cv-paper" id="cvPreview"></div>
+
+    <div class="ob-gate">
+      <button class="ob-btn" style="margin-top:0" onclick="openSignup()">Salvar e baixar meu currículo grátis →</button>
+      <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.45">
+        Criar conta leva 20 segundos e mantém seu currículo salvo para editar quando quiser.
+      </div>
+      <button class="ob-cross" onclick="signupThenAlerts()">
+        🔔 <b>Quer receber vagas compatíveis com esse currículo?</b><br>
+        <span style="color:var(--muted);font-weight:500;font-size:12.5px">Ativar alertas de vagas junto com a conta →</span>
+      </button>
+      <div class="ob-plan-note">
+        No plano <b>Grátis</b>: currículo salvo, 1 análise de vaga por mês e alertas semanais.<br>
+        No <b>Pro</b> (R$39,90/mês): análises ilimitadas, carta de apresentação e simulador de entrevista.
+      </div>
+    </div>
+
+    <button class="ob-btn ghost" onclick="goStep(4)">Trocar o modelo</button>
+  </section>
+
+</main>
+
+<!-- Modal de cadastro -->
+<div class="ob-modal" id="signupModal">
+  <div class="ob-modal-box">
+    <div id="signupForm">
+      <div class="ob-modal-t">Criar conta grátis</div>
+      <div class="ob-modal-d">Seu currículo já está montado — criando a conta ele fica salvo e pronto pra baixar.</div>
+      <button class="ob-gbtn" onclick="signupGoogle()">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.65l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84z"/><path fill="#EA4335" d="M12 4.75c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 1.46 14.97.5 12 .5A11 11 0 0 0 2.18 7.05l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continuar com Google
+      </button>
+      <div class="ob-or">ou</div>
+      <input type="text" id="emailInput" placeholder="seu@email.com" inputmode="email" autocomplete="email">
+      <div class="ob-err" id="emailErr" style="display:none"></div>
+      <button class="ob-btn" id="emailBtn" onclick="signupEmail()">Receber link de acesso →</button>
+      <button class="ob-close" onclick="closeSignup()">Agora não</button>
+    </div>
+    <div id="signupSent" style="display:none">
+      <div class="ob-modal-t">Link enviado ✉️</div>
+      <div class="ob-sent">
+        Enviamos um link de acesso para <b id="sentTo"></b>.<br><br>
+        Abra o e-mail e clique no link — seu currículo estará salvo te esperando.
+      </div>
+      <button class="ob-close" onclick="closeSignup()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   Onboarding anônimo — criar currículo (Card 2 da landing page)
+
+   A entrega de valor é o CURRÍCULO PRONTO, visível antes de qualquer
+   cadastro: quem chega sem nada sai com o documento montado na tela. A
+   conta só é pedida para SALVAR/BAIXAR — e alertas de vaga entram como
+   bônus depois da entrega, nunca como pré-requisito.
+
+   Sem importação de LinkedIn: só PDF/Word/TXT, que é o que a extração
+   local (pdf.js) realmente suporta hoje.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+var SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
+var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
+var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+var STATE_KEY = 'vagaai_ob_cv';
+var TOTAL_STEPS = 5;
+var state = { sit:'', imported:'', tpl:'modern', form:{}, cv:null, step:1 };
+var _generating = false;
+
+function track(name, params) {
+  try { if (typeof gtag === 'function') gtag('event', name, params || {}); } catch(e) {}
+}
+function saveState() { try { sessionStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch(e) {} }
+function loadState() {
+  try { var raw = sessionStorage.getItem(STATE_KEY); if (raw) state = Object.assign(state, JSON.parse(raw)); } catch(e) {}
+}
+try { if (localStorage.getItem('vagaai_theme') === 'dark') document.documentElement.setAttribute('data-theme','dark'); } catch(e) {}
+
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/* ── Navegação ─────────────────────────────────────────────────────────── */
+function stepFromUrl() {
+  var m = window.location.pathname.match(/\/onboarding\/curriculo\/(\d+)/);
+  var n = m ? parseInt(m[1], 10) : 1;
+  return (n >= 1 && n <= TOTAL_STEPS) ? n : 1;
+}
+
+function renderStep(n, push) {
+  // Guarda de pré-requisito: URL colada direto não pode pular etapa
+  if (n >= 5 && !state.cv) n = (state.form && state.form.nome) ? 4 : (state.sit ? 3 : 1);
+  if (n === 4 && !(state.form && state.form.nome && state.form.cargo)) n = state.sit ? 3 : 1;
+  if (n === 3 && !state.sit) n = 1;
+  if (n === 2 && !state.sit) n = 1;
+
+  state.step = n;
+  saveState();
+
+  for (var i = 1; i <= TOTAL_STEPS; i++) {
+    var el = document.getElementById('step' + i);
+    if (el) el.classList.toggle('active', i === n);
+  }
+  document.getElementById('stepGen').classList.remove('active');
+  document.getElementById('obMain').classList.toggle('wide', n === 5);
+
+  var dots = document.querySelectorAll('.ob-dot');
+  for (var d = 0; d < dots.length; d++) {
+    dots[d].classList.toggle('done', d + 1 < n);
+    dots[d].classList.toggle('now', d + 1 === n);
+  }
+  document.getElementById('backBtn').hidden = (n === 1 || n === 5);
+
+  var url = '/onboarding/curriculo/' + n;
+  if (push && window.location.pathname !== url) history.pushState({ step:n }, '', url);
+  window.scrollTo(0, 0);
+  track('onboarding_cv_step' + n + '_view');
+}
+function goStep(n) { renderStep(n, true); }
+function goBack() { history.back(); }
+window.addEventListener('popstate', function() { renderStep(stepFromUrl(), false); });
+
+/* ── Etapa 1 ───────────────────────────────────────────────────────────── */
+var SIT_COPY = {
+  atualizar: { sub:'Importe seu currículo atual — a gente extrai tudo e você só revisa o que quiser mudar.',
+               hint:'Pode escrever corrido. A IA reorganiza em tópicos profissionais.' },
+  primeiro:  { sub:'Sem currículo ainda? Sem problema: monte do zero, a gente guia o que escrever em cada campo.',
+               hint:'Escreva como você contaria pra um amigo o que você fazia no trabalho. A IA cuida do resto.' },
+  migrando:  { sub:'Vamos aproveitar sua experiência atual e reposicioná-la para a nova área.',
+               hint:'Conte o que você fez, mesmo em outra área. A IA destaca o que é transferível para o novo cargo.' }
+};
+
+function pickSit(sit) {
+  state.sit = sit;
+  saveState();
+  var c = SIT_COPY[sit] || SIT_COPY.primeiro;
+  document.getElementById('step2Sub').textContent = c.sub;
+  document.getElementById('expHint').textContent = c.hint;
+  track('onboarding_cv_qualification_selected', { situacao: sit });
+  // Quem nunca fez currículo não tem o que importar — pula direto pra captura
+  goStep(sit === 'primeiro' ? 3 : 2);
+}
+
+/* ── Etapa 2: importação ───────────────────────────────────────────────── */
+function skipImport() {
+  track('onboarding_cv_import_method', { method: 'manual' });
+  goStep(3);
+}
+
+function loadScript(src) {
+  return new Promise(function(resolve, reject) {
+    var s = document.createElement('script');
+    s.src = src; s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+function readAsText(file) {
+  return new Promise(function(resolve, reject) {
+    var r = new FileReader();
+    r.onload = function(e) { resolve(e.target.result); };
+    r.onerror = reject;
+    r.readAsText(file, 'UTF-8');
+  });
+}
+async function extractPdfText(file) {
+  if (!window.pdfjsLib) {
+    await loadScript('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js');
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+  }
+  var ab = await file.arrayBuffer();
+  var pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+  var out = [];
+  for (var i = 1; i <= pdf.numPages; i++) {
+    var page = await pdf.getPage(i);
+    var content = await page.getTextContent();
+    out.push(content.items.map(function(it) { return it.str; }).join(' '));
+  }
+  return out.join('\n');
+}
+
+async function handleImport(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var okEl = document.getElementById('impOk');
+  var errEl = document.getElementById('impErr');
+  errEl.style.display = 'none';
+
+  if (file.size > 5 * 1024 * 1024) {
+    errEl.textContent = 'Não conseguimos extrair os dados automaticamente. Sem problema — vamos preencher manualmente.';
+    errEl.style.display = 'block';
+    input.value = '';
+    setTimeout(function() { goStep(3); }, 1400);
+    return;
+  }
+
+  okEl.style.display = 'block';
+  okEl.textContent = 'Lendo ' + file.name + '...';
+  var ext = (file.name.split('.').pop() || '').toLowerCase();
+
+  try {
+    var text = '';
+    if (ext === 'pdf') text = await extractPdfText(file);
+    else if (ext === 'txt' || ext === 'doc' || ext === 'docx') text = await readAsText(file);
+    else throw new Error('formato');
+
+    text = (text || '').trim();
+    if (text.length < 50) throw new Error('curto');
+
+    state.imported = text.slice(0, 9000);
+    // Heurística leve: a 1ª linha curta costuma ser o nome no topo do currículo
+    var firstLine = (text.split('\n')[0] || '').trim();
+    if (firstLine && firstLine.length <= 60 && !/\d{4}|@/.test(firstLine)) {
+      state.form = Object.assign({}, state.form, { nome: firstLine });
+    }
+    saveState();
+    okEl.textContent = '✓ ' + file.name + ' lido — revise os dados na próxima etapa';
+    track('onboarding_cv_import_method', { method: 'upload' });
+    track('onboarding_cv_extraction_success', { success: true });
+    setTimeout(function() { goStep(3); }, 900);
+  } catch (e) {
+    okEl.style.display = 'none';
+    errEl.textContent = 'Não conseguimos extrair os dados automaticamente. Sem problema — vamos preencher manualmente.';
+    errEl.style.display = 'block';
+    input.value = '';
+    track('onboarding_cv_extraction_success', { success: false });
+    setTimeout(function() { goStep(3); }, 1600);
+  }
+}
+
+/* ── Etapa 3: captura ──────────────────────────────────────────────────── */
+function onFormInput() {
+  var nome = document.getElementById('fNome').value.trim();
+  var cargo = document.getElementById('fCargo').value.trim();
+  document.getElementById('formNext').disabled = !(nome && cargo);
+  collectForm();
+}
+
+function collectForm() {
+  state.form = {
+    nome:   document.getElementById('fNome').value.trim(),
+    cargo:  document.getElementById('fCargo').value.trim(),
+    exp:    document.getElementById('fExp').value.trim(),
+    form:   document.getElementById('fForm').value.trim(),
+    skills: document.getElementById('fSkills').value.trim(),
+    email:  document.getElementById('fEmail').value.trim(),
+    tel:    document.getElementById('fTel').value.trim(),
+    cidade: document.getElementById('fCidade').value.trim()
+  };
+  saveState();
+}
+
+/* ── Etapa 4: modelo ───────────────────────────────────────────────────── */
+var TPL_IDS = { modern:'tplModern', focus:'tplFocus', minimal:'tplMinimal', classic:'tplClassic', exec:'tplExec', compact:'tplCompact' };
+var _tplViews = 0;
+
+function pickTpl(tpl) {
+  state.tpl = tpl;
+  _tplViews++;
+  saveState();
+  for (var k in TPL_IDS) {
+    var el = document.getElementById(TPL_IDS[k]);
+    if (el) el.classList.toggle('on', k === tpl);
+  }
+  track('onboarding_cv_template_selected', { template: tpl });
+  if (state.cv) renderPreview(state.cv); // troca de modelo já refletida no preview
+}
+
+/* ── Geração ───────────────────────────────────────────────────────────── */
+var GEN_TIPS = [
+  'Dica: currículos de 1 página têm mais chance de serem lidos por inteiro.',
+  'Dica: comece cada tópico com um verbo de ação — "atendi", "organizei", "reduzi".',
+  'Dica: números concretos chamam atenção do recrutador mais que adjetivos.'
+];
+
+async function generateCv() {
+  if (_generating) return;
+  _generating = true;
+  collectForm();
+
+  var f = state.form;
+  if (!f.nome || !f.cargo) {
+    _generating = false;
+    goStep(3);
+    return;
+  }
+
+  // Mostra a tela de geração (não é etapa navegável — não entra no histórico)
+  for (var i = 1; i <= TOTAL_STEPS; i++) {
+    var el = document.getElementById('step' + i);
+    if (el) el.classList.remove('active');
+  }
+  document.getElementById('stepGen').classList.add('active');
+  document.getElementById('backBtn').hidden = true;
+  window.scrollTo(0, 0);
+
+  var tipIdx = 0;
+  var tipTimer = setInterval(function() {
+    tipIdx = (tipIdx + 1) % GEN_TIPS.length;
+    document.getElementById('genTip').textContent = GEN_TIPS[tipIdx];
+  }, 3500);
+
+  // Currículo importado entra como contexto extra — a IA estrutura o texto bruto
+  var expPayload = f.exp;
+  if (state.imported) {
+    expPayload = (f.exp ? f.exp + '\n\n' : '') + 'Conteúdo do currículo atual do candidato:\n' + state.imported;
+  }
+
+  try {
+    var res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'onboarding_cv',
+        nome: f.nome,
+        cargo_objetivo: f.cargo,
+        experiencias: expPayload,
+        formacao: f.form,
+        habilidades: f.skills,
+        contato: { email: f.email, telefone: f.tel, cidade: f.cidade }
+      })
+    });
+    clearInterval(tipTimer);
+
+    if (res.status === 429) {
+      _generating = false;
+      showGenLimit();
+      return;
+    }
+    if (!res.ok) throw new Error('http_' + res.status);
+
+    var data = await res.json();
+    if (!data || !data.cv) throw new Error('payload');
+
+    state.cv = data.cv;
+    saveState();
+
+    // Handoff para /cv (mesmas chaves que o editor completo já consome),
+    // garantindo que nada do que o visitante preencheu se perca no cadastro.
+    try {
+      var forCv = Object.assign({}, data.cv, { template: state.tpl });
+      localStorage.setItem('vagaai_cv', JSON.stringify(forCv));
+      localStorage.setItem('vagaai_cv_tpl', state.tpl);
+    } catch(e) {}
+
+    renderPreview(data.cv);
+    track('onboarding_cv_completed', { template: state.tpl, templates_previewed: _tplViews });
+    goStep(5);
+  } catch (err) {
+    clearInterval(tipTimer);
+    _generating = false;
+    showGenError();
+  }
+  _generating = false;
+}
+
+function showGenError() {
+  document.getElementById('stepGen').innerHTML = '<div class="ob-loading">'
+    + '<h1 style="font-size:21px;margin-bottom:10px">Não conseguimos montar o currículo</h1>'
+    + '<p class="ob-sub" style="margin-inline:auto">Pode ter sido uma instabilidade momentânea. Seus dados continuam preenchidos.</p>'
+    + '<button class="ob-btn" onclick="generateCv()">Tentar de novo</button>'
+    + '<button class="ob-btn ghost" onclick="goStep(3)">Revisar meus dados</button>'
+    + '</div>';
+  track('onboarding_cv_error');
+}
+
+function showGenLimit() {
+  document.getElementById('stepGen').innerHTML = '<div class="ob-loading">'
+    + '<div style="font-size:38px;margin-bottom:14px">📄</div>'
+    + '<h1 style="font-size:21px;margin-bottom:10px">Você já criou currículos grátis recentemente</h1>'
+    + '<p class="ob-sub" style="margin-inline:auto">Crie sua conta grátis para continuar montando e editando currículos sem limite de tentativas.</p>'
+    + '<button class="ob-btn" onclick="openSignup()">Criar conta grátis →</button>'
+    + '</div>';
+  track('onboarding_cv_limit_reached');
+}
+
+/* ── Preview: documento real com os dados reais ────────────────────────── */
+function renderPreview(cv) {
+  var f = state.form || {};
+  var c = cv.contato || {};
+  var parts = [];
+
+  // Templates "sidebar" ganham um acento visual; os ATS ficam limpos
+  var isVisual = (state.tpl === 'classic' || state.tpl === 'exec' || state.tpl === 'compact');
+  var accent = isVisual ? '#1a7a4a' : '#111';
+
+  parts.push('<h2 style="color:' + accent + '">' + esc(cv.nome || f.nome) + '</h2>');
+  parts.push('<div class="cv-role">' + esc(cv.titulo_profissional || f.cargo) + '</div>');
+
+  var ct = [];
+  if (c.email)    ct.push(esc(c.email));
+  if (c.telefone) ct.push(esc(c.telefone));
+  if (c.cidade)   ct.push(esc(c.cidade));
+  if (ct.length) parts.push('<div class="cv-contact">' + ct.map(function(x){ return '<span>' + x + '</span>'; }).join('') + '</div>');
+
+  if (cv.resumo_profissional) {
+    parts.push('<div class="cv-sec">Resumo profissional</div>');
+    parts.push('<div class="cv-txt">' + esc(cv.resumo_profissional) + '</div>');
+  }
+
+  if (cv.experiencias && cv.experiencias.length) {
+    parts.push('<div class="cv-sec">Experiência profissional</div>');
+    cv.experiencias.forEach(function(e) {
+      var bl = (e.bullets || []).map(function(b) { return '<li>' + esc(b) + '</li>'; }).join('');
+      parts.push('<div class="cv-exp">'
+        + '<div class="cv-exp-top"><span class="cv-exp-cargo">' + esc(e.cargo) + '</span>'
+        + (e.periodo ? '<span class="cv-exp-per">' + esc(e.periodo) + '</span>' : '') + '</div>'
+        + (e.empresa ? '<div class="cv-exp-emp">' + esc(e.empresa) + '</div>' : '')
+        + (bl ? '<ul>' + bl + '</ul>' : '')
+        + '</div>');
+    });
+  }
+
+  if (cv.formacao && cv.formacao.length) {
+    parts.push('<div class="cv-sec">Formação</div>');
+    cv.formacao.forEach(function(e) {
+      parts.push('<div class="cv-edu"><div class="cv-edu-c">' + esc(e.curso) + '</div>'
+        + '<div class="cv-edu-i">' + esc(e.instituicao) + (e.periodo ? ' · ' + esc(e.periodo) : '') + '</div></div>');
+    });
+  }
+
+  if (cv.habilidades && cv.habilidades.length) {
+    parts.push('<div class="cv-sec">Habilidades</div>');
+    parts.push('<div class="cv-tags">' + cv.habilidades.map(function(s) {
+      return '<span class="cv-tag">' + esc(s) + '</span>';
+    }).join('') + '</div>');
+  }
+
+  document.getElementById('cvPreview').innerHTML = parts.join('');
+}
+
+/* ── Cadastro ──────────────────────────────────────────────────────────── */
+var _wantAlerts = false;
+
+function openSignup() {
+  _wantAlerts = false;
+  document.getElementById('signupModal').classList.add('show');
+  track('onboarding_cv_download_clicked');
+}
+function signupThenAlerts() {
+  _wantAlerts = true;
+  document.getElementById('signupModal').classList.add('show');
+  track('onboarding_cv_alerts_clicked');
+}
+function closeSignup() { document.getElementById('signupModal').classList.remove('show'); }
+
+// Após o cadastro: quem pediu alertas cai no painel de alertas; os demais
+// vão pro editor de currículo, onde baixam o PDF no modelo escolhido.
+function signupDest() {
+  return _wantAlerts ? 'https://www.vagaai.app.br/dashboard#alertas' : 'https://www.vagaai.app.br/cv';
+}
+
+async function signupGoogle() {
+  track('onboarding_cv_signup_google');
+  try { localStorage.setItem('vagaai_from_signup', '1'); } catch(e) {}
+  try {
+    var r = await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: signupDest() } });
+    if (r.error) throw r.error;
+  } catch (err) {
+    try { localStorage.removeItem('vagaai_from_signup'); } catch(e) {}
+    var el = document.getElementById('emailErr');
+    el.textContent = 'Login com Google indisponível no momento. Use o e-mail abaixo.';
+    el.style.display = 'block';
+  }
+}
+
+async function signupEmail() {
+  var email = (document.getElementById('emailInput').value || '').trim();
+  var errEl = document.getElementById('emailErr');
+  var btn = document.getElementById('emailBtn');
+  errEl.style.display = 'none';
+
+  if (!email || email.indexOf('@') < 1) {
+    errEl.textContent = 'Insira um e-mail válido.';
+    errEl.style.display = 'block';
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  try {
+    var r = await sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: signupDest() } });
+    if (r.error) throw r.error;
+    try { localStorage.setItem('vagaai_from_signup', '1'); } catch(e) {}
+    track('onboarding_cv_signup_magic_link');
+    document.getElementById('signupForm').style.display = 'none';
+    document.getElementById('sentTo').textContent = email;
+    document.getElementById('signupSent').style.display = 'block';
+  } catch (err) {
+    errEl.textContent = (err && err.message) ? err.message : 'Erro ao enviar e-mail. Tente novamente.';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Receber link de acesso →';
+  }
+}
+
+/* ── Boot ──────────────────────────────────────────────────────────────── */
+(async function init() {
+  try {
+    var s = await sb.auth.getSession();
+    if (s && s.data && s.data.session) {
+      window.location.replace('/curriculo');
+      return;
+    }
+  } catch(e) {}
+
+  loadState();
+
+  if (state.sit) {
+    var c = SIT_COPY[state.sit] || SIT_COPY.primeiro;
+    document.getElementById('step2Sub').textContent = c.sub;
+    document.getElementById('expHint').textContent = c.hint;
+  }
+  var f = state.form || {};
+  if (f.nome)   document.getElementById('fNome').value = f.nome;
+  if (f.cargo)  document.getElementById('fCargo').value = f.cargo;
+  if (f.exp)    document.getElementById('fExp').value = f.exp;
+  if (f.form)   document.getElementById('fForm').value = f.form;
+  if (f.skills) document.getElementById('fSkills').value = f.skills;
+  if (f.email)  document.getElementById('fEmail').value = f.email;
+  if (f.tel)    document.getElementById('fTel').value = f.tel;
+  if (f.cidade) document.getElementById('fCidade').value = f.cidade;
+  document.getElementById('formNext').disabled = !(f.nome && f.cargo);
+
+  if (state.tpl) pickTpl(state.tpl);
+  if (state.cv) renderPreview(state.cv);
+
+  history.replaceState({ step: stepFromUrl() }, '', window.location.pathname);
+  renderStep(stepFromUrl(), false);
+})();
+</script>
+</body>
+</html>

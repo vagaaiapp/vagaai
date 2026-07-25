@@ -638,6 +638,13 @@ function checkCvRateLimit(userId) {
   return checkAndCountLimit({ key: `u:${userId}:cv`, limit: CV_USER_LIMIT, windowMs: CV_USER_WINDOW_MS });
 }
 
+// ─── Rate limit por IP (onboarding_cv — anônimo, sem conta) ──────────────────
+// Protege o custo de IA do fluxo de entrada: gerar currículo sem cadastro é a
+// isca do funil, mas não pode virar API pública grátis. 2 (e não 1) para o
+// visitante poder refazer se errar algum dado na primeira tentativa.
+const OB_CV_IP_LIMIT = 2;
+const OB_CV_WINDOW_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
+
 // ─── Dedução de crédito exclusiva para create_cv ─────────────────────────────
 // Diferença em relação a checkAndDeductCredit: BLOQUEIA usuários Free.
 // Não usa a gratuidade mensal de análise (free_monthly) para liberar CV.
@@ -973,6 +980,139 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
     } catch (err) {
       console.error('create_cv error:', err.message);
       await refundAnalysisCredit(cvUser.id, cvDeduct).catch(() => {});
+      return res.status(500).json({ error: 'Erro interno. Tente novamente.' });
+    }
+  }
+
+  // ── Modo: currículo do onboarding anônimo (/onboarding/curriculo) ───────────
+  // Diferente de create_cv: NÃO exige conta nem créditos — é a entrega de valor
+  // que o visitante recebe ANTES de se cadastrar. Como roda sem autenticação e
+  // custa IA, a proteção é rate limit por IP (lib/ratelimit.js, persistente).
+  // Retorna o mesmo shape de `cv_otimizado` usado pela análise e renderizado
+  // por /cv, para o handoff via localStorage funcionar sem conversão.
+  if (action === 'onboarding_cv') {
+    const obIp = clientIp(req);
+    if (!(await checkAndCountLimit({ key: `ip:${obIp}:obcv`, limit: OB_CV_IP_LIMIT, windowMs: OB_CV_WINDOW_MS }))) {
+      return res.status(429).json({
+        error: 'limite_atingido',
+        message: 'Você já criou currículos gratuitos recentemente. Crie sua conta para continuar.',
+      });
+    }
+
+    const obNome    = typeof req.body.nome === 'string' ? req.body.nome.trim() : '';
+    const obCargo   = typeof req.body.cargo_objetivo === 'string' ? req.body.cargo_objetivo.trim() : '';
+    const obExp     = typeof req.body.experiencias === 'string' ? req.body.experiencias.trim() : '';
+    const obForm    = typeof req.body.formacao === 'string' ? req.body.formacao.trim() : '';
+    const obSkills  = typeof req.body.habilidades === 'string' ? req.body.habilidades.trim() : '';
+    const obContato = req.body.contato && typeof req.body.contato === 'object' ? req.body.contato : {};
+
+    if (!obNome)  return res.status(400).json({ error: 'Nome é obrigatório.' });
+    if (!obCargo) return res.status(400).json({ error: 'Cargo desejado é obrigatório.' });
+    if (obNome.length > 200)   return res.status(400).json({ error: 'Nome muito longo (máx. 200 caracteres).' });
+    if (obCargo.length > 200)  return res.status(400).json({ error: 'Cargo muito longo (máx. 200 caracteres).' });
+    if (obExp.length > 10000)  return res.status(400).json({ error: 'Experiência muito longa (máx. 10.000 caracteres).' });
+    if (obForm.length > 5000)  return res.status(400).json({ error: 'Formação muito longa (máx. 5.000 caracteres).' });
+    if (obSkills.length > 2000) return res.status(400).json({ error: 'Habilidades muito longas (máx. 2.000 caracteres).' });
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(500).json({ error: 'Chave de API não configurada.' });
+    }
+
+    const obPrompt = `Você é especialista em currículos otimizados para ATS (Applicant Tracking System). Monte um currículo profissional a partir dos dados abaixo, escritos de forma informal pelo próprio candidato.
+
+⚠️ REGRA ABSOLUTA: use SOMENTE o que está nos dados. NUNCA invente empresas, cargos, datas, métricas, números, certificações ou habilidades que não foram informados. Se algo não foi informado, omita o campo (array vazio ou string vazia). É melhor um currículo curto e verdadeiro do que um completo e inventado.
+
+DADOS DO CANDIDATO:
+Nome: ${obNome}
+Cargo desejado: ${obCargo}
+${obExp ? `Experiência (texto livre do candidato): ${obExp}` : 'Experiência: não informada'}
+${obForm ? `Formação: ${obForm}` : 'Formação: não informada'}
+${obSkills ? `Habilidades: ${obSkills}` : 'Habilidades: não informadas'}
+
+TAREFA:
+- Transforme o texto informal de experiência em bullets profissionais (verbo de ação no passado + o que fazia). Só inclua métricas que o candidato escreveu.
+- Se o candidato não separou empresa/cargo/período claramente, faça a melhor interpretação do texto — mas não invente o que não dá para inferir; deixe o campo como string vazia.
+- Resumo profissional: 3-4 linhas conectando o perfil real ao cargo desejado, sem inventar senioridade ou anos de experiência.
+- Habilidades: liste as informadas; se o candidato não informou nenhuma, use array vazio.
+
+Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato exato:
+{
+  "nome": "${obNome}",
+  "titulo_profissional": "<cargo desejado, formatado profissionalmente>",
+  "resumo_profissional": "<3-4 linhas>",
+  "experiencias": [
+    { "cargo": "<cargo>", "empresa": "<empresa>", "periodo": "<período ou string vazia>", "bullets": ["<bullet 1>", "<bullet 2>"] }
+  ],
+  "formacao": [
+    { "curso": "<curso>", "instituicao": "<instituição>", "periodo": "<período ou string vazia>" }
+  ],
+  "habilidades": ["<skill 1>", "<skill 2>"]
+}`;
+
+    try {
+      const obRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 2000,
+          temperature: 0.3,
+          messages: [{ role: 'user', content: obPrompt }],
+        }),
+      });
+      if (!obRes.ok) {
+        console.error('onboarding_cv: IA retornou', obRes.status);
+        return res.status(502).json({ error: 'Erro ao gerar currículo. Tente novamente.' });
+      }
+      const obData = await obRes.json();
+      let obText = obData.content?.[0]?.text || '';
+      obText = obText.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+
+      let obCv = null;
+      try {
+        obCv = JSON.parse(obText);
+      } catch {
+        const m = obText.match(/\{[\s\S]*\}/);
+        try { obCv = m ? JSON.parse(m[0]) : null; } catch { obCv = null; }
+      }
+      if (!obCv || typeof obCv !== 'object') {
+        console.error('onboarding_cv: JSON inválido |', obText.slice(0, 300));
+        return res.status(502).json({ error: 'Não conseguimos montar o currículo. Tente novamente.' });
+      }
+
+      // Normaliza: garante o shape que /cv espera, mesmo se a IA omitir campos.
+      // O contato vem do formulário (não da IA) — nunca deve ser inventado.
+      const obClean = {
+        nome: String(obCv.nome || obNome).slice(0, 200),
+        titulo_profissional: String(obCv.titulo_profissional || obCargo).slice(0, 200),
+        contato: {
+          email:    String(obContato.email || '').slice(0, 200),
+          telefone: String(obContato.telefone || '').slice(0, 60),
+          linkedin: String(obContato.linkedin || '').slice(0, 300),
+          cidade:   String(obContato.cidade || '').slice(0, 120),
+        },
+        resumo_profissional: String(obCv.resumo_profissional || '').slice(0, 2000),
+        experiencias: Array.isArray(obCv.experiencias) ? obCv.experiencias.slice(0, 8).map(e => ({
+          cargo:    String(e?.cargo || '').slice(0, 200),
+          empresa:  String(e?.empresa || '').slice(0, 200),
+          periodo:  String(e?.periodo || '').slice(0, 100),
+          bullets:  Array.isArray(e?.bullets) ? e.bullets.slice(0, 6).map(b => String(b).slice(0, 500)) : [],
+        })) : [],
+        formacao: Array.isArray(obCv.formacao) ? obCv.formacao.slice(0, 6).map(f => ({
+          curso:       String(f?.curso || '').slice(0, 200),
+          instituicao: String(f?.instituicao || '').slice(0, 200),
+          periodo:     String(f?.periodo || '').slice(0, 100),
+        })) : [],
+        habilidades: Array.isArray(obCv.habilidades) ? obCv.habilidades.slice(0, 20).map(s => String(s).slice(0, 100)) : [],
+      };
+
+      return res.status(200).json({ cv: obClean });
+    } catch (err) {
+      console.error('onboarding_cv error:', err.message);
       return res.status(500).json({ error: 'Erro interno. Tente novamente.' });
     }
   }
