@@ -427,6 +427,18 @@ var _generating = false;
 function track(name, params) {
   try { if (typeof gtag === 'function') gtag('event', name, params || {}); } catch(e) {}
 }
+
+// page_view manual para navegação por pushState (ver renderStep)
+function trackPageView(path) {
+  try {
+    if (typeof gtag !== 'function') return;
+    gtag('event', 'page_view', {
+      page_path: path,
+      page_location: window.location.origin + path,
+      page_title: document.title
+    });
+  } catch(e) {}
+}
 function saveState() { try { sessionStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch(e) {} }
 function loadState() {
   try { var raw = sessionStorage.getItem(STATE_KEY); if (raw) state = Object.assign(state, JSON.parse(raw)); } catch(e) {}
@@ -473,6 +485,9 @@ function renderStep(n, push) {
   if (push && window.location.pathname !== url) history.pushState({ step:n }, '', url);
   window.scrollTo(0, 0);
   track('onboarding_cv_step' + n + '_view');
+  // Sem este page_view manual, as etapas 2-5 (navegadas por pushState) não
+  // apareceriam no relatório de Páginas do GA4 — ver comentário no fluxo /vaga.
+  trackPageView(url);
 }
 function goStep(n) { renderStep(n, true); }
 function goBack() { history.back(); }

@@ -420,6 +420,18 @@ function track(name, params) {
   try { if (typeof gtag === 'function') gtag('event', name, params || {}); } catch(e) {}
 }
 
+// page_view manual para navegação por pushState (ver renderStep)
+function trackPageView(path) {
+  try {
+    if (typeof gtag !== 'function') return;
+    gtag('event', 'page_view', {
+      page_path: path,
+      page_location: window.location.origin + path,
+      page_title: document.title
+    });
+  } catch(e) {}
+}
+
 /* ── Persistência: sobreviver a refresh, troca de aba e volta do e-mail ── */
 function saveState() {
   try { sessionStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch(e) {}
@@ -475,6 +487,11 @@ function renderStep(n, push) {
   }
   window.scrollTo(0, 0);
   track('onboarding_vaga_step' + n + '_view');
+  // O page_view automático do GA4 só dispara no carregamento: como a
+  // navegação é por pushState, sem este disparo manual as etapas 2-5 nunca
+  // apareceriam no relatório de Páginas (e o funil de drop-off por etapa,
+  // que é a razão de cada etapa ter URL própria, ficaria cego).
+  trackPageView(url);
 }
 
 function goStep(n) { renderStep(n, true); }
