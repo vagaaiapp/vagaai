@@ -111,6 +111,28 @@ textarea{min-height:210px}
 textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
 .ob-count{font-size:11.5px;color:var(--muted);margin-top:8px;text-align:right}
 
+/* ── Link da vaga ─────────────────────────────────────────────────────── */
+.ob-url-row{display:flex;gap:8px}
+.ob-url-row input{flex:1;min-width:0}
+.ob-url-btn{
+  flex-shrink:0;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;
+  padding:0 18px;color:var(--text);font-family:inherit;font-size:14px;font-weight:700;
+  cursor:pointer;min-height:52px;transition:border-color .18s,background .18s;
+}
+.ob-url-btn:hover:not(:disabled){border-color:var(--green-border);background:var(--surface)}
+.ob-url-btn:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:480px){
+  .ob-url-row{flex-direction:column}
+  .ob-url-btn{width:100%;padding:14px}
+}
+.ob-url-status{font-size:12.5px;margin-top:10px;line-height:1.45}
+.ob-url-status.load{color:var(--muted)}
+.ob-url-status.ok{color:var(--green);font-weight:600}
+.ob-url-status.warn{color:var(--yellow)}
+.ob-url-status.bad{color:var(--red)}
+.ob-sep{display:flex;align-items:center;gap:12px;margin:20px 0 14px;color:var(--muted);font-size:11.5px;font-weight:600}
+.ob-sep::before,.ob-sep::after{content:"";flex:1;height:1px;background:var(--border)}
+
 /* ── Upload ───────────────────────────────────────────────────────────── */
 .ob-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
 @media(max-width:520px){.ob-methods{grid-template-columns:1fr}}
@@ -274,8 +296,17 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
   <section class="ob-step" id="step2">
     <div class="ob-eyebrow">Etapa 2</div>
     <h1 id="step2Title">Vamos calcular seu score de compatibilidade</h1>
-    <p class="ob-sub">Cole a descrição completa da vaga — quanto mais detalhes, melhor a análise.</p>
-    <textarea id="jobInput" placeholder="Cole aqui o link ou a descrição completa da vaga..." oninput="onJobInput()"></textarea>
+    <p class="ob-sub">Cole o link da vaga que a gente carrega pra você — ou cole a descrição direto.</p>
+
+    <div class="ob-url-row">
+      <input type="text" id="jobUrl" placeholder="Cole o link da vaga (LinkedIn, Gupy, Indeed...)" inputmode="url" onkeydown="if(event.key==='Enter'){event.preventDefault();loadFromUrl()}">
+      <button class="ob-url-btn" id="urlBtn" onclick="loadFromUrl()">Carregar</button>
+    </div>
+    <div class="ob-url-status" id="urlStatus" style="display:none"></div>
+
+    <div class="ob-sep"><span>ou cole a descrição</span></div>
+
+    <textarea id="jobInput" placeholder="Cole aqui a descrição completa da vaga..." oninput="onJobInput()"></textarea>
     <div class="ob-count" id="jobCount">0 caracteres</div>
     <div class="ob-err" id="jobErr" style="display:none"></div>
     <button class="ob-btn" id="jobNext" onclick="goStep(3)" disabled>Continuar →</button>
@@ -413,7 +444,7 @@ var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 var STATE_KEY = 'vagaai_ob_vaga';
 var TOTAL_STEPS = 5;
-var state = { intent:'', job:'', cv:'', cvName:'', result:null, step:1 };
+var state = { intent:'', job:'', jobUrl:'', cv:'', cvName:'', result:null, step:1 };
 var _analysisRunning = false;
 
 function track(name, params) {
@@ -515,6 +546,66 @@ function pickIntent(intent) {
 }
 
 /* ── Etapa 2: vaga ─────────────────────────────────────────────────────── */
+
+// Carrega a descrição a partir do link (mesma API usada pelo /app). Alguns
+// sites bloqueiam leitura automática — nesses casos o campo de texto abaixo
+// continua sendo o caminho, então a falha nunca trava a etapa.
+async function loadFromUrl() {
+  var url = (document.getElementById('jobUrl').value || '').trim();
+  var st = document.getElementById('urlStatus');
+  var btn = document.getElementById('urlBtn');
+
+  if (!url) {
+    st.className = 'ob-url-status warn';
+    st.textContent = 'Cole o link da vaga primeiro.';
+    st.style.display = 'block';
+    return;
+  }
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+  btn.disabled = true;
+  btn.textContent = 'Carregando...';
+  st.className = 'ob-url-status load';
+  st.textContent = 'Lendo a página da vaga...';
+  st.style.display = 'block';
+  track('onboarding_vaga_url_load');
+
+  try {
+    var res = await fetch('/api/fetch-job?url=' + encodeURIComponent(url));
+    var data = await res.json();
+
+    if (data && data.text && data.text.length > 50) {
+      var ta = document.getElementById('jobInput');
+      ta.value = data.text;
+      ta.dispatchEvent(new Event('input'));
+      state.jobUrl = url;
+      saveState();
+      st.className = 'ob-url-status ok';
+      st.textContent = '✓ Vaga carregada — ' + data.text.length + ' caracteres. Revise abaixo se quiser.';
+      track('onboarding_vaga_url_ok', { source: data.source || '' });
+    } else if (res.status === 422 || (data && data.error === 'scraping_blocked')) {
+      st.className = 'ob-url-status warn';
+      st.innerHTML = '⚠ Esta plataforma bloqueia leitura automática. <b>Cole o texto da vaga</b> no campo abaixo.';
+      document.getElementById('jobInput').focus();
+      track('onboarding_vaga_url_blocked');
+    } else if (res.status === 429) {
+      st.className = 'ob-url-status warn';
+      st.textContent = 'Muitas tentativas seguidas. Aguarde um instante ou cole o texto abaixo.';
+    } else {
+      st.className = 'ob-url-status warn';
+      st.textContent = 'Não conseguimos ler essa página. Cole a descrição no campo abaixo.';
+      track('onboarding_vaga_url_fail');
+    }
+  } catch (e) {
+    st.className = 'ob-url-status bad';
+    st.textContent = 'Erro ao carregar o link. Cole a descrição no campo abaixo.';
+    track('onboarding_vaga_url_fail');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Carregar';
+}
+
 function onJobInput() {
   var v = document.getElementById('jobInput').value;
   state.job = v;
@@ -660,10 +751,12 @@ async function startAnalysis() {
   }, 15000);
 
   try {
+    var payload = { cv: state.cv, job: state.job };
+    if (state.jobUrl) payload.job_url = state.jobUrl; // guarda a origem da vaga
     var res = await fetch('/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cv: state.cv, job: state.job })
+      body: JSON.stringify(payload)
     });
 
     clearInterval(tipTimer);
@@ -873,6 +966,7 @@ async function signupEmail() {
 
   // Repõe o que já tinha sido preenchido (refresh, voltar do e-mail, etc.)
   if (state.intent) document.getElementById('step2Title').textContent = INTENT_TITLES[state.intent] || INTENT_TITLES.ats;
+  if (state.jobUrl) document.getElementById('jobUrl').value = state.jobUrl;
   if (state.job) {
     document.getElementById('jobInput').value = state.job;
     document.getElementById('jobCount').textContent = state.job.length + ' caracteres';
