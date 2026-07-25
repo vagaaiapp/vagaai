@@ -739,7 +739,14 @@ function showJobPreview(p) {
   if (p.contrato)   chips.push({ t:p.contrato, c:'contract' });
   if (p.nivel)      chips.push({ t:p.nivel, c:'' });
   if (p.modalidade) chips.push({ t:p.modalidade.charAt(0).toUpperCase() + p.modalidade.slice(1).toLowerCase(), c:'' });
-  if (p.cidade)     chips.push({ t:p.cidade.replace(/\b\w/g, function(m){ return m.toUpperCase(); }), c:'' });
+  // Capitaliza por palavra sem usar \b\w: em "são paulo" o ã não é \w, o que
+  // criaria uma falsa fronteira e produziria "SãO Paulo".
+  if (p.cidade) {
+    var cidadeFmt = p.cidade.split(/\s+/).map(function(w){
+      return w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w;
+    }).join(' ');
+    chips.push({ t:cidadeFmt, c:'' });
+  }
   document.getElementById('jpChips').innerHTML = chips.map(function(x){
     return '<span class="jp-chip ' + x.c + '">' + esc(x.t) + '</span>';
   }).join('');
