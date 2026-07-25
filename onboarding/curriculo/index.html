@@ -301,18 +301,20 @@ select:focus{outline:none;border-color:var(--green-border)}
     <h1>Vamos começar pelo que você já tem</h1>
     <p class="ob-sub" id="step2Sub">Se você já tem um currículo em PDF, importe — a gente aproveita tudo e você só revisa.</p>
     <div class="ob-choices">
-      <button class="ob-choice" onclick="document.getElementById('cvFile').click()">
+      <button class="ob-choice" id="importTrigger" onclick="openCvImport()">
         <span class="ob-choice-ic">📎</span>
         <span class="ob-choice-tx">
           <span class="ob-choice-t">Importar currículo existente</span>
-          <span class="ob-choice-d">PDF, Word ou TXT — a gente extrai os dados</span>
+          <span class="ob-choice-d">PDF, DOCX ou TXT · até 5 MB — a gente extrai os dados</span>
         </span>
         <span class="ob-choice-arrow">→</span>
       </button>
     </div>
     <input type="file" id="cvFile" accept=".txt,.pdf,.docx" style="display:none" onchange="handleImport(this)">
-    <div id="impOk" class="ob-ok" style="display:none"></div>
-    <div id="impErr" class="ob-err" style="display:none"></div>
+    <div id="impOk" class="ob-ok" role="status" aria-live="polite" style="display:none"></div>
+    <div id="impErr" class="ob-err" role="alert" aria-live="assertive" style="display:none"></div>
+    <button class="ob-btn" id="importNext" onclick="continueAfterImport()" style="display:none;margin-top:12px">Continuar para revisar os dados →</button>
+    <button class="ob-btn ghost" id="importFallback" onclick="continueWithoutImport()" style="display:none">Preencher manualmente →</button>
     <button class="ob-link" onclick="skipImport()">Prefiro montar do zero</button>
     <div class="ob-note"><span>🔒</span><span>Seus dados não treinam nenhuma IA — usados só para montar o seu currículo.</span></div>
   </section>
@@ -586,6 +588,7 @@ function renderStep(n, push) {
     dots[d].classList.toggle('now', d + 1 === n);
   }
   document.getElementById('backBtn').hidden = (n === 1 || n === 5);
+  if (n === 2) restoreImportUi();
 
   var url = '/onboarding/curriculo/' + n;
   if (push && window.location.pathname !== url) history.pushState({ step:n }, '', url);
@@ -658,6 +661,68 @@ function skipImport() {
   goStep(3);
 }
 
+function openCvImport() {
+  var input = document.getElementById('cvFile');
+  var okEl = document.getElementById('impOk');
+  var errEl = document.getElementById('impErr');
+  var nextEl = document.getElementById('importNext');
+  var fallbackEl = document.getElementById('importFallback');
+  input.value = '';
+  errEl.style.display = 'none';
+  fallbackEl.style.display = 'none';
+  if (state.imported && state.importedName) {
+    showImportSuccess(state.importedName);
+  } else {
+    okEl.style.display = 'none';
+    nextEl.style.display = 'none';
+  }
+  input.click();
+}
+
+function setImportBusy(isBusy) {
+  var trigger = document.getElementById('importTrigger');
+  trigger.disabled = isBusy;
+  trigger.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+}
+
+function showImportSuccess(fileName) {
+  var okEl = document.getElementById('impOk');
+  document.getElementById('impErr').style.display = 'none';
+  document.getElementById('importFallback').style.display = 'none';
+  okEl.textContent = '✓ ' + fileName + ' lido — seus dados estão prontos para revisão.';
+  okEl.style.display = 'flex';
+  document.getElementById('importNext').style.display = 'block';
+  setImportBusy(false);
+}
+
+function showImportError(message) {
+  var errEl = document.getElementById('impErr');
+  document.getElementById('impOk').style.display = 'none';
+  document.getElementById('importNext').style.display = 'none';
+  errEl.textContent = message;
+  errEl.style.display = 'block';
+  document.getElementById('importFallback').style.display = 'block';
+  setImportBusy(false);
+}
+
+function restoreImportUi() {
+  if (state.imported && state.importedName) showImportSuccess(state.importedName);
+}
+
+function continueAfterImport() {
+  if (!state.imported) {
+    showImportError('O arquivo ainda não foi processado. Tente importar novamente ou preencha manualmente.');
+    return;
+  }
+  track('onboarding_cv_import_continue', { method: 'upload' });
+  goStep(3);
+}
+
+function continueWithoutImport() {
+  track('onboarding_cv_import_continue', { method: 'manual_after_error' });
+  goStep(3);
+}
+
 function loadScript(src) {
   return new Promise(function(resolve, reject) {
     var s = document.createElement('script');
@@ -703,18 +768,27 @@ async function handleImport(input) {
   var okEl = document.getElementById('impOk');
   var errEl = document.getElementById('impErr');
   errEl.style.display = 'none';
+  document.getElementById('importNext').style.display = 'none';
+  document.getElementById('importFallback').style.display = 'none';
+  setImportBusy(true);
 
-  if (file.size > 5 * 1024 * 1024) {
-    errEl.textContent = 'Não conseguimos extrair os dados automaticamente. Sem problema — vamos preencher manualmente.';
-    errEl.style.display = 'block';
+  var ext = (file.name.split('.').pop() || '').toLowerCase();
+  if (['pdf', 'docx', 'txt'].indexOf(ext) === -1) {
     input.value = '';
-    setTimeout(function() { goStep(3); }, 1400);
+    showImportError('Formato não compatível. Envie um arquivo PDF, DOCX ou TXT.');
+    track('onboarding_cv_extraction_success', { success: false, reason: 'format' });
     return;
   }
 
-  okEl.style.display = 'block';
+  if (file.size > 5 * 1024 * 1024) {
+    input.value = '';
+    showImportError('O arquivo ultrapassa 5 MB. Envie uma versão menor ou continue preenchendo manualmente.');
+    track('onboarding_cv_extraction_success', { success: false, reason: 'size' });
+    return;
+  }
+
+  okEl.style.display = 'flex';
   okEl.textContent = 'Lendo ' + file.name + '...';
-  var ext = (file.name.split('.').pop() || '').toLowerCase();
 
   try {
     var text = '';
@@ -734,17 +808,13 @@ async function handleImport(input) {
       state.form = Object.assign({}, state.form, { nome: firstLine });
     }
     saveState();
-    okEl.textContent = '✓ ' + file.name + ' lido — revise os dados na próxima etapa';
+    showImportSuccess(file.name);
     track('onboarding_cv_import_method', { method: 'upload' });
     track('onboarding_cv_extraction_success', { success: true });
-    setTimeout(function() { goStep(3); }, 900);
   } catch (e) {
-    okEl.style.display = 'none';
-    errEl.textContent = 'Não conseguimos extrair os dados automaticamente. Sem problema — vamos preencher manualmente.';
-    errEl.style.display = 'block';
     input.value = '';
-    track('onboarding_cv_extraction_success', { success: false });
-    setTimeout(function() { goStep(3); }, 1600);
+    showImportError('Não conseguimos ler o conteúdo desse arquivo. Tente outra versão ou continue preenchendo manualmente.');
+    track('onboarding_cv_extraction_success', { success: false, reason: e && e.message ? e.message : 'unknown' });
   }
 }
 

@@ -7,6 +7,14 @@ const sharedSource = fs.readFileSync(
   new URL('../onboarding/shared.js', import.meta.url),
   'utf8'
 );
+const vagaHtml = fs.readFileSync(
+  new URL('../onboarding/vaga/index.html', import.meta.url),
+  'utf8'
+);
+const curriculoHtml = fs.readFileSync(
+  new URL('../onboarding/curriculo/index.html', import.meta.url),
+  'utf8'
+);
 
 function createStorage() {
   const values = new Map();
@@ -195,5 +203,44 @@ describe('Onboarding adaptativo', () => {
     assert.equal(result.errors.length, 0);
     assert.equal(result.alert.reason, 'not_requested');
     assert.equal(alertCalls, 0);
+  });
+
+  it('mantém uma saída explícita após importar o currículo', () => {
+    assert.match(curriculoHtml, /id="importNext"[^>]*onclick="continueAfterImport\(\)"/);
+    assert.match(curriculoHtml, /function continueAfterImport\(\)/);
+    assert.match(curriculoHtml, /function continueWithoutImport\(\)/);
+    assert.doesNotMatch(
+      curriculoHtml,
+      /setTimeout\(function\(\)\s*\{\s*goStep\(3\);\s*\}/,
+      'o upload não deve depender de redirecionamento automático'
+    );
+  });
+
+  it('restaura o CTA quando um currículo já foi processado', () => {
+    assert.match(curriculoHtml, /if \(n === 2\) restoreImportUi\(\)/);
+    assert.match(
+      curriculoHtml,
+      /if \(state\.imported && state\.importedName\) showImportSuccess\(state\.importedName\)/
+    );
+  });
+
+  it('informa os mesmos formatos que os campos de upload aceitam', () => {
+    for (const html of [vagaHtml, curriculoHtml]) {
+      assert.match(html, /accept="\.txt,\.pdf,\.docx"/);
+      assert.match(html, /PDF, DOCX ou TXT/);
+      assert.doesNotMatch(html, /PDF, Word ou TXT/);
+    }
+  });
+
+  it('permite reenviar o mesmo arquivo depois de uma falha', () => {
+    assert.match(curriculoHtml, /function openCvImport\(\)[\s\S]*?input\.value = '';/);
+    assert.match(vagaHtml, /function openCvUpload\(\)[\s\S]*?input\.value = '';/);
+  });
+
+  it('preserva o último upload válido quando o seletor é aberto e cancelado', () => {
+    assert.match(
+      curriculoHtml,
+      /function openCvImport\(\)[\s\S]*?if \(state\.imported && state\.importedName\) \{[\s\S]*?showImportSuccess\(state\.importedName\);/
+    );
   });
 });

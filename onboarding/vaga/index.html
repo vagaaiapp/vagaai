@@ -420,10 +420,10 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
     <p class="ob-sub" id="cvStepSub">Envie o arquivo ou cole o texto — o que for mais rápido pra você.</p>
     <div id="existingCvPanel">
     <div class="ob-methods">
-      <button class="ob-method" id="mUpload" onclick="document.getElementById('cvFile').click()">
+      <button class="ob-method" id="mUpload" onclick="openCvUpload()">
         <span class="ob-method-ic">📎</span>
         <span class="ob-method-t">Enviar arquivo</span>
-        <span class="ob-method-d">PDF, Word ou TXT</span>
+        <span class="ob-method-d">PDF, DOCX ou TXT · até 5 MB</span>
       </button>
       <button class="ob-method" id="mPaste" onclick="showPaste()">
         <span class="ob-method-ic">📋</span>
@@ -432,8 +432,8 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
       </button>
     </div>
     <input type="file" id="cvFile" accept=".txt,.pdf,.docx" style="display:none" onchange="handleCvFile(this)">
-    <div id="cvOk" class="ob-file-ok" style="display:none"></div>
-    <div id="cvErr" class="ob-err" style="display:none"></div>
+    <div id="cvOk" class="ob-file-ok" role="status" aria-live="polite" style="display:none"></div>
+    <div id="cvErr" class="ob-err" role="alert" aria-live="assertive" style="display:none"></div>
     <div id="pasteWrap" style="display:none;margin-top:12px">
       <textarea id="cvInput" placeholder="Cole aqui o texto do seu currículo..." oninput="onCvInput()"></textarea>
       <div class="ob-count" id="cvCount">0 caracteres</div>
@@ -1075,6 +1075,19 @@ function showPaste() {
   document.getElementById('cvInput').focus();
 }
 
+function openCvUpload() {
+  var input = document.getElementById('cvFile');
+  input.value = '';
+  document.getElementById('cvErr').style.display = 'none';
+  input.click();
+}
+
+function setCvUploadBusy(isBusy) {
+  var upload = document.getElementById('mUpload');
+  upload.disabled = isBusy;
+  upload.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+}
+
 function onCvInput() {
   var v = document.getElementById('cvInput').value;
   state.cv = v;
@@ -1131,15 +1144,25 @@ async function handleCvFile(input) {
   var errEl = document.getElementById('cvErr');
   var okEl = document.getElementById('cvOk');
   errEl.style.display = 'none';
+  setCvUploadBusy(true);
 
-  if (file.size > 5 * 1024 * 1024) {
-    errEl.textContent = 'Não conseguimos ler esse arquivo. Tente um PDF de até 5MB, ou cole o texto direto.';
+  var ext = (file.name.split('.').pop() || '').toLowerCase();
+  if (['pdf', 'docx', 'txt'].indexOf(ext) === -1) {
+    errEl.textContent = 'Formato não compatível. Envie um arquivo PDF, DOCX ou TXT.';
     errEl.style.display = 'block';
     input.value = '';
+    setCvUploadBusy(false);
     return;
   }
 
-  var ext = (file.name.split('.').pop() || '').toLowerCase();
+  if (file.size > 5 * 1024 * 1024) {
+    errEl.textContent = 'O arquivo ultrapassa 5 MB. Envie uma versão menor ou cole o texto do currículo.';
+    errEl.style.display = 'block';
+    input.value = '';
+    setCvUploadBusy(false);
+    return;
+  }
+
   okEl.style.display = 'block';
   okEl.textContent = 'Lendo ' + file.name + '...';
 
@@ -1161,12 +1184,14 @@ async function handleCvFile(input) {
     document.getElementById('mPaste').classList.remove('on');
     document.getElementById('pasteWrap').style.display = 'none';
     document.getElementById('cvNext').disabled = false;
+    setCvUploadBusy(false);
     track('onboarding_vaga_cv_method', { method: 'upload' });
   } catch (e) {
     okEl.style.display = 'none';
     errEl.textContent = 'Não conseguimos ler esse arquivo. Tente um PDF de até 5MB, ou cole o texto direto.';
     errEl.style.display = 'block';
     input.value = '';
+    setCvUploadBusy(false);
     showPaste();
   }
 }
@@ -1320,7 +1345,7 @@ function configureCvStep() {
     quick.hidden = true;
     quick.style.display = 'none';
     title.textContent = 'Agora, envie seu currículo';
-    sub.textContent = 'PDF, Word ou texto. A análise compara o seu currículo com os requisitos da vaga.';
+    sub.textContent = 'PDF, DOCX ou texto. A análise compara o seu currículo com os requisitos da vaga.';
   }
 }
 
