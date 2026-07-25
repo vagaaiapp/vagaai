@@ -247,8 +247,8 @@ select:focus{outline:none;border-color:var(--green-border)}
       </div>
     </div>
     <div id="cvSituationPanel" hidden>
-      <h1>Qual sua situação hoje?</h1>
-      <p class="ob-sub">Assim a gente adapta as próximas perguntas ao seu momento.</p>
+      <h1 id="situationTitle">Qual sua situação hoje?</h1>
+      <p class="ob-sub" id="situationSub">Assim a gente adapta as próximas perguntas ao seu momento.</p>
       <div class="ob-choices">
       <button class="ob-choice" onclick="pickSit('atualizar')">
         <span class="ob-choice-ic">📄</span>
@@ -442,11 +442,11 @@ select:focus{outline:none;border-color:var(--green-border)}
     </div>
 
     <div class="ob-gate">
-      <button class="ob-btn" style="margin-top:0" onclick="openSignup()">Salvar e baixar meu currículo grátis →</button>
-      <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.45">
+      <button class="ob-btn" id="primaryGateCta" style="margin-top:0" onclick="openSignup()">Salvar e baixar meu currículo grátis →</button>
+      <div id="primaryGateNote" style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.45">
         Criar conta leva 20 segundos e mantém seu currículo salvo para editar quando quiser.
       </div>
-      <button class="ob-cross" onclick="signupThenAlerts()">
+      <button class="ob-cross" id="alertsCrossSell" onclick="signupThenAlerts()">
         🔔 <b>Quer receber vagas compatíveis com esse currículo?</b><br>
         <span style="color:var(--muted);font-weight:500;font-size:12.5px">Ativar alertas de vagas junto com a conta →</span>
       </button>
@@ -465,8 +465,8 @@ select:focus{outline:none;border-color:var(--green-border)}
 <div class="ob-modal" id="signupModal">
   <div class="ob-modal-box">
     <div id="signupForm">
-      <div class="ob-modal-t">Criar conta grátis</div>
-      <div class="ob-modal-d">Seu currículo já está montado — criando a conta ele fica salvo e pronto pra baixar.</div>
+      <div class="ob-modal-t" id="signupModalTitle">Criar conta grátis</div>
+      <div class="ob-modal-d" id="signupModalDesc">Seu currículo já está montado — criando a conta ele fica salvo e pronto pra baixar.</div>
       <button class="ob-gbtn" onclick="signupGoogle()">
         <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.65l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84z"/><path fill="#EA4335" d="M12 4.75c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 1.46 14.97.5 12 .5A11 11 0 0 0 2.18 7.05l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
         Continuar com Google
@@ -508,7 +508,7 @@ var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 var STATE_KEY = 'vagaai_ob_cv';
 var TOTAL_STEPS = 5;
 var state = {
-  entry:'no-cv', flow:'', hasCv:false, hasJob:null, sit:'',
+  entry:'no-cv', flow:'', goal:'', hasCv:false, hasJob:null, sit:'',
   imported:'', importedName:'', tpl:'modern', form:{}, cv:null,
   alertDraft:{cargo:'',local:'',modalidade:'',salario:'',frequencia:'semanal',scoreMinimo:70,activate:true},
   step:1
@@ -638,6 +638,36 @@ function restoreCvQualification() {
   var resolvedNoJob = state.hasJob === false;
   hasQuestion.hidden = resolvedNoJob;
   sitPanel.hidden = !resolvedNoJob;
+}
+
+function applyJourneyGoal() {
+  var alertGoal = state.goal === 'alerts';
+  var title = document.getElementById('situationTitle');
+  var sub = document.getElementById('situationSub');
+  var primaryCta = document.getElementById('primaryGateCta');
+  var primaryNote = document.getElementById('primaryGateNote');
+  var crossSell = document.getElementById('alertsCrossSell');
+  var modalTitle = document.getElementById('signupModalTitle');
+  var modalDesc = document.getElementById('signupModalDesc');
+
+  if (alertGoal) {
+    if (title) title.textContent = 'Vamos usar seu currículo para encontrar vagas mais alinhadas';
+    if (sub) sub.textContent = 'Primeiro confirme seu momento profissional. Depois revisamos seu currículo e deixamos seu radar de oportunidades preparado.';
+    if (primaryCta) primaryCta.textContent = 'Salvar currículo e ativar meu alerta grátis →';
+    if (primaryNote) primaryNote.textContent = 'Crie sua conta para salvar o currículo, revisar o perfil monitorado e ativar o primeiro alerta semanal.';
+    if (crossSell) crossSell.style.display = 'none';
+    if (modalTitle) modalTitle.textContent = 'Salvar currículo e ativar alerta';
+    if (modalDesc) modalDesc.textContent = 'Seu currículo e seu radar já estão preparados. Crie a conta grátis para salvar os dados e revisar o alerta antes do primeiro envio.';
+    return;
+  }
+
+  if (title) title.textContent = 'Qual sua situação hoje?';
+  if (sub) sub.textContent = 'Assim a gente adapta as próximas perguntas ao seu momento.';
+  if (primaryCta) primaryCta.textContent = 'Salvar e baixar meu currículo grátis →';
+  if (primaryNote) primaryNote.textContent = 'Criar conta leva 20 segundos e mantém seu currículo salvo para editar quando quiser.';
+  if (crossSell) crossSell.style.display = '';
+  if (modalTitle) modalTitle.textContent = 'Criar conta grátis';
+  if (modalDesc) modalDesc.textContent = 'Seu currículo já está montado — criando a conta ele fica salvo e pronto pra baixar.';
 }
 
 function pickSit(sit) {
@@ -1078,9 +1108,9 @@ var _wantAlerts = false;
 function openSignup() {
   saveCvRadarDraft();
   saveState();
-  _wantAlerts = false;
+  _wantAlerts = state.goal === 'alerts' && state.alertDraft.activate !== false;
   document.getElementById('signupModal').classList.add('show');
-  track('onboarding_cv_download_clicked');
+  track(_wantAlerts ? 'onboarding_cv_alerts_clicked' : 'onboarding_cv_download_clicked');
 }
 function signupThenAlerts() {
   saveCvRadarDraft();
@@ -1146,6 +1176,7 @@ async function signupEmail() {
   var query = new URLSearchParams(window.location.search);
   var requestedEntry = query.get('entry') || '';
   var mode = query.get('mode') || '';
+  var goal = query.get('goal') || '';
   try {
     var s = await sb.auth.getSession();
     if (s && s.data && s.data.session) {
@@ -1166,13 +1197,16 @@ async function signupEmail() {
     state.hasCv = true;
     state.hasJob = false;
     state.flow = 'cv_no_job';
+    state.goal = goal === 'alerts' ? 'alerts' : '';
   } else if (requestedEntry === 'no-cv') {
     state.entry = 'no-cv';
     state.hasCv = false;
+    state.goal = '';
     if (stepFromUrl() === 1 && !state.sit) state.hasJob = null;
   }
   saveState();
   restoreCvQualification();
+  applyJourneyGoal();
 
   if (state.sit) {
     var c = SIT_COPY[state.sit] || SIT_COPY.primeiro;

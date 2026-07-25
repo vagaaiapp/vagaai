@@ -345,10 +345,10 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
     <div class="ob-eyebrow">Análise de vaga · Grátis</div>
     <div class="ob-context" id="hasJobQuestion">
       <div class="ob-context-title">Você já tem uma vaga específica em vista?</div>
-      <div class="ob-context-sub">A resposta define a jornada certa e evita pedir informações que você ainda não tem.</div>
+      <div class="ob-context-sub">Escolha seu próximo passo. Você pode analisar uma oportunidade agora ou usar seu currículo para encontrar vagas mais alinhadas.</div>
       <div class="ob-inline-choices">
-        <button class="ob-inline-choice" onclick="chooseHasJob(true)">Sim, quero analisar essa vaga</button>
-        <button class="ob-inline-choice" onclick="chooseHasJob(false)">Não, quero melhorar meu currículo</button>
+        <button class="ob-inline-choice" onclick="chooseHasJob(true)">Sim, analisar uma vaga →</button>
+        <button class="ob-inline-choice" onclick="chooseHasJob(false)">Não, encontrar vagas para meu perfil →</button>
       </div>
     </div>
     <div id="intentPanel" hidden>
@@ -761,7 +761,7 @@ function chooseHasJob(hasJob) {
   track('onboarding_vaga_has_job_selected', { has_job: state.hasJob, flow: state.flow });
 
   if (!state.hasJob) {
-    window.location.href = '/onboarding/curriculo/1?mode=cv_no_job';
+    window.location.href = '/onboarding/curriculo/1?mode=cv_no_job&goal=alerts';
     return;
   }
 

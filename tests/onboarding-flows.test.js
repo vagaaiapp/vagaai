@@ -247,6 +247,24 @@ describe('Onboarding adaptativo', () => {
     assert.doesNotMatch(vagaHtml, /onclick="pickIntent\(/);
   });
 
+  it('leva quem não tem vaga para uma jornada de currículo com alerta como objetivo', () => {
+    assert.match(vagaHtml, /Sim, analisar uma vaga →/);
+    assert.match(vagaHtml, /Não, encontrar vagas para meu perfil →/);
+    assert.match(
+      vagaHtml,
+      /\/onboarding\/curriculo\/1\?mode=cv_no_job&amp;goal=alerts|\/onboarding\/curriculo\/1\?mode=cv_no_job&goal=alerts/
+    );
+    assert.doesNotMatch(vagaHtml, /Não, quero melhorar meu currículo/);
+
+    assert.match(curriculoHtml, /state\.goal === 'alerts'/);
+    assert.match(curriculoHtml, /Salvar currículo e ativar meu alerta grátis →/);
+    assert.match(curriculoHtml, /state\.goal = goal === 'alerts' \? 'alerts' : ''/);
+    assert.match(
+      curriculoHtml,
+      /_wantAlerts = state\.goal === 'alerts' && state\.alertDraft\.activate !== false/
+    );
+  });
+
   it('preserva o último upload válido quando o seletor é aberto e cancelado', () => {
     assert.match(
       curriculoHtml,
