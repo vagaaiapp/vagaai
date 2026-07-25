@@ -16,6 +16,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <title>VagaAI — Painel</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/onboarding/shared.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -3043,6 +3044,12 @@ async function init() {
     }
     currentSession = session;
     currentUserId = session.user.id;
+    if (window.VagaAIOnboarding) {
+      await window.VagaAIOnboarding.consume(session, {
+        supabaseUrl: SUPABASE_URL,
+        anonKey: SUPABASE_ANON
+      });
+    }
     var email = session.user.email || '';
     var displayName = (session.user.user_metadata && session.user.user_metadata.full_name) || email.split('@')[0];
     var initials = displayName.slice(0,2).toUpperCase();

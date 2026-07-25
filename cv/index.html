@@ -11,6 +11,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 </script>
 <script src="/cookie-consent.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/onboarding/shared.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Currículo Otimizado</title>
@@ -1836,9 +1837,15 @@ async function cvLoadSaved(id) {
 
 // Init cloud list on page load
 (function() {
-  _initSbSession().then(function(sess) {
+  _initSbSession().then(async function(sess) {
     var msg = document.getElementById('spCloudLoginMsg');
     if (!sess) { if (msg) msg.classList.remove('hidden'); return; }
+    if (window.VagaAIOnboarding) {
+      await window.VagaAIOnboarding.consume(sess, {
+        supabaseUrl: SUPABASE_URL,
+        anonKey: SUPABASE_ANON
+      });
+    }
     cvLoadCloudList();
   });
 }());

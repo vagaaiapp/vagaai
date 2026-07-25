@@ -20,6 +20,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script defer src="/_vercel/insights/script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/onboarding/shared.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -232,6 +233,22 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
 .ob-item-ic{flex-shrink:0;font-weight:800;font-size:13px;margin-top:1px}
 .ob-item-ic.good{color:var(--green)}
 .ob-item-ic.gap{color:var(--yellow)}
+.ob-projection{
+  background:linear-gradient(145deg,var(--green-dim),var(--surface));border:1px solid var(--green-border);
+  border-radius:16px;padding:20px;margin-bottom:12px;
+}
+.ob-projection-label{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--green);margin-bottom:9px}
+.ob-projection-values{display:flex;align-items:center;gap:12px;font-family:'Lora',serif;font-weight:700}
+.ob-projection-before{font-size:24px;color:var(--muted)}
+.ob-projection-arrow{font:700 19px 'DM Sans',sans-serif;color:var(--green)}
+.ob-projection-after{font-size:34px;color:var(--green);line-height:1}
+.ob-projection-note{font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:8px}
+.ob-keywords{display:flex;flex-wrap:wrap;gap:7px}
+.ob-keyword{display:inline-flex;align-items:center;padding:7px 10px;border-radius:999px;background:rgba(201,138,0,.1);border:1px solid rgba(201,138,0,.25);color:var(--yellow);font-size:11.5px;font-weight:700}
+.ob-cv-ready{display:flex;gap:12px;align-items:flex-start;background:var(--green-dim);border:1px solid var(--green-border);border-radius:16px;padding:18px 20px;margin-bottom:12px}
+.ob-cv-ready-ic{width:38px;height:38px;border-radius:10px;background:var(--surface);display:grid;place-items:center;color:var(--green);flex-shrink:0}
+.ob-cv-ready-title{font-size:14px;font-weight:800;line-height:1.35;margin-bottom:4px}
+.ob-cv-ready-meta{font-size:12.5px;color:var(--muted);line-height:1.5}
 
 /* Gate de cadastro — mostra o que vem depois, já com Free vs Pro explícito */
 .ob-gate{
@@ -272,6 +289,28 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
 .ob-sent{background:var(--green-dim);border:1px solid var(--green-border);border-radius:12px;padding:18px;text-align:center;font-size:13.5px;line-height:1.55}
 .ob-close{background:none;border:none;color:var(--muted);font-family:inherit;font-size:13px;cursor:pointer;width:100%;padding:12px;margin-top:6px;min-height:44px}
 .ob-close:hover{color:var(--text)}
+.ob-context{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:18px}
+.ob-context[hidden]{display:none}
+.ob-context-title{font-family:'Lora',serif;font-size:18px;font-weight:700;line-height:1.3;margin-bottom:6px}
+.ob-context-sub{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+.ob-inline-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ob-inline-choice{border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);padding:13px;font:700 13px 'DM Sans',sans-serif;cursor:pointer;min-height:48px}
+.ob-inline-choice:hover{border-color:var(--green-border);background:var(--green-dim)}
+.ob-quick[hidden]{display:none}
+.ob-radar{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;margin-top:18px}
+.ob-radar-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:16px}
+.ob-radar-ic{width:40px;height:40px;border-radius:11px;background:var(--green-dim);display:grid;place-items:center;flex-shrink:0}
+.ob-radar-t{font-family:'Lora',serif;font-size:18px;font-weight:700;line-height:1.3}
+.ob-radar-d{font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:3px}
+.ob-radar-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ob-radar-grid .ob-field{margin:0}
+.ob-radar-grid .wide{grid-column:1/-1}
+.ob-radar-check{display:flex;align-items:flex-start;gap:9px;margin-top:14px;font-size:12.5px;line-height:1.45;color:var(--muted)}
+.ob-radar-check input{width:18px;height:18px;margin-top:1px;accent-color:var(--green)}
+@media(max-width:560px){
+  .ob-inline-choices,.ob-radar-grid{grid-template-columns:1fr}
+  .ob-radar-grid .wide{grid-column:auto}
+}
 </style>
 </head>
 <body>
@@ -289,7 +328,16 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
   <!-- ETAPA 1 — Qualificação -->
   <section class="ob-step active" id="step1">
     <div class="ob-eyebrow">Análise de vaga · Grátis</div>
-    <h1>Antes de começar, qual seu maior receio com essa vaga?</h1>
+    <div class="ob-context" id="hasJobQuestion">
+      <div class="ob-context-title">Você já tem uma vaga específica em vista?</div>
+      <div class="ob-context-sub">A resposta define a jornada certa e evita pedir informações que você ainda não tem.</div>
+      <div class="ob-inline-choices">
+        <button class="ob-inline-choice" onclick="chooseHasJob(true)">Sim, quero analisar essa vaga</button>
+        <button class="ob-inline-choice" onclick="chooseHasJob(false)">Não, quero melhorar meu currículo</button>
+      </div>
+    </div>
+    <div id="intentPanel" hidden>
+    <h1>Qual seu maior receio com essa vaga?</h1>
     <p class="ob-sub">Assim a gente foca o diagnóstico no que mais te preocupa.</p>
     <div class="ob-choices">
       <button class="ob-choice" onclick="pickIntent('ats')">
@@ -316,8 +364,17 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
         </span>
         <span class="ob-choice-arrow">→</span>
       </button>
+      <button class="ob-choice" onclick="pickIntent('adaptar')">
+        <span class="ob-choice-ic">⚡</span>
+        <span class="ob-choice-tx">
+          <span class="ob-choice-t">Quero adaptar meu currículo para essa vaga</span>
+          <span class="ob-choice-d">Vamos identificar prioridades sem inventar experiências</span>
+        </span>
+        <span class="ob-choice-arrow">→</span>
+      </button>
     </div>
     <div class="ob-micro"><span>⏱ 2 minutos</span><span>🆓 Grátis</span><span>💳 Sem cartão</span></div>
+    </div>
   </section>
 
   <!-- ETAPA 2 — Vaga -->
@@ -359,8 +416,9 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
   <!-- ETAPA 3 — Currículo -->
   <section class="ob-step" id="step3">
     <div class="ob-eyebrow">Etapa 3</div>
-    <h1>Agora seu currículo</h1>
-    <p class="ob-sub">Envie o arquivo ou cole o texto — o que for mais rápido pra você.</p>
+    <h1 id="cvStepTitle">Agora seu currículo</h1>
+    <p class="ob-sub" id="cvStepSub">Envie o arquivo ou cole o texto — o que for mais rápido pra você.</p>
+    <div id="existingCvPanel">
     <div class="ob-methods">
       <button class="ob-method" id="mUpload" onclick="document.getElementById('cvFile').click()">
         <span class="ob-method-ic">📎</span>
@@ -373,7 +431,7 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
         <span class="ob-method-d">Direto do seu currículo</span>
       </button>
     </div>
-    <input type="file" id="cvFile" accept=".txt,.pdf,.doc,.docx" style="display:none" onchange="handleCvFile(this)">
+    <input type="file" id="cvFile" accept=".txt,.pdf,.docx" style="display:none" onchange="handleCvFile(this)">
     <div id="cvOk" class="ob-file-ok" style="display:none"></div>
     <div id="cvErr" class="ob-err" style="display:none"></div>
     <div id="pasteWrap" style="display:none;margin-top:12px">
@@ -382,6 +440,32 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
     </div>
     <div class="ob-note"><span>🔒</span><span>Seus dados não treinam nenhuma IA — são usados só para gerar essa análise.</span></div>
     <button class="ob-btn" id="cvNext" onclick="startAnalysis()" disabled>Analisar minha compatibilidade →</button>
+    </div>
+    <div class="ob-quick" id="quickCvPanel" hidden>
+      <div class="ob-field">
+        <label for="qNome">Nome completo</label>
+        <input type="text" id="qNome" placeholder="Ex: Maria Silva" oninput="onQuickCvInput()">
+      </div>
+      <div class="ob-field">
+        <label for="qCargo">Cargo ou área desejada</label>
+        <input type="text" id="qCargo" placeholder="Ex: Analista de Marketing" oninput="onQuickCvInput()">
+      </div>
+      <div class="ob-field">
+        <label for="qExp">Experiências principais <small>— escreva do seu jeito</small></label>
+        <textarea id="qExp" placeholder="Ex: trabalhei com atendimento por 2 anos, organizei pedidos e ajudava a equipe a bater metas..." oninput="onQuickCvInput()"></textarea>
+      </div>
+      <div class="ob-field">
+        <label for="qForm">Formação <small>— opcional</small></label>
+        <input type="text" id="qForm" placeholder="Curso, instituição e ano" oninput="onQuickCvInput()">
+      </div>
+      <div class="ob-field">
+        <label for="qSkills">Competências <small>— 3 a 5, separadas por vírgula</small></label>
+        <input type="text" id="qSkills" placeholder="Excel, atendimento, organização" oninput="onQuickCvInput()">
+      </div>
+      <div class="ob-note"><span>✨</span><span>Escreva de forma simples. A IA organiza o conteúdo e direciona o currículo para a vaga.</span></div>
+      <div class="ob-err" id="quickCvErr" style="display:none"></div>
+      <button class="ob-btn" id="quickCvNext" onclick="generateDirectedCv()" disabled>Montar currículo e analisar →</button>
+    </div>
   </section>
 
   <!-- ETAPA 4 — Processando -->
@@ -412,6 +496,24 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
       <div class="ob-score-sum" id="scoreSum"></div>
     </div>
 
+    <div class="ob-projection" id="projectionBlock" style="display:none">
+      <div class="ob-projection-label">Aderência projetada após otimização</div>
+      <div class="ob-projection-values">
+        <span class="ob-projection-before" id="projectionBefore">—</span>
+        <span class="ob-projection-arrow">→</span>
+        <span class="ob-projection-after" id="projectionAfter">—</span>
+      </div>
+      <div class="ob-projection-note">Estimativa realista após aplicar as prioridades indicadas, sem inventar experiências.</div>
+    </div>
+
+    <div class="ob-cv-ready" id="generatedCvBlock" style="display:none">
+      <div class="ob-cv-ready-ic">✓</div>
+      <div>
+        <div class="ob-cv-ready-title" id="generatedCvTitle">Currículo direcionado criado</div>
+        <div class="ob-cv-ready-meta" id="generatedCvMeta"></div>
+      </div>
+    </div>
+
     <div class="ob-block" id="strongBlock" style="display:none">
       <div class="ob-block-t">✓ O que já está a seu favor</div>
       <div class="ob-list" id="strongList"></div>
@@ -420,6 +522,28 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
     <div class="ob-block" id="gapBlock" style="display:none">
       <div class="ob-block-t">△ O que precisa melhorar</div>
       <div class="ob-list" id="gapList"></div>
+    </div>
+
+    <div class="ob-block" id="keywordBlock" style="display:none">
+      <div class="ob-block-t">Palavras-chave prioritárias para esta vaga</div>
+      <div class="ob-keywords" id="keywordList"></div>
+    </div>
+
+    <div class="ob-radar">
+      <div class="ob-radar-head">
+        <div class="ob-radar-ic">🔔</div>
+        <div>
+          <div class="ob-radar-t">Receba vagas parecidas com esta</div>
+          <div class="ob-radar-d">Deixe o radar preparado agora. Ao criar sua conta, você poderá ativar o alerta sem preencher tudo novamente.</div>
+        </div>
+      </div>
+      <div class="ob-radar-grid">
+        <div class="ob-field"><label for="radarCargo">Cargo ou área</label><input id="radarCargo" type="text" placeholder="Ex: Analista de Marketing" oninput="saveRadarDraft()"></div>
+        <div class="ob-field"><label for="radarLocal">Cidade ou região</label><input id="radarLocal" type="text" placeholder="Ex: São Paulo ou remoto" oninput="saveRadarDraft()"></div>
+        <div class="ob-field"><label for="radarModalidade">Modalidade</label><select id="radarModalidade" onchange="saveRadarDraft()"><option value="">Qualquer modalidade</option><option value="remoto">Remoto</option><option value="hibrido">Híbrido</option><option value="presencial">Presencial</option></select></div>
+        <div class="ob-field"><label for="radarSalario">Salário mínimo <small>— opcional</small></label><input id="radarSalario" type="text" placeholder="Ex: 5000" inputmode="numeric" oninput="saveRadarDraft()"></div>
+      </div>
+      <label class="ob-radar-check"><input type="checkbox" id="radarActivate" checked onchange="saveRadarDraft()"><span>Quero deixar um alerta semanal preparado com este perfil.</span></label>
     </div>
 
     <div class="ob-gate">
@@ -488,7 +612,31 @@ var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 var STATE_KEY = 'vagaai_ob_vaga';
 var TOTAL_STEPS = 5;
-var state = { intent:'', job:'', jobUrl:'', preview:null, cv:'', cvName:'', result:null, step:1 };
+var state = {
+  entry: 'cv',
+  flow: '',
+  hasCv: true,
+  hasJob: null,
+  intent: '',
+  job: '',
+  jobUrl: '',
+  preview: null,
+  cv: '',
+  cvName: '',
+  generatedCv: null,
+  quickForm: {},
+  alertDraft: {
+    cargo: '',
+    local: '',
+    modalidade: '',
+    salario: '',
+    frequencia: 'semanal',
+    scoreMinimo: 70,
+    activate: true
+  },
+  result: null,
+  step: 1
+};
 var _analysisRunning = false;
 
 function track(name, params) {
@@ -510,12 +658,39 @@ function trackPageView(path) {
 /* ── Persistência: sobreviver a refresh, troca de aba e volta do e-mail ── */
 function saveState() {
   try { sessionStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch(e) {}
+  try {
+    if (window.VagaAIOnboarding) {
+      window.VagaAIOnboarding.write({
+        entry: state.entry,
+        flow: state.flow || window.VagaAIOnboarding.deriveFlow(state.hasCv, state.hasJob),
+        hasCv: state.hasCv,
+        hasJob: state.hasJob,
+        intent: state.intent,
+        job: { raw: state.job, url: state.jobUrl, preview: state.preview },
+        cv: { raw: state.cv, name: state.cvName, data: state.generatedCv },
+        analysis: state.result,
+        alertDraft: state.alertDraft,
+        nextAction: state.result ? 'save_analysis' : 'continue_onboarding',
+        productStagedAt: null
+      });
+    }
+  } catch(e) {}
 }
 function loadState() {
   try {
     var raw = sessionStorage.getItem(STATE_KEY);
     if (raw) state = Object.assign(state, JSON.parse(raw));
   } catch(e) {}
+  state.quickForm = state.quickForm || {};
+  state.alertDraft = Object.assign({
+    cargo: '',
+    local: '',
+    modalidade: '',
+    salario: '',
+    frequencia: 'semanal',
+    scoreMinimo: 70,
+    activate: true
+  }, state.alertDraft || {});
 }
 
 /* ── Tema: respeita o que o usuário já escolheu no resto do site ───────── */
@@ -534,7 +709,7 @@ function renderStep(n, push) {
   if (n >= 5 && !state.result) n = state.cv ? 4 : (state.job ? 3 : (state.intent ? 2 : 1));
   if (n === 4 && !state.cv) n = state.job ? 3 : (state.intent ? 2 : 1);
   if (n === 3 && !state.job) n = state.intent ? 2 : 1;
-  if (n === 2 && !state.intent) n = 1;
+  if (n === 2 && (!state.intent || state.hasJob !== true)) n = 1;
 
   state.step = n;
   saveState();
@@ -578,11 +753,48 @@ window.addEventListener('popstate', function() { renderStep(stepFromUrl(), false
 var INTENT_TITLES = {
   ats:      'Vamos calcular seu score de compatibilidade com essa vaga',
   destacar: 'Cole a vaga pra gente ver o que priorizar no seu currículo',
-  vale:     'Cole a vaga pra comparar com o seu perfil'
+  vale:     'Cole a vaga pra comparar com o seu perfil',
+  adaptar:  'Vamos adaptar seu currículo para os requisitos desta vaga'
 };
+
+function chooseHasJob(hasJob) {
+  state.hasJob = !!hasJob;
+  state.hasCv = state.entry !== 'no-cv';
+  state.flow = window.VagaAIOnboarding
+    ? window.VagaAIOnboarding.deriveFlow(state.hasCv, state.hasJob)
+    : (state.hasCv ? (state.hasJob ? 'cv_job' : 'cv_no_job') : (state.hasJob ? 'no_cv_job' : 'no_cv_no_job'));
+  saveState();
+  track('onboarding_vaga_has_job_selected', { has_job: state.hasJob, flow: state.flow });
+
+  if (!state.hasJob) {
+    window.location.href = '/onboarding/curriculo/1?mode=cv_no_job';
+    return;
+  }
+
+  document.getElementById('hasJobQuestion').style.display = 'none';
+  document.getElementById('intentPanel').style.display = 'block';
+}
+
+function restoreQualificationMode() {
+  var hasQuestion = document.getElementById('hasJobQuestion');
+  var intentPanel = document.getElementById('intentPanel');
+  if (!hasQuestion || !intentPanel) return;
+
+  if (state.entry === 'no-cv' || state.hasJob === true) {
+    hasQuestion.style.display = 'none';
+    intentPanel.style.display = 'block';
+  } else {
+    hasQuestion.style.display = '';
+    intentPanel.style.display = 'none';
+  }
+}
 
 function pickIntent(intent) {
   state.intent = intent;
+  state.hasJob = true;
+  state.flow = window.VagaAIOnboarding
+    ? window.VagaAIOnboarding.deriveFlow(state.hasCv, true)
+    : (state.hasCv ? 'cv_job' : 'no_cv_job');
   saveState();
   document.getElementById('step2Title').textContent = INTENT_TITLES[intent] || INTENT_TITLES.ats;
   track('onboarding_vaga_qualification_selected', { intent: intent });
@@ -905,6 +1117,14 @@ async function extractPdfText(file) {
   return out.join('\n');
 }
 
+async function extractDocxText(file) {
+  if (!window.mammoth) {
+    await loadScript('https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js');
+  }
+  var result = await window.mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+  return result && result.value ? result.value : '';
+}
+
 async function handleCvFile(input) {
   var file = input.files[0];
   if (!file) return;
@@ -926,7 +1146,8 @@ async function handleCvFile(input) {
   try {
     var text = '';
     if (ext === 'pdf') text = await extractPdfText(file);
-    else if (ext === 'txt' || ext === 'doc' || ext === 'docx') text = await readAsText(file);
+    else if (ext === 'docx') text = await extractDocxText(file);
+    else if (ext === 'txt') text = await readAsText(file);
     else throw new Error('formato');
 
     text = (text || '').trim();
@@ -957,12 +1178,191 @@ var TIPS = [
   'Palavras-chave da vaga no currículo aumentam a chance de passar pelo filtro automático.'
 ];
 
+function onQuickCvInput() {
+  state.quickForm = {
+    nome: document.getElementById('qNome').value.trim(),
+    cargo: document.getElementById('qCargo').value.trim(),
+    exp: document.getElementById('qExp').value.trim(),
+    form: document.getElementById('qForm').value.trim(),
+    skills: document.getElementById('qSkills').value.trim()
+  };
+  document.getElementById('quickCvNext').disabled = !(
+    state.quickForm.nome &&
+    state.quickForm.cargo &&
+    state.quickForm.exp &&
+    state.quickForm.skills
+  );
+  saveState();
+}
+
+function cvDataToText(cv) {
+  if (!cv || typeof cv !== 'object') return '';
+  var parts = [];
+  var contato = cv.contato || cv.dados_pessoais || {};
+  var experiencias = cv.experiencias || cv.experiencia || [];
+  var formacao = cv.formacao || [];
+  var habilidades = cv.habilidades || cv.competencias || [];
+
+  if (cv.nome) parts.push('Nome: ' + cv.nome);
+  if (cv.titulo_profissional || cv.cargo_objetivo) parts.push('Título profissional: ' + (cv.titulo_profissional || cv.cargo_objetivo));
+  if (contato.email) parts.push('E-mail: ' + contato.email);
+  if (contato.telefone) parts.push('Telefone: ' + contato.telefone);
+  if (contato.cidade) parts.push('Localização: ' + contato.cidade);
+  if (cv.resumo_profissional || cv.resumo) parts.push('Resumo profissional: ' + (cv.resumo_profissional || cv.resumo));
+
+  if (Array.isArray(experiencias) && experiencias.length) {
+    parts.push('Experiências:');
+    experiencias.forEach(function(exp) {
+      if (typeof exp === 'string') {
+        parts.push('- ' + exp);
+        return;
+      }
+      var cabecalho = [exp.cargo, exp.empresa, exp.periodo].filter(Boolean).join(' | ');
+      if (cabecalho) parts.push('- ' + cabecalho);
+      var itens = exp.realizacoes || exp.bullets || exp.descricao || [];
+      if (!Array.isArray(itens)) itens = [itens];
+      itens.filter(Boolean).forEach(function(item) { parts.push('  - ' + item); });
+    });
+  }
+
+  if (Array.isArray(formacao) && formacao.length) {
+    parts.push('Formação:');
+    formacao.forEach(function(item) {
+      parts.push('- ' + (typeof item === 'string' ? item : [item.curso, item.instituicao, item.periodo].filter(Boolean).join(' | ')));
+    });
+  }
+
+  if (Array.isArray(habilidades)) parts.push('Competências: ' + habilidades.join(', '));
+  else if (habilidades) parts.push('Competências: ' + habilidades);
+  return parts.join('\n').trim();
+}
+
+async function generateDirectedCv() {
+  if (_analysisRunning) return;
+  onQuickCvInput();
+  var f = state.quickForm;
+  if (!f.nome || !f.cargo || !f.exp || !f.skills) return;
+
+  _analysisRunning = true;
+  var btn = document.getElementById('quickCvNext');
+  btn.disabled = true;
+  btn.textContent = 'Montando seu currículo...';
+
+  try {
+    var res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'onboarding_cv',
+        nome: f.nome,
+        cargo_objetivo: f.cargo,
+        experiencias: f.exp,
+        formacao: f.form,
+        habilidades: f.skills,
+        contato: {}
+      })
+    });
+    if (res.status === 429) {
+      _analysisRunning = false;
+      btn.disabled = false;
+      btn.textContent = 'Montar currículo e analisar →';
+      var limitErr = document.getElementById('quickCvErr');
+      if (limitErr) {
+        limitErr.textContent = 'Você já usou as gerações gratuitas recentes. Crie sua conta para continuar sem perder os dados preenchidos.';
+        limitErr.style.display = 'block';
+      }
+      return;
+    }
+    if (!res.ok) throw new Error('http_' + res.status);
+    var data = await res.json();
+    if (!data || !data.cv) throw new Error('payload');
+
+    state.generatedCv = data.cv;
+    state.cv = cvDataToText(data.cv);
+    state.cvName = 'Currículo criado com a VagaAI';
+    saveState();
+    try {
+      localStorage.setItem('vagaai_cv', JSON.stringify(Object.assign({}, data.cv, { template: 'modern' })));
+      localStorage.setItem('vagaai_cv_tpl', 'modern');
+    } catch(e) {}
+
+    track('onboarding_vaga_quick_cv_generated', { flow: state.flow });
+    _analysisRunning = false;
+    startAnalysis();
+  } catch(e) {
+    _analysisRunning = false;
+    btn.disabled = false;
+    btn.textContent = 'Montar currículo e analisar →';
+    var err = document.getElementById('quickCvErr');
+    if (err) {
+      err.textContent = 'Não conseguimos montar o currículo agora. Revise os campos ou tente novamente.';
+      err.style.display = 'block';
+    }
+  }
+}
+
+function configureCvStep() {
+  var existing = document.getElementById('existingCvPanel');
+  var quick = document.getElementById('quickCvPanel');
+  var title = document.getElementById('cvStepTitle');
+  var sub = document.getElementById('cvStepSub');
+  if (!existing || !quick) return;
+
+  if (state.hasCv === false) {
+    existing.style.display = 'none';
+    quick.hidden = false;
+    quick.style.display = 'block';
+    title.textContent = 'Conte sua experiência do seu jeito';
+    sub.textContent = 'A VagaAI organiza o conteúdo, cria uma versão profissional e a direciona para esta vaga.';
+    onQuickCvInput();
+  } else {
+    existing.style.display = '';
+    quick.hidden = true;
+    quick.style.display = 'none';
+    title.textContent = 'Agora, envie seu currículo';
+    sub.textContent = 'PDF, Word ou texto. A análise compara o seu currículo com os requisitos da vaga.';
+  }
+}
+
+function saveRadarDraft() {
+  var cargo = document.getElementById('radarCargo');
+  if (!cargo) return;
+  state.alertDraft = Object.assign({}, state.alertDraft || {}, {
+    cargo: cargo.value.trim(),
+    local: document.getElementById('radarLocal').value.trim(),
+    modalidade: document.getElementById('radarModalidade').value,
+    salario: document.getElementById('radarSalario').value.trim(),
+    frequencia: 'semanal',
+    scoreMinimo: 70,
+    activate: document.getElementById('radarActivate').checked
+  });
+  saveState();
+}
+
+function restoreRadarDraft() {
+  var draft = state.alertDraft || {};
+  var preview = state.preview || {};
+  var cargo = document.getElementById('radarCargo');
+  if (!cargo) return;
+  cargo.value = draft.cargo || preview.cargo || '';
+  document.getElementById('radarLocal').value = draft.local || preview.local || preview.localizacao || '';
+  document.getElementById('radarModalidade').value = draft.modalidade || '';
+  document.getElementById('radarSalario').value = draft.salario || preview.salario || '';
+  document.getElementById('radarActivate').checked = draft.activate !== false;
+  saveRadarDraft();
+}
+
 async function startAnalysis() {
   if (_analysisRunning) return;
   _analysisRunning = true;
 
   if (!state.cv) state.cv = document.getElementById('cvInput').value || '';
   if (!state.job) state.job = document.getElementById('jobInput').value || '';
+  if (!state.cv.trim() || !state.job.trim()) {
+    _analysisRunning = false;
+    goStep(!state.job.trim() ? 2 : 3);
+    return;
+  }
   saveState();
 
   track('onboarding_vaga_pasted', { job_chars: state.job.length });
@@ -1023,6 +1423,7 @@ async function startAnalysis() {
     } catch(e) {}
 
     renderResult(data);
+    restoreRadarDraft();
     track('onboarding_vaga_completed', { score: data.score });
     goStep(5);
   } catch (err) {
@@ -1075,23 +1476,51 @@ function renderResult(d) {
 
   document.getElementById('scoreSum').textContent = d.resumo || '';
 
-  // 2 pontos fortes — evidência concreta: keywords da vaga que o currículo
-  // já cobre. Sem keywords encontradas, cai nos fatores melhor pontuados.
+  var projectedRaw = Number(
+    d.score_estimado_apos_ajustes != null ? d.score_estimado_apos_ajustes :
+    d.score_projetado != null ? d.score_projetado :
+    d.projected_score
+  );
+  var projectionBlock = document.getElementById('projectionBlock');
+  if (Number.isFinite(projectedRaw)) {
+    var projected = Math.max(score, Math.min(100, Math.round(projectedRaw)));
+    document.getElementById('projectionBefore').textContent = score + '%';
+    document.getElementById('projectionAfter').textContent = projected + '%';
+    projectionBlock.style.display = 'block';
+  } else {
+    projectionBlock.style.display = 'none';
+  }
+
+  var generatedBlock = document.getElementById('generatedCvBlock');
+  if (state.generatedCv) {
+    var generatedTitle = state.generatedCv.titulo_profissional || state.generatedCv.cargo_objetivo || state.quickForm.cargo || 'Currículo direcionado';
+    var generatedExperiences = state.generatedCv.experiencias || state.generatedCv.experiencia || [];
+    var generatedSkills = state.generatedCv.habilidades || state.generatedCv.competencias || [];
+    document.getElementById('generatedCvTitle').textContent = 'Currículo direcionado para ' + generatedTitle;
+    document.getElementById('generatedCvMeta').textContent =
+      (Array.isArray(generatedExperiences) ? generatedExperiences.length : 0) + ' experiência(s) organizada(s) e ' +
+      (Array.isArray(generatedSkills) ? generatedSkills.length : 0) + ' competência(s) prontas para revisão.';
+    generatedBlock.style.display = 'flex';
+  } else {
+    generatedBlock.style.display = 'none';
+  }
+
+  // Até 3 evidências concretas. Sem keywords encontradas, usa os fatores
+  // melhor pontuados para não inventar qualidades que a análise não mostrou.
   var strong = [];
   var found = Array.isArray(d.keywords_encontradas) ? d.keywords_encontradas.filter(Boolean) : [];
-  if (found.length) {
-    // Escapa cada keyword ANTES de juntar: escapar a string já com as tags
-    // dentro faria o <b> aparecer como texto literal na tela.
-    strong.push('Seu currículo já menciona <b>' + found.slice(0, 3).map(esc).join('</b>, <b>') + '</b> — termos que essa vaga pede.');
-  }
-  if (found.length > 3) {
-    strong.push('No total, <b>' + found.length + ' palavras-chave</b> da vaga já aparecem no seu perfil.');
-  } else if (d.fatores) {
+  found.slice(0, 3).forEach(function(keyword) {
+    strong.push('A competência <b>' + esc(keyword) + '</b> já aparece no seu currículo e também é valorizada pela vaga.');
+  });
+  if (d.fatores && !Array.isArray(d.fatores) && strong.length < 3) {
     var FL = { compatibilidade:'compatibilidade geral com a vaga', keywords_ats:'uso de palavras-chave para ATS', legibilidade:'legibilidade do currículo', forca_bullets:'força das descrições de experiência' };
-    var best = Object.keys(d.fatores)
+    Object.keys(d.fatores)
       .filter(function(k) { return FL[k] && Number(d.fatores[k]) >= 60; })
-      .sort(function(a, b) { return Number(d.fatores[b]) - Number(d.fatores[a]); })[0];
-    if (best) strong.push('Sua <b>' + FL[best] + '</b> está em ' + Math.round(Number(d.fatores[best])) + '/100 — acima da média.');
+      .sort(function(a, b) { return Number(d.fatores[b]) - Number(d.fatores[a]); })
+      .some(function(best) {
+        strong.push('Sua <b>' + FL[best] + '</b> está em ' + Math.round(Number(d.fatores[best])) + '/100.');
+        return strong.length >= 3;
+      });
   }
   if (!strong.length && score >= 40) {
     strong.push('Seu currículo tem base compatível com o que a vaga pede — dá pra melhorar com ajustes pontuais.');
@@ -1099,7 +1528,7 @@ function renderResult(d) {
 
   var sb2 = document.getElementById('strongBlock');
   if (strong.length) {
-    document.getElementById('strongList').innerHTML = strong.slice(0, 2).map(function(s) {
+    document.getElementById('strongList').innerHTML = strong.slice(0, 3).map(function(s) {
       return '<div class="ob-item"><span class="ob-item-ic good">✓</span><span>' + s + '</span></div>';
     }).join('');
     sb2.style.display = 'block';
@@ -1108,9 +1537,11 @@ function renderResult(d) {
   }
 
   // 3 lacunas reais (conteúdo de verdade, não borrado)
-  var gaps = (Array.isArray(d.falhas) ? d.falhas : []).filter(Boolean).slice(0, 3);
+  var missing = Array.isArray(d.keywords_faltando) ? d.keywords_faltando.filter(Boolean) : [];
+  var gaps = (Array.isArray(d.falhas) ? d.falhas : []).filter(Boolean).slice(0, 3).map(function(g) {
+    return esc(typeof g === 'string' ? g : (g.titulo || g.descricao || JSON.stringify(g)));
+  });
   if (gaps.length < 3) {
-    var missing = Array.isArray(d.keywords_faltando) ? d.keywords_faltando.filter(Boolean) : [];
     if (missing.length) {
       gaps.push('Faltam palavras-chave importantes: <b>' + missing.slice(0, 4).map(esc).join('</b>, <b>') + '</b>.');
     }
@@ -1124,6 +1555,16 @@ function renderResult(d) {
   } else {
     gb.style.display = 'none';
   }
+
+  var keywordBlock = document.getElementById('keywordBlock');
+  if (missing.length) {
+    document.getElementById('keywordList').innerHTML = missing.slice(0, 8).map(function(keyword) {
+      return '<span class="ob-keyword">' + esc(keyword) + '</span>';
+    }).join('');
+    keywordBlock.style.display = 'block';
+  } else {
+    keywordBlock.style.display = 'none';
+  }
 }
 
 function esc(s) {
@@ -1133,6 +1574,8 @@ function esc(s) {
 
 /* ── Cadastro ──────────────────────────────────────────────────────────── */
 function openSignup() {
+  saveRadarDraft();
+  saveState();
   document.getElementById('signupModal').classList.add('show');
   track('onboarding_vaga_signup_clicked');
 }
@@ -1192,16 +1635,41 @@ async function signupEmail() {
 
 /* ── Boot ──────────────────────────────────────────────────────────────── */
 (async function init() {
+  var params = new URLSearchParams(window.location.search);
+  var requestedMode = params.get('mode') || '';
+  var requestedEntry = params.get('entry') || '';
   // Usuário logado não passa pelo onboarding de aquisição — vai pro produto.
   try {
     var s = await sb.auth.getSession();
     if (s && s.data && s.data.session) {
-      window.location.replace('/app');
+      window.location.replace(requestedEntry === 'no-cv' ? '/curriculo' : '/app');
       return;
     }
   } catch(e) {}
 
+  if (params.get('new') === '1') {
+    try { sessionStorage.removeItem(STATE_KEY); } catch(e) {}
+    try { if (window.VagaAIOnboarding) window.VagaAIOnboarding.clear(); } catch(e) {}
+  }
+
   loadState();
+  if (requestedMode === 'no_cv_job') {
+    state.entry = 'no-cv';
+    state.hasCv = false;
+    state.hasJob = true;
+    state.flow = 'no_cv_job';
+  } else if (requestedMode === 'cv_job') {
+    state.entry = 'cv';
+    state.hasCv = true;
+    state.hasJob = true;
+    state.flow = 'cv_job';
+  } else if (requestedEntry === 'cv') {
+    state.entry = 'cv';
+    state.hasCv = true;
+    if (stepFromUrl() === 1) state.hasJob = null;
+    state.flow = state.hasJob === true ? 'cv_job' : '';
+  }
+  saveState();
 
   // Repõe o que já tinha sido preenchido (refresh, voltar do e-mail, etc.)
   if (state.intent) document.getElementById('step2Title').textContent = INTENT_TITLES[state.intent] || INTENT_TITLES.ats;
@@ -1227,7 +1695,18 @@ async function signupEmail() {
       document.getElementById('mPaste').classList.add('on');
     }
   }
-  if (state.result) renderResult(state.result);
+  var q = state.quickForm || {};
+  if (q.nome) document.getElementById('qNome').value = q.nome;
+  if (q.cargo) document.getElementById('qCargo').value = q.cargo;
+  if (q.exp) document.getElementById('qExp').value = q.exp;
+  if (q.form) document.getElementById('qForm').value = q.form;
+  if (q.skills) document.getElementById('qSkills').value = q.skills;
+  restoreQualificationMode();
+  configureCvStep();
+  if (state.result) {
+    renderResult(state.result);
+    restoreRadarDraft();
+  }
 
   history.replaceState({ step: stepFromUrl() }, '', window.location.pathname);
   renderStep(stepFromUrl(), false);

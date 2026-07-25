@@ -476,19 +476,21 @@ async function checkAndDeductCredit(userId) {
   return { ok: true, remaining: current - 1, plan: 'credits', via: 'credits' };
 }
 
-async function saveAnalysis(userId, score, nivel, jobExcerpt, result, hash) {
+async function saveAnalysis(userId, score, nivel, jobExcerpt, result, hash, dedupeWindowMs = 5 * 60 * 1000) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return;
   try {
     // Evita duplicatas: verifica se já existe análise com o mesmo hash nos últimos 5 min
     if (hash) {
-      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const createdFilter = dedupeWindowMs > 0
+        ? `&created_at=gte.${encodeURIComponent(new Date(Date.now() - dedupeWindowMs).toISOString())}`
+        : '';
       const dupCheck = await fetch(
-        `${SUPABASE_URL}/rest/v1/analyses?user_id=eq.${encodeURIComponent(userId)}&content_hash=eq.${hash}&created_at=gte.${encodeURIComponent(fiveMinAgo)}&select=id&limit=1`,
+        `${SUPABASE_URL}/rest/v1/analyses?user_id=eq.${encodeURIComponent(userId)}&content_hash=eq.${hash}${createdFilter}&select=id&limit=1`,
         { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
       ).then(r => r.json()).catch(() => []);
       if (Array.isArray(dupCheck) && dupCheck.length > 0) {
         console.log('saveAnalysis: duplicate skipped for user', userId, 'hash', hash);
-        return;
+        return dupCheck[0].id || null;
       }
     }
     const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/analyses`, {
@@ -859,6 +861,43 @@ export default async function handler(req, res) {
 
   // ── Modo: criar currículo otimizado ─────────────────────────────────────────
   const { action } = req.body || {};
+  if (action === 'claim_onboarding_analysis') {
+    const authHeader = req.headers['authorization'] || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+    if (!token) return res.status(401).json({ error: 'Autenticacao necessaria.' });
+
+    const user = await getUserFromToken(token);
+    if (!user?.id) return res.status(401).json({ error: 'Token invalido. Faca login novamente.' });
+
+    const { result, cv, job } = req.body || {};
+    if (!result || typeof result !== 'object' || Array.isArray(result)) {
+      return res.status(400).json({ error: 'Diagnostico do onboarding invalido.' });
+    }
+
+    const serialized = JSON.stringify(result);
+    if (serialized.length > 250000) {
+      return res.status(413).json({ error: 'Diagnostico muito grande para ser salvo.' });
+    }
+
+    const score = Math.max(0, Math.min(100, Number(result.score) || 0));
+    const nivel = String(result.nivel || '');
+    const jobText = String(job || result.job_text || result.job_excerpt || '').slice(0, 20000);
+    const cvText = String(cv || result.cv_text || '').slice(0, 30000);
+    const hash = contentHash(cvText || serialized, jobText || serialized);
+    const savedResult = attachJobMetadata({ ...result, score, nivel }, result?.job_info?.job_url || '');
+    const analysisId = await saveAnalysis(user.id, score, nivel, jobText, savedResult, hash, 0);
+
+    if (!analysisId) {
+      return res.status(503).json({ error: 'Nao foi possivel salvar o diagnostico agora.' });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      analysis_id: analysisId,
+      result: { ...savedResult, _analysis_id: analysisId }
+    });
+  }
+
   if (action === 'create_cv') {
     // 1. Autenticação obrigatória
     const cvAuthHeader = req.headers['authorization'] || '';
