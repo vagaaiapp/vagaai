@@ -50,7 +50,7 @@ body{
   padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface);
   position:sticky;top:0;z-index:20;
 }
-.ob-brand{font-family:'Lora',serif;font-weight:700;font-size:17px;color:var(--text);text-decoration:none;letter-spacing:-.2px}
+.ob-brand{font-family:'Lora',serif;font-weight:700;font-size:17px;color:var(--text);text-decoration:none;letter-spacing:-.2px;display:inline-flex;align-items:center;min-height:44px;padding:0 4px}
 .ob-brand span{color:var(--green)}
 .ob-back{
   background:none;border:none;color:var(--muted);font-family:inherit;font-size:13px;font-weight:600;
@@ -731,7 +731,9 @@ function renderResult(d) {
   var strong = [];
   var found = Array.isArray(d.keywords_encontradas) ? d.keywords_encontradas.filter(Boolean) : [];
   if (found.length) {
-    strong.push('Seu currículo já menciona <b>' + esc(found.slice(0, 3).join('</b>, <b>')) + '</b> — termos que essa vaga pede.');
+    // Escapa cada keyword ANTES de juntar: escapar a string já com as tags
+    // dentro faria o <b> aparecer como texto literal na tela.
+    strong.push('Seu currículo já menciona <b>' + found.slice(0, 3).map(esc).join('</b>, <b>') + '</b> — termos que essa vaga pede.');
   }
   if (found.length > 3) {
     strong.push('No total, <b>' + found.length + ' palavras-chave</b> da vaga já aparecem no seu perfil.');
@@ -761,7 +763,7 @@ function renderResult(d) {
   if (gaps.length < 3) {
     var missing = Array.isArray(d.keywords_faltando) ? d.keywords_faltando.filter(Boolean) : [];
     if (missing.length) {
-      gaps.push('Faltam palavras-chave importantes: <b>' + esc(missing.slice(0, 4).join('</b>, <b>')) + '</b>.');
+      gaps.push('Faltam palavras-chave importantes: <b>' + missing.slice(0, 4).map(esc).join('</b>, <b>') + '</b>.');
     }
   }
   var gb = document.getElementById('gapBlock');
