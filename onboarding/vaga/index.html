@@ -133,6 +133,34 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
 .ob-sep{display:flex;align-items:center;gap:12px;margin:20px 0 14px;color:var(--muted);font-size:11.5px;font-weight:600}
 .ob-sep::before,.ob-sep::after{content:"";flex:1;height:1px;background:var(--border)}
 
+/* ── Card de prévia da vaga lida ──────────────────────────────────────── */
+.jp-card{
+  background:var(--surface);border:1.5px solid var(--green-border);border-radius:16px;
+  padding:18px;margin-top:14px;box-shadow:var(--shadow);
+}
+.jp-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.jp-title{font-family:'Lora',serif;font-size:17px;font-weight:700;line-height:1.25;letter-spacing:-.2px}
+.jp-company{font-size:12.5px;color:var(--muted);margin-top:3px}
+.jp-ok{
+  flex-shrink:0;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--green);background:var(--green-dim);border:1px solid var(--green-border);
+  padding:3px 9px;border-radius:20px;white-space:nowrap;
+}
+.jp-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.jp-chip{
+  font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:7px;
+  background:var(--surface2);color:var(--text);border:1px solid var(--border);
+}
+.jp-chip.salary{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.jp-chip.contract{background:rgba(201,138,0,.1);color:var(--yellow);border-color:rgba(201,138,0,.25)}
+[data-theme="dark"] .jp-chip.contract{background:rgba(255,209,102,.1);border-color:rgba(255,209,102,.25)}
+.jp-excerpt{font-size:12.5px;color:var(--muted);line-height:1.55}
+.jp-edit{
+  background:none;border:none;color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;
+  cursor:pointer;padding:12px 0 2px;margin-top:6px;text-decoration:underline;text-align:left;min-height:40px;
+}
+.jp-edit:hover{color:var(--text)}
+
 /* ── Upload ───────────────────────────────────────────────────────────── */
 .ob-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
 @media(max-width:520px){.ob-methods{grid-template-columns:1fr}}
@@ -304,10 +332,26 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
     </div>
     <div class="ob-url-status" id="urlStatus" style="display:none"></div>
 
-    <div class="ob-sep"><span>ou cole a descrição</span></div>
+    <!-- Prévia da vaga lida: mostra o que foi entendido do link, em vez de
+         despejar o texto bruto com menu e rodapé do site -->
+    <div class="jp-card" id="jobPreview" style="display:none">
+      <div class="jp-head">
+        <div>
+          <div class="jp-title" id="jpTitle"></div>
+          <div class="jp-company" id="jpCompany"></div>
+        </div>
+        <span class="jp-ok">✓ lida</span>
+      </div>
+      <div class="jp-chips" id="jpChips"></div>
+      <div class="jp-excerpt" id="jpExcerpt"></div>
+      <button class="jp-edit" onclick="showJobTextArea()">Não é essa vaga? Colar a descrição manualmente</button>
+    </div>
 
-    <textarea id="jobInput" placeholder="Cole aqui a descrição completa da vaga..." oninput="onJobInput()"></textarea>
-    <div class="ob-count" id="jobCount">0 caracteres</div>
+    <div id="jobTextWrap">
+      <div class="ob-sep"><span>ou cole a descrição</span></div>
+      <textarea id="jobInput" placeholder="Cole aqui a descrição completa da vaga..." oninput="onJobInput()"></textarea>
+      <div class="ob-count" id="jobCount">0 caracteres</div>
+    </div>
     <div class="ob-err" id="jobErr" style="display:none"></div>
     <button class="ob-btn" id="jobNext" onclick="goStep(3)" disabled>Continuar →</button>
   </section>
@@ -444,7 +488,7 @@ var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 var STATE_KEY = 'vagaai_ob_vaga';
 var TOTAL_STEPS = 5;
-var state = { intent:'', job:'', jobUrl:'', cv:'', cvName:'', result:null, step:1 };
+var state = { intent:'', job:'', jobUrl:'', preview:null, cv:'', cvName:'', result:null, step:1 };
 var _analysisRunning = false;
 
 function track(name, params) {
@@ -547,6 +591,178 @@ function pickIntent(intent) {
 
 /* ── Etapa 2: vaga ─────────────────────────────────────────────────────── */
 
+/* Extrai os dados estruturados da vaga a partir do texto scrapeado + URL.
+   Portado do /app (mesma heurística já validada em produção lá): a URL é a
+   fonte mais confiável para o cargo, e o texto é limpo de boilerplate de
+   navegação antes de procurar salário, contrato, senioridade e atividades. */
+function extractJobPreview(text, jobUrlStr) {
+  var cargoFromUrl = '', empresaFromUrl = '', platform = '';
+  try {
+    var urlObj = new URL(jobUrlStr || '');
+    var host = urlObj.hostname.toLowerCase().replace(/^www\./, '');
+    var path = urlObj.pathname;
+
+    if (host.indexOf('catho') >= 0) platform = 'Catho';
+    else if (host.indexOf('linkedin') >= 0) platform = 'LinkedIn';
+    else if (host.indexOf('gupy') >= 0) { platform = 'Gupy'; var sub = urlObj.hostname.split('.')[0]; if (sub && sub !== 'www') empresaFromUrl = sub.charAt(0).toUpperCase() + sub.slice(1); }
+    else if (host.indexOf('indeed') >= 0) platform = 'Indeed';
+    else if (host.indexOf('vagas.com') >= 0) platform = 'Vagas.com';
+    else if (host.indexOf('infojobs') >= 0) platform = 'InfoJobs';
+    else if (host.indexOf('glassdoor') >= 0) platform = 'Glassdoor';
+    else if (host.indexOf('trabalhabrasil') >= 0) platform = 'Trabalha Brasil';
+    else if (host.indexOf('empregare') >= 0) platform = 'Empregare';
+    else if (host.indexOf('solides') >= 0) platform = 'Sólides';
+
+    var slugRaw = '', m;
+    if (host.indexOf('catho') >= 0) { m = path.match(/\/vagas\/([^\/\?#]+)/); if (m) slugRaw = m[1]; }
+    else if (host.indexOf('linkedin') >= 0) { m = path.match(/\/jobs\/view\/([^\/\?#]+)/); if (m) slugRaw = m[1].replace(/-?\d{6,}$/, ''); }
+    else if (host.indexOf('indeed') >= 0) { slugRaw = urlObj.searchParams.get('q') || ''; }
+    else if (host.indexOf('vagas.com') >= 0) { m = path.match(/\/([^\/\?#]+-emprego[s]?)/); if (m) slugRaw = m[1].replace(/-empregos?$/, ''); }
+    else if (host.indexOf('gupy') >= 0) { m = path.match(/\/jobs?\/([^\/\?#]+)/); if (m) slugRaw = m[1]; }
+    else {
+      var segs = path.split('/').filter(function(s){ return s && s.indexOf('-') >= 0 && !/^\d+$/.test(s) && s.length > 4; });
+      if (segs.length) slugRaw = segs[0];
+    }
+
+    if (slugRaw) {
+      var preps = /^(de|da|do|dos|das|e|em|na|no|para|por|com|a|o|as|os|um|uma)$/i;
+      cargoFromUrl = slugRaw.replace(/[-_]/g, ' ').trim().split(/\s+/).map(function(w, i){
+        return (i === 0 || !preps.test(w)) ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w.toLowerCase();
+      }).join(' ').replace(/\s*\d{4,}\s*$/, '').trim();
+    }
+  } catch(e) {}
+
+  var boilerplate = /^(envie (seu|o seu)|cadastr|anunciar|criar conta|entrar|login|sign (in|up)|apply|already have|baixar|baixe|politica|pol[ií]tica|termos|cookie|copyright|©|todos os direitos|compartilhar|salvar vaga|siga(-nos)?|redes sociais|home$|voltar$|menu$|whatsapp|instagram|facebook|twitter|linkedin$)/i;
+  var lines = text.split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l.length > 2 && !boilerplate.test(l); });
+
+  var cargo = cargoFromUrl;
+  if (!cargo) {
+    var cargoRE = /gerente|analista|coordenador|diretor|engenheiro|desenvolvedor|designer|especialista|assistente|consultor|supervisor|tech lead|product manager|marketing|vendas|comercial|financeiro|recursos humanos|\bti\b|junior|pleno|s[eê]nior|sr\.|jr\.|estagi[aá]rio|trainee|cientista|arquiteto|pesquisador/i;
+    for (var i = 0; i < Math.min(lines.length, 20); i++) {
+      if (lines[i].length > 4 && lines[i].length < 90 && cargoRE.test(lines[i])) { cargo = lines[i]; break; }
+    }
+  }
+
+  var empresa = empresaFromUrl;
+  if (!empresa) {
+    for (var k = 0; k < lines.length; k++) {
+      if (/^(sobre (a |n[oó]s|a empresa)|quem somos|nossa empresa|a empresa)/i.test(lines[k])) {
+        if (lines[k+1] && lines[k+1].length < 60) { empresa = lines[k+1]; break; }
+      }
+    }
+  }
+  if (!empresa && platform) empresa = 'via ' + platform;
+
+  var modalidade = '', cidade = '';
+  var regiaoRE = /\b(remoto|remote|home.?office|h[ií]brido|presencial|hybrid|on.?site)\b/i;
+  var cidadeRE = /\b(s[aã]o paulo|rio de janeiro|belo horizonte|curitiba|porto alegre|bras[ií]lia|salvador|campinas|fortaleza|recife|manaus|goi[aâ]nia|florian[oó]polis|s[aã]o jos[eé] dos campos)\b/i;
+  for (var n = 0; n < lines.length; n++) {
+    if (!modalidade) { var mm = lines[n].match(regiaoRE); if (mm) modalidade = mm[0]; }
+    if (!cidade)     { var cm = lines[n].match(cidadeRE);  if (cm) cidade = cm[0]; }
+    if (modalidade && cidade) break;
+  }
+
+  var allText = lines.join(' ');
+  var salario = '';
+  var salRE = /R\$\s*[\d.,]+(?:\s*[–\-a]\s*R\$\s*[\d.,]+)?(?:\s*(?:mil|k|\/h|\/hora|\/m[eê]s|mensais?|brutos?))?/gi;
+  var sm = allText.match(salRE);
+  if (sm && sm.length) salario = sm[0].trim().substring(0, 40);
+  if (!salario && /a combinar|confidencial|à combinar/i.test(allText)) salario = 'A combinar';
+
+  var contrato = '';
+  var cltM = allText.match(/\bCLT\b/i);
+  var pjM  = allText.match(/\bP\.?\s*J\.?\b|\bpessoa jur[ií]dica\b/i);
+  var estM = allText.match(/\best[aá]gio\b|\bestagi[aá]rio\b/i);
+  var tmpM = allText.match(/\btempor[aá]rio\b|\bfreelance\b|\bfreelancer\b/i);
+  if (cltM && pjM) contrato = 'CLT ou PJ';
+  else if (cltM) contrato = 'CLT';
+  else if (pjM) contrato = 'PJ';
+  else if (estM) contrato = 'Estágio';
+  else if (tmpM) contrato = tmpM[0].charAt(0).toUpperCase() + tmpM[0].slice(1).toLowerCase();
+
+  var nivel = '';
+  if (/\bpleno\b/i.test(allText)) nivel = 'Pleno';
+  else if (/\bs[eê]nior\b|\bsr\.?\b/i.test(allText)) nivel = 'Sênior';
+  else if (/\bj[uú]nior\b|\bjr\.?\b/i.test(allText)) nivel = 'Júnior';
+  else if (/\btrainee\b/i.test(allText)) nivel = 'Trainee';
+
+  // Atividades: só linhas que parecem tarefa real (verbo de ação), evitando
+  // capturar listagem de outras vagas presentes na mesma página
+  var sectionHeaderRE = /^(como ser[aá] o dia|o dia a dia|responsabilidades|o que voc[eê] far[aá]|principais atividades|atribui[çc][oõ]e?s|o que esperamos|requisitos|qualifica[çc][oõ]e?s|pr[eé]-requisitos|o que buscamos|sobre a vaga|atividades|fun[çc][oõ]e?s|perfil desejado|descri[çc][aã]o da vaga|sua miss[aã]o)[:\s]*$/i;
+  var notActivityRE = /^(R\$|de R\$|a partir|sal[aá]rio|empresa confidencial|confidencial|aplicar|candidatar|ver mais|outras vagas|vagas relacionadas|compartilhar|salvar|seguir|denunciar|imprimir|enviar|baixar|acessar|entrar|cadastr|cookie|termos|copyright|©|home|voltar|menu)/i;
+  var looksLikeActivity = /\b(gerenciar|desenvolver|criar|analisar|coordenar|elaborar|implementar|executar|monitorar|garantir|definir|planejar|liderar|atuar|acompanhar|suporte|respons[aá]vel|contribuir|trabalhar|colaborar|propor|estruturar|otimizar|entregar|apoiar|conduzir|avaliar|identificar|mapear|construir|manter|reportar|treinar|realizar|participar|gerir|assegurar|promover|negociar|atender|organizar|auxiliar|prestar|controlar|revisar|preparar|emitir|cadastrar|processar|supervisionar|zelar|receber|encaminhar|registrar)\b/i;
+
+  function cleanBullet(l) { return l.replace(/^[\-–•·▸▪◦\*»]\s*/, '').replace(/^\d+[\.\)]\s*/, '').trim(); }
+
+  var taskLines = [], collecting = false;
+  for (var p = 0; p < lines.length && taskLines.length < 3; p++) {
+    var l = lines[p];
+    if (sectionHeaderRE.test(l)) { collecting = true; continue; }
+    if (collecting && l.length > 25 && l.length < 200 && !notActivityRE.test(l)) {
+      var clean = cleanBullet(l);
+      if (clean.length > 25 && !/:\s*$/.test(clean) && looksLikeActivity.test(clean)) taskLines.push(clean);
+    }
+  }
+  if (taskLines.length < 2) {
+    var cands = lines.filter(function(l){
+      return l.length > 30 && l.length < 180 && !sectionHeaderRE.test(l) && !notActivityRE.test(l)
+        && !/:\s*$/.test(l) && looksLikeActivity.test(l);
+    }).map(cleanBullet);
+    for (var ci = 0; ci < cands.length && taskLines.length < 3; ci++) {
+      if (taskLines.indexOf(cands[ci]) < 0) taskLines.push(cands[ci]);
+    }
+  }
+
+  var excerpt = '';
+  if (taskLines.length >= 2) excerpt = 'Nessa vaga, você vai: ' + taskLines.slice(0, 3).join(' · ');
+  else if (taskLines.length === 1) excerpt = taskLines[0];
+
+  return { cargo:cargo, empresa:empresa, modalidade:modalidade, cidade:cidade,
+           salario:salario, contrato:contrato, nivel:nivel, excerpt:excerpt, platform:platform };
+}
+
+// A prévia só vale se der pra reconhecer a vaga. Sem cargo E sem nenhum dado
+// estruturado, mostrar o card seria pior que pedir os dados à pessoa.
+function previewIsUsable(p) {
+  if (!p) return false;
+  var temCargo = !!(p.cargo && p.cargo.length > 3);
+  var temDetalhe = !!(p.salario || p.contrato || p.nivel || p.modalidade || p.cidade || p.excerpt);
+  return temCargo && temDetalhe;
+}
+
+function showJobPreview(p) {
+  document.getElementById('jpTitle').textContent = p.cargo || 'Vaga identificada';
+  document.getElementById('jpCompany').textContent = p.empresa || '';
+
+  var chips = [];
+  if (p.salario)    chips.push({ t:p.salario, c:'salary' });
+  if (p.contrato)   chips.push({ t:p.contrato, c:'contract' });
+  if (p.nivel)      chips.push({ t:p.nivel, c:'' });
+  if (p.modalidade) chips.push({ t:p.modalidade.charAt(0).toUpperCase() + p.modalidade.slice(1).toLowerCase(), c:'' });
+  if (p.cidade)     chips.push({ t:p.cidade.replace(/\b\w/g, function(m){ return m.toUpperCase(); }), c:'' });
+  document.getElementById('jpChips').innerHTML = chips.map(function(x){
+    return '<span class="jp-chip ' + x.c + '">' + esc(x.t) + '</span>';
+  }).join('');
+
+  var exEl = document.getElementById('jpExcerpt');
+  exEl.textContent = p.excerpt || '';
+  exEl.style.display = p.excerpt ? 'block' : 'none';
+
+  document.getElementById('jobPreview').style.display = 'block';
+  document.getElementById('jobTextWrap').style.display = 'none';
+}
+
+// Volta ao modo manual (usuário disse que não é essa vaga, ou não deu pra ler).
+// Zera a prévia para ela não reaparecer num refresh, mas mantém o texto já
+// carregado — ele fica editável em vez de obrigar a começar do zero.
+function showJobTextArea() {
+  state.preview = null;
+  saveState();
+  document.getElementById('jobPreview').style.display = 'none';
+  document.getElementById('jobTextWrap').style.display = 'block';
+  document.getElementById('jobInput').focus();
+}
+
 // Carrega a descrição a partir do link (mesma API usada pelo /app). Alguns
 // sites bloqueiam leitura automática — nesses casos o campo de texto abaixo
 // continua sendo o caminho, então a falha nunca trava a etapa.
@@ -575,14 +791,30 @@ async function loadFromUrl() {
     var data = await res.json();
 
     if (data && data.text && data.text.length > 50) {
+      // O texto completo alimenta a análise, mas NÃO é exibido cru: o que a
+      // pessoa vê é a prévia estruturada do que entendemos da vaga.
       var ta = document.getElementById('jobInput');
       ta.value = data.text;
       ta.dispatchEvent(new Event('input'));
       state.jobUrl = url;
-      saveState();
-      st.className = 'ob-url-status ok';
-      st.textContent = '✓ Vaga carregada — ' + data.text.length + ' caracteres. Revise abaixo se quiser.';
-      track('onboarding_vaga_url_ok', { source: data.source || '' });
+
+      var preview = extractJobPreview(data.text, url);
+      if (previewIsUsable(preview)) {
+        state.preview = preview;
+        saveState();
+        showJobPreview(preview);
+        st.style.display = 'none';
+        track('onboarding_vaga_url_ok', { source: data.source || '' });
+      } else {
+        // Leu a página, mas não deu pra entender a vaga (ex: página de busca,
+        // listagem, login) — pedir os dados vale mais que mostrar lixo.
+        state.preview = null;
+        saveState();
+        showJobTextArea();
+        st.className = 'ob-url-status warn';
+        st.innerHTML = '⚠ Conseguimos abrir a página, mas não identificamos os dados da vaga. <b>Cole a descrição da vaga</b> (cargo, atividades e requisitos) no campo abaixo.';
+        track('onboarding_vaga_url_unusable');
+      }
     } else if (res.status === 422 || (data && data.error === 'scraping_blocked')) {
       st.className = 'ob-url-status warn';
       st.innerHTML = '⚠ Esta plataforma bloqueia leitura automática. <b>Cole o texto da vaga</b> no campo abaixo.';
@@ -972,6 +1204,8 @@ async function signupEmail() {
     document.getElementById('jobCount').textContent = state.job.length + ' caracteres';
     document.getElementById('jobNext').disabled = state.job.trim().length < 50;
   }
+  // Vaga já lida por link: volta mostrando a prévia, não o texto cru
+  if (state.preview) showJobPreview(state.preview);
   if (state.cv) {
     document.getElementById('cvNext').disabled = false;
     if (state.cvName) {
