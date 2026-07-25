@@ -237,6 +237,16 @@ describe('Onboarding adaptativo', () => {
     assert.match(vagaHtml, /function openCvUpload\(\)[\s\S]*?input\.value = '';/);
   });
 
+  it('oferece um diagnóstico completo sem escolhas sobrepostas', () => {
+    assert.match(vagaHtml, /Vamos analisar sua candidatura por completo/);
+    assert.match(vagaHtml, /O diagnóstico inclui:/);
+    assert.match(vagaHtml, /Começar diagnóstico gratuito/);
+    assert.match(vagaHtml, /function startCompleteDiagnostic\(\)/);
+    assert.match(vagaHtml, /state\.intent = 'complete'/);
+    assert.doesNotMatch(vagaHtml, /Qual seu maior receio com essa vaga/);
+    assert.doesNotMatch(vagaHtml, /onclick="pickIntent\(/);
+  });
+
   it('preserva o último upload válido quando o seletor é aberto e cancelado', () => {
     assert.match(
       curriculoHtml,
