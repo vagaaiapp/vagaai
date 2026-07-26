@@ -507,6 +507,7 @@ var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 var STATE_KEY = 'vagaai_ob_cv';
+var ANON_ID_KEY = 'vagaai_ob_anon_id';
 var TOTAL_STEPS = 5;
 var state = {
   entry:'no-cv', flow:'', goal:'', hasCv:false, hasJob:null, sit:'',
@@ -515,6 +516,31 @@ var state = {
   step:1
 };
 var _generating = false;
+
+function getAnonymousBrowserId() {
+  var current = '';
+  try { current = localStorage.getItem(ANON_ID_KEY) || ''; } catch(e) {}
+  if (/^[A-Za-z0-9._:-]{16,128}$/.test(current)) return current;
+
+  var created = '';
+  try {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      created = window.crypto.randomUUID();
+    } else if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+      var bytes = new Uint8Array(16);
+      window.crypto.getRandomValues(bytes);
+      created = Array.prototype.map.call(bytes, function(b) {
+        return b.toString(16).padStart(2, '0');
+      }).join('');
+    }
+  } catch(e) {}
+  if (!created) {
+    created = 'ob-' + Date.now().toString(36) + '-' +
+      Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+  }
+  try { localStorage.setItem(ANON_ID_KEY, created); } catch(e) {}
+  return created;
+}
 
 function track(name, params) {
   try { if (typeof gtag === 'function') gtag('event', name, params || {}); } catch(e) {}
@@ -1108,14 +1134,18 @@ async function generateCv() {
         experiencias: expPayload,
         formacao: f.form,
         habilidades: f.skills,
-        contato: { email: f.email, telefone: f.tel, cidade: f.cidade }
+        contato: { email: f.email, telefone: f.tel, cidade: f.cidade },
+        anon_id: getAnonymousBrowserId()
       })
     });
     clearInterval(tipTimer);
 
     if (res.status === 429) {
       _generating = false;
-      showGenLimit();
+      var limitData = {};
+      try { limitData = await res.json(); } catch(e) {}
+      if (limitData.reason === 'network_abuse_limit') showNetworkLimit();
+      else showGenLimit();
       return;
     }
     if (!res.ok) throw new Error('http_' + res.status);
@@ -1158,11 +1188,22 @@ function showGenError() {
 function showGenLimit() {
   document.getElementById('stepGen').innerHTML = '<div class="ob-loading">'
     + '<div style="font-size:38px;margin-bottom:14px">📄</div>'
-    + '<h1 style="font-size:21px;margin-bottom:10px">Você já criou currículos grátis recentemente</h1>'
-    + '<p class="ob-sub" style="margin-inline:auto">Crie sua conta grátis para continuar montando e editando currículos sem limite de tentativas.</p>'
+    + '<h1 style="font-size:21px;margin-bottom:10px">As gerações gratuitas deste navegador já foram utilizadas</h1>'
+    + '<p class="ob-sub" style="margin-inline:auto">Crie sua conta grátis para salvar, baixar e continuar editando seus currículos.</p>'
     + '<button class="ob-btn" onclick="openSignup()">Criar conta grátis →</button>'
+    + '<button class="ob-btn ghost" onclick="goStep(3)">Voltar e revisar os dados</button>'
     + '</div>';
   track('onboarding_cv_limit_reached');
+}
+
+function showNetworkLimit() {
+  document.getElementById('stepGen').innerHTML = '<div class="ob-loading">'
+    + '<div style="font-size:38px;margin-bottom:14px">⏱️</div>'
+    + '<h1 style="font-size:21px;margin-bottom:10px">Muitas solicitações nesta rede</h1>'
+    + '<p class="ob-sub" style="margin-inline:auto">Aguarde um pouco e tente novamente. Seus dados continuam preenchidos.</p>'
+    + '<button class="ob-btn" onclick="goStep(3)">Voltar e revisar os dados</button>'
+    + '</div>';
+  track('onboarding_cv_network_limit');
 }
 
 /* ── Preview: documento real com os dados reais ────────────────────────── */

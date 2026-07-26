@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 import { resolvePlan } from '../lib/entitlements.js';
-import { checkAndCountLimit } from '../lib/ratelimit.js';
+import { checkAndCountLimit, countLimit, isWithinLimit } from '../lib/ratelimit.js';
 
 // ─── Score breakdown determinístico ──────────────────────────────────────────
 
@@ -640,12 +640,14 @@ function checkCvRateLimit(userId) {
   return checkAndCountLimit({ key: `u:${userId}:cv`, limit: CV_USER_LIMIT, windowMs: CV_USER_WINDOW_MS });
 }
 
-// ─── Rate limit por IP (onboarding_cv — anônimo, sem conta) ──────────────────
-// Protege o custo de IA do fluxo de entrada: gerar currículo sem cadastro é a
-// isca do funil, mas não pode virar API pública grátis. 2 (e não 1) para o
-// visitante poder refazer se errar algum dado na primeira tentativa.
-const OB_CV_IP_LIMIT = 2;
+// ─── Rate limit do onboarding_cv anônimo ─────────────────────────────────────
+// O limite de produto acompanha o navegador, não o IP compartilhado. O IP fica
+// apenas como uma barreira ampla de abuso para não bloquear famílias, empresas
+// ou usuários sob CGNAT antes da primeira geração.
+const OB_CV_ANON_LIMIT = 2;
 const OB_CV_WINDOW_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
+const OB_CV_IP_ABUSE_LIMIT = 100;
+const OB_CV_IP_ABUSE_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 horas
 const OB_CV_EXTRACT_IP_LIMIT = 8;
 const OB_CV_EXTRACT_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 horas
 
@@ -1130,20 +1132,13 @@ ${rawCv}`;
   }
 
   if (action === 'onboarding_cv') {
-    const obIp = clientIp(req);
-    if (!(await checkAndCountLimit({ key: `ip:${obIp}:obcv`, limit: OB_CV_IP_LIMIT, windowMs: OB_CV_WINDOW_MS }))) {
-      return res.status(429).json({
-        error: 'limite_atingido',
-        message: 'Você já criou currículos gratuitos recentemente. Crie sua conta para continuar.',
-      });
-    }
-
     const obNome    = typeof req.body.nome === 'string' ? req.body.nome.trim() : '';
     const obCargo   = typeof req.body.cargo_objetivo === 'string' ? req.body.cargo_objetivo.trim() : '';
     const obExp     = typeof req.body.experiencias === 'string' ? req.body.experiencias.trim() : '';
     const obForm    = typeof req.body.formacao === 'string' ? req.body.formacao.trim() : '';
     const obSkills  = typeof req.body.habilidades === 'string' ? req.body.habilidades.trim() : '';
     const obContato = req.body.contato && typeof req.body.contato === 'object' ? req.body.contato : {};
+    const obAnonId  = typeof req.body.anon_id === 'string' ? req.body.anon_id.trim() : '';
 
     if (!obNome)  return res.status(400).json({ error: 'Nome é obrigatório.' });
     if (!obCargo) return res.status(400).json({ error: 'Cargo desejado é obrigatório.' });
@@ -1152,9 +1147,43 @@ ${rawCv}`;
     if (obExp.length > 10000)  return res.status(400).json({ error: 'Experiência muito longa (máx. 10.000 caracteres).' });
     if (obForm.length > 5000)  return res.status(400).json({ error: 'Formação muito longa (máx. 5.000 caracteres).' });
     if (obSkills.length > 2000) return res.status(400).json({ error: 'Habilidades muito longas (máx. 2.000 caracteres).' });
+    if (!/^[A-Za-z0-9._:-]{16,128}$/.test(obAnonId)) {
+      return res.status(400).json({
+        error: 'identificador_anonimo_invalido',
+        message: 'Atualize a página e tente novamente.',
+      });
+    }
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return res.status(500).json({ error: 'Chave de API não configurada.' });
+    }
+
+    const obIp = clientIp(req);
+    const obAnonHash = createHash('sha256').update(obAnonId).digest('hex').slice(0, 32);
+    const obAnonKey = `anon:${obAnonHash}:obcv`;
+
+    if (!(await isWithinLimit({
+      key: obAnonKey,
+      limit: OB_CV_ANON_LIMIT,
+      windowMs: OB_CV_WINDOW_MS,
+    }))) {
+      return res.status(429).json({
+        error: 'limite_atingido',
+        reason: 'anonymous_browser_limit',
+        message: 'As gerações gratuitas deste navegador já foram utilizadas. Crie sua conta para continuar.',
+      });
+    }
+
+    if (!(await checkAndCountLimit({
+      key: `ip:${obIp}:obcv-abuse`,
+      limit: OB_CV_IP_ABUSE_LIMIT,
+      windowMs: OB_CV_IP_ABUSE_WINDOW_MS,
+    }))) {
+      return res.status(429).json({
+        error: 'muitas_tentativas',
+        reason: 'network_abuse_limit',
+        message: 'Muitas gerações foram solicitadas nesta rede. Aguarde um pouco e tente novamente.',
+      });
     }
 
     const obPrompt = `Você é especialista em currículos otimizados para ATS (Applicant Tracking System). Monte um currículo profissional a partir dos dados abaixo, escritos de forma informal pelo próprio candidato.
@@ -1249,6 +1278,8 @@ Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato
         habilidades: Array.isArray(obCv.habilidades) ? obCv.habilidades.slice(0, 20).map(s => String(s).slice(0, 100)) : [],
       };
 
+      // Só uma geração concluída consome a franquia gratuita do navegador.
+      await countLimit({ key: obAnonKey, windowMs: OB_CV_WINDOW_MS });
       return res.status(200).json({ cv: obClean });
     } catch (err) {
       console.error('onboarding_cv error:', err.message);

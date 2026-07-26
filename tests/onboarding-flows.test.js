@@ -282,6 +282,36 @@ describe('Onboarding adaptativo', () => {
     assert.match(analyzeSource, /ip:\$\{extractIp\}:obcvextract/);
   });
 
+  it('limita a geração gratuita pelo navegador e usa o IP apenas contra abuso', () => {
+    assert.match(curriculoHtml, /var ANON_ID_KEY = 'vagaai_ob_anon_id'/);
+    assert.match(curriculoHtml, /function getAnonymousBrowserId\(\)/);
+    assert.match(curriculoHtml, /anon_id: getAnonymousBrowserId\(\)/);
+
+    assert.match(analyzeSource, /const OB_CV_ANON_LIMIT = 2/);
+    assert.match(analyzeSource, /const OB_CV_IP_ABUSE_LIMIT = 100/);
+    assert.match(analyzeSource, /anon:\$\{obAnonHash\}:obcv/);
+    assert.match(analyzeSource, /ip:\$\{obIp\}:obcv-abuse/);
+    assert.doesNotMatch(analyzeSource, /ip:\$\{obIp\}:obcv`/);
+    assert.match(curriculoHtml, /limitData\.reason === 'network_abuse_limit'/);
+    assert.match(curriculoHtml, /function showNetworkLimit\(\)/);
+  });
+
+  it('conta apenas currículos gerados com sucesso', () => {
+    const block = analyzeSource.match(
+      /if \(action === 'onboarding_cv'\) \{[\s\S]*?(?=\n  \/\/ .*Modo: Raio-X)/
+    );
+    assert.ok(block, 'bloco onboarding_cv não encontrado');
+    const source = block[0];
+    const validationAt = source.indexOf("if (!obNome)");
+    const limitAt = source.indexOf('isWithinLimit');
+    const successAt = source.indexOf('await countLimit');
+    const responseAt = source.indexOf("return res.status(200).json({ cv: obClean })");
+
+    assert.ok(validationAt >= 0 && validationAt < limitAt, 'validação deve ocorrer antes do limite');
+    assert.ok(successAt > limitAt, 'contador de sucesso deve ocorrer após o preflight');
+    assert.ok(responseAt > successAt, 'contador deve ser atualizado somente antes da resposta de sucesso');
+  });
+
   it('informa os mesmos formatos que os campos de upload aceitam', () => {
     for (const html of [vagaHtml, curriculoHtml]) {
       assert.match(html, /accept="\.txt,\.pdf,\.docx"/);
