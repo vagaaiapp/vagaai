@@ -324,6 +324,7 @@ select:focus{outline:none;border-color:var(--green-border)}
     <div class="ob-eyebrow">Etapa 3</div>
     <h1>Só o essencial por enquanto</h1>
     <p class="ob-sub" id="step3Sub">Escreva do seu jeito — a IA deixa profissional na hora de montar.</p>
+    <div id="importReviewNote" class="ob-ok" role="status" aria-live="polite" style="display:none;margin-bottom:20px"></div>
 
     <div class="ob-field">
       <label for="fNome">Nome completo</label>
@@ -509,7 +510,7 @@ var STATE_KEY = 'vagaai_ob_cv';
 var TOTAL_STEPS = 5;
 var state = {
   entry:'no-cv', flow:'', goal:'', hasCv:false, hasJob:null, sit:'',
-  imported:'', importedName:'', tpl:'modern', form:{}, cv:null,
+  imported:'', importedName:'', importedStructured:false, tpl:'modern', form:{}, cv:null,
   alertDraft:{cargo:'',local:'',modalidade:'',salario:'',frequencia:'semanal',scoreMinimo:70,activate:true},
   step:1
 };
@@ -589,6 +590,7 @@ function renderStep(n, push) {
   }
   document.getElementById('backBtn').hidden = (n === 1 || n === 5);
   if (n === 2) restoreImportUi();
+  if (n === 3) applyFormToInputs();
 
   var url = '/onboarding/curriculo/' + n;
   if (push && window.location.pathname !== url) history.pushState({ step:n }, '', url);
@@ -744,6 +746,10 @@ function continueAfterImport() {
     showImportError('O arquivo ainda não foi processado. Tente importar novamente ou preencha manualmente.');
     return;
   }
+  if (!state.form || !state.form.exp) {
+    state.form = mergeImportedForm(parseImportedCvLocally(state.imported), state.form || {});
+    saveState();
+  }
   track('onboarding_cv_import_continue', { method: 'upload' });
   goStep(3);
 }
@@ -751,6 +757,150 @@ function continueAfterImport() {
 function continueWithoutImport() {
   track('onboarding_cv_import_continue', { method: 'manual_after_error' });
   goStep(3);
+}
+
+function cleanImportedLines(raw) {
+  return String(raw || '')
+    .replace(/\r/g, '\n')
+    .split('\n')
+    .map(function(line) { return line.replace(/[ \t]+/g, ' ').trim(); })
+    .filter(Boolean);
+}
+
+function importedHeading(line) {
+  var key = String(line || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  key = key.replace(/[^a-z ]/g, ' ').replace(/\s+/g, ' ').trim();
+  var headings = {
+    'resumo':'resumo', 'resumo profissional':'resumo', 'perfil profissional':'resumo',
+    'objetivo':'objetivo', 'objetivo profissional':'objetivo',
+    'experiencia':'exp', 'experiencias':'exp', 'experiencia profissional':'exp',
+    'experiencias profissionais':'exp', 'historico profissional':'exp',
+    'formacao':'form', 'formacao academica':'form', 'educacao':'form',
+    'habilidades':'skills', 'competencias':'skills', 'competencias tecnicas':'skills',
+    'skills':'skills', 'conhecimentos':'skills',
+    'contato':'contact', 'dados pessoais':'contact',
+    'idiomas':'other', 'cursos':'other', 'certificacoes':'other',
+    'projetos':'other', 'informacoes adicionais':'other'
+  };
+  return headings[key] || '';
+}
+
+function importedSection(lines, section) {
+  var start = -1;
+  for (var i = 0; i < lines.length; i++) {
+    if (importedHeading(lines[i]) === section) { start = i + 1; break; }
+  }
+  if (start < 0) return '';
+  var out = [];
+  for (var j = start; j < lines.length; j++) {
+    if (importedHeading(lines[j])) break;
+    out.push(lines[j]);
+  }
+  return out.join('\n').trim();
+}
+
+function parseImportedCvLocally(raw) {
+  var lines = cleanImportedLines(raw);
+  var joined = lines.join('\n');
+  var email = (joined.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i) || [''])[0];
+  var tel = (joined.match(/(?:\+?55\s*)?(?:\(?\d{2}\)?\s*)?(?:9\s*)?\d{4}[-.\s]?\d{4}/) || [''])[0];
+  var nome = '';
+  for (var i = 0; i < Math.min(lines.length, 8); i++) {
+    var candidate = lines[i];
+    if (
+      candidate.length >= 5 && candidate.length <= 80 &&
+      candidate.indexOf('@') < 0 && !/\d{3,}/.test(candidate) &&
+      !importedHeading(candidate) && candidate.split(' ').length >= 2
+    ) {
+      nome = candidate;
+      break;
+    }
+  }
+
+  var cargo = importedSection(lines, 'objetivo').split('\n')[0] || '';
+  if (!cargo && nome) {
+    var nameIndex = lines.indexOf(nome);
+    for (var c = nameIndex + 1; c < Math.min(lines.length, nameIndex + 5); c++) {
+      if (
+        lines[c] && lines[c].length <= 100 && lines[c].indexOf('@') < 0 &&
+        !/\d{4}/.test(lines[c]) && !importedHeading(lines[c])
+      ) {
+        cargo = lines[c];
+        break;
+      }
+    }
+  }
+
+  var exp = importedSection(lines, 'exp');
+  var form = importedSection(lines, 'form');
+  var skillsRaw = importedSection(lines, 'skills');
+  var skills = skillsRaw
+    ? skillsRaw.split(/\n|[•·|;]/).map(function(item) { return item.replace(/^[-–—]\s*/, '').trim(); }).filter(Boolean).join(', ')
+    : '';
+
+  var cidade = '';
+  var locationMatch = joined.match(/\b[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][A-Za-zÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇáàâãéèêíìîóòôõúùûç ]{2,40}\s*[-–]\s*[A-Z]{2}\b/);
+  if (locationMatch) cidade = locationMatch[0].trim();
+
+  return {
+    nome: nome,
+    cargo: cargo,
+    exp: exp || joined.slice(0, 9000),
+    form: form,
+    skills: skills,
+    email: email,
+    tel: tel,
+    cidade: cidade
+  };
+}
+
+function mergeImportedForm(primary, fallback) {
+  primary = primary || {};
+  fallback = fallback || {};
+  var fields = ['nome','cargo','exp','form','skills','email','tel','cidade'];
+  var merged = {};
+  fields.forEach(function(field) {
+    merged[field] = String(primary[field] || fallback[field] || '').trim();
+  });
+  return merged;
+}
+
+async function structureImportedCv(raw) {
+  var local = parseImportedCvLocally(raw);
+  try {
+    var response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action:'onboarding_cv_extract', cv:String(raw || '').slice(0, 15000) })
+    });
+    if (!response.ok) throw new Error('extract_' + response.status);
+    var payload = await response.json();
+    return mergeImportedForm(payload.form || {}, local);
+  } catch (error) {
+    console.warn('Estruturação automática indisponível; usando extração local.', error);
+    return local;
+  }
+}
+
+function applyFormToInputs() {
+  var f = state.form || {};
+  var ids = {
+    nome:'fNome', cargo:'fCargo', exp:'fExp', form:'fForm',
+    skills:'fSkills', email:'fEmail', tel:'fTel', cidade:'fCidade'
+  };
+  Object.keys(ids).forEach(function(field) {
+    var input = document.getElementById(ids[field]);
+    if (input && f[field] != null) input.value = f[field];
+  });
+  var note = document.getElementById('importReviewNote');
+  if (note) {
+    note.style.display = state.imported ? 'flex' : 'none';
+    note.textContent = state.imported
+      ? '✓ Dados extraídos de ' + (state.importedName || 'seu currículo') + '. Revise os campos antes de escolher o modelo.'
+      : '';
+  }
+  var next = document.getElementById('formNext');
+  if (next) next.disabled = !(String(f.nome || '').trim() && String(f.cargo || '').trim());
 }
 
 function loadScript(src) {
@@ -779,7 +929,28 @@ async function extractPdfText(file) {
   for (var i = 1; i <= pdf.numPages; i++) {
     var page = await pdf.getPage(i);
     var content = await page.getTextContent();
-    out.push(content.items.map(function(it) { return it.str; }).join(' '));
+    var rows = [];
+    content.items.forEach(function(it) {
+      var y = Math.round((it.transform && it.transform[5]) || 0);
+      var x = (it.transform && it.transform[4]) || 0;
+      var row = null;
+      for (var r = 0; r < rows.length; r++) {
+        if (Math.abs(rows[r].y - y) <= 2) { row = rows[r]; break; }
+      }
+      if (!row) {
+        row = { y:y, items:[] };
+        rows.push(row);
+      }
+      row.items.push({ x:x, text:String(it.str || '').trim() });
+    });
+    rows.sort(function(a, b) { return b.y - a.y; });
+    out.push(rows.map(function(row) {
+      return row.items
+        .sort(function(a, b) { return a.x - b.x; })
+        .map(function(item) { return item.text; })
+        .filter(Boolean)
+        .join(' ');
+    }).filter(Boolean).join('\n'));
   }
   return out.join('\n');
 }
@@ -830,14 +1001,14 @@ async function handleImport(input) {
     text = (text || '').trim();
     if (text.length < 50) throw new Error('curto');
 
-    state.imported = text.slice(0, 9000);
+    state.imported = text.slice(0, 15000);
     state.importedName = file.name;
-    // Heurística leve: a 1ª linha curta costuma ser o nome no topo do currículo
-    var firstLine = (text.split('\n')[0] || '').trim();
-    if (firstLine && firstLine.length <= 60 && !/\d{4}|@/.test(firstLine)) {
-      state.form = Object.assign({}, state.form, { nome: firstLine });
-    }
+    state.importedStructured = false;
+    okEl.textContent = 'Organizando os dados de ' + file.name + '...';
+    state.form = mergeImportedForm(await structureImportedCv(state.imported), state.form || {});
+    state.importedStructured = true;
     saveState();
+    applyFormToInputs();
     showImportSuccess(file.name);
     track('onboarding_cv_import_method', { method: 'upload' });
     track('onboarding_cv_extraction_success', { success: true });
@@ -1213,16 +1384,7 @@ async function signupEmail() {
     document.getElementById('step2Sub').textContent = c.sub;
     document.getElementById('expHint').textContent = c.hint;
   }
-  var f = state.form || {};
-  if (f.nome)   document.getElementById('fNome').value = f.nome;
-  if (f.cargo)  document.getElementById('fCargo').value = f.cargo;
-  if (f.exp)    document.getElementById('fExp').value = f.exp;
-  if (f.form)   document.getElementById('fForm').value = f.form;
-  if (f.skills) document.getElementById('fSkills').value = f.skills;
-  if (f.email)  document.getElementById('fEmail').value = f.email;
-  if (f.tel)    document.getElementById('fTel').value = f.tel;
-  if (f.cidade) document.getElementById('fCidade').value = f.cidade;
-  document.getElementById('formNext').disabled = !(f.nome && f.cargo);
+  applyFormToInputs();
 
   if (state.tpl) pickTpl(state.tpl);
   if (state.cv) renderPreview(state.cv);

@@ -15,6 +15,10 @@ const curriculoHtml = fs.readFileSync(
   new URL('../onboarding/curriculo/index.html', import.meta.url),
   'utf8'
 );
+const analyzeSource = fs.readFileSync(
+  new URL('../api/analyze.js', import.meta.url),
+  'utf8'
+);
 
 function createStorage() {
   const values = new Map();
@@ -222,6 +226,60 @@ describe('Onboarding adaptativo', () => {
       curriculoHtml,
       /if \(state\.imported && state\.importedName\) showImportSuccess\(state\.importedName\)/
     );
+  });
+
+  it('estrutura o currículo importado antes da revisão e mantém fallback local', () => {
+    assert.match(curriculoHtml, /function parseImportedCvLocally/);
+    assert.match(curriculoHtml, /function structureImportedCv/);
+    assert.match(curriculoHtml, /action:'onboarding_cv_extract'/);
+    assert.match(curriculoHtml, /function applyFormToInputs/);
+    assert.match(curriculoHtml, /id="importReviewNote"/);
+    assert.match(curriculoHtml, /exp:\s*exp \|\| joined\.slice/);
+    assert.match(
+      curriculoHtml,
+      /state\.form = mergeImportedForm\(await structureImportedCv\(state\.imported\), state\.form \|\| \{\}\)/
+    );
+  });
+
+  it('preenche a revisão com dados extraídos de um currículo importado', () => {
+    const parserBlock = curriculoHtml.match(
+      /function cleanImportedLines[\s\S]*?(?=async function structureImportedCv)/
+    );
+    assert.ok(parserBlock, 'bloco do parser local não encontrado');
+
+    const sandbox = {};
+    vm.createContext(sandbox);
+    vm.runInContext(parserBlock[0], sandbox);
+
+    const parsed = sandbox.parseImportedCvLocally([
+      'Marina Costa',
+      'Analista de Marketing',
+      'marina@example.com',
+      'Rio de Janeiro - RJ',
+      'EXPERIÊNCIA PROFISSIONAL',
+      'Analista de Marketing',
+      'Empresa X | 2022 a 2024',
+      'Criei campanhas digitais',
+      'FORMAÇÃO',
+      'Marketing - Universidade X',
+      'HABILIDADES',
+      'Excel',
+      'Google Ads'
+    ].join('\n'));
+
+    assert.equal(parsed.nome, 'Marina Costa');
+    assert.equal(parsed.cargo, 'Analista de Marketing');
+    assert.match(parsed.exp, /Empresa X/);
+    assert.match(parsed.form, /Universidade X/);
+    assert.equal(parsed.skills, 'Excel, Google Ads');
+    assert.equal(parsed.email, 'marina@example.com');
+    assert.equal(parsed.cidade, 'Rio de Janeiro - RJ');
+  });
+
+  it('expõe uma ação de extração separada da geração gratuita', () => {
+    assert.match(analyzeSource, /action === 'onboarding_cv_extract'/);
+    assert.match(analyzeSource, /OB_CV_EXTRACT_IP_LIMIT/);
+    assert.match(analyzeSource, /ip:\$\{extractIp\}:obcvextract/);
   });
 
   it('informa os mesmos formatos que os campos de upload aceitam', () => {

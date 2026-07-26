@@ -646,6 +646,8 @@ function checkCvRateLimit(userId) {
 // visitante poder refazer se errar algum dado na primeira tentativa.
 const OB_CV_IP_LIMIT = 2;
 const OB_CV_WINDOW_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
+const OB_CV_EXTRACT_IP_LIMIT = 8;
+const OB_CV_EXTRACT_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 horas
 
 // ─── Dedução de crédito exclusiva para create_cv ─────────────────────────────
 // Diferença em relação a checkAndDeductCredit: BLOQUEIA usuários Free.
@@ -1029,6 +1031,104 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
   // custa IA, a proteção é rate limit por IP (lib/ratelimit.js, persistente).
   // Retorna o mesmo shape de `cv_otimizado` usado pela análise e renderizado
   // por /cv, para o handoff via localStorage funcionar sem conversão.
+  if (action === 'onboarding_cv_extract') {
+    const rawCv = typeof req.body.cv === 'string' ? req.body.cv.trim() : '';
+    if (rawCv.length < 50) {
+      return res.status(400).json({ error: 'Currículo muito curto para extração.' });
+    }
+    if (rawCv.length > 15000) {
+      return res.status(400).json({ error: 'Currículo muito longo (máx. 15.000 caracteres).' });
+    }
+
+    const extractIp = clientIp(req);
+    if (!(await checkAndCountLimit({
+      key: `ip:${extractIp}:obcvextract`,
+      limit: OB_CV_EXTRACT_IP_LIMIT,
+      windowMs: OB_CV_EXTRACT_WINDOW_MS,
+    }))) {
+      return res.status(429).json({
+        error: 'limite_atingido',
+        message: 'Limite temporário de importações atingido. Revise os dados extraídos localmente ou tente novamente mais tarde.',
+      });
+    }
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(500).json({ error: 'Chave de API não configurada.' });
+    }
+
+    const extractPrompt = `Extraia dados explícitos do currículo abaixo para preencher um formulário de revisão.
+
+REGRAS:
+- Não invente, complete ou deduza experiências, empresas, datas, cargos, formação, localização ou habilidades.
+- Preserve a experiência profissional em texto legível, com quebras de linha.
+- "cargo" é o título profissional ou objetivo declarado no currículo; se não existir, deixe vazio.
+- "skills" deve ser uma lista curta separada por vírgulas.
+- Responda somente com JSON válido, sem markdown.
+
+FORMATO EXATO:
+{"nome":"","cargo":"","exp":"","form":"","skills":"","email":"","tel":"","cidade":""}
+
+CURRÍCULO:
+${rawCv}`;
+
+    try {
+      const extractRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 1800,
+          temperature: 0,
+          messages: [{ role: 'user', content: extractPrompt }],
+        }),
+      });
+
+      if (!extractRes.ok) {
+        console.error('onboarding_cv_extract: IA retornou', extractRes.status);
+        return res.status(502).json({ error: 'Não foi possível estruturar o currículo agora.' });
+      }
+
+      const extractData = await extractRes.json();
+      let extractText = String(extractData.content?.[0]?.text || '')
+        .trim()
+        .replace(/^```(?:json)?/i, '')
+        .replace(/```$/, '')
+        .trim();
+      let parsed = null;
+      try {
+        parsed = JSON.parse(extractText);
+      } catch {
+        const match = extractText.match(/\{[\s\S]*\}/);
+        try { parsed = match ? JSON.parse(match[0]) : null; } catch { parsed = null; }
+      }
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        return res.status(502).json({ error: 'Resposta inválida ao estruturar o currículo.' });
+      }
+
+      const skills = Array.isArray(parsed.skills)
+        ? parsed.skills.map(value => String(value || '').trim()).filter(Boolean).join(', ')
+        : String(parsed.skills || '').trim();
+      const form = {
+        nome: String(parsed.nome || '').trim().slice(0, 200),
+        cargo: String(parsed.cargo || '').trim().slice(0, 200),
+        exp: String(parsed.exp || rawCv).trim().slice(0, 10000),
+        form: String(parsed.form || '').trim().slice(0, 5000),
+        skills: skills.slice(0, 2000),
+        email: String(parsed.email || '').trim().slice(0, 200),
+        tel: String(parsed.tel || '').trim().slice(0, 60),
+        cidade: String(parsed.cidade || '').trim().slice(0, 120),
+      };
+      return res.status(200).json({ form });
+    } catch (err) {
+      console.error('onboarding_cv_extract error:', err.message);
+      return res.status(500).json({ error: 'Erro interno ao estruturar o currículo.' });
+    }
+  }
+
   if (action === 'onboarding_cv') {
     const obIp = clientIp(req);
     if (!(await checkAndCountLimit({ key: `ip:${obIp}:obcv`, limit: OB_CV_IP_LIMIT, windowMs: OB_CV_WINDOW_MS }))) {
