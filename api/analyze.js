@@ -120,6 +120,14 @@ async function setCachedResult(hash, result) {
 
 const IP_FREE_LIMIT = 1; // 1 análise gratuita por IP a cada 30 dias
 
+// Liberação temporária para testes internos. Remove este bloco após 28/07/2026
+// (23:59:59 BRT). Não afeta usuários autenticados, planos ou outros IPs.
+const TEMP_TEST_IP = '128.201.40.237';
+const TEMP_TEST_IP_EXPIRES_AT = Date.parse('2026-07-29T02:59:59.999Z');
+function hasTemporaryTestAccess(ip) {
+  return ip === TEMP_TEST_IP && Date.now() <= TEMP_TEST_IP_EXPIRES_AT;
+}
+
 async function checkRateLimit(ip) {
   // Usa a SERVICE key: a tabela ip_rate_limits tem RLS habilitada e nega anon,
   // impedindo que o usuário zere o próprio contador via PostgREST (anon key é pública).
@@ -1443,6 +1451,9 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
     } else {
       // Anônimo: aplica rate limit mesmo em cache hit
       const _ip = clientIp(req);
+      if (hasTemporaryTestAccess(_ip)) {
+        return res.status(200).json(cachedResult);
+      }
       const { allowed } = await checkRateLimit(_ip);
       if (!allowed) {
         return res.status(429).json({ error: 'limite_atingido' });
@@ -1471,9 +1482,11 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
     }
   } else {
     _ip = clientIp(req);
-    const { allowed } = await checkRateLimit(_ip);
-    if (!allowed) {
-      return res.status(429).json({ error: 'limite_atingido' });
+    if (!hasTemporaryTestAccess(_ip)) {
+      const { allowed } = await checkRateLimit(_ip);
+      if (!allowed) {
+        return res.status(429).json({ error: 'limite_atingido' });
+      }
     }
   }
 
@@ -1690,7 +1703,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
         result._credits_remaining = credRows[0]?.credits ?? null;
       } catch (_) {}
     } else {
-      await recordIpUsage(_ip);
+      if (!hasTemporaryTestAccess(_ip)) await recordIpUsage(_ip);
     }
 
     // Score comparativo — benchmark interno
