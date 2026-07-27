@@ -375,8 +375,10 @@
     /* PRICING */
     .pricing{background:var(--bg)}
     .billing-toggle{margin:24px auto 0;width:max-content;display:flex;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
-    .billing-toggle button{padding:9px 18px;border:0;background:transparent;border-radius:9px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
+    .billing-toggle button{padding:9px 18px;border:0;background:transparent;border-radius:9px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
     .billing-toggle button.active{background:var(--green);color:#071009}
+    .billing-badge{font-size:10px;font-weight:800;padding:2px 6px;border-radius:20px;background:var(--mint);color:var(--green);letter-spacing:.02em}
+    .billing-toggle button.active .billing-badge{background:rgba(7,16,9,.15);color:#071009}
     .plans{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:32px;max-width:800px;margin-inline:auto}
     .plan{position:relative;padding:28px;border:1px solid rgba(76,205,146,.15);border-radius:16px;background:linear-gradient(135deg,rgba(76,205,146,.04) 0%,rgba(47,174,118,.02) 100%);backdrop-filter:blur(8px);transition:transform .25s cubic-bezier(.4,.0,.2,1),border-color .25s,box-shadow .25s}
     .plan:hover{transform:translateY(-6px);border-color:rgba(76,205,146,.3);box-shadow:0 16px 48px rgba(76,205,146,.15)}
@@ -1074,7 +1076,7 @@
     <!-- 16. PLANOS -->
     <section class="section pricing" id="planos"><div class="wrap">
       <div class="center reveal"><span class="eyebrow">Planos</span><h2>Comece grátis. <span class="green">Acelere quando fizer sentido.</span></h2><p class="lead">Teste a experiência sem cartão de crédito. Escolha um plano quando precisar analisar mais oportunidades e avançar com mais recursos.</p></div>
-      <div class="billing reveal billing-toggle"><button class="active" data-billing="monthly">Mensal</button><button data-billing="annual">Anual</button></div>
+      <div class="billing reveal billing-toggle"><button class="active" data-billing="monthly">Mensal</button><button data-billing="quarterly">Trimestral <span class="billing-badge">-25%</span></button></div>
       <div class="plans reveal">
         <article class="plan glow">
           <span class="plan-name">Gratuito</span><h3>Para dar o primeiro passo</h3>
@@ -1095,8 +1097,8 @@
           <span class="popular">Recomendado</span>
           <span class="plan-name">Pro</span><h3>Para quem quer acelerar a mudança</h3>
           <p>Análises ilimitadas, currículo e carta prontos para cada vaga, e preparação completa até a entrevista.</p>
-          <div class="price" data-monthly="R$39,90" data-annual="R$24,92" data-monthly-daily="· R$1,33/dia" data-annual-daily="· R$0,83/dia"><span class="price-value">R$39,90<small>/mês</small></span><span class="price-daily">· R$1,33/dia</span></div>
-          <a class="btn primary plan-link" href="https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408" data-monthly-url="https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408" data-annual-url="https://buy.stripe.com/bJe5kDgVM0jf8Ll8Cr9k409">Assinar Pro</a>
+          <div class="price" data-monthly="R$39,90" data-quarterly="R$29,90" data-monthly-daily="· R$1,33/dia" data-quarterly-daily="· R$1,00/dia"><span class="price-value">R$39,90<small>/mês</small></span><span class="price-daily">· R$1,33/dia</span></div>
+          <a class="btn primary plan-link" href="https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408" data-monthly-url="https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408" data-quarterly-url="https://buy.stripe.com/5kQaEX0WOd616Dd7yn9k40a">Assinar Pro</a>
           <div class="plan-note billing-note">Cobrança mensal, cancele quando quiser</div>
           <div class="list">
             <span>Todos os recursos do plano Gratuito</span>
@@ -1229,7 +1231,7 @@
           l.href = l.dataset[mode + 'Url'];
         });
         document.querySelectorAll('.billing-note').forEach(function(n) {
-          n.textContent = mode === 'annual' ? 'Cobrança anual, melhor valor mensal' : 'Cobrança mensal, cancele quando quiser';
+          n.textContent = mode === 'quarterly' ? 'R$89,70 a cada 3 meses · cancele quando quiser' : 'Cobrança mensal, cancele quando quiser';
         });
       });
     });

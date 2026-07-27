@@ -217,6 +217,7 @@ export default async function handler(req, res) {
       [process.env.STRIPE_PRICE_STARTER_ANNUAL  || 'price_1Tf3IlHSfV7EaBVqI70JVVrR', { plan: 'starter', billing: 'anual' }],
       [process.env.STRIPE_PRICE_PRO_MONTHLY     || 'price_1Tf3JmHSfV7EaBVqbgfQ1vv3', { plan: 'pro', billing: 'mensal' }],
       [process.env.STRIPE_PRICE_PRO_ANNUAL      || 'price_1Tf3KaHSfV7EaBVqFYYhyqhu', { plan: 'pro', billing: 'anual' }],
+      [process.env.STRIPE_PRICE_PRO_QUARTERLY   || 'price_1TxfrwHSfV7EaBVqZk2SfgBX', { plan: 'pro', billing: 'trimestral' }],
     ].filter(([k]) => k)
   );
 
