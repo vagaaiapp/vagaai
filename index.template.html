@@ -386,8 +386,9 @@
     .plan-name{color:var(--green);font-size:11px;font-weight:800;text-transform:uppercase}
     .plan h3{margin-top:9px;font:700 20px Lora}
     .plan>p{min-height:56px;margin-top:8px;color:var(--copy);font-size:12.5px}
-    .price{margin-top:16px;font:700 31px Lora}
+    .price{margin-top:16px;display:flex;align-items:baseline;gap:7px;font:700 31px Lora}
     .price small{font:500 12px Inter;color:var(--muted)}
+    .price-daily{font:600 11px Inter;color:var(--green);white-space:nowrap}
     .plan .btn{width:100%;margin:18px 0 6px}
     .plan-note{font-size:11px;color:var(--muted);margin-bottom:14px}
     .list{padding-top:18px;border-top:1px solid var(--line);display:grid;gap:10px}
@@ -1094,7 +1095,7 @@
           <span class="popular">Recomendado</span>
           <span class="plan-name">Pro</span><h3>Para quem quer acelerar a mudança</h3>
           <p>Análises ilimitadas, currículo e carta prontos para cada vaga, e preparação completa até a entrevista.</p>
-          <div class="price" data-monthly="R$39,90" data-annual="R$24,92">R$39,90<small>/mês</small></div>
+          <div class="price" data-monthly="R$39,90" data-annual="R$24,92"><span class="price-value">R$39,90<small>/mês</small></span><span class="price-daily">· R$1,33/dia</span></div>
           <a class="btn primary plan-link" href="https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408" data-monthly-url="https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408" data-annual-url="https://buy.stripe.com/bJe5kDgVM0jf8Ll8Cr9k409">Assinar Pro</a>
           <div class="plan-note billing-note">Cobrança mensal, cancele quando quiser</div>
           <div class="list">
@@ -1221,7 +1222,8 @@
         document.querySelectorAll('.billing button').forEach(function(b) { b.classList.remove('active'); });
         btn.classList.add('active');
         document.querySelectorAll('.price[data-monthly]').forEach(function(p) {
-          p.innerHTML = p.dataset[mode] + '<small>/mês</small>';
+          p.querySelector('.price-value').innerHTML = p.dataset[mode] + '<small>/mês</small>';
+          p.querySelector('.price-daily').hidden = mode === 'annual';
         });
         document.querySelectorAll('.plan-link').forEach(function(l) {
           l.href = l.dataset[mode + 'Url'];
