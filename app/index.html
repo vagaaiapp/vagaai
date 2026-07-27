@@ -393,6 +393,9 @@ textarea::placeholder{color:var(--muted)}
 .upsell-plan-btn:hover{background:#4ddb9e}
 .upsell-plan-btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
 .upsell-plan-btn.ghost:hover{border-color:var(--green-border);color:var(--green);background:transparent}
+.upsell-plan-quarterly{width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Manrope',sans-serif;font-size:11px;font-weight:600;border-radius:8px;padding:.5rem;cursor:pointer;margin-top:.4rem;transition:border-color .2s,color .2s}
+.upsell-plan-quarterly:hover{border-color:var(--green-border);color:var(--text)}
+.upsell-quarterly-badge{color:var(--green);font-weight:800}
 
 /* LIMITE ATINGIDO */
 .limit-section{display:none;text-align:center;padding:3rem 1rem}
@@ -1211,6 +1214,7 @@ var PLANS = [
     brl: 39.90,
     desc: 'Análises ilimitadas, currículo e carta para cada vaga, briefing completo e simulador de entrevista.',
     url: 'https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408',
+    quarterlyUrl: 'https://buy.stripe.com/5kQaEX0WOd616Dd7yn9k40a',
     featured: true
   }
 ];
@@ -1243,6 +1247,9 @@ function planCardHTML(p, btnClass) {
     + '<div class="upsell-plan-desc">' + p.desc + '</div>'
     + '<button class="upsell-plan-btn ' + (p.featured ? '' : 'ghost') + '" onclick="track(\'begin_checkout\',{plan:\'' + p.name + '\',value:' + p.brl + ',currency:\'BRL\'});openAuthCheckout(\'' + p.url + '\')">'
     + (p.featured ? 'Começar agora' : 'Escolher') + '</button>'
+    + (p.quarterlyUrl
+        ? '<button class="upsell-plan-quarterly" onclick="track(\'begin_checkout\',{plan:\'' + p.name + ' Trimestral\',currency:\'BRL\'});openAuthCheckout(\'' + p.quarterlyUrl + '\')">ou trimestral — R$29,90/mês <span class="upsell-quarterly-badge">-25%</span></button>'
+        : '')
     + '</div>';
 }
 

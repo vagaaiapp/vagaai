@@ -2960,6 +2960,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           <li style="display:flex;gap:8px;"><span style="color:var(--gb-bright)">✓</span> Simulador de entrevista</li>
         </ul>
         <button id="planBtnPro" style="width:100%;padding:11px;background:var(--gb-emerald);border:none;border-radius:var(--r-sm);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="openAuthCheckout('https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408')">Assinar Pro</button>
+        <button id="planBtnProQuarterly" style="width:100%;padding:9px;margin-top:8px;background:transparent;border:1px solid var(--border);border-radius:var(--r-sm);color:var(--t2);font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;display:none;" onclick="openAuthCheckout('https://buy.stripe.com/5kQaEX0WOd616Dd7yn9k40a')">ou trimestral — R$29,90/mês <span style="color:var(--gb-emerald);font-weight:800;">-25%</span></button>
       </div>
 
       <!-- Upsell Pro — visível para free/starter -->
@@ -2973,6 +2974,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t1);"><span style="color:var(--gb-emerald);font-weight:700;">✓</span> Simulador de entrevista com IA</div>
         </div>
         <button id="upsellProBtn" onclick="openAuthCheckout('https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408')" style="width:100%;padding:12px;background:var(--gb-emerald);border:none;border-radius:var(--r-sm);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">Assinar Pro — R$39,90/mês</button>
+        <button id="upsellProQuarterlyBtn" style="width:100%;padding:9px;margin-top:8px;background:transparent;border:1px solid var(--border);border-radius:var(--r-sm);color:var(--t2);font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;display:none;" onclick="openAuthCheckout('https://buy.stripe.com/5kQaEX0WOd616Dd7yn9k40a')">ou trimestral — R$29,90/mês <span style="color:var(--gb-emerald);font-weight:800;">-25%</span></button>
         <p style="font-size:11px;color:var(--t3);text-align:center;margin:10px 0 0;">Cancele quando quiser · Sem fidelidade</p>
       </div>
 
@@ -6718,6 +6720,13 @@ function renderPlanTiles(sub) {
   if (tileUs) tileUs.style.display = 'none';
   // Starter é plano comercial oculto (fallback) — só some visível pra quem já está nele.
   tileS.style.display = 'none';
+  // Link de checkout trimestral: só faz sentido em NOVA assinatura (ramo Free,
+  // que usa link direto do Stripe). Starter usa openStripePortal pra upgrade
+  // (outro fluxo), e quem já é Pro não deve ver CTA de assinar de novo.
+  var btnPQ = document.getElementById('planBtnProQuarterly');
+  var upsellBtnQ = document.getElementById('upsellProQuarterlyBtn');
+  if (btnPQ) btnPQ.style.display = 'none';
+  if (upsellBtnQ) upsellBtnQ.style.display = 'none';
 
   if (plan === 'starter') {
     tileS.style.display = '';
@@ -6757,12 +6766,14 @@ function renderPlanTiles(sub) {
     // Free: ambos os tiles com CTA de assinar + upsell Pro
     if (btnS) { btnS.style.cssText = 'width:100%;padding:11px;border:1.5px solid var(--gb-emerald);border-radius:var(--r-sm);background:var(--bg);color:var(--gb-emerald);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;'; btnS.textContent = 'Assinar Starter'; btnS.onclick = function(){ openAuthCheckout('https://buy.stripe.com/28E14n0WO2rne5Ff0P9k406'); }; }
     if (btnP) { btnP.style.cssText = 'width:100%;padding:11px;background:var(--gb-emerald);border:none;border-radius:var(--r-sm);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;'; btnP.textContent = 'Assinar Pro'; btnP.onclick = function(){ openAuthCheckout('https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408'); }; }
+    if (btnPQ) { btnPQ.style.display = ''; btnPQ.onclick = function(){ openAuthCheckout('https://buy.stripe.com/5kQaEX0WOd616Dd7yn9k40a'); }; }
     if (tileUpsell) {
       tileUpsell.style.display = '';
       var upsellP2 = tileUpsell.querySelector('p');
       if (upsellP2) upsellP2.textContent = 'Com o plano Pro você sai na frente: analise quantas vagas quiser, com CV otimizado e simulador de entrevista por IA.';
       var upsellBtn2 = document.getElementById('upsellProBtn');
       if (upsellBtn2) { upsellBtn2.textContent = 'Assinar Pro — R$39,90/mês'; upsellBtn2.onclick = function(){ openAuthCheckout('https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408'); }; }
+      if (upsellBtnQ) { upsellBtnQ.style.display = ''; upsellBtnQ.onclick = function(){ openAuthCheckout('https://buy.stripe.com/5kQaEX0WOd616Dd7yn9k40a'); }; }
     }
   }
 }
