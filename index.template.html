@@ -1095,7 +1095,7 @@
           <span class="popular">Recomendado</span>
           <span class="plan-name">Pro</span><h3>Para quem quer acelerar a mudança</h3>
           <p>Análises ilimitadas, currículo e carta prontos para cada vaga, e preparação completa até a entrevista.</p>
-          <div class="price" data-monthly="R$39,90" data-annual="R$24,92"><span class="price-value">R$39,90<small>/mês</small></span><span class="price-daily">· R$1,33/dia</span></div>
+          <div class="price" data-monthly="R$39,90" data-annual="R$24,92" data-monthly-daily="· R$1,33/dia" data-annual-daily="· R$0,83/dia"><span class="price-value">R$39,90<small>/mês</small></span><span class="price-daily">· R$1,33/dia</span></div>
           <a class="btn primary plan-link" href="https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408" data-monthly-url="https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408" data-annual-url="https://buy.stripe.com/bJe5kDgVM0jf8Ll8Cr9k409">Assinar Pro</a>
           <div class="plan-note billing-note">Cobrança mensal, cancele quando quiser</div>
           <div class="list">
@@ -1223,7 +1223,7 @@
         btn.classList.add('active');
         document.querySelectorAll('.price[data-monthly]').forEach(function(p) {
           p.querySelector('.price-value').innerHTML = p.dataset[mode] + '<small>/mês</small>';
-          p.querySelector('.price-daily').hidden = mode === 'annual';
+          p.querySelector('.price-daily').textContent = p.dataset[mode + 'Daily'];
         });
         document.querySelectorAll('.plan-link').forEach(function(l) {
           l.href = l.dataset[mode + 'Url'];
