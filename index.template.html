@@ -759,6 +759,23 @@
         width:100%;
       }
     }
+    /* Seletor reutilizavel para CTAs genericos. */
+    .journey-modal{position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(2,12,7,.68);backdrop-filter:blur(10px)}
+    .journey-modal.is-open{display:flex}
+    .journey-modal-card{position:relative;width:min(760px,100%);padding:38px;border:1px solid var(--line-2);border-radius:24px;background:var(--panel);box-shadow:0 30px 90px rgba(0,0,0,.42)}
+    .journey-modal-close{position:absolute;right:16px;top:16px;width:40px;height:40px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--copy);font-size:24px;line-height:1;cursor:pointer}
+    .journey-modal-close:hover{color:var(--ink);border-color:var(--green);background:var(--mint)}
+    .journey-modal h2{max-width:560px;font-size:clamp(29px,4vw,42px);margin-top:10px}
+    .journey-modal-copy{max-width:570px;margin-top:12px;color:var(--copy);font-size:15px;line-height:1.65}
+    .journey-modal-options{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:28px}
+    .journey-modal-option{min-height:220px;padding:24px;border:1px solid var(--line-2);border-radius:16px;background:linear-gradient(145deg,var(--mint),transparent 72%);text-decoration:none;transition:.22s ease}
+    .journey-modal-option:hover{transform:translateY(-3px);border-color:var(--green);box-shadow:0 16px 36px rgba(84,214,154,.14)}
+    .journey-modal-option strong{display:block;margin:14px 0 8px;font:700 22px/1.15 Lora,serif;color:var(--ink)}
+    .journey-modal-option p{color:var(--copy);font-size:13px;line-height:1.55}
+    .journey-modal-option span:not(.journey-modal-icon){display:inline-flex;margin-top:20px;color:var(--green);font-size:12px;font-weight:800}
+    .journey-modal-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:var(--mint);color:var(--green)}
+    body.modal-open{overflow:hidden}
+    @media(max-width:620px){.journey-modal{align-items:flex-end;padding:12px}.journey-modal-card{max-height:calc(100dvh - 24px);overflow:auto;padding:34px 20px 22px;border-radius:20px}.journey-modal-options{grid-template-columns:1fr}.journey-modal-option{min-height:0;padding:18px}.journey-modal-option strong{font-size:20px}.journey-modal-option span:not(.journey-modal-icon){margin-top:12px}}
   </style>
 </head>
 <body>
@@ -783,7 +800,7 @@
           <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
         <a class="btn" href="https://www.vagaai.app.br/login">Entrar</a>
-        <a class="btn primary" href="#jornadas">Começar grátis</a>
+        <a class="btn primary journey-trigger" href="#jornadas">Começar grátis</a>
         <button class="menu" aria-label="Abrir menu" onclick="toggleMenu()">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
         </button>
@@ -848,7 +865,7 @@
           <span>Currículo direcionado, pronto para revisar</span>
         </div>
         <div class="detail-callout">Sem inventar experiências: a VagaAI fortalece o que já existe. Você revisa tudo antes de usar.</div>
-        <a class="btn primary" href="https://www.vagaai.app.br/app">Analisar minha vaga grátis</a>
+        <a class="btn primary journey-trigger" href="https://www.vagaai.app.br/app">Analisar minha vaga grátis</a>
       </div>
       <div class="dmock reveal">
         <div class="dmock-window">
@@ -885,7 +902,7 @@
           <span>Editor por seções, importa PDF ou Word</span>
           <span>Pronto para ATS, com download em PDF</span>
         </div>
-        <a class="btn primary" href="https://www.vagaai.app.br/curriculo">Criar ou importar meu currículo</a>
+        <a class="btn primary journey-trigger" href="https://www.vagaai.app.br/curriculo">Criar ou importar meu currículo</a>
       </div>
       <div class="dmock reveal">
         <div class="dmock-window">
@@ -922,7 +939,7 @@
           <span>Cargo, localização e formato de trabalho</span>
           <span>Vagas por e-mail e no painel</span>
         </div>
-        <a class="btn primary" href="https://www.vagaai.app.br/app">Configurar meus alertas</a>
+        <a class="btn primary journey-trigger" href="https://www.vagaai.app.br/app">Configurar meus alertas</a>
       </div>
       <div class="dmock reveal">
         <div class="dmock-window">
@@ -959,7 +976,7 @@
           <span>Status de quero aplicar até oferta</span>
           <span>Currículo e carta da vaga a um clique</span>
         </div>
-        <a class="btn primary" href="https://www.vagaai.app.br/app">Organizar minhas candidaturas</a>
+        <a class="btn primary journey-trigger" href="https://www.vagaai.app.br/app">Organizar minhas candidaturas</a>
       </div>
       <div class="dmock reveal">
         <div class="dmock-window">
@@ -994,7 +1011,7 @@
           <span>Carta conectada aos requisitos da vaga</span>
           <span>Perguntas por cargo e empresa</span>
         </div>
-        <a class="btn primary" href="https://www.vagaai.app.br/app">Preparar minha candidatura</a>
+        <a class="btn primary journey-trigger" href="https://www.vagaai.app.br/app">Preparar minha candidatura</a>
       </div>
       <div class="dmock reveal">
         <div class="dmock-window">
@@ -1082,7 +1099,7 @@
           <span class="plan-name">Gratuito</span><h3>Para dar o primeiro passo</h3>
           <p>Entenda uma oportunidade, organize seu currículo e conheça a plataforma.</p>
           <div class="price">R$0</div>
-          <a class="btn" href="#jornadas">Começar grátis</a>
+          <a class="btn journey-trigger" href="#jornadas">Começar grátis</a>
           <div class="plan-note">Sem cartão de crédito</div>
           <div class="list">
             <span>1 análise completa por mês</span>
@@ -1140,6 +1157,30 @@
     <!--BLOG_SECTION-->
 
   </main>
+
+  <div class="journey-modal" id="journeyModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="journeyModalTitle">
+    <div class="journey-modal-card" role="document">
+      <button class="journey-modal-close" id="journeyModalClose" type="button" aria-label="Fechar">&times;</button>
+      <span class="eyebrow">Comece pelo seu momento</span>
+      <h2 id="journeyModalTitle">Qual caminho faz mais sentido para voc&ecirc;?</h2>
+      <p class="journey-modal-copy">Escolha uma op&ccedil;&atilde;o para come&ccedil;ar sem custo. Voc&ecirc; poder&aacute; ajustar, revisar e seguir para as pr&oacute;ximas etapas depois.</p>
+      <div class="journey-modal-options">
+        <a class="journey-modal-option" href="/onboarding/vaga/1?entry=cv&amp;new=1">
+          <span class="journey-modal-icon" aria-hidden="true">&#9889;</span>
+          <strong>J&aacute; tenho curr&iacute;culo</strong>
+          <p>Analise uma vaga, otimize seu curr&iacute;culo ou comece a receber alertas alinhados ao seu perfil.</p>
+          <span>Come&ccedil;ar com meu curr&iacute;culo &rarr;</span>
+        </a>
+        <a class="journey-modal-option" href="/onboarding/curriculo/1?entry=no-cv&amp;new=1">
+          <span class="journey-modal-icon" aria-hidden="true">&#128196;</span>
+          <strong>Ainda n&atilde;o tenho curr&iacute;culo pronto</strong>
+          <p>Crie um curr&iacute;culo profissional, descubra vagas compat&iacute;veis e organize sua busca desde o in&iacute;cio.</p>
+          <span>Criar meu curr&iacute;culo gr&aacute;tis &rarr;</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
   <footer class="footer"><div class="wrap">
     <div class="footer-grid">
       <div class="footer-brand"><img src="/logo.svg" alt="VagaAI"><p>Currículos e candidaturas mais fortes, do primeiro passo à entrevista.</p></div>
@@ -1174,6 +1215,34 @@
     function toggleMenu() { document.getElementById('nav').classList.toggle('open'); }
     document.querySelectorAll('.nav-links a').forEach(function(a) {
       a.addEventListener('click', function() { document.getElementById('nav').classList.remove('open'); });
+    });
+
+    /* ===== SELETOR DE JORNADA ===== */
+    var journeyModal = document.getElementById('journeyModal');
+    var journeyModalClose = document.getElementById('journeyModalClose');
+    var journeyLastTrigger = null;
+    function closeJourneyModal() {
+      journeyModal.classList.remove('is-open');
+      journeyModal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('modal-open');
+      if (journeyLastTrigger) journeyLastTrigger.focus();
+    }
+    document.querySelectorAll('.journey-trigger').forEach(function(trigger) {
+      trigger.addEventListener('click', function(event) {
+        event.preventDefault();
+        journeyLastTrigger = trigger;
+        journeyModal.classList.add('is-open');
+        journeyModal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
+        journeyModalClose.focus();
+      });
+    });
+    journeyModalClose.addEventListener('click', closeJourneyModal);
+    journeyModal.addEventListener('click', function(event) {
+      if (event.target === journeyModal) closeJourneyModal();
+    });
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape' && journeyModal.classList.contains('is-open')) closeJourneyModal();
     });
 
     /* ===== SCROLL PROGRESS + VOLTAR AO TOPO ===== */
