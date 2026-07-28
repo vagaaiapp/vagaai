@@ -604,6 +604,7 @@ var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 var STATE_KEY = 'vagaai_ob_vaga';
+var ANON_ID_KEY = 'vagaai_ob_anon_id';
 var TOTAL_STEPS = 5;
 var state = {
   entry: 'cv',
@@ -631,6 +632,31 @@ var state = {
   step: 1
 };
 var _analysisRunning = false;
+
+function getAnonymousBrowserId() {
+  var current = '';
+  try { current = localStorage.getItem(ANON_ID_KEY) || ''; } catch(e) {}
+  if (/^[A-Za-z0-9._:-]{16,128}$/.test(current)) return current;
+
+  var created = '';
+  try {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      created = window.crypto.randomUUID();
+    } else if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+      var bytes = new Uint8Array(16);
+      window.crypto.getRandomValues(bytes);
+      created = Array.prototype.map.call(bytes, function(b) {
+        return b.toString(16).padStart(2, '0');
+      }).join('');
+    }
+  } catch(e) {}
+  if (!created) {
+    created = 'ob-' + Date.now().toString(36) + '-' +
+      Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+  }
+  try { localStorage.setItem(ANON_ID_KEY, created); } catch(e) {}
+  return created;
+}
 
 function track(name, params) {
   try { if (typeof gtag === 'function') gtag('event', name, params || {}); } catch(e) {}
@@ -1273,6 +1299,7 @@ async function generateDirectedCv() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'onboarding_cv',
+        anon_id: getAnonymousBrowserId(),
         nome: f.nome,
         cargo_objetivo: f.cargo,
         experiencias: f.exp,
@@ -1281,6 +1308,7 @@ async function generateDirectedCv() {
         contato: {}
       })
     });
+    var data = await res.json().catch(function() { return {}; });
     if (res.status === 429) {
       _analysisRunning = false;
       btn.disabled = false;
@@ -1292,8 +1320,7 @@ async function generateDirectedCv() {
       }
       return;
     }
-    if (!res.ok) throw new Error('http_' + res.status);
-    var data = await res.json();
+    if (!res.ok) throw new Error(data.message || data.error || ('http_' + res.status));
     if (!data || !data.cv) throw new Error('payload');
 
     state.generatedCv = data.cv;

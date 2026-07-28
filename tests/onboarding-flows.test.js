@@ -286,6 +286,12 @@ describe('Onboarding adaptativo', () => {
     assert.match(curriculoHtml, /var ANON_ID_KEY = 'vagaai_ob_anon_id'/);
     assert.match(curriculoHtml, /function getAnonymousBrowserId\(\)/);
     assert.match(curriculoHtml, /anon_id: getAnonymousBrowserId\(\)/);
+    assert.match(vagaHtml, /var ANON_ID_KEY = 'vagaai_ob_anon_id'/);
+    assert.match(vagaHtml, /function getAnonymousBrowserId\(\)/);
+    assert.match(
+      vagaHtml,
+      /action:\s*'onboarding_cv'[\s\S]*?anon_id:\s*getAnonymousBrowserId\(\)/
+    );
 
     assert.match(analyzeSource, /const OB_CV_ANON_LIMIT = 2/);
     assert.match(analyzeSource, /const OB_CV_IP_ABUSE_LIMIT = 100/);
