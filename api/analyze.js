@@ -1051,7 +1051,7 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
     }
 
     const extractIp = clientIp(req);
-    if (!(await checkAndCountLimit({
+    if (!hasTemporaryTestAccess(extractIp) && !(await checkAndCountLimit({
       key: `ip:${extractIp}:obcvextract`,
       limit: OB_CV_EXTRACT_IP_LIMIT,
       windowMs: OB_CV_EXTRACT_WINDOW_MS,
@@ -1167,10 +1167,11 @@ ${rawCv}`;
     }
 
     const obIp = clientIp(req);
+    const obHasTemporaryTestAccess = hasTemporaryTestAccess(obIp);
     const obAnonHash = createHash('sha256').update(obAnonId).digest('hex').slice(0, 32);
     const obAnonKey = `anon:${obAnonHash}:obcv`;
 
-    if (!(await isWithinLimit({
+    if (!obHasTemporaryTestAccess && !(await isWithinLimit({
       key: obAnonKey,
       limit: OB_CV_ANON_LIMIT,
       windowMs: OB_CV_WINDOW_MS,
@@ -1182,7 +1183,7 @@ ${rawCv}`;
       });
     }
 
-    if (!(await checkAndCountLimit({
+    if (!obHasTemporaryTestAccess && !(await checkAndCountLimit({
       key: `ip:${obIp}:obcv-abuse`,
       limit: OB_CV_IP_ABUSE_LIMIT,
       windowMs: OB_CV_IP_ABUSE_WINDOW_MS,
@@ -1287,7 +1288,9 @@ Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato
       };
 
       // Só uma geração concluída consome a franquia gratuita do navegador.
-      await countLimit({ key: obAnonKey, windowMs: OB_CV_WINDOW_MS });
+      if (!obHasTemporaryTestAccess) {
+        await countLimit({ key: obAnonKey, windowMs: OB_CV_WINDOW_MS });
+      }
       return res.status(200).json({ cv: obClean });
     } catch (err) {
       console.error('onboarding_cv error:', err.message);
