@@ -120,10 +120,10 @@ async function setCachedResult(hash, result) {
 
 const IP_FREE_LIMIT = 1; // 1 análise gratuita por IP a cada 30 dias
 
-// Liberação temporária para testes internos. Remove este bloco após 28/07/2026
+// Liberação temporária para testes internos. Remove este bloco após 04/08/2026
 // (23:59:59 BRT). Não afeta usuários autenticados, planos ou outros IPs.
 const TEMP_TEST_IP = '128.201.40.237';
-const TEMP_TEST_IP_EXPIRES_AT = Date.parse('2026-07-29T02:59:59.999Z');
+const TEMP_TEST_IP_EXPIRES_AT = Date.parse('2026-08-05T02:59:59.999Z');
 function hasTemporaryTestAccess(ip) {
   return ip === TEMP_TEST_IP && Date.now() <= TEMP_TEST_IP_EXPIRES_AT;
 }
