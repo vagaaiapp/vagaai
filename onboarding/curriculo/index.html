@@ -566,7 +566,7 @@ function saveState() {
       hasCv: state.hasCv,
       hasJob: state.hasJob,
       situation: state.sit,
-      cv: { raw: state.imported, name: state.importedName, data: state.cv, template: state.tpl },
+      cv: { raw: state.imported, name: state.importedName, data: state.cv, template: state.tpl, form: state.form },
       alertDraft: state.alertDraft,
       nextAction: state.hasJob ? 'analisar_vaga' : 'ativar_alerta',
       productStagedAt: null
@@ -574,9 +574,57 @@ function saveState() {
   }
 }
 function loadState() {
-  try { var raw = sessionStorage.getItem(STATE_KEY); if (raw) state = Object.assign(state, JSON.parse(raw)); } catch(e) {}
+  var restoredFromSession = false;
+  try {
+    var raw = sessionStorage.getItem(STATE_KEY);
+    if (raw) {
+      state = Object.assign(state, JSON.parse(raw));
+      restoredFromSession = true;
+    }
+  } catch(e) {}
+
+  if (!restoredFromSession && window.VagaAIOnboarding) {
+    try {
+      var shared = window.VagaAIOnboarding.read();
+      if (shared && (
+        shared.flow === 'cv_no_job' ||
+        shared.flow === 'no_cv_job' ||
+        shared.flow === 'no_cv_no_job'
+      )) {
+        var sharedCv = shared.cv || {};
+        state = Object.assign(state, {
+          entry: shared.entry || state.entry,
+          flow: shared.flow || state.flow,
+          hasCv: typeof shared.hasCv === 'boolean' ? shared.hasCv : state.hasCv,
+          hasJob: typeof shared.hasJob === 'boolean' ? shared.hasJob : state.hasJob,
+          sit: shared.situation || state.sit,
+          imported: sharedCv.raw || state.imported,
+          importedName: sharedCv.name || state.importedName,
+          cv: sharedCv.data || state.cv,
+          tpl: sharedCv.template || state.tpl,
+          form: Object.assign({}, state.form || {}, sharedCv.form || {}),
+          alertDraft: Object.assign({}, state.alertDraft || {}, shared.alertDraft || {})
+        });
+      }
+    } catch(e) {}
+  }
   state.form = state.form || {};
   state.alertDraft = Object.assign({cargo:'',local:'',modalidade:'',salario:'',frequencia:'semanal',scoreMinimo:70,activate:true}, state.alertDraft || {});
+  ensureSituationForRestoredJourney();
+}
+
+function ensureSituationForRestoredJourney() {
+  if (state.sit) return;
+  if (state.imported || state.hasCv) {
+    state.sit = 'atualizar';
+    return;
+  }
+  if (state.goal === 'alerts') {
+    state.sit = 'estrategico';
+    return;
+  }
+  var form = state.form || {};
+  if (state.flow || form.nome || form.cargo || form.exp) state.sit = 'primeiro';
 }
 try { if (localStorage.getItem('vagaai_theme') === 'dark') document.documentElement.setAttribute('data-theme','dark'); } catch(e) {}
 
@@ -587,12 +635,27 @@ function esc(s) {
 
 /* ── Navegação ─────────────────────────────────────────────────────────── */
 function stepFromUrl() {
+  var historyStep = history.state && parseInt(history.state.step, 10);
+  if (historyStep >= 1 && historyStep <= TOTAL_STEPS) return historyStep;
+  var hashMatch = window.location.hash.match(/^#step-(\d+)$/);
+  if (hashMatch) {
+    var hashStep = parseInt(hashMatch[1], 10);
+    if (hashStep >= 1 && hashStep <= TOTAL_STEPS) return hashStep;
+  }
   var m = window.location.pathname.match(/\/onboarding\/curriculo\/(\d+)/);
-  var n = m ? parseInt(m[1], 10) : 1;
+  var n = m ? parseInt(m[1], 10) : parseInt(state.step, 10);
   return (n >= 1 && n <= TOTAL_STEPS) ? n : 1;
 }
 
+function canonicalStepUrl(n) {
+  var params = new URLSearchParams(window.location.search);
+  params.delete('new');
+  var query = params.toString();
+  return '/onboarding/curriculo/' + (query ? '?' + query : '') + '#step-' + n;
+}
+
 function renderStep(n, push) {
+  ensureSituationForRestoredJourney();
   // Guarda de pré-requisito: URL colada direto não pode pular etapa
   if (n >= 5 && !state.cv) n = (state.form && state.form.nome) ? 4 : (state.sit ? 3 : 1);
   if (n === 4 && !(state.form && state.form.nome && state.form.cargo)) n = state.sit ? 3 : 1;
@@ -618,18 +681,27 @@ function renderStep(n, push) {
   if (n === 2) restoreImportUi();
   if (n === 3) applyFormToInputs();
   applyJourneyCopy();
+  updateJourneySummary();
 
-  var url = '/onboarding/curriculo/' + n;
-  if (push && window.location.pathname !== url) history.pushState({ step:n }, '', url);
+  var analyticsUrl = '/onboarding/curriculo/' + n;
+  var browserUrl = canonicalStepUrl(n);
+  var currentUrl = window.location.pathname + window.location.search + window.location.hash;
+  if (push && currentUrl !== browserUrl) history.pushState({ step:n }, '', browserUrl);
+  else if (!push && (currentUrl !== browserUrl || !history.state || history.state.step !== n)) {
+    history.replaceState({ step:n }, '', browserUrl);
+  }
   window.scrollTo(0, 0);
   track('onboarding_cv_step' + n + '_view');
   // Sem este page_view manual, as etapas 2-5 (navegadas por pushState) não
   // apareceriam no relatório de Páginas do GA4 — ver comentário no fluxo /vaga.
-  trackPageView(url);
+  trackPageView(analyticsUrl);
 }
 function goStep(n) { renderStep(n, true); }
-function goBack() { history.back(); }
+function goBack() {
+  if (state.step > 1) renderStep(state.step - 1, false);
+}
 window.addEventListener('popstate', function() { renderStep(stepFromUrl(), false); });
+window.addEventListener('beforeunload', saveState);
 
 /* ── Etapa 1 ───────────────────────────────────────────────────────────── */
 var SIT_COPY = {
@@ -736,6 +808,56 @@ function applyJourneyCopy() {
   ].forEach(function(pair) {
     var el = document.getElementById(pair[0]);
     if (el && profile[pair[1]]) el.textContent = profile[pair[1]];
+  });
+}
+
+function curriculoNextValue(step) {
+  if (step === 1) return 'Depois disso, você importará ou começará seu currículo.';
+  if (step === 2) return 'Depois disso, você revisará os dados do currículo.';
+  if (step === 3) return 'Depois disso, você escolherá o visual do currículo.';
+  if (step === 4) return 'Depois disso, você verá seu currículo pronto.';
+  return 'Salve, baixe e continue sua busca com o currículo pronto.';
+}
+
+function curriculoProgressValue(step) {
+  if (step === 1) return 'depois disso você partirá do que já tem.';
+  if (step === 2) return 'depois disso você revisará seus dados.';
+  if (step === 3) return 'depois disso você escolherá o visual.';
+  if (step === 4) return 'depois disso você verá seu currículo pronto.';
+  return 'currículo pronto para salvar e baixar.';
+}
+
+function curriculoJobLabel(shared) {
+  var job = (shared && shared.job) || {};
+  var preview = job.preview || (shared && shared.preview) || {};
+  var jobInfo = preview.job_info || preview.jobInfo || {};
+  var cargo = preview.cargo || preview.title || jobInfo.cargo || jobInfo.title || '';
+  var empresa = preview.empresa || preview.company || jobInfo.empresa || jobInfo.company || '';
+  if (cargo && empresa) return cargo + ' · ' + empresa;
+  if (cargo || empresa) return cargo || empresa;
+  if (state.hasJob === true) return 'Vaga específica em preparação';
+  return 'Radar de vagas compatíveis';
+}
+
+function updateJourneySummary() {
+  if (!window.VagaAIOnboarding || !window.VagaAIOnboarding.renderJourneySummary) return;
+  var shared = window.VagaAIOnboarding.read ? window.VagaAIOnboarding.read() : {};
+  var hasForm = state.form && Object.keys(state.form).some(function(key) {
+    return String(state.form[key] || '').trim();
+  });
+  var cvLabel = state.importedName || (state.cv || hasForm ? 'Em criação' : 'Ainda não adicionado');
+  var goal = state.goal === 'alerts'
+    ? 'Preparar currículo e ativar alertas'
+    : (state.hasCv
+      ? 'Atualizar currículo e encontrar oportunidades'
+      : 'Criar currículo e começar a busca');
+
+  window.VagaAIOnboarding.renderJourneySummary({
+    goal: goal,
+    job: curriculoJobLabel(shared),
+    cv: cvLabel,
+    progress: 'Etapa ' + state.step + ' de ' + TOTAL_STEPS + ' · ' + curriculoProgressValue(state.step),
+    next: curriculoNextValue(state.step)
   });
 }
 
@@ -1076,6 +1198,7 @@ async function handleImport(input) {
     state.importedStructured = true;
     saveState();
     applyFormToInputs();
+    updateJourneySummary();
     showImportSuccess(file.name);
     track('onboarding_cv_import_method', { method: 'upload' });
     track('onboarding_cv_extraction_success', { success: true });
@@ -1106,6 +1229,7 @@ function collectForm() {
     cidade: document.getElementById('fCidade').value.trim()
   };
   saveState();
+  updateJourneySummary();
 }
 
 /* ── Etapa 4: modelo ───────────────────────────────────────────────────── */
@@ -1116,6 +1240,7 @@ function pickTpl(tpl) {
   state.tpl = tpl;
   _tplViews++;
   saveState();
+  updateJourneySummary();
   for (var k in TPL_IDS) {
     var el = document.getElementById(TPL_IDS[k]);
     if (el) el.classList.toggle('on', k === tpl);
@@ -1472,7 +1597,6 @@ async function signupEmail() {
   if (state.cv) renderPreview(state.cv);
   else restoreCvRadarDraft();
 
-  history.replaceState({ step: stepFromUrl() }, '', window.location.pathname);
   renderStep(stepFromUrl(), false);
 })();
 </script>

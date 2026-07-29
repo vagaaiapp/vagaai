@@ -686,7 +686,7 @@ function saveState() {
         hasJob: state.hasJob,
         intent: state.intent,
         job: { raw: state.job, url: state.jobUrl, preview: state.preview },
-        cv: { raw: state.cv, name: state.cvName, data: state.generatedCv },
+        cv: { raw: state.cv, name: state.cvName, data: state.generatedCv, form: state.quickForm },
         analysis: state.result,
         alertDraft: state.alertDraft,
         nextAction: state.result ? 'save_analysis' : 'continue_onboarding',
@@ -696,10 +696,40 @@ function saveState() {
   } catch(e) {}
 }
 function loadState() {
+  var restoredFromSession = false;
   try {
     var raw = sessionStorage.getItem(STATE_KEY);
-    if (raw) state = Object.assign(state, JSON.parse(raw));
+    if (raw) {
+      state = Object.assign(state, JSON.parse(raw));
+      restoredFromSession = true;
+    }
   } catch(e) {}
+
+  if (!restoredFromSession && window.VagaAIOnboarding) {
+    try {
+      var shared = window.VagaAIOnboarding.read();
+      if (shared && (shared.flow === 'cv_job' || shared.flow === 'no_cv_job')) {
+        var sharedJob = shared.job || {};
+        var sharedCv = shared.cv || {};
+        state = Object.assign(state, {
+          entry: shared.entry || state.entry,
+          flow: shared.flow || state.flow,
+          hasCv: typeof shared.hasCv === 'boolean' ? shared.hasCv : state.hasCv,
+          hasJob: typeof shared.hasJob === 'boolean' ? shared.hasJob : state.hasJob,
+          intent: shared.intent || state.intent,
+          jobUrl: sharedJob.url || state.jobUrl,
+          job: sharedJob.raw || state.job,
+          preview: sharedJob.preview || state.preview,
+          cv: sharedCv.raw || state.cv,
+          cvName: sharedCv.name || state.cvName,
+          generatedCv: sharedCv.data || state.generatedCv,
+          quickForm: Object.assign({}, state.quickForm || {}, sharedCv.form || {}),
+          alertDraft: Object.assign({}, state.alertDraft || {}, shared.alertDraft || {}),
+          result: shared.analysis || state.result
+        });
+      }
+    } catch(e) {}
+  }
   state.quickForm = state.quickForm || {};
   state.alertDraft = Object.assign({
     cargo: '',
@@ -717,9 +747,23 @@ try { if (localStorage.getItem('vagaai_theme') === 'dark') document.documentElem
 
 /* ── Navegação por etapa ───────────────────────────────────────────────── */
 function stepFromUrl() {
+  var historyStep = history.state && parseInt(history.state.step, 10);
+  if (historyStep >= 1 && historyStep <= TOTAL_STEPS) return historyStep;
+  var hashMatch = window.location.hash.match(/^#step-(\d+)$/);
+  if (hashMatch) {
+    var hashStep = parseInt(hashMatch[1], 10);
+    if (hashStep >= 1 && hashStep <= TOTAL_STEPS) return hashStep;
+  }
   var m = window.location.pathname.match(/\/onboarding\/vaga\/(\d+)/);
-  var n = m ? parseInt(m[1], 10) : 1;
+  var n = m ? parseInt(m[1], 10) : parseInt(state.step, 10);
   return (n >= 1 && n <= TOTAL_STEPS) ? n : 1;
+}
+
+function canonicalStepUrl(n) {
+  var params = new URLSearchParams(window.location.search);
+  params.delete('new');
+  var query = params.toString();
+  return '/onboarding/vaga/' + (query ? '?' + query : '') + '#step-' + n;
 }
 
 function journeyProfile() {
@@ -764,6 +808,54 @@ function applyJourneyCopy() {
   }
 }
 
+function vagaNextValue(step) {
+  if (step === 1) return 'Depois disso, você adicionará a vaga que quer avaliar.';
+  if (step === 2) return 'Depois disso, você adicionará o currículo que deseja usar.';
+  if (step === 3) return 'Depois disso, você verá a prévia do diagnóstico.';
+  if (step === 4) return 'Seu diagnóstico completo será exibido em instantes.';
+  return 'Crie sua conta para salvar o diagnóstico e continuar a candidatura.';
+}
+
+function vagaProgressValue(step) {
+  if (step === 1) return 'depois disso você adicionará a vaga.';
+  if (step === 2) return 'depois disso você adicionará o currículo.';
+  if (step === 3) return 'depois disso você verá o diagnóstico.';
+  if (step === 4) return 'agora estamos preparando seu diagnóstico.';
+  return 'diagnóstico concluído.';
+}
+
+function vagaJobLabel() {
+  var preview = state.preview || {};
+  var jobInfo = preview.job_info || preview.jobInfo || {};
+  var cargo = preview.cargo || preview.title || jobInfo.cargo || jobInfo.title || '';
+  var empresa = preview.empresa || preview.company || jobInfo.empresa || jobInfo.company || '';
+  if (cargo && empresa) return cargo + ' · ' + empresa;
+  if (cargo || empresa) return cargo || empresa;
+  if (state.jobUrl) return 'Vaga carregada por link';
+  if (state.job) return 'Descrição da vaga carregada';
+  return 'Ainda não selecionada';
+}
+
+function updateJourneySummary() {
+  if (!window.VagaAIOnboarding || !window.VagaAIOnboarding.renderJourneySummary) return;
+  var hasQuickForm = state.quickForm && Object.keys(state.quickForm).some(function(key) {
+    return String(state.quickForm[key] || '').trim();
+  });
+  var cvLabel = state.cvName ||
+    (state.generatedCv || hasQuickForm ? 'Em criação' :
+      (state.cv ? 'Currículo carregado' : 'Ainda não adicionado'));
+
+  window.VagaAIOnboarding.renderJourneySummary({
+    goal: state.hasCv === false
+      ? 'Criar currículo e analisar a vaga'
+      : 'Analisar a vaga com diagnóstico completo',
+    job: vagaJobLabel(),
+    cv: cvLabel,
+    progress: 'Etapa ' + state.step + ' de ' + TOTAL_STEPS + ' · ' + vagaProgressValue(state.step),
+    next: vagaNextValue(state.step)
+  });
+}
+
 function renderStep(n, push) {
   // Não deixa pular etapa sem os dados da anterior (ex: link colado direto
   // em /onboarding/vaga/5) — cai na última etapa realmente completada.
@@ -775,6 +867,7 @@ function renderStep(n, push) {
   state.step = n;
   saveState();
   applyJourneyCopy();
+  updateJourneySummary();
 
   for (var i = 1; i <= TOTAL_STEPS; i++) {
     var el = document.getElementById('step' + i);
@@ -793,9 +886,12 @@ function renderStep(n, push) {
   // Voltar: some na 1ª etapa, no processamento e no resultado (jornada linear)
   document.getElementById('backBtn').hidden = (n === 1 || n === 4 || n === 5);
 
-  var url = '/onboarding/vaga/' + n;
-  if (push && window.location.pathname !== url) {
-    history.pushState({ step:n }, '', url);
+  var analyticsUrl = '/onboarding/vaga/' + n;
+  var browserUrl = canonicalStepUrl(n);
+  var currentUrl = window.location.pathname + window.location.search + window.location.hash;
+  if (push && currentUrl !== browserUrl) history.pushState({ step:n }, '', browserUrl);
+  else if (!push && (currentUrl !== browserUrl || !history.state || history.state.step !== n)) {
+    history.replaceState({ step:n }, '', browserUrl);
   }
   window.scrollTo(0, 0);
   track('onboarding_vaga_step' + n + '_view');
@@ -803,13 +899,16 @@ function renderStep(n, push) {
   // navegação é por pushState, sem este disparo manual as etapas 2-5 nunca
   // apareceriam no relatório de Páginas (e o funil de drop-off por etapa,
   // que é a razão de cada etapa ter URL própria, ficaria cego).
-  trackPageView(url);
+  trackPageView(analyticsUrl);
 }
 
 function goStep(n) { renderStep(n, true); }
-function goBack() { history.back(); }
+function goBack() {
+  if (state.step > 1) renderStep(state.step - 1, false);
+}
 
 window.addEventListener('popstate', function() { renderStep(stepFromUrl(), false); });
+window.addEventListener('beforeunload', saveState);
 
 /* ── Etapa 1: qualificação ─────────────────────────────────────────────── */
 function chooseHasJob(hasJob) {
@@ -1076,6 +1175,7 @@ async function loadFromUrl() {
       if (previewIsUsable(preview)) {
         state.preview = preview;
         saveState();
+        updateJourneySummary();
         showJobPreview(preview);
         st.style.display = 'none';
         track('onboarding_vaga_url_ok', { source: data.source || '' });
@@ -1120,6 +1220,7 @@ function onJobInput() {
   var err = document.getElementById('jobErr');
   if (v.trim().length >= 50) err.style.display = 'none';
   saveState();
+  updateJourneySummary();
 }
 
 /* ── Etapa 3: currículo (extração igual à do /app) ─────────────────────── */
@@ -1150,6 +1251,7 @@ function onCvInput() {
   document.getElementById('cvCount').textContent = v.length + ' caracteres';
   document.getElementById('cvNext').disabled = v.trim().length < 50;
   saveState();
+  updateJourneySummary();
 }
 
 function loadScript(src) {
@@ -1234,6 +1336,7 @@ async function handleCvFile(input) {
     state.cv = text;
     state.cvName = file.name;
     saveState();
+    updateJourneySummary();
     okEl.textContent = '✓ ' + file.name + ' — ' + text.length + ' caracteres lidos';
     document.getElementById('mUpload').classList.add('on');
     document.getElementById('mPaste').classList.remove('on');
@@ -1273,6 +1376,7 @@ function onQuickCvInput() {
     state.quickForm.skills
   );
   saveState();
+  updateJourneySummary();
 }
 
 function cvDataToText(cv) {
@@ -1783,7 +1887,6 @@ async function signupEmail() {
     restoreRadarDraft();
   }
 
-  history.replaceState({ step: stepFromUrl() }, '', window.location.pathname);
   renderStep(stepFromUrl(), false);
 })();
 </script>

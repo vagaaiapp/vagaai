@@ -7,6 +7,7 @@
 
   var KEY = 'vagaai_onboarding_handoff_v1';
   var VERSION = 1;
+  var MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
   function emptyState() {
     return {
@@ -18,7 +19,7 @@
       intent: '',
       situation: '',
       job: { raw: '', url: '', preview: null },
-      cv: { raw: '', name: '', data: null, template: '' },
+      cv: { raw: '', name: '', data: null, template: '', form: {} },
       analysis: null,
       marketDiagnosis: null,
       alertDraft: {
@@ -42,6 +43,11 @@
     var out = Object.assign({}, base || {}, patch || {});
     out.job = Object.assign({}, (base && base.job) || {}, (patch && patch.job) || {});
     out.cv = Object.assign({}, (base && base.cv) || {}, (patch && patch.cv) || {});
+    out.cv.form = Object.assign(
+      {},
+      (base && base.cv && base.cv.form) || {},
+      (patch && patch.cv && patch.cv.form) || {}
+    );
     out.alertDraft = Object.assign(
       {},
       (base && base.alertDraft) || {},
@@ -56,7 +62,13 @@
     try {
       var raw = storage.getItem(KEY);
       if (!raw) return fallback;
-      return merge(fallback, JSON.parse(raw));
+      var parsed = JSON.parse(raw);
+      var savedAt = Date.parse(parsed.updatedAt || parsed.createdAt || '');
+      if (savedAt && Date.now() - savedAt > MAX_AGE_MS) {
+        storage.removeItem(KEY);
+        return fallback;
+      }
+      return merge(fallback, parsed);
     } catch (e) {
       return fallback;
     }
@@ -80,6 +92,83 @@
     if (hasCv === false && hasJob === true) return 'no_cv_job';
     if (hasCv === false && hasJob === false) return 'no_cv_no_job';
     return '';
+  }
+
+  function ensureJourneySummaryStyles() {
+    if (typeof document === 'undefined' || document.getElementById('obJourneySummaryStyles')) return;
+    var style = document.createElement('style');
+    style.id = 'obJourneySummaryStyles';
+    style.textContent =
+      '.ob-journey-summary{position:sticky;top:72px;z-index:12;margin:0 0 20px;padding:14px 16px;background:var(--card,#fff);background:color-mix(in srgb,var(--card,#fff) 94%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--line,#dfe7e1);border-radius:16px;box-shadow:0 12px 32px rgba(9,35,20,.08)}' +
+      '.ob-journey-grid{display:grid;grid-template-columns:1.15fr 1.1fr 1.1fr .72fr 1.55fr;gap:12px;align-items:start}' +
+      '.ob-journey-item{min-width:0}' +
+      '.ob-journey-label{display:block;margin-bottom:4px;color:var(--muted,#698072);font-size:9px;line-height:1.2;font-weight:800;letter-spacing:.08em;text-transform:uppercase}' +
+      '.ob-journey-value{display:block;color:var(--text,#0b1911);font-size:12px;line-height:1.35;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '.ob-journey-item.is-progress .ob-journey-value,.ob-journey-item.is-next .ob-journey-value{white-space:normal}' +
+      '.ob-journey-item.is-next .ob-journey-value{color:var(--green,#168451)}' +
+      '.ob-journey-trust{display:flex;align-items:center;gap:7px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line,#dfe7e1);color:var(--muted,#698072);font-size:10px;line-height:1.4}' +
+      '.ob-journey-trust-mark{display:inline-grid;place-items:center;width:17px;height:17px;flex:0 0 17px;border-radius:50%;background:rgba(30,157,96,.12);color:var(--green,#168451);font-size:10px;font-weight:900}' +
+      '@media(max-width:760px){.ob-journey-summary{position:relative;top:auto;margin:-8px 0 18px;padding:13px 14px}.ob-journey-grid{grid-template-columns:1fr 1fr;gap:11px 14px}.ob-journey-item.is-next{grid-column:1/-1}.ob-journey-value{font-size:11px}.ob-journey-trust{align-items:flex-start}}';
+    document.head.appendChild(style);
+  }
+
+  function renderJourneySummary(options) {
+    if (typeof document === 'undefined') return null;
+    options = options || {};
+    ensureJourneySummaryStyles();
+
+    var target = options.target;
+    if (typeof target === 'string') target = document.querySelector(target);
+    if (!target) target = document.querySelector('.ob-main');
+    if (!target) return null;
+
+    var summary = document.getElementById('obJourneySummary');
+    if (!summary) {
+      summary = document.createElement('section');
+      summary.id = 'obJourneySummary';
+      summary.className = 'ob-journey-summary';
+      summary.setAttribute('aria-label', 'Resumo da jornada');
+      target.insertBefore(summary, target.firstChild);
+    }
+
+    var fields = [
+      ['Objetivo', options.goal || 'Definir próximo passo', ''],
+      ['Vaga', options.job || 'Ainda não selecionada', ''],
+      ['Currículo', options.cv || 'Ainda não adicionado', ''],
+      ['Progresso', options.progress || '1 de 5', 'is-progress'],
+      ['Próxima entrega', options.next || 'Continue para ver o próximo resultado.', 'is-next']
+    ];
+
+    summary.innerHTML = '';
+    var grid = document.createElement('div');
+    grid.className = 'ob-journey-grid';
+    fields.forEach(function (field) {
+      var item = document.createElement('div');
+      item.className = 'ob-journey-item' + (field[2] ? ' ' + field[2] : '');
+      var label = document.createElement('span');
+      label.className = 'ob-journey-label';
+      label.textContent = field[0];
+      var value = document.createElement('span');
+      value.className = 'ob-journey-value';
+      value.textContent = field[1];
+      value.title = field[1];
+      item.appendChild(label);
+      item.appendChild(value);
+      grid.appendChild(item);
+    });
+    summary.appendChild(grid);
+
+    var trust = document.createElement('div');
+    trust.className = 'ob-journey-trust';
+    var trustMark = document.createElement('span');
+    trustMark.className = 'ob-journey-trust-mark';
+    trustMark.textContent = '✓';
+    var trustText = document.createElement('span');
+    trustText.textContent = options.trust || 'Você revisa tudo antes de usar. O VagaAI não inventa experiências.';
+    trust.appendChild(trustMark);
+    trust.appendChild(trustText);
+    summary.appendChild(trust);
+    return summary;
   }
 
   var JOURNEY_PROFILES = {
@@ -457,12 +546,14 @@
   return {
     KEY: KEY,
     VERSION: VERSION,
+    MAX_AGE_MS: MAX_AGE_MS,
     emptyState: emptyState,
     read: read,
     write: write,
     merge: merge,
     deriveFlow: deriveFlow,
     getJourneyProfile: getJourneyProfile,
+    renderJourneySummary: renderJourneySummary,
     setContext: setContext,
     stageProductData: stageProductData,
     claimAnalysis: claimAnalysis,
