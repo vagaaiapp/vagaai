@@ -99,7 +99,9 @@
     var style = document.createElement('style');
     style.id = 'obJourneySummaryStyles';
     style.textContent =
-      '.ob-journey-summary{position:sticky;top:72px;z-index:12;margin:0 0 20px;padding:13px 16px;background:var(--card,#fff);background:color-mix(in srgb,var(--card,#fff) 95%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--line,#dfe7e1);border-radius:16px;box-shadow:0 12px 32px rgba(9,35,20,.08)}' +
+      '.ob-journey-summary{position:sticky;top:var(--ob-journey-sticky-top,81px);z-index:12;isolation:isolate;margin:0 0 22px;padding:13px 16px;background:var(--card,#fff);border:1px solid var(--line,#dfe7e1);border-radius:16px;box-shadow:0 12px 32px rgba(9,35,20,.08)}' +
+      '.ob-journey-summary::before{content:"";position:absolute;z-index:-1;inset:-9px -7px;background:var(--bg,#f4f7f5);border-radius:20px;pointer-events:none}' +
+      '.ob-journey-summary[data-expanded="true"]{position:relative;top:auto}' +
       '.ob-journey-stepper{display:flex;align-items:flex-start;width:100%}' +
       '.ob-journey-step{display:flex;align-items:center;flex:1;min-width:0;color:var(--muted,#698072)}' +
       '.ob-journey-step:last-child{flex:0 0 auto}' +
@@ -124,7 +126,7 @@
       '.ob-journey-trust{display:flex;align-items:center;gap:7px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line,#dfe7e1);color:var(--muted,#698072);font-size:10px;line-height:1.4}' +
       '.ob-journey-trust-mark{display:inline-grid;place-items:center;width:17px;height:17px;flex:0 0 17px;border-radius:50%;background:rgba(30,157,96,.12);color:var(--green,#168451);font-size:10px;font-weight:900}' +
       '.ob-journey-mobile{display:none}' +
-      '@media(max-width:760px){.ob-journey-summary{top:8px;margin:-8px 0 18px;padding:12px 14px;border-radius:14px}.ob-journey-stepper{display:none}.ob-journey-mobile{display:block}.ob-journey-mobile-head{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--text,#0b1911);font-size:11px;font-weight:800}.ob-journey-mobile-track{height:5px;margin-top:8px;overflow:hidden;border-radius:999px;background:var(--line,#dfe7e1)}.ob-journey-mobile-fill{height:100%;border-radius:inherit;background:var(--green,#168451);transition:width .3s ease}.ob-journey-meta{align-items:flex-start;margin-top:9px;padding-top:9px}.ob-journey-progress{font-size:10px}.ob-journey-grid{grid-template-columns:1fr 1fr;gap:11px 14px}.ob-journey-item.is-next{grid-column:1/-1}.ob-journey-trust{align-items:flex-start}}';
+      '@media(max-width:760px){.ob-journey-summary{margin:0 0 20px;padding:12px 14px;border-radius:14px}.ob-journey-summary::before{inset:-7px -5px;border-radius:18px}.ob-journey-stepper{display:none}.ob-journey-mobile{display:block}.ob-journey-mobile-head{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--text,#0b1911);font-size:11px;font-weight:800}.ob-journey-mobile-track{height:5px;margin-top:8px;overflow:hidden;border-radius:999px;background:var(--line,#dfe7e1)}.ob-journey-mobile-fill{height:100%;border-radius:inherit;background:var(--green,#168451);transition:width .3s ease}.ob-journey-meta{align-items:flex-start;margin-top:9px;padding-top:9px}.ob-journey-progress{font-size:10px}.ob-journey-grid{grid-template-columns:1fr 1fr;gap:11px 14px}.ob-journey-item.is-next{grid-column:1/-1}.ob-journey-trust{align-items:flex-start}}';
     document.head.appendChild(style);
   }
 
@@ -145,6 +147,23 @@
       summary.className = 'ob-journey-summary';
       summary.setAttribute('aria-label', 'Resumo da jornada');
       target.insertBefore(summary, target.firstChild);
+    }
+
+    function syncStickyOffset() {
+      var topBar = document.querySelector('.ob-top');
+      var topBarHeight = topBar ? Math.ceil(topBar.getBoundingClientRect().height) : 72;
+      summary.style.setProperty('--ob-journey-sticky-top', (topBarHeight + 8) + 'px');
+    }
+    syncStickyOffset();
+    if (typeof window !== 'undefined' && !window.__vagaaiJourneyStickyBound) {
+      window.__vagaaiJourneyStickyBound = true;
+      window.addEventListener('resize', function () {
+        var activeSummary = document.getElementById('obJourneySummary');
+        var activeTopBar = document.querySelector('.ob-top');
+        if (!activeSummary) return;
+        var activeTopBarHeight = activeTopBar ? Math.ceil(activeTopBar.getBoundingClientRect().height) : 72;
+        activeSummary.style.setProperty('--ob-journey-sticky-top', (activeTopBarHeight + 8) + 'px');
+      }, { passive: true });
     }
 
     var currentStep = Math.max(1, parseInt(options.currentStep, 10) || 1);
