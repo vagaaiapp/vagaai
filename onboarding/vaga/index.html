@@ -846,6 +846,9 @@ function updateJourneySummary() {
       (state.cv ? 'Currículo carregado' : 'Ainda não adicionado'));
 
   window.VagaAIOnboarding.renderJourneySummary({
+    currentStep: state.step,
+    totalSteps: TOTAL_STEPS,
+    steps: ['Objetivo', 'Vaga', 'Currículo', 'Diagnóstico', 'Resultado'],
     goal: state.hasCv === false
       ? 'Criar currículo e analisar a vaga'
       : 'Analisar a vaga com diagnóstico completo',

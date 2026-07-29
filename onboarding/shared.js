@@ -99,16 +99,32 @@
     var style = document.createElement('style');
     style.id = 'obJourneySummaryStyles';
     style.textContent =
-      '.ob-journey-summary{position:sticky;top:72px;z-index:12;margin:0 0 20px;padding:14px 16px;background:var(--card,#fff);background:color-mix(in srgb,var(--card,#fff) 94%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--line,#dfe7e1);border-radius:16px;box-shadow:0 12px 32px rgba(9,35,20,.08)}' +
-      '.ob-journey-grid{display:grid;grid-template-columns:1.15fr 1.1fr 1.1fr .72fr 1.55fr;gap:12px;align-items:start}' +
+      '.ob-journey-summary{position:sticky;top:72px;z-index:12;margin:0 0 20px;padding:13px 16px;background:var(--card,#fff);background:color-mix(in srgb,var(--card,#fff) 95%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--line,#dfe7e1);border-radius:16px;box-shadow:0 12px 32px rgba(9,35,20,.08)}' +
+      '.ob-journey-stepper{display:flex;align-items:flex-start;width:100%}' +
+      '.ob-journey-step{display:flex;align-items:center;flex:1;min-width:0;color:var(--muted,#698072)}' +
+      '.ob-journey-step:last-child{flex:0 0 auto}' +
+      '.ob-journey-node{display:grid;place-items:center;width:24px;height:24px;flex:0 0 24px;border:1px solid var(--line,#dfe7e1);border-radius:50%;background:var(--card,#fff);color:var(--muted,#698072);font-size:10px;font-weight:800;transition:.22s ease}' +
+      '.ob-journey-step.is-done .ob-journey-node{border-color:rgba(30,157,96,.28);background:rgba(30,157,96,.12);color:var(--green,#168451)}' +
+      '.ob-journey-step.is-current .ob-journey-node{border-color:var(--green,#168451);background:var(--green,#168451);color:#fff;box-shadow:0 0 0 5px rgba(30,157,96,.10)}' +
+      '.ob-journey-step-label{margin-left:8px;overflow:hidden;color:inherit;font-size:11px;line-height:1.25;font-weight:700;white-space:nowrap;text-overflow:ellipsis}' +
+      '.ob-journey-step.is-current .ob-journey-step-label{color:var(--text,#0b1911)}' +
+      '.ob-journey-connector{height:1px;flex:1;min-width:16px;margin:12px 10px 0;background:var(--line,#dfe7e1)}' +
+      '.ob-journey-step.is-done .ob-journey-connector{background:rgba(30,157,96,.48)}' +
+      '.ob-journey-meta{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line,#dfe7e1)}' +
+      '.ob-journey-progress{min-width:0;color:var(--text,#0b1911);font-size:11px;line-height:1.4;font-weight:700}' +
+      '.ob-journey-toggle{flex:0 0 auto;padding:0;border:0;background:transparent;color:var(--green,#168451);font:inherit;font-size:10px;font-weight:800;cursor:pointer}' +
+      '.ob-journey-toggle:hover{text-decoration:underline}' +
+      '.ob-journey-details{margin-top:11px;padding:13px 14px;border:1px solid var(--line,#dfe7e1);border-radius:12px;background:var(--soft,#f4f7f5)}' +
+      '.ob-journey-details[hidden]{display:none}' +
+      '.ob-journey-grid{display:grid;grid-template-columns:1.15fr 1.1fr 1.1fr 1.55fr;gap:12px;align-items:start}' +
       '.ob-journey-item{min-width:0}' +
       '.ob-journey-label{display:block;margin-bottom:4px;color:var(--muted,#698072);font-size:9px;line-height:1.2;font-weight:800;letter-spacing:.08em;text-transform:uppercase}' +
-      '.ob-journey-value{display:block;color:var(--text,#0b1911);font-size:12px;line-height:1.35;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
-      '.ob-journey-item.is-progress .ob-journey-value,.ob-journey-item.is-next .ob-journey-value{white-space:normal}' +
-      '.ob-journey-item.is-next .ob-journey-value{color:var(--green,#168451)}' +
+      '.ob-journey-value{display:block;color:var(--text,#0b1911);font-size:11px;line-height:1.35;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '.ob-journey-item.is-next .ob-journey-value{color:var(--green,#168451);white-space:normal}' +
       '.ob-journey-trust{display:flex;align-items:center;gap:7px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line,#dfe7e1);color:var(--muted,#698072);font-size:10px;line-height:1.4}' +
       '.ob-journey-trust-mark{display:inline-grid;place-items:center;width:17px;height:17px;flex:0 0 17px;border-radius:50%;background:rgba(30,157,96,.12);color:var(--green,#168451);font-size:10px;font-weight:900}' +
-      '@media(max-width:760px){.ob-journey-summary{position:relative;top:auto;margin:-8px 0 18px;padding:13px 14px}.ob-journey-grid{grid-template-columns:1fr 1fr;gap:11px 14px}.ob-journey-item.is-next{grid-column:1/-1}.ob-journey-value{font-size:11px}.ob-journey-trust{align-items:flex-start}}';
+      '.ob-journey-mobile{display:none}' +
+      '@media(max-width:760px){.ob-journey-summary{top:8px;margin:-8px 0 18px;padding:12px 14px;border-radius:14px}.ob-journey-stepper{display:none}.ob-journey-mobile{display:block}.ob-journey-mobile-head{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--text,#0b1911);font-size:11px;font-weight:800}.ob-journey-mobile-track{height:5px;margin-top:8px;overflow:hidden;border-radius:999px;background:var(--line,#dfe7e1)}.ob-journey-mobile-fill{height:100%;border-radius:inherit;background:var(--green,#168451);transition:width .3s ease}.ob-journey-meta{align-items:flex-start;margin-top:9px;padding-top:9px}.ob-journey-progress{font-size:10px}.ob-journey-grid{grid-template-columns:1fr 1fr;gap:11px 14px}.ob-journey-item.is-next{grid-column:1/-1}.ob-journey-trust{align-items:flex-start}}';
     document.head.appendChild(style);
   }
 
@@ -131,32 +147,89 @@
       target.insertBefore(summary, target.firstChild);
     }
 
+    var currentStep = Math.max(1, parseInt(options.currentStep, 10) || 1);
+    var totalSteps = Math.max(currentStep, parseInt(options.totalSteps, 10) || 5);
+    var stepLabels = Array.isArray(options.steps) ? options.steps.slice(0, totalSteps) : [];
+    while (stepLabels.length < totalSteps) stepLabels.push('Etapa ' + (stepLabels.length + 1));
+    var wasExpanded = summary.getAttribute('data-expanded') === 'true';
+
+    summary.innerHTML = '';
+    var stepper = document.createElement('div');
+    stepper.className = 'ob-journey-stepper';
+    stepper.setAttribute('aria-label', 'Progresso da jornada');
+    stepLabels.forEach(function (stepLabel, index) {
+      var stepNumber = index + 1;
+      var step = document.createElement('div');
+      step.className = 'ob-journey-step' +
+        (stepNumber < currentStep ? ' is-done' : '') +
+        (stepNumber === currentStep ? ' is-current' : '');
+      var node = document.createElement('span');
+      node.className = 'ob-journey-node';
+      node.textContent = stepNumber < currentStep ? '✓' : String(stepNumber);
+      var label = document.createElement('span');
+      label.className = 'ob-journey-step-label';
+      label.textContent = stepLabel;
+      step.appendChild(node);
+      step.appendChild(label);
+      if (stepNumber < totalSteps) {
+        var connector = document.createElement('span');
+        connector.className = 'ob-journey-connector';
+        step.appendChild(connector);
+      }
+      stepper.appendChild(step);
+    });
+    summary.appendChild(stepper);
+
+    var mobile = document.createElement('div');
+    mobile.className = 'ob-journey-mobile';
+    mobile.innerHTML =
+      '<div class="ob-journey-mobile-head"><span>' +
+      String(stepLabels[currentStep - 1] || ('Etapa ' + currentStep)) +
+      '</span><span>' + currentStep + ' de ' + totalSteps + '</span></div>' +
+      '<div class="ob-journey-mobile-track"><div class="ob-journey-mobile-fill" style="width:' +
+      Math.min(100, Math.round((currentStep / totalSteps) * 100)) + '%"></div></div>';
+    summary.appendChild(mobile);
+
+    var meta = document.createElement('div');
+    meta.className = 'ob-journey-meta';
+    var progress = document.createElement('div');
+    progress.className = 'ob-journey-progress';
+    progress.textContent = options.progress || ('Etapa ' + currentStep + ' de ' + totalSteps);
+    var toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'ob-journey-toggle';
+    toggle.setAttribute('aria-expanded', wasExpanded ? 'true' : 'false');
+    toggle.textContent = wasExpanded ? 'Ocultar resumo' : 'Ver resumo da jornada';
+    meta.appendChild(progress);
+    meta.appendChild(toggle);
+    summary.appendChild(meta);
+
+    var details = document.createElement('div');
+    details.className = 'ob-journey-details';
+    details.hidden = !wasExpanded;
     var fields = [
       ['Objetivo', options.goal || 'Definir próximo passo', ''],
       ['Vaga', options.job || 'Ainda não selecionada', ''],
       ['Currículo', options.cv || 'Ainda não adicionado', ''],
-      ['Progresso', options.progress || '1 de 5', 'is-progress'],
       ['Próxima entrega', options.next || 'Continue para ver o próximo resultado.', 'is-next']
     ];
-
-    summary.innerHTML = '';
     var grid = document.createElement('div');
     grid.className = 'ob-journey-grid';
     fields.forEach(function (field) {
       var item = document.createElement('div');
       item.className = 'ob-journey-item' + (field[2] ? ' ' + field[2] : '');
-      var label = document.createElement('span');
-      label.className = 'ob-journey-label';
-      label.textContent = field[0];
+      var itemLabel = document.createElement('span');
+      itemLabel.className = 'ob-journey-label';
+      itemLabel.textContent = field[0];
       var value = document.createElement('span');
       value.className = 'ob-journey-value';
       value.textContent = field[1];
       value.title = field[1];
-      item.appendChild(label);
+      item.appendChild(itemLabel);
       item.appendChild(value);
       grid.appendChild(item);
     });
-    summary.appendChild(grid);
+    details.appendChild(grid);
 
     var trust = document.createElement('div');
     trust.className = 'ob-journey-trust';
@@ -167,7 +240,17 @@
     trustText.textContent = options.trust || 'Você revisa tudo antes de usar. O VagaAI não inventa experiências.';
     trust.appendChild(trustMark);
     trust.appendChild(trustText);
-    summary.appendChild(trust);
+    details.appendChild(trust);
+    summary.appendChild(details);
+
+    toggle.addEventListener('click', function () {
+      var expanded = details.hidden;
+      details.hidden = !expanded;
+      summary.setAttribute('data-expanded', expanded ? 'true' : 'false');
+      toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      toggle.textContent = expanded ? 'Ocultar resumo' : 'Ver resumo da jornada';
+    });
+    summary.setAttribute('data-expanded', wasExpanded ? 'true' : 'false');
     return summary;
   }
 
