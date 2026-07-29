@@ -374,7 +374,7 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
   <section class="ob-step" id="step2">
     <div class="ob-eyebrow">Etapa 2</div>
     <h1 id="step2Title">Agora, envie a vaga para o diagnóstico</h1>
-    <p class="ob-sub">Cole o link da vaga que a gente carrega pra você — ou cole a descrição direto.</p>
+    <p class="ob-sub" id="step2Sub">Cole o link da vaga que a gente carrega pra você — ou cole a descrição direto.</p>
 
     <div class="ob-url-row">
       <input type="text" id="jobUrl" placeholder="Cole o link da vaga (LinkedIn, Gupy, Indeed...)" inputmode="url" onkeydown="if(event.key==='Enter'){event.preventDefault();loadFromUrl()}">
@@ -722,6 +722,48 @@ function stepFromUrl() {
   return (n >= 1 && n <= TOTAL_STEPS) ? n : 1;
 }
 
+function journeyProfile() {
+  if (!window.VagaAIOnboarding || !window.VagaAIOnboarding.getJourneyProfile) return {};
+  return window.VagaAIOnboarding.getJourneyProfile(state.flow, {
+    hasCv: state.hasCv,
+    hasJob: state.hasJob,
+    job: {
+      raw: state.job,
+      url: state.jobUrl,
+      preview: state.preview
+    },
+    preview: state.preview,
+    alertDraft: state.alertDraft
+  });
+}
+
+function applyJourneyCopy() {
+  var profile = journeyProfile();
+  if (!profile || !profile.flow) return;
+
+  var step2Title = document.getElementById('step2Title');
+  var step2Sub = document.getElementById('step2Sub');
+  var jobNext = document.getElementById('jobNext');
+  var cvTitle = document.getElementById('cvStepTitle');
+  var cvSub = document.getElementById('cvStepSub');
+  var cvNext = document.getElementById('cvNext');
+  var quickNext = document.getElementById('quickCvNext');
+
+  if (step2Title && profile.jobTitle) step2Title.textContent = profile.jobTitle;
+  if (step2Sub && profile.jobSub) step2Sub.textContent = profile.jobSub;
+  if (jobNext && profile.jobCta) jobNext.textContent = profile.jobCta;
+
+  if (state.hasCv) {
+    if (cvTitle && profile.cvTitle) cvTitle.textContent = profile.cvTitle;
+    if (cvSub && profile.cvSub) cvSub.textContent = profile.cvSub;
+    if (cvNext && profile.cvCta) cvNext.textContent = profile.cvCta;
+  } else {
+    if (cvTitle && profile.quickTitle) cvTitle.textContent = profile.quickTitle;
+    if (cvSub && profile.quickSub) cvSub.textContent = profile.quickSub;
+    if (quickNext && profile.quickCta) quickNext.textContent = profile.quickCta;
+  }
+}
+
 function renderStep(n, push) {
   // Não deixa pular etapa sem os dados da anterior (ex: link colado direto
   // em /onboarding/vaga/5) — cai na última etapa realmente completada.
@@ -732,6 +774,7 @@ function renderStep(n, push) {
 
   state.step = n;
   saveState();
+  applyJourneyCopy();
 
   for (var i = 1; i <= TOTAL_STEPS; i++) {
     var el = document.getElementById('step' + i);
@@ -769,14 +812,6 @@ function goBack() { history.back(); }
 window.addEventListener('popstate', function() { renderStep(stepFromUrl(), false); });
 
 /* ── Etapa 1: qualificação ─────────────────────────────────────────────── */
-var INTENT_TITLES = {
-  complete: 'Agora, envie a vaga para o diagnóstico',
-  ats:      'Vamos calcular seu score de compatibilidade com essa vaga',
-  destacar: 'Cole a vaga pra gente ver o que priorizar no seu currículo',
-  vale:     'Cole a vaga pra comparar com o seu perfil',
-  adaptar:  'Vamos adaptar seu currículo para os requisitos desta vaga'
-};
-
 function chooseHasJob(hasJob) {
   state.hasJob = !!hasJob;
   state.hasCv = state.entry !== 'no-cv';
@@ -816,7 +851,7 @@ function startCompleteDiagnostic() {
     ? window.VagaAIOnboarding.deriveFlow(state.hasCv, true)
     : (state.hasCv ? 'cv_job' : 'no_cv_job');
   saveState();
-  document.getElementById('step2Title').textContent = INTENT_TITLES.complete;
+  applyJourneyCopy();
   track('onboarding_vaga_complete_diagnostic_started', { flow: state.flow });
   goStep(2);
 }
@@ -1312,7 +1347,7 @@ async function generateDirectedCv() {
     if (res.status === 429) {
       _analysisRunning = false;
       btn.disabled = false;
-      btn.textContent = 'Montar currículo e analisar →';
+      applyJourneyCopy();
       var limitErr = document.getElementById('quickCvErr');
       if (limitErr) {
         limitErr.textContent = 'Você já usou as gerações gratuitas recentes. Crie sua conta para continuar sem perder os dados preenchidos.';
@@ -1338,7 +1373,7 @@ async function generateDirectedCv() {
   } catch(e) {
     _analysisRunning = false;
     btn.disabled = false;
-    btn.textContent = 'Montar currículo e analisar →';
+    applyJourneyCopy();
     var err = document.getElementById('quickCvErr');
     if (err) {
       err.textContent = 'Não conseguimos montar o currículo agora. Revise os campos ou tente novamente.';
@@ -1350,24 +1385,19 @@ async function generateDirectedCv() {
 function configureCvStep() {
   var existing = document.getElementById('existingCvPanel');
   var quick = document.getElementById('quickCvPanel');
-  var title = document.getElementById('cvStepTitle');
-  var sub = document.getElementById('cvStepSub');
   if (!existing || !quick) return;
 
   if (state.hasCv === false) {
     existing.style.display = 'none';
     quick.hidden = false;
     quick.style.display = 'block';
-    title.textContent = 'Conte sua experiência do seu jeito';
-    sub.textContent = 'A VagaAI organiza o conteúdo, cria uma versão profissional e a direciona para esta vaga.';
     onQuickCvInput();
   } else {
     existing.style.display = '';
     quick.hidden = true;
     quick.style.display = 'none';
-    title.textContent = 'Agora, envie seu currículo';
-    sub.textContent = 'PDF, DOCX ou texto. A análise compara o seu currículo com os requisitos da vaga.';
   }
+  applyJourneyCopy();
 }
 
 function saveRadarDraft() {
@@ -1718,7 +1748,6 @@ async function signupEmail() {
   saveState();
 
   // Repõe o que já tinha sido preenchido (refresh, voltar do e-mail, etc.)
-  if (state.intent) document.getElementById('step2Title').textContent = INTENT_TITLES[state.intent] || INTENT_TITLES.ats;
   if (state.jobUrl) document.getElementById('jobUrl').value = state.jobUrl;
   if (state.job) {
     document.getElementById('jobInput').value = state.job;

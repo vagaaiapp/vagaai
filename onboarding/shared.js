@@ -82,6 +82,114 @@
     return '';
   }
 
+  var JOURNEY_PROFILES = {
+    cv_job: {
+      label: 'Currículo + vaga',
+      overviewTitle: 'Seu currículo encontra uma vaga específica.',
+      overviewSub: 'Vamos comparar os dois, mostrar onde você já é forte e o que precisa ajustar antes de aplicar.',
+      situation: 'Você já tem currículo e uma oportunidade em vista.',
+      problem: 'Um currículo bom ainda pode perder aderência quando não destaca o que esta vaga prioriza.',
+      implication: 'Sem essa comparação, você pode enviar uma candidatura genérica e descobrir tarde demais o que faltou.',
+      payoff: 'Você recebe diagnóstico completo, score, lacunas e prioridades para uma versão direcionada.',
+      jobTitle: 'Mostre qual vaga você quer avaliar',
+      jobSub: 'Cole o link ou a descrição. A VagaAI organiza os requisitos e prepara a comparação.',
+      jobCta: 'Usar esta vaga no diagnóstico →',
+      cvTitle: 'Agora traga o currículo que você pretende enviar',
+      cvSub: 'Vamos comparar sua experiência real com os requisitos desta vaga.',
+      cvCta: 'Gerar meu diagnóstico completo →',
+      quickTitle: 'Conte sua experiência para esta vaga',
+      quickSub: 'Escreva do seu jeito. A VagaAI organiza o conteúdo sem inventar experiências.',
+      quickCta: 'Montar currículo e gerar diagnóstico →'
+    },
+    cv_no_job: {
+      label: 'Currículo + radar de vagas',
+      overviewTitle: 'Seu currículo pode orientar uma busca mais precisa.',
+      overviewSub: 'Vamos revisar seu perfil e preparar alertas para oportunidades mais alinhadas.',
+      situation: 'Você já tem currículo, mas ainda não escolheu uma vaga específica.',
+      problem: 'Procurar em todos os lugares consome tempo e aumenta candidaturas pouco aderentes.',
+      implication: 'Sem critérios claros, você pode perder energia em vagas que não combinam com seu momento.',
+      payoff: 'Seu currículo fica estruturado e seu radar de vagas nasce com cargo, local e preferências.',
+      importTitle: 'Comece pelo currículo que você já tem',
+      importSub: 'A VagaAI extrai os dados para você apenas revisar, sem recomeçar do zero.',
+      importCta: 'Revisar meus dados extraídos →',
+      formTitle: 'Revise o perfil que orientará currículo e alertas',
+      formSub: 'Confirme o essencial para que o currículo e o radar usem o mesmo objetivo profissional.',
+      formCta: 'Ver meu currículo estruturado →',
+      templateTitle: 'Escolha como seu currículo será apresentado',
+      templateSub: 'Veja seus próprios dados no modelo e escolha uma versão pronta para revisar.',
+      templateCta: 'Gerar meu currículo e preparar alertas →',
+      gateTitle: 'Seu currículo e seu radar estão prontos',
+      gateSub: 'Crie a conta grátis para salvar o currículo e revisar o primeiro alerta antes de ativar.',
+      gateCta: 'Salvar currículo e ativar meu alerta grátis →'
+    },
+    no_cv_job: {
+      label: 'Currículo para uma vaga',
+      overviewTitle: 'Transforme sua experiência em um currículo para esta oportunidade.',
+      overviewSub: 'A vaga define as prioridades; você conta sua experiência e a VagaAI estrutura o currículo.',
+      situation: 'Você já encontrou a oportunidade, mas ainda precisa de um currículo pronto.',
+      problem: 'Sem um currículo estruturado, competências relevantes podem ficar invisíveis para o ATS e recrutador.',
+      implication: 'Você pode perder uma vaga compatível por não conseguir apresentar sua experiência com clareza.',
+      payoff: 'Você recebe currículo profissional direcionado e o diagnóstico de aderência à mesma vaga.',
+      jobTitle: 'Mostre a vaga que vai orientar seu currículo',
+      jobSub: 'Cole o link ou a descrição para identificarmos cargo, requisitos e prioridades.',
+      jobCta: 'Usar esta vaga como direção →',
+      quickTitle: 'Conte sua experiência do seu jeito',
+      quickSub: 'A VagaAI transforma o conteúdo em um currículo profissional e alinhado à vaga.',
+      quickCta: 'Montar currículo e analisar esta vaga →',
+      importTitle: 'Comece pelo que você já tem',
+      importSub: 'Se houver um currículo antigo, aproveitamos os dados; se não, você conta sua experiência do zero.',
+      importCta: 'Revisar os dados para esta vaga →',
+      formTitle: 'Conte o essencial para esta oportunidade',
+      formSub: 'Confirme sua experiência e competências para montarmos um currículo direcionado à vaga.',
+      formCta: 'Ver meu currículo para esta vaga →',
+      templateTitle: 'Escolha como seu currículo será apresentado',
+      templateSub: 'Veja seus dados no modelo e escolha a versão que você pretende enviar.',
+      templateCta: 'Gerar currículo e calcular aderência →',
+      gateTitle: 'Seu currículo para esta vaga está pronto',
+      gateSub: 'Crie a conta grátis para salvar, baixar e acompanhar a candidatura.',
+      gateCta: 'Salvar currículo e continuar candidatura →'
+    },
+    no_cv_no_job: {
+      label: 'Currículo + direção de busca',
+      overviewTitle: 'Construa seu currículo e comece a busca com direção.',
+      overviewSub: 'A VagaAI organiza sua experiência e usa seu objetivo para orientar oportunidades.',
+      situation: 'Você está começando a busca sem um currículo pronto e sem uma vaga definida.',
+      problem: 'Sem um perfil estruturado, fica difícil escolher vagas e demonstrar seu valor.',
+      implication: 'A busca tende a ficar ampla, cansativa e baseada em tentativas.',
+      payoff: 'Você sai com currículo profissional, objetivo claro e caminho para receber vagas compatíveis.',
+      importTitle: 'Aproveite o que você já tiver',
+      importSub: 'Se houver um arquivo antigo, importamos os dados; se não, você monta do zero com orientação.',
+      importCta: 'Revisar meus dados →',
+      formTitle: 'Conte o essencial para começar',
+      formSub: 'Escreva do seu jeito. A VagaAI organiza sua experiência e conecta o currículo ao objetivo.',
+      formCta: 'Ver meu currículo tomando forma →',
+      templateTitle: 'Escolha o modelo que representa seu perfil',
+      templateSub: 'Veja seus dados aplicados em uma versão profissional antes de decidir.',
+      templateCta: 'Gerar meu currículo grátis →',
+      gateTitle: 'Seu currículo está pronto para começar',
+      gateSub: 'Crie a conta grátis para salvar, baixar e configurar oportunidades compatíveis.',
+      gateCta: 'Salvar e baixar meu currículo grátis →'
+    }
+  };
+
+  function clone(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function getJourneyProfile(flow, state) {
+    var key = JOURNEY_PROFILES[flow]
+      ? flow
+      : deriveFlow(state && state.hasCv, state && state.hasJob);
+    var profile = clone(JOURNEY_PROFILES[key] || JOURNEY_PROFILES.no_cv_no_job);
+    var preview = state && ((state.job && state.job.preview) || state.preview) || {};
+    var cargo = preview.cargo || preview.title ||
+      (state && state.alertDraft && state.alertDraft.cargo) || '';
+    var empresa = preview.empresa || preview.company || '';
+    profile.flow = key || 'no_cv_no_job';
+    profile.target = cargo + (cargo && empresa ? ' na ' + empresa : '');
+    return profile;
+  }
+
   function setContext(hasCv, hasJob, extra) {
     return write(Object.assign({}, extra || {}, {
       hasCv: hasCv,
@@ -354,6 +462,7 @@
     write: write,
     merge: merge,
     deriveFlow: deriveFlow,
+    getJourneyProfile: getJourneyProfile,
     setContext: setContext,
     stageProductData: stageProductData,
     claimAnalysis: claimAnalysis,

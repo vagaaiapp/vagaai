@@ -298,7 +298,7 @@ select:focus{outline:none;border-color:var(--green-border)}
   <!-- ETAPA 2 — Importar ou do zero -->
   <section class="ob-step" id="step2">
     <div class="ob-eyebrow">Etapa 2</div>
-    <h1>Vamos começar pelo que você já tem</h1>
+    <h1 id="step2Title">Vamos começar pelo que você já tem</h1>
     <p class="ob-sub" id="step2Sub">Se você já tem um currículo em PDF, importe — a gente aproveita tudo e você só revisa.</p>
     <div class="ob-choices">
       <button class="ob-choice" id="importTrigger" onclick="openCvImport()">
@@ -322,7 +322,7 @@ select:focus{outline:none;border-color:var(--green-border)}
   <!-- ETAPA 3 — Captura rápida -->
   <section class="ob-step" id="step3">
     <div class="ob-eyebrow">Etapa 3</div>
-    <h1>Só o essencial por enquanto</h1>
+    <h1 id="step3Title">Só o essencial por enquanto</h1>
     <p class="ob-sub" id="step3Sub">Escreva do seu jeito — a IA deixa profissional na hora de montar.</p>
     <div id="importReviewNote" class="ob-ok" role="status" aria-live="polite" style="display:none;margin-bottom:20px"></div>
 
@@ -361,8 +361,8 @@ select:focus{outline:none;border-color:var(--green-border)}
   <!-- ETAPA 4 — Modelo -->
   <section class="ob-step" id="step4">
     <div class="ob-eyebrow">Etapa 4</div>
-    <h1>Escolha o estilo do seu currículo</h1>
-    <p class="ob-sub">Todos os modelos são escritos para leitura clara — a diferença está no layout.</p>
+    <h1 id="step4Title">Escolha o estilo do seu currículo</h1>
+    <p class="ob-sub" id="step4Sub">Todos os modelos são escritos para leitura clara — a diferença está no layout.</p>
 
     <div class="tpl-group">✓ Compatíveis com ATS — recomendados para candidaturas online</div>
     <div class="tpl-grid">
@@ -397,7 +397,7 @@ select:focus{outline:none;border-color:var(--green-border)}
     </div>
 
     <div class="ob-note"><span>💡</span><span>Vai se candidatar por site de vagas (LinkedIn, Gupy, Indeed)? Prefira um modelo <b>ATS ✓</b> — são lidos com mais precisão por filtros automáticos.</span></div>
-    <button class="ob-btn" onclick="generateCv()">Montar meu currículo →</button>
+    <button class="ob-btn" id="templateNext" onclick="generateCv()">Montar meu currículo →</button>
   </section>
 
   <!-- ETAPA 4b — Gerando -->
@@ -413,8 +413,8 @@ select:focus{outline:none;border-color:var(--green-border)}
   <!-- ETAPA 5 — Pronto -->
   <section class="ob-step" id="step5">
     <div class="ob-eyebrow">Pronto 🎉</div>
-    <h1>Seu currículo está pronto!</h1>
-    <p class="ob-sub">Revise abaixo. Você pode trocar o modelo ou ajustar qualquer detalhe depois.</p>
+    <h1 id="step5Title">Seu currículo está pronto!</h1>
+    <p class="ob-sub" id="step5Sub">Revise abaixo. Você pode trocar o modelo ou ajustar qualquer detalhe depois.</p>
 
     <div class="cv-paper" id="cvPreview"></div>
 
@@ -617,6 +617,7 @@ function renderStep(n, push) {
   document.getElementById('backBtn').hidden = (n === 1 || n === 5);
   if (n === 2) restoreImportUi();
   if (n === 3) applyFormToInputs();
+  applyJourneyCopy();
 
   var url = '/onboarding/curriculo/' + n;
   if (push && window.location.pathname !== url) history.pushState({ step:n }, '', url);
@@ -696,6 +697,46 @@ function applyJourneyGoal() {
   if (crossSell) crossSell.style.display = '';
   if (modalTitle) modalTitle.textContent = 'Criar conta grátis';
   if (modalDesc) modalDesc.textContent = 'Seu currículo já está montado — criando a conta ele fica salvo e pronto pra baixar.';
+}
+
+function journeyProfile() {
+  if (!window.VagaAIOnboarding || !window.VagaAIOnboarding.getJourneyProfile) return {};
+  var shared = window.VagaAIOnboarding.read ? window.VagaAIOnboarding.read() : {};
+  var sharedCv = shared.cv || {};
+  return window.VagaAIOnboarding.getJourneyProfile(state.flow, {
+    hasCv: state.hasCv,
+    hasJob: state.hasJob,
+    job: shared.job || {},
+    preview: shared.preview || (shared.job && shared.job.preview) || {},
+    alertDraft: state.alertDraft || shared.alertDraft || {},
+    cv: {
+      raw: state.imported || sharedCv.raw,
+      name: state.importedName || sharedCv.name,
+      data: state.cv || sharedCv.data
+    }
+  });
+}
+
+function applyJourneyCopy() {
+  var profile = journeyProfile();
+  if (!profile || !profile.flow) return;
+  [
+    ['step2Title', 'importTitle'],
+    ['step2Sub', 'importSub'],
+    ['importNext', 'importCta'],
+    ['step3Title', 'formTitle'],
+    ['step3Sub', 'formSub'],
+    ['formNext', 'formCta'],
+    ['step4Title', 'templateTitle'],
+    ['step4Sub', 'templateSub'],
+    ['templateNext', 'templateCta'],
+    ['step5Title', 'gateTitle'],
+    ['step5Sub', 'gateSub'],
+    ['primaryGateCta', 'gateCta']
+  ].forEach(function(pair) {
+    var el = document.getElementById(pair[0]);
+    if (el && profile[pair[1]]) el.textContent = profile[pair[1]];
+  });
 }
 
 function pickSit(sit) {
