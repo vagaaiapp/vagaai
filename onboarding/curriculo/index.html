@@ -338,6 +338,7 @@ select:focus{outline:none;border-color:var(--green-border)}
     <div class="ob-field">
       <label for="fExp">Experiência profissional <small>— conte com suas palavras</small></label>
       <textarea id="fExp" placeholder="Ex: trabalhei 2 anos na Loja X como vendedora, atendia clientes, organizava o estoque e batia a meta quase todo mês..." oninput="onFormInput()"></textarea>
+      <div class="ob-count" id="fExpCount">0 caracteres</div>
       <div class="ob-hint" id="expHint">Pode escrever corrido, sem formatar. A IA transforma em tópicos profissionais.</div>
     </div>
     <div class="ob-field">
@@ -413,9 +414,11 @@ select:focus{outline:none;border-color:var(--green-border)}
 
   <!-- ETAPA 5 — Pronto -->
   <section class="ob-step" id="step5">
-    <div class="ob-eyebrow">Pronto 🎉</div>
-    <h1 id="step5Title">Seu currículo está pronto!</h1>
-    <p class="ob-sub" id="step5Sub">Revise abaixo. Você pode trocar o modelo ou ajustar qualquer detalhe depois.</p>
+    <div class="ob-result-hero">
+      <div class="ob-eyebrow">Pronto 🎉</div>
+      <h1 id="step5Title">Seu currículo está pronto!</h1>
+      <p class="ob-sub" id="step5Sub">Revise abaixo. Você pode trocar o modelo ou ajustar qualquer detalhe depois.</p>
+    </div>
 
     <div class="cv-paper" id="cvPreview"></div>
 
@@ -435,11 +438,16 @@ select:focus{outline:none;border-color:var(--green-border)}
         <div><div class="ob-radar-t">Deixe seu radar de vagas preparado</div><div class="ob-radar-d">Você escolhe o perfil das oportunidades. O alerta só é ativado depois que você criar a conta.</div></div>
       </div>
       <div class="ob-radar-grid">
-        <div class="ob-field"><label for="cvRadarCargo">Cargo ou área</label><input type="text" id="cvRadarCargo" placeholder="Ex: Analista de Marketing" oninput="saveCvRadarDraft()"></div>
-        <div class="ob-field"><label for="cvRadarLocal">Cidade ou região</label><input type="text" id="cvRadarLocal" placeholder="Ex: São Paulo" oninput="saveCvRadarDraft()"></div>
-        <div class="ob-field"><label for="cvRadarModalidade">Formato</label><select id="cvRadarModalidade" onchange="saveCvRadarDraft()"><option value="">Qualquer formato</option><option value="remoto">Remoto</option><option value="hibrido">Híbrido</option><option value="presencial">Presencial</option></select></div>
-        <div class="ob-field"><label for="cvRadarSalario">Faixa salarial <small>opcional</small></label><input type="text" id="cvRadarSalario" placeholder="Ex: R$ 4.000" oninput="saveCvRadarDraft()"></div>
+        <div class="ob-field wide"><label for="cvRadarCargo">Cargo ou área</label><input type="text" id="cvRadarCargo" placeholder="Ex: Analista de Marketing" oninput="saveCvRadarDraft()"></div>
       </div>
+      <details class="ob-radar-more">
+        <summary>Refinar local, formato e salário <small>— opcional</small></summary>
+        <div class="ob-radar-grid">
+          <div class="ob-field"><label for="cvRadarLocal">Cidade ou região</label><input type="text" id="cvRadarLocal" placeholder="Ex: São Paulo" oninput="saveCvRadarDraft()"></div>
+          <div class="ob-field"><label for="cvRadarModalidade">Formato</label><select id="cvRadarModalidade" onchange="saveCvRadarDraft()"><option value="">Qualquer formato</option><option value="remoto">Remoto</option><option value="hibrido">Híbrido</option><option value="presencial">Presencial</option></select></div>
+          <div class="ob-field"><label for="cvRadarSalario">Faixa salarial <small>opcional</small></label><input type="text" id="cvRadarSalario" placeholder="Ex: R$ 4.000" oninput="saveCvRadarDraft()"></div>
+        </div>
+      </details>
       <label class="ob-radar-check"><input type="checkbox" id="cvRadarActivate" checked onchange="saveCvRadarDraft()"><span>Ativar meu alerta semanal depois do cadastro. Você poderá revisar tudo antes do primeiro envio.</span></label>
     </div>
 
@@ -727,7 +735,12 @@ function chooseCvHasJob(hasJob) {
   track('onboarding_cv_has_job_selected', { has_job: state.hasJob, flow: state.flow });
   if (state.hasJob) {
     var mode = state.hasCv ? 'cv_job' : 'no_cv_job';
-    window.location.href = '/onboarding/vaga/1?mode=' + mode;
+    var jobUrl = '/onboarding/vaga/1?mode=' + mode;
+    if (window.VagaAIOnboarding && window.VagaAIOnboarding.fadeNavigate) {
+      window.VagaAIOnboarding.fadeNavigate(jobUrl);
+    } else {
+      window.location.href = jobUrl;
+    }
     return;
   }
   document.getElementById('cvHasJobQuestion').hidden = true;
@@ -939,10 +952,12 @@ function continueAfterImport() {
     showImportError('O arquivo ainda não foi processado. Tente importar novamente ou preencha manualmente.');
     return;
   }
-  if (!state.form || !state.form.exp) {
-    state.form = mergeImportedForm(parseImportedCvLocally(state.imported), state.form || {});
-    saveState();
-  }
+  // Reconcile every field before review. The structured extractor may return
+  // only part of the CV, while the local parser can still recover the rest.
+  state.form = mergeImportedForm(state.form || {}, parseImportedCvLocally(state.imported));
+  saveState();
+  applyFormToInputs();
+  updateJourneySummary();
   track('onboarding_cv_import_continue', { method: 'upload' });
   goStep(3);
 }
@@ -1094,6 +1109,8 @@ function applyFormToInputs() {
   }
   var next = document.getElementById('formNext');
   if (next) next.disabled = !(String(f.nome || '').trim() && String(f.cargo || '').trim());
+  var expCount = document.getElementById('fExpCount');
+  if (expCount) expCount.textContent = String(f.exp || '').length + ' caracteres';
 }
 
 function loadScript(src) {
@@ -1197,8 +1214,12 @@ async function handleImport(input) {
     state.imported = text.slice(0, 15000);
     state.importedName = file.name;
     state.importedStructured = false;
+    state.cv = null;
     okEl.textContent = 'Organizando os dados de ' + file.name + '...';
-    state.form = mergeImportedForm(await structureImportedCv(state.imported), state.form || {});
+    // A new file starts a new source of truth. Do not fill extraction gaps
+    // with fields left by a previous upload or another onboarding branch.
+    var localForm = parseImportedCvLocally(state.imported);
+    state.form = mergeImportedForm(await structureImportedCv(state.imported), localForm);
     state.importedStructured = true;
     saveState();
     applyFormToInputs();
@@ -1218,6 +1239,7 @@ function onFormInput() {
   var nome = document.getElementById('fNome').value.trim();
   var cargo = document.getElementById('fCargo').value.trim();
   document.getElementById('formNext').disabled = !(nome && cargo);
+  document.getElementById('fExpCount').textContent = document.getElementById('fExp').value.length + ' caracteres';
   collectForm();
 }
 
@@ -1347,6 +1369,7 @@ async function generateCv() {
 
 function showGenError() {
   document.getElementById('stepGen').innerHTML = '<div class="ob-loading">'
+    + '<div class="ob-state-ic ob-state-ic--retry"></div>'
     + '<h1 style="font-size:21px;margin-bottom:10px">Não conseguimos montar o currículo</h1>'
     + '<p class="ob-sub" style="margin-inline:auto">Pode ter sido uma instabilidade momentânea. Seus dados continuam preenchidos.</p>'
     + '<button class="ob-btn" onclick="generateCv()">Tentar de novo</button>'
@@ -1357,7 +1380,7 @@ function showGenError() {
 
 function showGenLimit() {
   document.getElementById('stepGen').innerHTML = '<div class="ob-loading">'
-    + '<div style="font-size:38px;margin-bottom:14px">📄</div>'
+    + '<div class="ob-state-ic ob-state-ic--lock"></div>'
     + '<h1 style="font-size:21px;margin-bottom:10px">As gerações gratuitas deste navegador já foram utilizadas</h1>'
     + '<p class="ob-sub" style="margin-inline:auto">Crie sua conta grátis para salvar, baixar e continuar editando seus currículos.</p>'
     + '<button class="ob-btn" onclick="openSignup()">Criar conta grátis →</button>'
@@ -1368,7 +1391,7 @@ function showGenLimit() {
 
 function showNetworkLimit() {
   document.getElementById('stepGen').innerHTML = '<div class="ob-loading">'
-    + '<div style="font-size:38px;margin-bottom:14px">⏱️</div>'
+    + '<div class="ob-state-ic ob-state-ic--wait"></div>'
     + '<h1 style="font-size:21px;margin-bottom:10px">Muitas solicitações nesta rede</h1>'
     + '<p class="ob-sub" style="margin-inline:auto">Aguarde um pouco e tente novamente. Seus dados continuam preenchidos.</p>'
     + '<button class="ob-btn" onclick="goStep(3)">Voltar e revisar os dados</button>'

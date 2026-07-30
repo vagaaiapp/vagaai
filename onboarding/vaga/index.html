@@ -364,7 +364,6 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
         <li><span class="ob-diagnostic-check">✓</span><span>O que destacar e quais ajustes priorizar no currículo</span></li>
         <li><span class="ob-diagnostic-check">✓</span><span>Projeção de aderência após as melhorias recomendadas</span></li>
       </ul>
-      <div class="ob-diagnostic-note">Você não precisa escolher um tipo de análise. Vamos avaliar todos os pontos e organizar o resultado por prioridade.</div>
       <button class="ob-btn" style="margin-top:0" onclick="startCompleteDiagnostic()">Começar diagnóstico gratuito →</button>
     </div>
     <div class="ob-micro"><span>⏱ 2 minutos</span><span>🆓 Grátis</span><span>💳 Sem cartão</span></div>
@@ -437,15 +436,15 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
     </div>
     <div class="ob-quick" id="quickCvPanel" hidden>
       <div class="ob-field">
-        <label for="qNome">Nome completo</label>
+        <label for="qNome">Nome completo <span class="ob-req">*</span></label>
         <input type="text" id="qNome" placeholder="Ex: Maria Silva" oninput="onQuickCvInput()">
       </div>
       <div class="ob-field">
-        <label for="qCargo">Cargo ou área desejada</label>
+        <label for="qCargo">Cargo ou área desejada <span class="ob-req">*</span></label>
         <input type="text" id="qCargo" placeholder="Ex: Analista de Marketing" oninput="onQuickCvInput()">
       </div>
       <div class="ob-field">
-        <label for="qExp">Experiências principais <small>— escreva do seu jeito</small></label>
+        <label for="qExp">Experiências principais <span class="ob-req">*</span> <small>— escreva do seu jeito</small></label>
         <textarea id="qExp" placeholder="Ex: trabalhei com atendimento por 2 anos, organizei pedidos e ajudava a equipe a bater metas..." oninput="onQuickCvInput()"></textarea>
       </div>
       <div class="ob-field">
@@ -453,9 +452,10 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
         <input type="text" id="qForm" placeholder="Curso, instituição e ano" oninput="onQuickCvInput()">
       </div>
       <div class="ob-field">
-        <label for="qSkills">Competências <small>— 3 a 5, separadas por vírgula</small></label>
+        <label for="qSkills">Competências <span class="ob-req">*</span> <small>— 3 a 5, separadas por vírgula</small></label>
         <input type="text" id="qSkills" placeholder="Excel, atendimento, organização" oninput="onQuickCvInput()">
       </div>
+      <div class="ob-req-hint">* campos obrigatórios para gerar seu diagnóstico</div>
       <div class="ob-note"><span>✨</span><span>Escreva de forma simples. A IA organiza o conteúdo e direciona o currículo para a vaga.</span></div>
       <div class="ob-err" id="quickCvErr" style="display:none"></div>
       <button class="ob-btn" id="quickCvNext" onclick="generateDirectedCv()" disabled>Montar currículo e analisar →</button>
@@ -483,9 +483,17 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
 
   <!-- ETAPA 5 — Resultado -->
   <section class="ob-step" id="step5">
-    <div class="ob-eyebrow">Seu diagnóstico</div>
-    <div class="ob-score-card">
-      <div class="ob-score" id="scoreVal">—<small>/100</small></div>
+    <div class="ob-result-hero">
+      <div class="ob-eyebrow">Seu diagnóstico</div>
+      <div class="ob-score-ring-wrap">
+        <svg class="ob-score-ring" viewBox="0 0 160 160" aria-hidden="true">
+          <circle class="ob-score-ring-bg" cx="80" cy="80" r="70"/>
+          <circle class="ob-score-ring-fill" id="scoreRingFill" cx="80" cy="80" r="70"/>
+        </svg>
+        <div class="ob-score-ring-inner">
+          <div class="ob-score" id="scoreVal">—<small>/100</small></div>
+        </div>
+      </div>
       <div class="ob-score-lbl" id="scoreLbl">—</div>
       <div class="ob-score-sum" id="scoreSum"></div>
     </div>
@@ -532,11 +540,16 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
         </div>
       </div>
       <div class="ob-radar-grid">
-        <div class="ob-field"><label for="radarCargo">Cargo ou área</label><input id="radarCargo" type="text" placeholder="Ex: Analista de Marketing" oninput="saveRadarDraft()"></div>
-        <div class="ob-field"><label for="radarLocal">Cidade ou região</label><input id="radarLocal" type="text" placeholder="Ex: São Paulo ou remoto" oninput="saveRadarDraft()"></div>
-        <div class="ob-field"><label for="radarModalidade">Modalidade</label><select id="radarModalidade" onchange="saveRadarDraft()"><option value="">Qualquer modalidade</option><option value="remoto">Remoto</option><option value="hibrido">Híbrido</option><option value="presencial">Presencial</option></select></div>
-        <div class="ob-field"><label for="radarSalario">Salário mínimo <small>— opcional</small></label><input id="radarSalario" type="text" placeholder="Ex: 5000" inputmode="numeric" oninput="saveRadarDraft()"></div>
+        <div class="ob-field wide"><label for="radarCargo">Cargo ou área</label><input id="radarCargo" type="text" placeholder="Ex: Analista de Marketing" oninput="saveRadarDraft()"></div>
       </div>
+      <details class="ob-radar-more">
+        <summary>Refinar local, modalidade e salário <small>— opcional</small></summary>
+        <div class="ob-radar-grid">
+          <div class="ob-field"><label for="radarLocal">Cidade ou região</label><input id="radarLocal" type="text" placeholder="Ex: São Paulo ou remoto" oninput="saveRadarDraft()"></div>
+          <div class="ob-field"><label for="radarModalidade">Modalidade</label><select id="radarModalidade" onchange="saveRadarDraft()"><option value="">Qualquer modalidade</option><option value="remoto">Remoto</option><option value="hibrido">Híbrido</option><option value="presencial">Presencial</option></select></div>
+          <div class="ob-field"><label for="radarSalario">Salário mínimo <small>— opcional</small></label><input id="radarSalario" type="text" placeholder="Ex: 5000" inputmode="numeric" oninput="saveRadarDraft()"></div>
+        </div>
+      </details>
       <label class="ob-radar-check"><input type="checkbox" id="radarActivate" checked onchange="saveRadarDraft()"><span>Quero deixar um alerta semanal preparado com este perfil.</span></label>
     </div>
 
@@ -925,7 +938,12 @@ function chooseHasJob(hasJob) {
   track('onboarding_vaga_has_job_selected', { has_job: state.hasJob, flow: state.flow });
 
   if (!state.hasJob) {
-    window.location.href = '/onboarding/curriculo/1?mode=cv_no_job&goal=alerts';
+    var noJobUrl = '/onboarding/curriculo/1?mode=cv_no_job&goal=alerts';
+    if (window.VagaAIOnboarding && window.VagaAIOnboarding.fadeNavigate) {
+      window.VagaAIOnboarding.fadeNavigate(noJobUrl);
+    } else {
+      window.location.href = noJobUrl;
+    }
     return;
   }
 
@@ -1157,7 +1175,7 @@ async function loadFromUrl() {
   if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
   btn.disabled = true;
-  btn.textContent = 'Carregando...';
+  btn.innerHTML = '<span class="ob-spin-sm"></span>Carregando...';
   st.className = 'ob-url-status load';
   st.textContent = 'Lendo a página da vaga...';
   st.style.display = 'block';
@@ -1622,6 +1640,7 @@ async function startAnalysis() {
 function showAnalysisError() {
   var step4 = document.getElementById('step4');
   step4.innerHTML = '<div class="ob-loading">'
+    + '<div class="ob-state-ic ob-state-ic--retry"></div>'
     + '<h1 style="font-size:21px;margin-bottom:10px">Não conseguimos concluir a análise</h1>'
     + '<p class="ob-sub" style="margin-inline:auto">Pode ter sido uma instabilidade momentânea. Seus dados continuam preenchidos.</p>'
     + '<button class="ob-btn" onclick="retryAnalysis()">Tentar de novo</button>'
@@ -1633,7 +1652,7 @@ function showAnalysisError() {
 function showLimitReached() {
   var step4 = document.getElementById('step4');
   step4.innerHTML = '<div class="ob-loading">'
-    + '<div style="font-size:38px;margin-bottom:14px">🎯</div>'
+    + '<div class="ob-state-ic ob-state-ic--lock"></div>'
     + '<h1 style="font-size:21px;margin-bottom:10px">Você já usou sua análise gratuita</h1>'
     + '<p class="ob-sub" style="margin-inline:auto">Crie sua conta grátis para continuar analisando vagas — no plano Grátis você tem 1 análise completa por mês.</p>'
     + '<button class="ob-btn" onclick="openSignup()">Criar conta grátis →</button>'
@@ -1642,7 +1661,12 @@ function showLimitReached() {
 }
 
 function retryAnalysis() {
-  window.location.href = '/onboarding/vaga/3';
+  var retryUrl = '/onboarding/vaga/3';
+  if (window.VagaAIOnboarding && window.VagaAIOnboarding.fadeNavigate) {
+    window.VagaAIOnboarding.fadeNavigate(retryUrl);
+  } else {
+    window.location.href = retryUrl;
+  }
 }
 
 /* ── Etapa 5: resultado (prévia real, não teaser bloqueado) ────────────── */
@@ -1653,6 +1677,13 @@ function renderResult(d) {
   var scoreEl = document.getElementById('scoreVal');
   scoreEl.className = 'ob-score ' + cls;
   scoreEl.innerHTML = score + '<small>/100</small>';
+
+  var ringEl = document.getElementById('scoreRingFill');
+  if (ringEl) {
+    ringEl.className.baseVal = 'ob-score-ring-fill ' + cls;
+    var ringLen = 439.8;
+    ringEl.style.strokeDashoffset = ringLen - (ringLen * score / 100);
+  }
 
   var lblEl = document.getElementById('scoreLbl');
   lblEl.className = 'ob-score-lbl ' + cls;

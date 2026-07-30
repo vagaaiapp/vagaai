@@ -237,7 +237,7 @@ describe('Onboarding adaptativo', () => {
     assert.match(curriculoHtml, /exp:\s*exp \|\| joined\.slice/);
     assert.match(
       curriculoHtml,
-      /state\.form = mergeImportedForm\(await structureImportedCv\(state\.imported\), state\.form \|\| \{\}\)/
+      /state\.form = mergeImportedForm\(await structureImportedCv\(state\.imported\), localForm\)/
     );
   });
 

@@ -396,6 +396,12 @@
     return emptyState();
   }
 
+  function fadeNavigate(url, delay) {
+    if (typeof document === 'undefined' || typeof window === 'undefined') return;
+    document.body.classList.add('ob-leaving');
+    setTimeout(function () { window.location.href = url; }, delay || 160);
+  }
+
   function stageProductData() {
     var state = read();
     if (!storage || state.productStagedAt) return state;
@@ -657,6 +663,7 @@
     getJourneyProfile: getJourneyProfile,
     renderJourneySummary: renderJourneySummary,
     setContext: setContext,
+    fadeNavigate: fadeNavigate,
     stageProductData: stageProductData,
     claimAnalysis: claimAnalysis,
     provisionTracker: provisionTracker,
