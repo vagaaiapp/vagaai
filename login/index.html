@@ -351,7 +351,7 @@ async function handleAuth() {
   } else {
     var { data, error } = await _SB.auth.signInWithPassword({ email: email, password: password });
     if (error) {
-      var msg = 'E-mail ou senha incorretos.';
+      var msg = 'E-mail ou senha incorretos. Se você criou sua conta com Google ou link de acesso por e-mail, use a mesma opção — ou clique em "Esqueceu a senha?" para criar uma agora.';
       if (error.message && error.message.toLowerCase().includes('email not confirmed')) msg = 'Confirme seu e-mail antes de entrar. Verifique a caixa de entrada.';
       errEl.textContent = msg; errEl.classList.add('show');
       btn.disabled = false; btn.textContent = 'Entrar';

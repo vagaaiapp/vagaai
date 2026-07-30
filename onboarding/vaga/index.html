@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="light">
+<html lang="pt-BR" data-theme="dark">
 <head>
 <!-- Google Analytics 4 (com Consent Mode v2 — LGPD) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XCT8K58VWF"></script>
@@ -757,7 +757,10 @@ function loadState() {
 }
 
 /* ── Tema: respeita o que o usuário já escolheu no resto do site ───────── */
-try { if (localStorage.getItem('vagaai_theme') === 'dark') document.documentElement.setAttribute('data-theme','dark'); } catch(e) {}
+try {
+  var savedTheme = localStorage.getItem('vagaai_theme');
+  document.documentElement.setAttribute('data-theme', savedTheme === 'light' ? 'light' : 'dark');
+} catch(e) {}
 
 /* ── Navegação por etapa ───────────────────────────────────────────────── */
 function stepFromUrl() {
