@@ -334,8 +334,11 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
 <header class="ob-top">
   <button class="ob-back" id="backBtn" onclick="goBack()" hidden>← Voltar</button>
   <a href="/" class="ob-brand" id="brandLink">Vaga<span>ai.</span></a>
-  <div class="ob-dots" id="dots" aria-hidden="true">
-    <div class="ob-dot now"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div>
+  <div class="ob-top-right">
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema"></button>
+    <div class="ob-dots" id="dots" aria-hidden="true">
+      <div class="ob-dot now"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div>
+    </div>
   </div>
 </header>
 
@@ -761,6 +764,21 @@ try {
   var savedTheme = localStorage.getItem('vagaai_theme');
   document.documentElement.setAttribute('data-theme', savedTheme === 'light' ? 'light' : 'dark');
 } catch(e) {}
+
+var ICON_SUN_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
+var ICON_MOON_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+function toggleTheme() {
+  var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  var next = isLight ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('vagaai_theme', next); } catch(e) {}
+  var btn = document.getElementById('themeBtn');
+  if (btn) btn.innerHTML = next === 'light' ? ICON_MOON_SVG : ICON_SUN_SVG;
+}
+(function() {
+  var btn = document.getElementById('themeBtn');
+  if (btn) btn.innerHTML = document.documentElement.getAttribute('data-theme') === 'light' ? ICON_MOON_SVG : ICON_SUN_SVG;
+})();
 
 /* ── Navegação por etapa ───────────────────────────────────────────────── */
 function stepFromUrl() {
