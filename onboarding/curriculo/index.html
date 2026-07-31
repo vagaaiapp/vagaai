@@ -1424,58 +1424,111 @@ function showNetworkLimit() {
 }
 
 /* ── Preview: documento real com os dados reais ────────────────────────── */
+/* ── Preview: os 6 modelos reais ────────────────────────────────────────
+   A estrutura espelha os templates de cv/index.html (lateral do Profissional
+   e do Compacto, linha do tempo do Minimalista, faixa do Executivo, blocos
+   finais lado a lado). Antes os seis renderizavam igual, então o preview não
+   previa o documento que a pessoa baixaria depois do cadastro. */
+
+function pvContatos(c) {
+  var out = [];
+  if (c.email)    out.push(esc(c.email));
+  if (c.telefone) out.push(esc(c.telefone));
+  if (c.cidade)   out.push(esc(c.cidade));
+  return out;
+}
+
+function pvResumo(cv) {
+  if (!cv.resumo_profissional) return '';
+  return '<div class="cv-sec">Resumo profissional</div>'
+    + '<div class="cv-txt">' + esc(cv.resumo_profissional) + '</div>';
+}
+
+function pvExperiencias(cv, timeline) {
+  if (!cv.experiencias || !cv.experiencias.length) return '';
+  var out = '<div class="cv-sec">Experiência profissional</div>';
+  if (timeline) out += '<div class="cvt-tl">';
+  cv.experiencias.forEach(function(e) {
+    var bl = (e.bullets || []).map(function(b) { return '<li>' + esc(b) + '</li>'; }).join('');
+    var corpo = '<div class="cv-exp-top"><span class="cv-exp-cargo">' + esc(e.cargo) + '</span>'
+      + (e.periodo ? '<span class="cv-exp-per">' + esc(e.periodo) + '</span>' : '') + '</div>'
+      + (e.empresa ? '<div class="cv-exp-emp">' + esc(e.empresa) + '</div>' : '')
+      + (bl ? '<ul>' + bl + '</ul>' : '');
+    out += timeline
+      ? '<div class="cvt-tl-item"><span class="cvt-tl-spine"><span class="cvt-tl-dot"></span></span>'
+        + '<div class="cv-exp">' + corpo + '</div></div>'
+      : '<div class="cv-exp">' + corpo + '</div>';
+  });
+  if (timeline) out += '</div>';
+  return out;
+}
+
+function pvFormacao(cv, secCls) {
+  if (!cv.formacao || !cv.formacao.length) return '';
+  return '<div class="' + secCls + '">Formação</div>' + cv.formacao.map(function(e) {
+    return '<div class="cv-edu"><div class="cv-edu-c">' + esc(e.curso) + '</div>'
+      + '<div class="cv-edu-i">' + esc(e.instituicao) + (e.periodo ? ' · ' + esc(e.periodo) : '') + '</div></div>';
+  }).join('');
+}
+
+function pvHabilidades(cv, secCls) {
+  if (!cv.habilidades || !cv.habilidades.length) return '';
+  return '<div class="' + secCls + '">Habilidades</div><div class="cv-tags">'
+    + cv.habilidades.map(function(s) { return '<span class="cv-tag">' + esc(s) + '</span>'; }).join('')
+    + '</div>';
+}
+
+function buildCvTemplate(tpl, cv, f, c) {
+  var nome = esc(cv.nome || f.nome || '');
+  var cargo = esc(cv.titulo_profissional || f.cargo || '');
+  var contatos = pvContatos(c);
+  var linhaContato = contatos.length
+    ? '<div class="cv-contact">' + contatos.map(function(x) { return '<span>' + x + '</span>'; }).join('') + '</div>'
+    : '';
+
+  // Profissional e Compacto: coluna lateral com contato, habilidades e formação
+  if (tpl === 'classic' || tpl === 'compact') {
+    return '<aside class="cvt-side">'
+      + '<div class="cvt-side-nome">' + nome + '</div>'
+      + '<div class="cvt-side-cargo">' + cargo + '</div>'
+      + (contatos.length
+        ? '<div class="cvt-side-sec">Contato</div><div class="cvt-side-lista">'
+          + contatos.map(function(x) { return '<span>' + x + '</span>'; }).join('') + '</div>'
+        : '')
+      + pvHabilidades(cv, 'cvt-side-sec')
+      + pvFormacao(cv, 'cvt-side-sec')
+      + '</aside>'
+      + '<div class="cvt-main">'
+      + '<div class="cvt-head"><h2>' + nome + '</h2><div class="cv-role">' + cargo + '</div></div>'
+      + pvResumo(cv) + pvExperiencias(cv, false)
+      + '</div>';
+  }
+
+  // Demais modelos: coluna única, com formação e habilidades lado a lado no fim
+  var blocoForm = pvFormacao(cv, 'cv-sec');
+  var blocoHab = pvHabilidades(cv, 'cv-sec');
+  var rodape = (blocoForm || blocoHab)
+    ? '<div class="cvt-bottom">'
+      + (blocoForm ? '<div>' + blocoForm + '</div>' : '')
+      + (blocoHab ? '<div>' + blocoHab + '</div>' : '')
+      + '</div>'
+    : '';
+
+  return (tpl === 'modern' ? '<div class="cvt-topbar"></div>' : '')
+    + '<div class="cvt-head"><h2>' + nome + '</h2><div class="cv-role">' + cargo + '</div>' + linhaContato + '</div>'
+    + (tpl === 'minimal' || tpl === 'focus' ? '<div class="cvt-rule"></div>' : '')
+    + '<div class="cvt-body">'
+    + pvResumo(cv) + pvExperiencias(cv, tpl === 'minimal') + rodape
+    + '</div>';
+}
+
 function renderPreview(cv) {
   var f = state.form || {};
   var c = cv.contato || {};
-  var parts = [];
-
-  // Templates "sidebar" ganham um acento visual; os ATS ficam limpos
-  var isVisual = (state.tpl === 'classic' || state.tpl === 'exec' || state.tpl === 'compact');
-  var accent = isVisual ? '#1a7a4a' : '#111';
-
-  parts.push('<h2 style="color:' + accent + '">' + esc(cv.nome || f.nome) + '</h2>');
-  parts.push('<div class="cv-role">' + esc(cv.titulo_profissional || f.cargo) + '</div>');
-
-  var ct = [];
-  if (c.email)    ct.push(esc(c.email));
-  if (c.telefone) ct.push(esc(c.telefone));
-  if (c.cidade)   ct.push(esc(c.cidade));
-  if (ct.length) parts.push('<div class="cv-contact">' + ct.map(function(x){ return '<span>' + x + '</span>'; }).join('') + '</div>');
-
-  if (cv.resumo_profissional) {
-    parts.push('<div class="cv-sec">Resumo profissional</div>');
-    parts.push('<div class="cv-txt">' + esc(cv.resumo_profissional) + '</div>');
-  }
-
-  if (cv.experiencias && cv.experiencias.length) {
-    parts.push('<div class="cv-sec">Experiência profissional</div>');
-    cv.experiencias.forEach(function(e) {
-      var bl = (e.bullets || []).map(function(b) { return '<li>' + esc(b) + '</li>'; }).join('');
-      parts.push('<div class="cv-exp">'
-        + '<div class="cv-exp-top"><span class="cv-exp-cargo">' + esc(e.cargo) + '</span>'
-        + (e.periodo ? '<span class="cv-exp-per">' + esc(e.periodo) + '</span>' : '') + '</div>'
-        + (e.empresa ? '<div class="cv-exp-emp">' + esc(e.empresa) + '</div>' : '')
-        + (bl ? '<ul>' + bl + '</ul>' : '')
-        + '</div>');
-    });
-  }
-
-  if (cv.formacao && cv.formacao.length) {
-    parts.push('<div class="cv-sec">Formação</div>');
-    cv.formacao.forEach(function(e) {
-      parts.push('<div class="cv-edu"><div class="cv-edu-c">' + esc(e.curso) + '</div>'
-        + '<div class="cv-edu-i">' + esc(e.instituicao) + (e.periodo ? ' · ' + esc(e.periodo) : '') + '</div></div>');
-    });
-  }
-
-  if (cv.habilidades && cv.habilidades.length) {
-    parts.push('<div class="cv-sec">Habilidades</div>');
-    parts.push('<div class="cv-tags">' + cv.habilidades.map(function(s) {
-      return '<span class="cv-tag">' + esc(s) + '</span>';
-    }).join('') + '</div>');
-  }
-
-  document.getElementById('cvPreview').innerHTML = parts.join('');
+  var tpl = state.tpl || 'modern';
+  var el = document.getElementById('cvPreview');
+  el.className = 'cv-paper cvt cvt-' + tpl;
+  el.innerHTML = buildCvTemplate(tpl, cv, f, c);
   renderMarketSummary(cv);
   restoreCvRadarDraft();
 }
