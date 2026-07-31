@@ -773,12 +773,55 @@ select:focus {
   text-overflow: ellipsis;
 }
 
-/* Faixa do modelo Executivo sangra até a borda do "papel" */
+/* Faixa do Executivo: cabeçalho branco com borda inferior de destaque,
+   igual ao .exec-header do documento real em cv/ */
 .tpl-thumb .band {
   display: block;
   margin: -7px -7px 5px;
-  padding: 5px 7px;
+  padding: 6px 7px 5px;
+  border-bottom: 2px solid #1a7a4a;
+}
+
+/* Linha fina no topo do Moderno */
+.tpl-thumb .rule {
+  display: block;
+  height: 2px;
+  margin-bottom: 3px;
   background: #1a7a4a;
+}
+
+/* Linha do tempo do Minimalista */
+.tpl-thumb .tl {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5px;
+  margin-top: 3px;
+  padding-left: 6px;
+  border-left: 1px solid #d9e2dc;
+}
+
+/* Blocos lado a lado no fim do Focado e do Executivo */
+.tpl-thumb .two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.tpl-thumb .two > span {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5px;
+  min-width: 0;
+}
+
+/* Coluna lateral: clara, como a sidebar real dos modelos com design */
+.tpl-thumb .side {
+  background: #eef2ef !important;
+}
+
+.tpl-thumb .side.wide {
+  width: 42%;
 }
 
 /* O nome do modelo não dizia nada sobre quando usá-lo */
