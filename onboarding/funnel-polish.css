@@ -147,7 +147,13 @@ body.ob-leaving {
 
 .ob-step > .ob-eyebrow,
 .ob-step > h1,
-.ob-step > .ob-sub,
+.ob-step > .ob-sub {
+  width: min(100%, 760px);
+}
+
+/* Só o hero de resultado é centralizado. Aplicar margin-inline:auto nas
+   etapas empurrava o subtítulo para o meio, porque .ob-sub tem max-width
+   de 46ch e sobrava espaço para o auto distribuir. */
 .ob-result-hero > h1,
 .ob-result-hero > .ob-sub {
   width: min(100%, 760px);
