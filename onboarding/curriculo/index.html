@@ -13,7 +13,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VagaAI — Criar meu currículo grátis</title>
-<meta name="description" content="Monte um currículo profissional em 3 minutos com ajuda da IA. Escolha o modelo e baixe grátis.">
+<meta name="description" content="Monte um currículo profissional em 3 minutos com ajuda da IA. Escolha o modelo no fim e baixe grátis.">
 <!-- Etapas do funil não devem competir com /criar-curriculo nem duplicar conteúdo -->
 <meta name="robots" content="noindex, follow">
 <link rel="canonical" href="https://www.vagaai.app.br/criar-curriculo">
@@ -336,9 +336,9 @@ select:focus{outline:none;border-color:var(--green-border)}
       <input type="text" id="fCidade" placeholder="Cidade / Estado">
     </div>
 
-    <div class="ob-req-hint">* campos obrigatórios para escolher o modelo</div>
+    <div class="ob-req-hint">* campos obrigatórios para montar o currículo</div>
     <div id="formErr" class="ob-err" style="display:none"></div>
-    <button class="ob-btn" id="formNext" onclick="goStep(4)" disabled>Escolher o modelo →</button>
+    <button class="ob-btn" id="formNext" onclick="goStep(4)" disabled>Preparar meu radar de vagas →</button>
   </section>
 
   <!-- ETAPA 4 — Alertas -->
@@ -360,7 +360,7 @@ select:focus{outline:none;border-color:var(--green-border)}
         <div class="ob-radar-grid">
           <div class="ob-field"><label for="cvRadarLocal">Cidade ou região</label><input type="text" id="cvRadarLocal" placeholder="Ex: São Paulo" oninput="saveCvRadarDraft()"></div>
           <div class="ob-field"><label for="cvRadarModalidade">Formato</label><select id="cvRadarModalidade" onchange="saveCvRadarDraft()"><option value="">Qualquer formato</option><option value="remoto">Remoto</option><option value="hibrido">Híbrido</option><option value="presencial">Presencial</option></select></div>
-          <div class="ob-field"><label for="cvRadarSalario">Faixa salarial <small>opcional</small></label><input type="text" id="cvRadarSalario" placeholder="Ex: R$ 4.000" oninput="saveCvRadarDraft()"></div>
+          <div class="ob-field"><label for="cvRadarSalario">Salário mínimo <small>— opcional</small></label><input type="text" id="cvRadarSalario" placeholder="Ex: 5000" inputmode="numeric" oninput="saveCvRadarDraft()"></div>
         </div>
       </details>
       <label class="ob-radar-check"><input type="checkbox" id="cvRadarActivate" checked onchange="saveCvRadarDraft()"><span>Ativar meu alerta semanal depois do cadastro. Você poderá revisar tudo antes do primeiro envio.</span></label>
@@ -1063,7 +1063,7 @@ function applyFormToInputs() {
   if (note) {
     note.style.display = state.imported ? 'flex' : 'none';
     note.textContent = state.imported
-      ? '✓ Dados extraídos de ' + (state.importedName || 'seu currículo') + '. Revise os campos antes de escolher o modelo.'
+      ? '✓ Dados extraídos de ' + (state.importedName || 'seu currículo') + '. Revise os campos antes de continuar.'
       : '';
   }
   var next = document.getElementById('formNext');
