@@ -114,29 +114,6 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
 .ob-ok{display:flex;align-items:center;gap:10px;background:var(--green-dim);border:1px solid var(--green-border);border-radius:11px;padding:12px 14px;font-size:13px;font-weight:600;color:var(--green);margin-top:12px;line-height:1.4}
 .ob-note{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--muted);margin-top:14px;line-height:1.45}
 
-/* ── Templates ────────────────────────────────────────────────────────── */
-.tpl-group{font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:22px 0 12px}
-.tpl-group:first-of-type{margin-top:0}
-.tpl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-@media(max-width:560px){.tpl-grid{grid-template-columns:repeat(2,1fr)}}
-.tpl-card{
-  background:var(--surface);border:1.5px solid var(--border);border-radius:13px;padding:11px;
-  cursor:pointer;font-family:inherit;color:var(--text);transition:border-color .18s,transform .18s;text-align:left;
-}
-.tpl-card:hover{border-color:var(--green-border);transform:translateY(-2px)}
-.tpl-card.on{border-color:var(--green);box-shadow:0 0 0 3px var(--green-dim)}
-/* Miniatura desenhada em CSS — dá a forma do layout sem baixar imagem */
-.tpl-thumb{background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:7px;height:76px;padding:7px;display:flex;gap:5px;overflow:hidden;margin-bottom:9px}
-.tpl-thumb i{display:block;background:#d9e2dc;border-radius:2px;height:3px}
-.tpl-thumb .col{display:flex;flex-direction:column;gap:3.5px;flex:1;min-width:0}
-.tpl-thumb .side{width:30%;background:#e8efea;border-radius:4px;padding:5px;display:flex;flex-direction:column;gap:3.5px}
-.tpl-thumb .hd{height:6px;background:#1a7a4a;width:60%;border-radius:2px}
-.tpl-thumb .hd2{height:4px;background:#9db3a6;width:40%;border-radius:2px}
-.tpl-name{font-size:12.5px;font-weight:700;line-height:1.2}
-.tpl-badge{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.03em;padding:2px 6px;border-radius:4px;margin-top:5px}
-.tpl-badge.ats{background:var(--green-dim);color:var(--green)}
-.tpl-badge.vis{background:var(--surface2);color:var(--muted)}
-
 /* ── Preview do currículo (documento real, dados reais) ───────────────── */
 .cv-paper{
   background:#fff;color:#1a1a1a;border-radius:12px;box-shadow:0 4px 24px rgba(7,18,9,.12);
@@ -364,79 +341,33 @@ select:focus{outline:none;border-color:var(--green-border)}
     <button class="ob-btn" id="formNext" onclick="goStep(4)" disabled>Escolher o modelo →</button>
   </section>
 
-  <!-- ETAPA 4 — Modelo -->
+  <!-- ETAPA 4 — Alertas -->
   <section class="ob-step" id="step4">
     <div class="ob-eyebrow">Etapa 4</div>
-    <h1 id="step4Title">Escolha o estilo do seu currículo</h1>
-    <p class="ob-sub" id="step4Sub">Todos os modelos são escritos para leitura clara — a diferença está no layout.</p>
+    <h1 id="step4Title">Prepare seu radar de oportunidades</h1>
+    <p class="ob-sub" id="step4Sub">Enquanto seu currículo é montado, deixe pronto o alerta de vagas do seu perfil.</p>
 
-    <div class="tpl-layout">
-      <div class="tpl-list">
-        <div class="ob-note tpl-ats-explainer"><span>💡</span><span><b>ATS</b> são os filtros automáticos que leem currículos antes de qualquer pessoa. Se você vai se candidatar por site de vagas (LinkedIn, Gupy, Indeed), prefira um modelo <b>ATS ✓</b>.</span></div>
-
-        <div class="tpl-group">✓ Compatíveis com ATS — recomendados para candidaturas online</div>
-        <div class="tpl-grid">
-          <button class="tpl-card on" id="tplModern" onclick="pickTpl('modern')">
-            <span class="tpl-thumb"></span>
-            <span class="tpl-info">
-              <span class="tpl-name">Moderno</span>
-              <span class="tpl-why">Uma coluna, com uma linha fina de destaque no topo. Boa escolha padrão.</span>
-              <span class="tpl-badge ats">ATS ✓</span>
-            </span>
-          </button>
-          <button class="tpl-card" id="tplFocus" onclick="pickTpl('focus')">
-            <span class="tpl-thumb"></span>
-            <span class="tpl-info">
-              <span class="tpl-name">Focado</span>
-              <span class="tpl-why">Experiência em destaque, formação e habilidades lado a lado no fim.</span>
-              <span class="tpl-badge ats">ATS ✓</span>
-            </span>
-          </button>
-          <button class="tpl-card" id="tplMinimal" onclick="pickTpl('minimal')">
-            <span class="tpl-thumb"></span>
-            <span class="tpl-info">
-              <span class="tpl-name">Minimalista</span>
-              <span class="tpl-why">Linha do tempo discreta, sem cor. O mais sóbrio dos seis.</span>
-              <span class="tpl-badge ats">ATS ✓</span>
-            </span>
-          </button>
-        </div>
-
-        <div class="tpl-group">Com design visual — ideais para enviar direto ao recrutador</div>
-        <div class="tpl-grid">
-          <button class="tpl-card" id="tplClassic" onclick="pickTpl('classic')">
-            <span class="tpl-thumb"></span>
-            <span class="tpl-info">
-              <span class="tpl-name">Profissional</span>
-              <span class="tpl-why">Contato e competências numa coluna lateral. Bom para envio por e-mail.</span>
-              <span class="tpl-badge vis">Sidebar</span>
-            </span>
-          </button>
-          <button class="tpl-card" id="tplExec" onclick="pickTpl('exec')">
-            <span class="tpl-thumb"></span>
-            <span class="tpl-info">
-              <span class="tpl-name">Executivo</span>
-              <span class="tpl-why">Cabeçalho largo com faixa de destaque. Para cargos sênior e liderança.</span>
-              <span class="tpl-badge vis">Cabeçalho</span>
-            </span>
-          </button>
-          <button class="tpl-card" id="tplCompact" onclick="pickTpl('compact')">
-            <span class="tpl-thumb"></span>
-            <span class="tpl-info">
-              <span class="tpl-name">Compacto</span>
-              <span class="tpl-why">Lateral mais larga. Quando há bastante conteúdo e você quer uma página só.</span>
-              <span class="tpl-badge vis">Sidebar</span>
-            </span>
-          </button>
-        </div>
-        <button class="ob-btn" id="templateNext" onclick="generateCv()">Montar meu currículo →</button>
-        <div class="ob-hint" style="text-align:center">Escolha sem medo: na próxima tela você troca de modelo à vontade, já vendo seu currículo pronto.</div>
+    <div class="ob-radar">
+      <div class="ob-radar-head">
+        <div class="ob-radar-ic">🔔</div>
+        <div><div class="ob-radar-t">Deixe seu radar de vagas preparado</div><div class="ob-radar-d">Você escolhe o perfil das oportunidades. O alerta só é ativado depois que você criar a conta.</div></div>
       </div>
-
-      <div class="tpl-preview-pane">
-        <div class="tpl-preview-doc cv-paper cvt cvt-modern" id="tplBigPreview"></div>
+      <div class="ob-radar-grid">
+        <div class="ob-field wide"><label for="cvRadarCargo">Cargo ou área</label><input type="text" id="cvRadarCargo" placeholder="Ex: Analista de Marketing" oninput="saveCvRadarDraft()"></div>
       </div>
+      <details class="ob-radar-more">
+        <summary>Refinar local, formato e salário <small>— opcional</small></summary>
+        <div class="ob-radar-grid">
+          <div class="ob-field"><label for="cvRadarLocal">Cidade ou região</label><input type="text" id="cvRadarLocal" placeholder="Ex: São Paulo" oninput="saveCvRadarDraft()"></div>
+          <div class="ob-field"><label for="cvRadarModalidade">Formato</label><select id="cvRadarModalidade" onchange="saveCvRadarDraft()"><option value="">Qualquer formato</option><option value="remoto">Remoto</option><option value="hibrido">Híbrido</option><option value="presencial">Presencial</option></select></div>
+          <div class="ob-field"><label for="cvRadarSalario">Faixa salarial <small>opcional</small></label><input type="text" id="cvRadarSalario" placeholder="Ex: R$ 4.000" oninput="saveCvRadarDraft()"></div>
+        </div>
+      </details>
+      <label class="ob-radar-check"><input type="checkbox" id="cvRadarActivate" checked onchange="saveCvRadarDraft()"><span>Ativar meu alerta semanal depois do cadastro. Você poderá revisar tudo antes do primeiro envio.</span></label>
     </div>
+
+    <button class="ob-btn" id="alertsNext" onclick="generateCv()">Montar meu currículo →</button>
+    <div class="ob-hint" style="text-align:center">Na próxima tela seu currículo aparece pronto — e você escolhe o modelo já vendo o resultado.</div>
   </section>
 
   <!-- ETAPA 4b — Gerando -->
@@ -458,13 +389,23 @@ select:focus{outline:none;border-color:var(--green-border)}
     </div>
 
     <div class="ob-tpl-switch" role="group" aria-label="Trocar o modelo do currículo">
-      <span class="ob-tpl-switch-lbl">Modelo</span>
-      <button type="button" class="ob-tpl-opt" data-tpl="modern" onclick="pickTpl('modern')">Moderno<span class="ob-tpl-ats">ATS</span></button>
-      <button type="button" class="ob-tpl-opt" data-tpl="focus" onclick="pickTpl('focus')">Focado<span class="ob-tpl-ats">ATS</span></button>
-      <button type="button" class="ob-tpl-opt" data-tpl="minimal" onclick="pickTpl('minimal')">Minimalista<span class="ob-tpl-ats">ATS</span></button>
-      <button type="button" class="ob-tpl-opt" data-tpl="classic" onclick="pickTpl('classic')">Profissional</button>
-      <button type="button" class="ob-tpl-opt" data-tpl="exec" onclick="pickTpl('exec')">Executivo</button>
-      <button type="button" class="ob-tpl-opt" data-tpl="compact" onclick="pickTpl('compact')">Compacto</button>
+      <div class="ob-tpl-switch-group">
+        <span class="ob-tpl-switch-lbl">✓ Compatíveis com ATS — recomendados para candidaturas online</span>
+        <div class="ob-tpl-switch-opts">
+          <button type="button" class="ob-tpl-opt" data-tpl="modern" onclick="pickTpl('modern')">Moderno<span class="ob-tpl-ats">ATS</span></button>
+          <button type="button" class="ob-tpl-opt" data-tpl="focus" onclick="pickTpl('focus')">Focado<span class="ob-tpl-ats">ATS</span></button>
+          <button type="button" class="ob-tpl-opt" data-tpl="minimal" onclick="pickTpl('minimal')">Minimalista<span class="ob-tpl-ats">ATS</span></button>
+        </div>
+      </div>
+      <div class="ob-tpl-switch-group">
+        <span class="ob-tpl-switch-lbl">Com design visual — ideais para enviar direto ao recrutador</span>
+        <div class="ob-tpl-switch-opts">
+          <button type="button" class="ob-tpl-opt" data-tpl="classic" onclick="pickTpl('classic')">Profissional</button>
+          <button type="button" class="ob-tpl-opt" data-tpl="exec" onclick="pickTpl('exec')">Executivo</button>
+          <button type="button" class="ob-tpl-opt" data-tpl="compact" onclick="pickTpl('compact')">Compacto</button>
+        </div>
+      </div>
+      <div class="ob-tpl-switch-note"><b>ATS</b> são os filtros automáticos que leem currículos antes de qualquer pessoa. Se você vai se candidatar por site de vagas (LinkedIn, Gupy, Indeed), prefira um modelo <b>ATS ✓</b>.</div>
     </div>
 
     <div class="cv-paper" id="cvPreview"></div>
@@ -479,23 +420,13 @@ select:focus{outline:none;border-color:var(--green-border)}
       </div>
     </div>
 
-    <div class="ob-radar">
-      <div class="ob-radar-head">
-        <div class="ob-radar-ic">🔔</div>
-        <div><div class="ob-radar-t">Deixe seu radar de vagas preparado</div><div class="ob-radar-d">Você escolhe o perfil das oportunidades. O alerta só é ativado depois que você criar a conta.</div></div>
+    <div class="ob-alert-done" id="cvAlertSummary">
+      <div class="ob-alert-done-ic">🔔</div>
+      <div class="ob-alert-done-tx">
+        <div class="ob-alert-done-t" id="cvAlertSummaryTitle">Alerta de vagas preparado</div>
+        <div class="ob-alert-done-d" id="cvAlertSummaryText"></div>
       </div>
-      <div class="ob-radar-grid">
-        <div class="ob-field wide"><label for="cvRadarCargo">Cargo ou área</label><input type="text" id="cvRadarCargo" placeholder="Ex: Analista de Marketing" oninput="saveCvRadarDraft()"></div>
-      </div>
-      <details class="ob-radar-more">
-        <summary>Refinar local, formato e salário <small>— opcional</small></summary>
-        <div class="ob-radar-grid">
-          <div class="ob-field"><label for="cvRadarLocal">Cidade ou região</label><input type="text" id="cvRadarLocal" placeholder="Ex: São Paulo" oninput="saveCvRadarDraft()"></div>
-          <div class="ob-field"><label for="cvRadarModalidade">Formato</label><select id="cvRadarModalidade" onchange="saveCvRadarDraft()"><option value="">Qualquer formato</option><option value="remoto">Remoto</option><option value="hibrido">Híbrido</option><option value="presencial">Presencial</option></select></div>
-          <div class="ob-field"><label for="cvRadarSalario">Faixa salarial <small>opcional</small></label><input type="text" id="cvRadarSalario" placeholder="Ex: R$ 4.000" oninput="saveCvRadarDraft()"></div>
-        </div>
-      </details>
-      <label class="ob-radar-check"><input type="checkbox" id="cvRadarActivate" checked onchange="saveCvRadarDraft()"><span>Ativar meu alerta semanal depois do cadastro. Você poderá revisar tudo antes do primeiro envio.</span></label>
+      <button type="button" class="ob-alert-done-edit" onclick="goStep(4)">Editar</button>
     </div>
 
     <div class="ob-gate">
@@ -700,7 +631,9 @@ function renderStep(n, push) {
   document.getElementById('backBtn').hidden = (n === 1 || n === 5);
   if (n === 2) restoreImportUi();
   if (n === 3) applyFormToInputs();
-  if (n === 4) renderTemplateThumbs();
+  // collectForm antes do radar: cidade e cargo da etapa 3 são o que
+  // pré-preenche o alerta, e nem todo campo dispara onFormInput()
+  if (n === 4) { collectForm(); restoreCvRadarDraft(); }
   applyJourneyCopy();
   updateJourneySummary();
 
@@ -779,16 +712,15 @@ function applyJourneyGoal() {
   var sub = document.getElementById('situationSub');
   var primaryCta = document.getElementById('primaryGateCta');
   var primaryNote = document.getElementById('primaryGateNote');
-  var crossSell = document.getElementById('alertsCrossSell');
   var modalTitle = document.getElementById('signupModalTitle');
   var modalDesc = document.getElementById('signupModalDesc');
+  updateAlertsCrossSell();
 
   if (alertGoal) {
     if (title) title.textContent = 'Vamos usar seu currículo para encontrar vagas mais alinhadas';
     if (sub) sub.textContent = 'Primeiro confirme seu momento profissional. Depois revisamos seu currículo e deixamos seu radar de oportunidades preparado.';
     if (primaryCta) primaryCta.textContent = 'Salvar currículo e ativar meu alerta grátis →';
     if (primaryNote) primaryNote.textContent = 'Crie sua conta para salvar o currículo, revisar o perfil monitorado e ativar o primeiro alerta semanal.';
-    if (crossSell) crossSell.style.display = 'none';
     if (modalTitle) modalTitle.textContent = 'Salvar currículo e ativar alerta';
     if (modalDesc) modalDesc.textContent = 'Seu currículo e seu radar já estão preparados. Crie a conta grátis para salvar os dados e revisar o alerta antes do primeiro envio.';
     return;
@@ -798,9 +730,18 @@ function applyJourneyGoal() {
   if (sub) sub.textContent = 'Assim a gente adapta as próximas perguntas ao seu momento.';
   if (primaryCta) primaryCta.textContent = 'Salvar e baixar meu currículo grátis →';
   if (primaryNote) primaryNote.textContent = 'Criar conta leva 20 segundos e mantém seu currículo salvo para editar quando quiser.';
-  if (crossSell) crossSell.style.display = '';
   if (modalTitle) modalTitle.textContent = 'Criar conta grátis';
   if (modalDesc) modalDesc.textContent = 'Seu currículo já está montado — criando a conta ele fica salvo e pronto pra baixar.';
+}
+
+// O cross-sell de alertas só faz sentido para quem recusou o radar na etapa
+// 4. Oferecer de novo a quem acabou de ativá-lo sugere que a escolha não foi
+// registrada.
+function updateAlertsCrossSell() {
+  var crossSell = document.getElementById('alertsCrossSell');
+  if (!crossSell) return;
+  var jaAtivo = (state.alertDraft || {}).activate !== false;
+  crossSell.style.display = (state.goal === 'alerts' || jaAtivo) ? 'none' : '';
 }
 
 function journeyProfile() {
@@ -831,9 +772,9 @@ function applyJourneyCopy() {
     ['step3Title', 'formTitle'],
     ['step3Sub', 'formSub'],
     ['formNext', 'formCta'],
-    ['step4Title', 'templateTitle'],
-    ['step4Sub', 'templateSub'],
-    ['templateNext', 'templateCta'],
+    ['step4Title', 'alertTitle'],
+    ['step4Sub', 'alertSub'],
+    ['alertsNext', 'alertCta'],
     ['step5Title', 'gateTitle'],
     ['step5Sub', 'gateSub'],
     ['primaryGateCta', 'gateCta']
@@ -846,7 +787,7 @@ function applyJourneyCopy() {
 function curriculoNextValue(step) {
   if (step === 1) return 'Depois disso, você importará ou começará seu currículo.';
   if (step === 2) return 'Depois disso, você revisará os dados do currículo.';
-  if (step === 3) return 'Depois disso, você escolherá o visual do currículo.';
+  if (step === 3) return 'Depois disso, você preparará seu radar de vagas.';
   if (step === 4) return 'Depois disso, você verá seu currículo pronto.';
   return 'Salve, baixe e continue sua busca com o currículo pronto.';
 }
@@ -854,7 +795,7 @@ function curriculoNextValue(step) {
 function curriculoProgressValue(step) {
   if (step === 1) return 'depois disso você partirá do que já tem.';
   if (step === 2) return 'depois disso você revisará seus dados.';
-  if (step === 3) return 'depois disso você escolherá o visual.';
+  if (step === 3) return 'depois disso você prepara seu radar de vagas.';
   if (step === 4) return 'depois disso você verá seu currículo pronto.';
   return 'currículo pronto para salvar e baixar.';
 }
@@ -887,7 +828,7 @@ function updateJourneySummary() {
   window.VagaAIOnboarding.renderJourneySummary({
     currentStep: state.step,
     totalSteps: TOTAL_STEPS,
-    steps: ['Situação', 'Currículo', 'Conteúdo', 'Visual', 'Pronto'],
+    steps: ['Situação', 'Currículo', 'Conteúdo', 'Alertas', 'Pronto'],
     goal: goal,
     job: curriculoJobLabel(shared),
     cv: cvLabel,
@@ -1276,87 +1217,10 @@ function collectForm() {
   updateJourneySummary();
 }
 
-/* ── Etapa 4: modelo ───────────────────────────────────────────────────── */
-var TPL_IDS = { modern:'tplModern', focus:'tplFocus', minimal:'tplMinimal', classic:'tplClassic', exec:'tplExec', compact:'tplCompact' };
-
-/* Miniaturas = o documento de verdade, renderizado pequeno.
-   Usam buildCvTemplate(), o mesmo renderizador do preview da etapa final,
-   então não existe versão paralela para divergir — e a pessoa vê o layout
-   completo com o próprio conteúdo antes de escolher. */
-var TPL_DOC_W = 620; // largura de referência do documento antes da escala
-
-// Monta um currículo provisório com o que a pessoa já preencheu. A IA ainda
-// vai reescrever o texto na geração; aqui o que importa é a estrutura.
-function demoCvFromForm(f) {
-  var bruto = String(f.exp || '').trim();
-  var linhas = bruto
-    ? bruto.split(/[\n·;]+/).map(function(s) { return s.trim(); }).filter(Boolean).slice(0, 3)
-    : [];
-  var skills = String(f.skills || '').split(',')
-    .map(function(s) { return s.trim(); }).filter(Boolean).slice(0, 6);
-
-  return {
-    nome: String(f.nome || '').trim() || 'Seu nome',
-    titulo_profissional: String(f.cargo || '').trim() || 'Seu cargo',
-    contato: { email: f.email || '', telefone: f.tel || '', cidade: f.cidade || '' },
-    resumo_profissional: linhas[0] || '',
-    experiencias: linhas.length
-      ? [{ cargo: String(f.cargo || '').trim() || 'Sua experiência', empresa: '', periodo: '', bullets: linhas }]
-      : [],
-    formacao: f.form ? [{ curso: f.form, instituicao: '', periodo: '' }] : [],
-    habilidades: skills
-  };
-}
-
-function renderTemplateThumbs() {
-  var f = state.form || {};
-  var demo = demoCvFromForm(f);
-  Object.keys(TPL_IDS).forEach(function(tpl) {
-    var card = document.getElementById(TPL_IDS[tpl]);
-    var box = card && card.querySelector('.tpl-thumb');
-    if (!box) return;
-    var doc = box.querySelector('.tpl-doc');
-    if (!doc) {
-      doc = document.createElement('span');
-      box.innerHTML = '';
-      box.appendChild(doc);
-    }
-    doc.className = 'tpl-doc cv-paper cvt cvt-' + tpl;
-    doc.innerHTML = buildCvTemplate(tpl, demo, f, demo.contato);
-  });
-  scaleTemplateThumbs();
-  renderBigTemplatePreview();
-}
-
-// Preview grande ao lado da lista: mesmo documento real, em tamanho de
-// leitura. Usa o CV já gerado quando existir (troca de modelo na etapa 5
-// reaproveita esta função) ou os dados do formulário como prévia.
-function renderBigTemplatePreview() {
-  var el = document.getElementById('tplBigPreview');
-  if (!el) return;
-  var f = state.form || {};
-  var tpl = state.tpl || 'modern';
-  var cv = state.cv || demoCvFromForm(f);
-  el.className = 'tpl-preview-doc cv-paper cvt cvt-' + tpl;
-  el.innerHTML = buildCvTemplate(tpl, cv, f, cv.contato || {});
-}
-
-function scaleTemplateThumbs() {
-  Object.keys(TPL_IDS).forEach(function(tpl) {
-    var card = document.getElementById(TPL_IDS[tpl]);
-    var box = card && card.querySelector('.tpl-thumb');
-    var doc = box && box.querySelector('.tpl-doc');
-    if (!doc) return;
-    // clientWidth é 0 enquanto a etapa não está visível — daí o piso
-    doc.style.transform = 'scale(' + ((box.clientWidth || 230) / TPL_DOC_W) + ')';
-  });
-}
-
-// Sem isto a escala congela na largura de quando a etapa abriu, e o
-// documento vaza da caixa ao girar o celular ou redimensionar a janela.
-window.addEventListener('resize', function() {
-  if (state.step === 4) scaleTemplateThumbs();
-}, { passive: true });
+/* ── Modelo do currículo ───────────────────────────────────────────────────
+   A escolha vive só na etapa final: o currículo é gerado uma vez e o modelo
+   é pura renderização local, então não há por que decidir antes de existir
+   documento para olhar. */
 var _tplViews = 0;
 
 // Aplica o modelo (estado + destaque + preview). Não conta como escolha: o
@@ -1365,18 +1229,12 @@ function applyTpl(tpl) {
   state.tpl = tpl;
   saveState();
   updateJourneySummary();
-  for (var k in TPL_IDS) {
-    var el = document.getElementById(TPL_IDS[k]);
-    if (el) el.classList.toggle('on', k === tpl);
-  }
-  // Seletor compacto da etapa final espelha a grade da etapa 4
   var opts = document.querySelectorAll('.ob-tpl-opt');
   for (var i = 0; i < opts.length; i++) {
     opts[i].classList.toggle('on', opts[i].getAttribute('data-tpl') === tpl);
     opts[i].setAttribute('aria-pressed', opts[i].getAttribute('data-tpl') === tpl ? 'true' : 'false');
   }
   if (state.cv) renderPreview(state.cv); // troca de modelo já refletida no preview
-  renderBigTemplatePreview(); // idem para o preview grande da etapa 4
 }
 
 // Escolha explícita da pessoa — só este caminho vira evento de analytics.
@@ -1397,6 +1255,7 @@ async function generateCv() {
   if (_generating) return;
   _generating = true;
   collectForm();
+  saveCvRadarDraft(); // a etapa 4 é o radar: guarda antes de trocar de tela
 
   var f = state.form;
   if (!f.nome || !f.cargo) {
@@ -1617,7 +1476,7 @@ function renderPreview(cv) {
   el.className = 'cv-paper cvt cvt-' + tpl;
   el.innerHTML = buildCvTemplate(tpl, cv, f, c);
   renderMarketSummary(cv);
-  restoreCvRadarDraft();
+  renderAlertSummary();
 }
 
 function renderMarketSummary(cv) {
@@ -1636,21 +1495,56 @@ function renderMarketSummary(cv) {
   if (!state.alertDraft.cargo && role && role !== 'Seu objetivo') state.alertDraft.cargo = role;
 }
 
+// Os campos do radar só existem na etapa 4. Fora dela (o gate da etapa 5
+// chama isto antes do cadastro) o rascunho é preservado — ler campo ausente
+// como string vazia apagaria justamente o que a pessoa acabou de configurar.
 function saveCvRadarDraft() {
+  var draft = Object.assign({}, state.alertDraft || {});
   var cargo = document.getElementById('cvRadarCargo');
   var local = document.getElementById('cvRadarLocal');
   var modalidade = document.getElementById('cvRadarModalidade');
   var salario = document.getElementById('cvRadarSalario');
   var activate = document.getElementById('cvRadarActivate');
-  state.alertDraft = Object.assign({}, state.alertDraft || {}, {
-    cargo: cargo ? cargo.value.trim() : '',
-    local: local ? local.value.trim() : '',
-    modalidade: modalidade ? modalidade.value : '',
-    salario: salario ? salario.value.trim() : '',
-    frequencia: 'semanal',
-    activate: activate ? activate.checked : true
-  });
+  if (cargo) draft.cargo = cargo.value.trim();
+  if (local) draft.local = local.value.trim();
+  if (modalidade) draft.modalidade = modalidade.value;
+  if (salario) draft.salario = salario.value.trim();
+  if (activate) draft.activate = activate.checked;
+  draft.frequencia = 'semanal';
+  state.alertDraft = draft;
   saveState();
+  renderAlertSummary();
+}
+
+// Etapa 5 não repete o formulário: mostra o que ficou definido na etapa 4,
+// com "Editar" voltando para lá.
+function renderAlertBox() {
+  var box = document.getElementById('cvAlertSummary');
+  if (!box) return;
+  var draft = state.alertDraft || {};
+  var titleEl = document.getElementById('cvAlertSummaryTitle');
+  var textEl = document.getElementById('cvAlertSummaryText');
+  var ativo = draft.activate !== false;
+  var cargo = String(draft.cargo || '').trim();
+
+  box.classList.toggle('off', !ativo);
+  if (titleEl) titleEl.textContent = ativo ? 'Alerta de vagas preparado' : 'Alerta de vagas desativado';
+  if (!textEl) return;
+
+  if (!ativo) {
+    textEl.textContent = 'Você pode ativar quando quiser — nada é enviado sem sua conta criada.';
+    return;
+  }
+  var partes = [cargo || 'Perfil do seu currículo'];
+  if (draft.local) partes.push(draft.local);
+  if (draft.modalidade) partes.push(draft.modalidade);
+  if (draft.salario) partes.push('a partir de ' + draft.salario);
+  textEl.textContent = partes.join(' · ') + ' · semanal';
+}
+
+function renderAlertSummary() {
+  renderAlertBox();
+  updateAlertsCrossSell();
 }
 
 function restoreCvRadarDraft() {
@@ -1669,6 +1563,7 @@ function restoreCvRadarDraft() {
   if (activate) activate.checked = draft.activate !== false;
   state.alertDraft = draft;
   saveState();
+  renderAlertSummary();
 }
 
 /* ── Cadastro ──────────────────────────────────────────────────────────── */

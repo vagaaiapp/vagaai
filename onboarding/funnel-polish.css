@@ -719,139 +719,73 @@ select:focus {
   margin-top: 14px;
 }
 
-/* Etapa 4 — lista compacta à esquerda + preview grande e ao vivo à direita.
-   Um clique no card já atualiza o documento inteiro do lado, sem modal. */
-#step4.ob-step {
-  width: min(100%, 1080px);
-}
-
-.tpl-layout {
+/* Resumo do alerta na etapa final: a configuração acontece na etapa 4, aqui
+   só se confirma o que ficou definido — repetir o formulário inteiro em cima
+   do currículo era o que deixava a tela de resultado pesada. */
+.ob-alert-done {
   display: flex;
-  flex-direction: column;
-  gap: 26px;
-}
-
-.tpl-list {
-  min-width: 0;
-}
-
-.tpl-preview-pane {
-  display: flex;
-  justify-content: center;
-}
-
-.tpl-preview-doc {
-  width: 100%;
-  max-width: 420px;
-}
-
-@media (min-width: 860px) {
-  .tpl-layout {
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 36px;
-  }
-
-  .tpl-list {
-    flex: 0 0 380px;
-  }
-
-  .tpl-preview-pane {
-    flex: 1;
-    justify-content: flex-start;
-    position: sticky;
-    top: 24px;
-  }
-
-  .tpl-preview-doc {
-    max-width: 460px;
-  }
-}
-
-/* Cada modelo vira uma linha compacta (miniatura + texto lado a lado) em
-   vez de um card alto — cabe a lista inteira sem rolagem longa. */
-.tpl-grid {
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 8px !important;
-}
-
-.tpl-card {
-  display: flex !important;
   align-items: center;
-  gap: 12px;
-  min-width: 0;
-  padding: 8px !important;
-  border-color: var(--ob-line) !important;
-  border-radius: var(--ob-radius) !important;
-  background: var(--ob-paper) !important;
+  gap: 13px;
+  margin-top: 18px;
+  padding: 15px 17px;
+  border: 1px solid var(--ob-line);
+  border-radius: var(--ob-radius);
+  background: var(--ob-paper);
   box-shadow: var(--ob-shadow-sm);
-  overflow: hidden;
-  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease !important;
 }
 
-.tpl-card:hover,
-.tpl-card.on {
-  transform: translateY(-2px);
-  border-color: var(--ob-action) !important;
-  box-shadow: var(--ob-shadow-md);
+.ob-alert-done-ic {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--ob-action-soft);
+  font-size: 17px;
 }
 
-/* Miniatura = o documento real renderizado em escala, pelo mesmo
-   buildCvTemplate() do preview final. Barras cinzas não deixavam ninguém
-   avaliar o modelo; um desenho paralelo divergiria do documento com o tempo. */
-.tpl-thumb {
-  position: relative;
-  display: block !important;
-  width: 46px;
-  height: auto !important;
-  flex: 0 0 46px;
-  aspect-ratio: 1 / 1.32;
-  padding: 0 !important;
-  overflow: hidden;
-  background: #fff !important;
-  border-color: rgba(0, 0, 0, .09) !important;
-  border-radius: 5px !important;
+.ob-alert-done.off .ob-alert-done-ic {
+  background: var(--ob-paper-soft);
+  filter: grayscale(1);
+  opacity: .7;
 }
 
-.tpl-doc {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 620px;
-  transform-origin: top left;
-  pointer-events: none;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-
-.tpl-info {
-  display: flex;
-  flex-direction: column;
+.ob-alert-done-tx {
+  flex: 1;
   min-width: 0;
 }
 
-/* O nome do modelo não dizia nada sobre quando usá-lo */
-.tpl-name { display: block; }
+.ob-alert-done-t {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.3;
+}
 
-.tpl-why {
-  display: block;
-  margin-top: 2px;
+.ob-alert-done-d {
+  margin-top: 3px;
   color: var(--ob-copy);
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1.4;
+  font-size: 12px;
+  line-height: 1.45;
 }
 
-.tpl-badge {
-  align-self: flex-start;
-  margin-top: 5px !important;
+.ob-alert-done-edit {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border: 1px solid var(--ob-line-strong);
+  border-radius: 999px;
+  background: none;
+  color: var(--ob-copy);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color .18s ease, color .18s ease;
 }
 
-/* Explicação de ATS antes da grade: é o que dá sentido aos dois grupos */
-.tpl-ats-explainer {
-  margin: 0 0 20px !important;
+.ob-alert-done-edit:hover {
+  border-color: var(--ob-action);
+  color: var(--ob-action);
 }
 
 .cv-paper {
@@ -1054,23 +988,49 @@ select:focus {
    vez de mandar a pessoa de volta escolher às cegas. */
 .ob-tpl-switch {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 14px;
   margin-bottom: 14px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   border: 1px solid var(--ob-line);
   border-radius: var(--ob-radius-sm);
   background: var(--ob-paper-soft);
 }
 
+/* Os dois grupos são o critério de escolha — sem eles a pessoa vê só seis
+   nomes e não sabe qual serve para candidatura online e qual para enviar
+   direto ao recrutador. */
+.ob-tpl-switch-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .ob-tpl-switch-lbl {
-  margin-right: 2px;
   color: var(--ob-copy);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: .085em;
   text-transform: uppercase;
+}
+
+.ob-tpl-switch-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ob-tpl-switch-note {
+  padding-top: 12px;
+  border-top: 1px solid var(--ob-line);
+  color: var(--ob-copy);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.ob-tpl-switch-note b {
+  color: var(--ob-ink);
+  font-weight: 700;
 }
 
 .ob-tpl-opt {
@@ -1340,8 +1300,13 @@ select:focus {
     grid-template-columns: 1fr !important;
   }
 
-  .tpl-why {
-    font-size: 10.5px;
+  .ob-alert-done {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .ob-alert-done-edit {
+    margin-left: 51px;
   }
 
   .ob-choice {
