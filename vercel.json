@@ -9,6 +9,11 @@
   ],
   "headers": [
     {
+      "comment": "O template da home fica acessivel como arquivo estatico em /index.template.html — uma copia da home sem a secao de blog e com o marcador <!--BLOG_SECTION--> cru. O canonical ja aponta para /, mas noindex evita de vez que apareca na busca.",
+      "source": "/index.template.html",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
       "source": "/(.*)",
       "headers": [
         { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },

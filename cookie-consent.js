@@ -6,7 +6,7 @@
   var KEY = 'vagaai_cookie_consent';
   var choice;
   try { choice = localStorage.getItem(KEY); } catch (e) { choice = null; }
-  if (choice === 'granted' || choice === 'denied') return; // já decidiu
+  var jaDecidiu = (choice === 'granted' || choice === 'denied');
 
   function setConsent(granted) {
     try { localStorage.setItem(KEY, granted ? 'granted' : 'denied'); } catch (e) {}
@@ -50,6 +50,23 @@
     document.getElementById('vg-cookie-accept').addEventListener('click', function () { setConsent(true); });
     document.getElementById('vg-cookie-reject').addEventListener('click', function () { setConsent(false); });
   }
+
+  // LGPD Art. 8º §5º: o consentimento pode ser revogado a qualquer momento.
+  // Antes, depois da primeira escolha este script fazia return e não havia
+  // nenhuma forma de reabrir o banner — o link "Preferências de cookies" do
+  // rodapé apontava para /termos#cookies, uma âncora que nem existe.
+  // Agora o rodapé chama VagaAICookies.open() e o banner volta.
+  window.VagaAICookies = {
+    open: function () {
+      if (document.body) render();
+      else document.addEventListener('DOMContentLoaded', render);
+    },
+    escolha: function () {
+      try { return localStorage.getItem(KEY); } catch (e) { return null; }
+    }
+  };
+
+  if (jaDecidiu) return; // não mostra sozinho de novo; só via VagaAICookies.open()
 
   if (document.body) render();
   else document.addEventListener('DOMContentLoaded', render);

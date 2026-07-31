@@ -36,10 +36,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:ital,wght@0,700;1,700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:ital,wght@0,700;1,700&display=swap"></noscript>
+  <!-- 74% da página nasce com .reveal{opacity:0} e só aparece via JS. Sem JS
+       (ou com o bloco inline bloqueado por extensão/proxy) a página ficaria em
+       branco — este <noscript> devolve o conteúdo. Ver também o bloco REVEAL,
+       que roda antes de tudo e tem fallback próprio. -->
+  <noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
   <script>
     (function(){
-      var s=localStorage.getItem('vagaai-theme');
-      var p=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';
+      var s=null;
+      try{s=localStorage.getItem('vagaai-theme')}catch(e){}
+      var p='dark';
+      try{p=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}catch(e){}
       document.documentElement.dataset.theme=s||p;
     })();
   </script>
@@ -88,7 +95,10 @@
     :root,[data-theme="dark"]{--bg:#08120d;--panel:#111b15;--panel-2:#0f1913;--soft:#0b1710;--ink:#edf4ee;--copy:rgba(226,238,230,.7);--muted:rgba(226,238,230,.48);--line:rgba(142,205,170,.13);--line-2:rgba(142,205,170,.22);--green:#54d69a;--green2:#2fb57a;--mint:rgba(84,214,154,.1);--dark:#07100b;--shadow:0 18px 52px rgba(2,10,6,.42);--nav-bg:rgba(8,18,13,.82);--paper-grain:rgba(255,255,255,.018);--max:1160px}
     [data-theme="light"]{--bg:#f6f4ee;--panel:#fffdf8;--panel-2:#f0f3ec;--soft:#edf5ef;--ink:#10231b;--copy:rgba(16,35,27,.7);--muted:rgba(16,35,27,.48);--line:#d9dfd5;--line-2:rgba(16,80,52,.18);--green:#16885c;--green2:#0f6f4b;--mint:#e3f1e9;--dark:#0b211a;--shadow:0 18px 48px rgba(33,56,45,.1);--nav-bg:rgba(255,253,248,.86);--paper-grain:rgba(16,35,27,.026)}
     *{box-sizing:border-box;margin:0;padding:0}
-    html{scroll-behavior:smooth;overscroll-behavior-x:none;width:100%;max-width:100%;overflow-x:hidden}
+    /* scroll-padding-top: a nav é fixa (top 18px + 64px de altura = 82px). Sem
+       isso, todo link de âncora (#recursos, #planos, #como-funciona) para com o
+       alvo escondido atrás dela — o #recursos perdia os 82px inteiros. */
+    html{scroll-behavior:smooth;scroll-padding-top:100px;overscroll-behavior-x:none;width:100%;max-width:100%;overflow-x:hidden}
     body{background:radial-gradient(circle at 16% 8%,var(--mint),transparent 30%),radial-gradient(circle at 88% 16%,var(--mint),transparent 32%),var(--bg);color:var(--ink);font-family:Inter,sans-serif;line-height:1.6;overflow-x:hidden;overscroll-behavior-x:none;transition:background .3s,color .3s;width:100%;max-width:100%;position:relative}
     img,svg,video,canvas{max-width:100%}
     a{color:inherit}
@@ -237,7 +247,10 @@
     .detail-row{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;padding:76px 0}
     .detail-row.rev .dmock{order:-1}
     .detail-tag{display:inline-flex;padding:6px 10px;border-radius:99px;background:var(--mint);color:var(--green);font-size:10px;font-weight:800;text-transform:uppercase}
-    .detail-text h3{margin-top:15px;font:700 clamp(22px,2.8vw,29px)/1.2 Lora;letter-spacing:-.02em}
+    /* h2 (não h3): estes são os 5 blocos principais de produto. Como h3 sem um
+       h2 pai, a hierarquia ficava H1 → H3 e o Google subdimensionava as
+       keywords centrais da página. O tamanho continua o mesmo. */
+    .detail-text h2{margin-top:15px;font:700 clamp(22px,2.8vw,29px)/1.2 Lora;letter-spacing:-.02em}
     .detail-text>p{margin-top:11px;color:var(--copy);font-size:14.5px}
     .detail-text .capability-list{border-top:1px solid var(--line);margin-top:16px;padding-top:16px}
     .detail-text .btn{margin-top:22px}
@@ -443,7 +456,9 @@
     .footer-brand img{height:30px}
     .footer-brand p{margin-top:12px;color:rgba(255,255,255,.45);font-size:12px;max-width:220px;line-height:1.6}
     .footer-col h5{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.45);margin-bottom:15px}
-    .footer-col a{display:block;margin-bottom:11px;font-size:13.5px;color:rgba(255,255,255,.65);text-decoration:none;transition:color .2s}
+    /* min-height 44px: alvo de toque recomendado (WCAG 2.5.5). Antes os links
+       do rodapé tinham 22px de altura clicável no mobile. */
+    .footer-col a{display:flex;align-items:center;min-height:44px;font-size:13.5px;color:rgba(255,255,255,.65);text-decoration:none;transition:color .2s;background:none;border:0;padding:0;font-family:inherit;text-align:left;cursor:pointer}
     .footer-col a:hover{color:#5be3a4}
     .footer-brand p{color:rgba(255,255,255,.48)}
     .footer-bottom{margin-top:40px;padding-top:20px;border-top:1px solid rgba(76,205,146,.1);font-size:12px;color:rgba(255,255,255,.42)}
@@ -783,11 +798,11 @@
 
   <div class="nav-shell">
     <nav class="nav" id="nav">
-      <a class="brand" href="#" aria-label="VagaAI, ir para o início">
+      <a class="brand" href="/" aria-label="VagaAI, ir para o início">
         <img src="/logo.svg" alt="VagaAI" class="logo-dark">
         <img src="/logo-light.svg" alt="VagaAI" class="logo-light">
       </a>
-      <div class="nav-links">
+      <div class="nav-links" id="navLinks">
         <a href="#como-funciona">Como funciona</a>
         <a href="#recursos">Recursos</a>
         <a href="#planos">Planos</a>
@@ -799,9 +814,9 @@
           <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
           <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
-        <a class="btn" href="https://www.vagaai.app.br/login">Entrar</a>
+        <a class="btn" href="/login">Entrar</a>
         <a class="btn primary journey-trigger" href="#jornadas">Começar grátis</a>
-        <button class="menu" aria-label="Abrir menu" onclick="toggleMenu()">
+        <button class="menu" id="menuBtn" aria-label="Abrir menu" aria-expanded="false" aria-controls="navLinks">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
         </button>
       </div>
@@ -858,14 +873,14 @@
     <section class="detail"><div class="wrap detail-row">
       <div class="detail-text reveal">
         <span class="detail-tag">Antes de se candidatar</span>
-        <h3>Entenda a oportunidade antes de enviar seu currículo.</h3>
+        <h2>Entenda a oportunidade antes de enviar seu currículo.</h2>
         <p>Cole a vaga e o currículo. Em segundos, você recebe:</p>
         <div class="capability-list">
           <span>Score e palavras-chave que faltam para o ATS</span>
           <span>Currículo direcionado, pronto para revisar</span>
         </div>
         <div class="detail-callout">Sem inventar experiências: a VagaAI fortalece o que já existe. Você revisa tudo antes de usar.</div>
-        <a class="btn primary journey-trigger" href="https://www.vagaai.app.br/app">Analisar minha vaga grátis</a>
+        <a class="btn primary" href="/onboarding/vaga/1?entry=cv">Analisar minha vaga grátis</a>
       </div>
       <div class="dmock reveal">
         <div class="dmock-window">
@@ -896,13 +911,13 @@
     <section class="detail"><div class="wrap detail-row rev">
       <div class="detail-text reveal">
         <span class="detail-tag">Seu currículo</span>
-        <h3>Um currículo principal. Uma versão melhor para cada oportunidade.</h3>
+        <h2>Um currículo principal. Uma versão melhor para cada oportunidade.</h2>
         <p>Uma versão principal sempre atualizada, adaptada para cada vaga.</p>
         <div class="capability-list">
           <span>Editor por seções, importa PDF ou Word</span>
           <span>Pronto para ATS, com download em PDF</span>
         </div>
-        <a class="btn primary journey-trigger" href="https://www.vagaai.app.br/curriculo">Criar ou importar meu currículo</a>
+        <a class="btn primary" href="/onboarding/curriculo/1?entry=no-cv">Criar ou importar meu currículo</a>
       </div>
       <div class="dmock reveal">
         <div class="dmock-window">
@@ -933,13 +948,13 @@
     <section class="detail"><div class="wrap detail-row">
       <div class="detail-text reveal">
         <span class="detail-tag">Oportunidades para o seu perfil</span>
-        <h3>Pare de procurar em todos os lugares.</h3>
+        <h2>Pare de procurar em todos os lugares.</h2>
         <p>Configure seus critérios uma vez. A VagaAI seleciona as oportunidades e mostra quais merecem atenção primeiro.</p>
         <div class="capability-list">
           <span>Cargo, localização e formato de trabalho</span>
           <span>Vagas por e-mail e no painel</span>
         </div>
-        <a class="btn primary journey-trigger" href="https://www.vagaai.app.br/app">Configurar meus alertas</a>
+        <a class="btn primary" href="/onboarding/vaga/1?entry=cv">Configurar meus alertas</a>
       </div>
       <div class="dmock reveal">
         <div class="dmock-window">
@@ -970,13 +985,13 @@
     <section class="detail"><div class="wrap detail-row rev">
       <div class="detail-text reveal">
         <span class="detail-tag">Organização</span>
-        <h3>Nenhuma candidatura perdida no caminho.</h3>
+        <h2>Nenhuma candidatura perdida no caminho.</h2>
         <p>Da intenção à oferta: cada candidatura com status, datas e próximo passo em um painel único.</p>
         <div class="capability-list">
           <span>Status de quero aplicar até oferta</span>
           <span>Currículo e carta da vaga a um clique</span>
         </div>
-        <a class="btn primary journey-trigger" href="https://www.vagaai.app.br/app">Organizar minhas candidaturas</a>
+        <a class="btn primary" href="/onboarding/vaga/1?entry=cv">Organizar minhas candidaturas</a>
       </div>
       <div class="dmock reveal">
         <div class="dmock-window">
@@ -1005,13 +1020,13 @@
     <section class="detail"><div class="wrap detail-row">
       <div class="detail-text reveal">
         <span class="detail-tag">Avance mais preparado</span>
-        <h3>A candidatura não termina quando você envia o currículo.</h3>
+        <h2>A candidatura não termina quando você envia o currículo.</h2>
         <p>Use o contexto da vaga e da empresa para se preparar para as próximas etapas.</p>
         <div class="capability-list">
           <span>Carta conectada aos requisitos da vaga</span>
           <span>Perguntas por cargo e empresa</span>
         </div>
-        <a class="btn primary journey-trigger" href="https://www.vagaai.app.br/app">Preparar minha candidatura</a>
+        <a class="btn primary" href="/onboarding/vaga/1?entry=cv">Preparar minha candidatura</a>
       </div>
       <div class="dmock reveal">
         <div class="dmock-window">
@@ -1133,12 +1148,12 @@
     <section class="section"><div class="wrap">
       <div class="center reveal"><span class="eyebrow">Dúvidas frequentes</span><h2>Antes de <span class="green">começar.</span></h2></div>
       <div class="faq-grid reveal">
-        <div class="faq open"><button>Preciso pagar para usar a VagaAI?<span>−</span></button><div class="faq-answer">Não. Você pode começar pelo plano gratuito, sem cadastrar cartão de crédito. Os planos pagos liberam mais análises e recursos avançados.</div></div>
-        <div class="faq"><button>Preciso criar uma conta?<span>+</span></button><div class="faq-answer">Você pode iniciar uma análise gratuitamente. Para manter seu currículo, histórico, candidaturas e alertas acessíveis em diferentes dispositivos, é necessário criar uma conta gratuita.</div></div>
-        <div class="faq"><button>Posso usar um currículo que já tenho, ou criar do zero?<span>+</span></button><div class="faq-answer">Os dois. Envie um arquivo em PDF, Word ou TXT, ou use o editor guiado por seções para montar um currículo novo.</div></div>
-        <div class="faq"><button>A VagaAI garante que meu currículo passe pelo ATS?<span>+</span></button><div class="faq-answer">Não existe garantia de aprovação, pois cada empresa usa critérios próprios. A VagaAI ajuda a organizar o currículo e identificar palavras-chave relevantes.</div></div>
-        <div class="faq"><button>A inteligência artificial inventa experiências?<span>+</span></button><div class="faq-answer">Não. A VagaAI trabalha com as informações fornecidas por você. Todas as sugestões devem ser revisadas antes de serem utilizadas.</div></div>
-        <div class="faq"><button>Posso cancelar meu plano?<span>+</span></button><div class="faq-answer">Sim. Os planos mensais podem ser cancelados a qualquer momento. O acesso permanece disponível até o fim do período já pago.</div></div>
+        <div class="faq open"><button aria-expanded="true">Preciso pagar para usar a VagaAI?<span>−</span></button><div class="faq-answer">Não. Você pode começar pelo plano gratuito, sem cadastrar cartão de crédito. Os planos pagos liberam mais análises e recursos avançados.</div></div>
+        <div class="faq"><button aria-expanded="false">Preciso criar uma conta?<span>+</span></button><div class="faq-answer">Você pode iniciar uma análise gratuitamente. Para manter seu currículo, histórico, candidaturas e alertas acessíveis em diferentes dispositivos, é necessário criar uma conta gratuita.</div></div>
+        <div class="faq"><button aria-expanded="false">Posso usar um currículo que já tenho, ou criar do zero?<span>+</span></button><div class="faq-answer">Os dois. Envie um arquivo em PDF, Word ou TXT, ou use o editor guiado por seções para montar um currículo novo.</div></div>
+        <div class="faq"><button aria-expanded="false">A VagaAI garante que meu currículo passe pelo ATS?<span>+</span></button><div class="faq-answer">Não existe garantia de aprovação, pois cada empresa usa critérios próprios. A VagaAI ajuda a organizar o currículo e identificar palavras-chave relevantes.</div></div>
+        <div class="faq"><button aria-expanded="false">A inteligência artificial inventa experiências?<span>+</span></button><div class="faq-answer">Não. A VagaAI trabalha com as informações fornecidas por você. Todas as sugestões devem ser revisadas antes de serem utilizadas.</div></div>
+        <div class="faq"><button aria-expanded="false">Posso cancelar meu plano?<span>+</span></button><div class="faq-answer">Sim. Os planos mensais podem ser cancelados a qualquer momento. O acesso permanece disponível até o fim do período já pago.</div></div>
       </div>
     </div></section>
 
@@ -1184,12 +1199,18 @@
   <footer class="footer"><div class="wrap">
     <div class="footer-grid">
       <div class="footer-brand"><img src="/logo.svg" alt="VagaAI"><p>Currículos e candidaturas mais fortes, do primeiro passo à entrevista.</p></div>
-      <div class="footer-col"><h5>Produto</h5><a href="https://www.vagaai.app.br/app">Analisar vaga</a><a href="https://www.vagaai.app.br/curriculo">Criar currículo</a><a href="https://www.vagaai.app.br/app">Alertas de vagas</a><a href="https://www.vagaai.app.br/app">Candidaturas</a><a href="https://www.vagaai.app.br/app">Entrevistas</a><a href="#planos">Planos</a></div>
+      <!-- "Alertas", "Candidaturas" e "Entrevistas" apontavam todos para /app
+           (que é só a análise de vaga), e "Criar currículo" jogava o lead
+           anônimo direto na parede de login do /curriculo. Agora cada um vai
+           para o funil livre ou para a aba real do painel. -->
+      <div class="footer-col"><h5>Produto</h5><a href="/app">Analisar vaga</a><a href="/onboarding/curriculo/1?entry=no-cv">Criar currículo</a><a href="/login?next=%2Fdashboard%23alertas">Alertas de vagas</a><a href="/login?next=%2Fdashboard%23vagas">Candidaturas</a><a href="/entrevista">Entrevistas</a><a href="#planos">Planos</a></div>
       <div class="footer-col"><h5>Conteúdo</h5><a href="/blog">Blog</a><a href="/blog">Dicas de currículo</a><a href="/blog">Preparação para entrevistas</a><a href="/blog">Carreira e mercado</a></div>
-      <div class="footer-col"><h5>Empresa</h5><a href="/paraempresas">Para empresas</a><a href="https://www.vagaai.app.br/login">Entrar</a><a href="mailto:suporte@vagaai.app.br">Suporte</a></div>
-      <div class="footer-col"><h5>Legal</h5><a href="/termos">Termos de Uso</a><a href="/termos#privacidade">Política de Privacidade</a><a href="/termos#cookies">Preferências de cookies</a></div>
+      <div class="footer-col"><h5>Empresa</h5><a href="/paraempresas">Para empresas</a><a href="/login">Entrar</a><a href="mailto:suporte@vagaai.app.br">Suporte</a></div>
+      <!-- "Preferências de cookies" era /termos#cookies — âncora que não existe.
+           Agora reabre o banner de consentimento (LGPD Art. 8º §5º: revogação). -->
+      <div class="footer-col"><h5>Legal</h5><a href="/termos">Termos de Uso</a><a href="/termos#privacidade">Política de Privacidade</a><a href="/termos#cookies" id="cookiePrefs">Preferências de cookies</a></div>
     </div>
-    <div class="footer-bottom">© 2026 VagaAI. Todos os direitos reservados.</div>
+    <div class="footer-bottom">© <span id="footerYear">2026</span> VagaAI. Todos os direitos reservados.</div>
   </div></footer>
 
   <button class="to-top" id="toTop" aria-label="Voltar ao topo">
@@ -1197,52 +1218,160 @@
   </button>
 
   <script>
+  (function () {
+    /* ===== REVEAL — PRIMEIRO DE TUDO =====
+       74% da altura da página (H1, os dois cards de jornada, todos os CTAs, todas
+       as seções) nasce com .reveal{opacity:0} e só aparece quando este bloco roda.
+       Antes ele era o 5º trecho de um <script> único: qualquer erro acima dele
+       deixava a landing page EM BRANCO — não degradada, invisível.
+       Agora: (1) roda antes de qualquer outra coisa, (2) tem fallback próprio se
+       IntersectionObserver não existir, (3) o resto do script está isolado num
+       try/catch que revela tudo se algo quebrar. O <noscript> no <head> cobre o
+       caso de o JS nem chegar a executar. */
+    function revealAll() {
+      var els = document.querySelectorAll('.reveal');
+      for (var i = 0; i < els.length; i++) els[i].classList.add('in');
+    }
+    try {
+      if (!('IntersectionObserver' in window)) {
+        revealAll();
+      } else {
+        var revealObs = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) { e.target.classList.add('in'); revealObs.unobserve(e.target); }
+          });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(function (el) { revealObs.observe(el); });
+      }
+    } catch (err) {
+      revealAll();
+    }
+
+    /* Tudo daqui pra baixo é enfeite: se quebrar, a página continua legível e
+       clicável. O catch garante que nada fique invisível. */
+    try {
+
+    /* ===== ANALYTICS =====
+       A LP não emitia nenhum evento — só pageview. Não dava para saber qual dos
+       dois caminhos converte nem onde o lead desiste. Respeita o Consent Mode:
+       gtag() já existe (definido no <head>) e o GA descarta os eventos sozinho
+       enquanto analytics_storage estiver 'denied'. */
+    function track(evento, dados) {
+      try { if (typeof gtag === 'function') gtag('event', evento, dados || {}); } catch (e) {}
+    }
+
     /* ===== THEME ===== */
     var themeBtn = document.getElementById('themeToggle');
-    themeBtn.addEventListener('click', function() {
-      var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-      document.documentElement.dataset.theme = next;
-      localStorage.setItem('vagaai-theme', next);
-      themeBtn.setAttribute('aria-label', next === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro');
-    });
-    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function(e) {
-      if (!localStorage.getItem('vagaai-theme')) {
-        document.documentElement.dataset.theme = e.matches ? 'light' : 'dark';
-      }
-    });
+    if (themeBtn) {
+      themeBtn.addEventListener('click', function () {
+        var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        try { localStorage.setItem('vagaai-theme', next); } catch (e) {}
+        themeBtn.setAttribute('aria-label', next === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro');
+        track('tema_alterado', { tema: next });
+      });
+    }
+    /* addEventListener em MediaQueryList não existe no Safari <=13 / iOS <=13 —
+       era exatamente aqui que o script morria e a página sumia nesses browsers. */
+    var mqLight = window.matchMedia('(prefers-color-scheme: light)');
+    function onSchemeChange(e) {
+      var salvo = null;
+      try { salvo = localStorage.getItem('vagaai-theme'); } catch (_) {}
+      if (!salvo) document.documentElement.dataset.theme = e.matches ? 'light' : 'dark';
+    }
+    if (mqLight.addEventListener) mqLight.addEventListener('change', onSchemeChange);
+    else if (mqLight.addListener) mqLight.addListener(onSchemeChange);
 
     /* ===== NAV ===== */
-    function toggleMenu() { document.getElementById('nav').classList.toggle('open'); }
-    document.querySelectorAll('.nav-links a').forEach(function(a) {
-      a.addEventListener('click', function() { document.getElementById('nav').classList.remove('open'); });
+    var nav = document.getElementById('nav');
+    var menuBtn = document.getElementById('menuBtn');
+    function setMenu(aberto) {
+      nav.classList.toggle('open', aberto);
+      if (menuBtn) {
+        menuBtn.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+        menuBtn.setAttribute('aria-label', aberto ? 'Fechar menu' : 'Abrir menu');
+      }
+    }
+    if (menuBtn) {
+      menuBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        setMenu(!nav.classList.contains('open'));
+      });
+    }
+    document.querySelectorAll('.nav-links a').forEach(function (a) {
+      a.addEventListener('click', function () {
+        setMenu(false);
+        track('nav_click', { destino: a.getAttribute('href') || '' });
+      });
+    });
+    /* O menu mobile só fechava clicando num link — ficava preso cobrindo o hero
+       se o usuário tocasse em qualquer outro lugar. */
+    document.addEventListener('click', function (e) {
+      if (nav.classList.contains('open') && !nav.contains(e.target)) setMenu(false);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && nav.classList.contains('open')) { setMenu(false); if (menuBtn) menuBtn.focus(); }
     });
 
     /* ===== SELETOR DE JORNADA ===== */
     var journeyModal = document.getElementById('journeyModal');
     var journeyModalClose = document.getElementById('journeyModalClose');
     var journeyLastTrigger = null;
+    function focaveisDoModal() {
+      return journeyModal.querySelectorAll('a[href], button:not([disabled])');
+    }
     function closeJourneyModal() {
       journeyModal.classList.remove('is-open');
       journeyModal.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('modal-open');
       if (journeyLastTrigger) journeyLastTrigger.focus();
     }
-    document.querySelectorAll('.journey-trigger').forEach(function(trigger) {
-      trigger.addEventListener('click', function(event) {
+    document.querySelectorAll('.journey-trigger').forEach(function (trigger) {
+      trigger.addEventListener('click', function (event) {
         event.preventDefault();
         journeyLastTrigger = trigger;
         journeyModal.classList.add('is-open');
         journeyModal.setAttribute('aria-hidden', 'false');
         document.body.classList.add('modal-open');
         journeyModalClose.focus();
+        track('jornada_modal_aberto', { origem: (trigger.textContent || '').trim() });
       });
     });
     journeyModalClose.addEventListener('click', closeJourneyModal);
-    journeyModal.addEventListener('click', function(event) {
+    journeyModal.addEventListener('click', function (event) {
       if (event.target === journeyModal) closeJourneyModal();
     });
-    document.addEventListener('keydown', function(event) {
-      if (event.key === 'Escape' && journeyModal.classList.contains('is-open')) closeJourneyModal();
+    journeyModal.querySelectorAll('.journey-modal-option').forEach(function (op) {
+      op.addEventListener('click', function () {
+        track('jornada_escolhida', {
+          caminho: op.getAttribute('href').indexOf('/curriculo/') !== -1 ? 'sem_curriculo' : 'com_curriculo',
+          origem: 'modal'
+        });
+      });
+    });
+    /* Focus trap: sem isso o Tab saía do modal e ia navegando a página atrás,
+       invisível para quem usa teclado ou leitor de tela. */
+    document.addEventListener('keydown', function (event) {
+      if (!journeyModal.classList.contains('is-open')) return;
+      if (event.key === 'Escape') { closeJourneyModal(); return; }
+      if (event.key !== 'Tab') return;
+      var f = focaveisDoModal();
+      if (!f.length) return;
+      var primeiro = f[0], ultimo = f[f.length - 1];
+      if (event.shiftKey && document.activeElement === primeiro) { event.preventDefault(); ultimo.focus(); }
+      else if (!event.shiftKey && document.activeElement === ultimo) { event.preventDefault(); primeiro.focus(); }
+    });
+
+    /* ===== EVENTOS DOS CAMINHOS (hero, CTA final e blocos de produto) ===== */
+    document.querySelectorAll('a[href^="/onboarding/"]').forEach(function (a) {
+      a.addEventListener('click', function () {
+        var href = a.getAttribute('href');
+        track('cta_funil', {
+          caminho: href.indexOf('/curriculo/') !== -1 ? 'sem_curriculo' : 'com_curriculo',
+          rotulo: (a.textContent || '').trim(),
+          secao: (a.closest('section') || {}).className || 'modal'
+        });
+      });
     });
 
     /* ===== SCROLL PROGRESS + VOLTAR AO TOPO ===== */
@@ -1254,21 +1383,14 @@
       toTop.classList.toggle('show', scrollY > 600);
     }
     addEventListener('scroll', updateProg, { passive: true });
+    addEventListener('resize', updateProg, { passive: true });
     updateProg();
-    toTop.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
-
-    /* ===== REVEAL ===== */
-    var revealObs = new IntersectionObserver(function(entries) {
-      entries.forEach(function(e) {
-        if (e.isIntersecting) { e.target.classList.add('in'); revealObs.unobserve(e.target); }
-      });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.reveal').forEach(function(el) { revealObs.observe(el); });
+    toTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
     /* ===== GLOW SEGUE O CURSOR =====
        Delegado no documento para cobrir tambem cards injetados depois
        (posts do blog). Atualiza --mx/--my usados no radial do .glow. */
-    document.addEventListener('pointermove', function(e) {
+    document.addEventListener('pointermove', function (e) {
       var c = e.target && e.target.closest ? e.target.closest('.glow') : null;
       if (!c) return;
       var r = c.getBoundingClientRect();
@@ -1277,31 +1399,34 @@
     }, { passive: true });
 
     /* ===== FAQ ACCORDION ===== */
-    document.querySelectorAll('.faq button').forEach(function(btn) {
-      btn.addEventListener('click', function() {
+    document.querySelectorAll('.faq button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
         var item = btn.closest('.faq');
-        var open = item.classList.contains('open');
+        var abrindo = !item.classList.contains('open');
         item.classList.toggle('open');
-        btn.querySelector('span').textContent = !open ? '−' : '+';
+        btn.setAttribute('aria-expanded', abrindo ? 'true' : 'false');
+        btn.querySelector('span').textContent = abrindo ? '−' : '+';
+        if (abrindo) track('faq_aberto', { pergunta: btn.textContent.replace(/[+−]$/, '').trim() });
       });
     });
 
     /* ===== BILLING TOGGLE ===== */
-    document.querySelectorAll('.billing button').forEach(function(btn) {
-      btn.addEventListener('click', function() {
+    document.querySelectorAll('.billing button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
         var mode = btn.dataset.billing;
-        document.querySelectorAll('.billing button').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.billing button').forEach(function (b) { b.classList.remove('active'); });
         btn.classList.add('active');
-        document.querySelectorAll('.price[data-monthly]').forEach(function(p) {
+        document.querySelectorAll('.price[data-monthly]').forEach(function (p) {
           p.querySelector('.price-value').innerHTML = p.dataset[mode] + '<small>/mês</small>';
           p.querySelector('.price-daily').textContent = p.dataset[mode + 'Daily'];
         });
-        document.querySelectorAll('.plan-link').forEach(function(l) {
+        document.querySelectorAll('.plan-link').forEach(function (l) {
           l.href = l.dataset[mode + 'Url'];
         });
-        document.querySelectorAll('.billing-note').forEach(function(n) {
+        document.querySelectorAll('.billing-note').forEach(function (n) {
           n.textContent = mode === 'quarterly' ? 'R$89,70 a cada 3 meses · cancele quando quiser' : 'Cobrança mensal, cancele quando quiser';
         });
+        track('plano_periodicidade', { periodo: mode });
       });
     });
 
@@ -1310,16 +1435,42 @@
        client_reference_id e o webhook não consegue vincular a assinatura ao
        usuário (cliente pagaria e ficaria sem o plano). Guardamos a intenção
        e mandamos pro /login, que retoma o checkout já autenticado. */
-    document.querySelectorAll('.plan-link').forEach(function(l) {
-      l.addEventListener('click', function(e) {
+    document.querySelectorAll('.plan-link').forEach(function (l) {
+      l.addEventListener('click', function (e) {
         e.preventDefault();
         var base = l.getAttribute('href') || '';
         try {
           localStorage.setItem('vagaai_pending_checkout', JSON.stringify({ url: base, ts: Date.now() }));
         } catch (_) {}
+        track('checkout_iniciado', {
+          plano: 'pro',
+          periodo: (document.querySelector('.billing button.active') || {}).dataset ? document.querySelector('.billing button.active').dataset.billing : 'monthly'
+        });
         window.location.href = '/login';
       });
     });
+
+    /* ===== PREFERÊNCIAS DE COOKIES (LGPD Art. 8º §5º — revogação) =====
+       O link do rodapé apontava para /termos#cookies, âncora que não existe, e
+       não havia nenhuma forma de mudar de ideia depois da primeira escolha. */
+    var cookieBtn = document.getElementById('cookiePrefs');
+    if (cookieBtn) {
+      cookieBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (window.VagaAICookies && window.VagaAICookies.open) window.VagaAICookies.open();
+        else window.location.href = cookieBtn.getAttribute('href'); // /termos#cookies
+      });
+    }
+
+    /* Ano do rodapé: era "© 2026" fixo no HTML. */
+    var anoEl = document.getElementById('footerYear');
+    if (anoEl) anoEl.textContent = new Date().getFullYear();
+
+    } catch (err) {
+      revealAll();
+      if (window.console && console.error) console.error('LP: erro de inicialização', err);
+    }
+  })();
   </script>
 </body>
 </html>

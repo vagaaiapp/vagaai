@@ -170,7 +170,7 @@ footer{text-align:center;padding:2rem;font-size:13px;color:var(--muted);border-t
     </ul>
     <p>Para exercer esses direitos, entre em contato: <a href="mailto:contato@vagaai.app.br">contato@vagaai.app.br</a></p>
 
-    <h2>6. Cookies</h2>
+    <h2 id="cookies">6. Cookies</h2>
     <p>Usamos cookies essenciais para autenticação de sessão e, <strong>somente mediante seu consentimento</strong> (banner de cookies), cookies de análise do Google Analytics para entender o uso do produto e melhorá-lo. Não usamos cookies de publicidade. Você pode recusar os cookies de análise sem perder nenhuma funcionalidade.</p>
 
     <h2>7. Segurança</h2>
@@ -198,10 +198,17 @@ function showTab(id, fromHash) {
   if (tabs[idx]) tabs[idx].classList.add('active');
   if (!fromHash && event && event.target) event.target.classList.add('active');
 }
-// Suporte a deep link: /termos#privacidade abre aba de privacidade
+// Suporte a deep link: /termos#privacidade abre aba de privacidade.
+// #cookies também: a seção de cookies mora dentro da aba de privacidade, então
+// sem isso o link caía na aba de Termos de Uso e nem rolava até o texto.
 (function() {
-  if (window.location.hash === '#privacidade') {
+  var hash = window.location.hash;
+  if (hash === '#privacidade' || hash === '#cookies') {
     showTab('privacidade', true);
+  }
+  if (hash === '#cookies') {
+    var alvo = document.getElementById('cookies');
+    if (alvo) alvo.scrollIntoView({ block: 'start' });
   }
 })();
 </script>
