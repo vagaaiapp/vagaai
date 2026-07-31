@@ -331,11 +331,11 @@ select:focus{outline:none;border-color:var(--green-border)}
     <div id="importReviewNote" class="ob-ok" role="status" aria-live="polite" style="display:none;margin-bottom:20px"></div>
 
     <div class="ob-field">
-      <label for="fNome">Nome completo</label>
+      <label for="fNome">Nome completo <span class="ob-req">*</span></label>
       <input type="text" id="fNome" placeholder="Ex: Maria Silva Santos" oninput="onFormInput()">
     </div>
     <div class="ob-field">
-      <label for="fCargo">Cargo desejado</label>
+      <label for="fCargo">Cargo desejado <span class="ob-req">*</span></label>
       <input type="text" id="fCargo" placeholder="Ex: Analista de Marketing" oninput="onFormInput()">
     </div>
     <div class="ob-field">
@@ -359,6 +359,7 @@ select:focus{outline:none;border-color:var(--green-border)}
       <input type="text" id="fCidade" placeholder="Cidade / Estado">
     </div>
 
+    <div class="ob-req-hint">* campos obrigatórios para escolher o modelo</div>
     <div id="formErr" class="ob-err" style="display:none"></div>
     <button class="ob-btn" id="formNext" onclick="goStep(4)" disabled>Escolher o modelo →</button>
   </section>
@@ -716,9 +717,9 @@ function renderStep(n, push) {
   var analyticsUrl = '/onboarding/curriculo/' + n;
   var browserUrl = canonicalStepUrl(n);
   var currentUrl = window.location.pathname + window.location.search + window.location.hash;
-  if (push && currentUrl !== browserUrl) history.pushState({ step:n }, '', browserUrl);
+  if (push && currentUrl !== browserUrl) history.pushState({ step:n, depth: currentDepth() + 1 }, '', browserUrl);
   else if (!push && (currentUrl !== browserUrl || !history.state || history.state.step !== n)) {
-    history.replaceState({ step:n }, '', browserUrl);
+    history.replaceState({ step:n, depth: currentDepth() }, '', browserUrl);
   }
   window.scrollTo(0, 0);
   track('onboarding_cv_step' + n + '_view');
@@ -727,8 +728,20 @@ function renderStep(n, push) {
   trackPageView(analyticsUrl);
 }
 function goStep(n) { renderStep(n, true); }
+
+// Profundidade guardada na própria entrada do histórico: sobrevive a
+// back/forward, diferente de um contador em memória.
+function currentDepth() {
+  return (history.state && typeof history.state.depth === 'number') ? history.state.depth : 0;
+}
+
 function goBack() {
-  if (state.step > 1) renderStep(state.step - 1, false);
+  if (state.step <= 1) return;
+  // Anda de verdade no histórico quando a entrada anterior é nossa. Sem isso
+  // o replaceState deixa duas entradas iguais e o primeiro "voltar" do
+  // navegador não sai do lugar.
+  if (currentDepth() > 0) { history.back(); return; }
+  renderStep(state.step - 1, false);
 }
 window.addEventListener('popstate', function() { renderStep(stepFromUrl(), false); });
 window.addEventListener('beforeunload', saveState);
@@ -1283,17 +1296,24 @@ function collectForm() {
 var TPL_IDS = { modern:'tplModern', focus:'tplFocus', minimal:'tplMinimal', classic:'tplClassic', exec:'tplExec', compact:'tplCompact' };
 var _tplViews = 0;
 
-function pickTpl(tpl) {
+// Aplica o modelo (estado + destaque + preview). Não conta como escolha: o
+// boot precisa reaplicar o modelo salvo sem inflar a métrica de seleção.
+function applyTpl(tpl) {
   state.tpl = tpl;
-  _tplViews++;
   saveState();
   updateJourneySummary();
   for (var k in TPL_IDS) {
     var el = document.getElementById(TPL_IDS[k]);
     if (el) el.classList.toggle('on', k === tpl);
   }
-  track('onboarding_cv_template_selected', { template: tpl });
   if (state.cv) renderPreview(state.cv); // troca de modelo já refletida no preview
+}
+
+// Escolha explícita da pessoa — só este caminho vira evento de analytics.
+function pickTpl(tpl) {
+  _tplViews++;
+  applyTpl(tpl);
+  track('onboarding_cv_template_selected', { template: tpl });
 }
 
 /* ── Geração ───────────────────────────────────────────────────────────── */
@@ -1641,7 +1661,7 @@ async function signupEmail() {
   }
   applyFormToInputs();
 
-  if (state.tpl) pickTpl(state.tpl);
+  if (state.tpl) applyTpl(state.tpl);
   if (state.cv) renderPreview(state.cv);
   else restoreCvRadarDraft();
 

@@ -646,6 +646,7 @@ var state = {
     activate: true
   },
   result: null,
+  analysisBlocked: false,
   step: 1
 };
 var _analysisRunning = false;
@@ -912,6 +913,17 @@ function renderStep(n, push) {
     if (el) el.classList.toggle('active', i === n);
   }
 
+  // Reavalia os painéis da etapa 3: sem isso o CTA do formulário rápido
+  // continua desabilitado ao voltar de uma geração já concluída.
+  if (n === 3) configureCvStep();
+
+  // Etapa 4 é a tela de carregamento. Se ninguém está analisando (refresh,
+  // restauração de aba, link direto), o spinner nunca sairia do lugar.
+  if (n === 4 && !state.result && !_analysisRunning) {
+    if (state.analysisBlocked) showLimitReached();
+    else showAnalysisInterrupted();
+  }
+
   // Dots: etapa 4 (processando) e 5 (resultado) contam como a última bolinha
   var dotIdx = Math.min(n, 4);
   var dots = document.querySelectorAll('.ob-dot');
@@ -927,9 +939,9 @@ function renderStep(n, push) {
   var analyticsUrl = '/onboarding/vaga/' + n;
   var browserUrl = canonicalStepUrl(n);
   var currentUrl = window.location.pathname + window.location.search + window.location.hash;
-  if (push && currentUrl !== browserUrl) history.pushState({ step:n }, '', browserUrl);
+  if (push && currentUrl !== browserUrl) history.pushState({ step:n, depth: currentDepth() + 1 }, '', browserUrl);
   else if (!push && (currentUrl !== browserUrl || !history.state || history.state.step !== n)) {
-    history.replaceState({ step:n }, '', browserUrl);
+    history.replaceState({ step:n, depth: currentDepth() }, '', browserUrl);
   }
   window.scrollTo(0, 0);
   track('onboarding_vaga_step' + n + '_view');
@@ -941,8 +953,20 @@ function renderStep(n, push) {
 }
 
 function goStep(n) { renderStep(n, true); }
+
+// Profundidade guardada na própria entrada do histórico: sobrevive a
+// back/forward, diferente de um contador em memória.
+function currentDepth() {
+  return (history.state && typeof history.state.depth === 'number') ? history.state.depth : 0;
+}
+
 function goBack() {
-  if (state.step > 1) renderStep(state.step - 1, false);
+  if (state.step <= 1) return;
+  // Anda de verdade no histórico quando a entrada anterior é nossa. Sem isso
+  // o replaceState deixa duas entradas iguais e o primeiro "voltar" do
+  // navegador não sai do lugar.
+  if (currentDepth() > 0) { history.back(); return; }
+  renderStep(state.step - 1, false);
 }
 
 window.addEventListener('popstate', function() { renderStep(stepFromUrl(), false); });
@@ -1589,6 +1613,7 @@ async function startAnalysis() {
   saveState();
 
   track('onboarding_vaga_pasted', { job_chars: state.job.length });
+  resetStep4(); // pode estar exibindo erro/limite/interrupção de uma tentativa anterior
   goStep(4);
 
   // Dicas rotativas + progressão visual do pipeline durante a espera real
@@ -1658,6 +1683,29 @@ async function startAnalysis() {
   _analysisRunning = false;
 }
 
+// As telas de erro/limite/interrupção substituem o innerHTML da etapa 4. Sem
+// guardar o markup original, a etapa nunca voltaria a ser a tela de
+// carregamento numa segunda tentativa dentro da mesma sessão.
+var STEP4_HTML = (document.getElementById('step4') || {}).innerHTML || '';
+
+function resetStep4() {
+  var step4 = document.getElementById('step4');
+  if (step4 && STEP4_HTML) step4.innerHTML = STEP4_HTML;
+}
+
+function showAnalysisInterrupted() {
+  var step4 = document.getElementById('step4');
+  if (!step4) return;
+  step4.innerHTML = '<div class="ob-loading">'
+    + '<div class="ob-state-ic ob-state-ic--retry"></div>'
+    + '<h1 style="font-size:21px;margin-bottom:10px">Sua análise foi interrompida</h1>'
+    + '<p class="ob-sub" style="margin-inline:auto">A página foi recarregada antes de terminarmos. Nada do que você preencheu se perdeu — é só retomar.</p>'
+    + '<button class="ob-btn" onclick="startAnalysis()">Retomar análise →</button>'
+    + '<button class="ob-btn ghost" onclick="goStep(3)">Revisar meu currículo</button>'
+    + '</div>';
+  track('onboarding_vaga_analysis_interrupted');
+}
+
 function showAnalysisError() {
   var step4 = document.getElementById('step4');
   step4.innerHTML = '<div class="ob-loading">'
@@ -1671,6 +1719,9 @@ function showAnalysisError() {
 }
 
 function showLimitReached() {
+  // Persistido: num refresh, retomar a análise só bateria no mesmo limite.
+  state.analysisBlocked = true;
+  saveState();
   var step4 = document.getElementById('step4');
   step4.innerHTML = '<div class="ob-loading">'
     + '<div class="ob-state-ic ob-state-ic--lock"></div>'
