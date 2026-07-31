@@ -719,16 +719,69 @@ select:focus {
   margin-top: 14px;
 }
 
-/* 3 colunas: cada grupo tem exatamente 3 modelos, então 2 colunas deixavam
-   o terceiro card órfão numa linha sozinha. */
+/* Etapa 4 — lista compacta à esquerda + preview grande e ao vivo à direita.
+   Um clique no card já atualiza o documento inteiro do lado, sem modal. */
+#step4.ob-step {
+  width: min(100%, 1080px);
+}
+
+.tpl-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.tpl-list {
+  min-width: 0;
+}
+
+.tpl-preview-pane {
+  display: flex;
+  justify-content: center;
+}
+
+.tpl-preview-doc {
+  width: 100%;
+  max-width: 420px;
+}
+
+@media (min-width: 860px) {
+  .tpl-layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 36px;
+  }
+
+  .tpl-list {
+    flex: 0 0 380px;
+  }
+
+  .tpl-preview-pane {
+    flex: 1;
+    justify-content: flex-start;
+    position: sticky;
+    top: 24px;
+  }
+
+  .tpl-preview-doc {
+    max-width: 460px;
+  }
+}
+
+/* Cada modelo vira uma linha compacta (miniatura + texto lado a lado) em
+   vez de um card alto — cabe a lista inteira sem rolagem longa. */
 .tpl-grid {
   display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  gap: 16px !important;
+  grid-template-columns: 1fr !important;
+  gap: 8px !important;
 }
 
 .tpl-card {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
   min-width: 0;
+  padding: 8px !important;
   border-color: var(--ob-line) !important;
   border-radius: var(--ob-radius) !important;
   background: var(--ob-paper) !important;
@@ -750,12 +803,15 @@ select:focus {
 .tpl-thumb {
   position: relative;
   display: block !important;
+  width: 46px;
   height: auto !important;
+  flex: 0 0 46px;
   aspect-ratio: 1 / 1.32;
   padding: 0 !important;
   overflow: hidden;
   background: #fff !important;
   border-color: rgba(0, 0, 0, .09) !important;
+  border-radius: 5px !important;
 }
 
 .tpl-doc {
@@ -770,19 +826,28 @@ select:focus {
   box-shadow: none !important;
 }
 
+.tpl-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 /* O nome do modelo não dizia nada sobre quando usá-lo */
 .tpl-name { display: block; }
 
 .tpl-why {
   display: block;
-  margin-top: 5px;
+  margin-top: 2px;
   color: var(--ob-copy);
   font-size: 11px;
   font-weight: 500;
   line-height: 1.4;
 }
 
-.tpl-badge { margin-top: 7px !important; }
+.tpl-badge {
+  align-self: flex-start;
+  margin-top: 5px !important;
+}
 
 /* Explicação de ATS antes da grade: é o que dá sentido aos dois grupos */
 .tpl-ats-explainer {
@@ -1273,12 +1338,6 @@ select:focus {
   .ob-inline-choices,
   .ob-methods {
     grid-template-columns: 1fr !important;
-  }
-
-  /* 6 modelos em coluna única viraria uma rolagem longa demais */
-  .tpl-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 12px !important;
   }
 
   .tpl-why {
