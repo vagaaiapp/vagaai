@@ -1,13 +1,115 @@
 (function (root, factory) {
-  var api = factory(root && root.localStorage ? root.localStorage : null);
+  var api = factory(root && root.localStorage ? root.localStorage : null, root);
   if (typeof module === 'object' && module.exports) module.exports = api;
   if (root) root.VagaAIOnboarding = api;
-})(typeof window !== 'undefined' ? window : globalThis, function (storage) {
+})(typeof window !== 'undefined' ? window : globalThis, function (storage, root) {
   'use strict';
 
   var KEY = 'vagaai_onboarding_handoff_v1';
   var VERSION = 1;
   var MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+  var ANON_ID_KEY = 'vagaai_ob_anon_id';
+  var THEME_KEY = 'vagaai_theme';
+
+  /* ── Utilidades comuns aos dois funis ──────────────────────────────────
+     Antes duplicadas em onboarding/vaga e onboarding/curriculo: toda
+     correção precisava ser feita — e lembrada — nos dois arquivos. */
+
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function track(name, params) {
+    try {
+      if (root && typeof root.gtag === 'function') root.gtag('event', name, params || {});
+    } catch (e) {}
+  }
+
+  // O page_view automático do GA4 só dispara no carregamento. Como a navegação
+  // entre etapas é por pushState, sem este disparo manual o funil de drop-off
+  // por etapa ficaria cego.
+  function trackPageView(path) {
+    try {
+      if (!root || typeof root.gtag !== 'function') return;
+      root.gtag('event', 'page_view', {
+        page_path: path,
+        page_location: root.location.origin + path,
+        page_title: typeof document !== 'undefined' ? document.title : ''
+      });
+    } catch (e) {}
+  }
+
+  function anonymousBrowserId() {
+    var current = '';
+    try { current = (storage && storage.getItem(ANON_ID_KEY)) || ''; } catch (e) {}
+    if (/^[A-Za-z0-9._:-]{16,128}$/.test(current)) return current;
+
+    var created = '';
+    try {
+      var c = root && root.crypto;
+      if (c && typeof c.randomUUID === 'function') {
+        created = c.randomUUID();
+      } else if (c && typeof c.getRandomValues === 'function') {
+        var bytes = new Uint8Array(16);
+        c.getRandomValues(bytes);
+        created = Array.prototype.map.call(bytes, function (b) {
+          return b.toString(16).padStart(2, '0');
+        }).join('');
+      }
+    } catch (e) {}
+    if (!created) {
+      created = 'ob-' + Date.now().toString(36) + '-' +
+        Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    }
+    try { if (storage) storage.setItem(ANON_ID_KEY, created); } catch (e) {}
+    return created;
+  }
+
+  // Profundidade guardada na própria entrada do histórico: sobrevive a
+  // back/forward, diferente de um contador em memória.
+  function currentDepth() {
+    if (typeof history === 'undefined' || !history.state) return 0;
+    return typeof history.state.depth === 'number' ? history.state.depth : 0;
+  }
+
+  /* ── Tema ──────────────────────────────────────────────────────────────
+     Mesma chave do produto logado (dashboard, app, cv), que abre em claro
+     quando não há preferência salva. */
+
+  var ICON_SUN = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
+  var ICON_MOON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+
+  function savedTheme() {
+    try {
+      return (storage && storage.getItem(THEME_KEY)) === 'dark' ? 'dark' : 'light';
+    } catch (e) { return 'light'; }
+  }
+
+  function applyTheme(theme) {
+    if (typeof document === 'undefined' || !document.documentElement) return;
+    document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light');
+  }
+
+  function syncThemeButton() {
+    if (typeof document === 'undefined') return;
+    var btn = document.getElementById('themeBtn');
+    if (!btn) return;
+    btn.innerHTML = document.documentElement.getAttribute('data-theme') === 'light' ? ICON_MOON : ICON_SUN;
+  }
+
+  function toggleTheme() {
+    if (typeof document === 'undefined') return;
+    var next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    try { if (storage) storage.setItem(THEME_KEY, next); } catch (e) {}
+    syncThemeButton();
+  }
+
+  // Aplicado já no carregamento: shared.js é carregado no <head>, antes do
+  // <body>, então a preferência salva entra sem flash do tema padrão.
+  applyTheme(savedTheme());
 
   function emptyState() {
     return {
@@ -664,6 +766,13 @@
     renderJourneySummary: renderJourneySummary,
     setContext: setContext,
     fadeNavigate: fadeNavigate,
+    esc: esc,
+    track: track,
+    trackPageView: trackPageView,
+    anonymousBrowserId: anonymousBrowserId,
+    currentDepth: currentDepth,
+    toggleTheme: toggleTheme,
+    syncThemeButton: syncThemeButton,
     stageProductData: stageProductData,
     claimAnalysis: claimAnalysis,
     provisionTracker: provisionTracker,

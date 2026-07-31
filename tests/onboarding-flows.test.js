@@ -283,11 +283,12 @@ describe('Onboarding adaptativo', () => {
   });
 
   it('limita a geração gratuita pelo navegador e usa o IP apenas contra abuso', () => {
-    assert.match(curriculoHtml, /var ANON_ID_KEY = 'vagaai_ob_anon_id'/);
-    assert.match(curriculoHtml, /function getAnonymousBrowserId\(\)/);
+    // A identidade anônima vive em shared.js; cada funil só a referencia.
+    assert.match(sharedSource, /var ANON_ID_KEY = 'vagaai_ob_anon_id'/);
+    assert.match(sharedSource, /function anonymousBrowserId\(\)/);
+    assert.match(curriculoHtml, /var getAnonymousBrowserId = OB\.anonymousBrowserId/);
     assert.match(curriculoHtml, /anon_id: getAnonymousBrowserId\(\)/);
-    assert.match(vagaHtml, /var ANON_ID_KEY = 'vagaai_ob_anon_id'/);
-    assert.match(vagaHtml, /function getAnonymousBrowserId\(\)/);
+    assert.match(vagaHtml, /var getAnonymousBrowserId = OB\.anonymousBrowserId/);
     assert.match(
       vagaHtml,
       /action:\s*'onboarding_cv'[\s\S]*?anon_id:\s*getAnonymousBrowserId\(\)/
@@ -364,5 +365,71 @@ describe('Onboarding adaptativo', () => {
       curriculoHtml,
       /function openCvImport\(\)[\s\S]*?if \(state\.imported && state\.importedName\) \{[\s\S]*?showImportSuccess\(state\.importedName\);/
     );
+  });
+});
+
+/* Regressões de bugs encontrados em auditoria. Não substituem um teste de
+   jornada real (que exigiria um DOM), mas impedem a reintrodução de cada
+   causa raiz específica. */
+describe('Regressões de navegação e estado', () => {
+  it('não deixa a etapa de carregamento órfã quando nenhuma análise roda', () => {
+    // Refresh/deep-link na etapa 4 mostrava spinner eterno, sem saída na tela
+    assert.match(vagaHtml, /if \(n === 4 && !state\.result && !_analysisRunning\)/);
+    assert.match(vagaHtml, /function showAnalysisInterrupted\(\)/);
+    // O markup de carregamento precisa voltar na tentativa seguinte
+    assert.match(vagaHtml, /function resetStep4\(\)/);
+    assert.match(vagaHtml, /resetStep4\(\);[\s\S]{0,140}goStep\(4\)/);
+    // Quem bateu o limite não recebe um "retomar" que falharia de novo
+    assert.match(vagaHtml, /state\.analysisBlocked = true/);
+    assert.match(vagaHtml, /if \(state\.analysisBlocked\) showLimitReached\(\)/);
+  });
+
+  it('reavalia o CTA do currículo ao voltar para a etapa 3', () => {
+    assert.match(vagaHtml, /if \(n === 3\) configureCvStep\(\)/);
+    // O estado do botão vem de state.cv, não de quem preencheu por último
+    assert.match(vagaHtml, /cvNext\.disabled = String\(state\.cv \|\| ''\)\.trim\(\)\.length < 50/);
+  });
+
+  it('anda no histórico de verdade ao voltar uma etapa', () => {
+    for (const html of [vagaHtml, curriculoHtml]) {
+      assert.match(html, /history\.pushState\(\{ step:n, depth: currentDepth\(\) \+ 1 \}/);
+      assert.match(html, /if \(currentDepth\(\) > 0\) \{ history\.back\(\); return; \}/);
+    }
+  });
+
+  it('só registra escolha de modelo quando a pessoa escolhe', () => {
+    assert.match(curriculoHtml, /if \(state\.tpl\) applyTpl\(state\.tpl\)/);
+    const applyBody = curriculoHtml.match(/function applyTpl\(tpl\) \{[\s\S]*?\n\}/);
+    const pickBody = curriculoHtml.match(/function pickTpl\(tpl\) \{[\s\S]*?\n\}/);
+    assert.ok(applyBody && pickBody);
+    assert.doesNotMatch(applyBody[0], /onboarding_cv_template_selected/);
+    assert.doesNotMatch(applyBody[0], /_tplViews\+\+/);
+    assert.match(pickBody[0], /onboarding_cv_template_selected/);
+  });
+
+  it('mantém as utilidades comuns em um lugar só', () => {
+    for (const html of [vagaHtml, curriculoHtml]) {
+      assert.match(html, /var OB = window\.VagaAIOnboarding/);
+      for (const dup of [
+        /^function esc\(/m,
+        /^function track\(/m,
+        /^function trackPageView\(/m,
+        /^function getAnonymousBrowserId\(/m,
+        /^function currentDepth\(/m,
+        /^function toggleTheme\(/m
+      ]) {
+        assert.doesNotMatch(html, dup);
+      }
+    }
+    for (const shared of [
+      /function esc\(/,
+      /function track\(/,
+      /function trackPageView\(/,
+      /function anonymousBrowserId\(/,
+      /function currentDepth\(/,
+      /function toggleTheme\(/
+    ]) {
+      assert.match(sharedSource, shared);
+    }
   });
 });

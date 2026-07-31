@@ -621,8 +621,18 @@ var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 var STATE_KEY = 'vagaai_ob_vaga';
-var ANON_ID_KEY = 'vagaai_ob_anon_id';
 var TOTAL_STEPS = 5;
+
+/* Utilidades comuns aos dois funis vivem em /onboarding/shared.js — os nomes
+   locais abaixo são só atalhos para os call sites. shared.js é dependência
+   obrigatória (carregada no <head>), não opcional. */
+var OB = window.VagaAIOnboarding;
+var esc = OB.esc;
+var track = OB.track;
+var trackPageView = OB.trackPageView;
+var getAnonymousBrowserId = OB.anonymousBrowserId;
+var currentDepth = OB.currentDepth;
+var toggleTheme = OB.toggleTheme;
 var state = {
   entry: 'cv',
   flow: '',
@@ -650,47 +660,6 @@ var state = {
   step: 1
 };
 var _analysisRunning = false;
-
-function getAnonymousBrowserId() {
-  var current = '';
-  try { current = localStorage.getItem(ANON_ID_KEY) || ''; } catch(e) {}
-  if (/^[A-Za-z0-9._:-]{16,128}$/.test(current)) return current;
-
-  var created = '';
-  try {
-    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
-      created = window.crypto.randomUUID();
-    } else if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
-      var bytes = new Uint8Array(16);
-      window.crypto.getRandomValues(bytes);
-      created = Array.prototype.map.call(bytes, function(b) {
-        return b.toString(16).padStart(2, '0');
-      }).join('');
-    }
-  } catch(e) {}
-  if (!created) {
-    created = 'ob-' + Date.now().toString(36) + '-' +
-      Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
-  }
-  try { localStorage.setItem(ANON_ID_KEY, created); } catch(e) {}
-  return created;
-}
-
-function track(name, params) {
-  try { if (typeof gtag === 'function') gtag('event', name, params || {}); } catch(e) {}
-}
-
-// page_view manual para navegação por pushState (ver renderStep)
-function trackPageView(path) {
-  try {
-    if (typeof gtag !== 'function') return;
-    gtag('event', 'page_view', {
-      page_path: path,
-      page_location: window.location.origin + path,
-      page_title: document.title
-    });
-  } catch(e) {}
-}
 
 /* ── Persistência: sobreviver a refresh, troca de aba e volta do e-mail ── */
 function saveState() {
@@ -760,26 +729,8 @@ function loadState() {
   }, state.alertDraft || {});
 }
 
-/* ── Tema: respeita o que o usuário já escolheu no resto do site ───────── */
-try {
-  var savedTheme = localStorage.getItem('vagaai_theme');
-  document.documentElement.setAttribute('data-theme', savedTheme === 'dark' ? 'dark' : 'light');
-} catch(e) {}
-
-var ICON_SUN_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
-var ICON_MOON_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
-function toggleTheme() {
-  var isLight = document.documentElement.getAttribute('data-theme') === 'light';
-  var next = isLight ? 'dark' : 'light';
-  document.documentElement.setAttribute('data-theme', next);
-  try { localStorage.setItem('vagaai_theme', next); } catch(e) {}
-  var btn = document.getElementById('themeBtn');
-  if (btn) btn.innerHTML = next === 'light' ? ICON_MOON_SVG : ICON_SUN_SVG;
-}
-(function() {
-  var btn = document.getElementById('themeBtn');
-  if (btn) btn.innerHTML = document.documentElement.getAttribute('data-theme') === 'light' ? ICON_MOON_SVG : ICON_SUN_SVG;
-})();
+/* Tema: aplicado pelo shared.js ainda no <head>, sem flash. */
+OB.syncThemeButton();
 
 /* ── Navegação por etapa ───────────────────────────────────────────────── */
 function stepFromUrl() {
@@ -953,12 +904,6 @@ function renderStep(n, push) {
 }
 
 function goStep(n) { renderStep(n, true); }
-
-// Profundidade guardada na própria entrada do histórico: sobrevive a
-// back/forward, diferente de um contador em memória.
-function currentDepth() {
-  return (history.state && typeof history.state.depth === 'number') ? history.state.depth : 0;
-}
 
 function goBack() {
   if (state.step <= 1) return;
@@ -1855,11 +1800,6 @@ function renderResult(d) {
   } else {
     keywordBlock.style.display = 'none';
   }
-}
-
-function esc(s) {
-  return String(s == null ? '' : s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 /* ── Cadastro ──────────────────────────────────────────────────────────── */
