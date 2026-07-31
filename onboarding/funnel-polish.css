@@ -202,6 +202,13 @@ body.ob-leaving {
   box-shadow: var(--ob-shadow-sm);
 }
 
+/* O currículo é papel nos dois temas. No escuro, o fundo acima virava
+   #101a14 enquanto o texto seguia #1a1a1a — praticamente ilegível. */
+.cv-paper {
+  background: #fff !important;
+  color: #1a1a1a !important;
+}
+
 .ob-context {
   margin-bottom: 22px !important;
   padding: 24px !important;
@@ -737,91 +744,30 @@ select:focus {
   box-shadow: var(--ob-shadow-md);
 }
 
-/* Miniatura como documento de verdade: papel branco em qualquer tema, com o
-   nome e o cargo reais da pessoa. Antes eram só barras cinzas — parecia
-   wireframe, não currículo, e contradizia a copy da etapa. */
+/* Miniatura = o documento real renderizado em escala, pelo mesmo
+   buildCvTemplate() do preview final. Barras cinzas não deixavam ninguém
+   avaliar o modelo; um desenho paralelo divergiria do documento com o tempo. */
 .tpl-thumb {
-  height: 104px !important;
+  position: relative;
+  display: block !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1.32;
+  padding: 0 !important;
+  overflow: hidden;
   background: #fff !important;
   border-color: rgba(0, 0, 0, .09) !important;
 }
 
-.tpl-thumb .tn {
-  display: block;
-  font-family: 'Lora', Georgia, serif;
-  font-size: 9.5px;
-  font-weight: 700;
-  line-height: 1.2;
-  color: #2d3748;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.tpl-thumb .tn.dark { color: #333; }
-.tpl-thumb .tn.sm { font-size: 8px; }
-.tpl-thumb .tn.light { color: #fff; }
-
-.tpl-thumb .tc {
-  display: block;
-  margin-bottom: 3px;
-  font-size: 6.5px;
-  line-height: 1.25;
-  color: #8a9e92;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Faixa do Executivo: cabeçalho branco com borda inferior de destaque,
-   igual ao .exec-header do documento real em cv/ */
-.tpl-thumb .band {
-  display: block;
-  margin: -7px -7px 5px;
-  padding: 6px 7px 5px;
-  border-bottom: 2px solid #2d3748;
-}
-
-/* Linha fina no topo do Moderno */
-.tpl-thumb .rule {
-  display: block;
-  height: 2px;
-  margin-bottom: 3px;
-  background: #2d3748;
-}
-
-/* Linha do tempo do Minimalista */
-.tpl-thumb .tl {
-  display: flex;
-  flex-direction: column;
-  gap: 3.5px;
-  margin-top: 3px;
-  padding-left: 6px;
-  border-left: 1px solid #d9e2dc;
-}
-
-/* Blocos lado a lado no fim do Focado e do Executivo */
-.tpl-thumb .two {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  margin-top: 4px;
-}
-
-.tpl-thumb .two > span {
-  display: flex;
-  flex-direction: column;
-  gap: 3.5px;
-  min-width: 0;
-}
-
-/* Coluna lateral: clara, como a sidebar real dos modelos com design */
-.tpl-thumb .side {
-  background: #eef2ef !important;
-}
-
-.tpl-thumb .side.wide {
-  width: 42%;
+.tpl-doc {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 620px;
+  transform-origin: top left;
+  pointer-events: none;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 /* O nome do modelo não dizia nada sobre quando usá-lo */

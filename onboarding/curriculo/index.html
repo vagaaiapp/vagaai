@@ -375,19 +375,19 @@ select:focus{outline:none;border-color:var(--green-border)}
     <div class="tpl-group">✓ Compatíveis com ATS — recomendados para candidaturas online</div>
     <div class="tpl-grid">
       <button class="tpl-card on" id="tplModern" onclick="pickTpl('modern')">
-        <span class="tpl-thumb t-modern"><span class="col"><span class="rule"></span><span class="tn"></span><span class="tc"></span><i></i><i></i><i style="width:70%"></i><i></i><i style="width:85%"></i></span></span>
+        <span class="tpl-thumb"></span>
         <span class="tpl-name">Moderno</span>
         <span class="tpl-why">Uma coluna, com uma linha fina de destaque no topo. Boa escolha padrão.</span>
         <span class="tpl-badge ats">ATS ✓</span>
       </button>
       <button class="tpl-card" id="tplFocus" onclick="pickTpl('focus')">
-        <span class="tpl-thumb t-focus"><span class="col"><span class="tn"></span><span class="tc"></span><i></i><i style="width:80%"></i><i></i><span class="two"><span><i></i><i style="width:70%"></i></span><span><i></i><i style="width:60%"></i></span></span></span></span>
+        <span class="tpl-thumb"></span>
         <span class="tpl-name">Focado</span>
         <span class="tpl-why">Experiência em destaque, formação e habilidades lado a lado no fim.</span>
         <span class="tpl-badge ats">ATS ✓</span>
       </button>
       <button class="tpl-card" id="tplMinimal" onclick="pickTpl('minimal')">
-        <span class="tpl-thumb t-minimal"><span class="col"><span class="tn dark"></span><span class="tc"></span><span class="tl"><i></i><i style="width:75%"></i><i></i><i style="width:60%"></i></span></span></span>
+        <span class="tpl-thumb"></span>
         <span class="tpl-name">Minimalista</span>
         <span class="tpl-why">Linha do tempo discreta, sem cor. O mais sóbrio dos seis.</span>
         <span class="tpl-badge ats">ATS ✓</span>
@@ -397,19 +397,19 @@ select:focus{outline:none;border-color:var(--green-border)}
     <div class="tpl-group">Com design visual — ideais para enviar direto ao recrutador</div>
     <div class="tpl-grid">
       <button class="tpl-card" id="tplClassic" onclick="pickTpl('classic')">
-        <span class="tpl-thumb t-classic"><span class="side"><i></i><i style="width:70%"></i><i></i><i style="width:80%"></i></span><span class="col"><span class="tn"></span><span class="tc"></span><i></i><i style="width:80%"></i><i></i></span></span>
+        <span class="tpl-thumb"></span>
         <span class="tpl-name">Profissional</span>
         <span class="tpl-why">Contato e competências numa coluna lateral. Bom para envio por e-mail.</span>
         <span class="tpl-badge vis">Sidebar</span>
       </button>
       <button class="tpl-card" id="tplExec" onclick="pickTpl('exec')">
-        <span class="tpl-thumb t-exec"><span class="col"><span class="band"><span class="tn"></span><span class="tc"></span></span><i></i><i style="width:80%"></i><span class="two"><span><i></i><i style="width:70%"></i></span><span><i></i><i style="width:60%"></i></span></span></span></span>
+        <span class="tpl-thumb"></span>
         <span class="tpl-name">Executivo</span>
         <span class="tpl-why">Cabeçalho largo com faixa de destaque. Para cargos sênior e liderança.</span>
         <span class="tpl-badge vis">Cabeçalho</span>
       </button>
       <button class="tpl-card" id="tplCompact" onclick="pickTpl('compact')">
-        <span class="tpl-thumb t-compact"><span class="side wide"><i></i><i style="width:75%"></i><i></i><i style="width:65%"></i><i></i></span><span class="col"><span class="tn sm"></span><span class="tc"></span><i></i><i></i><i style="width:70%"></i></span></span>
+        <span class="tpl-thumb"></span>
         <span class="tpl-name">Compacto</span>
         <span class="tpl-why">Lateral mais larga. Quando há bastante conteúdo e você quer uma página só.</span>
         <span class="tpl-badge vis">Sidebar</span>
@@ -680,7 +680,7 @@ function renderStep(n, push) {
   document.getElementById('backBtn').hidden = (n === 1 || n === 5);
   if (n === 2) restoreImportUi();
   if (n === 3) applyFormToInputs();
-  if (n === 4) applyThumbIdentity();
+  if (n === 4) renderTemplateThumbs();
   applyJourneyCopy();
   updateJourneySummary();
 
@@ -1259,18 +1259,70 @@ function collectForm() {
 /* ── Etapa 4: modelo ───────────────────────────────────────────────────── */
 var TPL_IDS = { modern:'tplModern', focus:'tplFocus', minimal:'tplMinimal', classic:'tplClassic', exec:'tplExec', compact:'tplCompact' };
 
-// Miniaturas com o nome e o cargo reais: a diferença entre avaliar "um
-// layout genérico" e avaliar "o meu currículo". Também é o que torna a
-// promessa da etapa ("veja seus próprios dados no modelo") verdadeira.
-function applyThumbIdentity() {
-  var f = state.form || {};
-  var nome = String(f.nome || '').trim() || 'Seu nome';
-  var cargo = String(f.cargo || '').trim() || 'Seu cargo';
-  var nomes = document.querySelectorAll('.tpl-thumb .tn');
-  for (var i = 0; i < nomes.length; i++) nomes[i].textContent = nome;
-  var cargos = document.querySelectorAll('.tpl-thumb .tc');
-  for (var j = 0; j < cargos.length; j++) cargos[j].textContent = cargo;
+/* Miniaturas = o documento de verdade, renderizado pequeno.
+   Usam buildCvTemplate(), o mesmo renderizador do preview da etapa final,
+   então não existe versão paralela para divergir — e a pessoa vê o layout
+   completo com o próprio conteúdo antes de escolher. */
+var TPL_DOC_W = 620; // largura de referência do documento antes da escala
+
+// Monta um currículo provisório com o que a pessoa já preencheu. A IA ainda
+// vai reescrever o texto na geração; aqui o que importa é a estrutura.
+function demoCvFromForm(f) {
+  var bruto = String(f.exp || '').trim();
+  var linhas = bruto
+    ? bruto.split(/[\n·;]+/).map(function(s) { return s.trim(); }).filter(Boolean).slice(0, 3)
+    : [];
+  var skills = String(f.skills || '').split(',')
+    .map(function(s) { return s.trim(); }).filter(Boolean).slice(0, 6);
+
+  return {
+    nome: String(f.nome || '').trim() || 'Seu nome',
+    titulo_profissional: String(f.cargo || '').trim() || 'Seu cargo',
+    contato: { email: f.email || '', telefone: f.tel || '', cidade: f.cidade || '' },
+    resumo_profissional: linhas[0] || '',
+    experiencias: linhas.length
+      ? [{ cargo: String(f.cargo || '').trim() || 'Sua experiência', empresa: '', periodo: '', bullets: linhas }]
+      : [],
+    formacao: f.form ? [{ curso: f.form, instituicao: '', periodo: '' }] : [],
+    habilidades: skills
+  };
 }
+
+function renderTemplateThumbs() {
+  var f = state.form || {};
+  var demo = demoCvFromForm(f);
+  Object.keys(TPL_IDS).forEach(function(tpl) {
+    var card = document.getElementById(TPL_IDS[tpl]);
+    var box = card && card.querySelector('.tpl-thumb');
+    if (!box) return;
+    var doc = box.querySelector('.tpl-doc');
+    if (!doc) {
+      doc = document.createElement('span');
+      box.innerHTML = '';
+      box.appendChild(doc);
+    }
+    doc.className = 'tpl-doc cv-paper cvt cvt-' + tpl;
+    doc.innerHTML = buildCvTemplate(tpl, demo, f, demo.contato);
+  });
+  scaleTemplateThumbs();
+}
+
+function scaleTemplateThumbs() {
+  Object.keys(TPL_IDS).forEach(function(tpl) {
+    var card = document.getElementById(TPL_IDS[tpl]);
+    var box = card && card.querySelector('.tpl-thumb');
+    var doc = box && box.querySelector('.tpl-doc');
+    if (!doc) return;
+    // clientWidth é 0 enquanto a etapa não está visível — daí o piso
+    doc.style.transform = 'scale(' + ((box.clientWidth || 230) / TPL_DOC_W) + ')';
+  });
+}
+
+// Sem isto a escala congela na largura de quando a etapa abriu, e o
+// documento vaza da caixa ao girar o celular ou redimensionar a janela.
+window.addEventListener('resize', function() {
+  if (state.step === 4) scaleTemplateThumbs();
+}, { passive: true });
 var _tplViews = 0;
 
 // Aplica o modelo (estado + destaque + preview). Não conta como escolha: o
