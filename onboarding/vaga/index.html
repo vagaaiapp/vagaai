@@ -1863,6 +1863,20 @@ async function signupEmail() {
   }
 }
 
+/* Ha conteudo que o usuario realmente digitou/enviou no estado salvo?
+   Usado para nao deixar new=1 apagar trabalho de verdade (ver boot). */
+function temProgressoInvestido() {
+  try {
+    var raw = sessionStorage.getItem(STATE_KEY);
+    if (!raw) return false;
+    var s = JSON.parse(raw);
+    if (!s) return false;
+    return !!(s.cv || s.job || s.jobUrl || s.result || s.generatedCv ||
+           (s.quickForm && Object.keys(s.quickForm).length) ||
+           (s.alertDraft && s.alertDraft.cargo));
+  } catch (e) { return false; }
+}
+
 /* ── Boot ──────────────────────────────────────────────────────────────── */
 (async function init() {
   var params = new URLSearchParams(window.location.search);
@@ -1877,7 +1891,12 @@ async function signupEmail() {
     }
   } catch(e) {}
 
-  if (params.get('new') === '1') {
+  // new=1 vem de todos os CTAs da landing page. Antes ele apagava o progresso
+  // sempre: quem entrava no funil, voltava pra home (o logo daqui aponta pra /)
+  // e clicava num CTA de novo perdia a vaga colada e o curriculo enviado — sem nenhum aviso.
+  // Agora so limpa quando nao ha nada a perder; se houver, o funil retoma de
+  // onde parou e o usuario segue da etapa pedida na URL.
+  if (params.get('new') === '1' && !temProgressoInvestido()) {
     try { sessionStorage.removeItem(STATE_KEY); } catch(e) {}
     try { if (window.VagaAIOnboarding) window.VagaAIOnboarding.clear(); } catch(e) {}
   }

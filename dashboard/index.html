@@ -6462,24 +6462,54 @@ window.addEventListener('popstate', function(e) {
 // Retoma um checkout iniciado na landing (intenção guardada em localStorage).
 // O usuário já está autenticado aqui, então anexamos client_reference_id e
 // navegamos na MESMA aba (window.open programático seria bloqueado por popup).
+// Quem clicou em "Assinar Pro" na landing e não conseguiu ser levado ao Stripe
+// caía aqui no painel normal, sem checkout e sem nenhuma explicação — nunca
+// entendia por que não foi cobrado. O motivo mais comum é tempo: o cadastro
+// pede confirmação por e-mail, e a janela de 30 min estourava com facilidade.
+//
+// Agora há duas faixas. Até 30 min a intenção ainda é recente o bastante para
+// mandar direto ao Stripe (comportamento de sempre; a janela curta existe para
+// não abrir um checkout surpresa numa visita futura). Entre 30 min e 24 h não
+// redirecionamos sozinhos, mas abrimos a aba Plano com um aviso, para ele
+// concluir com um clique em vez de sumir do funil.
+//
+// O caso de abrir o link de confirmação em OUTRO navegador ou dispositivo não
+// tem conserto deste lado: o localStorage é de outra origem e a intenção não
+// existe aqui. Recuperar isso exigiria guardar a intenção no servidor.
+var CHECKOUT_AUTO_MS = 30 * 60 * 1000;
+var CHECKOUT_AVISO_MS = 24 * 60 * 60 * 1000;
+
+function avisarCheckoutInterrompido() {
+  try {
+    switchDashTab('plano');
+    if (typeof showToast === 'function') {
+      showToast('Seu checkout do plano Pro ficou pela metade. É só escolher o plano aqui para continuar.', 'error');
+    }
+  } catch (e) {}
+}
+
 function resumePendingCheckout() {
   var raw = null;
   try { raw = localStorage.getItem('vagaai_pending_checkout'); } catch (e) { return false; }
   if (!raw) return false;
   try { localStorage.removeItem('vagaai_pending_checkout'); } catch (e) {}
+
   var data = null;
-  try { data = JSON.parse(raw); } catch (e) { return false; }
-  if (!data || !data.url) return false;
+  try { data = JSON.parse(raw); } catch (e) { data = null; }
   // valida destino — só aceita links de checkout do Stripe
-  if (!/^https:\/\/buy\.stripe\.com\//.test(data.url)) return false;
-  // expira em 30 min para não disparar um checkout surpresa em visitas futuras
-  if (!data.ts || (Date.now() - data.ts) > 30 * 60 * 1000) return false;
-  if (!(currentUserId && currentSession && currentSession.user)) return false;
-  var sep = data.url.indexOf('?') !== -1 ? '&' : '?';
-  var url = data.url + sep + 'client_reference_id=' + encodeURIComponent(currentUserId)
-          + '&prefilled_email=' + encodeURIComponent(currentSession.user.email || '');
-  window.location.assign(url);
-  return true;
+  var valido = !!(data && data.url && /^https:\/\/buy\.stripe\.com\//.test(data.url) && data.ts);
+  var idade = valido ? (Date.now() - data.ts) : Infinity;
+
+  if (valido && idade <= CHECKOUT_AUTO_MS && currentUserId && currentSession && currentSession.user) {
+    var sep = data.url.indexOf('?') !== -1 ? '&' : '?';
+    var url = data.url + sep + 'client_reference_id=' + encodeURIComponent(currentUserId)
+            + '&prefilled_email=' + encodeURIComponent(currentSession.user.email || '');
+    window.location.assign(url);
+    return true;
+  }
+
+  if (idade <= CHECKOUT_AVISO_MS) { avisarCheckoutInterrompido(); return true; }
+  return false; // intenção velha demais: segue para a aba pedida normalmente
 }
 
 function openRequestedDashboardTab() {

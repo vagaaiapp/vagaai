@@ -31,7 +31,8 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,13,0.92);backdrop-fi
 .page-title{font-family:'Lora',serif;font-size:clamp(24px,4vw,36px);font-weight:700;margin-bottom:.5rem}
 .updated{font-size:13px;color:var(--muted);margin-bottom:3rem}
 .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:2.5rem}
-.tab{padding:.7rem 1.4rem;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.tab{padding:.7rem 1.4rem;min-height:44px;font-family:inherit;background:none;border:0;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.tab:focus-visible{outline:2px solid var(--green);outline-offset:-2px;border-radius:6px 6px 0 0}
 .tab.active{color:var(--green);border-color:var(--green)}
 .section{display:none}
 .section.active{display:block}
@@ -76,9 +77,9 @@ footer{text-align:center;padding:2rem;font-size:13px;color:var(--muted);border-t
   <h1 class="page-title">Termos de Uso e Privacidade</h1>
   <p class="updated">Última atualização: 3 de junho de 2026</p>
 
-  <div class="tabs">
-    <div class="tab active" onclick="showTab('termos')">Termos de Uso</div>
-    <div class="tab" onclick="showTab('privacidade')">Política de Privacidade</div>
+  <div class="tabs" role="tablist" aria-label="Seções do documento">
+    <button type="button" class="tab active" role="tab" aria-selected="true" aria-controls="termos" onclick="showTab('termos')">Termos de Uso</button>
+    <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="privacidade" onclick="showTab('privacidade')">Política de Privacidade</button>
   </div>
 
   <!-- TERMOS DE USO -->
@@ -195,6 +196,7 @@ function showTab(id, fromHash) {
   // Ativa a aba correta pelo índice (0 = termos, 1 = privacidade)
   var tabs = document.querySelectorAll('.tab');
   var idx = id === 'privacidade' ? 1 : 0;
+  tabs.forEach(function(t, i) { t.setAttribute('aria-selected', i === idx ? 'true' : 'false'); });
   if (tabs[idx]) tabs[idx].classList.add('active');
   if (!fromHash && event && event.target) event.target.classList.add('active');
 }

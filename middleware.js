@@ -32,7 +32,14 @@ export const config = { matcher: ['/', '/sitemap.xml', '/blog/post'] };
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const SITE = 'https://www.vagaai.app.br';
-const FETCH_TIMEOUT_MS = 4000;
+// Timeouts separados por rota. A home e o /blog/post caem em falha aberta (a
+// pagina renderiza sem a secao de blog / o client rebusca), entao esperar 4s
+// so serve para segurar o TTFB de um visitante numa revalidacao de cache — 1,5s
+// ja cobre com folga uma consulta que normalmente responde em ~150ms.
+// O sitemap nao tem fallback util: sem os dados ele sai vazio e o Google perde
+// os posts, entao ali vale a pena esperar mais. Ninguem esta olhando a tela.
+const FETCH_TIMEOUT_MS = 1500;
+const SITEMAP_TIMEOUT_MS = 5000;
 
 function escHtml(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -53,10 +60,10 @@ function parseCats(raw) {
   }
 }
 
-async function supabaseFetch(path) {
+async function supabaseFetch(path, timeoutMs = FETCH_TIMEOUT_MS) {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const r = await fetch(`${SUPABASE_URL}${path}`, { headers: { apikey: SUPABASE_ANON_KEY }, signal: controller.signal });
     if (!r.ok) return null;
@@ -121,7 +128,7 @@ async function handleSitemap() {
     { loc: '/termos', changefreq: 'monthly', priority: '0.4' },
   ];
 
-  const posts = (await supabaseFetch('/rest/v1/blog_posts?published=eq.true&select=slug,created_at&order=created_at.desc&limit=500')) || [];
+  const posts = (await supabaseFetch('/rest/v1/blog_posts?published=eq.true&select=slug,created_at&order=created_at.desc&limit=500', SITEMAP_TIMEOUT_MS)) || [];
 
   const staticUrls = staticPages.map(p =>
     `  <url>\n    <loc>${SITE}${p.loc}</loc>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`

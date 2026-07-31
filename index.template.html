@@ -388,7 +388,7 @@
     /* PRICING */
     .pricing{background:var(--bg)}
     .billing-toggle{margin:24px auto 0;width:max-content;display:flex;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
-    .billing-toggle button{padding:9px 18px;border:0;background:transparent;border-radius:9px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+    .billing-toggle button{padding:9px 18px;min-height:44px;border:0;background:transparent;border-radius:9px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:6px}
     .billing-toggle button.active{background:var(--green);color:#071009}
     .billing-badge{font-size:10px;font-weight:800;padding:2px 6px;border-radius:20px;background:var(--mint);color:var(--green);letter-spacing:.02em}
     .billing-toggle button.active .billing-badge{background:rgba(7,16,9,.15);color:#071009}
@@ -505,7 +505,7 @@
       .brand img{height:28px;max-width:94px;object-fit:contain}
       .nav-actions{gap:6px}
       .nav a.btn:not(.primary){display:none}
-      .nav .btn{min-height:40px;padding:0 14px;font-size:12px;white-space:nowrap;min-width:0}
+      .nav .btn{min-height:44px;padding:0 14px;font-size:12px;white-space:nowrap;min-width:0}
       .theme-toggle,.menu{width:38px;height:38px}
       .nav.open .nav-links{left:12px;right:12px;top:66px}
       .hero{padding:132px 0 56px}
@@ -774,6 +774,23 @@
         width:100%;
       }
     }
+    /* Telas curtas (o 360x640 comum no Android e qualquer iPhone em paisagem):
+       o hero media 1233px e o primeiro CTA caia em y=654 — nenhum botao
+       aparecia sem rolar, e o card 02 comecava so em y=758. Compacta o topo
+       para caber o card 01 inteiro acima da dobra. */
+    @media(max-width:860px) and (max-height:760px){
+      .hero{padding:92px 0 34px}
+      .hero-social{margin-bottom:12px;padding:6px 12px}
+      .hero-social span{font-size:11px}
+      .hero h1{margin-top:12px;font-size:clamp(27px,8.4vw,34px)}
+      .hero-copy{margin-top:12px;font-size:14.5px}
+      .paths{margin-top:20px;gap:12px}
+      .path{padding:20px}
+      .path-num{font-size:40px;top:10px}
+      .path h3{margin-top:14px;font-size:19px}
+      .path p{margin:7px 0 14px;font-size:13px}
+      .micro{margin-top:16px}
+    }
     /* Seletor reutilizavel para CTAs genericos. */
     .journey-modal{position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(2,12,7,.68);backdrop-filter:blur(10px)}
     .journey-modal.is-open{display:flex}
@@ -814,8 +831,8 @@
           <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
           <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
-        <a class="btn" href="/login">Entrar</a>
-        <a class="btn primary journey-trigger" href="#jornadas">Começar grátis</a>
+        <a class="btn" href="/login" id="navEntrar">Entrar</a>
+        <a class="btn primary journey-trigger" href="#jornadas" id="navComecar">Começar grátis</a>
         <button class="menu" id="menuBtn" aria-label="Abrir menu" aria-expanded="false" aria-controls="navLinks">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
         </button>
@@ -828,8 +845,8 @@
     <!-- 2. HERO -->
     <section class="hero"><div class="wrap hero-content">
       <div class="hero-social reveal">
-        <span class="hero-stars">★★★★★</span>
-        <span><b>4,8</b> · <span class="hero-social-full">mais de 1.200 profissionais já usam a VagaAI</span><span class="hero-social-short">1.200+ profissionais usam a VagaAI</span></span>
+        <span class="hero-stars">✓</span>
+        <span><b>Grátis para começar</b> · <span class="hero-social-full">sem cartão de crédito e sem inventar experiências</span><span class="hero-social-short">sem cartão de crédito</span></span>
       </div>
       <span class="eyebrow reveal">Seu currículo no centro da busca</span>
       <h1 class="reveal">Currículo certo. <span class="green">Vaga certa.</span> Sem adivinhação.</h1>
@@ -1096,7 +1113,7 @@
       <div class="center reveal">
         <span class="eyebrow">Histórias reais</span>
         <h2>Pessoas reais. <span class="green">Buscas mais bem preparadas.</span></h2>
-        <div class="hero-social" style="margin:18px auto 0"><span class="hero-stars">★★★★★</span><span><b>4,8</b> · <span class="hero-social-full">mais de 1.200 profissionais já usam a VagaAI</span><span class="hero-social-short">1.200+ profissionais usam a VagaAI</span></span></div>
+
       </div>
       <div class="testi-grid reveal">
         <article class="testi glow"><div class="testi-stars">★★★★★</div><p>"Eu enviava praticamente o mesmo currículo para todas as vagas. Com a análise, consegui entender quais experiências precisavam aparecer com mais clareza."</p><footer><div class="testi-av">AC</div><div><b>Ana Carolina S.</b><span>Desenvolvedora Full Stack</span></div></footer></article>
@@ -1258,6 +1275,37 @@
        enquanto analytics_storage estiver 'denied'. */
     function track(evento, dados) {
       try { if (typeof gtag === 'function') gtag('event', evento, dados || {}); } catch (e) {}
+    }
+
+    /* ===== VISITANTE JÁ LOGADO =====
+       Quem já tem conta via uma página que o trata como estranho — "Entrar" e
+       "Começar grátis" — e qualquer caminho que clicasse ricocheteava pelo
+       onboarding até o /app.
+       Detectar a sessão pelo SDK exigiria carregar o supabase-js (script
+       externo, ~40 KB) na página de maior tráfego do site, caro demais para o
+       que resolve. O SDK guarda a sessão em localStorage sob chave previsível,
+       então basta ler e conferir a validade — sem nenhuma requisição.
+       É heurística: no pior caso o botão aparece à toa, o usuário clica e o
+       /dashboard o manda para o /login, exatamente como faria de outro jeito. */
+    function sessaoAtiva() {
+      try {
+        var raw = localStorage.getItem('sb-kbcjchjepgejdezeuwwh-auth-token');
+        if (!raw) return false;
+        var s = JSON.parse(raw);
+        if (!s) return false;
+        var exp = s.expires_at || (s.currentSession && s.currentSession.expires_at);
+        return !exp || (exp * 1000) > Date.now();
+      } catch (e) { return false; }
+    }
+    if (sessaoAtiva()) {
+      var btnEntrar = document.getElementById('navEntrar');
+      var btnComecar = document.getElementById('navComecar');
+      if (btnEntrar) btnEntrar.style.display = 'none';
+      if (btnComecar) {
+        btnComecar.textContent = 'Ir para o painel';
+        btnComecar.setAttribute('href', '/dashboard');
+        btnComecar.classList.remove('journey-trigger'); // não abre o modal de jornada
+      }
     }
 
     /* ===== THEME ===== */
