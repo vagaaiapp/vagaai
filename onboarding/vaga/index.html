@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR" data-theme="light">
 <head>
 <!-- Google Analytics 4 (com Consent Mode v2 — LGPD) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XCT8K58VWF"></script>
@@ -763,7 +763,7 @@ function loadState() {
 /* ── Tema: respeita o que o usuário já escolheu no resto do site ───────── */
 try {
   var savedTheme = localStorage.getItem('vagaai_theme');
-  document.documentElement.setAttribute('data-theme', savedTheme === 'light' ? 'light' : 'dark');
+  document.documentElement.setAttribute('data-theme', savedTheme === 'dark' ? 'dark' : 'light');
 } catch(e) {}
 
 var ICON_SUN_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
@@ -1567,6 +1567,11 @@ function configureCvStep() {
     existing.style.display = '';
     quick.hidden = true;
     quick.style.display = 'none';
+    // Deriva o CTA do estado, não de quem preencheu por último: ao voltar de
+    // uma falha de análise o currículo já está em memória e o botão precisa
+    // estar clicável mesmo sem novo upload/colagem.
+    var cvNext = document.getElementById('cvNext');
+    if (cvNext) cvNext.disabled = String(state.cv || '').trim().length < 50;
   }
   applyJourneyCopy();
 }
@@ -1733,12 +1738,10 @@ function showLimitReached() {
 }
 
 function retryAnalysis() {
-  var retryUrl = '/onboarding/vaga/3';
-  if (window.VagaAIOnboarding && window.VagaAIOnboarding.fadeNavigate) {
-    window.VagaAIOnboarding.fadeNavigate(retryUrl);
-  } else {
-    window.location.href = retryUrl;
-  }
+  // Navegação SPA: recarregar o documento inteiro aqui era desnecessário —
+  // o estado já está em memória e resetStep4() devolve a tela de carregamento
+  // na próxima tentativa.
+  goStep(3);
 }
 
 /* ── Etapa 5: resultado (prévia real, não teaser bloqueado) ────────────── */
