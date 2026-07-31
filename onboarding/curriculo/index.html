@@ -404,6 +404,7 @@ select:focus{outline:none;border-color:var(--green-border)}
 
     <div class="ob-note"><span>💡</span><span>Vai se candidatar por site de vagas (LinkedIn, Gupy, Indeed)? Prefira um modelo <b>ATS ✓</b> — são lidos com mais precisão por filtros automáticos.</span></div>
     <button class="ob-btn" id="templateNext" onclick="generateCv()">Montar meu currículo →</button>
+    <div class="ob-hint" style="text-align:center">Escolha sem medo: na próxima tela você troca de modelo à vontade, já vendo seu currículo pronto.</div>
   </section>
 
   <!-- ETAPA 4b — Gerando -->
@@ -422,6 +423,16 @@ select:focus{outline:none;border-color:var(--green-border)}
       <div class="ob-eyebrow">Pronto 🎉</div>
       <h1 id="step5Title">Seu currículo está pronto!</h1>
       <p class="ob-sub" id="step5Sub">Revise abaixo. Você pode trocar o modelo ou ajustar qualquer detalhe depois.</p>
+    </div>
+
+    <div class="ob-tpl-switch" role="group" aria-label="Trocar o modelo do currículo">
+      <span class="ob-tpl-switch-lbl">Modelo</span>
+      <button type="button" class="ob-tpl-opt" data-tpl="modern" onclick="pickTpl('modern')">Moderno<span class="ob-tpl-ats">ATS</span></button>
+      <button type="button" class="ob-tpl-opt" data-tpl="focus" onclick="pickTpl('focus')">Focado<span class="ob-tpl-ats">ATS</span></button>
+      <button type="button" class="ob-tpl-opt" data-tpl="minimal" onclick="pickTpl('minimal')">Minimalista<span class="ob-tpl-ats">ATS</span></button>
+      <button type="button" class="ob-tpl-opt" data-tpl="classic" onclick="pickTpl('classic')">Profissional</button>
+      <button type="button" class="ob-tpl-opt" data-tpl="exec" onclick="pickTpl('exec')">Executivo</button>
+      <button type="button" class="ob-tpl-opt" data-tpl="compact" onclick="pickTpl('compact')">Compacto</button>
     </div>
 
     <div class="cv-paper" id="cvPreview"></div>
@@ -469,8 +480,6 @@ select:focus{outline:none;border-color:var(--green-border)}
         No <b>Pro</b> (R$39,90/mês): análises ilimitadas, carta de apresentação e simulador de entrevista.
       </div>
     </div>
-
-    <button class="ob-btn ghost" onclick="goStep(4)">Trocar o modelo</button>
   </section>
 
 </main>
@@ -1247,6 +1256,12 @@ function applyTpl(tpl) {
   for (var k in TPL_IDS) {
     var el = document.getElementById(TPL_IDS[k]);
     if (el) el.classList.toggle('on', k === tpl);
+  }
+  // Seletor compacto da etapa final espelha a grade da etapa 4
+  var opts = document.querySelectorAll('.ob-tpl-opt');
+  for (var i = 0; i < opts.length; i++) {
+    opts[i].classList.toggle('on', opts[i].getAttribute('data-tpl') === tpl);
+    opts[i].setAttribute('aria-pressed', opts[i].getAttribute('data-tpl') === tpl ? 'true' : 'false');
   }
   if (state.cv) renderPreview(state.cv); // troca de modelo já refletida no preview
 }

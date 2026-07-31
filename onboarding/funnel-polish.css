@@ -737,6 +737,76 @@ select:focus {
   border-radius: 3px !important;
 }
 
+/* Troca de modelo na etapa final: o currículo já está gerado e o modelo é só
+   renderização local, então dá pra alternar com o conteúdo real à vista em
+   vez de mandar a pessoa de volta escolher às cegas. */
+.ob-tpl-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--ob-line);
+  border-radius: var(--ob-radius-sm);
+  background: var(--ob-paper-soft);
+}
+
+.ob-tpl-switch-lbl {
+  margin-right: 2px;
+  color: var(--ob-copy);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .085em;
+  text-transform: uppercase;
+}
+
+.ob-tpl-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--ob-line-strong);
+  border-radius: 999px;
+  background: var(--ob-paper);
+  color: var(--ob-ink);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color .18s ease, background .18s ease, color .18s ease;
+}
+
+.ob-tpl-opt:hover {
+  border-color: var(--ob-action);
+  color: var(--ob-action);
+}
+
+.ob-tpl-opt.on {
+  border-color: var(--ob-action);
+  background: var(--ob-action);
+  color: #fff;
+}
+
+.ob-tpl-opt:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ob-action) 28%, transparent);
+  outline-offset: 2px;
+}
+
+.ob-tpl-ats {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  color: var(--ob-action);
+  opacity: .85;
+}
+
+.ob-tpl-opt.on .ob-tpl-ats {
+  color: #fff;
+  opacity: .75;
+}
+
 .ob-modal {
   padding: 20px !important;
   background: rgba(4, 16, 9, .68) !important;
