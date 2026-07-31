@@ -712,9 +712,11 @@ select:focus {
   margin-top: 14px;
 }
 
+/* 3 colunas: cada grupo tem exatamente 3 modelos, então 2 colunas deixavam
+   o terceiro card órfão numa linha sozinha. */
 .tpl-grid {
   display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   gap: 16px !important;
 }
 
@@ -735,8 +737,67 @@ select:focus {
   box-shadow: var(--ob-shadow-md);
 }
 
+/* Miniatura como documento de verdade: papel branco em qualquer tema, com o
+   nome e o cargo reais da pessoa. Antes eram só barras cinzas — parecia
+   wireframe, não currículo, e contradizia a copy da etapa. */
 .tpl-thumb {
-  background: var(--ob-paper-soft) !important;
+  height: 104px !important;
+  background: #fff !important;
+  border-color: rgba(0, 0, 0, .09) !important;
+}
+
+.tpl-thumb .tn {
+  display: block;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #1a7a4a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tpl-thumb .tn.dark { color: #333; }
+.tpl-thumb .tn.sm { font-size: 8px; }
+.tpl-thumb .tn.light { color: #fff; }
+
+.tpl-thumb .tc {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 6.5px;
+  line-height: 1.25;
+  color: #8a9e92;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Faixa do modelo Executivo sangra até a borda do "papel" */
+.tpl-thumb .band {
+  display: block;
+  margin: -7px -7px 5px;
+  padding: 5px 7px;
+  background: #1a7a4a;
+}
+
+/* O nome do modelo não dizia nada sobre quando usá-lo */
+.tpl-name { display: block; }
+
+.tpl-why {
+  display: block;
+  margin-top: 5px;
+  color: var(--ob-copy);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.tpl-badge { margin-top: 7px !important; }
+
+/* Explicação de ATS antes da grade: é o que dá sentido aos dois grupos */
+.tpl-ats-explainer {
+  margin: 0 0 20px !important;
 }
 
 .cv-paper {
@@ -1030,9 +1091,18 @@ select:focus {
 
   #cvHasJobQuestion .ob-choices,
   .ob-inline-choices,
-  .ob-methods,
-  .tpl-grid {
+  .ob-methods {
     grid-template-columns: 1fr !important;
+  }
+
+  /* 6 modelos em coluna única viraria uma rolagem longa demais */
+  .tpl-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .tpl-why {
+    font-size: 10.5px;
   }
 
   .ob-choice {
