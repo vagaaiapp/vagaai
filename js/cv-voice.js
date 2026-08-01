@@ -190,10 +190,13 @@
       var headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = 'Bearer ' + token;
 
-      var res = await fetch('/api/cv-voice', {
+      // Vive em /api/interview (action=cv_voice), nao em endpoint proprio: o
+      // Hobby plan da Vercel limita a 12 Serverless Functions por deploy e o
+      // projeto ja estava no teto.
+      var res = await fetch('/api/interview', {
         method: 'POST',
         headers: headers,
-        body: JSON.stringify({ field: field, audioBase64: b64, context: ctx })
+        body: JSON.stringify({ action: 'cv_voice', field: field, audioBase64: b64, context: ctx })
       });
       var data = await res.json().catch(function(){ return {}; });
       if (!res.ok) {
