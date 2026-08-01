@@ -172,6 +172,7 @@
     .nav-links{display:flex;gap:26px}
     .nav-links a{font-size:13px;font-weight:600;text-decoration:none;color:var(--copy);transition:color .2s}
     .nav-links a:hover{color:var(--ink)}
+    .nav-links .mobile-login{display:none}
     .nav-actions{display:flex;align-items:center;gap:8px}
     .theme-toggle{width:42px;height:42px;border:1px solid var(--line);border-radius:10px;display:grid;place-items:center;background:transparent;color:var(--copy);cursor:pointer;transition:.2s}
     .theme-toggle:hover{border-color:var(--green);color:var(--green);background:var(--mint)}
@@ -185,6 +186,7 @@
       .nav.open .nav-links{display:flex;position:absolute;top:72px;left:0;right:0;flex-direction:column;gap:4px;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:var(--shadow)}
       .nav.open .nav-links a{padding:12px 10px;border-radius:10px}
       .nav.open .nav-links a:hover{background:var(--mint)}
+      .nav.open .nav-links .mobile-login{display:block;border-top:1px solid var(--line);margin-top:6px;padding-top:16px;color:var(--green);font-weight:700}
     }
 
     /* HERO */
@@ -825,6 +827,7 @@
         <a href="#planos">Planos</a>
         <a href="/blog">Conteúdos</a>
         <a href="/paraempresas" style="color:var(--green);font-weight:700">Para empresas</a>
+        <a href="/login" class="mobile-login" id="mobileNavEntrar">Entrar</a>
       </div>
       <div class="nav-actions">
         <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">
@@ -1300,8 +1303,10 @@
     }
     if (sessaoAtiva()) {
       var btnEntrar = document.getElementById('navEntrar');
+      var mobileBtnEntrar = document.getElementById('mobileNavEntrar');
       var btnComecar = document.getElementById('navComecar');
       if (btnEntrar) btnEntrar.style.display = 'none';
+      if (mobileBtnEntrar) mobileBtnEntrar.style.display = 'none';
       if (btnComecar) {
         btnComecar.textContent = 'Ir para o painel';
         btnComecar.setAttribute('href', '/dashboard');
