@@ -37,6 +37,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/onboarding/shared.js"></script>
+<script src="/js/cv-voice.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -783,6 +784,7 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
           <div class="cv-builder-field">
             <label>Experiência profissional <span>— empresa, período e o que fez (pode ser informal)</span></label>
             <textarea id="cb-experiencias" rows="5" placeholder="Ex: Empresa ABC (2021–2024): Promotora de Vendas. Visitava 15 PDVs por semana, atingia 110% da meta mensal, organizava estoque e treinava equipe de 3 pessoas.&#10;&#10;Loja XYZ (2019–2021): Vendedora. Atendimento ao cliente, emissão de NF."></textarea>
+            <div id="cvvHostCbExp"></div>
           </div>
           <div class="cv-builder-field">
             <label>Formação acadêmica</label>
@@ -3218,6 +3220,26 @@ function showAppToast(msg, duration) {
   } else if (embedded) {
     document.body.classList.add('embedded');
   }
+})();
+</script>
+<!-- Entrada por voz no campo "conte com suas palavras" (/js/cv-voice.js).
+     Anonimo e aceito: este funil roda antes do cadastro. -->
+<script>
+(function(){
+  if (!window.CvVoice) return;
+  var HOST = 'cvvHostCbExp', KEY = 'cb-experiencias', CARGO = 'cb-cargo';
+  var host = document.getElementById(HOST);
+  if (!host || !document.getElementById(KEY)) return;
+  CvVoice.init({
+    getToken: function(){ return ''; },
+    getContext: function(){
+      var c = document.getElementById(CARGO);
+      return c ? { cargo: c.value } : {};
+    },
+    onFilled: function(){}
+  });
+  host.innerHTML = CvVoice.block(KEY, 'experiencia', null,
+    'Prefere falar? Conte em voz alta o que você fez em cada emprego — a IA organiza o texto.');
 })();
 </script>
 </body>

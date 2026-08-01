@@ -21,6 +21,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <script defer src="/_vercel/insights/script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/onboarding/shared.js"></script>
+<script src="/js/cv-voice.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -318,6 +319,7 @@ select:focus{outline:none;border-color:var(--green-border)}
     <div class="ob-field">
       <label for="fExp">Experiência profissional <small>— conte com suas palavras</small></label>
       <textarea id="fExp" placeholder="Ex: trabalhei 2 anos na Loja X como vendedora, atendia clientes, organizava o estoque e batia a meta quase todo mês..." oninput="onFormInput()"></textarea>
+      <div id="cvvHostFExp"></div>
       <div class="ob-count" id="fExpCount">0 caracteres</div>
       <div class="ob-hint" id="expHint">Pode escrever corrido, sem formatar. A IA transforma em tópicos profissionais.</div>
     </div>
@@ -1703,6 +1705,26 @@ function temProgressoInvestido() {
   else restoreCvRadarDraft();
 
   renderStep(stepFromUrl(), false);
+})();
+</script>
+<!-- Entrada por voz no campo "conte com suas palavras" (/js/cv-voice.js).
+     Anonimo e aceito: este funil roda antes do cadastro. -->
+<script>
+(function(){
+  if (!window.CvVoice) return;
+  var HOST = 'cvvHostFExp', KEY = 'fExp', CARGO = 'fCargo';
+  var host = document.getElementById(HOST);
+  if (!host || !document.getElementById(KEY)) return;
+  CvVoice.init({
+    getToken: function(){ return ''; },
+    getContext: function(){
+      var c = document.getElementById(CARGO);
+      return c ? { cargo: c.value } : {};
+    },
+    onFilled: function(){ if (typeof onFormInput === 'function') onFormInput(); }
+  });
+  host.innerHTML = CvVoice.block(KEY, 'experiencia', null,
+    'Prefere falar? Conte em voz alta o que você fez em cada emprego — a IA organiza o texto.');
 })();
 </script>
 </body>

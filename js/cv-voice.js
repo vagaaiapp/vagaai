@@ -126,14 +126,8 @@
       track('cv_voice_failed', { field: field, reason: 'sem_suporte' });
       return;
     }
-    var token = '';
-    try { token = _cfg.getToken ? await _cfg.getToken() : ''; } catch(e) {}
-    if (!token) {
-      status(key, 'Entre na sua conta para usar a gravação por voz.', 'err');
-      track('cv_voice_failed', { field: field, reason: 'sem_sessao' });
-      return;
-    }
-
+    // Sem token seguimos: os funis de currículo rodam antes do cadastro e o
+    // endpoint aceita anônimo com limite por IP.
     _key = key; _field = field; _idx = (idx == null ? null : idx);
     try {
       status(key, 'Solicitando acesso ao microfone...');
@@ -193,9 +187,12 @@
       var token = '';
       try { token = _cfg.getToken ? await _cfg.getToken() : ''; } catch(e) {}
 
+      var headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+
       var res = await fetch('/api/cv-voice', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        headers: headers,
         body: JSON.stringify({ field: field, audioBase64: b64, context: ctx })
       });
       var data = await res.json().catch(function(){ return {}; });

@@ -4,8 +4,15 @@
 // O usuário nunca vê a transcrição crua: o retorno já vem pronto para colar
 // no campo, e ele revisa dali.
 //
-// field=resumo  -> texto corrido do resumo profissional (sf_resumo)
-// field=bullets -> uma entrega por linha, verbo na frente (efec_bul_*)
+// field=resumo      -> texto corrido do resumo profissional (sf_resumo)
+// field=bullets     -> uma entrega por linha, verbo na frente (efec_bul_*)
+// field=experiencia -> relato organizado, para os campos "conte com suas
+//                      palavras" dos funis (fExp, qExp, cb-experiencias), cujo
+//                      texto ainda passa por outra IA que monta o currículo
+//
+// Aceita usuário anônimo: os funis de currículo rodam antes do cadastro, e é
+// justamente lá que a barra do campo em branco derruba mais gente. O limite
+// anônimo é por IP, como em analyze.js.
 
 import { checkAndCountLimit } from '../lib/ratelimit.js';
 import { transcribeAudio } from '../lib/transcribe.js';
@@ -26,6 +33,21 @@ const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 // 20/h por usuário cobre um currículo inteiro com folga e trava abuso.
 const USER_LIMIT = 20;
 const USER_WINDOW_MS = 60 * 60 * 1000;
+
+// Anônimo é mais apertado: sem conta não há a quem cobrar o custo. 12/24h
+// cobre com folga preencher um currículo no funil inteiro.
+const ANON_IP_LIMIT = 12;
+const ANON_IP_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+// IP do cliente para rate-limit. Prefere x-real-ip (definido pela Vercel, não
+// spoofável pelo cliente) em vez do 1º item de x-forwarded-for. Mesma função
+// de analyze.js.
+function clientIp(req) {
+  const realIp = (req.headers['x-real-ip'] || '').trim();
+  if (realIp) return realIp;
+  const xff = (req.headers['x-forwarded-for'] || '').split(',').map(s => s.trim()).filter(Boolean);
+  return xff.length ? xff[xff.length - 1] : 'unknown';
+}
 
 async function getUserFromToken(token) {
   try {
@@ -97,6 +119,29 @@ FORMATO: de 3 a 5 linhas, uma entrega por linha, sem numeracao e sem hifen/bulle
 ${REGRAS}`;
 }
 
+// Campos "conte com suas palavras" dos funis. Aqui o texto ainda passa por
+// outra IA que monta o currículo, entao a saida NAO deve ser formatada como
+// curriculo: o objetivo e so limpar a fala e preservar cada detalhe util.
+function promptExperiencia(transcript, ctx) {
+  const alvo = ctx.cargo ? `\nCargo desejado pela pessoa: ${String(ctx.cargo).slice(0, 120)}` : '';
+  return `A pessoa gravou um audio contando a propria experiencia profissional para preencher um formulario de curriculo. Reescreva a fala como um relato organizado e legivel.${alvo}
+
+FALA TRANSCRITA:
+"""
+${transcript.slice(0, 5000)}
+"""
+
+FORMATO: um paragrafo curto por emprego citado, na ordem em que a pessoa falou. Em cada um, deixe claro empresa, cargo, periodo e o que ela fazia, quando ela tiver dito isso. Texto corrido e simples, sem topicos e sem titulos. Preserve TODO detalhe util que ela deu (numeros, ferramentas, tamanho de equipe, metas) — este texto ainda sera transformado em curriculo depois, entao perder detalhe aqui e perder para sempre.
+
+${REGRAS}`;
+}
+
+const PROMPTS = {
+  resumo: { build: promptResumo, maxTokens: 600 },
+  bullets: { build: promptBullets, maxTokens: 700 },
+  experiencia: { build: promptExperiencia, maxTokens: 1200 },
+};
+
 function limparSaida(text, field) {
   let out = String(text || '').replace(/```[a-z]*\n?/gi, '').trim();
   if (field === 'bullets') {
@@ -106,8 +151,12 @@ function limparSaida(text, field) {
       .filter(Boolean)
       .slice(0, 6)
       .join('\n');
-  } else {
+  } else if (field === 'resumo') {
+    // Resumo é um parágrafo só.
     out = out.replace(/\s*\n+\s*/g, ' ').trim();
+  } else {
+    // Experiência mantém a quebra entre empregos, sem linhas vazias extras.
+    out = out.replace(/\n{3,}/g, '\n\n').trim();
   }
   return out;
 }
@@ -115,19 +164,24 @@ function limparSaida(text, field) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const token = (req.headers.authorization || '').replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Token required' });
+  // Token é opcional: os funis de currículo rodam antes do cadastro.
+  const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
+  const user = token ? await getUserFromToken(token) : null;
 
-  const user = await getUserFromToken(token);
-  if (!user) return res.status(401).json({ error: 'Invalid token' });
-
-  if (!(await checkAndCountLimit({ key: `u:${user.id}:cvvoice`, limit: USER_LIMIT, windowMs: USER_WINDOW_MS }))) {
-    return res.status(429).json({ error: 'Voce atingiu o limite de gravacoes desta hora. Tente novamente mais tarde.' });
+  const ok = user
+    ? await checkAndCountLimit({ key: `u:${user.id}:cvvoice`, limit: USER_LIMIT, windowMs: USER_WINDOW_MS })
+    : await checkAndCountLimit({ key: `ip:${clientIp(req)}:cvvoice`, limit: ANON_IP_LIMIT, windowMs: ANON_IP_WINDOW_MS });
+  if (!ok) {
+    return res.status(429).json({
+      error: user
+        ? 'Voce atingiu o limite de gravacoes desta hora. Tente novamente mais tarde.'
+        : 'Voce atingiu o limite de gravacoes por hoje. Crie sua conta para continuar.'
+    });
   }
 
   const { field, audioBase64, context } = req.body || {};
-  if (field !== 'resumo' && field !== 'bullets') {
-    return res.status(400).json({ error: 'field invalido. Use resumo ou bullets' });
+  if (!PROMPTS[field]) {
+    return res.status(400).json({ error: 'field invalido. Use resumo, bullets ou experiencia' });
   }
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
 
@@ -138,8 +192,8 @@ export default async function handler(req, res) {
     }
 
     const ctx = context && typeof context === 'object' ? context : {};
-    const prompt = field === 'resumo' ? promptResumo(transcript, ctx) : promptBullets(transcript, ctx);
-    const raw = await callClaude(prompt, field === 'resumo' ? 600 : 700);
+    const spec = PROMPTS[field];
+    const raw = await callClaude(spec.build(transcript, ctx), spec.maxTokens);
     const text = limparSaida(raw, field);
 
     if (!text) return res.status(502).json({ error: 'Falha ao organizar o texto. Tente gravar novamente.' });
