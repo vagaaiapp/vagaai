@@ -333,13 +333,27 @@ describe('Onboarding adaptativo', () => {
   });
 
   it('oferece um diagnóstico completo sem escolhas sobrepostas', () => {
-    assert.match(vagaHtml, /Vamos analisar sua candidatura por completo/);
+    // O checklist de valor continua existindo, mas como contexto da etapa 2 —
+    // não mais atrás de um clique de confirmação na etapa 1.
     assert.match(vagaHtml, /O diagnóstico inclui:/);
-    assert.match(vagaHtml, /Começar diagnóstico gratuito/);
-    assert.match(vagaHtml, /function startCompleteDiagnostic\(\)/);
     assert.match(vagaHtml, /state\.intent = 'complete'/);
+    // Proteção original: não voltar a ter perguntas de intenção sobrepostas.
     assert.doesNotMatch(vagaHtml, /Qual seu maior receio com essa vaga/);
     assert.doesNotMatch(vagaHtml, /onclick="pickIntent\(/);
+  });
+
+  it('não pede confirmação extra depois de responder que tem uma vaga', () => {
+    // Responder "Sim, analisar uma vaga" leva direto à etapa 2. O painel
+    // intermediário ("Começar diagnóstico gratuito") foi removido — sem ele,
+    // a resposta da etapa 1 é o único clique necessário.
+    // Ancorado no markup, não no texto solto: a frase ainda aparece em
+    // comentários explicando por que o painel saiu.
+    assert.doesNotMatch(vagaHtml, /startCompleteDiagnostic/);
+    assert.doesNotMatch(vagaHtml, /id="intentPanel"/);
+    assert.doesNotMatch(vagaHtml, /<button[^>]*>Começar diagnóstico/);
+    assert.match(vagaHtml, /function chooseHasJob\(hasJob\)[\s\S]*?goStep\(2\)/);
+    // Quem chega redirecionado de /curriculo já respondeu lá: não repergunta.
+    assert.match(vagaHtml, /skipQualification[\s\S]*?initialStep = 2/);
   });
 
   it('leva quem não tem vaga para uma jornada de currículo com alerta como objetivo', () => {
