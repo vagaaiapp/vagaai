@@ -212,7 +212,8 @@
       '.ob-journey-step.is-current .ob-journey-node{border-color:var(--green,#168451);background:var(--green,#168451);color:#fff;box-shadow:0 0 0 5px rgba(30,157,96,.10)}' +
       '.ob-journey-step-label{margin-left:8px;overflow:hidden;color:inherit;font-size:11px;line-height:1.25;font-weight:700;white-space:nowrap;text-overflow:ellipsis}' +
       '.ob-journey-step.is-current .ob-journey-step-label{color:var(--text,#0b1911)}' +
-      '.ob-journey-connector{height:1px;flex:1;min-width:16px;margin:12px 10px 0;background:var(--line,#dfe7e1)}' +
+      '.ob-journey-connector{height:1px;flex:1;min-width:16px;margin:12px 10px 0;background:var(--line,#dfe7e1);transition:background .22s ease}' +
+      '.ob-journey-step.is-current .ob-journey-connector{background:rgba(30,157,96,.22)}' +
       '.ob-journey-step.is-done .ob-journey-connector{background:rgba(30,157,96,.48)}' +
       '.ob-journey-meta{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line,#dfe7e1)}' +
       '.ob-journey-progress{min-width:0;color:var(--text,#0b1911);font-size:11px;line-height:1.4;font-weight:700}' +

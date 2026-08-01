@@ -68,11 +68,6 @@ body::before{
 .ob-back{background:none;border:none;color:var(--muted);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:8px 10px;margin-left:-10px;border-radius:8px;min-height:40px}
 .ob-back:hover{color:var(--text);background:var(--surface2)}
 .ob-back[hidden]{display:none}
-.ob-dots{display:flex;gap:6px;align-items:center}
-.ob-dot{width:18px;height:4px;border-radius:99px;background:var(--border);transition:background .3s}
-.ob-dot.done{background:var(--green-bright)}
-.ob-dot.now{background:var(--green)}
-@media(max-width:420px){.ob-dot{width:13px}}
 
 .ob-main{flex:1;width:100%;max-width:620px;margin:0 auto;padding:32px 20px 48px;display:flex;flex-direction:column}
 .ob-main.wide{max-width:760px}
@@ -207,9 +202,6 @@ select:focus{outline:none;border-color:var(--green-border)}
   <a href="/" class="ob-brand">Vaga<span>ai.</span></a>
   <div class="ob-top-right">
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema"></button>
-    <div class="ob-dots" id="dots" aria-hidden="true">
-      <div class="ob-dot now"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div>
-    </div>
   </div>
 </header>
 
@@ -637,11 +629,6 @@ function renderStep(n, push) {
   document.getElementById('stepGen').classList.remove('active');
   document.getElementById('obMain').classList.toggle('wide', n === 5);
 
-  var dots = document.querySelectorAll('.ob-dot');
-  for (var d = 0; d < dots.length; d++) {
-    dots[d].classList.toggle('done', d + 1 < n);
-    dots[d].classList.toggle('now', d + 1 === n);
-  }
   document.getElementById('backBtn').hidden = (n === 1 || n === 5);
   if (n === 2) restoreImportUi();
   if (n === 3) applyFormToInputs();
