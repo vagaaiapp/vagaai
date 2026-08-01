@@ -1453,12 +1453,14 @@ select:focus {
 
 .ob-journey-summary {
   width: min(100%, 820px) !important;
-  margin: 0 auto 22px !important;
-  padding: 18px 20px 16px !important;
-  border: 1px solid var(--ob-line-strong) !important;
-  border-radius: 20px !important;
-  background: linear-gradient(145deg, var(--ob-paper), color-mix(in srgb, var(--ob-paper-soft) 72%, var(--ob-paper))) !important;
-  box-shadow: 0 18px 54px rgba(7, 28, 16, .10) !important;
+  margin: 0 auto 18px !important;
+  padding: 14px 18px 12px !important;
+  border: 1px solid color-mix(in srgb, var(--ob-line-strong) 72%, transparent) !important;
+  border-radius: 17px !important;
+  background: color-mix(in srgb, var(--ob-paper) 88%, transparent) !important;
+  box-shadow: 0 10px 32px rgba(7, 28, 16, .065) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .ob-journey-summary::before {
@@ -1466,18 +1468,18 @@ select:focus {
 }
 
 .ob-journey-node {
-  width: 30px !important;
-  height: 30px !important;
-  flex-basis: 30px !important;
+  width: 26px !important;
+  height: 26px !important;
+  flex-basis: 26px !important;
   border-width: 1px !important;
-  font-size: 11px !important;
+  font-size: 10px !important;
 }
 
 .ob-journey-step.is-current .ob-journey-node {
   border-color: var(--ob-action) !important;
   background: var(--ob-action) !important;
   color: #fff !important;
-  box-shadow: 0 0 0 5px var(--ob-action-soft), 0 6px 18px rgba(26, 122, 74, .18) !important;
+  box-shadow: 0 0 0 4px var(--ob-action-soft), 0 5px 14px rgba(26, 122, 74, .15) !important;
 }
 
 .ob-journey-step.is-done .ob-journey-node {
@@ -1487,26 +1489,46 @@ select:focus {
 }
 
 .ob-journey-step-label {
-  margin-left: 9px !important;
-  font-size: 11px !important;
+  margin-left: 8px !important;
+  color: var(--ob-copy) !important;
+  font-size: 10.5px !important;
+  font-weight: 650 !important;
   letter-spacing: -.01em;
 }
 
+.ob-journey-step.is-current .ob-journey-step-label {
+  color: var(--ob-ink) !important;
+  font-weight: 800 !important;
+}
+
+.ob-journey-step.is-done .ob-journey-step-label {
+  color: color-mix(in srgb, var(--ob-action) 76%, var(--ob-copy)) !important;
+}
+
 .ob-journey-connector {
-  height: 2px !important;
-  margin-top: 14px !important;
+  height: 1px !important;
+  margin: 12px 12px 0 !important;
   border-radius: 999px;
+  opacity: .72;
 }
 
 .ob-journey-meta {
-  margin-top: 15px !important;
-  padding-top: 13px !important;
+  margin-top: 12px !important;
+  padding-top: 10px !important;
+  border-top-color: color-mix(in srgb, var(--ob-line) 72%, transparent) !important;
+}
+
+.ob-journey-progress {
+  color: var(--ob-copy) !important;
+  font-size: 10px !important;
+  font-weight: 650 !important;
 }
 
 .ob-journey-toggle {
-  min-height: 34px;
-  padding: 0 10px !important;
-  border-radius: 9px !important;
+  min-height: 30px;
+  padding: 0 9px !important;
+  border-radius: 8px !important;
+  font-size: 9.5px !important;
 }
 
 .ob-journey-toggle:hover {
