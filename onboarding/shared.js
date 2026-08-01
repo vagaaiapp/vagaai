@@ -204,17 +204,14 @@
       '.ob-journey-summary{position:sticky;top:var(--ob-journey-sticky-top,81px);z-index:12;isolation:isolate;margin:0 0 22px;padding:13px 16px;background:var(--card,#fff);border:1px solid var(--line,#dfe7e1);border-radius:16px;box-shadow:0 12px 32px rgba(9,35,20,.08)}' +
       '.ob-journey-summary::before{content:"";position:absolute;z-index:-1;inset:-9px -7px;background:var(--bg,#f4f7f5);border-radius:20px;pointer-events:none}' +
       '.ob-journey-summary[data-expanded="true"]{position:relative;top:auto}' +
-      '.ob-journey-stepper{display:flex;align-items:flex-start;width:100%}' +
-      '.ob-journey-step{display:flex;align-items:center;flex:1;min-width:0;color:var(--muted,#698072)}' +
-      '.ob-journey-step:last-child{flex:0 0 auto}' +
-      '.ob-journey-node{display:grid;place-items:center;width:24px;height:24px;flex:0 0 24px;border:1px solid var(--line,#dfe7e1);border-radius:50%;background:var(--card,#fff);color:var(--muted,#698072);font-size:10px;font-weight:800;transition:.22s ease}' +
-      '.ob-journey-step.is-done .ob-journey-node{border-color:rgba(30,157,96,.28);background:rgba(30,157,96,.12);color:var(--green,#168451)}' +
-      '.ob-journey-step.is-current .ob-journey-node{border-color:var(--green,#168451);background:var(--green,#168451);color:#fff;box-shadow:0 0 0 5px rgba(30,157,96,.10)}' +
-      '.ob-journey-step-label{margin-left:8px;overflow:hidden;color:inherit;font-size:11px;line-height:1.25;font-weight:700;white-space:nowrap;text-overflow:ellipsis}' +
-      '.ob-journey-step.is-current .ob-journey-step-label{color:var(--text,#0b1911)}' +
-      '.ob-journey-connector{height:1px;flex:1;min-width:16px;margin:12px 10px 0;background:var(--line,#dfe7e1);transition:background .22s ease}' +
-      '.ob-journey-step.is-current .ob-journey-connector{background:rgba(30,157,96,.22)}' +
-      '.ob-journey-step.is-done .ob-journey-connector{background:rgba(30,157,96,.48)}' +
+      '.ob-journey-stepper{width:100%}' +
+      '.ob-journey-track{display:flex;gap:6px;width:100%}' +
+      '.ob-journey-seg{flex:1;height:6px;border-radius:99px;background:var(--line,#dfe7e1);transition:background .22s ease}' +
+      '.ob-journey-seg.is-current{background:rgba(30,157,96,.55)}' +
+      '.ob-journey-seg.is-done{background:var(--green,#168451)}' +
+      '.ob-journey-labels{display:flex;justify-content:space-between;gap:6px;margin-top:8px}' +
+      '.ob-journey-label-item{min-width:0;overflow:hidden;color:var(--muted,#698072);font-size:11px;line-height:1.25;font-weight:700;white-space:nowrap;text-overflow:ellipsis}' +
+      '.ob-journey-label-item.is-done,.ob-journey-label-item.is-current{color:var(--text,#0b1911)}' +
       '.ob-journey-meta{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line,#dfe7e1)}' +
       '.ob-journey-progress{min-width:0;color:var(--text,#0b1911);font-size:11px;line-height:1.4;font-weight:700}' +
       '.ob-journey-toggle{flex:0 0 auto;padding:0;border:0;background:transparent;color:var(--green,#168451);font:inherit;font-size:10px;font-weight:800;cursor:pointer}' +
@@ -279,27 +276,23 @@
     var stepper = document.createElement('div');
     stepper.className = 'ob-journey-stepper';
     stepper.setAttribute('aria-label', 'Progresso da jornada');
+    var track = document.createElement('div');
+    track.className = 'ob-journey-track';
+    var labelsRow = document.createElement('div');
+    labelsRow.className = 'ob-journey-labels';
     stepLabels.forEach(function (stepLabel, index) {
       var stepNumber = index + 1;
-      var step = document.createElement('div');
-      step.className = 'ob-journey-step' +
-        (stepNumber < currentStep ? ' is-done' : '') +
-        (stepNumber === currentStep ? ' is-current' : '');
-      var node = document.createElement('span');
-      node.className = 'ob-journey-node';
-      node.textContent = stepNumber < currentStep ? '✓' : String(stepNumber);
-      var label = document.createElement('span');
-      label.className = 'ob-journey-step-label';
-      label.textContent = stepLabel;
-      step.appendChild(node);
-      step.appendChild(label);
-      if (stepNumber < totalSteps) {
-        var connector = document.createElement('span');
-        connector.className = 'ob-journey-connector';
-        step.appendChild(connector);
-      }
-      stepper.appendChild(step);
+      var stateClass = stepNumber < currentStep ? ' is-done' : (stepNumber === currentStep ? ' is-current' : '');
+      var seg = document.createElement('span');
+      seg.className = 'ob-journey-seg' + stateClass;
+      track.appendChild(seg);
+      var labelItem = document.createElement('span');
+      labelItem.className = 'ob-journey-label-item' + stateClass;
+      labelItem.textContent = stepLabel;
+      labelsRow.appendChild(labelItem);
     });
+    stepper.appendChild(track);
+    stepper.appendChild(labelsRow);
     summary.appendChild(stepper);
 
     var mobile = document.createElement('div');
