@@ -501,7 +501,11 @@ html.no-photo .compact-photo{display:none}
 
 /* ── 3-column editor layout ──────────────────────────────── */
 body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;margin:0;overflow:hidden}
-.app-header,.mob-bar,.panel-overlay{display:none!important}
+/* .app-header é de um design anterior desta página (substituído pelo
+   shell de 3 colunas abaixo) e fica sempre oculto. .mob-bar/.panel-overlay
+   já nascem display:none por padrão (definição própria mais acima) — sem
+   !important aqui, para que o media query mobile consiga reexibi-los. */
+.app-header{display:none!important}
 .cv-shell{display:flex;height:100vh;overflow:hidden}
 
 /* ── Left nav ─────────────────────────────────────────────── */
@@ -932,24 +936,39 @@ body.fit-one-page .exp-emp{margin:.05rem 0 .2rem}
 /* ─── Responsive ──────────────────────────────────────────── */
 @media(max-width:768px){
   html,body{overflow-x:hidden}
+  /* O shell de 3 colunas trava o scroll da página (overflow:hidden) de
+     propósito no desktop — cada coluna rola por conta própria. No mobile
+     o layout empilha em coluna única, então a PÁGINA precisa rolar. */
+  body{overflow-y:visible;padding:0}
   .app-header{display:none}
   .mob-bar{display:flex}
-  body{padding-left:0;padding-top:48px;padding-bottom:1.5rem}
-  .side-panel{
-    top:48px;left:0;width:280px;background:var(--app-card);
+
+  /* .cv-shell era uma linha flex de 3 colunas (nav 256px + main + preview
+     310px) somando >560px — em qualquer tela de celular isso empurrava
+     .cv-main pra largura 0 (o formulário ficava literalmente invisível) e
+     estourava o preview pra fora da tela. Empilha em coluna única. */
+  .cv-shell{flex-direction:column;height:auto;min-height:100vh;overflow:visible;padding-top:48px}
+  .cv-main{width:100%;flex:none;overflow-y:visible;padding-bottom:6.5rem}
+  .cv-preview{width:100%;flex:none;overflow-y:visible;border-left:none;border-top:1px solid rgba(0,0,0,.08)}
+
+  /* A navegação de Etapas vira painel deslizante (era .side-panel — classe
+     que não existe mais no HTML desde que a página passou a usar .cv-nav;
+     o CSS mobile antigo nunca chegou a se aplicar de fato). */
+  .cv-nav{
+    position:fixed;top:48px;left:0;bottom:0;width:280px;
     transform:translateX(-100%);transition:transform .25s ease;
     z-index:400;box-shadow:none;
   }
-  .side-panel.panel-open{
+  .cv-nav.panel-open{
     transform:translateX(0);
     box-shadow:4px 0 24px rgba(0,0,0,.55);
   }
+
   /* CV pages: scaled by JS for viewport-safe A4 preview */
   .page{margin:0 auto}
   .page-wrap{width:100%;overflow:visible;display:block}
   #cvpScaleOuter{max-width:calc(100vw - 28px);margin-inline:auto;overflow:hidden}
   #pageWrap{position:absolute!important;top:0;left:0;width:210mm!important;min-width:210mm!important;transform-origin:top left!important}
-  .cv-main{padding-bottom:6.5rem}
 }
 
 /* ─── No data ─────────────────────────────────────────────── */
@@ -2928,7 +2947,7 @@ function applyTemplate(tpl, save) {
   setTimeout(scaleCvPages, 50);
   // Close mobile panel after selecting template
   if (save !== false && window.innerWidth <= 768) {
-    var panel = document.getElementById('sidePanel');
+    var panel = document.querySelector('.cv-nav');
     var overlay = document.getElementById('panelOverlay');
     if (panel) panel.classList.remove('panel-open');
     if (overlay) overlay.classList.remove('vis');
@@ -3039,7 +3058,7 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
 
 /* ── Mobile: panel toggle ───────────────────────────────── */
 function togglePanel() {
-  var panel   = document.getElementById('sidePanel');
+  var panel   = document.querySelector('.cv-nav');
   var overlay = document.getElementById('panelOverlay');
   var isOpen  = panel.classList.toggle('panel-open');
   overlay.classList.toggle('vis', isOpen);
@@ -4151,7 +4170,7 @@ function saveEduEditor() {
 /* ── Mobile: close panel helper ─────────────────────────── */
 function _closePanelMob() {
   if (window.innerWidth > 768) return;
-  var panel = document.getElementById('sidePanel');
+  var panel = document.querySelector('.cv-nav');
   var overlay = document.getElementById('panelOverlay');
   if (panel) panel.classList.remove('panel-open');
   if (overlay) overlay.classList.remove('vis');
