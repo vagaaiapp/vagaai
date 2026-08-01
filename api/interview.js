@@ -4,6 +4,7 @@
 
 import { resolvePlan } from '../lib/entitlements.js';
 import { checkAndCountLimit } from '../lib/ratelimit.js';
+import { transcribeAudio } from '../lib/transcribe.js';
 
 export const config = {
   api: {
@@ -17,7 +18,6 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
-const ASSEMBLYAI_KEY = process.env.ASSEMBLYAI_API_KEY;
 
 async function getUserFromToken(token) {
   try {
@@ -140,87 +140,6 @@ Seja direto e honesto. Nota 5 = resposta excelente, 3 = aceitavel mas pode melho
   return JSON.parse(cleanJsonText(text));
 }
 
-function decodeBase64Audio(audioBase64) {
-  const clean = String(audioBase64 || '').replace(/^data:audio\/[a-z0-9.+-]+;base64,/i, '');
-  if (!clean) return null;
-  return Buffer.from(clean, 'base64');
-}
-
-async function transcribeAudio(audioBase64, mimeType) {
-  if (!ASSEMBLYAI_KEY) {
-    const err = new Error('ASSEMBLYAI_API_KEY not configured');
-    err.statusCode = 500;
-    err.publicMessage = 'Servico de transcricao nao configurado';
-    throw err;
-  }
-
-  const buffer = decodeBase64Audio(audioBase64);
-  if (!buffer || buffer.length < 1000) {
-    const err = new Error('Audio invalid');
-    err.statusCode = 400;
-    err.publicMessage = 'Audio invalido ou vazio';
-    throw err;
-  }
-  if (buffer.length > 7 * 1024 * 1024) {
-    const err = new Error('Audio too large');
-    err.statusCode = 413;
-    err.publicMessage = 'Audio muito grande. Grave uma resposta mais curta.';
-    throw err;
-  }
-
-  // 1. Upload do áudio
-  const uploadRes = await fetch('https://api.assemblyai.com/v2/upload', {
-    method: 'POST',
-    headers: { 'Authorization': ASSEMBLYAI_KEY, 'Content-Type': 'application/octet-stream' },
-    body: buffer,
-  });
-  if (!uploadRes.ok) {
-    console.error('AssemblyAI upload error:', uploadRes.status);
-    const err = new Error('Upload failed');
-    err.statusCode = 502;
-    err.publicMessage = 'Falha ao enviar audio para transcricao';
-    throw err;
-  }
-  const { upload_url } = await uploadRes.json();
-
-  // 2. Submete transcrição
-  const transcriptRes = await fetch('https://api.assemblyai.com/v2/transcript', {
-    method: 'POST',
-    headers: { 'Authorization': ASSEMBLYAI_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ audio_url: upload_url, language_code: 'pt', language_detection: false }),
-  });
-  if (!transcriptRes.ok) {
-    console.error('AssemblyAI transcript request error:', transcriptRes.status);
-    const err = new Error('Transcription request failed');
-    err.statusCode = 502;
-    err.publicMessage = 'Falha ao iniciar transcricao';
-    throw err;
-  }
-  const { id } = await transcriptRes.json();
-
-  // 3. Polling até concluir (max ~15s — a função tem maxDuration:60 no
-  // vercel.json; os ~7s anteriores estouravam os 10s default em áudios longos)
-  const pollingUrl = `https://api.assemblyai.com/v2/transcript/${id}`;
-  for (let i = 0; i < 30; i++) {
-    await new Promise(r => setTimeout(r, 500));
-    const pollRes = await fetch(pollingUrl, { headers: { 'Authorization': ASSEMBLYAI_KEY } });
-    const result = await pollRes.json();
-    if (result.status === 'completed') return (result.text || '').trim();
-    if (result.status === 'error') {
-      console.error('AssemblyAI transcription error:', result.error);
-      const err = new Error('Transcription error');
-      err.statusCode = 502;
-      err.publicMessage = 'Falha ao transcrever o audio';
-      throw err;
-    }
-  }
-
-  const err = new Error('Transcription timeout');
-  err.statusCode = 504;
-  err.publicMessage = 'Transcricao demorou demais. Tente novamente com uma resposta mais curta.';
-  throw err;
-}
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -243,7 +162,7 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Limite de uso atingido. Tente novamente mais tarde.' });
   }
 
-  const { action, job, cv, question, answer, audioBase64, mimeType } = req.body || {};
+  const { action, job, cv, question, answer, audioBase64 } = req.body || {};
 
   try {
     if (action === 'generate') {
@@ -263,7 +182,7 @@ export default async function handler(req, res) {
     }
 
     if (action === 'transcribe') {
-      const text = await transcribeAudio(audioBase64, mimeType);
+      const text = await transcribeAudio(audioBase64);
       return res.status(200).json({ text });
     }
 

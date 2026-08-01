@@ -9,6 +9,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script defer src="/_vercel/insights/script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/cv-voice.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -541,7 +542,8 @@ function saveObjetivo() { saveAndClose(function(){ _cvData.titulo_profissional =
 function editResumo() {
   openModal(
     '<h3>Resumo das qualificações</h3>' +
-    '<div class="f-row"><label>3-4 linhas sobre sua trajetória</label><textarea id="mResumo" rows="5">' + esc(_cvData.resumo_profissional) + '</textarea></div>' +
+    '<div class="f-row"><label>3-4 linhas sobre sua trajetória</label><textarea id="mResumo" rows="5">' + esc(_cvData.resumo_profissional) + '</textarea>' +
+    cvVoiceBlock('mResumo', 'resumo', null, 'Sem ideia do que escrever? Fale por 30s sobre sua carreira e a IA monta o resumo.') + '</div>' +
     '<div class="modal-actions"><button class="btn btn-primary" onclick="saveResumo()">Salvar</button><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button></div>'
   );
 }
@@ -569,7 +571,44 @@ function expRowHtml(i, e) {
     '<div class="f-grid2"><div class="f-row"><label>Cargo</label><input class="e-cargo" value="' + esc(e.cargo) + '"></div>' +
     '<div class="f-row"><label>Empresa</label><input class="e-empresa" value="' + esc(e.empresa) + '"></div></div>' +
     '<div class="f-row"><label>Período</label><input class="e-periodo" placeholder="Ex: 2021 — 2024" value="' + esc(e.periodo) + '"></div>' +
-    '<div class="f-row"><label>Principais atividades (uma por linha)</label><textarea class="e-bullets" rows="3">' + esc((e.bullets||[]).join('\n')) + '</textarea></div></div>';
+    '<div class="f-row"><label>Principais atividades (uma por linha)</label><textarea class="e-bullets" id="cvvb_' + i + '" rows="3">' + esc((e.bullets||[]).join('\n')) + '</textarea>' +
+    cvVoiceBlock('cvvb_' + i, 'bullets', i, 'Conte o que você fazia nesse cargo e o que entregou — a IA transforma em linhas de currículo.') + '</div></div>';
+}
+
+/* Entrada por voz (/js/cv-voice.js). Devolve '' se o módulo não carregou —
+   o campo continua funcionando por texto. */
+function cvVoiceBlock(key, field, idx, hint) {
+  return window.CvVoice ? CvVoice.block(key, field, idx, hint) : '';
+}
+
+if (window.CvVoice) {
+  CvVoice.init({
+    getToken: async function() {
+      try {
+        var r = await sb.auth.getSession();
+        var s = r && r.data && r.data.session;
+        if (s) _session = s;
+      } catch(e) {}
+      return (_session && _session.access_token) || '';
+    },
+    // Os campos aqui não têm ids fixos como no /cv: cargo e empresa vivem na
+    // mesma .list-row do textarea, por classe.
+    getContext: function(field, idx) {
+      var ctx = {};
+      if (field === 'resumo') {
+        ctx.titulo = (_cvData && _cvData.titulo_profissional) || '';
+      } else {
+        var ta = document.getElementById('cvvb_' + idx);
+        var row = ta && ta.closest('.list-row');
+        if (row) {
+          var c = row.querySelector('.e-cargo'), em = row.querySelector('.e-empresa');
+          if (c) ctx.cargo = c.value;
+          if (em) ctx.empresa = em.value;
+        }
+      }
+      return ctx;
+    }
+  });
 }
 function addExpRow() { document.getElementById('listRows').insertAdjacentHTML('beforeend', expRowHtml(Date.now(), {})); }
 function saveExperiencias() {

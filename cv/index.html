@@ -12,6 +12,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <script src="/cookie-consent.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/onboarding/shared.js"></script>
+<script src="/js/cv-voice.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Currículo Otimizado</title>
@@ -590,6 +591,7 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 .csv-input:focus{border-color:var(--app-emerald);box-shadow:0 0 0 3px rgba(26,122,74,.08)}
 .csv-textarea{resize:vertical;min-height:100px}
 .csv-char-count{font-size:10.5px;color:var(--app-t3);margin-top:.2rem}
+
 
 /* Steps 3-4 experience/edu cards */
 .csv-section-label{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--app-t3);margin-bottom:.6rem}
@@ -1218,6 +1220,14 @@ html.no-photo .mod-header{display:block}
         <div class="csv-field" style="grid-column:1/-1">
           <label class="csv-label" for="sf_resumo">Resumo profissional</label>
           <textarea class="csv-input csv-textarea" id="sf_resumo" oninput="sfOnChange();s2CheckResumo()" rows="5" placeholder="Descreva sua trajetória, principais competências e o que você busca. Seja objetivo e use palavras-chave da área."></textarea>
+          <div class="cvmic" id="cvmic_sf_resumo">
+            <button class="cvmic-btn" type="button" id="cvmic_sf_resumo_b" onclick="CvVoice.toggle('sf_resumo','resumo',null)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+              <span id="cvmic_sf_resumo_l">Preencher falando</span>
+            </button>
+            <span class="cvmic-time" id="cvmic_sf_resumo_t"></span>
+            <div class="cvmic-status" id="cvmic_sf_resumo_s">Sem ideia do que escrever? Fale por 30s sobre sua carreira e a IA monta o resumo.</div>
+          </div>
           <div class="csv-inline-fb" id="s2ResumoFb"></div>
         </div>
         <div class="csv-field">
@@ -1748,6 +1758,22 @@ async function _initSbSession() {
     _sbSession = (r && r.data && r.data.session) ? r.data.session : null;
   } catch(e) { _sbSession = null; }
   return _sbSession;
+}
+
+/* Entrada por voz nos campos de texto livre (/js/cv-voice.js) */
+if (window.CvVoice) {
+  CvVoice.init({
+    getToken: async function() {
+      if (!_sbSession) await _initSbSession();
+      return (_sbSession && _sbSession.access_token) || '';
+    },
+    onFilled: function(key) {
+      if (key === 'sf_resumo') {
+        if (typeof sfOnChange === 'function') sfOnChange();
+        if (typeof s2CheckResumo === 'function') s2CheckResumo();
+      }
+    }
+  });
 }
 
 async function cvSaveToCloud() {
@@ -4038,6 +4064,7 @@ function renderExpEditor() {
       +'<div class="ef-group"><div class="ef-label">Período</div><input class="ef-input" id="efec_per_'+i+'" value="'+_esc(e.periodo||'')+'" placeholder="Ex: Jan 2022 — Atual"></div></div>'
       +'<div class="ef-group"><div class="ef-label">Atividades e resultados (uma por linha)</div>'
       +'<textarea class="ef-textarea" id="efec_bul_'+i+'" rows="4" placeholder="Use uma linha por entrega, começando por verbo e com números:&#10;Aumentei as vendas em 30% em 6 meses&#10;Gerenciei equipe de 5 pessoas&#10;Reduzi custos operacionais em R$ 20 mil/mês">'+_esc((e.bullets||[]).join('\n'))+'</textarea>'
+      +CvVoice.block('efec_bul_'+i,'bullets',i,'Conte o que você fazia nesse cargo e o que entregou — a IA transforma em linhas de currículo.')
       +'<div class="ef-hint" style="margin-top:.35rem">Dica: comece cada linha com um verbo de ação e inclua números — isso eleva o score ATS.</div></div>'
       +'<button class="ef-card-rm" onclick="efRemoveExp('+i+')">🗑 Remover experiência</button>'
       +'</div></div>';
