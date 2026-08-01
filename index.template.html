@@ -806,10 +806,13 @@
     .journey-modal-option:hover{transform:translateY(-3px);border-color:var(--green);box-shadow:0 16px 36px rgba(84,214,154,.14)}
     .journey-modal-option strong{display:block;margin:14px 0 8px;font:700 22px/1.15 Lora,serif;color:var(--ink)}
     .journey-modal-option p{color:var(--copy);font-size:13px;line-height:1.55}
-    .journey-modal-option span:not(.journey-modal-icon){display:inline-flex;margin-top:20px;color:var(--green);font-size:12px;font-weight:800}
-    .journey-modal-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:var(--mint);color:var(--green)}
+    .journey-modal-action{display:inline-flex;margin-top:20px;color:var(--green);font-size:12px;font-weight:800}
+    .journey-modal-option-top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .journey-modal-number{font:700 12px/1 Inter,sans-serif;letter-spacing:.12em;color:var(--muted)}
+    .journey-modal-icon{width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--line-2);border-radius:13px;background:var(--mint);color:var(--green);box-shadow:inset 0 0 0 1px rgba(84,214,154,.04)}
+    .journey-modal-icon svg{width:21px;height:21px}
     body.modal-open{overflow:hidden}
-    @media(max-width:620px){.journey-modal{align-items:flex-end;padding:12px}.journey-modal-card{max-height:calc(100dvh - 24px);overflow:auto;padding:34px 20px 22px;border-radius:20px}.journey-modal-options{grid-template-columns:1fr}.journey-modal-option{min-height:0;padding:18px}.journey-modal-option strong{font-size:20px}.journey-modal-option span:not(.journey-modal-icon){margin-top:12px}}
+    @media(max-width:620px){.journey-modal{align-items:flex-end;padding:12px}.journey-modal-card{max-height:calc(100dvh - 24px);overflow:auto;padding:34px 20px 22px;border-radius:20px}.journey-modal-options{grid-template-columns:1fr}.journey-modal-option{min-height:0;padding:18px}.journey-modal-option strong{font-size:20px}.journey-modal-action{margin-top:12px}}
   </style>
 </head>
 <body>
@@ -1202,16 +1205,16 @@
       <p class="journey-modal-copy">Escolha uma op&ccedil;&atilde;o para come&ccedil;ar sem custo. Voc&ecirc; poder&aacute; ajustar, revisar e seguir para as pr&oacute;ximas etapas depois.</p>
       <div class="journey-modal-options">
         <a class="journey-modal-option" href="/onboarding/vaga/1?entry=cv&amp;new=1">
-          <span class="journey-modal-icon" aria-hidden="true">&#9889;</span>
+          <div class="journey-modal-option-top"><span class="journey-modal-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg></span><span class="journey-modal-number">01</span></div>
           <strong>J&aacute; tenho curr&iacute;culo</strong>
-          <p>Analise uma vaga, otimize seu curr&iacute;culo ou comece a receber alertas alinhados ao seu perfil.</p>
-          <span>Come&ccedil;ar com meu curr&iacute;culo &rarr;</span>
+          <p>Quero analisar uma vaga ou encontrar oportunidades compat&iacute;veis.</p>
+          <span class="journey-modal-action">Continuar com meu curr&iacute;culo &rarr;</span>
         </a>
         <a class="journey-modal-option" href="/onboarding/curriculo/1?entry=no-cv&amp;new=1">
-          <span class="journey-modal-icon" aria-hidden="true">&#128196;</span>
+          <div class="journey-modal-option-top"><span class="journey-modal-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8M8 17h6"/></svg></span><span class="journey-modal-number">02</span></div>
           <strong>Ainda n&atilde;o tenho curr&iacute;culo pronto</strong>
-          <p>Crie um curr&iacute;culo profissional, descubra vagas compat&iacute;veis e organize sua busca desde o in&iacute;cio.</p>
-          <span>Criar meu curr&iacute;culo gr&aacute;tis &rarr;</span>
+          <p>Quero criar um curr&iacute;culo profissional e come&ccedil;ar minha busca.</p>
+          <span class="journey-modal-action">Criar meu curr&iacute;culo &rarr;</span>
         </a>
       </div>
     </div>
