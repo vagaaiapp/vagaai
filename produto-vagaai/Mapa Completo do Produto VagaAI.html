@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mapa Completo do Produto VagaAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --forest:#071f12; --deep:#0a2b19; --green:#1a8f5c; --bright:#4ece91;
+      --mint:#eef8f2; --paper:#f7faf7; --card:#ffffff; --line:#dfe9e2;
+      --text:#07130b; --muted:#587461; --soft:#789281; --amber:#c47d0a; --red:#d94f4f;
+      --shadow:0 18px 50px rgba(7,31,18,.10);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#f7faf7 0%,#edf5f0 100%);color:var(--text);font-family:Manrope,Arial,sans-serif;line-height:1.62}
+    .page{max-width:1120px;margin:0 auto;padding:46px 34px 70px}
+    .cover{position:relative;background:linear-gradient(140deg,var(--forest),#0b4b2a);border-radius:28px;color:white;padding:58px 62px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:26px}
+    .cover:after{content:"";position:absolute;width:360px;height:360px;right:-90px;top:-120px;border-radius:50%;background:radial-gradient(circle,rgba(78,206,145,.42),rgba(78,206,145,0) 65%)}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:54px;font-weight:800;letter-spacing:.02em}
+    .logo{width:34px;height:34px;border-radius:50%;background:#0d1510;border:1px solid rgba(255,255,255,.18);display:grid;place-items:center;color:var(--bright);font-family:Lora,serif;font-weight:700}
+    .eyebrow,.kicker{font-size:11px;text-transform:uppercase;letter-spacing:.13em;color:var(--bright);font-weight:800;margin-bottom:10px}
+    h1,h2,h3{font-family:Lora,Georgia,serif;line-height:1.05;letter-spacing:-.035em;margin:0}
+    h1{font-size:58px;max-width:760px}
+    .cover p{max-width:760px;color:rgba(255,255,255,.76);font-size:18px;margin:18px 0 0}
+    .meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:34px}
+    .pill{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);border-radius:999px;padding:8px 13px;color:#dff8e9;font-size:12px;font-weight:700}
+    .toc{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0 26px}
+    .toc div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 8px 25px rgba(7,31,18,.06);font-size:12px;color:var(--muted);font-weight:700}
+    .section{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:34px 38px;margin:18px 0;box-shadow:0 10px 35px rgba(7,31,18,.06);break-inside:avoid}
+    .section h2{font-size:34px;margin-bottom:16px;max-width:900px}
+    .section p{color:var(--muted);font-size:14.5px;margin:10px 0}
+    ul{margin:16px 0 0;padding:0;display:grid;gap:9px}
+    li{list-style:none;position:relative;padding-left:22px;color:#244b34;font-size:13.5px}
+    li:before{content:"";position:absolute;left:0;top:.72em;width:8px;height:8px;border-radius:50%;background:var(--bright)}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:22px}
+    .card{background:linear-gradient(180deg,#fbfdfb,#f1f7f3);border:1px solid var(--line);border-radius:18px;padding:20px;min-height:150px}
+    .card h4{margin:0 0 9px;font-size:16px;color:#072012}
+    .card p{font-size:13px;margin:0 0 12px;color:#4c6a58}
+    .card small{display:block;border-left:3px solid var(--green);padding-left:10px;color:#0d6d43;font-weight:700;font-size:12px;line-height:1.45}
+    table{width:100%;border-collapse:collapse;margin-top:20px;overflow:hidden;border-radius:14px;font-size:12.5px}
+    td{border:1px solid var(--line);padding:13px;vertical-align:top;color:#345a42}
+    td:first-child{font-weight:800;color:#082314;width:22%}
+    td:nth-child(3){color:#0d6d43;font-weight:650}
+    .timeline{display:grid;gap:12px;margin-top:22px}
+    .step{display:grid;grid-template-columns:120px 1fr;gap:20px;align-items:start;background:#f4faf6;border:1px solid var(--line);border-radius:16px;padding:16px}
+    .step span{font-weight:900;color:var(--green);font-size:13px;text-transform:uppercase;letter-spacing:.06em}
+    .step p{margin:0;color:#355d44;font-size:13.5px}
+    .matrix{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+    .callout{background:#fff8ed;border:1px solid rgba(196,125,10,.25);border-radius:20px;padding:22px;color:#593604;margin-top:18px}
+    .callout strong{display:block;font-size:15px;margin-bottom:6px}
+    .sources{font-size:12px;color:var(--muted);margin-top:22px}
+    .sources a{color:var(--green);text-decoration:none;font-weight:700}
+    .footer{text-align:center;color:var(--soft);font-size:12px;margin-top:30px}
+    @media print {
+      body{background:white}
+      .page{padding:0;max-width:none}
+      .cover,.section{box-shadow:none}
+      .section{break-inside:avoid-page}
+      a{color:inherit}
+    }
+    @media(max-width:800px){
+      .page{padding:20px 14px}
+      .cover{padding:34px 26px;border-radius:22px}
+      h1{font-size:38px}
+      .section{padding:26px 22px}
+      .section h2{font-size:27px}
+      .toc,.grid{grid-template-columns:1fr}
+      .step{grid-template-columns:1fr;gap:6px}
+    }
+  </style>
+</head>
+<body>
+<main class="page">
+  <header class="cover">
+    <div class="brand"><span class="logo">V</span><span>VagaAI</span></div>
+    <div class="eyebrow">Guia estrategico de produto</div>
+    <h1>Mapa Completo do Produto VagaAI</h1>
+    <p>Funcionalidades, logica de funcionamento, beneficios, gaps e caminhos de evolucao.</p>
+    <div class="meta">
+      <span class="pill">Sistema de candidatura</span>
+      <span class="pill">Brasil primeiro</span>
+      <span class="pill">IA com promessa realista</span>
+      <span class="pill">Roadmap pratico + apostas futuras</span>
+    </div>
+  </header>
+  <nav class="toc">
+    <div>01. Funcionalidades atuais</div>
+    <div>02. Logica e beneficios</div>
+    <div>03. Gaps e melhorias</div>
+    <div>04. Futuro do produto</div>
+  </nav>
+  <section class="section">
+      <div class="kicker">Resumo executivo</div>
+      <h2>O VagaAI nao e apenas um gerador de curriculo. E um sistema de candidatura.</h2>
+<p>O VagaAI organiza a busca por emprego em uma jornada unica: encontrar oportunidades, entender aderencia, adaptar o curriculo, acompanhar candidaturas, preparar entrevista e gerar materiais de apoio.</p>
+<p>A promessa mais forte da marca deve ser clara e realista: ajudar o profissional a tomar decisoes melhores e enviar candidaturas mais fortes, sem prometer contratacao.</p>
+<p>O produto atual ja tem uma base poderosa. O maior desafio agora e transformar muitas funcionalidades boas em uma experiencia mais conectada, confiavel, mensuravel e facil de entender.</p>
+<ul><li>Tese central: clareza antes de aplicar, materiais melhores antes de enviar, acompanhamento depois da candidatura.</li><li>Maior oportunidade: posicionar o VagaAI como sistema operacional da busca por emprego.</li><li>Maior risco: excesso de funcionalidades parecer fragmentado se cada fluxo nao conversar com os demais.</li><li>Prioridade: confiabilidade, plano/creditos, alertas, rastreador, mobile e metricas de ativacao.</li></ul>
+</section><section class="section">
+      <div class="kicker">Contexto de mercado</div>
+      <h2>A busca por emprego ficou mais digital, mais competitiva e mais opaca para o candidato.</h2>
+<p>O candidato moderno vive uma contradicao: ha mais canais para encontrar vagas, mas tambem mais ruido, mais filtros automatizados e menos clareza sobre o que realmente aumenta suas chances.</p>
+<p>Relatorios de recrutamento e empregabilidade reforcam a digitalizacao do processo seletivo, o uso crescente de tecnologia na triagem e a necessidade de profissionais se posicionarem com mais precisao.</p>
+<p>Nesse contexto, o VagaAI deve se vender como um copiloto de decisao: ele nao substitui a experiencia real do candidato, mas ajuda essa experiencia a aparecer melhor para a vaga certa.</p>
+<ul><li>O mercado premia candidaturas especificas, nao curriculos genericos enviados em massa.</li><li>O usuario precisa saber se vale a pena aplicar antes de gastar tempo.</li><li>A dor principal nao e somente desemprego: e falta de retorno, falta de clareza e falta de preparacao.</li><li>Fontes de contexto: IBGE, LinkedIn Future of Recruiting, Gupy e Indeed Hiring Lab.</li></ul>
+</section><section class="section">
+      <div class="kicker">Produto atual</div>
+      <h2>Mapa das funcionalidades existentes</h2>
+<p>O produto cobre praticamente toda a jornada de uma candidatura: diagnostico, materiais, rastreamento, alerta e preparo. Isso e raro em ferramentas de curriculo, que normalmente param no documento.</p>
+<p>Abaixo esta o mapa funcional do VagaAI com a logica de cada modulo e o valor percebido para o cliente.</p>
+<div class="grid"><article class="card">
+          <h4>Analise de vaga + CV</h4>
+          <p>Recebe vaga e curriculo, calcula score, identifica lacunas, keywords presentes/ausentes, briefing e prioridades.</p>
+          <small>Evita candidatura no escuro e mostra onde melhorar antes de enviar.</small>
+        </article>
+<article class="card">
+          <h4>Curriculo otimizado</h4>
+          <p>Gera uma versao direcionada para a vaga, com foco ATS, templates, edicao e exportacao em PDF.</p>
+          <small>Entrega um material mais especifico e profissional sem inventar experiencia.</small>
+        </article>
+<article class="card">
+          <h4>Rastreador de candidaturas</h4>
+          <p>Organiza vagas analisadas, status, salario, link, proximas acoes, entrevista e historico.</p>
+          <small>Reduz perda de contexto e transforma candidatura em processo acompanhado.</small>
+        </article>
+<article class="card">
+          <h4>Alertas de vagas</h4>
+          <p>Monitora oportunidades com base em cargo, local, salario, senioridade e keywords.</p>
+          <small>Traz vagas alinhadas para o usuario em vez dele buscar tudo manualmente.</small>
+        </article>
+<article class="card">
+          <h4>Simulador de entrevista</h4>
+          <p>Gera perguntas com base na vaga e no CV, avalia respostas e pode aceitar audio.</p>
+          <small>Prepara o usuario para destacar o que importa naquela oportunidade.</small>
+        </article>
+<article class="card">
+          <h4>Carta de apresentacao</h4>
+          <p>Gera carta personalizada por tom e por vaga usando o curriculo do usuario.</p>
+          <small>Ajuda em processos que pedem mensagem, e-mail ou apresentacao mais humana.</small>
+        </article>
+<article class="card">
+          <h4>Dashboard inteligente</h4>
+          <p>Mostra proxima melhor acao, prioridades, oportunidades, funil e avisos.</p>
+          <small>Transforma dados em direcao pratica.</small>
+        </article>
+<article class="card">
+          <h4>Planos e pagamentos</h4>
+          <p>Free, Starter, Pro e creditos avulsos com Stripe, webhook e regras de uso.</p>
+          <small>Cria caminhos de monetizacao flexiveis e progressivos.</small>
+        </article></div>
+</section><section class="section">
+      <div class="kicker">Logica de funcionamento</div>
+      <h2>A arquitetura de valor deve manter contexto entre todos os modulos.</h2>
+<p>O ponto mais importante do VagaAI e preservar contexto. Quando o usuario analisa uma vaga, essa vaga deve alimentar automaticamente curriculo, carta, entrevista, candidatura e alertas futuros.</p>
+<p>O produto fica mais forte quando cada acao gera a proxima acao sem friccao. Exemplo: analisou a vaga -&gt; recebeu score -&gt; gerou CV otimizado -&gt; marcou candidatura -&gt; treinou entrevista -&gt; recebeu follow-up.</p>
+<ul><li>Entrada principal: descricao/link da vaga + curriculo.</li><li>Processamento: analise de aderencia, extracao de requisitos, keywords, score e briefing.</li><li>Saidas: diagnostico, CV otimizado, carta, perguntas de entrevista e card de candidatura.</li><li>Retencao: alertas, rastreador, proximas acoes, historico e e-mails.</li><li>Monetizacao: limites por plano, recursos premium e upgrade contextual.</li></ul>
+</section><section class="section">
+      <div class="kicker">Beneficios por perfil</div>
+      <h2>O mesmo produto resolve dores diferentes para publicos diferentes.</h2>
+<p>A comunicacao deve mudar conforme o momento do usuario. Quem esta desempregado quer velocidade e clareza. Quem esta empregado e quer trocar de cargo quer estrategia e discricao. Quem esta mudando de area quer saber onde esta o gap real.</p>
+<div class="grid"><article class="card">
+          <h4>Profissional buscando recolocacao</h4>
+          <p>Reduz tentativa e erro, prioriza vagas melhores e organiza candidatura.</p>
+          <small>Mensagem: pare de enviar no escuro.</small>
+        </article>
+<article class="card">
+          <h4>Profissional empregado querendo trocar</h4>
+          <p>Ajuda a escolher oportunidades com mais criterio e preparar materiais fortes.</p>
+          <small>Mensagem: troque com estrategia, nao por impulso.</small>
+        </article>
+<article class="card">
+          <h4>Junior ou inicio de carreira</h4>
+          <p>Mostra lacunas, estrutura melhor o CV e prepara para entrevistas.</p>
+          <small>Mensagem: transforme pouca experiencia em clareza e potencial.</small>
+        </article>
+<article class="card">
+          <h4>Transicao de carreira</h4>
+          <p>Compara experiencia atual com requisitos da nova area.</p>
+          <small>Mensagem: entenda o que reaproveitar e o que precisa reforcar.</small>
+        </article>
+<article class="card">
+          <h4>Profissionais de marketing, negocios e tech</h4>
+          <p>Beneficiam-se de keywords, metricas, portfolio verbal e adaptacao por vaga.</p>
+          <small>Mensagem: mostre resultado, contexto e aderencia.</small>
+        </article></div>
+</section><section class="section">
+      <div class="kicker">Gaps atuais</div>
+      <h2>O produto esta rico, mas precisa reduzir friccao, inconsistencias e pontos cegos.</h2>
+<p>Os gaps abaixo nao diminuem o potencial do VagaAI. Eles mostram onde o produto precisa amadurecer para vender com mais seguranca e reter melhor.</p>
+<table><tbody><tr><td>Conexao entre fluxos</td><td>Alguns caminhos ainda podem pedir dados que o sistema ja conhece.</td><td>Preservar contexto por analysis_id/job_id entre app, CV, carta, entrevista e candidaturas.</td></tr>
+<tr><td>Alertas</td><td>Dependem de fontes externas, filtros e cron. Podem parecer inconsistentes se nao houver historico claro.</td><td>Criar diagnostico de fontes, historico persistente e explicacao quando nao houver vaga.</td></tr>
+<tr><td>Planos e creditos</td><td>UI pode mostrar ilimitado enquanto backend bloqueia se houver divergencia.</td><td>Ter uma fonte unica de verdade e teste automatizado de entitlements.</td></tr>
+<tr><td>Exportacao de CV</td><td>PDF/A4, margens, quebras e modelos precisam ser impecaveis.</td><td>Padronizar motor de PDF server-side ou workflow controlado com preflight.</td></tr>
+<tr><td>Mobile</td><td>Produto e denso; precisa bottom nav, menus e cards compactos.</td><td>Tratar mobile como jornada prioritaria, nao so adaptacao visual.</td></tr>
+<tr><td>Observabilidade</td><td>Bugs de cron, API, Stripe e Supabase precisam ser detectados antes do usuario.</td><td>Adicionar logs estruturados, alertas internos e painel de saude.</td></tr>
+<tr><td>Onboarding</td><td>Usuario pode nao entender o fluxo completo logo no primeiro uso.</td><td>Criar trilha guiada: analise -&gt; CV -&gt; candidatura -&gt; entrevista.</td></tr>
+<tr><td>Prova e confianca</td><td>Mercado sensivel a promessas exageradas.</td><td>Mostrar limites honestos, exemplos reais, privacidade e antes/depois.</td></tr></tbody></table>
+</section><section class="section">
+      <div class="kicker">Roadmap realista</div>
+      <h2>Caminho de evolucao dentro da realidade atual</h2>
+<p>A evolucao recomendada prioriza confiabilidade e ativacao antes de escalar aquisicao. O produto ja tem muitas alavancas; o proximo passo e fazer cada uma funcionar de forma previsivel.</p>
+<div class="timeline"><div class="step"><span>0-30 dias</span><p>Estabilizar planos/creditos, alertas, PDF, mobile, links quebrados, tracking e metricas basicas de funil.</p></div>
+<div class="step"><span>31-60 dias</span><p>Criar jornada guiada e e-mails de ativacao: primeira analise, baixar CV, rastrear candidatura, simular entrevista.</p></div>
+<div class="step"><span>61-90 dias</span><p>Transformar alertas e rastreador em motor de retencao: resumo semanal, proximas acoes, follow-up e reativacao.</p></div>
+<div class="step"><span>3-6 meses</span><p>Melhorar motor de vagas, fontes, qualidade dos alertas, PWA/mobile e painel de saude operacional.</p></div>
+<div class="step"><span>6-12 meses</span><p>Explorar B2B leve: universidades, mentorias, outplacement, escolas e comunidades profissionais.</p></div></div>
+</section><section class="section">
+      <div class="kicker">Projetos fora da caixa</div>
+      <h2>Ideias que podem mudar o jogo se forem bem executadas</h2>
+<p>Essas apostas nao devem ser todas feitas agora. Elas funcionam como direcao de longo prazo para transformar o VagaAI de ferramenta em ecossistema.</p>
+<div class="grid"><article class="card">
+          <h4>Extensao de navegador</h4>
+          <p>Botao em LinkedIn, Gupy, Indeed e sites de vaga: &#x27;Analisar com VagaAI&#x27; direto na pagina.</p>
+          <small>Alto potencial de aquisicao e uso recorrente.</small>
+        </article>
+<article class="card">
+          <h4>Candidatura Pack</h4>
+          <p>Um clique gera: score, CV otimizado, carta, perguntas de entrevista e card no rastreador.</p>
+          <small>Transforma o produto em fluxo magico, mas sem prometer emprego.</small>
+        </article>
+<article class="card">
+          <h4>Relatorio semanal de carreira</h4>
+          <p>Resumo por e-mail/WhatsApp: vagas boas, candidaturas paradas, entrevistas proximas, score medio.</p>
+          <small>Retencao forte e alto valor percebido.</small>
+        </article>
+<article class="card">
+          <h4>Mapa de aderencia de mercado</h4>
+          <p>Mostra quais cargos combinam mais com o perfil atual e quais skills destravam novas vagas.</p>
+          <small>Ajuda usuario a decidir carreira, nao so candidatura.</small>
+        </article>
+<article class="card">
+          <h4>Treino de entrevista por voz</h4>
+          <p>Simulacao falada, feedback de clareza, estrutura, exemplos e postura.</p>
+          <small>Diferenciacao premium para plano Pro.</small>
+        </article>
+<article class="card">
+          <h4>Copiloto no WhatsApp</h4>
+          <p>Alertas, lembretes e proximas acoes por conversa.</p>
+          <small>Canal natural no Brasil, mas exige cuidado operacional.</small>
+        </article>
+<article class="card">
+          <h4>Benchmark anonimo</h4>
+          <p>Comparar score e gaps com perfis similares, sem expor dados pessoais.</p>
+          <small>Aumenta urgencia e clareza, com privacidade.</small>
+        </article>
+<article class="card">
+          <h4>Outplacement/educacao</h4>
+          <p>Versao para escolas, cursos, mentorias e empresas que recolocam profissionais.</p>
+          <small>Novo canal B2B com ticket maior.</small>
+        </article></div>
+</section><section class="section">
+      <div class="kicker">Metricas essenciais</div>
+      <h2>O que medir para saber se o produto esta funcionando</h2>
+<p>Sem metricas, o VagaAI pode parecer cheio de recursos sem provar quais geram valor. O foco deve ser ativacao, retencao e conversao por momento da jornada.</p>
+<table><tbody><tr><td>Ativacao</td><td>Primeira analise concluida</td><td>Mostra se o usuario chegou ao primeiro valor.</td></tr>
+<tr><td>Aha moment</td><td>CV otimizado baixado ou candidatura rastreada</td><td>Indica que o usuario transformou diagnostico em acao.</td></tr>
+<tr><td>Retencao</td><td>Retorno por alerta, dashboard ou candidatura</td><td>Mostra se o produto virou rotina.</td></tr>
+<tr><td>Conversao</td><td>Free -&gt; Starter/Pro; limite atingido -&gt; upgrade</td><td>Mostra monetizacao contextual.</td></tr>
+<tr><td>Qualidade</td><td>Taxa de alerta analisado, vaga salva, CV baixado, entrevista iniciada</td><td>Mostra se os modulos estao conectados.</td></tr>
+<tr><td>Confiabilidade</td><td>Falhas de API, webhook, cron, PDF, Supabase e Stripe</td><td>Mostra se o produto esta pronto para escala.</td></tr></tbody></table>
+</section><section class="section">
+      <div class="kicker">Planos e proposta comercial</div>
+      <h2>Cada plano precisa comunicar um nivel de maturidade na busca por emprego.</h2>
+<p>A diferenca entre planos deve ser apresentada como progressao natural, nao como bloqueio agressivo.</p>
+<div class="grid"><article class="card">
+          <h4>Free</h4>
+          <p>Testar valor rapidamente: uma analise, alertas basicos e entrada no rastreador.</p>
+          <small>Mensagem: entenda se o VagaAI faz sentido para voce.</small>
+        </article>
+<article class="card">
+          <h4>Starter</h4>
+          <p>Uso recorrente moderado: mais analises, CV otimizado, cartas e alertas melhores.</p>
+          <small>Mensagem: comece a aplicar com mais criterio.</small>
+        </article>
+<article class="card">
+          <h4>Pro</h4>
+          <p>Sistema completo de candidatura: analises amplas, simulador, alertas diarios e recursos avancados.</p>
+          <small>Mensagem: organize sua busca como um processo profissional.</small>
+        </article>
+<article class="card">
+          <h4>Creditos avulsos</h4>
+          <p>Compra pontual para quem nao quer assinar.</p>
+          <small>Mensagem: use quando precisar, sem compromisso.</small>
+        </article></div>
+</section><section class="section">
+      <div class="kicker">Recomendacoes finais</div>
+      <h2>O proximo salto nao e adicionar mais uma funcionalidade. E conectar melhor as que ja existem.</h2>
+<p>O VagaAI tem um caminho forte: virar o sistema onde o profissional entende, prepara, envia e acompanha cada oportunidade.</p>
+<p>A evolucao mais inteligente agora e transformar o produto em uma jornada inevitavel: cada tela precisa responder &#x27;qual e a proxima melhor acao para este usuario?&#x27;.</p>
+<ul><li>Reforcar o posicionamento: sistema de candidatura, nao ferramenta isolada.</li><li>Fazer toda vaga analisada nascer automaticamente em Candidaturas.</li><li>Transformar Alertas + Rastreador no motor de retencao.</li><li>Conectar entrevista e carta diretamente a cada candidatura.</li><li>Aprimorar PDF, mobile e confiabilidade antes de aumentar muito a aquisicao.</li><li>Criar comunicacao honesta: nao garante emprego; aumenta clareza, preparo e qualidade da candidatura.</li><li>Medir cada etapa da jornada para saber onde o usuario trava.</li></ul>
+</section>
+  <section class="section">
+    <div class="kicker">Fontes e referencias</div>
+    <h2>Base de contexto usada para orientar mercado e posicionamento</h2>
+    <p>As referencias abaixo servem como contexto de mercado. O documento traduz esse contexto para a realidade atual do VagaAI e para decisoes praticas de produto.</p>
+    <div class="sources">
+      <p><a href="https://www.ibge.gov.br/explica/desemprego.php">IBGE - Desemprego</a> — https://www.ibge.gov.br/explica/desemprego.php</p><p><a href="https://business.linkedin.com/hire/resources/future-of-recruiting">LinkedIn - Future of Recruiting</a> — https://business.linkedin.com/hire/resources/future-of-recruiting</p><p><a href="https://conteudos.gupy.io/materiais/relatorio/empregabilidade-2026">Gupy - Empregabilidade 2026</a> — https://conteudos.gupy.io/materiais/relatorio/empregabilidade-2026</p><p><a href="https://www.hiringlab.org/">Indeed Hiring Lab</a> — https://www.hiringlab.org/</p>
+    </div>
+    <div class="callout"><strong>Principio de comunicacao</strong>O VagaAI nao deve prometer emprego, aprovacao ou contratacao. A marca deve prometer clareza, preparo, materiais mais fortes e melhor organizacao da jornada.</div>
+  </section>
+  <div class="footer">VagaAI · Documento interno de produto · Gerado para planejamento estrategico</div>
+</main>
+</body>
+</html>

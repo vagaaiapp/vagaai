@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VagaAI - Previews de Animação</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Lora:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#07120d;
+      --bg2:#0b1f16;
+      --panel:#0d2118;
+      --panel2:#102b1f;
+      --line:rgba(91,227,164,.18);
+      --line2:rgba(255,255,255,.08);
+      --green:#5be3a4;
+      --green2:#2ccf87;
+      --text:#f4fff8;
+      --muted:rgba(244,255,248,.58);
+      --soft:rgba(91,227,164,.1);
+      --amber:#ffbd4a;
+      --red:#ff6670;
+      --r:24px;
+      --shadow:0 30px 80px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 20% 5%, rgba(91,227,164,.18), transparent 28%),
+        radial-gradient(circle at 82% 12%, rgba(44,207,135,.14), transparent 28%),
+        linear-gradient(180deg,#08130e 0%,#06100b 100%);
+      color:var(--text);
+      font-family:Inter,system-ui,sans-serif;
+      padding:42px 18px 70px;
+      overflow-x:hidden;
+    }
+    .wrap{width:min(1180px,100%);margin:auto}
+    .top{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:28px}
+    .brand{font:700 22px Lora,serif;letter-spacing:-.03em}
+    .brand span{color:var(--green)}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--green);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px}
+    .eyebrow:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green)}
+    h1{font:700 clamp(34px,5vw,62px)/1.02 Lora,serif;letter-spacing:-.04em;max-width:760px}
+    .lead{max-width:640px;margin-top:16px;color:var(--muted);font-size:15px;line-height:1.7}
+    .note{padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.04);color:var(--muted);font-size:12px;font-weight:700;white-space:nowrap}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    .preview{
+      position:relative;
+      min-height:430px;
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:
+        linear-gradient(135deg,rgba(91,227,164,.08),rgba(255,255,255,.025)),
+        var(--panel);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      isolation:isolate;
+    }
+    .preview:before{
+      content:"";
+      position:absolute;inset:0;
+      background-image:
+        linear-gradient(rgba(91,227,164,.055) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(91,227,164,.045) 1px,transparent 1px);
+      background-size:44px 44px;
+      mask-image:linear-gradient(to bottom,black,transparent 78%);
+      pointer-events:none;
+      opacity:.45;
+    }
+    .preview-head{position:relative;z-index:2;padding:20px 22px 0;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .preview-title{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--green)}
+    .preview-sub{font-size:12px;color:var(--muted);margin-top:4px}
+    .pill{font-size:10px;font-weight:800;color:#06100b;background:var(--green);padding:6px 9px;border-radius:999px}
+    .stage{position:absolute;inset:78px 18px 18px;border-radius:20px;background:rgba(4,14,9,.52);border:1px solid var(--line2);overflow:hidden}
+    .glass{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);box-shadow:0 18px 45px rgba(0,0,0,.22);backdrop-filter:blur(14px)}
+    .mini-card{position:absolute;border-radius:16px;padding:14px;background:#f8fff9;color:#10231b;box-shadow:0 20px 45px rgba(0,0,0,.28)}
+    .mini-card b{display:block;font-size:13px;margin-bottom:5px}
+    .mini-card span{display:block;color:#648074;font-size:10.5px}
+    .status{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;color:#147a52;background:#dff7eb;border-radius:999px;padding:5px 8px;margin-top:10px}
+    .status:before{content:"";width:7px;height:7px;border-radius:50%;background:#27cf87}
+    .ring{width:98px;height:98px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--green) 0 74%, rgba(255,255,255,.08) 74% 100%);box-shadow:0 0 0 10px rgba(91,227,164,.07)}
+    .ring:before{content:"";position:absolute;width:68px;height:68px;border-radius:50%;background:#07130d}
+    .ring b{position:relative;font-size:26px;color:var(--green)}
+    .scan{position:absolute;left:-35%;top:0;width:32%;height:100%;background:linear-gradient(90deg,transparent,rgba(91,227,164,.4),transparent);filter:blur(3px);animation:scan 3.8s ease-in-out infinite}
+    @keyframes scan{0%,20%{transform:translateX(0);opacity:0}35%,65%{opacity:1}85%,100%{transform:translateX(430%);opacity:0}}
+
+    /* 1 Flux */
+    .flux-vaga{left:30px;top:72px;width:168px;animation:in-left 4s ease-in-out infinite}
+    .flux-cv{right:30px;top:72px;width:168px;animation:in-right 4s ease-in-out infinite}
+    .flux-core{position:absolute;left:50%;top:150px;transform:translateX(-50%);width:120px;height:120px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:rgba(91,227,164,.08);animation:pulse 4s ease-in-out infinite}
+    .flux-core .ring{transform:scale(.78)}
+    .flux-outs{position:absolute;left:50%;bottom:38px;transform:translateX(-50%);display:flex;gap:8px;animation:fade-late 4s ease-in-out infinite}
+    .out{padding:9px 10px;border-radius:999px;background:rgba(91,227,164,.12);border:1px solid var(--line);font-size:10px;font-weight:800;color:var(--green);white-space:nowrap}
+    @keyframes in-left{0%,15%{transform:translateX(-80px);opacity:0}30%,100%{transform:translateX(0);opacity:1}}
+    @keyframes in-right{0%,15%{transform:translateX(80px);opacity:0}30%,100%{transform:translateX(0);opacity:1}}
+    @keyframes pulse{0%,38%{opacity:.35;transform:translateX(-50%) scale(.82)}52%,100%{opacity:1;transform:translateX(-50%) scale(1)}}
+    @keyframes fade-late{0%,58%{opacity:0;transform:translate(-50%,12px)}72%,100%{opacity:1;transform:translate(-50%,0)}}
+
+    /* 2 Conveyor */
+    .belt{position:absolute;left:28px;right:28px;top:178px;height:4px;background:rgba(91,227,164,.22)}
+    .belt:after{content:"";position:absolute;left:0;top:0;height:100%;width:34%;background:linear-gradient(90deg,transparent,var(--green),transparent);animation:belt 3.2s linear infinite}
+    .step-card{position:absolute;top:118px;width:94px;height:94px;border-radius:18px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--green);animation:step-pop 5s ease-in-out infinite}
+    .step-card svg{width:26px;height:26px}
+    .step-card:nth-child(2){left:38px;animation-delay:0s}
+    .step-card:nth-child(3){left:calc(25% + 16px);animation-delay:.5s}
+    .step-card:nth-child(4){left:calc(50% - 47px);animation-delay:1s}
+    .step-card:nth-child(5){right:calc(25% + 16px);animation-delay:1.5s}
+    .step-card:nth-child(6){right:38px;animation-delay:2s}
+    .moving-dot{position:absolute;top:168px;left:28px;width:24px;height:24px;border-radius:50%;background:var(--green);box-shadow:0 0 24px rgba(91,227,164,.8);animation:move-dot 5s ease-in-out infinite}
+    @keyframes belt{to{transform:translateX(300%)}}
+    @keyframes move-dot{0%{left:28px}25%{left:28%}50%{left:50%}75%{left:72%}100%{left:calc(100% - 52px)}}
+    @keyframes step-pop{0%,100%{transform:scale(1);background:rgba(255,255,255,.06)}45%,58%{transform:scale(1.1);background:rgba(91,227,164,.14)}}
+
+    /* 3 Radar */
+    .radar{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:250px;height:250px;border-radius:50%;border:1px solid var(--line);background:radial-gradient(circle,rgba(91,227,164,.12),transparent 60%)}
+    .radar:before{content:"";position:absolute;inset:22px;border-radius:50%;border:1px solid rgba(91,227,164,.16)}
+    .radar:after{content:"";position:absolute;left:50%;top:50%;width:50%;height:2px;background:linear-gradient(90deg,var(--green),transparent);transform-origin:left center;animation:rotate 3.6s linear infinite}
+    .job-dot{position:absolute;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid var(--line2);color:var(--muted);font-size:12px;font-weight:800}
+    .job-dot.good{background:rgba(91,227,164,.16);border-color:var(--line);color:var(--green);box-shadow:0 0 40px rgba(91,227,164,.22);animation:good-job 3.6s ease-in-out infinite}
+    .j1{left:62px;top:62px}.j2{right:72px;top:76px}.j3{left:80px;bottom:70px}.j4{right:66px;bottom:84px}.j5{left:50%;top:50%;transform:translate(-50%,-50%)}
+    @keyframes rotate{to{transform:rotate(360deg)}}
+    @keyframes good-job{0%,55%{transform:translate(-50%,-50%) scale(1)}70%,100%{transform:translate(-50%,-50%) scale(1.16)}}
+
+    /* 4 Dashboard */
+    .window{position:absolute;left:34px;right:34px;top:42px;bottom:34px;border-radius:18px;background:#f8fff9;color:#10231b;box-shadow:0 25px 70px rgba(0,0,0,.38);overflow:hidden}
+    .chrome{height:38px;background:#dfeae4;display:flex;align-items:center;gap:6px;padding:0 14px}
+    .dot{width:9px;height:9px;border-radius:50%;background:#ff6b5f}.dot:nth-child(2){background:#ffbd4a}.dot:nth-child(3){background:#2bd57f}
+    .screen{position:absolute;inset:38px 0 0;display:grid;grid-template-columns:70px 1fr}
+    .side{background:#0b2519;padding:14px 12px;display:grid;gap:10px;align-content:start}
+    .side i{height:28px;border-radius:8px;background:rgba(91,227,164,.12);display:block}
+    .dash-content{padding:20px;position:relative}
+    .dash-slide{position:absolute;inset:20px;opacity:0;transform:translateY(10px);animation:slides 8s infinite}
+    .dash-slide:nth-child(1){animation-delay:0s}.dash-slide:nth-child(2){animation-delay:2s}.dash-slide:nth-child(3){animation-delay:4s}.dash-slide:nth-child(4){animation-delay:6s}
+    .dash-slide b{font-size:16px}.dash-line{height:8px;border-radius:99px;background:#d8e5dd;margin-top:12px}.dash-line.green{background:var(--green)}
+    .dash-box{margin-top:16px;border:1px solid #d6e3dc;border-radius:14px;padding:14px;background:#fff}
+    @keyframes slides{0%,20%{opacity:1;transform:translateY(0)}25%,100%{opacity:0;transform:translateY(-8px)}}
+
+    /* 5 Magnetic */
+    .mag-core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:112px;height:112px;border-radius:32px;background:rgba(91,227,164,.12);border:1px solid var(--line);display:grid;place-items:center;color:var(--green);font:800 26px Lora;box-shadow:0 0 60px rgba(91,227,164,.2)}
+    .mag-card{position:absolute;border-radius:999px;padding:10px 13px;background:rgba(255,255,255,.07);border:1px solid var(--line2);font-size:11px;font-weight:800;color:var(--muted);animation:mag 5s ease-in-out infinite}
+    .m1{left:42px;top:58px}.m2{right:48px;top:76px;animation-delay:.2s}.m3{left:48px;bottom:74px;animation-delay:.4s}.m4{right:42px;bottom:68px;animation-delay:.6s}.m5{left:50%;bottom:34px;animation-delay:.8s}
+    @keyframes mag{0%,25%{transform:translate(0,0);color:var(--muted)}55%,85%{transform:translate(var(--tx,0),var(--ty,0));color:var(--green);border-color:var(--line)}100%{transform:translate(0,0)}}
+    .m1{--tx:92px;--ty:78px}.m2{--tx:-90px;--ty:62px}.m3{--tx:94px;--ty:-64px}.m4{--tx:-88px;--ty:-70px}.m5{--tx:-48px;--ty:-104px}
+
+    /* 6 Before after */
+    .ba-card{position:absolute;left:38px;right:38px;top:54px;bottom:46px;border-radius:20px;background:#f8fff9;color:#10231b;overflow:hidden;box-shadow:0 25px 70px rgba(0,0,0,.36)}
+    .ba-half{position:absolute;inset:0;padding:28px;display:grid;align-content:center}
+    .before{background:#fff6f6;clip-path:inset(0 50% 0 0);animation:clip-before 5s ease-in-out infinite}
+    .after{background:#f0fff6;clip-path:inset(0 0 0 50%);animation:clip-after 5s ease-in-out infinite}
+    .ba-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#7d9187}
+    .ba-score{font:800 44px Inter;color:var(--red);margin-top:12px}
+    .after .ba-score{color:#12875b}
+    .ba-line{height:8px;border-radius:99px;background:#e5dada;margin-top:12px;width:80%}
+    .after .ba-line{background:#cceedd;width:92%}
+    .divider{position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--green);box-shadow:0 0 24px rgba(91,227,164,.8);animation:divider 5s ease-in-out infinite}
+    @keyframes clip-before{0%,38%{clip-path:inset(0 50% 0 0)}58%,100%{clip-path:inset(0 100% 0 0)}}
+    @keyframes clip-after{0%,38%{clip-path:inset(0 0 0 50%)}58%,100%{clip-path:inset(0 0 0 0)}}
+    @keyframes divider{0%,38%{left:50%}58%,100%{left:100%}}
+
+    @media(max-width:900px){
+      body{padding:26px 14px 42px}
+      .top{display:block}
+      .note{display:inline-flex;margin-top:18px;white-space:normal}
+      .grid{grid-template-columns:1fr}
+      .preview{min-height:390px}
+      .stage{inset:78px 12px 14px}
+      .flux-vaga,.flux-cv{width:138px}
+      .flux-vaga{left:16px}.flux-cv{right:16px}
+      .flux-outs{gap:6px;flex-wrap:wrap;justify-content:center;width:90%}
+      .out{font-size:9px}
+      .step-card{width:58px;height:58px;top:136px;border-radius:15px}
+      .step-card:nth-child(2){left:20px}.step-card:nth-child(3){left:25%}.step-card:nth-child(4){left:calc(50% - 29px)}.step-card:nth-child(5){right:25%}.step-card:nth-child(6){right:20px}
+      .belt{left:26px;right:26px;top:166px}
+      .moving-dot{top:156px}
+      .window{left:18px;right:18px}
+      .radar{width:220px;height:220px}
+      .ba-card{left:18px;right:18px}
+      .mag-card{font-size:10px}
+    }
+    @media(prefers-reduced-motion:reduce){
+      *{animation:none!important;transition:none!important}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <div class="brand">Vaga<span>AI</span></div>
+        <div class="eyebrow" style="margin-top:26px">Previews sem aplicar na LP</div>
+        <h1>Seis caminhos visuais para substituir a timeline mobile.</h1>
+        <p class="lead">Cada bloco abaixo é um conceito animado. A intenção é mostrar o fluxo sem copy pesada: o visual precisa explicar a lógica do produto sozinho.</p>
+      </div>
+      <div class="note">Protótipo isolado: não altera o site original</div>
+    </div>
+
+    <div class="grid">
+      <section class="preview">
+        <div class="preview-head"><div><div class="preview-title">01 - Vaga + CV</div><div class="preview-sub">Comparação vira score e materiais.</div></div><span class="pill">recomendado</span></div>
+        <div class="stage">
+          <div class="scan"></div>
+          <div class="mini-card flux-vaga"><b>Vaga</b><span>Requisitos + contexto</span><i class="status">carregada</i></div>
+          <div class="mini-card flux-cv"><b>CV</b><span>Experiência + skills</span><i class="status">lido</i></div>
+          <div class="flux-core"><div class="ring"><b>74</b></div></div>
+          <div class="flux-outs"><span class="out">CV otimizado</span><span class="out">Candidatura</span><span class="out">Entrevista</span></div>
+        </div>
+      </section>
+
+      <section class="preview">
+        <div class="preview-head"><div><div class="preview-title">02 - Esteira inteligente</div><div class="preview-sub">Etapas passam como sistema operacional.</div></div><span class="pill">fluido</span></div>
+        <div class="stage">
+          <div class="belt"></div>
+          <div class="step-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="m4 7 8 6 8-6"/></svg></div>
+          <div class="step-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></div>
+          <div class="step-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v6h6"/></svg></div>
+          <div class="step-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16v13H4z"/><path d="M8 7V5h8v2"/></svg></div>
+          <div class="step-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></div>
+          <div class="moving-dot"></div>
+        </div>
+      </section>
+
+      <section class="preview">
+        <div class="preview-head"><div><div class="preview-title">03 - Radar de oportunidades</div><div class="preview-sub">Vaga boa é selecionada visualmente.</div></div><span class="pill">alertas</span></div>
+        <div class="stage">
+          <div class="radar"></div>
+          <div class="job-dot j1">42%</div>
+          <div class="job-dot j2">58%</div>
+          <div class="job-dot j3">61%</div>
+          <div class="job-dot j4">35%</div>
+          <div class="job-dot good j5">89%</div>
+        </div>
+      </section>
+
+      <section class="preview">
+        <div class="preview-head"><div><div class="preview-title">04 - Dashboard vivo</div><div class="preview-sub">Mockup muda de estado sozinho.</div></div><span class="pill">premium</span></div>
+        <div class="stage">
+          <div class="window">
+            <div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i></div>
+            <div class="screen">
+              <div class="side"><i></i><i></i><i></i><i></i></div>
+              <div class="dash-content">
+                <div class="dash-slide"><b>Alerta recebido</b><div class="dash-box"><div class="dash-line green"></div><div class="dash-line"></div></div></div>
+                <div class="dash-slide"><b>Score calculado</b><div class="dash-box"><div class="dash-line green" style="width:76%"></div><div class="dash-line"></div></div></div>
+                <div class="dash-slide"><b>CV otimizado</b><div class="dash-box"><div class="dash-line green"></div><div class="dash-line green" style="width:62%"></div></div></div>
+                <div class="dash-slide"><b>Entrevista pronta</b><div class="dash-box"><div class="dash-line green" style="width:88%"></div><div class="dash-line"></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="preview">
+        <div class="preview-head"><div><div class="preview-title">05 - Cards magnéticos</div><div class="preview-sub">A IA organiza sinais soltos em jornada.</div></div><span class="pill">conceitual</span></div>
+        <div class="stage">
+          <div class="mag-core">V</div>
+          <div class="mag-card m1">Vaga</div>
+          <div class="mag-card m2">CV</div>
+          <div class="mag-card m3">Keywords</div>
+          <div class="mag-card m4">Score</div>
+          <div class="mag-card m5">Entrevista</div>
+        </div>
+      </section>
+
+      <section class="preview">
+        <div class="preview-head"><div><div class="preview-title">06 - Antes e depois</div><div class="preview-sub">Transformação de candidatura fraca para pronta.</div></div><span class="pill">conversão</span></div>
+        <div class="stage">
+          <div class="ba-card">
+            <div class="ba-half before">
+              <div class="ba-label">antes</div>
+              <div class="ba-score">33%</div>
+              <div class="ba-line"></div>
+              <div class="ba-line" style="width:58%"></div>
+            </div>
+            <div class="ba-half after">
+              <div class="ba-label">depois</div>
+              <div class="ba-score">76%</div>
+              <div class="ba-line"></div>
+              <div class="ba-line"></div>
+              <i class="status">pronto para revisar</i>
+            </div>
+            <div class="divider"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

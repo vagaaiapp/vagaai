@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Estrategia Editorial de E-mails VagaAI</title>
+  <style>
+    :root {
+      --forest:#0A1A10; --deep:#0D5A35; --emerald:#1A7A4A; --bright:#4ECE91;
+      --paper:#F5F7F5; --card:#FFFFFF; --ink:#071209; --text:#254B34; --muted:#6E8A78;
+      --line:#DDE8E1; --soft:#EAF4EE; --amber:#C47D0A; --red:#D94F4F;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family: Inter, Arial, sans-serif; line-height:1.55; }
+    h1,h2,h3,h4 { font-family: Georgia, 'Times New Roman', serif; margin:0; letter-spacing:-.03em; }
+    h1 { font-size:58px; line-height:.96; color:#fff; max-width:860px; }
+    h2 { font-size:34px; line-height:1.05; margin-bottom:14px; }
+    h3 { font-size:20px; line-height:1.15; }
+    h4 { font-family:Inter, Arial, sans-serif; font-size:16px; letter-spacing:-.01em; margin-bottom:5px; }
+    p { margin:0; color:var(--text); }
+    .wrap { max-width:1120px; margin:0 auto; padding:38px 32px 80px; }
+    .cover { background:linear-gradient(135deg,#071209,#0D5A35 65%,#1A7A4A); border-radius:36px; padding:56px; margin-bottom:30px; position:relative; overflow:hidden; box-shadow:0 30px 80px rgba(7,18,9,.22); }
+    .cover:after { content:''; position:absolute; right:-90px; top:-120px; width:360px; height:360px; border-radius:50%; background:rgba(78,206,145,.14); }
+    .kicker,.label { color:var(--bright); text-transform:uppercase; font-weight:900; letter-spacing:.14em; font-size:12px; margin-bottom:14px; }
+    .cover p { color:#D6E8DC; font-size:19px; max-width:760px; margin-top:20px; }
+    .chips { display:flex; flex-wrap:wrap; gap:10px; margin-top:30px; }
+    .chip { color:#D8F5E5; border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.07); border-radius:999px; padding:9px 14px; font-size:13px; font-weight:800; }
+    .hero-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:34px; }
+    .hero-card { background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.13); border-radius:18px; padding:18px; color:#fff; }
+    .hero-card b { display:block; font-size:28px; margin-bottom:4px; color:#fff; }
+    .hero-card span { color:#BFE8CF; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
+    .section { background:var(--card); border:1px solid var(--line); border-radius:28px; padding:36px; margin-bottom:22px; box-shadow:0 16px 40px rgba(10,26,16,.06); break-inside:avoid; page-break-inside:avoid; }
+    .lead { font-size:18px; max-width:820px; margin-bottom:18px; }
+    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:20px; }
+    .card { border:1px solid var(--line); background:#FBFDFC; border-radius:18px; padding:20px; min-height:145px; }
+    .card h3 { font-family:Inter, Arial, sans-serif; font-size:17px; letter-spacing:-.02em; margin-bottom:8px; }
+    .promise { border-left:4px solid var(--emerald); background:var(--soft); color:var(--deep); padding:14px 16px; border-radius:14px; margin:18px 0 22px; font-weight:800; }
+    .ideas { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .idea { display:flex; gap:12px; align-items:flex-start; border:1px solid var(--line); background:#FBFDFC; border-radius:18px; padding:16px; break-inside:avoid; page-break-inside:avoid; }
+    .idea-num { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--soft); color:var(--emerald); font-weight:900; flex-shrink:0; }
+    .idea p { font-size:13.5px; color:var(--text); margin-bottom:9px; }
+    .idea span { font-size:12px; color:var(--emerald); font-weight:900; }
+    table { width:100%; border-collapse:collapse; margin-top:18px; overflow:hidden; border-radius:16px; }
+    th,td { text-align:left; border-bottom:1px solid var(--line); padding:14px; vertical-align:top; font-size:14px; }
+    th { background:var(--soft); color:var(--deep); text-transform:uppercase; font-size:11px; letter-spacing:.08em; }
+    .template { border:1px solid var(--line); background:#FBFDFC; border-radius:22px; padding:24px; margin-top:14px; break-inside:avoid; page-break-inside:avoid; }
+    .template h3 { margin-bottom:10px; }
+    .template ul { margin:14px 0; padding-left:20px; color:var(--text); }
+    .tag { display:inline-block; background:var(--soft); color:var(--emerald); border-radius:999px; padding:6px 10px; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:.08em; margin-bottom:12px; }
+    .cta { display:inline-block; border-radius:12px; background:var(--emerald); color:#fff; padding:10px 14px; font-size:13px; font-weight:900; }
+    .checklist { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:20px; }
+    .checklist span { background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:13px 14px; font-weight:800; color:var(--deep); }
+    @media print {
+      body { background:#fff; }
+      .wrap { max-width:none; padding:24px; }
+      .section,.cover { break-inside:avoid; page-break-inside:avoid; }
+      h1 { font-size:46px; }
+      h2 { font-size:28px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="cover">
+      <div class="kicker">Newsletter e conteudo de valor para conversao</div>
+      <h1>Uma caixa de e-mail que ajuda o candidato a procurar emprego melhor.</h1>
+      <p>Este plano nao e uma regua de jornada do produto. E uma estrategia editorial para nutrir audiencia, gerar confianca, educar o mercado e criar conversao por valor percebido.</p>
+      <div class="chips">
+        <span class="chip">Conteudo util antes da venda</span>
+        <span class="chip">Dores reais de candidatura</span>
+        <span class="chip">Produto como proximo passo natural</span>
+      </div>
+      <div class="hero-grid">
+        <div class="hero-card"><b>7</b><span>pilares editoriais</span></div>
+        <div class="hero-card"><b>70</b><span>ideias de e-mails</span></div>
+        <div class="hero-card"><b>5</b><span>series recorrentes</span></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="label">01 / Direcao estrategica</div>
+      <h2>O papel do e-mail no VagaAI</h2>
+      <p class="lead">O e-mail deve fazer o usuario sentir que recebeu clareza, nao apenas propaganda. A venda acontece quando o leitor percebe que o VagaAI organiza um problema que ele ja vive: escolher vagas, entender aderencia, adaptar curriculo e se preparar melhor.</p>
+      <div class="grid">
+        <div class="card"><h3>Objetivo principal</h3><p>Transformar leitores em usuarios que testam uma vaga real no VagaAI.</p></div>
+        <div class="card"><h3>Objetivo secundario</h3><p>Manter a marca presente durante a busca por emprego, mesmo quando o usuario ainda nao esta pronto para assinar.</p></div>
+        <div class="card"><h3>Tese editorial</h3><p>Quem ajuda antes de vender ganha permissao para vender com mais naturalidade.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="label">02 / Cadencia recomendada</div>
+      <h2>Frequencia sem virar spam</h2>
+      <p class="lead">A cadencia ideal e previsivel, util e leve: duas mensagens por semana para base geral, uma newsletter mais conceitual por semana e campanhas extras apenas quando houver oportunidade ou lancamento.</p>
+      <table>
+        <thead><tr><th>Dia</th><th>Serie</th><th>O que enviar</th><th>Funcao</th></tr></thead>
+        <tbody><tr><td>Segunda</td><td>Vaga da semana</td><td>Uma vaga real ou perfil de vaga + o que observar antes de aplicar.</td><td>Educacao + ativacao</td></tr>
+<tr><td>Terca</td><td>Erro de curriculo</td><td>Um erro especifico que reduz aderencia e como corrigir.</td><td>Autoridade</td></tr>
+<tr><td>Quarta</td><td>ATS sem panico</td><td>Explicacao simples sobre filtros, score e palavras-chave.</td><td>Educacao</td></tr>
+<tr><td>Quinta</td><td>Candidatura mais forte</td><td>Checklist pratico para enviar melhor uma oportunidade.</td><td>Conversao suave</td></tr>
+<tr><td>Sexta</td><td>Carreira em movimento</td><td>Texto conceitual curto, emocional e sofisticado.</td><td>Relacionamento</td></tr></tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <div class="label">03 / Regras de conversao</div>
+      <h2>Como vender sem parecer que esta vendendo o tempo todo</h2>
+      <div class="grid">
+        <div class="card"><h3>1. Comece pela dor</h3><p>Abra com uma situacao que o usuario reconhece: silencio apos envio, vaga confusa, CV generico, entrevista sem preparo.</p></div>
+        <div class="card"><h3>2. Entregue um criterio</h3><p>Ensine uma forma melhor de pensar: como avaliar uma vaga, como ler requisitos, como priorizar candidaturas.</p></div>
+        <div class="card"><h3>3. Mostre o produto como ferramenta</h3><p>O CTA entra como a forma mais facil de aplicar o criterio na pratica, nao como interrupcao comercial.</p></div>
+      </div>
+    </section>
+
+    
+    <section class="section pillar" id="pilar-1">
+      <div class="label">Pilar editorial 1</div>
+      <h2>1. Vagas que valem seu tempo</h2>
+      <p class="lead">Ensinar o usuario a escolher melhor antes de gastar energia aplicando.</p>
+      <div class="promise">Menos candidaturas no escuro. Mais clareza sobre onde vale insistir.</div>
+      <div class="ideas">
+            <div class="idea">
+              <div class="idea-num">01</div>
+              <div>
+                <h4>Antes de aplicar, faca esta pergunta sobre a vaga</h4>
+                <p>A maioria olha so cargo e salario. O que decide suas chances esta nos requisitos, no momento da empresa e na aderencia real.</p>
+                <span>CTA sutil: Analise uma vaga antes de enviar o curriculo</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">02</div>
+              <div>
+                <h4>Nem toda vaga boa e uma boa vaga para voce</h4>
+                <p>Uma vaga pode parecer perfeita e ainda assim desperdiçar sua energia se pedir um historico que seu CV nao prova.</p>
+                <span>CTA sutil: Veja seu score de aderencia</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">03</div>
+              <div>
+                <h4>O erro de enviar curriculo para toda vaga parecida</h4>
+                <p>Volume sem criterio cria cansaco, frustracao e baixa taxa de retorno.</p>
+                <span>CTA sutil: Filtre oportunidades por cargo, local e salario</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">04</div>
+              <div>
+                <h4>Como identificar uma vaga-armadilha em 2 minutos</h4>
+                <p>Descricao generica, requisitos conflitantes e senioridade confusa sao sinais de baixa qualidade.</p>
+                <span>CTA sutil: Use o alerta para separar oportunidades melhores</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">05</div>
+              <div>
+                <h4>A vaga que parece junior, mas cobra senior</h4>
+                <p>Muitas descricoes misturam escopo, senioridade e salario de forma desalinhada.</p>
+                <span>CTA sutil: Compare requisitos antes de aplicar</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">06</div>
+              <div>
+                <h4>O recrutador nao le sua intencao. Ele le evidencias</h4>
+                <p>Querer a vaga nao basta. O curriculo precisa mostrar o que aquela oportunidade pede.</p>
+                <span>CTA sutil: Descubra lacunas da vaga</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">07</div>
+              <div>
+                <h4>Quando vale aplicar mesmo com score medio</h4>
+                <p>Nem todo score medio e rejeicao. Algumas lacunas sao ajustaveis no curriculo.</p>
+                <span>CTA sutil: Veja o que pode melhorar</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">08</div>
+              <div>
+                <h4>Quando nao vale aplicar, mesmo que voce queira muito</h4>
+                <p>Se a vaga exige experiencia que voce nao tem e nao pode demonstrar, a energia talvez esteja melhor em outra oportunidade.</p>
+                <span>CTA sutil: Priorize vagas com melhor encaixe</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">09</div>
+              <div>
+                <h4>Seu tempo de busca tambem precisa de estrategia</h4>
+                <p>A busca por emprego melhora quando voce decide onde investir atencao, nao quando dispara curriculos sem contexto.</p>
+                <span>CTA sutil: Organize sua lista de vagas</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">10</div>
+              <div>
+                <h4>A melhor vaga da semana talvez nao seja a mais famosa</h4>
+                <p>Empresas menores, cargos especificos e requisitos mais claros podem gerar oportunidades melhores.</p>
+                <span>CTA sutil: Receba vagas alinhadas ao seu perfil</span>
+              </div>
+            </div>
+            </div>
+    </section>
+    
+
+    <section class="section pillar" id="pilar-2">
+      <div class="label">Pilar editorial 2</div>
+      <h2>2. Curriculo que prova valor</h2>
+      <p class="lead">Mostrar que curriculo bom nao e bonito: e especifico, claro e comprovavel.</p>
+      <div class="promise">Transformar experiencias em argumentos que combinam com a vaga.</div>
+      <div class="ideas">
+            <div class="idea">
+              <div class="idea-num">01</div>
+              <div>
+                <h4>Seu curriculo nao precisa falar tudo. Precisa provar o que importa</h4>
+                <p>Curriculos genericos tentam agradar todo mundo e acabam nao convencendo ninguem.</p>
+                <span>CTA sutil: Otimize para uma vaga real</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">02</div>
+              <div>
+                <h4>O que seu curriculo esta dizendo sem voce perceber</h4>
+                <p>Ausencia de metricas, verbos fracos e experiencias soltas comunicam menos senioridade do que voce tem.</p>
+                <span>CTA sutil: Veja a qualidade ATS</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">03</div>
+              <div>
+                <h4>A experiencia esta la. O problema e como ela aparece</h4>
+                <p>Muitos profissionais tem repertorio, mas apresentam isso de forma que nao conversa com a vaga.</p>
+                <span>CTA sutil: Reescreva com foco na oportunidade</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">04</div>
+              <div>
+                <h4>Por que seu resumo profissional pode estar te enfraquecendo</h4>
+                <p>Resumo generico abre o curriculo com baixa precisao e tira contexto das suas conquistas.</p>
+                <span>CTA sutil: Ajuste o resumo para a vaga</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">05</div>
+              <div>
+                <h4>O recrutador procura sinais, nao autobiografia</h4>
+                <p>A primeira leitura busca correspondencia rapida entre requisito e evidencia.</p>
+                <span>CTA sutil: Destaque palavras-chave certas</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">06</div>
+              <div>
+                <h4>Seu curriculo precisa de menos adjetivo e mais prova</h4>
+                <p>Proativo, dinamico e comunicativo dizem pouco sem resultado, escopo e contexto.</p>
+                <span>CTA sutil: Adicione metricas e evidencias</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">07</div>
+              <div>
+                <h4>Um curriculo para cada oportunidade nao e exagero</h4>
+                <p>E estrategia. Cada vaga valoriza uma parte diferente da sua experiencia.</p>
+                <span>CTA sutil: Gerar versao otimizada</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">08</div>
+              <div>
+                <h4>O que tirar do curriculo para ele parecer mais forte</h4>
+                <p>Excesso de informacao dilui relevancia. O foco certo aumenta percepcao de encaixe.</p>
+                <span>CTA sutil: Compacte e priorize secoes</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">09</div>
+              <div>
+                <h4>A diferenca entre listar tarefas e vender impacto</h4>
+                <p>Tarefa mostra o que voce fez. Impacto mostra por que aquilo importou.</p>
+                <span>CTA sutil: Transforme tarefas em resultados</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">10</div>
+              <div>
+                <h4>Seu CV esta pronto para humanos e sistemas?</h4>
+                <p>ATS, recrutadores e gestores procuram pistas diferentes. O ideal e equilibrar clareza e aderencia.</p>
+                <span>CTA sutil: Ver score de aderencia</span>
+              </div>
+            </div>
+            </div>
+    </section>
+    
+
+    <section class="section pillar" id="pilar-3">
+      <div class="label">Pilar editorial 3</div>
+      <h2>3. ATS sem terrorismo</h2>
+      <p class="lead">Educar sem medo barato. Explicar filtros, palavras-chave e legibilidade com honestidade.</p>
+      <div class="promise">Ajudar o usuario a entender filtros automaticos sem prometer milagre.</div>
+      <div class="ideas">
+            <div class="idea">
+              <div class="idea-num">01</div>
+              <div>
+                <h4>ATS nao e um robo vilao. E um filtro de contexto</h4>
+                <p>O problema nao e o sistema existir. E enviar um curriculo que nao conversa com a vaga.</p>
+                <span>CTA sutil: Ver palavras-chave ausentes</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">02</div>
+              <div>
+                <h4>O que pode fazer seu CV sumir antes da entrevista</h4>
+                <p>Pouca aderencia, termos ausentes e experiencias mal descritas reduzem leitura e ranqueamento.</p>
+                <span>CTA sutil: Diagnosticar uma vaga</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">03</div>
+              <div>
+                <h4>Palavra-chave nao e copiar requisito</h4>
+                <p>Copiar a descricao da vaga pode soar artificial. O ideal e traduzir requisitos em experiencia real.</p>
+                <span>CTA sutil: Otimizar sem inventar</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">04</div>
+              <div>
+                <h4>O mito do curriculo perfeito para todas as vagas</h4>
+                <p>Nao existe curriculo universal forte. Existe curriculo bem posicionado para uma oportunidade.</p>
+                <span>CTA sutil: Criar versao por vaga</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">05</div>
+              <div>
+                <h4>Score baixo nao significa fim. Significa mapa</h4>
+                <p>Um score mostra lacunas. Algumas sao estruturais, outras sao apenas ajuste de comunicacao.</p>
+                <span>CTA sutil: Ver prioridades de melhoria</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">06</div>
+              <div>
+                <h4>Como ler uma descricao de vaga como um recrutador</h4>
+                <p>Cargo, senioridade, verbos e requisitos repetidos indicam o que pesa na triagem.</p>
+                <span>CTA sutil: Comparar vaga e CV</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">07</div>
+              <div>
+                <h4>Tres sinais de que seu CV esta generico demais</h4>
+                <p>Resumo amplo, experiencias sem metricas e habilidades soltas dificultam correspondencia.</p>
+                <span>CTA sutil: Melhorar com IA</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">08</div>
+              <div>
+                <h4>Por que formatacao tambem influencia</h4>
+                <p>Leitura ruim, secoes confusas e excesso visual podem atrapalhar sistemas e pessoas.</p>
+                <span>CTA sutil: Exportar modelo ATS-friendly</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">09</div>
+              <div>
+                <h4>Nem toda lacuna precisa ser corrigida</h4>
+                <p>Algumas lacunas sao experiencia real que voce nao tem. Outras sao apenas coisas que voce nao explicou.</p>
+                <span>CTA sutil: Separar lacuna real de lacuna de escrita</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">10</div>
+              <div>
+                <h4>O ATS nao contrata. Mas pode impedir voce de ser visto</h4>
+                <p>A meta nao e agradar algoritmo. E garantir que sua experiencia seja entendida.</p>
+                <span>CTA sutil: Fortalecer candidatura</span>
+              </div>
+            </div>
+            </div>
+    </section>
+    
+
+    <section class="section pillar" id="pilar-4">
+      <div class="label">Pilar editorial 4</div>
+      <h2>4. Rotina de candidatura</h2>
+      <p class="lead">Ensinar organizacao, follow-up, priorizacao e consistencia sem ansiedade.</p>
+      <div class="promise">Transformar busca por emprego em processo, nao em caos.</div>
+      <div class="ideas">
+            <div class="idea">
+              <div class="idea-num">01</div>
+              <div>
+                <h4>Se voce nao acompanha suas candidaturas, voce perde contexto</h4>
+                <p>Depois de alguns envios, fica dificil lembrar onde aplicou, quando responderam e qual vaga merece follow-up.</p>
+                <span>CTA sutil: Abrir rastreador</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">02</div>
+              <div>
+                <h4>A busca por emprego precisa de rotina, nao impulso</h4>
+                <p>Aplicar em dias aleatorios aumenta sensacao de descontrole. Processo simples reduz ansiedade.</p>
+                <span>CTA sutil: Organizar proximas acoes</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">03</div>
+              <div>
+                <h4>O melhor follow-up e curto, contextual e no tempo certo</h4>
+                <p>A mensagem certa nao implora. Ela reforca interesse e disponibilidade.</p>
+                <span>CTA sutil: Ver candidaturas pendentes</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">04</div>
+              <div>
+                <h4>O que fazer depois de enviar o curriculo</h4>
+                <p>A candidatura nao termina no envio. Existe acompanhamento, entrevista, carta e preparacao.</p>
+                <span>CTA sutil: Marcar status da vaga</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">05</div>
+              <div>
+                <h4>Por que voce esquece vagas boas no meio do caminho</h4>
+                <p>Sem rastreador, oportunidades importantes viram abas perdidas e prints soltos.</p>
+                <span>CTA sutil: Salvar oportunidade</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">06</div>
+              <div>
+                <h4>Uma candidatura forte tem memoria</h4>
+                <p>Vaga, CV, carta, score e entrevista precisam ficar conectados.</p>
+                <span>CTA sutil: Centralizar no VagaAI</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">07</div>
+              <div>
+                <h4>Como saber qual vaga merece sua atencao hoje</h4>
+                <p>Priorize por prazo, score, etapa e impacto na sua carreira.</p>
+                <span>CTA sutil: Gerenciar proximas acoes</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">08</div>
+              <div>
+                <h4>O erro de tratar todas as candidaturas igual</h4>
+                <p>Algumas precisam de follow-up. Outras pedem CV melhor. Outras pedem treino de entrevista.</p>
+                <span>CTA sutil: Ver prioridade da semana</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">09</div>
+              <div>
+                <h4>Seu funil de emprego precisa ser visivel</h4>
+                <p>Quando voce enxerga analisadas, aplicadas e entrevistas, entende onde esta travando.</p>
+                <span>CTA sutil: Acompanhar funil</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">10</div>
+              <div>
+                <h4>Busca organizada nao garante vaga. Mas evita desperdicio</h4>
+                <p>Clareza operacional aumenta constancia e melhora decisoes.</p>
+                <span>CTA sutil: Criar sistema de candidaturas</span>
+              </div>
+            </div>
+            </div>
+    </section>
+    
+
+    <section class="section pillar" id="pilar-5">
+      <div class="label">Pilar editorial 5</div>
+      <h2>5. Entrevista com contexto</h2>
+      <p class="lead">Mostrar que preparacao boa nasce da vaga, da empresa e do CV enviado.</p>
+      <div class="promise">Chegar com respostas mais especificas, menos improvisadas.</div>
+      <div class="ideas">
+            <div class="idea">
+              <div class="idea-num">01</div>
+              <div>
+                <h4>A entrevista comeca antes da primeira pergunta</h4>
+                <p>Ela comeca quando voce entende o que aquela vaga realmente precisa validar.</p>
+                <span>CTA sutil: Treinar entrevista</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">02</div>
+              <div>
+                <h4>Responder bem nao e decorar frase pronta</h4>
+                <p>Resposta forte conecta experiencia, contexto e resultado.</p>
+                <span>CTA sutil: Simular perguntas da vaga</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">03</div>
+              <div>
+                <h4>O que destacar quando perguntam sobre sua experiencia</h4>
+                <p>Nem toda experiencia merece o mesmo peso. A vaga define o que precisa ir para frente.</p>
+                <span>CTA sutil: Ver perguntas personalizadas</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">04</div>
+              <div>
+                <h4>A pergunta que derruba bons candidatos</h4>
+                <p>Fale sobre voce pode virar resposta generica se voce nao tiver narrativa.</p>
+                <span>CTA sutil: Preparar resposta com base no CV</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">05</div>
+              <div>
+                <h4>Se voce nao sabe o que a empresa busca, voce responde no escuro</h4>
+                <p>Briefing de empresa e descricao da vaga ajudam a antecipar temas importantes.</p>
+                <span>CTA sutil: Gerar briefing</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">06</div>
+              <div>
+                <h4>Treinar entrevista nao e parecer ensaiado</h4>
+                <p>E ganhar clareza para responder com calma, estrutura e exemplos reais.</p>
+                <span>CTA sutil: Praticar com feedback</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">07</div>
+              <div>
+                <h4>Como transformar uma lacuna em resposta honesta</h4>
+                <p>Nem toda fraqueza precisa ser escondida. Algumas precisam ser contextualizadas.</p>
+                <span>CTA sutil: Treinar objecoes</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">08</div>
+              <div>
+                <h4>Sua resposta precisa ter exemplo, decisao e resultado</h4>
+                <p>O modelo simples evita respostas vagas e aumenta credibilidade.</p>
+                <span>CTA sutil: Avaliar resposta</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">09</div>
+              <div>
+                <h4>A entrevista mede aderencia e maturidade</h4>
+                <p>Tecnica importa, mas raciocinio, postura e clareza tambem pesam.</p>
+                <span>CTA sutil: Treinar perguntas comportamentais</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">10</div>
+              <div>
+                <h4>O que revisar 30 minutos antes da entrevista</h4>
+                <p>Vaga, empresa, conquistas mais relevantes, perguntas provaveis e motivacao.</p>
+                <span>CTA sutil: Abrir preparacao da vaga</span>
+              </div>
+            </div>
+            </div>
+    </section>
+    
+
+    <section class="section pillar" id="pilar-6">
+      <div class="label">Pilar editorial 6</div>
+      <h2>6. Carreira em movimento</h2>
+      <p class="lead">Conteudos conceituais que criam identificacao emocional e mantem a marca lembrada.</p>
+      <div class="promise">Ajudar o profissional a repensar rota, valor, estrategia e mercado.</div>
+      <div class="ideas">
+            <div class="idea">
+              <div class="idea-num">01</div>
+              <div>
+                <h4>Talvez voce nao precise de mais coragem. Precise de mais direcao</h4>
+                <p>Buscar emprego sem clareza transforma ansiedade em movimento sem resultado.</p>
+                <span>CTA sutil: Comecar por uma vaga real</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">02</div>
+              <div>
+                <h4>As vezes mudar de rota e sinal de maturidade</h4>
+                <p>Recalcular carreira nao e fracasso. E leitura de contexto.</p>
+                <span>CTA sutil: Mapear oportunidades melhores</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">03</div>
+              <div>
+                <h4>O silencio depois do envio cansa mais do que a vaga em si</h4>
+                <p>O problema nao e apenas nao passar. E nao saber por que nao passou.</p>
+                <span>CTA sutil: Entender sua aderencia</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">04</div>
+              <div>
+                <h4>Voce nao esta atrasado. Mas talvez esteja aplicando sem estrategia</h4>
+                <p>Comparar trajetorias pode esconder a pergunta certa: qual vaga conversa com o que voce prova hoje?</p>
+                <span>CTA sutil: Criar plano de candidatura</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">05</div>
+              <div>
+                <h4>Experiencia sem narrativa vira ruido</h4>
+                <p>O mercado nao adivinha sua historia. Voce precisa organizar sinais.</p>
+                <span>CTA sutil: Fortalecer seu curriculo</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">06</div>
+              <div>
+                <h4>Ser bom nao basta se ninguem entende onde voce se encaixa</h4>
+                <p>Valor profissional precisa ser traduzido para a oportunidade certa.</p>
+                <span>CTA sutil: Testar encaixe da vaga</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">07</div>
+              <div>
+                <h4>A pressa de sair pode te levar para outra vaga errada</h4>
+                <p>Trocar de emprego pede criterio, nao apenas urgencia.</p>
+                <span>CTA sutil: Receber vagas alinhadas</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">08</div>
+              <div>
+                <h4>O curriculo tambem conta como voce enxerga sua carreira</h4>
+                <p>Foco, escolhas e progresso aparecem na forma como voce organiza sua trajetoria.</p>
+                <span>CTA sutil: Revisar narrativa profissional</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">09</div>
+              <div>
+                <h4>Nao e sobre mandar mais. E sobre mandar melhor</h4>
+                <p>Quantidade pode dar sensacao de controle, mas qualidade aumenta chance de retorno.</p>
+                <span>CTA sutil: Analisar antes de enviar</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">10</div>
+              <div>
+                <h4>Quando tudo parece urgente, priorizar vira autocuidado</h4>
+                <p>A busca por emprego fica menos pesada quando o proximo passo e claro.</p>
+                <span>CTA sutil: Ver proxima melhor acao</span>
+              </div>
+            </div>
+            </div>
+    </section>
+    
+
+    <section class="section pillar" id="pilar-7">
+      <div class="label">Pilar editorial 7</div>
+      <h2>7. Mercado, IA e bastidores do recrutamento</h2>
+      <p class="lead">Trazer contexto de mercado e educar o candidato sobre como a selecao mudou.</p>
+      <div class="promise">Dar leitura de ambiente para o usuario tomar melhores decisoes.</div>
+      <div class="ideas">
+            <div class="idea">
+              <div class="idea-num">01</div>
+              <div>
+                <h4>O recrutamento ficou mais digital. Sua candidatura tambem precisa ficar mais clara</h4>
+                <p>Mais tecnologia na triagem exige curriculos mais legiveis, especificos e contextualizados.</p>
+                <span>CTA sutil: Preparar candidatura completa</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">02</div>
+              <div>
+                <h4>IA no recrutamento nao elimina criterio. Ela aumenta a importancia do contexto</h4>
+                <p>Quanto mais automatizacao, mais importante e conectar requisitos, experiencia e evidencias.</p>
+                <span>CTA sutil: Ver score de compatibilidade</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">03</div>
+              <div>
+                <h4>A vaga mudou. O jeito de se candidatar tambem</h4>
+                <p>Candidatura forte hoje combina escolha, diagnostico, adaptacao, acompanhamento e preparo.</p>
+                <span>CTA sutil: Conhecer o fluxo VagaAI</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">04</div>
+              <div>
+                <h4>O mercado nao premia apenas quem tem experiencia. Premia quem comunica valor</h4>
+                <p>Experiencia escondida em texto fraco perde para experiencia bem apresentada.</p>
+                <span>CTA sutil: Melhorar apresentacao do CV</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">05</div>
+              <div>
+                <h4>Empresas buscam sinais de encaixe antes de conversar</h4>
+                <p>Seu curriculo, carta e respostas precisam antecipar esse encaixe.</p>
+                <span>CTA sutil: Criar materiais por vaga</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">06</div>
+              <div>
+                <h4>O candidato tambem precisa de inteligencia de busca</h4>
+                <p>Nao basta esperar retorno. E preciso entender padroes, funil e proximas acoes.</p>
+                <span>CTA sutil: Acompanhar candidaturas</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">07</div>
+              <div>
+                <h4>A triagem ficou mais rapida. Sua mensagem precisa ser mais precisa</h4>
+                <p>O primeiro contato com seu perfil precisa mostrar relevancia em poucos segundos.</p>
+                <span>CTA sutil: Ajustar resumo e keywords</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">08</div>
+              <div>
+                <h4>O excesso de vagas online criou outro problema: escolha ruim</h4>
+                <p>Com muitas oportunidades, o desafio vira decidir onde investir tempo.</p>
+                <span>CTA sutil: Receber alertas filtrados</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">09</div>
+              <div>
+                <h4>O futuro da candidatura e contextual</h4>
+                <p>Um curriculo, uma carta e uma entrevista preparados para a mesma vaga comunicam maturidade.</p>
+                <span>CTA sutil: Unificar sua jornada</span>
+              </div>
+            </div>
+            
+
+            <div class="idea">
+              <div class="idea-num">10</div>
+              <div>
+                <h4>O profissional que aprende com cada envio evolui mais rapido</h4>
+                <p>Cada score, lacuna e resposta vira dado para a proxima candidatura.</p>
+                <span>CTA sutil: Usar historico de analises</span>
+              </div>
+            </div>
+            </div>
+    </section>
+    
+
+    <section class="section">
+      <div class="label">11 / Templates prontos</div>
+      <h2>Modelos de e-mails para disparo</h2>
+      <p class="lead">Use estes modelos como base para campanhas semanais. O ideal e alternar dor, educacao, prova de valor e convite ao produto.</p>
+      
+    <div class="template">
+      <div class="tag">Newsletter educativa</div>
+      <h3>Voce pode estar perdendo vagas boas por um detalhe simples</h3>
+      <p><b>Preheader:</b> Antes de enviar mais um curriculo, olhe para a aderencia.</p>
+      <ul><li>A maioria dos candidatos decide aplicar olhando cargo, salario e nome da empresa.</li><li>Mas a triagem olha outra coisa: requisitos, palavras-chave, senioridade e evidencias no curriculo.</li><li>Isso significa que uma vaga aparentemente perfeita pode estar desalinhada com o que seu CV prova hoje.</li><li>Antes de enviar, pergunte: meu curriculo mostra exatamente o que essa vaga esta pedindo?</li></ul>
+      <div class="cta">CTA: Analisar uma vaga gratis</div>
+    </div>
+    
+
+    <div class="template">
+      <div class="tag">Dor + reframe</div>
+      <h3>Mandar mais curriculos pode nao ser o melhor proximo passo</h3>
+      <p><b>Preheader:</b> Quando o retorno nao vem, talvez o problema seja direcao.</p>
+      <ul><li>Se voce ja enviou dezenas de curriculos e recebeu pouco retorno, a resposta natural e mandar mais.</li><li>Mas volume sem diagnostico costuma repetir o mesmo problema em escala.</li><li>O caminho mais inteligente e entender onde sua candidatura perde forca: escolha da vaga, aderencia, curriculo, carta ou entrevista.</li></ul>
+      <div class="cta">CTA: Ver onde sua candidatura pode melhorar</div>
+    </div>
+    
+
+    <div class="template">
+      <div class="tag">Produto sem parecer propaganda</div>
+      <h3>A diferenca entre um curriculo bom e um curriculo certo para a vaga</h3>
+      <p><b>Preheader:</b> O VagaAI compara os dois antes de voce aplicar.</p>
+      <ul><li>Um curriculo pode estar bem escrito e ainda assim nao ser o melhor curriculo para aquela vaga.</li><li>Isso acontece porque cada oportunidade valoriza sinais diferentes.</li><li>O VagaAI ajuda a comparar a descricao da vaga com seu perfil, mostra lacunas e gera uma versao mais direcionada.</li></ul>
+      <div class="cta">CTA: Testar com uma vaga real</div>
+    </div>
+    
+
+    <div class="template">
+      <div class="tag">Conteudo conceitual</div>
+      <h3>Talvez voce nao precise enviar mais. Precise enxergar melhor.</h3>
+      <p><b>Preheader:</b> Busca por emprego tambem e estrategia.</p>
+      <ul><li>Existe uma fase da busca em que tudo parece depender de insistir mais.</li><li>Mais vagas, mais curriculos, mais abas abertas.</li><li>Mas as vezes a virada vem quando voce para de se mover no escuro e comeca a entender quais oportunidades realmente combinam com sua trajetoria.</li></ul>
+      <div class="cta">CTA: Organizar minha busca</div>
+    </div>
+    
+    </section>
+
+    <section class="section">
+      <div class="label">12 / Calendario de 30 dias</div>
+      <h2>Primeiro mes de disparos</h2>
+      <table>
+        <thead><tr><th>Semana</th><th>E-mail 1</th><th>E-mail 2</th><th>E-mail 3 opcional</th></tr></thead>
+        <tbody>
+          <tr><td>Semana 1</td><td>Antes de aplicar, faca esta pergunta sobre a vaga</td><td>Seu curriculo nao precisa falar tudo</td><td>Talvez voce nao precise de mais coragem</td></tr>
+          <tr><td>Semana 2</td><td>ATS nao e um robo vilao</td><td>O que fazer depois de enviar o curriculo</td><td>A entrevista comeca antes da primeira pergunta</td></tr>
+          <tr><td>Semana 3</td><td>Nem toda vaga boa e boa para voce</td><td>O recrutador procura sinais, nao autobiografia</td><td>A vaga mudou. O jeito de se candidatar tambem</td></tr>
+          <tr><td>Semana 4</td><td>Score baixo nao significa fim</td><td>O melhor follow-up e curto</td><td>Ser bom nao basta se ninguem entende onde voce se encaixa</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <div class="label">13 / Checklist editorial</div>
+      <h2>Antes de disparar</h2>
+      <div class="checklist">
+        <span>O assunto cria curiosidade sem exagero?</span>
+        <span>O e-mail entrega valor mesmo sem clique?</span>
+        <span>Existe uma dor real do candidato?</span>
+        <span>O CTA e um proximo passo natural?</span>
+        <span>A promessa evita garantir emprego?</span>
+        <span>O texto parece mentor, nao vendedor agressivo?</span>
+        <span>O conteudo reforca clareza, estrategia e preparo?</span>
+        <span>Ha UTM e segmentacao por campanha?</span>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
