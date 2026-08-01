@@ -6,6 +6,7 @@
 
 import crypto from 'crypto';
 import { resolvePlan, planEntitlements, coerceFrequency } from '../lib/entitlements.js';
+import { buildResendTags, recordEmailSent } from './_lib/email-tracking.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -2253,6 +2254,7 @@ async function processUserAlert(profile, options = {}) {
       to: [email],
       subject: `🎯 ${jobs.length} vaga${jobs.length > 1 ? 's novas' : ' nova'} compatíveis com seu perfil`,
       html,
+      tags: buildResendTags({ emailType: 'alerta_diario', userId }),
     }),
   });
 
@@ -2268,6 +2270,11 @@ async function processUserAlert(profile, options = {}) {
     }
     throw new Error(`Resend error: ${err}`);
   }
+
+  // Fire-and-forget: não gasta orçamento de tempo do batch (maxDuration 60s).
+  emailRes.json().then(data => {
+    recordEmailSent({ resendId: data?.id, userId, emailType: 'alerta_diario', toEmail: email }).catch(() => {});
+  }).catch(() => {});
 
   // Registra vagas enviadas, atualiza timestamps e grava histórico
   if (!isTest) {

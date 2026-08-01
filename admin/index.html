@@ -285,6 +285,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <button class="admin-tab" onclick="switchTab('finance')" data-tab="finance">💰 Financeiro</button>
     <button class="admin-tab" onclick="switchTab('traffic')" data-tab="traffic">📈 Tráfego</button>
     <button class="admin-tab" onclick="switchTab('alerts')" data-tab="alerts">🔔 Alertas</button>
+    <button class="admin-tab" onclick="switchTab('email')" data-tab="email">✉️ E-mail Marketing</button>
   </div>
 
   <!-- ═══════════════ ABA: VISÃO GERAL ═══════════════ -->
@@ -552,6 +553,40 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
 
   </div><!-- /panel-alerts -->
+
+  <!-- ═══════════════ ABA: E-MAIL MARKETING ═══════════════ -->
+  <div id="panel-email" class="tab-panel" style="display:none">
+
+    <div class="section-header">
+      <div class="section-title">E-mail Marketing</div>
+      <button class="btn-nav ghost" onclick="loadEmailMarketingData(_emailFunnel)" style="font-size:12px">↻ Atualizar</button>
+    </div>
+
+    <!-- Cota Resend free -->
+    <div class="ga4-grid" id="emailQuota" style="margin-bottom:20px"></div>
+
+    <div class="ga4-two-col">
+      <!-- Funil selecionável -->
+      <div>
+        <div class="ga4-box-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>Funil de jornada</span>
+          <div id="emailFunnelSelector" style="display:flex;gap:6px"></div>
+        </div>
+        <div class="ga4-funnel" id="emailFunnelContent">
+          <div class="ga4-loading">Carregando…</div>
+        </div>
+      </div>
+
+      <!-- Ranking de e-mails por tipo -->
+      <div>
+        <div class="ga4-box-title">Ranking de e-mails (open rate / click rate)</div>
+        <div class="ga4-list" id="emailRanking">
+          <div class="ga4-loading">Carregando…</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /panel-email -->
 
 </div><!-- /container -->
 
@@ -877,7 +912,7 @@ function renderGA4(d) {
 var _alertsLoaded = false;
 
 function switchTab(tab) {
-  ['overview','users','finance','traffic','alerts'].forEach(function(t) {
+  ['overview','users','finance','traffic','alerts','email'].forEach(function(t) {
     var panel = document.getElementById('panel-' + t);
     var btn   = document.querySelector('.admin-tab[data-tab="' + t + '"]');
     if (panel) panel.style.display = t === tab ? '' : 'none';
@@ -888,6 +923,9 @@ function switchTab(tab) {
   }
   if (tab === 'alerts' && !_alertsLoaded) {
     loadAlertsData();
+  }
+  if (tab === 'email' && !_emailLoaded) {
+    loadEmailMarketingData(_emailFunnel);
   }
 }
 
@@ -1022,6 +1060,90 @@ function renderAlertsTab(d) {
         '<th style="padding:6px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:600">Erro</th>' +
       '</tr></thead><tbody>' + hrows + '</tbody></table>';
   }
+}
+
+// ─── Aba E-mail Marketing ─────────────────────────────────────────────────────
+
+var _emailLoaded = false;
+var _emailFunnel = 'onboarding';
+var EMAIL_FUNNEL_LABELS = { onboarding: 'Onboarding', winback: 'Reativação', trial_sem_uso: 'Trial sem uso' };
+var EMAIL_TYPE_LABELS = {
+  welcome: 'Boas-vindas', day2: 'Day 2', day5: 'Day 5', day7_alerts: 'Day 7 (alertas)',
+  winback: 'Win-back', tracker_followup: 'Follow-up candidatura', free_renewed: 'Ciclo grátis renovado',
+  sub_activated: 'Assinatura ativada', payment_failed: 'Pagamento falhou', sub_canceled: 'Cancelamento',
+  alerta_diario: 'Alerta diário de vagas', purchase_confirmation: 'Compra confirmada', support_lead: 'Lead/suporte',
+};
+
+// Barra de funil dedicada (mesmo visual de .ga4-funnel-row, sem depender do
+// closure funnelBar() de renderGA4 — evita mexer em código já validado).
+function emailFunnelBar(label, val, maxVal) {
+  var barW = maxVal > 0 ? Math.round((val / maxVal) * 100) : 0;
+  return '<div class="ga4-funnel-row">'
+    + '<div class="ga4-funnel-label">' + label + '</div>'
+    + '<div class="ga4-funnel-bar-wrap"><div class="ga4-funnel-bar" style="width:' + barW + '%"></div></div>'
+    + '<div class="ga4-funnel-count">' + (val||0).toLocaleString('pt-BR') + '</div>'
+    + '</div>';
+}
+
+async function loadEmailMarketingData(funnel) {
+  _emailLoaded = true;
+  _emailFunnel = funnel || 'onboarding';
+  document.getElementById('emailFunnelContent').innerHTML = '<div class="ga4-loading">Carregando…</div>';
+  document.getElementById('emailRanking').innerHTML = '<div class="ga4-loading">Carregando…</div>';
+  document.getElementById('emailFunnelSelector').innerHTML = Object.keys(EMAIL_FUNNEL_LABELS).map(function(key) {
+    var active = key === _emailFunnel ? ' active' : '';
+    return '<button class="ga4-period-btn' + active + '" onclick="loadEmailMarketingData(\'' + key + '\')">' + EMAIL_FUNNEL_LABELS[key] + '</button>';
+  }).join('');
+  try {
+    if (!_ga4Token) {
+      var { data: { session } } = await sb.auth.getSession();
+      if (session) _ga4Token = session.access_token;
+    }
+    var res = await fetch('/api/admin?action=email_marketing&funnel=' + encodeURIComponent(_emailFunnel), {
+      headers: { Authorization: 'Bearer ' + _ga4Token }
+    });
+    if (!res.ok) throw new Error((await res.json().catch(function(){return {};})).error || 'Erro ao carregar');
+    renderEmailMarketingTab(await res.json());
+  } catch(e) {
+    document.getElementById('emailFunnelContent').innerHTML = '<div style="color:var(--red);font-size:13px">Erro: ' + e.message + '</div>';
+    document.getElementById('emailRanking').innerHTML = '';
+  }
+}
+
+function renderEmailMarketingTab(d) {
+  var stages = d.funnel_stages || [];
+  var stats  = d.type_stats || [];
+  var quota  = d.quota || {};
+
+  // ── Cota Resend free ──
+  var pctDay   = quota.daily_limit   ? Math.round((quota.sent_today || 0) / quota.daily_limit * 100)   : 0;
+  var pctMonth = quota.monthly_limit ? Math.round((quota.sent_month || 0) / quota.monthly_limit * 100) : 0;
+  var dayDelta   = pctDay   >= 80 ? '<span class="ga4-card-delta down">' + pctDay   + '% da cota diária</span>'  : '<span class="ga4-card-delta neutral">' + pctDay   + '% da cota diária</span>';
+  var monthDelta = pctMonth >= 90 ? '<span class="ga4-card-delta down">' + pctMonth + '% da cota mensal</span>' : '<span class="ga4-card-delta neutral">' + pctMonth + '% da cota mensal</span>';
+  document.getElementById('emailQuota').innerHTML =
+    '<div class="ga4-card"><div class="ga4-card-label">Envios hoje</div><div class="ga4-card-value">' + (quota.sent_today||0) + ' / ' + (quota.daily_limit||100) + '</div>' + dayDelta + '</div>' +
+    '<div class="ga4-card"><div class="ga4-card-label">Envios este mês</div><div class="ga4-card-value">' + (quota.sent_month||0) + ' / ' + (quota.monthly_limit||3000) + '</div>' + monthDelta + '</div>' +
+    '<div class="ga4-card"><div class="ga4-card-label">Plano Resend</div><div class="ga4-card-value" style="font-size:20px">Free</div><span class="ga4-card-delta neutral">100/dia · 3.000/mês</span></div>';
+
+  // ── Funil selecionado ──
+  var maxStage = stages.length ? (stages[0].value || 1) : 1;
+  document.getElementById('emailFunnelContent').innerHTML = stages.length
+    ? stages.map(function(s){ return emailFunnelBar(s.stage, s.value, maxStage); }).join('')
+    : '<div style="color:var(--muted);font-size:13px;padding:1rem">Sem dados ainda — os eventos aparecem aqui conforme os e-mails são enviados/abertos.</div>';
+
+  // ── Ranking por tipo ──
+  document.getElementById('emailRanking').innerHTML = stats.length
+    ? stats.map(function(s) {
+        var sent = s.sent || 0;
+        var openRate  = sent > 0 ? Math.round((s.opened  / sent) * 100) : 0;
+        var clickRate = sent > 0 ? Math.round((s.clicked / sent) * 100) : 0;
+        var label = EMAIL_TYPE_LABELS[s.email_type] || s.email_type;
+        return '<div class="ga4-page-row">'
+          + '<span class="ga4-page-path">' + label + '</span>'
+          + '<span class="ga4-page-views">' + sent.toLocaleString('pt-BR') + ' enviados · ' + openRate + '% abertura · ' + clickRate + '% clique</span>'
+          + '</div>';
+      }).join('')
+    : '<div style="color:var(--muted);font-size:13px;padding:1rem">Sem dados ainda.</div>';
 }
 
 // ─── Gerenciamento de usuários ────────────────────────────────────────────────

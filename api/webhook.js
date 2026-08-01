@@ -1,10 +1,160 @@
+// api/webhook.js
+// Webhook do Stripe (pagamentos/assinaturas) E do Resend (eventos de e-mail:
+// delivered/opened/clicked/bounced/...), no mesmo arquivo. O Hobby plan da
+// Vercel limita a 12 Serverless Functions por deployment (ver
+// tests/vercel-config.test.js) — dois provedores diferentes de webhook
+// caberiam em dois arquivos, mas ambos exigem bodyParser:false + raw body
+// para checar assinatura, então dividir por header é barato e evita gastar
+// mais uma function. Despacho: presença de `svix-id` (Resend/Svix) vs
+// `stripe-signature` (Stripe), verificados ANTES de decidir qual segredo usar.
+
 import crypto from 'crypto';
+import { buildResendTags, recordEmailSent } from './_lib/email-tracking.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET;
+
+// ─── Resend (eventos de e-mail) ──────────────────────────────────────────────
+// Recebe delivered/opened/clicked/bounced/complained/delivery_delayed e grava
+// em email_events, correlacionando com o envio original via `resend_id` (id
+// devolvido no POST /emails) e via `tags` (email_type/user_id) ecoadas pelo
+// Resend no payload do webhook. Verificação de assinatura Svix sem SDK: raw
+// body + HMAC + timingSafeEqual (mesmo padrão da verificação Stripe abaixo).
+
+const RESEND_EVENT_MAP = {
+  'email.sent': 'sent',
+  'email.delivered': 'delivered',
+  'email.delivery_delayed': 'delivery_delayed',
+  'email.bounced': 'bounced',
+  'email.complained': 'complained',
+  'email.opened': 'opened',
+  'email.clicked': 'clicked',
+};
+
+// Secret vem como "whsec_<base64>"; assinatura no header "svix-signature" no
+// formato "v1,<base64sig> v1,<base64sig2>..." (pode haver mais de uma, ex:
+// rotação de chave). Conteúdo assinado: "<svix-id>.<svix-timestamp>.<rawBody>".
+function verifySvixSignature({ svixId, svixTimestamp, svixSignature, rawBody, secret }) {
+  if (!svixId || !svixTimestamp || !svixSignature) return false;
+
+  // Rejeita timestamps fora de uma janela de 5 minutos (mitiga replay)
+  const now = Math.floor(Date.now() / 1000);
+  const ts = parseInt(svixTimestamp, 10);
+  if (!ts || Math.abs(now - ts) > 300) return false;
+
+  const secretKey = Buffer.from(secret.replace(/^whsec_/, ''), 'base64');
+  const signedContent = `${svixId}.${svixTimestamp}.${rawBody.toString('utf8')}`;
+  const expected = crypto.createHmac('sha256', secretKey).update(signedContent, 'utf8').digest('base64');
+
+  const candidates = svixSignature.split(' ').map((s) => s.split(',')[1]).filter(Boolean);
+  return candidates.some((sig) => {
+    try {
+      return crypto.timingSafeEqual(Buffer.from(sig, 'base64'), Buffer.from(expected, 'base64'));
+    } catch {
+      return false;
+    }
+  });
+}
+
+function resendTagsToMap(tags) {
+  const map = {};
+  if (Array.isArray(tags)) {
+    for (const t of tags) {
+      if (t && t.name) map[t.name] = t.value;
+    }
+  }
+  return map;
+}
+
+async function insertEmailEvent({ resendId, userId, emailType, event, toEmail, occurredAt, meta }) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/email_events`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+      'Content-Type': 'application/json',
+      Prefer: 'resolution=ignore-duplicates',
+    },
+    body: JSON.stringify({
+      resend_id: resendId || null,
+      user_id: userId || null,
+      email_type: emailType,
+      event,
+      to_email: toEmail || null,
+      occurred_at: occurredAt || new Date().toISOString(),
+      meta: meta || null,
+    }),
+  });
+  if (!r.ok) throw new Error(`Supabase insert error: ${await r.text()}`);
+}
+
+async function handleResendWebhook(req, res, rawBody) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    console.error('resend-webhook: missing Supabase env vars');
+    return res.status(500).json({ error: 'Config error' });
+  }
+  if (!RESEND_WEBHOOK_SECRET) {
+    console.error('resend-webhook: RESEND_WEBHOOK_SECRET não configurado — rejeitando requisição');
+    return res.status(500).json({ error: 'Webhook não configurado' });
+  }
+
+  const valid = verifySvixSignature({
+    svixId: req.headers['svix-id'],
+    svixTimestamp: req.headers['svix-timestamp'],
+    svixSignature: req.headers['svix-signature'],
+    rawBody,
+    secret: RESEND_WEBHOOK_SECRET,
+  });
+  if (!valid) {
+    console.error('resend-webhook: assinatura inválida');
+    return res.status(400).json({ error: 'Invalid signature' });
+  }
+
+  let payload;
+  try {
+    payload = JSON.parse(rawBody.toString('utf8'));
+  } catch (err) {
+    console.error('resend-webhook: invalid JSON', err);
+    return res.status(400).json({ error: 'Invalid JSON' });
+  }
+
+  const event = RESEND_EVENT_MAP[payload?.type];
+  if (!event) {
+    // Tipo de evento não mapeado (ex: contact.created) — ignora sem erro.
+    return res.status(200).json({ ok: true, ignored: true });
+  }
+
+  const data = payload.data || {};
+  const tags = resendTagsToMap(data.tags);
+  const emailType = tags.email_type || 'unknown';
+  const userId = tags.user_id || null;
+  const toEmail = Array.isArray(data.to) ? data.to[0] : data.to;
+
+  try {
+    await insertEmailEvent({
+      resendId: data.email_id || data.id,
+      userId,
+      emailType,
+      event,
+      toEmail,
+      occurredAt: payload.created_at,
+      meta: event === 'clicked' ? { link: data.click?.link } : event === 'bounced' ? { reason: data.bounce?.message } : null,
+    });
+  } catch (err) {
+    console.error('resend-webhook: insert falhou', err.message);
+    // Responde 200 mesmo assim — Resend faz retry agressivo em não-2xx e o
+    // índice único (resend_id,event) já cobre idempotência de retries legítimos;
+    // não vale a pena entrar em loop de retry por um erro transitório nosso.
+  }
+
+  return res.status(200).json({ ok: true });
+}
+
+// ─── Stripe (pagamentos/assinaturas) ─────────────────────────────────────────
 
 // Busca o e-mail do customer direto na API do Stripe. Usado como fallback de
 // resolução de usuário quando o evento de assinatura não traz client_reference_id
@@ -187,6 +337,12 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error('Webhook: failed to read body', err);
     return res.status(400).json({ error: 'Failed to read body' });
+  }
+
+  // Resend (Svix) manda svix-id; Stripe manda stripe-signature. Despacha pelo
+  // header presente antes de tentar validar com o segredo errado.
+  if (req.headers['svix-id']) {
+    return handleResendWebhook(req, res, rawBody);
   }
 
   // Verifica assinatura Stripe — obrigatório em produção
@@ -547,7 +703,10 @@ export default async function handler(req, res) {
   <a href="https://www.vagaai.app.br/dashboard" style="display:inline-block;background:#3ecf8e;color:#0a0f0d;font-weight:700;padding:.8rem 1.5rem;border-radius:8px;text-decoration:none">→ Ir para o painel</a>
   <p style="color:#4d6e57;font-size:12px;margin-top:2rem">VagaAI · vagaai.app.br</p>
 </div>`,
+          tags: buildResendTags({ emailType: 'purchase_confirmation', userId }),
         }),
+      }).then(r => r.ok ? r.json() : null).then(data => {
+        if (data?.id) recordEmailSent({ resendId: data.id, userId, emailType: 'purchase_confirmation', toEmail: customerEmail }).catch(() => {});
       }).catch((e) => console.error('Webhook: email send failed', e.message));
     }
 

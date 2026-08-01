@@ -2,19 +2,27 @@
 // Chamado pelo webhook após criação de conta/assinatura, ou pelo cliente no primeiro login
 // Envia sequência: Dia 0 (boas-vindas), Dia 2 (dica ATS), Dia 5 (lembrete)
 
+import { buildResendTags, recordEmailSent } from './_lib/email-tracking.js';
+
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
-async function sendEmail(to, subject, html, replyTo = null) {
-  if (!RESEND_API_KEY) return;
+// Retorna { ok, id } — id é o resend_id devolvido síncrono pelo POST /emails,
+// usado para correlacionar eventos subsequentes (delivered/opened/...) vindos
+// do webhook do Resend (api/resend-webhook.js).
+async function sendEmail(to, subject, html, replyTo = null, tags = null) {
+  if (!RESEND_API_KEY) return { ok: false };
   const payload = { from: 'VagaAI <ola@vagaai.app.br>', to: [to], subject, html };
   if (replyTo) payload.reply_to = replyTo;
-  return fetch('https://api.resend.com/emails', {
+  if (tags) payload.tags = tags;
+  const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
+  const data = r.ok ? await r.json().catch(() => null) : null;
+  return { ok: r.ok, id: data?.id };
 }
 
 // Escapa valores dinâmicos antes de interpolar no HTML dos e-mails.
@@ -301,7 +309,8 @@ export default async function handler(req, res) {
       // Envia welcome
       const name = user.user_metadata?.full_name || user.user_metadata?.name || email.split('@')[0];
       const emailData = EMAILS.welcome(name);
-      const r = await sendEmail(email, emailData.subject, emailData.html);
+      const r = await sendEmail(email, emailData.subject, emailData.html, null, buildResendTags({ emailType: 'welcome', userId: user.id }));
+      if (r.ok) recordEmailSent({ resendId: r.id, userId: user.id, emailType: 'welcome', toEmail: email }).catch(() => {});
 
       // Registra envio (colunas reais da tabela: stripe_session_id, user_id, amount, processed_at)
       await fetch(`${SUPABASE_URL}/rest/v1/webhook_events`, {
@@ -344,7 +353,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const { email, name, type, credits_left, empresa, cargo, plan } = req.body || {};
+  const { email, name, type, credits_left, empresa, cargo, plan, user_id } = req.body || {};
   if (!email || !type) return res.status(400).json({ error: 'email e type obrigatórios' });
 
   const displayName = name || email.split('@')[0];
@@ -364,8 +373,9 @@ export default async function handler(req, res) {
     else if (type === 'tracker_followup') emailData = EMAILS.tracker_followup(displayName, empresa || 'empresa', cargo || 'vaga');
     else return res.status(400).json({ error: 'type inválido' });
 
-    const r = await sendEmail(email, emailData.subject, emailData.html, replyTo);
+    const r = await sendEmail(email, emailData.subject, emailData.html, replyTo, buildResendTags({ emailType: type, userId: user_id }));
     if (!r?.ok) throw new Error('Resend error');
+    recordEmailSent({ resendId: r.id, userId: user_id, emailType: type, toEmail: email }).catch(() => {});
     return res.status(200).json({ sent: true, type, to: email });
   } catch (e) {
     return res.status(500).json({ error: e.message });

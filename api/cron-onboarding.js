@@ -129,7 +129,7 @@ async function isPaidPlan(userId) {
   } catch { return true; }
 }
 
-async function callOnboardingEmail(email, name, type, creditsLeft) {
+async function callOnboardingEmail(email, name, type, creditsLeft, userId) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     console.error('cron-onboarding: CRON_SECRET not configured');
@@ -141,7 +141,7 @@ async function callOnboardingEmail(email, name, type, creditsLeft) {
       Authorization: `Bearer ${cronSecret}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ email, name, type, credits_left: creditsLeft }),
+    body: JSON.stringify({ email, name, type, credits_left: creditsLeft, user_id: userId }),
   });
   return res.ok;
 }
@@ -185,7 +185,7 @@ async function getUserEmail(userId) {
   } catch { return null; }
 }
 
-async function callFollowupEmail(email, name, empresa, cargo) {
+async function callFollowupEmail(email, name, empresa, cargo, userId) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     console.error('cron-onboarding: CRON_SECRET not configured');
@@ -197,9 +197,172 @@ async function callFollowupEmail(email, name, empresa, cargo) {
       Authorization: `Bearer ${cronSecret}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ email, name, type: 'tracker_followup', empresa, cargo }),
+    body: JSON.stringify({ email, name, type: 'tracker_followup', empresa, cargo, user_id: userId }),
   });
   return res.ok;
+}
+
+// ─── Motor de sequências data-driven (Fase 3) ────────────────────────────────
+// Lê email_sequences/email_sequence_steps/user_sequence_state em vez de ter a
+// régua hardcoded acima. Roda em paralelo à régua antiga sem substituí-la:
+// por padrão fica em modo "shadow" (calcula quem seria elegível e loga, mas
+// NÃO envia e-mail nem grava estado) — vira "live" só com
+// SEQUENCE_ENGINE_MODE=live, e mesmo assim é seguro rodar junto da régua
+// antiga porque cada e-mail que ela já manda passa a existir também como um
+// step de email_sequence_steps com o mesmo email_type: se ambos os caminhos
+// tentassem enviar o mesmo tipo pro mesmo usuário no mesmo dia, o dedupe da
+// régua antiga (isEmailSent) e o dedupe do motor novo (user_sequence_state)
+// são independentes — por isso o cutover real exige DESLIGAR os blocos
+// antigos (day2/day5/day7_alerts/winback) manualmente depois de validar
+// paridade em modo shadow por um ciclo completo (21 dias). Ver plano de
+// implementação para o script de migração de dados de webhook_events →
+// user_sequence_state, necessário antes desse cutover.
+
+// Condição avaliada por nome fixo (nunca SQL dinâmico) — mapeia para os
+// helpers de condição já existentes acima.
+const CONDITIONS = {
+  no_active_alert: async (userId) => !(await hasActiveAlert(userId)),
+  no_active_alert_and_no_recent_analysis: async (userId) => {
+    if (await hasActiveAlert(userId)) return false;
+    const since14d = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+    return !(await hasAnalysisSince(userId, since14d));
+  },
+};
+
+async function getUsersCreatedSince(minMs) {
+  const users = [];
+  let page = 1;
+  const perPage = 1000;
+  while (true) {
+    const res = await fetch(
+      `${SUPABASE_URL}/auth/v1/admin/users?page=${page}&per_page=${perPage}`,
+      { headers: _sbHeaders() }
+    );
+    if (!res.ok) break;
+    const data = await res.json();
+    const pageUsers = data.users || [];
+    for (const u of pageUsers) {
+      const t = new Date(u.created_at).getTime();
+      if (t >= minMs) users.push(u);
+    }
+    if (pageUsers.length < perPage) break;
+    page++;
+  }
+  return users;
+}
+
+async function fetchSequencesWithSteps(trigger) {
+  const seqRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/email_sequences?trigger=eq.${encodeURIComponent(trigger)}&ativo=eq.true&select=*`,
+    { headers: _sbHeaders() }
+  );
+  const sequences = seqRes.ok ? await seqRes.json() : [];
+  for (const seq of sequences) {
+    const stepsRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/email_sequence_steps?sequence_id=eq.${seq.id}&ativo=eq.true&order=ordem.asc&select=*`,
+      { headers: _sbHeaders() }
+    );
+    seq.steps = stepsRes.ok ? await stepsRes.json() : [];
+  }
+  return sequences;
+}
+
+async function getSequenceState(userId, sequenceId, baseEventAt) {
+  const r = await fetch(
+    `${SUPABASE_URL}/rest/v1/user_sequence_state?user_id=eq.${encodeURIComponent(userId)}&sequence_id=eq.${sequenceId}&base_event_at=eq.${encodeURIComponent(baseEventAt)}&select=*`,
+    { headers: _sbHeaders() }
+  );
+  const rows = r.ok ? await r.json() : [];
+  return rows?.[0] || null;
+}
+
+async function saveSequenceState(existing, row) {
+  try {
+    if (existing) {
+      await fetch(`${SUPABASE_URL}/rest/v1/user_sequence_state?id=eq.${existing.id}`, {
+        method: 'PATCH',
+        headers: { ..._sbHeaders(), 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({ ...row, updated_at: new Date().toISOString() }),
+      });
+    } else {
+      await fetch(`${SUPABASE_URL}/rest/v1/user_sequence_state`, {
+        method: 'POST',
+        headers: { ..._sbHeaders(), 'Content-Type': 'application/json', Prefer: 'resolution=ignore-duplicates,return=minimal' },
+        body: JSON.stringify({ ...row, updated_at: new Date().toISOString() }),
+      });
+    }
+  } catch (e) {
+    console.error('saveSequenceState falhou:', e.message);
+  }
+}
+
+async function runSequenceEngine() {
+  const mode = process.env.SEQUENCE_ENGINE_MODE === 'live' ? 'live' : 'shadow';
+  const sequences = await fetchSequencesWithSteps('user_created');
+  const log = [];
+  let candidatesTotal = 0;
+
+  for (const seq of sequences) {
+    if (!seq.steps.length) continue;
+    const maxDelayMs = Math.max(...seq.steps.map((s) => s.delay_dias)) * 24 * 60 * 60 * 1000;
+    const maxJanelaMs = Math.max(...seq.steps.map((s) => s.janela_horas)) * 60 * 60 * 1000;
+    const candidates = await getUsersCreatedSince(Date.now() - maxDelayMs - maxJanelaMs);
+    candidatesTotal += candidates.length;
+
+    for (const user of candidates) {
+      if (!user.email) continue;
+      const baseEventAt = user.created_at;
+      const baseMs = new Date(baseEventAt).getTime();
+      const existing = await getSequenceState(user.id, seq.id, baseEventAt);
+      if (existing?.concluido) continue;
+
+      const stepAtual = existing?.step_atual || 0;
+      const nextStep = seq.steps.find((s) => s.ordem === stepAtual + 1);
+      if (!nextStep) {
+        await saveSequenceState(existing, { user_id: user.id, sequence_id: seq.id, base_event_at: baseEventAt, step_atual: stepAtual, concluido: true });
+        continue;
+      }
+
+      const dueMs = baseMs + nextStep.delay_dias * 24 * 60 * 60 * 1000;
+      const windowStartMs = dueMs - nextStep.janela_horas * 60 * 60 * 1000;
+      const windowEndMs = dueMs + nextStep.janela_horas * 60 * 60 * 1000;
+      const now = Date.now();
+      if (now < windowStartMs) continue; // ainda não chegou a vez deste step
+
+      let eligible = true;
+      if (nextStep.condicao && CONDITIONS[nextStep.condicao]) {
+        eligible = await CONDITIONS[nextStep.condicao](user.id);
+      }
+
+      if (!eligible) {
+        if (now > windowEndMs) {
+          // Janela expirou sem a condição ser satisfeita: avança o step sem
+          // enviar (mesmo efeito prático de "esse envio não acontece mais").
+          const isLast = !seq.steps.some((s) => s.ordem === stepAtual + 2);
+          await saveSequenceState(existing, { user_id: user.id, sequence_id: seq.id, base_event_at: baseEventAt, step_atual: stepAtual + 1, concluido: isLast });
+          log.push({ sequence: seq.name, step: nextStep.ordem, user: user.id, action: 'skipped_expired' });
+        }
+        continue;
+      }
+
+      const name = user.user_metadata?.full_name || user.email.split('@')[0];
+      if (mode === 'live') {
+        const sent = await callOnboardingEmail(user.email, name, nextStep.email_type, 0, user.id);
+        if (sent) {
+          const isLast = !seq.steps.some((s) => s.ordem === stepAtual + 2);
+          await saveSequenceState(existing, { user_id: user.id, sequence_id: seq.id, base_event_at: baseEventAt, step_atual: stepAtual + 1, concluido: isLast });
+          log.push({ sequence: seq.name, step: nextStep.ordem, user: user.id, action: 'sent', email_type: nextStep.email_type });
+        }
+      } else {
+        // Shadow: não envia e não persiste estado — recalcula do zero a cada
+        // run (volume baixo o suficiente para não pesar; evita "sujar" o
+        // estado real antes do cutover).
+        log.push({ sequence: seq.name, step: nextStep.ordem, user: user.id, action: 'would_send', email_type: nextStep.email_type });
+      }
+    }
+  }
+
+  return { mode, candidates: candidatesTotal, entries: log.length, log: log.slice(0, 50) };
 }
 
 export default async function handler(req, res) {
@@ -230,6 +393,7 @@ export default async function handler(req, res) {
     day2: { processed: 0, sent: 0 }, day5: { processed: 0, sent: 0 },
     day7_alerts: { processed: 0, sent: 0 }, winback: { processed: 0, sent: 0 },
     free_renewed: { processed: 0, sent: 0 }, tracker_followup: { processed: 0, sent: 0 },
+    sequence_engine: null,
     block_errors: [],
   };
   // Isola cada bloco da régua: um erro transitório (ex.: fetch de rede lançando
@@ -262,7 +426,7 @@ export default async function handler(req, res) {
         const name = user.user_metadata?.full_name || email.split('@')[0];
         const credits = type === 'day5' ? await getUserCredits(user.id) : 0;
 
-        const sent = await callOnboardingEmail(email, name, type, credits);
+        const sent = await callOnboardingEmail(email, name, type, credits, user.id);
         if (sent) {
           await markEmailSent(user.id, type);
           results[type].sent++;
@@ -281,7 +445,7 @@ export default async function handler(req, res) {
       if (!user.email) continue;
       if (await hasActiveAlert(user.id)) continue;
       const name = user.user_metadata?.full_name || user.email.split('@')[0];
-      const sent = await callOnboardingEmail(user.email, name, 'day7_alerts', 0);
+      const sent = await callOnboardingEmail(user.email, name, 'day7_alerts', 0, user.id);
       if (sent) {
         await markEmailSent(user.id, 'day7_alerts');
         results.day7_alerts.sent++;
@@ -301,7 +465,7 @@ export default async function handler(req, res) {
       if (await hasActiveAlert(user.id)) continue;
       if (await hasAnalysisSince(user.id, since14d)) continue;
       const name = user.user_metadata?.full_name || user.email.split('@')[0];
-      const sent = await callOnboardingEmail(user.email, name, 'winback', 0);
+      const sent = await callOnboardingEmail(user.email, name, 'winback', 0, user.id);
       if (sent) {
         await markEmailSent(user.id, 'winback');
         results.winback.sent++;
@@ -331,7 +495,7 @@ export default async function handler(req, res) {
       if ((await getUserCredits(uid)) > 0) continue;    // com créditos, o gate não é a análise grátis
       const info = await getUserEmail(uid);
       if (!info?.email) continue;
-      const sent = await callOnboardingEmail(info.email, info.name, 'free_renewed', 0);
+      const sent = await callOnboardingEmail(info.email, info.name, 'free_renewed', 0, uid);
       if (sent) {
         await markEmailSent(uid, monthKey);
         results.free_renewed.sent++;
@@ -351,11 +515,19 @@ export default async function handler(req, res) {
       const userInfo = await getUserEmail(card.user_id);
       if (!userInfo || !userInfo.email) continue;
 
-      const sent = await callFollowupEmail(userInfo.email, userInfo.name, card.empresa, card.cargo);
+      const sent = await callFollowupEmail(userInfo.email, userInfo.name, card.empresa, card.cargo, card.user_id);
       if (sent) {
         await markEmailSent(card.user_id, dedupeKey);
         results.tracker_followup.sent++;
       }
+    }
+  });
+
+  // ── Motor de sequências data-driven (shadow por padrão) ───────────────────
+  await runBlock('sequence_engine', async () => {
+    results.sequence_engine = await runSequenceEngine();
+    if (results.sequence_engine.entries > 0) {
+      console.log('cron-onboarding sequence_engine:', JSON.stringify(results.sequence_engine));
     }
   });
 

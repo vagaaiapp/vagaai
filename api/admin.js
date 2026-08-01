@@ -278,6 +278,44 @@ async function fetchBlogPostViews(days = 30) {
   return bySlug;
 }
 
+// ─── E-mail marketing helpers ──────────────────────────────────────────────────
+
+const EMAIL_DAILY_LIMIT = 100;   // limite do plano Resend free — trocar se fizer upgrade
+const EMAIL_MONTHLY_LIMIT = 3000;
+
+async function fetchEmailMarketingData(funnel = 'onboarding') {
+  const validFunnels = ['onboarding', 'winback', 'trial_sem_uso'];
+  const chosenFunnel = validFunnels.includes(funnel) ? funnel : 'onboarding';
+
+  const [statsRes, quotaRes, funnelRes] = await Promise.all([
+    fetch(`${SUPABASE_URL}/rest/v1/rpc/get_email_type_stats`, {
+      method: 'POST', headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json' }, body: '{}',
+    }),
+    fetch(`${SUPABASE_URL}/rest/v1/rpc/get_email_quota`, {
+      method: 'POST', headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json' }, body: '{}',
+    }),
+    fetch(`${SUPABASE_URL}/rest/v1/rpc/get_email_funnel`, {
+      method: 'POST', headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_funnel: chosenFunnel, p_days: 30 }),
+    }),
+  ]);
+
+  const stats = statsRes.ok ? await statsRes.json() : [];
+  const quota = quotaRes.ok ? await quotaRes.json() : { sent_today: 0, sent_month: 0 };
+  const funnelStages = funnelRes.ok ? await funnelRes.json() : [];
+
+  return {
+    funnel: chosenFunnel,
+    funnel_stages: funnelStages,
+    type_stats: stats,
+    quota: {
+      ...quota,
+      daily_limit: EMAIL_DAILY_LIMIT,
+      monthly_limit: EMAIL_MONTHLY_LIMIT,
+    },
+  };
+}
+
 // ─── Stripe helpers ───────────────────────────────────────────────────────────
 
 async function fetchStripeData() {
@@ -413,6 +451,17 @@ export default async function handler(req, res) {
     } catch (err) {
       console.error('blog_views error:', err);
       return res.status(500).json({ error: err.message || 'Erro ao buscar views do blog' });
+    }
+  }
+
+  // ── GET: aba E-mail Marketing (funil, ranking por tipo, cota Resend) ──────────
+  if (req.query.action === 'email_marketing') {
+    try {
+      const data = await fetchEmailMarketingData(req.query.funnel);
+      return res.status(200).json({ ok: true, ...data });
+    } catch (err) {
+      console.error('email_marketing error:', err);
+      return res.status(500).json({ error: err.message || 'Erro ao buscar dados de e-mail marketing' });
     }
   }
 
