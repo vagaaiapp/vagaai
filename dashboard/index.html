@@ -1150,6 +1150,26 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .toast.success { border-left: 3px solid var(--gb-emerald); }
 .toast.error   { border-left: 3px solid var(--s-red); }
 
+/* Toast de exclusão de vaga (alertas): mensagem + desfazer, motivo opcional
+   em chips, e uma barra de progresso mostrando quanto falta pra confirmar
+   de vez — assim o "opcional" fica óbvio, não escondido. */
+.dismiss-toast { flex-direction: column; align-items: stretch; gap: 8px; max-width: 380px; padding: 14px 16px 12px; border-left: 3px solid var(--gb-emerald); }
+.dismiss-toast-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.dismiss-toast-msg { font-size: 13px; font-weight: 700; color: var(--t1); }
+.dismiss-toast-undo { flex-shrink: 0; background: none; border: none; color: var(--gb-emerald); font-weight: 700; font-size: 12.5px; cursor: pointer; font-family: inherit; padding: 2px 4px; }
+.dismiss-toast-undo:hover { text-decoration: underline; }
+.dismiss-toast-reason-prompt { font-size: 11px; color: var(--t2); }
+.dismiss-toast-reason-prompt span { color: var(--t3); }
+.dismiss-toast-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.dtc-chip { font-size: 10.5px; font-weight: 600; padding: 4px 9px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-sub); color: var(--t2); cursor: pointer; font-family: inherit; transition: all .12s; }
+.dtc-chip:hover { border-color: var(--gb-emerald); color: var(--gb-emerald); }
+.dtc-chip.picked { background: var(--gb-emerald); border-color: var(--gb-emerald); color: #fff; }
+.dismiss-toast-progress { height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 2px; }
+.dismiss-toast-progress-fill { height: 100%; width: 100%; background: var(--gb-emerald); transform: scaleX(1); transform-origin: left; animation: dtProgress 6s linear forwards; }
+@keyframes dtProgress { to { transform: scaleX(0); } }
+@media (prefers-reduced-motion: reduce) { .dismiss-toast-progress-fill { animation: none; } }
+@media (max-width: 600px) { .dismiss-toast { max-width: 100%; } }
+
 @keyframes toastIn {
   from { transform: translateX(30px); opacity: 0; }
   to   { transform: translateX(0); opacity: 1; }
@@ -2883,18 +2903,6 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     <!-- aria-live region -->
     <div id="alLiveRegion" role="status" aria-live="polite" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"></div>
 
-    <!-- Dismiss modal -->
-    <div id="alDismissOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:900;align-items:center;justify-content:center">
-      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:420px;width:calc(100% - 32px);box-shadow:0 8px 32px rgba(0,0,0,.18)">
-        <div style="font-size:15px;font-weight:700;color:var(--t1);margin-bottom:4px">Por que excluir esta vaga?</div>
-        <div id="alDismissJobLabel" style="font-size:12px;color:var(--t3);margin-bottom:16px"></div>
-        <div id="alDismissReasons" style="display:flex;flex-direction:column;gap:7px;margin-bottom:20px"></div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
-          <button onclick="_closeDismissModal()" style="border:1px solid var(--border);background:var(--bg-card);color:var(--t2);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancelar</button>
-          <button id="alDismissConfirmBtn" onclick="_confirmDismiss()" style="border:none;background:var(--s-red,#e05252);color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit" disabled>Excluir vaga</button>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- ══ PLANO ══ -->
@@ -5464,9 +5472,6 @@ function _getRateLimitInfo() {
   return { blocked: true, waitMin: Math.ceil((15 * 60 * 1000 - elapsed) / 60000) };
 }
 
-var _dismissTarget = null; // job object being dismissed
-var _dismissReasons = new Set(); // selected reasons (multi)
-
 var AL_DISMISS_REASONS = [
   'Cargo não é relevante',
   'Empresa não me interessa',
@@ -5477,65 +5482,91 @@ var AL_DISMISS_REASONS = [
   'Outro motivo',
 ];
 
+// Exclusão instantânea e reversível: a vaga some da tela e do cache local
+// na hora (sem modal bloqueando o clique), com um toast "Desfazer" por 6s.
+// O motivo continua existindo — ele alimenta a "Precisão do alerta" do
+// perfil monitorado — mas virou opcional e não-bloqueante: é um conjunto de
+// chips dentro do próprio toast, não um passo obrigatório antes de excluir.
+// A chamada à API só acontece quando o toast expira ou quando outra
+// exclusão começa (não dá pra ter dois undos pendentes ao mesmo tempo);
+// se o usuário clicar "Desfazer" antes disso, nenhuma requisição é feita.
+var _pendingDismiss = null; // { job, index, reason, timer, toastEl }
+
 function _dismissJobFromCache(link) {
   if (!_alertCache || !Array.isArray(_alertCache.jobs)) return;
-  var job = _alertCache.jobs.find(function(j) { return j.link === link; });
-  if (!job) return;
-  _dismissTarget = job;
-  _dismissReasons = new Set();
+  var idx = _alertCache.jobs.findIndex(function(j) { return j.link === link; });
+  if (idx === -1) return;
+  if (_pendingDismiss) _commitPendingDismiss(); // só um undo pendente por vez
 
-  var label = document.getElementById('alDismissJobLabel');
-  if (label) label.textContent = (job.title || '') + (job.company ? ' · ' + job.company : '');
+  var job = _alertCache.jobs[idx];
+  _alertCache.jobs.splice(idx, 1);
+  renderAlertJobsGrid();
 
-  var reasons = document.getElementById('alDismissReasons');
-  if (reasons) {
-    reasons.innerHTML = AL_DISMISS_REASONS.map(function(r) {
-      return '<button onclick="_selectDismissReason(this,\'' + r.replace(/'/g, "\\'") + '\')" ' +
-        'style="text-align:left;border:1px solid var(--border);background:var(--bg-card);color:var(--t2);' +
-        'border-radius:8px;padding:9px 13px;font-size:13px;cursor:pointer;font-family:inherit;transition:all .12s">' +
-        r + '</button>';
-    }).join('');
+  _pendingDismiss = { job: job, index: idx, reason: null, timer: null, toastEl: null };
+  _showDismissToast(job);
+}
+
+function _showDismissToast(job) {
+  var c = document.getElementById('toast-container');
+  if (!c || !_pendingDismiss) return;
+  var t = document.createElement('div');
+  t.className = 'toast dismiss-toast';
+  t.innerHTML =
+    '<div class="dismiss-toast-row">' +
+      '<span class="dismiss-toast-msg">✓ Vaga excluída</span>' +
+      '<button class="dismiss-toast-undo" onclick="_undoDismiss()">Desfazer</button>' +
+    '</div>' +
+    '<div class="dismiss-toast-reason-prompt">Por quê? <span>(opcional, ajuda a refinar seu alerta)</span></div>' +
+    '<div class="dismiss-toast-chips">' +
+      AL_DISMISS_REASONS.map(function(r) {
+        return '<button class="dtc-chip" onclick="_pickDismissReason(this,\'' + r.replace(/'/g, "\\'") + '\')">' + r + '</button>';
+      }).join('') +
+    '</div>' +
+    '<div class="dismiss-toast-progress"><div class="dismiss-toast-progress-fill"></div></div>';
+  c.appendChild(t);
+  _pendingDismiss.toastEl = t;
+  _pendingDismiss.timer = setTimeout(_commitPendingDismiss, 6000);
+}
+
+function _pickDismissReason(btn, reason) {
+  if (!_pendingDismiss) return;
+  var already = _pendingDismiss.reason === reason;
+  if (_pendingDismiss.toastEl) {
+    Array.prototype.forEach.call(_pendingDismiss.toastEl.querySelectorAll('.dtc-chip'), function(b) {
+      b.classList.remove('picked');
+    });
   }
-
-  var confirmBtn = document.getElementById('alDismissConfirmBtn');
-  if (confirmBtn) confirmBtn.disabled = true;
-
-  var overlay = document.getElementById('alDismissOverlay');
-  if (overlay) { overlay.style.display = 'flex'; }
+  _pendingDismiss.reason = already ? null : reason;
+  if (!already) btn.classList.add('picked');
 }
 
-function _selectDismissReason(btn, reason) {
-  if (_dismissReasons.has(reason)) {
-    _dismissReasons.delete(reason);
-    btn.style.borderColor = 'var(--border)';
-    btn.style.background = 'var(--bg-card)';
-    btn.style.color = 'var(--t2)';
-    btn.style.fontWeight = '400';
-  } else {
-    _dismissReasons.add(reason);
-    btn.style.borderColor = 'var(--s-red,#e05252)';
-    btn.style.background = 'rgba(224,82,82,.08)';
-    btn.style.color = 'var(--s-red,#e05252)';
-    btn.style.fontWeight = '600';
-  }
-  var confirmBtn = document.getElementById('alDismissConfirmBtn');
-  if (confirmBtn) confirmBtn.disabled = _dismissReasons.size === 0;
+function _undoDismiss() {
+  if (!_pendingDismiss) return;
+  clearTimeout(_pendingDismiss.timer);
+  _restoreJobToCache(_pendingDismiss.job, _pendingDismiss.index);
+  _removePendingToast();
+  _pendingDismiss = null;
 }
 
-function _closeDismissModal() {
-  _dismissTarget = null;
-  _dismissReasons = new Set();
-  var overlay = document.getElementById('alDismissOverlay');
-  if (overlay) overlay.style.display = 'none';
+function _restoreJobToCache(job, index) {
+  if (!_alertCache || !Array.isArray(_alertCache.jobs)) return;
+  _alertCache.jobs.splice(Math.min(index, _alertCache.jobs.length), 0, job);
+  renderAlertJobsGrid();
 }
 
-async function _confirmDismiss() {
-  if (!_dismissTarget || _dismissReasons.size === 0) return;
-  var job = _dismissTarget;
-  var reason = Array.from(_dismissReasons).join(', ');
+function _removePendingToast() {
+  var el = _pendingDismiss && _pendingDismiss.toastEl;
+  if (!el) return;
+  el.style.opacity = '0'; el.style.transform = 'translateX(30px)'; el.style.transition = 'all .3s';
+  setTimeout(function() { el.remove(); }, 300);
+}
 
-  var confirmBtn = document.getElementById('alDismissConfirmBtn');
-  if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = 'Excluindo…'; }
+async function _commitPendingDismiss() {
+  if (!_pendingDismiss) return;
+  var job = _pendingDismiss.job, reason = _pendingDismiss.reason, index = _pendingDismiss.index;
+  clearTimeout(_pendingDismiss.timer);
+  _removePendingToast();
+  _pendingDismiss = null;
 
   try {
     var res = await fetch('/api/send-alerts?action=dismiss', {
@@ -5549,23 +5580,16 @@ async function _confirmDismiss() {
         job_title: job.title || '',
         job_company: job.company || '',
         job_location: job.location || '',
-        reason: reason,
+        reason: reason || '',
       }),
     });
-    if (!res.ok) { showToast('Erro ao excluir vaga.', 'error'); }
-    else {
-      // Remove do cache local
-      if (_alertCache && Array.isArray(_alertCache.jobs)) {
-        _alertCache.jobs = _alertCache.jobs.filter(function(j) { return j.link !== job.link; });
-      }
-      renderAlertJobsGrid();
-      showToast('Vaga excluída. Não aparecerá nos próximos envios.');
-    }
-  } catch(e) {
-    showToast('Erro ao excluir vaga.', 'error');
-  } finally {
-    _closeDismissModal();
-    if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.textContent = 'Excluir vaga'; }
+    if (!res.ok) throw new Error('dismiss failed');
+  } catch (e) {
+    // A vaga já tinha sumido da tela — se a exclusão não persistiu, ela
+    // reapareceria no próximo envio sem nenhum aviso. Devolve pro cache e
+    // avisa, em vez de falhar em silêncio.
+    _restoreJobToCache(job, index);
+    showToast('Não foi possível excluir a vaga. Ela voltou pra lista.', 'error');
   }
 }
 
