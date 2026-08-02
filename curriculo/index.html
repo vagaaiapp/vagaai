@@ -350,6 +350,7 @@ function render() {
   var initials = (d.nome || '?').trim().split(/\s+/).slice(0,2).map(function(w){return w[0]||'';}).join('').toUpperCase() || '?';
 
   var html = '';
+  html += '<div class="gap-panel" id="gapPanel"><div class="gap-title">Posicionamento de mercado</div><div class="gap-empty">Carregando...</div></div>';
   html += '<div class="profile-head">';
   html += '<div class="profile-avatar">' + esc(initials) + '</div>';
   html += '<div style="flex:1;min-width:160px"><div class="profile-main-label">1 · Currículo base</div><div class="profile-name">' + esc(d.nome || 'Seu nome aqui') + '</div><div class="profile-role">' + esc(d.titulo_profissional || 'Adicione seu objetivo profissional') + '</div><div class="profile-purpose">Seu conteúdo mestre e geral. Ele alimenta análises e alertas, mas não deve ser adaptado para uma vaga específica.</div></div>';
@@ -358,7 +359,6 @@ function render() {
   html += '</div>';
 
   html += '<div class="sec-card" id="versionsPanel"><div class="sec-head"><div class="sec-title">2 · Currículos para vagas</div></div><p class="versions-intro">Cópias direcionadas para oportunidades específicas. Cada uma fica ligada à sua vaga e nunca altera o currículo base.</p><p class="sec-empty">Carregando currículos vinculados às suas análises...</p></div>';
-  html += '<div class="gap-panel" id="gapPanel"><div class="gap-title">Posicionamento de mercado</div><div class="gap-empty">Carregando...</div></div>';
 
   // Perfil ainda vazio: oferece importar um currículo pronto em vez de
   // obrigar a digitar tudo — caminho rápido pra quem já tem o arquivo.

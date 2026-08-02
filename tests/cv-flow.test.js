@@ -64,6 +64,13 @@ describe('Fluxo canônico de currículo', () => {
     assert.match(curriculo, /2 · Currículos para vagas/);
   });
 
+  it('mantém o posicionamento de mercado no topo do hub', () => {
+    const market = curriculo.indexOf('id="gapPanel"');
+    const base = curriculo.indexOf('class="profile-head"', market);
+    const versions = curriculo.indexOf('id="versionsPanel"', market);
+    assert.ok(market >= 0 && market < base && base < versions);
+  });
+
   it('usa o currículo principal nos alertas de novas vagas', () => {
     assert.match(alerts, /rest\/v1\/cv_saves\?user_id=eq\./);
     assert.match(alerts, /select=cv_data/);
