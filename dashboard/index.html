@@ -1008,6 +1008,11 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .int-train-btn.locked { background:var(--bg-sub); color:var(--t2); border:1px solid var(--border); box-shadow:none; }
 .int-empty { padding:46px 24px; text-align:center; color:var(--t3); }
 .int-empty strong { display:block; color:var(--t1); font-size:15px; margin-bottom:6px; }
+/* Sem display:block aqui, o texto ficava inline e o botão logo abaixo
+   (inline-flex, com margin-top) grudava na mesma linha em vez de abrir
+   uma linha própria — o margin-top de um elemento inline não empurra
+   irmãos para baixo. */
+.int-empty span { display:block; max-width:46ch; margin:0 auto; line-height:1.5; }
 
 /* Modals */
 .modal-overlay {
