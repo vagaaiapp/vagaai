@@ -1354,15 +1354,15 @@ html.no-photo .mod-header{display:block}
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         <span id="s4HeaderBadgeText">Currículo</span>
       </div>
-      <h1 class="csv-title">Conclua sua candidatura</h1>
-      <p class="csv-sub">Baixe seus materiais, envie para a vaga e acompanhe a candidatura — tudo a partir daqui.</p>
+      <h1 class="csv-title" id="s4Title">Conclua sua candidatura</h1>
+      <p class="csv-sub" id="s4Subtitle">Baixe seus materiais, envie para a vaga e acompanhe a candidatura — tudo a partir daqui.</p>
     </div>
     <div class="csv-body">
       <!-- Review banner — shown only when coming from analysis -->
       <div id="s4ReviewBanner" style="display:none"></div>
       <!-- Download standalone — shown when no review banner (fluxo direto) -->
       <div class="csv-materials-card" id="s4DirectDownload">
-        <div class="csv-send-sub" style="margin-bottom:.8rem">Baixe seu currículo para anexar na candidatura.</div>
+        <div class="csv-send-sub" id="s4DirectCopy" style="margin-bottom:.8rem">Baixe seu currículo para anexar na candidatura.</div>
         <div class="csv-download-row" id="s4DownloadRow">
           <button class="csv-dl-btn primary" id="s4PdfBtn" onclick="s4StartPdfDownload()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1375,7 +1375,7 @@ html.no-photo .mod-header{display:block}
         </button>
       </div>
       <!-- Bloco 1: Carta de apresentação -->
-      <div class="csv-materials-card">
+      <div class="csv-materials-card" id="s4CartaCard">
         <div class="csv-send-step"><span class="csv-send-num">1</span> Carta de apresentação <span class="csv-material-opt" style="margin-left:.4rem">opcional</span></div>
         <div class="csv-send-sub" style="margin-bottom:.8rem">A carta já vem escrita para esta vaga — lê seu currículo, identifica os pontos certos e adapta o tom ao que o recrutador quer ver.</div>
         <button class="csv-material-carta" id="s4CartaBtn" onclick="s4OpenCarta()">
@@ -1398,7 +1398,7 @@ html.no-photo .mod-header{display:block}
           <div class="s4-pdf-success-title">Arquivo gerado com sucesso</div>
           <div class="s4-pdf-success-actions">
             <button class="csv-dl-btn secondary small" onclick="s4StartPdfDownload()">Baixar novamente</button>
-            <a class="csv-dl-btn secondary small" href="/dashboard#app" onclick="return goBackToDashboardApp(event)">Adaptar para outra vaga →</a>
+            <a class="csv-dl-btn secondary small" id="s4AdaptLink" href="/dashboard#app" onclick="return goBackToDashboardApp(event)">Adaptar para outra vaga →</a>
           </div>
         </div>
       </div>
@@ -3450,6 +3450,10 @@ function goToStepValidated(n) {
 
 function s4ShowTrackerCard() {
   var card = document.getElementById('s4TrackerCard');
+  if (_cvEditorSource === 'base') {
+    if (card) card.style.display = 'none';
+    return;
+  }
   if (card) {
     card.style.display = 'block';
     card.style.animation = 'fadeInUp .35s ease';
@@ -3488,6 +3492,11 @@ function s4OpenCarta() {
 function s4RenderSendCard() {
   var card = document.getElementById('s4SendCard');
   if (!card) return;
+  if (_cvEditorSource === 'base') {
+    card.style.display = 'none';
+    card.innerHTML = '';
+    return;
+  }
   var identity = getCvContextIdentity();
   var url = identity.job_url || '';
   var role = identity.cargo && identity.cargo !== 'Vaga analisada' ? identity.cargo : '';
@@ -3770,10 +3779,24 @@ function applyCvSourceUi() {
   var mode = document.getElementById('appCvMode');
   var mobile = document.getElementById('mobCvType');
   var back = document.getElementById('appCvBack');
+  var exportTitle = document.getElementById('s4Title');
+  var exportSubtitle = document.getElementById('s4Subtitle');
+  var directCopy = document.getElementById('s4DirectCopy');
+  var cartaCard = document.getElementById('s4CartaCard');
+  var sendCard = document.getElementById('s4SendCard');
+  var trackerCard = document.getElementById('s4TrackerCard');
+  var adaptLink = document.getElementById('s4AdaptLink');
   if (type) type.textContent = isVersion ? 'Currículo para vaga' : 'Currículo base';
   if (mode) mode.textContent = isVersion ? job : 'Modelos e download';
   if (mobile) mobile.textContent = isVersion ? 'CV para vaga' : 'CV base';
   if (back) back.textContent = 'Voltar aos currículos';
+  if (exportTitle) exportTitle.textContent = isVersion ? 'Conclua sua candidatura' : 'Exporte seu currículo base';
+  if (exportSubtitle) exportSubtitle.textContent = isVersion ? 'Baixe seus materiais, envie para a vaga e acompanhe a candidatura — tudo a partir daqui.' : 'Escolha o formato e salve uma versão geral para compartilhar quando precisar.';
+  if (directCopy) directCopy.textContent = isVersion ? 'Baixe seu currículo para anexar na candidatura.' : 'Baixe seu currículo base em PDF ou .doc, sem adaptações de uma vaga específica.';
+  if (cartaCard) cartaCard.style.display = isVersion ? '' : 'none';
+  if (!isVersion && sendCard) { sendCard.style.display = 'none'; sendCard.innerHTML = ''; }
+  if (!isVersion && trackerCard) trackerCard.style.display = 'none';
+  if (adaptLink) adaptLink.textContent = isVersion ? 'Adaptar para outra vaga →' : 'Criar versão para uma vaga →';
   document.title = (_cvData && _cvData.nome ? _cvData.nome + ' — ' : '') + (isVersion ? 'Currículo para vaga' : 'Currículo base');
 }
 

@@ -71,6 +71,18 @@ describe('Fluxo canônico de currículo', () => {
     assert.ok(market >= 0 && market < base && base < versions);
   });
 
+  it('usa uma exportação neutra no currículo base', () => {
+    assert.match(cv, /Exporte seu currículo base/);
+    assert.match(cv, /sem adaptações de uma vaga específica/);
+    assert.match(cv, /if \(cartaCard\) cartaCard\.style\.display = isVersion \? '' : 'none'/);
+    assert.match(cv, /if \(_cvEditorSource === 'base'\)[\s\S]*?card\.style\.display = 'none'/);
+  });
+
+  it('faz as ações do currículo base ocuparem toda a largura do cartão', () => {
+    assert.match(curriculo, /\.profile-actions\{[^}]*flex:1 0 100%[^}]*width:100%/);
+    assert.match(curriculo, /\.save-status:empty\{display:none\}/);
+  });
+
   it('usa o currículo principal nos alertas de novas vagas', () => {
     assert.match(alerts, /rest\/v1\/cv_saves\?user_id=eq\./);
     assert.match(alerts, /select=cv_data/);
