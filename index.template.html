@@ -228,25 +228,19 @@
     .capability-list span{font-size:13px;color:var(--copy);padding-left:20px;position:relative;line-height:1.5}
     .capability-list span:before{content:"✓";position:absolute;left:0;top:0;color:var(--green);font-weight:900}
 
-    /* COMO FUNCIONA + RECURSOS (pipeline animado + cards, secao unica) */
-    .howworks{background:var(--soft)}
-    .pipeline{margin-top:52px;display:grid;grid-template-columns:repeat(6,1fr);gap:0;position:relative}
-    .pipeline-mobile-path{display:none}
-    .pipeline-line{position:absolute;top:23px;left:calc(100%/12);right:calc(100%/12);height:2px;background:var(--line);z-index:0}
-    .pipeline-pulse{position:absolute;top:-3px;left:0;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px 3px var(--green);animation:pulse-travel 7s linear infinite}
-    @keyframes pulse-travel{0%{left:0;opacity:0}5%{opacity:1}95%{opacity:1}100%{left:calc(100% - 8px);opacity:0}}
-    .pipeline-node{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 6px}
-    .pipeline-ic{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--panel);border:2px solid var(--line);color:var(--muted);transition:border-color .3s,color .3s,transform .3s}
-    .pipeline-ic svg{width:19px;height:19px}
-    .pipeline-node span{margin-top:10px;font-size:10.5px;font-weight:700;color:var(--copy)}
-    .pipeline-node:nth-of-type(2) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:0s}
-    .pipeline-node:nth-of-type(3) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:1.15s}
-    .pipeline-node:nth-of-type(4) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:2.3s}
-    .pipeline-node:nth-of-type(5) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:3.45s}
-    .pipeline-node:nth-of-type(6) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:4.6s}
-    .pipeline-node:nth-of-type(7) .pipeline-ic{animation:node-glow 7s linear infinite;animation-delay:5.75s}
-    @keyframes node-glow{0%,88%,100%{border-color:var(--line);color:var(--muted);transform:scale(1)}92%{border-color:var(--green);color:var(--green);transform:scale(1.12);box-shadow:0 0 0 6px var(--mint)}}
-    @media(prefers-reduced-motion:reduce){.pipeline-pulse{animation:none;opacity:0}.pipeline-ic{animation:none!important}.pipeline-mobile-pulse{display:none}}
+    /* FLUXO PRINCIPAL — quatro capacidades com luz sincronizada em 8 segundos */
+    .howworks{padding-top:74px;padding-bottom:78px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--soft)}
+    .journey-flow{--steps:4;position:relative;display:grid;grid-template-columns:repeat(var(--steps),1fr);max-width:1020px;margin:42px auto 0}
+    .journey-flow:before{content:"";position:absolute;left:calc(50%/var(--steps));right:calc(50%/var(--steps));top:29px;height:1px;background:var(--line);z-index:0}
+    .journey-beam{position:absolute;z-index:1;left:calc(50%/var(--steps));top:27px;width:11px;height:5px;border-radius:99px;background:var(--green);box-shadow:0 0 9px 3px var(--green),0 0 20px 7px var(--mint);transform:translateX(-50%);animation:journey-beam-desktop 8s ease-in-out infinite}
+    .journey-node{position:relative;z-index:2;padding:0 14px;text-align:center;color:var(--muted)}
+    .journey-icon{width:58px;height:58px;margin:0 auto 13px;border:1.5px solid var(--line);border-radius:50%;display:grid;place-items:center;background:var(--panel);color:var(--muted);box-shadow:0 7px 22px rgba(2,12,7,.08);animation:journey-node-glow 8s ease-in-out infinite both}
+    .journey-icon svg{width:23px;height:23px;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;fill:none}
+    .journey-node:nth-child(3) .journey-icon{animation-delay:2s}.journey-node:nth-child(4) .journey-icon{animation-delay:4s}.journey-node:nth-child(5) .journey-icon{animation-delay:6s}
+    .journey-node b{display:block;color:var(--ink);font-size:13px;line-height:1.3}.journey-node span{display:block;max-width:190px;margin:6px auto 0;color:var(--muted);font-size:10px;line-height:1.45}
+    @keyframes journey-beam-desktop{0%{left:12.5%;opacity:0}3%,12%{left:12.5%;opacity:1}25%,37%{left:37.5%;opacity:1}50%,62%{left:62.5%;opacity:1}75%,88%{left:87.5%;opacity:1}95%{left:87.5%;opacity:0}100%{left:12.5%;opacity:0}}
+    @keyframes journey-node-glow{0%,12%{border-color:var(--green);background:var(--mint);color:var(--green);transform:translateY(-2px) scale(1.04);box-shadow:0 0 0 5px var(--mint),0 8px 28px rgba(47,181,122,.18)}18%,100%{border-color:var(--line);background:var(--panel);color:var(--muted);transform:none;box-shadow:0 7px 22px rgba(2,12,7,.08)}}
+    @media(prefers-reduced-motion:reduce){.journey-beam,.journey-icon{animation:none!important}.journey-beam{display:none}}
 
     /* DETAIL */
     .detail{border-top:1px solid var(--line);background:var(--bg)}
@@ -488,23 +482,14 @@
       .section{padding:68px 0}
       .hero{padding-top:150px}
       .paths,.plans{grid-template-columns:1fr}
-      /* No mobile, o pipeline vira um mapa central em zigue-zague para ocupar
-         melhor a largura da tela e manter a ideia de fluxo em movimento. */
-      .pipeline{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,104px);gap:14px 22px;width:min(100%,360px);min-height:340px;margin:42px auto 0;padding:12px 6px 4px}
-      .pipeline-line{display:none}
-      .pipeline-mobile-path{display:block;position:absolute;inset:0;z-index:0;pointer-events:none;overflow:visible}
-      .pipeline-mobile-path path{fill:none;stroke:var(--line);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-      .pipeline-mobile-pulse{fill:var(--green);filter:drop-shadow(0 0 8px rgba(56,211,139,.85)) drop-shadow(0 0 14px rgba(56,211,139,.35))}
-      .pipeline-node{align-self:center;justify-self:center;width:128px;min-height:92px;padding:0;gap:8px}
-      .pipeline-node:nth-of-type(2){grid-column:1;grid-row:1}
-      .pipeline-node:nth-of-type(3){grid-column:2;grid-row:1;transform:translateY(16px)}
-      .pipeline-node:nth-of-type(4){grid-column:1;grid-row:2;transform:translateY(-2px)}
-      .pipeline-node:nth-of-type(5){grid-column:2;grid-row:2;transform:translateY(16px)}
-      .pipeline-node:nth-of-type(6){grid-column:1;grid-row:3;transform:translateY(-2px)}
-      .pipeline-node:nth-of-type(7){grid-column:2;grid-row:3;transform:translateY(16px)}
-      .pipeline-ic{width:50px;height:50px;border-radius:50%;background:var(--panel);border:2px solid var(--line);box-shadow:none}
-      .pipeline-ic svg{width:20px;height:20px}
-      .pipeline-node span{margin-top:2px;font-size:11px}
+      /* No mobile, o fluxo vira uma coluna: leitura natural e luz sincronizada. */
+      .journey-flow{display:grid;grid-template-columns:1fr;gap:12px;width:min(100%,410px);margin:34px auto 0}
+      .journey-flow:before{left:28px;right:auto;top:29px;bottom:29px;width:1px;height:auto}
+      .journey-beam{left:26px;top:29px;width:5px;height:11px;transform:translateY(-50%);animation-name:journey-beam-mobile}
+      .journey-node{min-height:72px;padding:6px 6px 6px 0;display:grid;grid-template-columns:58px 1fr;grid-template-rows:auto auto;column-gap:14px;align-content:center;text-align:left}
+      .journey-icon{grid-column:1;grid-row:1/3;width:56px;height:56px;margin:0}
+      .journey-node b{grid-column:2;grid-row:1;align-self:end;font-size:13px}.journey-node span{grid-column:2;grid-row:2;max-width:none;margin:4px 0 0;font-size:10px}
+      @keyframes journey-beam-mobile{0%{top:29px;opacity:0}3%,12%{top:29px;opacity:1}25%,37%{top:33.33%;opacity:1}50%,62%{top:66.66%;opacity:1}75%,88%{top:calc(100% - 29px);opacity:1}95%{top:calc(100% - 29px);opacity:0}100%{top:29px;opacity:0}}
       .responsible-grid{grid-template-columns:1fr;gap:32px}
       .plan.featured{transform:none}
       .detail-row{grid-template-columns:1fr;padding:52px 0;gap:28px}
@@ -542,8 +527,8 @@
       .trust-item{min-width:0;padding:24px 10px}
       .trust-item:nth-child(2){border-right:0}
       .trust-item:nth-child(-n+2){border-bottom:1px solid var(--line)}
-      .pipeline{max-width:100%}
-      .pipeline-node{min-width:0}
+      .journey-flow{max-width:100%}
+      .journey-node{min-width:0}
       .plans{gap:12px}
       .testi-grid,.footer-grid,.responsible-grid{grid-template-columns:1fr}
       .trust-panel{padding:24px}
@@ -899,32 +884,15 @@
       </table></div><div class="compare-rail"></div></div>
     </div></section>
 
-    <!-- 3. FAIXA DE CONFIANÇA — depois do problema, não antes: é o alívio da
-         tensão criada acima, e sem tensão não há alívio a comunicar. -->
-    <section class="trust"><div class="wrap trust-grid">
-      <div class="trust-item"><b>R$ 0</b>para começar</div>
-      <div class="trust-item"><b>&lt; 30s</b>para receber sua análise</div>
-      <div class="trust-item"><b>1 painel</b>para organizar sua busca</div>
-      <div class="trust-item"><b>Você no controle</b>revise tudo antes de enviar</div>
-    </div></section>
-
-    <!-- COMO FUNCIONA (pipeline, sem repetir os 2 caminhos do hero nem os recursos que vem a seguir) -->
+    <!-- COMO FUNCIONA — quatro capacidades principais, sem repetir os dois funis do hero -->
     <section class="section howworks" id="como-funciona"><div class="wrap">
-      <div class="center reveal"><span class="eyebrow">Como funciona</span><h2>Currículo e vaga, <span class="green">na mesma direção.</span></h2></div>
-      <div class="pipeline reveal" id="recursos">
-        <div class="pipeline-line"><div class="pipeline-pulse"></div></div>
-        <svg class="pipeline-mobile-path" viewBox="0 0 320 330" aria-hidden="true" focusable="false">
-          <path id="pipelineMobilePath" d="M78 58 C118 30 204 30 242 76 C276 118 236 148 168 164 C92 182 58 218 92 252 C126 286 204 284 242 260" />
-          <circle class="pipeline-mobile-pulse" r="4">
-            <animateMotion dur="7s" repeatCount="indefinite" path="M78 58 C118 30 204 30 242 76 C276 118 236 148 168 164 C92 182 58 218 92 252 C126 286 204 284 242 260" />
-          </circle>
-        </svg>
-        <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><span>Currículo</span></div>
-        <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg></div><span>Vagas</span></div>
-        <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div><span>Análise</span></div>
-        <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg></div><span>Direcionado</span></div>
-        <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="12" rx="1"/></svg></div><span>Candidatura</span></div>
-        <div class="pipeline-node"><div class="pipeline-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><span>Entrevista</span></div>
+      <div class="center reveal"><span class="eyebrow">Como funciona</span><h2>Da vaga encontrada à <span class="green">entrevista preparada.</span></h2><p class="lead" style="margin-inline:auto">Encontre, analise e prepare cada etapa da candidatura em um só lugar.</p></div>
+      <div class="journey-flow reveal" id="recursos" aria-label="Jornada conectada do VagaAI">
+        <span class="journey-beam" aria-hidden="true"></span>
+        <div class="journey-node"><div class="journey-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7V5.5A2.5 2.5 0 0 1 10.5 3h3A2.5 2.5 0 0 1 16 5.5V7"/><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M3 12h18M10 12v2h4v-2"/></svg></div><b>Vagas compatíveis</b><span>Encontre ou traga uma oportunidade</span></div>
+        <div class="journey-node"><div class="journey-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5M8 11l2 2 4-4"/></svg></div><b>Análise de compatibilidade</b><span>Score, requisitos, lacunas e ATS</span></div>
+        <div class="journey-node"><div class="journey-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6z"/><path d="M14 2v4h4M8 11h6M8 15h4"/><path d="m15 14 3 2 3-2v6h-6z"/></svg></div><b>Currículo + Carta</b><span>Materiais personalizados para a vaga</span></div>
+        <div class="journey-node"><div class="journey-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4h10v12H4zM7 8h4M7 12h3"/><path d="M16 8h2a2 2 0 0 1 2 2v7l-3 3-3-3v-2"/><path d="m16 12 1.5 1.5L21 10"/></svg></div><b>Candidatura + Entrevista</b><span>Organização e preparação com IA</span></div>
       </div>
     </div></section>
 
