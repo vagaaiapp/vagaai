@@ -1559,18 +1559,33 @@ body.frame-fullscreen .sidebar { display: none !important; }
 body.cd-modal-open { overflow:hidden; }
 .cand-detail { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,.32); display:flex; flex-direction:column; width:min(560px,100%); max-height:calc(100vh - 48px); margin:auto; animation:cdRise .24s cubic-bezier(.22,1,.36,1); }
 @keyframes cdRise { from { opacity:0; transform:translateY(16px) scale(.985); } to { opacity:1; transform:none; } }
-.cd-top { padding:18px 20px 14px; border-bottom:1px solid var(--border); flex-shrink:0; }
-.cd-close { background:none; border:none; cursor:pointer; color:var(--t3); font-size:18px; float:right; line-height:1; width:44px; height:44px; display:flex; align-items:center; justify-content:center; margin:-14px -14px 0 0; border-radius:8px; }
+.cd-close { background:none; border:none; cursor:pointer; color:var(--t3); font-size:18px; float:right; line-height:1; width:44px; height:44px; display:flex; align-items:center; justify-content:center; margin:-14px -14px 0 0; border-radius:8px; transition:background .15s,color .15s; }
+.cd-close:hover { background:var(--bg-sub); color:var(--t1); }
+/* .cd-top ganha um leve gradiente na cor do score (definido inline por
+   item — o modal é o mesmo template para score alto/médio/baixo/sem
+   análise), pra dar uma pista visual antes mesmo de ler o número. */
+.cd-top { padding:18px 20px 14px; border-bottom:1px solid var(--border); flex-shrink:0; border-radius:16px 16px 0 0; }
 .cd-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--t3); margin-bottom:6px; margin-top:4px; }
-.cd-title { font-size:16px; font-weight:800; color:var(--t1); line-height:1.25; margin-bottom:3px; }
+.cd-title { font-size:17px; font-weight:800; color:var(--t1); line-height:1.25; margin-bottom:3px; letter-spacing:-.01em; }
 .cd-sub { font-size:12px; color:var(--t3); margin-bottom:12px; }
-.cd-score-row { display:flex; align-items:center; gap:10px; }
-.cd-ring { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0; }
+.cd-score-row { display:flex; align-items:center; gap:12px; margin-top:14px; }
+/* Anel de progresso real (SVG), no lugar do círculo plano — mesma
+   linguagem visual do anel de score do funil de análise (/onboarding). */
+.cd-ring-wrap { position:relative; width:52px; height:52px; flex-shrink:0; }
+.cd-ring-svg { width:100%; height:100%; transform:rotate(-90deg); }
+.cd-ring-bg { fill:none; stroke:var(--border); stroke-width:9; }
+.cd-ring-fill { fill:none; stroke-width:9; stroke-linecap:round; transition:stroke-dashoffset .6s cubic-bezier(.22,1,.36,1); }
+.cd-ring-val { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; }
 .cd-score-lbl { font-size:11px; color:var(--t3); }
 .cd-status-wrap { margin-left:auto; }
-.cd-body { padding:16px 20px; overflow-y:auto; flex:1 1 auto; min-height:0; display:flex; flex-direction:column; gap:14px; }
-.cd-section { display:flex; flex-direction:column; gap:6px; }
-.cd-section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--t3); }
+.cd-body { padding:18px 20px; overflow-y:auto; flex:1 1 auto; min-height:0; display:flex; flex-direction:column; gap:16px; }
+.cd-section { display:flex; flex-direction:column; gap:7px; }
+.cd-section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--t3); display:flex; align-items:center; gap:6px; }
+.cd-section-title::before { content:""; width:5px; height:5px; border-radius:50%; background:var(--gb-emerald); flex-shrink:0; }
+/* Resumo e Notas eram texto solto — agora entram no mesmo tratamento de
+   card que .cd-meta-item já usa, então a seção inteira lê como um
+   conjunto de blocos, não texto + caixinhas misturados. */
+.cd-text-card { padding:10px 12px; border:1px solid var(--border); border-radius:9px; background:var(--bg-sub); font-size:11.5px; color:var(--t2); line-height:1.5; }
 .cd-meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .cd-meta-item { min-width:0; padding:10px 11px; border:1px solid var(--border); border-radius:9px; background:var(--bg-sub); }
 .cd-meta-label { display:block; margin-bottom:4px; color:var(--t3); font-size:9.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
@@ -1592,9 +1607,9 @@ body.cd-modal-open { overflow:hidden; }
 .kw-present { background:var(--s-grn-bg); color:var(--s-grn); }
 .cd-actions { display:flex; gap:8px; flex-wrap:wrap; padding:14px 20px; border-top:1px solid var(--border); flex-shrink:0; }
 .cd-btn { font-size:11.5px; font-weight:600; padding:7px 14px; border:1px solid var(--border); border-radius:8px; background:var(--bg-sub); color:var(--t2); cursor:pointer; font-family:inherit; transition:all .15s; text-decoration:none; display:inline-flex; align-items:center; }
-.cd-btn:hover { border-color:var(--gb-emerald); color:var(--gb-emerald); }
-.cd-btn.cd-cta { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); }
-.cd-btn.cd-cta:hover { background:var(--gb-mid); }
+.cd-btn:hover { border-color:var(--gb-emerald); color:var(--gb-emerald); transform:translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,.08); }
+.cd-btn.cd-cta { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); box-shadow:0 2px 8px rgba(26,122,74,.22); }
+.cd-btn.cd-cta:hover { background:var(--gb-mid); box-shadow:0 6px 14px rgba(26,122,74,.28); }
 .cd-btn.cd-danger { width:34px; height:34px; padding:0; justify-content:center; margin:0 auto; color:var(--s-red); background:var(--s-red-bg); border-color:rgba(217,79,79,.22); }
 .cd-btn.cd-danger svg { width:15px; height:15px; }
 .cd-btn.cd-danger:hover { color:#fff; background:var(--s-red); border-color:var(--s-red); }
@@ -3985,12 +4000,22 @@ function closeCandDetail() {
 
 function renderCandDetail(item) {
   var s = item.score;
-  var sbg = s >= 70 ? 'var(--s-grn-bg)' : s >= 40 ? 'var(--s-amb-bg)' : 'var(--s-red-bg)';
-  var sclr = s >= 70 ? 'var(--s-grn)' : s >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
+  // Sem analysisData, s fica undefined e caía no ramo "vermelho" por padrão
+  // (undefined >= 70/40 é sempre false) — o círculo antigo já herdava essa
+  // cor, mas era um badge pequeno; agora que ela também tinge o cabeçalho
+  // inteiro (cd-top), "sem análise" parecia "score ruim". Neutro em cinza.
+  var sbg = !item.analysisData ? 'var(--bg-sub)' : s >= 70 ? 'var(--s-grn-bg)' : s >= 40 ? 'var(--s-amb-bg)' : 'var(--s-red-bg)';
+  var sclr = !item.analysisData ? 'var(--t3)' : s >= 70 ? 'var(--s-grn)' : s >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
   var r = item.result || {};
   var stLbl = STATUS_LABELS[item.status] || item.status;
   var stClr = STATUS_COLORS[item.status] || 'var(--t3)';
   var stBg  = STATUS_BG[item.status]    || 'var(--bg-sub)';
+  // Anel de progresso real: circunferência do círculo r=42 (viewBox 100),
+  // preenchido proporcionalmente ao score. Sem análise, fica vazio (cinza).
+  var ringCirc = 2 * Math.PI * 42;
+  var ringPct = item.analysisData ? Math.max(0, Math.min(100, s)) / 100 : 0;
+  var ringOffset = ringCirc - ringPct * ringCirc;
+  var ringColor = item.analysisData ? sclr : 'var(--t3)';
   var timeline = buildTimeline(item);
   var tlHtml = timeline.map(function(ev, i) {
     var last = i === timeline.length - 1;
@@ -4042,12 +4067,15 @@ function renderCandDetail(item) {
   if (item.hasTracker) acts += '<button class="cd-btn cd-danger" onclick="confirmDeleteTracker(\''+escAttr(item.trackerId)+'\')" aria-label="Remover candidatura" title="Remover candidatura">'+trashIcon+'</button>';
   else if (item.analysisData) acts += '<button class="cd-btn cd-danger" onclick="confirmDeleteAnalysis(\''+escAttr(item.analysisData.id)+'\')" aria-label="Remover análise" title="Remover análise">'+trashIcon+'</button>';
   return '<div class="cand-detail">'+
-    '<div class="cd-top">'+
+    '<div class="cd-top" style="background:linear-gradient(180deg,'+sbg+' 0%, transparent 100%)">'+
       '<button class="cd-close" onclick="closeCandDetail()">✕</button>'+
       '<div class="cd-label">'+escHtml(item.empresa)+'</div>'+
       '<div class="cd-title">'+escHtml(item.cargo)+'</div>'+
       '<div class="cd-score-row">'+
-        '<div class="cd-ring" style="background:'+sbg+';color:'+sclr+'">'+(item.analysisData ? s+'%' : '—')+'</div>'+
+        '<div class="cd-ring-wrap"><svg class="cd-ring-svg" viewBox="0 0 100 100" aria-hidden="true">'+
+          '<circle class="cd-ring-bg" cx="50" cy="50" r="42"/>'+
+          '<circle class="cd-ring-fill" cx="50" cy="50" r="42" stroke="'+ringColor+'" stroke-dasharray="'+ringCirc.toFixed(1)+'" stroke-dashoffset="'+ringOffset.toFixed(1)+'"/>'+
+        '</svg><div class="cd-ring-val" style="color:'+ringColor+'">'+(item.analysisData ? s+'%' : '—')+'</div></div>'+
         '<div><div style="font-size:12px;font-weight:700;color:'+sclr+'">'+(item.analysisData ? (s>=70?'Alto':s>=40?'Médio':'Baixo') : 'Sem análise')+'</div><div class="cd-score-lbl">Score ATS</div></div>'+
         '<div class="cd-status-wrap"><span class="cr-status-pill" style="background:'+stBg+';color:'+stClr+'">'+escHtml(stLbl)+'</span></div>'+
       '</div>'+
@@ -4056,8 +4084,8 @@ function renderCandDetail(item) {
       (tlHtml ? '<div class="cd-section"><div class="cd-section-title">Histórico</div><div class="cd-timeline">'+tlHtml+'</div></div>' : '')+
       metaHtml+
       kwHtml+
-      (resumo ? '<div class="cd-section"><div class="cd-section-title">Resumo</div><div style="font-size:11.5px;color:var(--t2);line-height:1.5">'+resumo+'</div></div>' : '')+
-      (nota ? '<div class="cd-section"><div class="cd-section-title">Notas</div><div style="font-size:11.5px;color:var(--t2);line-height:1.5">'+escHtml(nota)+'</div></div>' : '')+
+      (resumo ? '<div class="cd-section"><div class="cd-section-title">Resumo</div><div class="cd-text-card">'+resumo+'</div></div>' : '')+
+      (nota ? '<div class="cd-section"><div class="cd-section-title">Notas</div><div class="cd-text-card">'+escHtml(nota)+'</div></div>' : '')+
       (item.hasTracker ? '<div class="cd-section"><div class="cd-section-title">Atualizar status</div>'+selectHtml+'</div>' : '')+
     '</div>'+
     (acts ? '<div class="cd-actions">'+acts+'</div>' : '')+
@@ -6128,6 +6156,12 @@ async function _showShellFrame(href, activeId) {
 function switchDashTab(tab, href) {
   var requestedTab = tab;
   closeMobileDrawer();
+  // "Ver análise", "Carta para vaga" e "Treinar entrevista" no modal de
+  // candidatura navegam para outra aba via esta função, mas nunca fechavam
+  // o modal — ele ficava sobreposto ao conteúdo novo. closeCandDetail() já
+  // é no-op se não houver modal aberto (ex: "Abrir currículo", que abre em
+  // nova aba e não passa por aqui), então é seguro chamar sempre.
+  closeCandDetail();
   // Frame-based sections
   if (tab === 'app')        { _showShellFrame(href || '/app',        'app');         return; }
   if (tab === 'curriculo')  { _showShellFrame(href || '/cv',         'curriculo');   return; }
