@@ -1059,11 +1059,11 @@ html.no-photo .mod-header{display:block}
 <body>
 
 <header class="app-header">
-  <div class="app-crumb"><strong>Currículo otimizado</strong><span>›</span><span>Editor e exportação</span></div>
+  <div class="app-crumb"><strong id="appCvType">Currículo</strong><span>›</span><span id="appCvMode">Editor e exportação</span></div>
   <div class="app-header-actions">
     <span class="app-saved"><i></i> Alterações salvas</span>
     <button class="app-icon-btn" type="button" onclick="toggleAppTheme()" aria-label="Alternar tema" title="Alternar tema"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg></button>
-    <a class="app-outline-btn" href="/dashboard#vagas" onclick="return goBackToDashboardTab(event,'vagas')" style="text-decoration:none">Voltar às candidaturas</a>
+    <a class="app-outline-btn" id="appCvBack" href="/curriculo" onclick="return goBackToCurriculos(event)" style="text-decoration:none">Voltar aos currículos</a>
     <button class="app-primary-btn" type="button" onclick="mobPrint()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>Baixar PDF</button>
   </div>
 </header>
@@ -1080,7 +1080,7 @@ html.no-photo .mod-header{display:block}
   <button class="mob-btn" onclick="togglePanel()" aria-label="Menu">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
-  <span class="mob-logo">VagaAI</span>
+  <span class="mob-logo" id="mobCvType">Currículo</span>
   <button class="mob-print" onclick="mobPrint()">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
     PDF
@@ -1352,7 +1352,7 @@ html.no-photo .mod-header{display:block}
     <div class="csv-header">
       <div class="csv-done-badge" id="s4HeaderBadge">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        <span id="s4HeaderBadgeText">Currículo otimizado</span>
+        <span id="s4HeaderBadgeText">Currículo</span>
       </div>
       <h1 class="csv-title">Conclua sua candidatura</h1>
       <p class="csv-sub">Baixe seus materiais, envie para a vaga e acompanhe a candidatura — tudo a partir daqui.</p>
@@ -1681,7 +1681,7 @@ html.no-photo .mod-header{display:block}
 <div class="no-data-page" id="noDataPage" style="display:none">
   <div class="no-data">
     <h2>Nenhum currículo encontrado</h2>
-    <p>Crie ou importe seu currículo principal antes de escolher o modelo.</p>
+    <p>Crie ou importe seu currículo base antes de escolher o modelo.</p>
     <a href="/curriculo">Ir para Meu Currículo →</a>
   </div>
 </div>
@@ -1763,6 +1763,7 @@ html.no-photo .mod-header{display:block}
 var _cvData = null;
 var _cvContext = null;
 var _editSection = null;
+var _cvEditorSource = 'base';
 
 /* ── Supabase client ────────────────────────────────────── */
 var SUPABASE_URL  = 'https://kbcjchjepgejdezeuwwh.supabase.co';
@@ -1966,6 +1967,19 @@ function goBackToDashboardTab(event, tab) {
     }
   } catch(e) {}
   window.location.href = '/dashboard#' + tab;
+  return false;
+}
+
+function goBackToCurriculos(event) {
+  if (event) event.preventDefault();
+  try {
+    var embedded = window.__VAGAAI_EMBEDDED__ || window.self !== window.top || new URLSearchParams(location.search).get('embedded') === '1';
+    if (embedded && window.parent) {
+      window.parent.postMessage({ type:'vagaai-nav', frame:true, id:'curriculo', href:'/curriculo' }, window.location.origin);
+      return false;
+    }
+  } catch(e) {}
+  window.location.href = '/curriculo';
   return false;
 }
 
@@ -2689,7 +2703,12 @@ function applySmartFix(type) {
     var querySource = new URLSearchParams(location.search).get('source');
     var requestedSource = querySource || localStorage.getItem('vagaai_cv_editor_source') || (localStorage.getItem('vagaai_cv_from_analysis') ? 'version' : 'base');
     if (requestedSource !== 'version') requestedSource = 'base';
+    _cvEditorSource = requestedSource;
     localStorage.setItem('vagaai_cv_editor_source', requestedSource);
+    if (requestedSource === 'base') {
+      localStorage.removeItem('vagaai_cv_from_analysis');
+      localStorage.removeItem('vagaai_cv_context');
+    }
     _optFlagAtLoad = requestedSource === 'version';
     raw = _optFlagAtLoad
       ? localStorage.getItem('vagaai_cv_version')
@@ -2707,11 +2726,10 @@ function applySmartFix(type) {
   setTimeout(function() { _restoreCvStep(_optFlagAtLoad); }, 120);
   setTimeout(updateNavAtsScore, 0);
   try {
-    var contextRaw = localStorage.getItem('vagaai_cv_context');
+    var contextRaw = _cvEditorSource === 'version' ? localStorage.getItem('vagaai_cv_context') : null;
     _cvContext = contextRaw ? JSON.parse(contextRaw) : null;
-  } catch(e) {
-    _cvContext = null;
-  }
+  } catch(e) { _cvContext = null; }
+  applyCvSourceUi();
   renderCvContext(_cvContext);
 
   /* ── Populate helpers ───────────────────────────────────── */
@@ -3699,6 +3717,22 @@ function s4StartPdfDownload() {
 function updateNavAtsScore() {
   var widget = document.getElementById('cnAtsWidget');
   if (!widget) return;
+  if (_cvEditorSource === 'base') {
+    widget.style.display = '';
+    var baseVal = document.getElementById('cnAtsVal');
+    var baseFill = document.getElementById('cnAtsBarFill');
+    var baseTitle = document.getElementById('cnJobTitle');
+    var baseCompany = document.getElementById('cnJobCompany');
+    var baseTip = document.getElementById('cnJobTip');
+    var baseLabel = widget.querySelector('.cn-ats-label');
+    if (baseLabel) baseLabel.textContent = 'Currículo base';
+    if (baseVal) { baseVal.textContent = 'GERAL'; baseVal.style.color = 'var(--app-emerald)'; }
+    if (baseFill) baseFill.style.width = '100%';
+    if (baseTitle) baseTitle.textContent = 'Seu conteúdo mestre';
+    if (baseCompany) baseCompany.textContent = 'Sem vínculo com vaga';
+    if (baseTip) baseTip.textContent = 'Use este conteúdo para gerar versões direcionadas.';
+    return;
+  }
   var identity = getCvContextIdentity();
   var ctx = _cvContext || {};
   var info = ctx.job_info && typeof ctx.job_info === 'object' ? ctx.job_info : {};
@@ -3726,6 +3760,21 @@ function updateNavAtsScore() {
       : 'Currículo conectado à análise atual.';
   }
   if (valEl) valEl.style.color = !hasScore ? 'var(--app-emerald)' : score >= 70 ? 'var(--app-emerald)' : score >= 40 ? '#e5a93a' : '#e05a5a';
+}
+
+function applyCvSourceUi() {
+  var isVersion = _cvEditorSource === 'version';
+  var info = (_cvContext && _cvContext.job_info) || {};
+  var job = info.titulo || info.cargo || 'vaga analisada';
+  var type = document.getElementById('appCvType');
+  var mode = document.getElementById('appCvMode');
+  var mobile = document.getElementById('mobCvType');
+  var back = document.getElementById('appCvBack');
+  if (type) type.textContent = isVersion ? 'Currículo para vaga' : 'Currículo base';
+  if (mode) mode.textContent = isVersion ? job : 'Modelos e download';
+  if (mobile) mobile.textContent = isVersion ? 'CV para vaga' : 'CV base';
+  if (back) back.textContent = 'Voltar aos currículos';
+  document.title = (_cvData && _cvData.nome ? _cvData.nome + ' — ' : '') + (isVersion ? 'Currículo para vaga' : 'Currículo base');
 }
 
 function syncStep2Form() {
@@ -3846,9 +3895,9 @@ function renderStep4() {
   var scoreCtx = getCvScoreContext();
   var badgeTxt = document.getElementById('s4HeaderBadgeText');
   if (badgeTxt) {
-    badgeTxt.textContent = scoreCtx.projected !== null
-      ? 'Currículo otimizado · aderência estimada ' + scoreCtx.projected + '%'
-      : 'Currículo otimizado' + (scoreCtx.technical !== null ? ' · qualidade CV ' + scoreCtx.technical + '%' : '');
+    badgeTxt.textContent = _cvEditorSource === 'version'
+      ? (scoreCtx.projected !== null ? 'Currículo para vaga · aderência estimada ' + scoreCtx.projected + '%' : 'Currículo para vaga')
+      : 'Currículo base' + (scoreCtx.technical !== null ? ' · qualidade técnica ' + scoreCtx.technical + '%' : '');
   }
   s4RenderProgress();
   s4RenderSendCard();
@@ -4258,8 +4307,8 @@ function closeModal() {
 /* ── Optimized-from-analysis mode ───────────────────────── */
 (function initOptimizedMode() {
   var flag;
-  try { flag = new URLSearchParams(location.search).get('source') === 'version' || localStorage.getItem('vagaai_cv_from_analysis'); } catch(e) {}
-  if (!flag) return;
+  try { flag = _cvEditorSource === 'version'; } catch(e) {}
+  if (!flag || !_cvData) return;
   try { localStorage.removeItem('vagaai_cv_from_analysis'); } catch(e) {}
 
   var ctx;

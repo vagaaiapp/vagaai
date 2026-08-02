@@ -38,14 +38,30 @@ describe('Fluxo canônico de currículo', () => {
   });
 
   it('deixa explícito o currículo principal e permite gerenciar seu ciclo de vida', () => {
-    assert.match(curriculo, /Currículo principal/);
-    assert.match(curriculo, /Excluir currículo principal/);
+    assert.match(curriculo, /Currículo base/);
+    assert.match(curriculo, /Excluir currículo base/);
     assert.match(curriculo, /function deleteBaseCv/);
     assert.match(curriculo, /function changeVersionState\(id, action\)/);
     assert.match(curriculo, /cv_version_archived_at/);
     assert.match(curriculo, /cv_version_deleted_at/);
     assert.match(curriculo, /Restaurar/);
     assert.match(curriculo, /Excluir definitivamente/);
+  });
+
+  it('isola o editor base de qualquer contexto residual de vaga', () => {
+    assert.match(curriculo, /function openAdvancedEditor\(\)[\s\S]*?removeItem\('vagaai_cv_from_analysis'\)[\s\S]*?removeItem\('vagaai_cv_context'\)[\s\S]*?removeItem\('vagaai_cv_step'\)/);
+    assert.match(cv, /requestedSource === 'base'[\s\S]*?removeItem\('vagaai_cv_context'\)/);
+    assert.match(cv, /var contextRaw = _cvEditorSource === 'version'/);
+    assert.match(cv, /flag = _cvEditorSource === 'version'/);
+    assert.match(cv, /if \(!flag \|\| !_cvData\) return/);
+  });
+
+  it('identifica visualmente os dois tipos de currículo dentro do editor', () => {
+    assert.match(cv, /function applyCvSourceUi/);
+    assert.match(cv, /Currículo para vaga/);
+    assert.match(cv, /Currículo base/);
+    assert.match(curriculo, /1 · Currículo base/);
+    assert.match(curriculo, /2 · Currículos para vagas/);
   });
 
   it('usa o currículo principal nos alertas de novas vagas', () => {

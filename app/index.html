@@ -2529,11 +2529,11 @@ function openCV() {
   track('cv_download_click');
   try { localStorage.setItem('vagaai_cv_from_analysis', '1'); localStorage.setItem('vagaai_cv_editor_source', 'version'); } catch(e) {}
   if (window.self !== window.top) {
-    window.parent.postMessage({ type: 'vagaai-nav', id: 'cv', href: '/cv', frame: true }, '*');
+    window.parent.postMessage({ type: 'vagaai-nav', id: 'cv', href: '/cv?source=version', frame: true }, '*');
   } else if (typeof window.shellNavigate === 'function') {
-    window.shellNavigate({ href: '/cv', frame: true, id: 'cv' });
+    window.shellNavigate({ href: '/cv?source=version', frame: true, id: 'cv' });
   } else {
-    window.location.href = '/cv';
+    window.location.href = '/cv?source=version';
   }
 }
 
