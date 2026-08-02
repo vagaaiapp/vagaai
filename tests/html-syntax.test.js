@@ -10,6 +10,7 @@ const files = [
   'onboarding/vaga/index.html',
   'onboarding/curriculo/index.html',
   'app/index.html',
+  'curriculo/index.html',
   'cv/index.html',
   'dashboard/index.html'
 ];

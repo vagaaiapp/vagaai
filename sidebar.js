@@ -4,6 +4,7 @@
   var NAV = [
     { id: 'painel',      label: 'Vis\u00e3o geral',     icon: 'grid',  href: '/dashboard', tab: 'painel',      frame: false, bottom: true  },
     { id: 'app',         label: 'Analisar vaga',       icon: 'doc',   href: '/app',                           frame: true,  bottom: true  },
+    { id: 'curriculo',   label: 'Meu Curr\u00edculo',  icon: 'user',  href: '/curriculo',                    frame: true,  bottom: false },
     { id: 'vagas',       label: 'Candidaturas',        icon: 'brief', href: '/dashboard', tab: 'vagas',       frame: false, bottom: true  },
     { id: 'entrevistas', label: 'Entrevistas',         icon: 'mic',   href: '/dashboard', tab: 'entrevistas', frame: false, bottom: false },
     { id: 'carta',       label: 'Carta para vaga',     icon: 'mail',  href: '/carta',                         frame: true,  bottom: false },
@@ -44,6 +45,7 @@
     var tab = new URLSearchParams(location.search).get('tab');
     var hash = location.hash.replace('#', '');
     if (path === '/app' || path.startsWith('/app/')) return 'app';
+    if (path === '/curriculo' || path.startsWith('/curriculo/') || path === '/cv' || path.startsWith('/cv/')) return 'curriculo';
     if (path === '/carta' || path.startsWith('/carta/')) return 'carta';
     if (path.startsWith('/entrevista')) return 'entrevistas';
     if (tab) return tab;

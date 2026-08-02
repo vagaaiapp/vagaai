@@ -4790,8 +4790,8 @@ async function loadCvGapCard() {
   var card = document.getElementById('cvGapCard');
   if (!card || !currentUserId) return;
   try {
-    var cvRes = await sb.from('cv_saves').select('cv_data').eq('user_id', currentUserId).maybeSingle();
-    var cvData = cvRes && cvRes.data && cvRes.data.cv_data;
+    var cvRes = await sb.from('cv_saves').select('cv_data').eq('user_id', currentUserId).order('updated_at', { ascending:false }).limit(1);
+    var cvData = cvRes && cvRes.data && cvRes.data[0] && cvRes.data[0].cv_data;
     if (!cvData) return; // sem currículo salvo ainda — não mostra o card (evita empurrar algo que não dá pra agir)
 
     var anRes = await sb.from('analyses').select('result').eq('user_id', currentUserId).order('created_at', { ascending: false }).limit(50);
@@ -6167,7 +6167,7 @@ async function _showShellFrame(href, activeId) {
     // embedded app can read query params such as ?vaga=...
     var embeddedHref = location.origin + embeddedUrl;
     var embedScript = '<script>window.__VAGAAI_EMBEDDED__=true;window.__VAGAAI_EMBEDDED_URL__=' + JSON.stringify(embeddedHref) + ';try{history.replaceState(null,"",' + JSON.stringify(embeddedHref) + ')}catch(e){}<\/script>';
-    var shellNavGuard = '<script>(function(){document.addEventListener("click",function(ev){var a=ev.target&&ev.target.closest?ev.target.closest("a[href]"):null;if(!a)return;var raw=a.getAttribute("href")||"";if(!raw||raw.charAt(0)==="#")return;var url;try{url=new URL(raw,location.origin)}catch(e){return}if(url.origin!==location.origin)return;var id=null;var href=null;if(url.pathname==="/app"||(url.pathname==="/dashboard"&&url.hash==="#app")){id="app";href="/app"+url.search}else if(url.pathname==="/cv"||(url.pathname==="/dashboard"&&url.hash==="#curriculo")){id="curriculo";href="/cv"+url.search}else if(url.pathname==="/carta"||(url.pathname==="/dashboard"&&url.hash==="#carta")){id="carta";href="/carta"+url.search}else if(url.pathname==="/entrevista"||(url.pathname==="/dashboard"&&url.hash==="#entrevista")){id="entrevistas";href="/entrevista"+url.search}if(!id)return;ev.preventDefault();parent.postMessage({type:"vagaai-nav",frame:true,id:id,href:href},location.origin)},true)})();<\/script>';
+    var shellNavGuard = '<script>(function(){document.addEventListener("click",function(ev){var a=ev.target&&ev.target.closest?ev.target.closest("a[href]"):null;if(!a)return;var raw=a.getAttribute("href")||"";if(!raw||raw.charAt(0)==="#")return;var url;try{url=new URL(raw,location.origin)}catch(e){return}if(url.origin!==location.origin)return;var id=null;var href=null;if(url.pathname==="/app"||(url.pathname==="/dashboard"&&url.hash==="#app")){id="app";href="/app"+url.search}else if(url.pathname==="/curriculo"||url.pathname==="/cv"||(url.pathname==="/dashboard"&&url.hash==="#curriculo")){id="curriculo";href=url.pathname+url.search}else if(url.pathname==="/carta"||(url.pathname==="/dashboard"&&url.hash==="#carta")){id="carta";href="/carta"+url.search}else if(url.pathname==="/entrevista"||(url.pathname==="/dashboard"&&url.hash==="#entrevista")){id="entrevistas";href="/entrevista"+url.search}if(!id)return;ev.preventDefault();parent.postMessage({type:"vagaai-nav",frame:true,id:id,href:href},location.origin)},true)})();<\/script>';
     html = html.replace(/(<head[^>]*>)/i, '$1<base href="' + location.origin + '">' + embedScript + shellNavGuard);
     var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
     if (doc) { doc.open(); doc.write(html); doc.close(); }
@@ -6188,7 +6188,7 @@ function switchDashTab(tab, href) {
   closeCandDetail();
   // Frame-based sections
   if (tab === 'app')        { _showShellFrame(href || '/app',        'app');         return; }
-  if (tab === 'curriculo')  { _showShellFrame(href || '/cv',         'curriculo');   return; }
+  if (tab === 'curriculo')  { _showShellFrame(href || '/curriculo',  'curriculo');   return; }
   if (tab === 'carta')      { _showShellFrame(href || '/carta',      'carta');       return; }
   if (tab === 'entrevista') { _showShellFrame(href || '/entrevista', 'entrevistas'); return; }
   // Native dashboard tabs

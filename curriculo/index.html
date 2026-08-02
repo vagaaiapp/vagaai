@@ -76,6 +76,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;fon
 .sec-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem}
 .sec-title{font-size:14px;font-weight:800;display:flex;align-items:center;gap:.4rem}
 .sec-title svg{color:var(--green)}
+.version-list{display:grid;gap:8px;margin-top:12px}.version-row{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid var(--border);border-radius:11px;background:var(--surface2)}.version-row-copy{flex:1;min-width:0}.version-row-copy b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.version-row-copy span{display:block;margin-top:3px;color:var(--muted);font-size:11px}.version-open{border:1px solid var(--green-border);border-radius:9px;background:var(--green-dim);color:var(--green);padding:8px 10px;font:700 11px Manrope,sans-serif;cursor:pointer;white-space:nowrap}
 .sec-edit{font-size:12.5px;font-weight:700;color:var(--green);background:none;border:none;cursor:pointer}
 .sec-edit:hover{text-decoration:underline}
 .sec-empty{color:var(--muted);font-size:13px;margin-top:.4rem}
@@ -161,6 +162,8 @@ var SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
 var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 var DRAFT_KEY = 'vagaai_cv_draft';
+var DRAFT_AT_KEY = 'vagaai_cv_draft_updated_at';
+var BASE_KEY = 'vagaai_cv_base';
 
 (function(){ var t=null; try{ t=localStorage.getItem('vagaai_theme'); }catch(e){} if(t==='dark'||t==='light') document.documentElement.setAttribute('data-theme', t); })();
 
@@ -170,6 +173,7 @@ var _cvData = null;      // atalho pro objeto de dados em edição
 var _isEmbedded = window.self !== window.top || new URLSearchParams(location.search).get('embedded') === '1';
 var _saveTimer = null;
 var _dirty = false;
+var _versionsById = {};
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function toast(msg, isErr){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.toggle('err',!!isErr); t.classList.add('vis'); clearTimeout(t._tm); t._tm=setTimeout(function(){t.classList.remove('vis');},3000); }
@@ -186,15 +190,27 @@ function emptyCv(){ return { nome:'', contato:{email:'',telefone:'',linkedin:'',
     var snRight = document.getElementById('snRight');
     if (!_session) { snRight.href = '/login?next=%2Fcurriculo'; snRight.textContent = 'Entrar'; }
   }
+  var draft = null;
+  var draftAt = 0;
+  try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); draftAt = Number(localStorage.getItem(DRAFT_AT_KEY) || 0); } catch(e) {}
   if (_session) {
-    var r = await sb.from('cv_saves').select('*').eq('user_id', _session.user.id).maybeSingle();
-    _cv = r && r.data;
-    if (_cv) { _cvData = normalize(_cv.cv_data); }
+    var r = await sb.from('cv_saves').select('*').eq('user_id', _session.user.id).order('updated_at', { ascending: false }).limit(1);
+    _cv = r && r.data && r.data[0];
+    if (_cv) {
+      _cvData = normalize(_cv.cv_data);
+      try { localStorage.setItem(BASE_KEY, JSON.stringify(_cvData)); } catch(e) {}
+      var cloudAt = Date.parse(_cv.updated_at || 0) || 0;
+      if (draft && draftAt > cloudAt) {
+        _cvData = normalize(draft);
+        _dirty = true;
+        var banner = document.getElementById('draftBanner');
+        banner.innerHTML = 'Encontramos altera&ccedil;&otilde;es mais recentes neste dispositivo. <b>Revise e salve</b> para atualizar seu curr&iacute;culo na conta.';
+        banner.classList.add('show');
+      }
+    }
   }
   if (!_cvData) {
     // sem sessão, ou sessão sem currículo salvo ainda: tenta retomar rascunho local
-    var draft = null;
-    try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch(e) {}
     _cvData = draft ? normalize(draft) : emptyCv();
     if (!_session) document.getElementById('draftBanner').classList.add('show');
   }
@@ -219,6 +235,7 @@ function normalize(d) {
   base.cursos = Array.isArray(d.cursos) ? d.cursos : [];
   base.idiomas = Array.isArray(d.idiomas) ? d.idiomas : [];
   base.habilidades = Array.isArray(d.habilidades) ? d.habilidades.map(function(s){ return typeof s === 'string' ? s : (s && s.nome) || ''; }).filter(Boolean) : [];
+  if (d.raw_text) base.raw_text = String(d.raw_text);
   return base;
 }
 
@@ -252,6 +269,7 @@ function cvToText(d) {
     d.idiomas.forEach(function(e){ L.push([e.idioma, e.nivel].filter(Boolean).join(' — ')); });
   }
   if ((d.habilidades||[]).length) { L.push(''); L.push('HABILIDADES'); L.push(d.habilidades.join(', ')); }
+  if (d.raw_text) { L.push(''); L.push('CONTEÚDO DO CURRÍCULO IMPORTADO'); L.push(d.raw_text); }
   return L.join('\n');
 }
 
@@ -264,7 +282,7 @@ function completude(d) {
 /* ── Persistência (rascunho local sempre; nuvem só se logado) ── */
 function markDirty() {
   _dirty = true;
-  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(_cvData)); } catch(e) {}
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(_cvData)); localStorage.setItem(DRAFT_AT_KEY, String(Date.now())); } catch(e) {}
   updateSaveUI();
 }
 
@@ -278,7 +296,7 @@ function updateSaveUI() {
 
 async function saveProfile() {
   if (!_session) {
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(_cvData)); } catch(e) {}
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(_cvData)); localStorage.setItem(DRAFT_AT_KEY, String(Date.now())); } catch(e) {}
     location.href = '/login?next=' + encodeURIComponent('/curriculo');
     return;
   }
@@ -288,11 +306,13 @@ async function saveProfile() {
   btn.textContent = 'Salvando...';
   try {
     var payload = { user_id: _session.user.id, name: (_cvData.nome || 'Meu currículo').slice(0,80), cv_data: _cvData, template: (_cv && _cv.template) || 'perfil', updated_at: new Date().toISOString() };
-    var r = await sb.from('cv_saves').upsert(payload, { onConflict: 'user_id' }).select().single();
+    var r = _cv && _cv.id
+      ? await sb.from('cv_saves').update(payload).eq('id', _cv.id).eq('user_id', _session.user.id).select().single()
+      : await sb.from('cv_saves').insert(payload).select().single();
     if (r.error) throw r.error;
     _cv = r.data;
     _dirty = false;
-    try { localStorage.removeItem(DRAFT_KEY); } catch(e) {}
+    try { localStorage.setItem(BASE_KEY, JSON.stringify(_cvData)); localStorage.removeItem(DRAFT_KEY); localStorage.removeItem(DRAFT_AT_KEY); } catch(e) {}
     toast('✓ Currículo salvo');
     updateSaveUI();
     loadGapPanel();
@@ -330,10 +350,11 @@ function render() {
   html += '<div class="profile-avatar">' + esc(initials) + '</div>';
   html += '<div style="flex:1;min-width:160px"><div class="profile-name">' + esc(d.nome || 'Seu nome aqui') + '</div><div class="profile-role">' + esc(d.titulo_profissional || 'Adicione seu objetivo profissional') + '</div></div>';
   html += '<div class="completude-wrap"><div class="completude-label"><span>Perfil completo</span><span>' + pct + '%</span></div><div class="completude-bar"><div class="completude-fill" style="width:' + pct + '%"></div></div></div>';
-  html += '<div><button class="save-btn" id="saveBtn" onclick="saveProfile()">Salvar</button><div class="save-status" id="saveStatus" style="margin-top:.3rem;text-align:right"></div></div>';
+  html += '<div style="display:grid;gap:7px"><button class="save-btn" id="saveBtn" onclick="saveProfile()">Salvar</button><button class="btn btn-ghost" onclick="openAdvancedEditor()">Modelos e download</button><div class="save-status" id="saveStatus" style="text-align:right"></div></div>';
   html += '</div>';
 
   html += '<div class="gap-panel" id="gapPanel"><div class="gap-title">Posicionamento de mercado</div><div class="gap-empty">Carregando...</div></div>';
+  html += '<div class="sec-card" id="versionsPanel"><div class="sec-head"><div class="sec-title">Versões para vagas</div></div><p class="sec-empty">Carregando versões vinculadas às suas análises...</p></div>';
 
   // Perfil ainda vazio: oferece importar um currículo pronto em vez de
   // obrigar a digitar tudo — caminho rápido pra quem já tem o arquivo.
@@ -360,6 +381,7 @@ function render() {
   document.getElementById('mainArea').innerHTML = html;
   updateSaveUI();
   loadGapPanel();
+  loadVersionsPanel();
 }
 
 function startFromScratch() {
@@ -417,10 +439,80 @@ async function handleUploadFile(input) {
   }
   text = (text || '').trim();
   if (text.length < 120) { toast('Não encontramos texto suficiente no arquivo. Verifique se o currículo não é uma imagem escaneada.', true); return; }
+  _cvData = emptyCv();
   _cvData.raw_text = text.slice(0, 30000);
+  try {
+    var extractRes = await fetch('/api/analyze', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ action:'onboarding_cv_extract', cv:text.slice(0,15000) }) });
+    var extracted = extractRes.ok ? await extractRes.json() : null;
+    var f = extracted && extracted.form || {};
+    _cvData.nome = String(f.nome || '').trim();
+    _cvData.titulo_profissional = String(f.cargo || '').trim();
+    _cvData.contato = { email:String(f.email || '').trim(), telefone:String(f.tel || '').trim(), linkedin:'', cidade:String(f.cidade || '').trim() };
+    _cvData.habilidades = String(f.skills || '').split(/[,;\n]/).map(function(s){return s.trim();}).filter(Boolean);
+    var expText = String(f.exp || '').trim();
+    var formText = String(f.form || '').trim();
+    if (expText) _cvData.experiencias = [{ cargo:_cvData.titulo_profissional || 'Experiência profissional', empresa:'', periodo:'', bullets:expText.split(/\n+/).map(function(s){return s.replace(/^[-•]\s*/, '').trim();}).filter(Boolean) }];
+    if (formText) _cvData.formacao = [{ curso:formText, instituicao:'', periodo:'' }];
+  } catch(e) { /* o texto integral continua preservado como fonte */ }
   markDirty();
   render();
-  toast('✓ Currículo importado — salve para não perder');
+  toast('✓ Currículo importado e organizado — revise antes de salvar');
+}
+
+function openAdvancedEditor() {
+  try {
+    localStorage.setItem(BASE_KEY, JSON.stringify(_cvData));
+    localStorage.setItem('vagaai_cv_editor_source', 'base');
+  } catch(e) {}
+  if (_isEmbedded && window.parent && window.parent !== window) {
+    try { window.parent.postMessage({ type:'vagaai-nav', frame:true, href:'/cv?source=base', id:'curriculo' }, '*'); return; } catch(e) {}
+  }
+  location.href = '/cv?source=base';
+}
+
+async function loadVersionsPanel() {
+  var panel = document.getElementById('versionsPanel');
+  if (!panel) return;
+  if (!_session) {
+    panel.innerHTML = '<div class="sec-head"><div class="sec-title">Versões para vagas</div></div><p class="sec-empty">Crie sua conta para organizar aqui os currículos direcionados para cada vaga.</p>';
+    return;
+  }
+  try {
+    var response = await sb.from('analyses').select('id,result,created_at').eq('user_id', _session.user.id).order('created_at', { ascending:false }).limit(30);
+    if (response.error) throw response.error;
+    var rows = (response.data || []).filter(function(row){ return row.result && row.result.cv_otimizado; });
+    _versionsById = {};
+    rows.forEach(function(row){ _versionsById[row.id] = row; });
+    if (!rows.length) {
+      panel.innerHTML = '<div class="sec-head"><div class="sec-title">Versões para vagas</div></div><p class="sec-empty">Quando você otimizar o currículo para uma vaga, a versão aparecerá aqui sem substituir seu currículo principal.</p>';
+      return;
+    }
+    panel.innerHTML = '<div class="sec-head"><div class="sec-title">Versões para vagas</div><span class="save-status">' + rows.length + ' salva(s)</span></div><div class="version-list">' + rows.slice(0,8).map(function(row){
+      var info = row.result.job_info || {};
+      var title = info.titulo || info.cargo || 'Vaga analisada';
+      var company = info.empresa || 'Empresa não informada';
+      var date = new Date(row.created_at).toLocaleDateString('pt-BR');
+      return '<div class="version-row"><div class="version-row-copy"><b>' + esc(title) + '</b><span>' + esc(company) + ' · ' + date + '</span></div><button class="version-open" onclick="openCvVersion(\'' + row.id + '\')">Abrir versão</button></div>';
+    }).join('') + '</div>';
+  } catch(e) {
+    panel.innerHTML = '<div class="sec-head"><div class="sec-title">Versões para vagas</div></div><p class="sec-empty">Não foi possível carregar as versões agora.</p>';
+  }
+}
+
+function openCvVersion(id) {
+  var row = _versionsById[id];
+  if (!row || !row.result || !row.result.cv_otimizado) return;
+  var result = row.result;
+  try {
+    localStorage.setItem('vagaai_cv_version', JSON.stringify(result.cv_otimizado));
+    localStorage.setItem('vagaai_cv_editor_source', 'version');
+    localStorage.setItem('vagaai_cv_from_analysis', '1');
+    localStorage.setItem('vagaai_cv_context', JSON.stringify({ analysis_id:id, score:result.score, score_estimado_apos_ajustes:result.score_estimado_apos_ajustes, nivel:result.nivel, resumo:result.resumo, job_info:result.job_info || {}, keywords_encontradas:result.keywords_encontradas || [], keywords_faltando:result.keywords_faltando || [], fatores:result.fatores || {}, briefing_empresa:result.briefing_empresa || {} }));
+  } catch(e) {}
+  if (_isEmbedded && window.parent && window.parent !== window) {
+    try { window.parent.postMessage({ type:'vagaai-nav', frame:true, href:'/cv?source=version&analysis=' + encodeURIComponent(id), id:'curriculo' }, '*'); return; } catch(e) {}
+  }
+  location.href = '/cv?source=version&analysis=' + encodeURIComponent(id);
 }
 
 var ICON = {

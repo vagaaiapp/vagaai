@@ -139,6 +139,12 @@ describe('Onboarding adaptativo', () => {
       if (url.includes('/rest/v1/job_alert_profiles?')) {
         return response(204, null);
       }
+      if (url.includes('/rest/v1/cv_saves?')) {
+        return response(200, []);
+      }
+      if (url.endsWith('/rest/v1/cv_saves')) {
+        return response(201, [{ id: 'cv-1' }]);
+      }
       return response(404, {});
     };
     const session = {
@@ -154,12 +160,14 @@ describe('Onboarding adaptativo', () => {
     const first = await api.consume(session, options);
     assert.equal(first.errors.length, 0);
     assert.equal(first.analysis.claimed, true);
+    assert.equal(first.baseCv.saved, true);
     assert.equal(first.tracker.created, true);
     assert.equal(first.alert.created, true);
 
     const second = await api.consume(session, options);
     assert.equal(second.errors.length, 0);
     assert.equal(second.analysis.reason, 'already_claimed');
+    assert.equal(second.baseCv.reason, 'not_available');
     assert.equal(second.tracker.reason, 'already_provisioned');
     assert.equal(second.alert.reason, 'already_provisioned');
 
@@ -173,6 +181,12 @@ describe('Onboarding adaptativo', () => {
     assert.equal(
       calls.filter(
         (call) => call.url.includes('/rest/v1/job_alert_profiles?') && call.method === 'POST'
+      ).length,
+      1
+    );
+    assert.equal(
+      calls.filter(
+        (call) => call.url.endsWith('/rest/v1/cv_saves') && call.method === 'POST'
       ).length,
       1
     );

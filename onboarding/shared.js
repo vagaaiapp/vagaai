@@ -505,7 +505,10 @@
     try {
       if (state.cv && state.cv.data) {
         storage.setItem('vagaai_cv', JSON.stringify(state.cv.data));
+        storage.setItem('vagaai_cv_base', JSON.stringify(state.cv.data));
         if (state.cv.template) storage.setItem('vagaai_cv_tpl', state.cv.template);
+      } else if (state.cv && state.cv.raw) {
+        storage.setItem('vagaai_cv_base', JSON.stringify({ raw_text: state.cv.raw }));
       }
       if (state.job && state.job.raw) storage.setItem('vagaai_last_job', state.job.raw);
       if (state.cv && state.cv.raw) storage.setItem('vagaai_last_cv', state.cv.raw);
@@ -645,6 +648,35 @@
     };
   }
 
+  async function persistBaseCv(session, options) {
+    var state = read();
+    var cv = state.cv || {};
+    var cvData = cv.data || (cv.raw ? { raw_text: String(cv.raw).slice(0, 30000) } : null);
+    if (!session || !session.user || !cvData || state.baseCvPersistedAt) {
+      return { saved: false, reason: 'not_available', state: state };
+    }
+    options = options || {};
+    var supabaseUrl = options.supabaseUrl || '';
+    var anonKey = options.anonKey || '';
+    var fetchFn = options.fetchFn || (typeof fetch === 'function' ? fetch.bind(globalThis) : null);
+    if (!supabaseUrl || !anonKey || !fetchFn) return { saved: false, reason: 'missing_config', state: state };
+    var headers = { apikey: anonKey, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' };
+    var list = await fetchFn(supabaseUrl + '/rest/v1/cv_saves?user_id=eq.' + encodeURIComponent(session.user.id) + '&select=id&order=updated_at.desc&limit=1', { headers: headers });
+    if (!list.ok) throw new Error('base_cv_lookup_' + list.status);
+    var rows = await list.json();
+    if (rows && rows[0]) {
+      return { saved: false, reason: 'base_exists', state: write({ baseCvPersistedAt: new Date().toISOString() }) };
+    }
+    var name = String((cvData && cvData.nome) || cv.name || 'Meu currículo').slice(0, 80);
+    var response = await fetchFn(supabaseUrl + '/rest/v1/cv_saves', {
+      method: 'POST',
+      headers: Object.assign({}, headers, { Prefer: 'return=representation' }),
+      body: JSON.stringify({ user_id: session.user.id, name: name, cv_data: cvData, template: cv.template || 'perfil', updated_at: new Date().toISOString() })
+    });
+    if (!response.ok) throw new Error('base_cv_save_' + response.status);
+    return { saved: true, reason: 'created', state: write({ baseCvPersistedAt: new Date().toISOString() }) };
+  }
+
   function trackerFields(state) {
     var result = state.analysis || {};
     var info = result.job_info || {};
@@ -728,11 +760,14 @@
   }
 
   async function consume(session, options) {
-    var output = { state: read(), analysis: null, tracker: null, alert: null, errors: [] };
+    var output = { state: read(), analysis: null, baseCv: null, tracker: null, alert: null, errors: [] };
     try { output.analysis = await claimAnalysis(session, options); }
     catch (error) { output.errors.push({ stage: 'analysis', error: error }); }
 
     output.state = stageProductData();
+
+    try { output.baseCv = await persistBaseCv(session, options); }
+    catch (error) { output.errors.push({ stage: 'base_cv', error: error }); }
 
     try { output.tracker = await provisionTracker(session, options); }
     catch (error) { output.errors.push({ stage: 'tracker', error: error }); }
@@ -769,6 +804,7 @@
     syncThemeButton: syncThemeButton,
     stageProductData: stageProductData,
     claimAnalysis: claimAnalysis,
+    persistBaseCv: persistBaseCv,
     provisionTracker: provisionTracker,
     provisionAlert: provisionAlert,
     consume: consume,

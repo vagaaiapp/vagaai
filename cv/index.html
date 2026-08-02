@@ -1681,8 +1681,8 @@ html.no-photo .mod-header{display:block}
 <div class="no-data-page" id="noDataPage" style="display:none">
   <div class="no-data">
     <h2>Nenhum currículo encontrado</h2>
-    <p>Faça uma análise primeiro para gerar seu currículo otimizado.</p>
-    <a href="/app">Analisar minha vaga →</a>
+    <p>Crie ou importe seu currículo principal antes de escolher o modelo.</p>
+    <a href="/curriculo">Ir para Meu Currículo →</a>
   </div>
 </div>
 
@@ -1779,6 +1779,19 @@ async function _initSbSession() {
   return _sbSession;
 }
 
+async function cvSaveVersionToAnalysis() {
+  if (!_sbSession) await _initSbSession();
+  var analysisId = _cvContext && (_cvContext.analysis_id || _cvContext._analysis_id);
+  if (!_sbSession || !analysisId || !_cvData) throw new Error('version_context_missing');
+  var current = await _sb.from('analyses').select('result').eq('id', analysisId).eq('user_id', _sbSession.user.id).single();
+  if (current.error || !current.data) throw current.error || new Error('analysis_not_found');
+  var result = Object.assign({}, current.data.result || {}, { cv_otimizado: _cvData });
+  var saved = await _sb.from('analyses').update({ result: result }).eq('id', analysisId).eq('user_id', _sbSession.user.id);
+  if (saved.error) throw saved.error;
+  try { localStorage.setItem('vagaai_cv_version', JSON.stringify(_cvData)); } catch(e) {}
+  return true;
+}
+
 /* Entrada por voz nos campos de texto livre (/js/cv-voice.js) */
 if (window.CvVoice) {
   CvVoice.init({
@@ -1806,6 +1819,18 @@ async function cvSaveToCloud() {
     return;
   }
   if (!_cvData) return;
+  var editorSource = '';
+  try { editorSource = localStorage.getItem('vagaai_cv_editor_source') || ''; } catch(e) {}
+  if (editorSource === 'version') {
+    try {
+      await cvSaveVersionToAnalysis();
+      if (lbl) lbl.textContent = '✓ Versão salva para esta vaga';
+    } catch(e) {
+      if (lbl) lbl.textContent = 'Erro ao salvar versão';
+    }
+    setTimeout(function(){ if (lbl) lbl.textContent = 'Salvar currículo'; }, 2400);
+    return;
+  }
   if (btn) btn.classList.add('saving');
   if (lbl) lbl.textContent = 'Salvando…';
   var tpl = (function(){ try { return localStorage.getItem('vagaai_cv_tpl') || 'modern'; } catch(e){ return 'classic'; } })();
@@ -1822,7 +1847,13 @@ async function cvSaveToCloud() {
     };
     // Modelo "1 currículo por pessoa": sempre atualiza o mesmo registro do
     // usuário (upsert por user_id), nunca cria um segundo currículo salvo.
-    await _sb.from('cv_saves').upsert(payload, { onConflict: 'user_id' });
+    var existing = await _sb.from('cv_saves').select('id').eq('user_id', _sbSession.user.id).order('updated_at', { ascending: false }).limit(1);
+    var current = existing && existing.data && existing.data[0];
+    var saved = current
+      ? await _sb.from('cv_saves').update(payload).eq('id', current.id).eq('user_id', _sbSession.user.id)
+      : await _sb.from('cv_saves').insert(payload);
+    if (saved && saved.error) throw saved.error;
+    try { localStorage.setItem('vagaai_cv_base', JSON.stringify(_cvData)); } catch(e) {}
     if (lbl) lbl.textContent = '✓ Salvo!';
     setTimeout(function(){ if (lbl) lbl.textContent = 'Salvar currículo'; }, 2200);
     cvLoadCloudList();
@@ -1839,12 +1870,13 @@ async function cvLoadCloudList() {
   if (!_sbSession) await _initSbSession();
   if (!_sbSession) return;
   try {
-    var r = await _sb.from('cv_saves').select('id,name,template,updated_at').eq('user_id', _sbSession.user.id).order('updated_at', { ascending: false }).limit(10);
+    var r = await _sb.from('cv_saves').select('id,name,template,updated_at').eq('user_id', _sbSession.user.id).order('updated_at', { ascending: false }).limit(1);
     var saves = (r && r.data) ? r.data : [];
     if (!saves.length) {
       list.innerHTML = '<div class="sp-cloud-empty">Nenhum currículo salvo.</div>';
       return;
     }
+    if (!_cvData && saves[0] && saves[0].id) await cvLoadSaved(saves[0].id);
     list.innerHTML = saves.map(function(s) {
       var d = new Date(s.updated_at);
       var dateStr = d.toLocaleDateString('pt-BR', { day:'2-digit', month:'short' });
@@ -1866,7 +1898,11 @@ async function cvLoadSaved(id) {
     var save = r.data;
     pushHistory();
     applyFullCvData(save.cv_data);
-    try { localStorage.setItem('vagaai_cv', JSON.stringify(save.cv_data)); } catch(e) {}
+    try { localStorage.setItem('vagaai_cv_base', JSON.stringify(save.cv_data)); localStorage.setItem('vagaai_cv', JSON.stringify(save.cv_data)); localStorage.setItem('vagaai_cv_editor_source', 'base'); } catch(e) {}
+    var noData = document.getElementById('noDataPage');
+    var classicPage = document.getElementById('pageClassic');
+    if (noData) noData.style.display = 'none';
+    if (classicPage) classicPage.classList.add('active');
     if (save.template) {
       setTemplate(save.template, false);
       try { localStorage.setItem('vagaai_cv_tpl', save.template); } catch(e) {}
@@ -2648,7 +2684,13 @@ function applySmartFix(type) {
 (function () {
   /* ── Load data ──────────────────────────────────────────── */
   var raw = null;
-  try { raw = localStorage.getItem('vagaai_cv'); } catch(e) {}
+  var _optFlagAtLoad = false;
+  try {
+    _optFlagAtLoad = !!localStorage.getItem('vagaai_cv_from_analysis');
+    raw = _optFlagAtLoad
+      ? localStorage.getItem('vagaai_cv_version')
+      : (localStorage.getItem('vagaai_cv_base') || localStorage.getItem('vagaai_cv'));
+  } catch(e) {}
   if (!raw) { document.getElementById('noDataPage').style.display = 'flex'; document.getElementById('pageClassic').classList.remove('active'); return; }
   var cv;
   try { cv = JSON.parse(raw); } catch(e) { document.getElementById('noDataPage').style.display = 'flex'; document.getElementById('pageClassic').classList.remove('active'); return; }
@@ -2658,8 +2700,6 @@ function applySmartFix(type) {
   // Captura o flag de origem-análise AGORA (síncrono, antes de initOptimizedMode
   // consumi-lo) e agenda a restauração do passo de forma independente: assim ela
   // roda mesmo que a populção de templates abaixo lance uma exceção.
-  var _optFlagAtLoad = false;
-  try { _optFlagAtLoad = !!localStorage.getItem('vagaai_cv_from_analysis'); } catch(e) {}
   setTimeout(function() { _restoreCvStep(_optFlagAtLoad); }, 120);
   setTimeout(updateNavAtsScore, 0);
   try {
@@ -3179,7 +3219,11 @@ function undoCv() {
   if (!_cvHistory.length) return;
   var prev = JSON.parse(_cvHistory.pop());
   applyFullCvData(prev);
-  try { localStorage.setItem('vagaai_cv', JSON.stringify(prev)); } catch(e) {}
+  try {
+    var source = localStorage.getItem('vagaai_cv_editor_source') || 'base';
+    localStorage.setItem(source === 'version' ? 'vagaai_cv_version' : 'vagaai_cv_base', JSON.stringify(prev));
+    if (source !== 'version') localStorage.setItem('vagaai_cv', JSON.stringify(prev));
+  } catch(e) {}
   var toast = document.getElementById('undoToast');
   if (toast) { toast.classList.add('vis'); setTimeout(function(){ toast.classList.remove('vis'); }, 1800); }
 }
@@ -3197,7 +3241,11 @@ document.addEventListener('keydown', function(e) {
 function saveCvData() {
   if (!_cvData) return;
   pushHistory();
-  try { localStorage.setItem('vagaai_cv', JSON.stringify(_cvData)); } catch(e) {}
+  try {
+    var source = localStorage.getItem('vagaai_cv_editor_source') || 'base';
+    if (source === 'version') localStorage.setItem('vagaai_cv_version', JSON.stringify(_cvData));
+    else { localStorage.setItem('vagaai_cv_base', JSON.stringify(_cvData)); localStorage.setItem('vagaai_cv', JSON.stringify(_cvData)); }
+  } catch(e) {}
 }
 
 /* ── Steps ──────────────────────────────────────────────── */
@@ -3574,6 +3622,18 @@ function maybeReturnToPendingJob() {
 
 async function s4SaveCloud(btn) {
   if (!_cvData) { showToast('Preencha o currículo antes de salvar', 'warn'); return; }
+  var editorSource = '';
+  try { editorSource = localStorage.getItem('vagaai_cv_editor_source') || ''; } catch(e) {}
+  if (editorSource === 'version') {
+    try {
+      await cvSaveVersionToAnalysis();
+      showToast('Versão salva para esta vaga. Seu currículo principal não foi alterado.', 'success');
+      maybeReturnToPendingJob();
+    } catch(e) {
+      showToast('Não foi possível salvar esta versão. Tente novamente.', 'error');
+    }
+    return;
+  }
   if (!_sb) { showToast('Faça login para salvar na nuvem', 'warn'); return; }
   var orig = btn ? btn.innerHTML : '';
   if (btn) { btn.disabled = true; btn.innerHTML = btn.innerHTML.replace('Salvar na nuvem', 'Salvando…'); }
@@ -3586,7 +3646,13 @@ async function s4SaveCloud(btn) {
     // Modelo "1 currículo por pessoa": sempre atualiza o mesmo registro do
     // usuário (upsert por user_id), nunca cria um segundo currículo salvo.
     var payload = { user_id: _sbSession.user.id, name: nome, cv_data: _cvData, template: tpl, photo: photo, updated_at: new Date().toISOString() };
-    await _sb.from('cv_saves').upsert(payload, { onConflict: 'user_id' });
+    var existing = await _sb.from('cv_saves').select('id').eq('user_id', _sbSession.user.id).order('updated_at', { ascending: false }).limit(1);
+    var current = existing && existing.data && existing.data[0];
+    var saved = current
+      ? await _sb.from('cv_saves').update(payload).eq('id', current.id).eq('user_id', _sbSession.user.id)
+      : await _sb.from('cv_saves').insert(payload);
+    if (saved && saved.error) throw saved.error;
+    try { localStorage.setItem('vagaai_cv_base', JSON.stringify(_cvData)); } catch(e) {}
     if (btn) btn.innerHTML = btn.innerHTML.replace('Salvando…', '✓ Salvo na nuvem!');
     setTimeout(function() { if (btn) { btn.disabled = false; btn.innerHTML = orig; } }, 2500);
     showToast('Currículo salvo na nuvem!', 'success');

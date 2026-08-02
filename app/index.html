@@ -1084,7 +1084,7 @@ async function initAuth() {
       }
       authSession = session;
       await loadUserCredits(session);
-      loadSavedCvsForApp(session);
+      await loadSavedCvsForApp(session);
       // Redireciona "Início" para o painel quando logado
       var backBtn = document.getElementById('navBackBtn');
       if (backBtn) { backBtn.href = '/dashboard'; backBtn.textContent = '← Painel'; }
@@ -1374,9 +1374,13 @@ async function saveCvToProfileIfFirst(cvText) {
   if (!authSession || _myCv || !cvText || cvText.length < 100) return;
   try {
     var payload = { user_id: authSession.user.id, name: 'Meu currículo', cv_data: { raw_text: cvText.slice(0, 30000) }, template: 'upload', updated_at: new Date().toISOString() };
-    var r = await sb.from('cv_saves').upsert(payload, { onConflict: 'user_id' }).select().single();
+    var existing = await sb.from('cv_saves').select('id').eq('user_id', authSession.user.id).order('updated_at', { ascending: false }).limit(1);
+    var current = existing && existing.data && existing.data[0];
+    if (current) { _myCv = current; return; }
+    var r = await sb.from('cv_saves').insert(payload).select().single();
     if (r && r.data) {
       _myCv = r.data;
+      try { localStorage.setItem('vagaai_cv_base', JSON.stringify(r.data.cv_data)); } catch(e) {}
       var tab = document.getElementById('tabSalvoCV');
       if (tab) tab.style.display = '';
       appToast('✓ Currículo salvo no seu perfil — nas próximas análises é só usar "Meu currículo"', 'success');
@@ -1388,9 +1392,10 @@ var _myCv = null; // registro único cv_saves do usuário (modelo "1 currículo 
 
 async function loadSavedCvsForApp(session) {
   try {
-    var r = await sb.from('cv_saves').select('id,name,cv_data,updated_at').eq('user_id', session.user.id).maybeSingle();
-    _myCv = r && r.data;
+    var r = await sb.from('cv_saves').select('id,name,cv_data,updated_at').eq('user_id', session.user.id).order('updated_at', { ascending: false }).limit(1);
+    _myCv = r && r.data && r.data[0];
     if (!_myCv) return;
+    try { localStorage.setItem('vagaai_cv_base', JSON.stringify(_myCv.cv_data)); } catch(e) {}
 
     var tab = document.getElementById('tabSalvoCV');
     tab.style.display = '';
@@ -2401,7 +2406,7 @@ function showResult(d) {
 
   if (!isAnonymous && d.cv_otimizado && d.cv_otimizado.nome) {
     try {
-      localStorage.setItem('vagaai_cv', JSON.stringify(d.cv_otimizado));
+      localStorage.setItem('vagaai_cv_version', JSON.stringify(d.cv_otimizado));
       localStorage.setItem('vagaai_cv_context', JSON.stringify({
         analysis_id: d._analysis_id || null,
         score: d.score,
@@ -2522,7 +2527,7 @@ function tryNewAnalysis() {
 
 function openCV() {
   track('cv_download_click');
-  try { localStorage.setItem('vagaai_cv_from_analysis', '1'); } catch(e) {}
+  try { localStorage.setItem('vagaai_cv_from_analysis', '1'); localStorage.setItem('vagaai_cv_editor_source', 'version'); } catch(e) {}
   if (window.self !== window.top) {
     window.parent.postMessage({ type: 'vagaai-nav', id: 'cv', href: '/cv', frame: true }, '*');
   } else if (typeof window.shellNavigate === 'function') {
