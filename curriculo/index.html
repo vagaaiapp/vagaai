@@ -76,7 +76,8 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;fon
 .sec-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem}
 .sec-title{font-size:14px;font-weight:800;display:flex;align-items:center;gap:.4rem}
 .sec-title svg{color:var(--green)}
-.version-list{display:grid;gap:8px;margin-top:12px}.version-row{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid var(--border);border-radius:11px;background:var(--surface2)}.version-row-copy{flex:1;min-width:0}.version-row-copy b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.version-row-copy span{display:block;margin-top:3px;color:var(--muted);font-size:11px}.version-open{border:1px solid var(--green-border);border-radius:9px;background:var(--green-dim);color:var(--green);padding:8px 10px;font:700 11px Manrope,sans-serif;cursor:pointer;white-space:nowrap}
+.profile-main-label{font-size:9.5px;font-weight:900;letter-spacing:.11em;text-transform:uppercase;color:var(--green);margin-bottom:6px}.profile-purpose{font-size:11px;color:var(--muted);margin-top:6px;max-width:390px;line-height:1.45}.profile-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;min-width:250px}.profile-actions .save-btn{grid-column:1/-1}.profile-danger{grid-column:1/-1;border:0;background:none;color:var(--red);font:700 11px Manrope,sans-serif;cursor:pointer;padding:4px}.profile-danger:hover{text-decoration:underline}
+.versions-intro{font-size:12px;color:var(--muted);line-height:1.5;margin-top:5px}.version-tabs{display:flex;gap:6px;margin-top:14px}.version-tab{border:1px solid var(--border);border-radius:999px;background:var(--surface2);color:var(--muted);padding:6px 10px;font:700 11px Manrope,sans-serif;cursor:pointer}.version-tab.active{border-color:var(--green-border);background:var(--green-dim);color:var(--green)}.version-list{display:grid;gap:8px;margin-top:12px}.version-row{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:11px;background:var(--surface2)}.version-row-copy{flex:1;min-width:0}.version-row-copy b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.version-row-copy>span{display:block;margin-top:3px;color:var(--muted);font-size:11px}.version-meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}.version-chip{font-size:9.5px;font-weight:800;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:3px 7px;background:var(--surface)}.version-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px}.version-action{border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);padding:7px 9px;font:700 10.5px Manrope,sans-serif;cursor:pointer;white-space:nowrap}.version-action.primary{border-color:var(--green-border);background:var(--green-dim);color:var(--green)}.version-action.danger{color:var(--red)}.versions-more{width:100%;margin-top:10px;border:1px dashed var(--border);border-radius:9px;background:none;color:var(--muted);padding:8px;font:700 11px Manrope,sans-serif;cursor:pointer}
 .sec-edit{font-size:12.5px;font-weight:700;color:var(--green);background:none;border:none;cursor:pointer}
 .sec-edit:hover{text-decoration:underline}
 .sec-empty{color:var(--muted);font-size:13px;margin-top:.4rem}
@@ -130,7 +131,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;fon
 .loading{text-align:center;padding:4rem 0;color:var(--muted);font-size:14px}
 .spinner{display:inline-block;width:22px;height:22px;border:2.5px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:.5rem}
 @keyframes spin{to{transform:rotate(360deg)}}
-@media(max-width:560px){.f-grid2{grid-template-columns:1fr}.profile-head{flex-direction:column;align-items:flex-start}.save-btn{width:100%}}
+@media(max-width:560px){.f-grid2{grid-template-columns:1fr}.profile-head{flex-direction:column;align-items:flex-start}.save-btn{width:100%}.profile-actions{width:100%;min-width:0}.version-row{align-items:flex-start;flex-direction:column}.version-actions{width:100%;justify-content:flex-start}.version-action{flex:1}.version-row-copy{width:100%}}
 </style>
 </head>
 <body>
@@ -174,6 +175,9 @@ var _isEmbedded = window.self !== window.top || new URLSearchParams(location.sea
 var _saveTimer = null;
 var _dirty = false;
 var _versionsById = {};
+var _versionStatusByAnalysis = {};
+var _versionView = 'active';
+var _showAllVersions = false;
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function toast(msg, isErr){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.toggle('err',!!isErr); t.classList.add('vis'); clearTimeout(t._tm); t._tm=setTimeout(function(){t.classList.remove('vis');},3000); }
@@ -348,13 +352,13 @@ function render() {
   var html = '';
   html += '<div class="profile-head">';
   html += '<div class="profile-avatar">' + esc(initials) + '</div>';
-  html += '<div style="flex:1;min-width:160px"><div class="profile-name">' + esc(d.nome || 'Seu nome aqui') + '</div><div class="profile-role">' + esc(d.titulo_profissional || 'Adicione seu objetivo profissional') + '</div></div>';
+  html += '<div style="flex:1;min-width:160px"><div class="profile-main-label">Currículo principal</div><div class="profile-name">' + esc(d.nome || 'Seu nome aqui') + '</div><div class="profile-role">' + esc(d.titulo_profissional || 'Adicione seu objetivo profissional') + '</div><div class="profile-purpose">Usado como ponto de partida nas análises, alertas e novas versões para vagas.</div></div>';
   html += '<div class="completude-wrap"><div class="completude-label"><span>Perfil completo</span><span>' + pct + '%</span></div><div class="completude-bar"><div class="completude-fill" style="width:' + pct + '%"></div></div></div>';
-  html += '<div style="display:grid;gap:7px"><button class="save-btn" id="saveBtn" onclick="saveProfile()">Salvar</button><button class="btn btn-ghost" onclick="openAdvancedEditor()">Modelos e download</button><div class="save-status" id="saveStatus" style="text-align:right"></div></div>';
+  html += '<div class="profile-actions"><button class="save-btn" id="saveBtn" onclick="saveProfile()">Salvar</button><button class="btn btn-ghost" onclick="scrollToCvDetails()">Editar informações</button><button class="btn btn-ghost" onclick="document.getElementById(\'uploadInput\').click()">Substituir arquivo</button><button class="btn btn-ghost" style="grid-column:1/-1" onclick="openAdvancedEditor()">Modelos e download</button><button class="profile-danger" onclick="deleteBaseCv()">Excluir currículo principal</button><div class="save-status" id="saveStatus" style="grid-column:1/-1;text-align:right"></div></div>';
   html += '</div>';
 
+  html += '<div class="sec-card" id="versionsPanel"><div class="sec-head"><div class="sec-title">Versões para vagas</div></div><p class="versions-intro">Currículos adaptados para oportunidades específicas. Alterar ou excluir uma versão não modifica seu currículo principal.</p><p class="sec-empty">Carregando versões vinculadas às suas análises...</p></div>';
   html += '<div class="gap-panel" id="gapPanel"><div class="gap-title">Posicionamento de mercado</div><div class="gap-empty">Carregando...</div></div>';
-  html += '<div class="sec-card" id="versionsPanel"><div class="sec-head"><div class="sec-title">Versões para vagas</div></div><p class="sec-empty">Carregando versões vinculadas às suas análises...</p></div>';
 
   // Perfil ainda vazio: oferece importar um currículo pronto em vez de
   // obrigar a digitar tudo — caminho rápido pra quem já tem o arquivo.
@@ -369,6 +373,7 @@ function render() {
       '<pre style="white-space:pre-wrap;font-size:12px;color:var(--muted);max-height:160px;overflow:auto;margin-top:.6rem;font-family:inherit">' + esc(d.raw_text.slice(0,1200)) + (d.raw_text.length>1200?'…':'') + '</pre></div>';
   }
 
+  html += '<div id="cvDetailsStart"></div>';
   html += secDadosPessoais(d);
   html += secObjetivo(d);
   html += secExperiencias(d);
@@ -470,32 +475,133 @@ function openAdvancedEditor() {
   location.href = '/cv?source=base';
 }
 
+function scrollToCvDetails() {
+  var target = document.getElementById('cvDetailsStart');
+  if (target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+async function deleteBaseCv() {
+  var hasData = _cv || completude(_cvData) > 0 || _cvData.raw_text;
+  if (!hasData) { toast('Nenhum currículo principal para excluir.', true); return; }
+  var ok = window.confirm('Excluir seu currículo principal?\n\nAs versões criadas para vagas continuarão disponíveis. Novas análises e alertas terão menos informações até você criar ou importar outro currículo.');
+  if (!ok) return;
+  try {
+    if (_session) {
+      var removed = await sb.from('cv_saves').delete().eq('user_id', _session.user.id);
+      if (removed.error) throw removed.error;
+    }
+    ['vagaai_cv_base','vagaai_cv','vagaai_cv_draft','vagaai_cv_draft_updated_at'].forEach(function(key){ try { localStorage.removeItem(key); } catch(e) {} });
+    _cv = null;
+    _cvData = emptyCv();
+    _dirty = false;
+    render();
+    toast('Currículo principal excluído. Suas versões por vaga foram preservadas.');
+  } catch(e) {
+    toast('Não foi possível excluir o currículo principal. Tente novamente.', true);
+  }
+}
+
 async function loadVersionsPanel() {
   var panel = document.getElementById('versionsPanel');
   if (!panel) return;
   if (!_session) {
-    panel.innerHTML = '<div class="sec-head"><div class="sec-title">Versões para vagas</div></div><p class="sec-empty">Crie sua conta para organizar aqui os currículos direcionados para cada vaga.</p>';
+    panel.innerHTML = '<div class="sec-head"><div class="sec-title">Versões para vagas</div></div><p class="versions-intro">Currículos adaptados para oportunidades específicas. Alterar ou excluir uma versão não modifica seu currículo principal.</p><p class="sec-empty">Crie sua conta para organizar aqui os currículos direcionados para cada vaga.</p>';
     return;
   }
   try {
-    var response = await sb.from('analyses').select('id,result,created_at').eq('user_id', _session.user.id).order('created_at', { ascending:false }).limit(30);
+    var response = await sb.from('analyses').select('id,score,result,created_at,archived_at').eq('user_id', _session.user.id).order('created_at', { ascending:false }).limit(100);
     if (response.error) throw response.error;
     var rows = (response.data || []).filter(function(row){ return row.result && row.result.cv_otimizado; });
     _versionsById = {};
     rows.forEach(function(row){ _versionsById[row.id] = row; });
-    if (!rows.length) {
-      panel.innerHTML = '<div class="sec-head"><div class="sec-title">Versões para vagas</div></div><p class="sec-empty">Quando você otimizar o currículo para uma vaga, a versão aparecerá aqui sem substituir seu currículo principal.</p>';
-      return;
+    _versionStatusByAnalysis = {};
+    if (rows.length) {
+      var tracker = await sb.from('job_tracker').select('analysis_id,status').eq('user_id', _session.user.id).in('analysis_id', rows.map(function(row){ return row.id; }));
+      (tracker.data || []).forEach(function(item){ if (item.analysis_id) _versionStatusByAnalysis[item.analysis_id] = item.status || ''; });
     }
-    panel.innerHTML = '<div class="sec-head"><div class="sec-title">Versões para vagas</div><span class="save-status">' + rows.length + ' salva(s)</span></div><div class="version-list">' + rows.slice(0,8).map(function(row){
-      var info = row.result.job_info || {};
-      var title = info.titulo || info.cargo || 'Vaga analisada';
-      var company = info.empresa || 'Empresa não informada';
-      var date = new Date(row.created_at).toLocaleDateString('pt-BR');
-      return '<div class="version-row"><div class="version-row-copy"><b>' + esc(title) + '</b><span>' + esc(company) + ' · ' + date + '</span></div><button class="version-open" onclick="openCvVersion(\'' + row.id + '\')">Abrir versão</button></div>';
-    }).join('') + '</div>';
+    renderVersionsPanel();
   } catch(e) {
-    panel.innerHTML = '<div class="sec-head"><div class="sec-title">Versões para vagas</div></div><p class="sec-empty">Não foi possível carregar as versões agora.</p>';
+    panel.innerHTML = '<div class="sec-head"><div class="sec-title">Versões para vagas</div></div><p class="versions-intro">Currículos adaptados para oportunidades específicas. Alterar ou excluir uma versão não modifica seu currículo principal.</p><p class="sec-empty">Não foi possível carregar as versões agora.</p>';
+  }
+}
+
+function versionStatusLabel(status) {
+  var labels = { quero_aplicar:'Quero aplicar', aplicada:'Candidatura enviada', entrevista:'Em entrevista', oferta:'Oferta', rejeitada:'Encerrada' };
+  return labels[status] || 'Analisada';
+}
+
+function renderVersionsPanel() {
+  var panel = document.getElementById('versionsPanel');
+  if (!panel) return;
+  var rows = Object.keys(_versionsById).map(function(id){ return _versionsById[id]; }).filter(function(row){ return row && row.result && row.result.cv_otimizado; });
+  var active = rows.filter(function(row){ return !row.result.cv_version_archived_at; });
+  var archived = rows.filter(function(row){ return !!row.result.cv_version_archived_at; });
+  var visible = _versionView === 'archived' ? archived : active;
+  var shown = _showAllVersions ? visible : visible.slice(0,8);
+  var intro = '<p class="versions-intro">Currículos adaptados para oportunidades específicas. Alterar ou excluir uma versão não modifica seu currículo principal.</p>';
+  var tabs = '<div class="version-tabs"><button class="version-tab ' + (_versionView === 'active' ? 'active' : '') + '" onclick="setVersionView(\'active\')">Ativas (' + active.length + ')</button><button class="version-tab ' + (_versionView === 'archived' ? 'active' : '') + '" onclick="setVersionView(\'archived\')">Arquivadas (' + archived.length + ')</button></div>';
+  var head = '<div class="sec-head"><div class="sec-title">Versões para vagas</div><span class="save-status">' + rows.length + ' no total</span></div>' + intro + tabs;
+  if (!rows.length) {
+    panel.innerHTML = head + '<p class="sec-empty">Quando você otimizar o currículo para uma vaga, a versão aparecerá aqui sem substituir seu currículo principal.</p>';
+    return;
+  }
+  if (!visible.length) {
+    panel.innerHTML = head + '<p class="sec-empty">' + (_versionView === 'archived' ? 'Nenhuma versão arquivada.' : 'Nenhuma versão ativa.') + '</p>';
+    return;
+  }
+  var list = shown.map(function(row){
+    var result = row.result || {};
+    var info = result.job_info || {};
+    var title = info.titulo || info.cargo || 'Vaga analisada';
+    var company = info.empresa || 'Empresa não informada';
+    var versionDate = result.cv_version_updated_at || row.created_at;
+    var date = new Date(versionDate).toLocaleDateString('pt-BR');
+    var scoreValue = row.score == null ? result.score : row.score;
+    var score = scoreValue == null ? '—' : Math.round(Number(scoreValue)) + '%';
+    var status = versionStatusLabel(_versionStatusByAnalysis[row.id]);
+    var analysisState = row.archived_at ? 'Análise arquivada' : status;
+    var actions = _versionView === 'archived'
+      ? '<button class="version-action" onclick="changeVersionState(\'' + row.id + '\',\'restore\')">Restaurar</button><button class="version-action danger" onclick="changeVersionState(\'' + row.id + '\',\'delete\')">Excluir definitivamente</button>'
+      : '<button class="version-action primary" onclick="openCvVersion(\'' + row.id + '\')">Abrir versão</button><button class="version-action" onclick="changeVersionState(\'' + row.id + '\',\'archive\')">Arquivar</button><button class="version-action danger" onclick="changeVersionState(\'' + row.id + '\',\'delete\')">Excluir</button>';
+    return '<div class="version-row"><div class="version-row-copy"><b>' + esc(title) + '</b><span>' + esc(company) + ' · atualizada em ' + date + '</span><div class="version-meta"><span class="version-chip">Score ' + esc(score) + '</span><span class="version-chip">' + esc(analysisState) + '</span></div></div><div class="version-actions">' + actions + '</div></div>';
+  }).join('');
+  var more = visible.length > 8 ? '<button class="versions-more" onclick="toggleAllVersions()">' + (_showAllVersions ? 'Mostrar menos' : 'Ver todas as ' + visible.length + ' versões') + '</button>' : '';
+  panel.innerHTML = head + '<div class="version-list">' + list + '</div>' + more;
+}
+
+function setVersionView(view) {
+  _versionView = view === 'archived' ? 'archived' : 'active';
+  _showAllVersions = false;
+  renderVersionsPanel();
+}
+
+function toggleAllVersions() {
+  _showAllVersions = !_showAllVersions;
+  renderVersionsPanel();
+}
+
+async function changeVersionState(id, action) {
+  var row = _versionsById[id];
+  if (!row || !row.result) return;
+  if (action === 'archive' && !window.confirm('Arquivar esta versão? Ela sairá da lista ativa, mas continuará disponível para restauração e para os recursos ligados à vaga.')) return;
+  if (action === 'delete' && !window.confirm('Excluir esta versão definitivamente? A análise e a candidatura continuarão salvas, mas carta e entrevista poderão perder o currículo direcionado desta vaga.')) return;
+  var result = Object.assign({}, row.result);
+  if (action === 'archive') result.cv_version_archived_at = new Date().toISOString();
+  if (action === 'restore') result.cv_version_archived_at = null;
+  if (action === 'delete') {
+    delete result.cv_otimizado;
+    result.cv_version_deleted_at = new Date().toISOString();
+    result.cv_version_archived_at = null;
+  }
+  try {
+    var saved = await sb.from('analyses').update({ result:result }).eq('id', id).eq('user_id', _session.user.id);
+    if (saved.error) throw saved.error;
+    if (action === 'delete') delete _versionsById[id];
+    else _versionsById[id].result = result;
+    renderVersionsPanel();
+    toast(action === 'archive' ? 'Versão arquivada.' : action === 'restore' ? 'Versão restaurada.' : 'Versão excluída. A análise e a candidatura foram preservadas.');
+  } catch(e) {
+    toast('Não foi possível atualizar esta versão. Tente novamente.', true);
   }
 }
 

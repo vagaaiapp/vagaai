@@ -1785,7 +1785,7 @@ async function cvSaveVersionToAnalysis() {
   if (!_sbSession || !analysisId || !_cvData) throw new Error('version_context_missing');
   var current = await _sb.from('analyses').select('result').eq('id', analysisId).eq('user_id', _sbSession.user.id).single();
   if (current.error || !current.data) throw current.error || new Error('analysis_not_found');
-  var result = Object.assign({}, current.data.result || {}, { cv_otimizado: _cvData });
+  var result = Object.assign({}, current.data.result || {}, { cv_otimizado: _cvData, cv_version_updated_at: new Date().toISOString(), cv_version_archived_at: null });
   var saved = await _sb.from('analyses').update({ result: result }).eq('id', analysisId).eq('user_id', _sbSession.user.id);
   if (saved.error) throw saved.error;
   try { localStorage.setItem('vagaai_cv_version', JSON.stringify(_cvData)); } catch(e) {}
@@ -2686,7 +2686,11 @@ function applySmartFix(type) {
   var raw = null;
   var _optFlagAtLoad = false;
   try {
-    _optFlagAtLoad = !!localStorage.getItem('vagaai_cv_from_analysis');
+    var querySource = new URLSearchParams(location.search).get('source');
+    var requestedSource = querySource || localStorage.getItem('vagaai_cv_editor_source') || (localStorage.getItem('vagaai_cv_from_analysis') ? 'version' : 'base');
+    if (requestedSource !== 'version') requestedSource = 'base';
+    localStorage.setItem('vagaai_cv_editor_source', requestedSource);
+    _optFlagAtLoad = requestedSource === 'version';
     raw = _optFlagAtLoad
       ? localStorage.getItem('vagaai_cv_version')
       : (localStorage.getItem('vagaai_cv_base') || localStorage.getItem('vagaai_cv'));
@@ -4254,7 +4258,7 @@ function closeModal() {
 /* ── Optimized-from-analysis mode ───────────────────────── */
 (function initOptimizedMode() {
   var flag;
-  try { flag = localStorage.getItem('vagaai_cv_from_analysis'); } catch(e) {}
+  try { flag = new URLSearchParams(location.search).get('source') === 'version' || localStorage.getItem('vagaai_cv_from_analysis'); } catch(e) {}
   if (!flag) return;
   try { localStorage.removeItem('vagaai_cv_from_analysis'); } catch(e) {}
 

@@ -2197,15 +2197,16 @@ async function processUserAlert(profile, options = {}) {
   const deadline = options.deadline || (Date.now() + 50000);
   let cvHint = '';
   if (!isTest && plan !== 'free' && jobs.length > 1 && Date.now() < deadline - 12000) {
-    // CV real da última análise do usuário: sinal muito mais forte que o perfil
-    // declarado ("compatibilidade estimada" vira quase score ATS real).
+    // O currículo principal é a fonte estável para novas oportunidades.
+    // Uma versão direcionada pertence à vaga que a originou e não deve
+    // enviesar recomendações futuras para outras empresas.
     try {
       const ar = await fetch(
-        `${SUPABASE_URL}/rest/v1/analyses?user_id=eq.${userId}&order=created_at.desc&limit=1&select=result`,
+        `${SUPABASE_URL}/rest/v1/cv_saves?user_id=eq.${userId}&order=updated_at.desc&limit=1&select=cv_data`,
         { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
       );
       const arRows = await ar.json();
-      const cv = arRows?.[0]?.result?.cv_otimizado;
+      const cv = arRows?.[0]?.cv_data;
       if (cv) {
         const skills = Array.isArray(cv.habilidades) ? cv.habilidades.slice(0, 12).join(', ') : '';
         const exps = Array.isArray(cv.experiencias)
@@ -2214,6 +2215,7 @@ async function processUserAlert(profile, options = {}) {
           cv.titulo_profissional || '',
           exps ? `Experiências: ${exps}` : '',
           skills ? `Skills: ${skills}` : '',
+          cv.raw_text ? String(cv.raw_text).slice(0, 260) : '',
         ].filter(Boolean).join(' | ').slice(0, 400);
       }
     } catch (e) { /* sem CV → re-rank segue só com o perfil */ }

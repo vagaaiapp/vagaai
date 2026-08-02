@@ -4129,7 +4129,9 @@ function openSavedCv(id) {
     return;
   }
   try {
-    localStorage.setItem('vagaai_cv', JSON.stringify(cv));
+    localStorage.setItem('vagaai_cv_version', JSON.stringify(cv));
+    localStorage.setItem('vagaai_cv_editor_source', 'version');
+    localStorage.setItem('vagaai_cv_from_analysis', '1');
     localStorage.setItem('vagaai_cv_context', JSON.stringify({
       analysis_id: analysis.id || null,
       score: analysis.result.score != null ? analysis.result.score : analysis.score,
@@ -4142,7 +4144,7 @@ function openSavedCv(id) {
       fatores: analysis.result.fatores || {},
       briefing_empresa: analysis.result.briefing_empresa || {}
     }));
-    window.open('/cv', '_blank', 'noopener');
+    window.open('/cv?source=version&analysis=' + encodeURIComponent(analysis.id), '_blank', 'noopener');
   } catch(e) {
     showToast('Não foi possível abrir o currículo.', 'error');
   }
