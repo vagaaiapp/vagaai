@@ -138,9 +138,6 @@ input:focus{
   <div class="title">Admin Login</div>
   <p class="subtitle">Acesso exclusivo para administradores do VagaAI.</p>
 
-  <div class="info">
-    ⚠️ Esta página é <strong>PRIVADA</strong>. Apenas você pode acessar.
-  </div>
 
   <div class="field">
     <label for="email">Email</label>
@@ -159,75 +156,97 @@ input:focus{
 </div>
 
 <script>
-const SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY4Njg5NzksImV4cCI6MTczMjQ2MDk3OX0.dq8pWIFWg_JsLxPDtJI1_6TP1K2qNkJ1Z-wvHzUXEJA';
-const ADMIN_EMAILS = ['jvhr96@gmail.com'];
+(async () => {
+  const SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY4Njg5NzksImV4cCI6MTczMjQ2MDk3OX0.dq8pWIFWg_JsLxPDtJI1_6TP1K2qNkJ1Z-wvHzUXEJA';
+  const ADMIN_EMAILS = ['jvhr96@gmail.com'];
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Wait for supabase to load
+  let supabase = null;
+  let attempts = 0;
+  while (!supabase && attempts < 10) {
+    if (window.supabase) {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      break;
+    }
+    await new Promise(r => setTimeout(r, 100));
+    attempts++;
+  }
 
-async function handleLogin() {
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-  const btn = document.getElementById('loginBtn');
-  const errorEl = document.getElementById('errorMsg');
-  const successEl = document.getElementById('successMsg');
-
-  errorEl.textContent = '';
-  errorEl.classList.remove('show');
-  successEl.textContent = '';
-  successEl.classList.remove('show');
-
-  if (!email || !password) {
-    errorEl.textContent = 'Preencha email e senha.';
-    errorEl.classList.add('show');
+  if (!supabase) {
+    document.getElementById('errorMsg').textContent = 'Erro ao carregar. Recarregue a página.';
+    document.getElementById('errorMsg').classList.add('show');
     return;
   }
 
-  if (!ADMIN_EMAILS.includes(email)) {
-    errorEl.textContent = '❌ Acesso negado. Este email não é admin.';
-    errorEl.classList.add('show');
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Entrando...';
-
+  // Check if already logged in
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data } = await supabase.auth.getSession();
+    if (data?.session) {
+      window.location.href = '/admin';
+    }
+  } catch (e) {
+    console.error('Session check error:', e);
+  }
 
-    if (error) {
-      errorEl.textContent = 'Email ou senha incorretos.';
+  // Login handler
+  window.handleLogin = async () => {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('loginBtn');
+    const errorEl = document.getElementById('errorMsg');
+    const successEl = document.getElementById('successMsg');
+
+    errorEl.textContent = '';
+    errorEl.classList.remove('show');
+    successEl.textContent = '';
+    successEl.classList.remove('show');
+
+    if (!email || !password) {
+      errorEl.textContent = 'Preencha email e senha.';
       errorEl.classList.add('show');
-      btn.disabled = false;
-      btn.textContent = 'Entrar';
       return;
     }
 
-    successEl.textContent = '✅ Login bem-sucedido! Redirecionando...';
-    successEl.classList.add('show');
+    if (!ADMIN_EMAILS.includes(email)) {
+      errorEl.textContent = 'Acesso negado. Email não autorizado.';
+      errorEl.classList.add('show');
+      return;
+    }
 
-    setTimeout(() => {
-      window.location.href = '/admin?redirect=login';
-    }, 1500);
-  } catch (e) {
-    errorEl.textContent = 'Erro ao conectar. Tente novamente.';
-    errorEl.classList.add('show');
-    btn.disabled = false;
-    btn.textContent = 'Entrar';
-  }
-}
+    btn.disabled = true;
+    btn.textContent = 'Entrando...';
 
-// Enter key submit
-document.getElementById('password').addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') handleLogin();
-});
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-// Check if already logged in
-(async () => {
-  const { data } = await supabase.auth.getSession();
-  if (data?.session) {
-    window.location.href = '/admin';
-  }
+      if (error) {
+        errorEl.textContent = 'Email ou senha incorretos.';
+        errorEl.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = 'Entrar';
+        return;
+      }
+
+      successEl.textContent = 'Login bem-sucedido! Redirecionando...';
+      successEl.classList.add('show');
+
+      setTimeout(() => {
+        window.location.href = '/admin';
+      }, 1000);
+    } catch (e) {
+      console.error('Login error:', e);
+      errorEl.textContent = 'Erro ao conectar. Tente novamente.';
+      errorEl.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Entrar';
+    }
+  };
+
+  // Enter key submit
+  document.getElementById('password').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') window.handleLogin();
+  });
 })();
 </script>
 
