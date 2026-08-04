@@ -151,8 +151,23 @@ input:focus{
 
   <button class="btn" id="loginBtn" onclick="handleLogin()">Entrar</button>
 
+  <div style="text-align:center;margin-top:1rem">
+    <a href="#" onclick="toggleReset(event)" style="color:#8a9e90;text-decoration:none;font-size:13px">Esqueceu a senha?</a>
+  </div>
+
   <div class="alert alert-error" id="errorMsg"></div>
   <div class="alert alert-success" id="successMsg"></div>
+
+  <div id="resetForm" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.07)">
+    <h3 style="font-size:16px;margin-bottom:0.5rem">Resetar Senha</h3>
+    <p style="font-size:13px;color:#8a9e90;margin-bottom:1rem">Enviaremos um link de reset para seu email.</p>
+    <div class="field">
+      <label for="resetEmail">Email</label>
+      <input type="email" id="resetEmail" placeholder="seu@email.com" autocomplete="email">
+    </div>
+    <button class="btn" onclick="handlePasswordReset()" style="margin-bottom:0.5rem">Enviar link de reset</button>
+    <button class="btn" style="background:#444;color:#e8ede9" onclick="toggleReset()">Voltar</button>
+  </div>
 </div>
 
 <script>
@@ -247,6 +262,60 @@ input:focus{
   document.getElementById('password').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') window.handleLogin();
   });
+
+  // Toggle reset form
+  window.toggleReset = (e) => {
+    if (e) e.preventDefault();
+    const resetForm = document.getElementById('resetForm');
+    resetForm.style.display = resetForm.style.display === 'none' ? 'block' : 'none';
+  };
+
+  // Password reset handler
+  window.handlePasswordReset = async () => {
+    const email = document.getElementById('resetEmail').value.trim();
+    const btn = event.target;
+    const errorEl = document.getElementById('errorMsg');
+    const successEl = document.getElementById('successMsg');
+
+    errorEl.textContent = '';
+    errorEl.classList.remove('show');
+    successEl.textContent = '';
+    successEl.classList.remove('show');
+
+    if (!email) {
+      errorEl.textContent = 'Digite seu email.';
+      errorEl.classList.add('show');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/admin-login?reset=true`
+      });
+
+      if (error) {
+        errorEl.textContent = 'Erro ao enviar. Tente novamente.';
+        errorEl.classList.add('show');
+      } else {
+        successEl.textContent = '✅ Email de reset enviado! Verifique sua caixa de entrada.';
+        successEl.classList.add('show');
+        document.getElementById('resetEmail').value = '';
+        setTimeout(() => {
+          document.getElementById('resetForm').style.display = 'none';
+        }, 2000);
+      }
+    } catch (e) {
+      console.error('Reset error:', e);
+      errorEl.textContent = 'Erro ao conectar. Tente novamente.';
+      errorEl.classList.add('show');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Enviar link de reset';
+    }
+  };
 })();
 </script>
 
