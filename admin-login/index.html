@@ -160,13 +160,19 @@ input:focus{
 
   <div id="resetForm" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.07)">
     <h3 style="font-size:16px;margin-bottom:0.5rem">Resetar Senha</h3>
-    <p style="font-size:13px;color:#8a9e90;margin-bottom:1rem">Enviaremos um link de reset para seu email.</p>
-    <div class="field">
-      <label for="resetEmail">Email</label>
-      <input type="email" id="resetEmail" placeholder="seu@email.com" autocomplete="email">
-    </div>
-    <button class="btn" onclick="handlePasswordReset()" style="margin-bottom:0.5rem">Enviar link de reset</button>
-    <button class="btn" style="background:#444;color:#e8ede9" onclick="toggleReset()">Voltar</button>
+    <p style="font-size:13px;color:#8a9e90;margin-bottom:1rem">Para resetar sua senha, acesse o painel Supabase:</p>
+
+    <ol style="font-size:13px;color:#8a9e90;margin-left:1.2rem;line-height:1.8;margin-bottom:1.5rem">
+      <li>Acesse <a href="https://supabase.com/dashboard" target="_blank" style="color:#3ecf8e;text-decoration:none">https://supabase.com/dashboard</a></li>
+      <li>Vá em <strong>Authentication</strong> → <strong>Users</strong></li>
+      <li>Procure pelo email <code style="background:#0a0f0d;padding:0.2rem 0.4rem;border-radius:4px">jvhr96@gmail.com</code></li>
+      <li>Clique nos <strong>três pontos</strong> (⋯) e selecione <strong>Reset password</strong></li>
+      <li>Você receberá um email com link para criar uma nova senha</li>
+    </ol>
+
+    <p style="font-size:12px;color:#64c8ff;background:rgba(100,200,255,0.1);border:1px solid rgba(100,200,255,0.25);border-radius:8px;padding:0.75rem;margin-bottom:1rem">💡 Depois de resetar, volte aqui e faça login com sua nova senha.</p>
+
+    <button class="btn" style="background:#444;color:#e8ede9;margin-bottom:0.5rem" onclick="toggleReset()">Voltar</button>
   </div>
 </div>
 
@@ -268,56 +274,6 @@ input:focus{
     if (e) e.preventDefault();
     const resetForm = document.getElementById('resetForm');
     resetForm.style.display = resetForm.style.display === 'none' ? 'block' : 'none';
-  };
-
-  // Password reset handler
-  window.handlePasswordReset = async () => {
-    const email = document.getElementById('resetEmail').value.trim();
-    const btn = event.target;
-    const errorEl = document.getElementById('errorMsg');
-    const successEl = document.getElementById('successMsg');
-
-    errorEl.textContent = '';
-    errorEl.classList.remove('show');
-    successEl.textContent = '';
-    successEl.classList.remove('show');
-
-    if (!email) {
-      errorEl.textContent = 'Digite seu email.';
-      errorEl.classList.add('show');
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = 'Enviando...';
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/admin-login?reset=true`
-      });
-
-      console.log('Reset response:', { error });
-
-      if (error) {
-        console.error('Reset error:', error.message);
-        errorEl.textContent = error.message || 'Erro ao enviar. Tente novamente.';
-        errorEl.classList.add('show');
-      } else {
-        successEl.textContent = '✅ Email de reset enviado! Verifique sua caixa de entrada.';
-        successEl.classList.add('show');
-        document.getElementById('resetEmail').value = '';
-        setTimeout(() => {
-          document.getElementById('resetForm').style.display = 'none';
-        }, 2000);
-      }
-    } catch (e) {
-      console.error('Reset exception:', e);
-      errorEl.textContent = e.message || 'Erro ao conectar. Tente novamente.';
-      errorEl.classList.add('show');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Enviar link de reset';
-    }
   };
 })();
 </script>
