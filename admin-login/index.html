@@ -296,8 +296,11 @@ input:focus{
         redirectTo: `${window.location.origin}/admin-login?reset=true`
       });
 
+      console.log('Reset response:', { error });
+
       if (error) {
-        errorEl.textContent = 'Erro ao enviar. Tente novamente.';
+        console.error('Reset error:', error.message);
+        errorEl.textContent = error.message || 'Erro ao enviar. Tente novamente.';
         errorEl.classList.add('show');
       } else {
         successEl.textContent = '✅ Email de reset enviado! Verifique sua caixa de entrada.';
@@ -308,8 +311,8 @@ input:focus{
         }, 2000);
       }
     } catch (e) {
-      console.error('Reset error:', e);
-      errorEl.textContent = 'Erro ao conectar. Tente novamente.';
+      console.error('Reset exception:', e);
+      errorEl.textContent = e.message || 'Erro ao conectar. Tente novamente.';
       errorEl.classList.add('show');
     } finally {
       btn.disabled = false;
