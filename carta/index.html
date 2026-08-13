@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/cv-base.js"></script>
 <script defer src="/_vercel/insights/script.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -418,8 +419,10 @@ async function getFreshToken() {
       document.getElementById('mainSection').style.display = 'block';
       var badge = document.getElementById('planBadge');
       if (badge) { badge.textContent = sub.plan === 'pro' ? 'Pro' : 'Starter'; badge.style.display = ''; }
-      var savedCv = readBaseCv();
-      if (savedCv) { var link = document.getElementById('cvSavedLink'); if (link) link.style.display = ''; }
+      // Do banco, não do navegador: quem fez login em outro dispositivo tem o
+      // currículo em cv_saves e via aqui "nenhum currículo salvo".
+      _cvBase = await window.VagaAICv.carregarBase(sb, _session.user.id);
+      if (_cvBase) { var link = document.getElementById('cvSavedLink'); if (link) link.style.display = ''; }
       await loadCartaContext();
     }
   } catch(e) {
@@ -741,54 +744,16 @@ function loadScript(src) {
   });
 }
 
-/* O hub /curriculo grava o currículo base em 'vagaai_cv_base'; só fluxos
-   antigos escreviam em 'vagaai_cv'. Lendo apenas a chave antiga, quem montou o
-   currículo pelo hub nunca via o link "usar meu currículo salvo" aqui. */
-function readBaseCv() {
-  var keys = ['vagaai_cv_base', 'vagaai_cv'];
-  for (var i = 0; i < keys.length; i++) {
-    try {
-      var v = localStorage.getItem(keys[i]);
-      if (v) return v;
-    } catch(e) { return null; }
-  }
-  return null;
-}
+/* Carregado do banco em cv_saves durante a inicialização (VagaAICv.carregarBase),
+   com o localStorage servindo só de cache. */
+var _cvBase = null;
 
 function loadSavedCv(e) {
   e.preventDefault();
   try {
-    var raw = readBaseCv();
-    if (!raw) return;
-    var cv = JSON.parse(raw);
-    var parts = [];
-    function pl(label, val) {
-      var t = typeof val === 'string' ? val.trim() : (Array.isArray(val) ? val.join(', ') : '');
-      if (t) parts.push(label + ': ' + t);
-    }
-    if (cv.nome) parts.push('Nome: ' + cv.nome);
-    pl('Título', cv.titulo_profissional || cv.cargo_objetivo || cv.titulo);
-    pl('Resumo', cv.resumo_profissional || cv.objetivo || cv.resumo);
-    // experiencias/formacao/cursos são arrays de OBJETOS no currículo base.
-    // Passá-los por join() rendia "[object Object]" na carta inteira.
-    var exps = (cv.experiencias || []).map(function(e) {
-      var cab = [e.cargo, e.empresa].filter(Boolean).join(' — ');
-      var per = e.periodo ? ' (' + e.periodo + ')' : '';
-      var bul = (e.bullets || []).filter(Boolean).map(function(b){ return '  · ' + b; }).join('\n');
-      return (cab + per + (bul ? '\n' + bul : '')).trim();
-    }).filter(Boolean);
-    if (exps.length) parts.push('Experiências:\n' + exps.join('\n'));
-    var forms = (cv.formacao || cv.educacao || []).map(function(f) {
-      return typeof f === 'string' ? f : [f.curso, f.instituicao, f.periodo].filter(Boolean).join(' — ');
-    }).filter(Boolean);
-    if (forms.length) parts.push('Formação: ' + forms.join('; '));
-    pl('Habilidades', cv.habilidades || cv.skills || cv.competencias);
-    var idiomas = (cv.idiomas || []).map(function(i) {
-      return typeof i === 'string' ? i : [i.idioma, i.nivel].filter(Boolean).join(' (') + (i.nivel ? ')' : '');
-    }).filter(Boolean);
-    if (idiomas.length) parts.push('Idiomas: ' + idiomas.join(', '));
-    // Currículo importado sem estruturação: o texto cru é tudo que existe.
-    var text = parts.length ? parts.join('\n') : String(cv.raw_text || '').trim();
+    if (!_cvBase) return;
+    var cv = _cvBase;
+    var text = window.VagaAICv.cvParaTextoLegivel(cv);
     if (text) setCvText(text, cv.nome ? 'Currículo - ' + cv.nome : 'Currículo salvo');
   } catch(err) {}
 }

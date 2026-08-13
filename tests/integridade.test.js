@@ -145,6 +145,79 @@ describe('Integridade entre páginas', () => {
   });
 });
 
+describe('Currículo base como fonte única', () => {
+  it('as páginas que usam o currículo o buscam no banco, não só no navegador', () => {
+    // localStorage é cache do dispositivo. Páginas que liam só o cache diziam
+    // "nenhum currículo salvo" para quem tinha feito login em outro aparelho.
+    for (const pagina of ['carta/index.html', 'entrevista/index.html']) {
+      const src = read(pagina);
+      assert.match(src, /src="\/js\/cv-base\.js"/, `${pagina} não carrega o módulo`);
+      assert.match(src, /VagaAICv\.carregarBase\(/, `${pagina} não busca o currículo no banco`);
+    }
+  });
+
+  it('o serializador legível não perde projetos nem o texto importado', () => {
+    const sandbox = { window: {} };
+    vm.runInNewContext(read('js/cv-base.js'), sandbox, { filename: 'js/cv-base.js' });
+    const { cvParaTextoLegivel } = sandbox.window.VagaAICv;
+
+    const texto = cvParaTextoLegivel({
+      nome: 'Ana',
+      experiencias: [{ cargo: 'Analista', empresa: 'Acme', bullets: ['Reduziu custo em 20%'] }],
+      projetos: [{ nome: 'ETL', contexto: 'Voluntariado', bullets: ['Pipeline em Python'] }],
+      habilidades: ['SQL'],
+      raw_text: 'Texto original do PDF'
+    });
+    assert.match(texto, /EXPERIÊNCIA PROFISSIONAL/);
+    assert.match(texto, /Reduziu custo em 20%/);
+    assert.match(texto, /PROJETOS E PORTFÓLIO/);
+    assert.match(texto, /Pipeline em Python/);
+    assert.match(texto, /Texto original do PDF/);
+
+    // Currículo só importado: devolve o texto cru, sem cabeçalho inventado.
+    assert.equal(cvParaTextoLegivel({ raw_text: 'Só o texto' }), 'Só o texto');
+    assert.equal(cvParaTextoLegivel(null), '');
+    assert.equal(cvParaTextoLegivel('já é texto'), 'já é texto');
+  });
+});
+
+describe('Fluxo de candidatura', () => {
+  it('vaga adicionada à mão oferece análise, levando o link junto', () => {
+    // A linha "Sem análise" só tinha editar e remover: para analisar, o usuário
+    // recolava no formulário em branco uma URL que o tracker já guardava.
+    const dash = read('dashboard/index.html');
+    assert.match(dash, /⚡ Analisar/);
+
+    const fn = dash.match(/function buildTrackerAnalyzeUrl\([\s\S]*?\n\}/);
+    const safe = dash.match(/function safeExternalUrl\([\s\S]*?\n\}/);
+    assert.ok(fn && safe);
+    const sandbox = { URL, String, encodeURIComponent };
+    vm.runInNewContext(`${safe[0]}\n${fn[0]}\nvar _b = buildTrackerAnalyzeUrl;`, sandbox);
+
+    const url = sandbox._b({ job_url: 'https://vagas.com/x', cargo: 'Analista', empresa: 'Acme' });
+    assert.match(url, /^\/app\?/);
+    assert.match(url, /vaga=https%3A%2F%2Fvagas\.com%2Fx/);
+    assert.match(url, /job_title=Analista/);
+    assert.match(url, /job_company=Acme/);
+
+    // Link com esquema executável não pode virar parâmetro de navegação.
+    assert.doesNotMatch(sandbox._b({ job_url: 'javascript:alert(1)', cargo: 'X' }), /javascript/);
+    // Sem link, ainda abre o analisador — só sem pré-preenchimento de URL.
+    assert.equal(sandbox._b({}), '/app');
+  });
+
+  it('o menu avisa quais abas o plano atual não libera', () => {
+    const dash = read('dashboard/index.html');
+    assert.match(dash, /function marcarItensPagosNoMenu/);
+    // Os selos precisam bater com o gate real do servidor: cover-letter recusa
+    // free; interview recusa quem não é pro.
+    assert.match(read('api/cover-letter.js'), /plan === 'free'/);
+    assert.match(read('api/interview.js'), /plan !== 'pro'/);
+    assert.match(dash, /tab: 'carta',\s*bloqueado: plano === 'free'/);
+    assert.match(dash, /tab: 'entrevistas',\s*bloqueado: !\(plano === 'pro'/);
+  });
+});
+
 describe('Cálculo de lacunas', () => {
   function carregar() {
     const sandbox = { window: {} };

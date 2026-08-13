@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/cv-base.js"></script>
 <script defer src="/_vercel/insights/script.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -406,11 +407,18 @@ var _audioMode = '';
         showScreen('screenSetup');
       }
     } else {
-      // Sem analysis_id: usa localStorage como fallback
+      // Sem analysis_id: a última vaga analisada vem do localStorage, mas o
+      // currículo vem do banco. Antes usávamos só 'vagaai_last_cv', o que
+      // deixava o campo vazio para quem entrou de outro dispositivo — mesmo
+      // com o currículo base salvo na conta.
       var savedJob = '';
       var savedCv = '';
       try { savedJob = localStorage.getItem('vagaai_last_job') || ''; } catch(e){}
       try { savedCv = localStorage.getItem('vagaai_last_cv') || ''; } catch(e){}
+      if (!savedCv) {
+        var base = await window.VagaAICv.carregarBase(sb, _session.user.id);
+        if (base) savedCv = window.VagaAICv.cvParaTextoLegivel(base);
+      }
       if (savedJob) document.getElementById('jobInput').value = savedJob;
       if (savedCv) document.getElementById('cvInput').value = savedCv;
       showScreen('screenSetup');

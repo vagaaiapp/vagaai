@@ -1130,6 +1130,21 @@ async function loadGapPanel() {
   } catch(e) {
     panel.innerHTML = gapHeroShell('Não foi possível carregar agora.', '', '');
   }
+  focarLacunasSePedido();
+}
+
+/* Quem clica em "Ver lacunas →" no painel chega com ?foco=lacunas. Sem isso a
+   pessoa caía no topo do hub e tinha que procurar o que acabou de pedir. */
+function focarLacunasSePedido() {
+  try {
+    if (new URLSearchParams(location.search).get('foco') !== 'lacunas') return;
+  } catch(e) { return; }
+  var panel = document.getElementById('gapPanel');
+  if (!panel) return;
+  panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  panel.style.transition = 'box-shadow .4s';
+  panel.style.boxShadow = '0 0 0 3px rgba(78,206,145,.55)';
+  setTimeout(function(){ panel.style.boxShadow = ''; }, 2200);
 }
 </script>
 </body>

@@ -182,6 +182,19 @@ body.frame-fullscreen .sidebar { display: none !important; }
 }
 
 .sb-btn svg { width: 17px; height: 17px; flex-shrink: 0; }
+/* Cadeado nos itens que o plano atual não libera: sem sinal nenhum, o usuário
+   free só descobria o bloqueio depois de clicar e bater no gate da página.
+   É ícone e não texto por medida: no rail de 230px, "Carta para vaga" mais um
+   selo escrito "Starter" trunca o próprio rótulo do menu. O plano exato vai no
+   title e no aria-label, que é onde cabe a frase inteira. */
+.sb-btn > span:not(.sb-lock) { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.sb-lock {
+  margin-left: auto; flex-shrink: 0;
+  display: inline-flex; align-items: center;
+  color: #ffd166; opacity: .85;
+}
+.sb-lock svg { width: 12px; height: 12px; }
+.sb-btn:hover .sb-lock { opacity: 1; }
 .sb-btn:hover { background: rgba(78,206,145,.1); color: rgba(255,255,255,.85); }
 .sb-btn:focus-visible { outline: 2px solid var(--gb-bright); outline-offset: 2px; }
 .sb-btn.active { color: #fff; background: rgba(62,207,142,.13); box-shadow: inset 3px 0 0 #3ecf8e; }
@@ -3380,7 +3393,9 @@ function buildMaterialStrip() {
         '<div class="mat-val">' + gaps.length + ' <small>competência' + (gaps.length !== 1 ? 's' : '') + '</small></div>' +
         '<div class="mat-chips">' + chips.join('') + '</div>' +
         '<div class="mat-sub">Pedidas nas ' + nVagas + ' vaga' + (nVagas !== 1 ? 's' : '') + ' que você analisou e ausentes no seu currículo base.</div>' +
-        '<button class="mat-cta" onclick="switchDashTab(\'curriculo\')">Ver lacunas →</button>'));
+        // Aponta para o painel de posicionamento do hub, que mostra a lista
+        // completa e as métricas. Aqui é o resumo; lá é o detalhe.
+        '<button class="mat-cta" onclick="switchDashTab(\'curriculo\',\'/curriculo?foco=lacunas\')">Ver lacunas →</button>'));
     }
   }
 
@@ -4543,9 +4558,24 @@ function renderAnalysisItem(a, tracked) {
     '</div>';
 }
 
+/* Vaga adicionada à mão já traz link, cargo e empresa. Mandar o usuário para o
+   analisador em branco fazia ele recolar uma URL que a plataforma já tinha —
+   e era o único caminho, porque a linha "Sem análise" só oferecia editar e
+   remover. Mesmos parâmetros que os alertas usam (checkVagaParam em /app). */
+function buildTrackerAnalyzeUrl(j) {
+  var params = [];
+  var url = safeExternalUrl(j && j.job_url);
+  if (url) params.push('vaga=' + encodeURIComponent(url));
+  if (j && j.cargo) params.push('job_title=' + encodeURIComponent(j.cargo));
+  if (j && j.empresa) params.push('job_company=' + encodeURIComponent(j.empresa));
+  if (j && j.salario) params.push('job_salary=' + encodeURIComponent(j.salario));
+  return '/app' + (params.length ? '?' + params.join('&') : '');
+}
+
 function renderManualItem(j) {
   var jid = j.id || '';
   var selectHtml = buildStatusSelect(j.status || '', null, jid);
+  var analyzeUrl = buildTrackerAnalyzeUrl(j);
   return '<div class="mv-item">' +
     '<div style="width:44px;height:44px;border-radius:8px;background:var(--bg-sub);border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;margin-top:2px;flex-shrink:0">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="color:var(--t3)"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>' +
@@ -4554,6 +4584,7 @@ function renderManualItem(j) {
       '<div class="mv-cargo">' + escHtml(j.cargo || '—') + '</div>' +
       '<div class="mv-emp">' + escHtml(j.empresa || '—') + '</div>' +
       '<div class="mv-tags"><span class="sc-status" style="font-size:11px;background:var(--bg-sub);color:var(--t3)">Sem análise</span>' +
+        '<button onclick="openAnalyzerInDashboard(this.dataset.url)" data-url="' + escAttr(analyzeUrl) + '" style="font-size:11px;color:var(--gb-emerald);background:none;border:none;cursor:pointer;padding:0;font-weight:700">⚡ Analisar</button>' +
         '<button onclick="openTrackerEditById(\'' + escAttr(jid) + '\')" style="font-size:11px;color:var(--gb-emerald);background:none;border:none;cursor:pointer;padding:0;font-weight:600">Editar</button>' +
         '<button onclick="deleteTracker(\'' + escAttr(jid) + '\')" style="font-size:11px;color:var(--s-red);background:none;border:none;cursor:pointer;padding:0;font-weight:600">Remover</button>' +
       '</div>' +
@@ -6490,6 +6521,36 @@ async function openStripePortal(btn) {
   }
 }
 
+/* Sinaliza no menu o que o plano atual não libera. Os limites reais são os das
+   funções serverless (cover-letter devolve 403 para free; interview, para quem
+   não é pro) — aqui é só antecipar a informação, não substituir a checagem. */
+function marcarItensPagosNoMenu(sub) {
+  var plano = (sub && sub.plan) || 'free';
+  var ent = (sub && sub.entitlements) || {};
+  var itens = [
+    { tab: 'carta',       bloqueado: plano === 'free',                     selo: 'Starter' },
+    { tab: 'entrevistas', bloqueado: !(plano === 'pro' || ent.simulador_entrevista), selo: 'Pro' }
+  ];
+  itens.forEach(function(it) {
+    document.querySelectorAll('.sb-btn[data-tab="' + it.tab + '"], .dm-drawer-btn[data-tab="' + it.tab + '"]').forEach(function(btn) {
+      var antigo = btn.querySelector('.sb-lock');
+      if (antigo) antigo.remove();
+      // Guarda o rótulo original na primeira passada: a função roda de novo a
+      // cada recarga de assinatura, e reler o aria-label já modificado ia
+      // empilhando "— disponível no plano X" a cada chamada.
+      if (!btn.dataset.labelBase) btn.dataset.labelBase = btn.getAttribute('aria-label') || btn.textContent.trim();
+      if (!it.bloqueado) { btn.setAttribute('aria-label', btn.dataset.labelBase); return; }
+      var selo = document.createElement('span');
+      selo.className = 'sb-lock';
+      selo.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+      selo.title = 'Disponível no plano ' + it.selo;
+      // Complementa o rótulo lido por leitor de tela, em vez de substituí-lo.
+      btn.setAttribute('aria-label', btn.dataset.labelBase + ' — disponível no plano ' + it.selo);
+      btn.appendChild(selo);
+    });
+  });
+}
+
 async function loadSubscriptionData() {
   try {
     var token = await getFreshToken();
@@ -6512,6 +6573,7 @@ async function loadSubscriptionData() {
     }
     var sub = await res.json();
     window._subscriptionData = sub;
+    marcarItensPagosNoMenu(sub);
     var planLabels = { pro: 'Pro', starter: 'Starter', free: 'Grátis' };
     var planLabel = planLabels[sub.plan] || sub.plan || 'Grátis';
     // Hero metrics
