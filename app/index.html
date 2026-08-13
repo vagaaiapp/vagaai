@@ -2959,15 +2959,11 @@ initAuth().then(async function() {
     } catch(e) {}
   }
 
-  // Feature 4: pré-preenchimento de URL vinda do tracker ("Quero Aplicar → Analisar")
-  try {
-    var prefillUrl = localStorage.getItem('vagaai_prefill_url');
-    if (prefillUrl) {
-      localStorage.removeItem('vagaai_prefill_url');
-      var jobUrlEl = document.getElementById('jobUrl');
-      if (jobUrlEl) { jobUrlEl.value = prefillUrl; jobUrlEl.dispatchEvent(new Event('input')); }
-    }
-  } catch(e) {}
+  // O pré-preenchimento da URL da vaga acontece pela querystring ?prefill_url=
+  // (tratada em checkVagaParam, junto com ?vaga=) — é por ali que os alertas
+  // mandam a vaga. Existia aqui um segundo caminho por localStorage
+  // ('vagaai_prefill_url') que nenhuma página jamais escreveu: código morto
+  // desde sempre. Removido para não sugerir um mecanismo que não existe.
 
   var runtimeParams = getRuntimeSearchParams();
   var hasIncomingJob = !!(runtimeParams.get('vaga') || runtimeParams.get('prefill_url') || runtimeParams.get('alert_job') || runtimeParams.get('from') === 'alertas');
@@ -2977,29 +2973,17 @@ initAuth().then(async function() {
     var viewAnalysis = localStorage.getItem('vagaai_view_analysis');
     if (viewAnalysis && hasIncomingJob) {
       localStorage.removeItem('vagaai_view_analysis');
-      localStorage.removeItem('vagaai_scroll_to');
     } else if (viewAnalysis) {
       localStorage.removeItem('vagaai_view_analysis');
-      var scrollTo = localStorage.getItem('vagaai_scroll_to');
-      localStorage.removeItem('vagaai_scroll_to');
+      // Havia aqui um branch que rolava a tela até o botão de CV quando
+      // 'vagaai_scroll_to' valesse 'cv'. Nenhuma página escrevia essa chave —
+      // o scroll nunca aconteceu. Quem abre o CV de uma análise hoje vai
+      // direto para /cv por openSavedCv(), sem passar por esta tela.
       var vData = JSON.parse(viewAnalysis);
       document.getElementById('formSection').style.display = 'none';
       document.getElementById('freeNotice').style.display = 'none';
       showResult(vData);
       setStep(3);
-      // Scroll para seção de CV se solicitado
-      if (scrollTo === 'cv') {
-        setTimeout(function() {
-          var cvEl = document.getElementById('cvBtnInline') || document.getElementById('cvBtn');
-          if (cvEl) {
-            cvEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Pulsa o botão para chamar atenção
-            cvEl.style.transition = 'box-shadow .3s';
-            cvEl.style.boxShadow = '0 0 0 3px rgba(62,207,142,.5)';
-            setTimeout(function(){ cvEl.style.boxShadow = ''; }, 1800);
-          }
-        }, 500);
-      }
       return; // não executa checkVagaParam nem pending abaixo
     }
   } catch(e) {}

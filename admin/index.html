@@ -663,6 +663,18 @@ function escHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+/* escHtml não impede href="javascript:...". A lista de fontes abaixo é
+   constante hoje, mas a regra vale para todo href montado a partir de variável:
+   se um dia essas URLs vierem do banco, a proteção já está no lugar. */
+function safeExternalUrl(value) {
+  try {
+    var url = new URL(String(value || '').trim());
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : '';
+  } catch(e) {
+    return '';
+  }
+}
+
 // ─── Email Leads ──────────────────────────────────────────────────────────────
 
 var _leadsData = [];
@@ -1602,7 +1614,7 @@ function renderSources() {
 
     return '<tr>'
       + '<td style="color:var(--muted);font-size:12px;font-weight:600">' + s.n + '</td>'
-      + '<td><a href="' + escHtml(s.url) + '" target="_blank" rel="noopener" style="color:var(--text);font-weight:600;text-decoration:none;font-size:13px">' + escHtml(s.name) + ' <span style="font-size:10px;color:var(--muted)">↗</span></a></td>'
+      + '<td><a href="' + escHtml(safeExternalUrl(s.url)) + '" target="_blank" rel="noopener" style="color:var(--text);font-weight:600;text-decoration:none;font-size:13px">' + escHtml(s.name) + ' <span style="font-size:10px;color:var(--muted)">↗</span></a></td>'
       + '<td style="font-size:12px;color:var(--muted)">' + escHtml(s.coverage) + '</td>'
       + '<td>' + typeBadge + '</td>'
       + '<td>' + keyHtml + '</td>'

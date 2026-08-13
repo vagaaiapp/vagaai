@@ -12,6 +12,7 @@
 <script src="/onboarding/shared.js"></script>
 <script src="/js/cv-voice.js"></script>
 <script src="/js/cv-completude.js"></script>
+<script src="/js/cv-lacunas.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -261,51 +262,8 @@ function normalize(d) {
   return base;
 }
 
-function cvToText(d) {
-  if (!d) return '';
-  if (d.raw_text && !d.nome) return d.raw_text;
-  var L = [];
-  if (d.nome) L.push(d.nome);
-  if (d.titulo_profissional) L.push(d.titulo_profissional);
-  var c = d.contato || {};
-  var ct = [c.email, c.telefone, c.linkedin, c.portfolio, c.cidade].filter(Boolean).join(' | ');
-  if (ct) L.push(ct);
-  if (d.resumo_profissional) { L.push(''); L.push('RESUMO PROFISSIONAL'); L.push(d.resumo_profissional); }
-  if ((d.experiencias||[]).length) {
-    L.push(''); L.push('EXPERIÊNCIA PROFISSIONAL');
-    d.experiencias.forEach(function(e){
-      L.push([e.cargo, e.empresa].filter(Boolean).join(' — ') + (e.periodo ? ' (' + e.periodo + ')' : ''));
-      (e.bullets || []).forEach(function(b){ if(b) L.push('- ' + b); });
-    });
-  }
-  if ((d.formacao||[]).length) {
-    L.push(''); L.push('FORMAÇÃO ACADÊMICA');
-    d.formacao.forEach(function(e){
-      var detalhes = [e.periodo, e.situacao].filter(Boolean).join(' · ');
-      L.push([e.curso, e.instituicao].filter(Boolean).join(' — ') + (detalhes ? ' (' + detalhes + ')' : ''));
-    });
-  }
-  if ((d.cursos||[]).length) {
-    L.push(''); L.push('CURSOS E ESPECIALIZAÇÕES');
-    d.cursos.forEach(function(e){ L.push([e.nome, e.instituicao].filter(Boolean).join(' — ') + (e.periodo ? ' (' + e.periodo + ')' : '')); });
-  }
-  if ((d.idiomas||[]).length) {
-    L.push(''); L.push('IDIOMAS');
-    d.idiomas.forEach(function(e){ L.push([e.idioma, e.nivel].filter(Boolean).join(' — ')); });
-  }
-  if ((d.habilidades||[]).length) { L.push(''); L.push('HABILIDADES'); L.push(d.habilidades.join(', ')); }
-  if ((d.projetos||[]).length) {
-    L.push(''); L.push('PROJETOS E PORTFÓLIO');
-    d.projetos.forEach(function(e){
-      var cabecalho = [e.nome, e.contexto].filter(Boolean).join(' — ') + (e.periodo ? ' (' + e.periodo + ')' : '');
-      L.push(cabecalho);
-      if (e.link) L.push(e.link);
-      (e.bullets || []).forEach(function(b){ if (b) L.push('- ' + b); });
-    });
-  }
-  if (d.raw_text) { L.push(''); L.push('CONTEÚDO DO CURRÍCULO IMPORTADO'); L.push(d.raw_text); }
-  return L.join('\n');
-}
+/* A serialização do currículo para busca de lacunas mora em
+   /js/cv-lacunas.js (cvParaTexto), compartilhada com o painel. */
 
 // Currículo importado como arquivo: o conteúdo ESTÁ aqui, só não foi separado
 // em campos. Contar como zero fazia a barra abrir em "0% completo" para quem
@@ -1134,7 +1092,13 @@ async function loadGapPanel() {
     return;
   }
   try {
-    var r = await sb.from('analyses').select('result').eq('user_id', _session.user.id).order('created_at', { ascending: false }).limit(50);
+    // Mesmo recorte que o painel usa (VagaAICv.ANALISES_QUERY): arquivadas de
+    // fora e limite 200. Antes eram 50 sem filtro de arquivadas, e as duas telas
+    // chegavam a números diferentes para o mesmo currículo.
+    var r = await sb.from('analyses').select('result').eq('user_id', _session.user.id)
+      .is('archived_at', null)
+      .order('created_at', { ascending: false })
+      .limit(window.VagaAICv.ANALISES_QUERY.limite);
     var rows = (r && r.data) || [];
     if (!rows.length) {
       panel.innerHTML = gapHeroShell(
@@ -1144,22 +1108,10 @@ async function loadGapPanel() {
       );
       return;
     }
-    var freq = {};
-    rows.forEach(function(row){
-      var res = row.result || {};
-      (res.keywords_faltando || []).forEach(function(k){
-        var key = String(k).trim();
-        if (!key) return;
-        freq[key] = (freq[key] || 0) + 1;
-      });
-    });
-    var cvText = cvToText(_cvData).toLowerCase();
-    var allKeys = Object.keys(freq);
-    var gaps = allKeys
-      .filter(function(k){ return cvText.indexOf(k.toLowerCase()) === -1; })
-      .sort(function(a,b){ return freq[b] - freq[a]; });
-    var covered = allKeys.length - gaps.length;
-    var metricsHtml = metric(rows.length, 'vagas analisadas') + metric(covered, 'competências em comum') + metric(gaps.length, 'lacunas identificadas');
+    var lac = window.VagaAICv.calcularLacunas(_cvData, rows);
+    var freq = lac.freq;
+    var gaps = lac.gaps;
+    var metricsHtml = metric(rows.length, 'vagas analisadas') + metric(lac.cobertas, 'competências em comum') + metric(gaps.length, 'lacunas identificadas');
 
     if (!gaps.length) {
       panel.innerHTML = gapHeroShell(

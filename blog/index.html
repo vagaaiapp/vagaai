@@ -29,7 +29,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&display=swap" rel="stylesheet">
   <script>
     (function(){
-      var s=localStorage.getItem('vagaai-theme');
+      var s=(localStorage.getItem('vagaai_theme') || localStorage.getItem('vagaai-theme'));
       var p=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';
       document.documentElement.dataset.theme=s||p;
     })();
@@ -198,11 +198,11 @@
     themeBtn.addEventListener('click', function() {
       var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
       document.documentElement.dataset.theme = next;
-      localStorage.setItem('vagaai-theme', next);
+      localStorage.setItem('vagaai_theme', next);
       themeBtn.setAttribute('aria-label', next === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro');
     });
     window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function(e) {
-      if (!localStorage.getItem('vagaai-theme')) {
+      if (!(localStorage.getItem('vagaai_theme') || localStorage.getItem('vagaai-theme'))) {
         document.documentElement.dataset.theme = e.matches ? 'light' : 'dark';
       }
     });

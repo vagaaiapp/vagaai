@@ -82,7 +82,11 @@ export default async function handler(req, res) {
       const url = req.url();
       if (url.startsWith('data:') || url.startsWith('about:') || url.includes('fonts.googleapis') || url.includes('fonts.gstatic')) {
         req.continue();
-      } else if (req.resourceType() === 'document') {
+      } else if (req.resourceType() === 'document' && req.frame() === page.mainFrame()) {
+        // Só o documento principal. Subframe também é resourceType 'document':
+        // liberar todos deixava um <iframe src="http://169.254.169.254/..."> no
+        // HTML enviado pelo cliente buscar endereço interno e devolver o
+        // conteúdo renderizado dentro do PDF.
         req.continue();
       } else {
         req.abort();

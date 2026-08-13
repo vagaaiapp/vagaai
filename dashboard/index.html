@@ -19,6 +19,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/onboarding/shared.js"></script>
 <script src="/js/cv-completude.js"></script>
+<script src="/js/cv-lacunas.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -3359,18 +3360,12 @@ function buildMaterialStrip() {
         : 'Analise sua primeira vaga para começarmos a mapear o que o mercado pede.') + '</div>' +
       '<button class="mat-cta" onclick="switchDashTab(\'' + (cvData ? 'app' : 'curriculo') + '\')">' + (cvData ? 'Analisar uma vaga →' : 'Criar currículo base →') + '</button>'));
   } else {
-    var freq = {};
-    analyses.forEach(function(a) {
-      ((a.result || {}).keywords_faltando || []).forEach(function(k) {
-        var key = String(k).trim();
-        if (key) freq[key] = (freq[key] || 0) + 1;
-      });
-    });
-    var cvText = _cvTextFromData(cvData).toLowerCase();
-    var gaps = Object.keys(freq)
-      .filter(function(k){ return cvText.indexOf(k.toLowerCase()) === -1; })
-      .sort(function(a,b){ return freq[b] - freq[a]; });
-    var nVagas = analyses.length;
+    // Mesmo cálculo que o hero de /curriculo — módulo compartilhado para as duas
+    // telas nunca mostrarem números diferentes para o mesmo currículo.
+    var lac = window.VagaAICv.calcularLacunas(cvData, analyses);
+    var freq = lac.freq;
+    var gaps = lac.gaps;
+    var nVagas = lac.totalVagas;
     if (!gaps.length) {
       tiles.push(matTile('Lacunas do mercado',
         '<div class="mat-val">0 <small>lacunas</small></div>' +
@@ -3423,7 +3418,10 @@ function buildSecondaryHint() {
   var chosenId = _pbaChosen && _pbaChosen.analysisId;
 
   var hint = null;
-  var semAlerta = !_alertProfile || _alertProfile.ativo === false;
+  // Checagem truthy, igual ao resto do arquivo (renderAlertUsage, renderAlertStatus,
+  // calculateNextAlertRun). Com `=== false`, um perfil com ativo NULL fazia o
+  // painel escondê-la enquanto a aba Alertas mostrava o alerta como inativo.
+  var semAlerta = !_alertProfile || !_alertProfile.ativo;
   // Outras análises que ainda não viraram candidatura, fora a que o bloco 02 já trata.
   var pendentes = analyses.filter(function(a) {
     if (!a.score || String(a.id) === String(chosenId)) return false;
@@ -4721,6 +4719,10 @@ function openAnalysisModal(job) {
   var fatores = r.fatores || {};
   var keywords_ok = (r.keywords_encontradas || []).join(', ') || '—';
   var keywords_falt = (r.keywords_faltando || []).join(', ') || '—';
+  // escHtml escapa & < >, mas não impede href="javascript:...". O link da vaga
+  // vem do campo do usuário E do feed externo de vagas (saveRecommendedJob),
+  // então precisa passar pela mesma validação de esquema do resto do arquivo.
+  var jobUrlSafe = safeExternalUrl(job.job_url);
 
   var modal = document.createElement('div');
   modal.className = 'modal-overlay';
@@ -4738,7 +4740,7 @@ function openAnalysisModal(job) {
         '<div style="font-size:18px;font-weight:700">' + escHtml(r.nivel || '—') + '</div>' +
         '<div style="font-size:11px;color:var(--t3);margin-top:2px">Nível</div>' +
       '</div>' +
-      (job.job_url ? '<a href="' + escHtml(job.job_url) + '" target="_blank" rel="noopener" style="display:flex;align-items:center;padding:14px 20px;background:var(--s-grn-bg);border:1.5px solid var(--gb-emerald);border-radius:var(--r-sm);color:var(--gb-emerald);font-weight:700;font-size:13px;text-decoration:none">🔗 Ver vaga</a>' : '') +
+      (jobUrlSafe ? '<a href="' + escHtml(jobUrlSafe) + '" target="_blank" rel="noopener" style="display:flex;align-items:center;padding:14px 20px;background:var(--s-grn-bg);border:1.5px solid var(--gb-emerald);border-radius:var(--r-sm);color:var(--gb-emerald);font-weight:700;font-size:13px;text-decoration:none">🔗 Ver vaga</a>' : '') +
     '</div>' +
 
     // Resumo
@@ -4919,29 +4921,20 @@ function _alSaveExt() {
   localStorage.setItem('vagaai_alert_ext', JSON.stringify(_alertExtended));
 }
 
-/* ── Seu currículo x o mercado (aba Alertas) ──────────────────────
-   Mesmo cálculo do hero card de /curriculo: cruza keywords_faltando de
-   TODAS as análises de vaga do usuário com o texto do currículo salvo —
-   gratuito, sem IA. Reaproveita o dado real da própria plataforma pra
-   lembrar, dentro de Alertas, que o currículo também pode ser ajustado. */
-function _cvTextFromData(d) {
-  if (!d) return '';
-  if (d.raw_text && !d.nome) return String(d.raw_text);
-  var parts = [d.nome, d.titulo_profissional, d.resumo_profissional].filter(Boolean);
-  (d.experiencias || []).forEach(function(e){ parts.push(e.cargo, e.empresa); (e.bullets||[]).forEach(function(b){ parts.push(b); }); });
-  (d.formacao || []).forEach(function(e){ parts.push(e.curso, e.instituicao); });
-  (d.cursos || []).forEach(function(e){ parts.push(e.nome, e.instituicao); });
-  (d.idiomas || []).forEach(function(e){ parts.push(e.idioma); });
-  (d.habilidades || []).forEach(function(h){ parts.push(h); });
-  return parts.filter(Boolean).join(' ');
-}
+/* A serialização do currículo para busca de lacunas mora em /js/cv-lacunas.js
+   (cvParaTexto). A cópia que existia aqui ignorava projetos e o raw_text de
+   currículos estruturados, então marcava como lacuna competência que a pessoa
+   já tinha citado — e discordava do hero de /curriculo. */
 
 /* Carrega o currículo base do usuário. As lacunas de mercado, que antes eram
    calculadas aqui e renderizadas na aba Alertas, agora vivem no bloco 01 da
    Visão geral (buildMaterialStrip) e reaproveitam as análises já carregadas —
    uma consulta a menos. */
 async function loadCvBase() {
-  if (!currentUserId) return;
+  // Sair sem marcar a flag deixaria a faixa "Seu material" presa em "Carregando…"
+  // para sempre, porque buildMaterialStrip usa _cvBaseLoaded para distinguir
+  // "ainda carregando" de "não existe currículo".
+  if (!currentUserId) { _cvBaseLoaded = true; buildMaterialStrip(); return; }
   try {
     var cvRes = await sb.from('cv_saves').select('cv_data,updated_at').eq('user_id', currentUserId).order('updated_at', { ascending:false }).limit(1);
     _cvBase = (cvRes && cvRes.data && cvRes.data[0]) || null;
@@ -5553,6 +5546,10 @@ function renderAlertJobsGrid() {
     var score = j._score || 0;
     var scoreClass = score >= 80 ? '' : 'warn';
     var analyzeUrl = buildAlertAnalyzeUrl(j, '');
+    // j.link vem do feed externo de vagas (Adzuna, Jooble, JSearch, SerpAPI).
+    // _esc escapa & < >, mas não impede href="javascript:..." — e este é o
+    // dado menos confiável do painel, porque não passa por nenhum usuário.
+    var linkSafe = safeExternalUrl(j.link);
     html += '<div class="al-job-card">' +
       '<div class="al-job-match ' + scoreClass + '">' + score + '%</div>' +
       '<div class="al-job-company">' + _esc(company) + '</div>' +
@@ -5561,7 +5558,7 @@ function renderAlertJobsGrid() {
         (j.salary ? ' · 💰 ' + _esc(j.salary) : '') + '</div>' +
       '<div class="al-job-actions">' +
         '<button class="al-jact-btn" onclick="openAnalyzerInDashboard(this.dataset.url)" data-url="' + _esc(analyzeUrl) + '">⚡ Analisar</button>' +
-        (j.link ? '<a class="al-jact-btn" href="' + _esc(j.link) + '" target="_blank" rel="noopener" style="text-decoration:none">🔗 Ver vaga</a>' : '') +
+        (linkSafe ? '<a class="al-jact-btn" href="' + _esc(linkSafe) + '" target="_blank" rel="noopener" style="text-decoration:none">🔗 Ver vaga</a>' : '') +
         '<button class="al-jact-btn al-jact-icon" title="Excluir vaga" data-link="' + _esc(j.link || '') + '" onclick="_dismissJobFromCache(this.dataset.link)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>' +
       '</div>' +
     '</div>';

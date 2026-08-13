@@ -2060,7 +2060,7 @@ function getCvContextIdentity() {
     empresa: company,
     cargo: role,
     score: Number.isFinite(score) ? Math.round(score) : null,
-    job_url: /^https?:\/\//i.test(url) ? url : '',
+    job_url: safeExternalUrl(url),
     salario: salary && !/^n[aã]o informado$/i.test(salary) ? salary : ''
   };
 }
@@ -2109,6 +2109,19 @@ function _href(url) {
   var u = String(url || '').trim().replace(/^\/+/, '');
   if (!u) return '';
   return /^https?:\/\//i.test(u) ? u : 'https://' + u;
+}
+/* _href serve para link que a PESSOA digitou no próprio currículo, onde
+   "linkedin.com/in/fulano" sem esquema é entrada normal e ganha o https://.
+   Para a URL da vaga é diferente: ela vem da análise (IA, feed de vagas ou
+   colagem), e completar um valor estranho com https:// só disfarçaria o
+   problema. Aqui vale a mesma regra do painel — ou é http(s), ou não vira link. */
+function safeExternalUrl(value) {
+  try {
+    var url = new URL(String(value || '').trim());
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : '';
+  } catch(e) {
+    return '';
+  }
 }
 function _labelUrl(url) {
   return String(url || '').trim().replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/+$/, '');
@@ -3629,7 +3642,9 @@ function s4RenderSendCard() {
     return;
   }
   var identity = getCvContextIdentity();
-  var url = identity.job_url || '';
+  // Revalidado aqui de propósito: o href fica logo abaixo, e a garantia de
+  // esquema precisa ser legível no ponto de uso, não só na origem do dado.
+  var url = safeExternalUrl(identity.job_url);
   var role = identity.cargo && identity.cargo !== 'Vaga analisada' ? identity.cargo : '';
   var company = identity.empresa && identity.empresa !== 'Empresa não informada' ? identity.empresa : '';
   var alvo = role ? '<strong>' + _esc(role) + '</strong>' + (company ? ' na <strong>' + _esc(company) + '</strong>' : '') : (company ? '<strong>' + _esc(company) + '</strong>' : 'a vaga');
