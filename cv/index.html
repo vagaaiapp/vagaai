@@ -599,6 +599,7 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 
 /* Steps 3-4 experience/edu cards */
 .csv-section-label{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--app-t3);margin-bottom:.6rem}
+.csv-help{font-size:11.5px;line-height:1.5;color:var(--app-t3);margin:-.3rem 0 .7rem}
 .csv-card-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:.6rem}
 .csv-item-card{display:flex;align-items:center;gap:.75rem;padding:.65rem .85rem;background:var(--app-card);border:1px solid var(--app-border);border-radius:10px}
 .csv-item-name{font-size:12.5px;font-weight:700;color:var(--app-t1)}
@@ -1266,9 +1267,14 @@ html.no-photo .mod-header{display:block}
           <input class="csv-input" id="sf_li" oninput="sfOnChange();s2CheckLinkedIn()" placeholder="linkedin.com/in/...">
           <div class="csv-inline-fb" id="s2LinkedInFb"></div>
         </div>
+        <div class="csv-field">
+          <label class="csv-label" for="sf_portfolio">Portfólio ou site (opcional)</label>
+          <input class="csv-input" id="sf_portfolio" oninput="sfOnChange()" placeholder="behance.net/seunome, github.com/seunome">
+        </div>
       </div>
       <!-- Foto -->
       <div class="csv-section-label" style="margin-top:1.2rem">Foto (opcional)</div>
+      <p class="csv-help">No Brasil, foto raramente é avaliada e a maioria das vagas dispensa. Use quando a empresa pedir ou quando a função realmente exigir.</p>
       <div class="csv-photo-section">
         <div class="csv-photo-circle" id="spPhotoCircle" onclick="document.getElementById('photoFileInput').click()">
           <img id="spPhotoThumb" alt="">
@@ -1337,6 +1343,21 @@ html.no-photo .mod-header{display:block}
           <button class="csv-add-btn" onclick="openEdit('skills')">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Editar habilidades
+          </button>
+        </div>
+      </div>
+      <!-- Projetos e portfólio (accordion) -->
+      <div class="csv-accordion" style="margin-top:.5rem">
+        <button class="csv-accordion-hd" onclick="s3ToggleAccordion('s3ProjBody',this)">
+          <span>Projetos e portfólio</span>
+          <svg class="csv-acc-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="csv-accordion-body" id="s3ProjBody" style="display:none">
+          <p class="csv-help">Voluntariado, freelas, trabalhos acadêmicos ou projetos pessoais. Conta muito quando a experiência formal ainda é curta.</p>
+          <div class="csv-card-list" id="s3ProjList"></div>
+          <button class="csv-add-btn" onclick="openEdit('proj')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Adicionar / editar projetos
           </button>
         </div>
       </div>
@@ -1495,6 +1516,10 @@ html.no-photo .mod-header{display:block}
       <div class="cv-sec-h">Experiência Profissional</div>
       <div id="clExps"></div>
     </div>
+    <div id="clSecProj" style="display:none">
+      <div class="cv-sec-h">Projetos e Portfólio</div>
+      <div id="clProjs"></div>
+    </div>
   </div>
 </div>
 
@@ -1521,6 +1546,10 @@ html.no-photo .mod-header{display:block}
     <div id="modSecExp" style="display:none">
       <div class="mod-sec-h">Experiência Profissional</div>
       <div id="modExps"></div>
+    </div>
+    <div id="modSecProj" style="display:none">
+      <div class="mod-sec-h">Projetos e Portfólio</div>
+      <div id="modProjs"></div>
     </div>
     <div class="mod-bottom-row" id="modBottom" style="display:none">
       <div id="modSecEdu" style="display:none">
@@ -1557,6 +1586,10 @@ html.no-photo .mod-header{display:block}
     <div id="exSecExp" style="display:none">
       <div class="exec-sec-h">Experiência Profissional</div>
       <div id="exExps"></div>
+    </div>
+    <div id="exSecProj" style="display:none">
+      <div class="exec-sec-h">Projetos e Portfólio</div>
+      <div id="exProjs"></div>
     </div>
     <div class="exec-bottom" id="exBottom" style="display:none">
       <div id="exSecEdu" style="display:none">
@@ -1608,6 +1641,10 @@ html.no-photo .mod-header{display:block}
       <div class="compact-cv-sec-h">Experiência Profissional</div>
       <div id="cpExps"></div>
     </div>
+    <div id="cpSecProj" style="display:none">
+      <div class="compact-cv-sec-h">Projetos e Portfólio</div>
+      <div id="cpProjs"></div>
+    </div>
   </div>
 </div>
 
@@ -1629,6 +1666,10 @@ html.no-photo .mod-header{display:block}
     <div id="mnSecExp" style="display:none">
       <div class="minimal-sec-h">Experiência Profissional</div>
       <div class="minimal-exp-wrap" id="mnExps"></div>
+    </div>
+    <div id="mnSecProj" style="display:none">
+      <div class="minimal-sec-h">Projetos e Portfólio</div>
+      <div class="minimal-exp-wrap" id="mnProjs"></div>
     </div>
     <div class="minimal-bottom" id="mnBottom" style="display:none">
       <div id="mnSecEdu" style="display:none">
@@ -1659,6 +1700,10 @@ html.no-photo .mod-header{display:block}
     <div id="foSecExp" style="display:none">
       <div class="focus-sec-h">Experiência Profissional</div>
       <div id="foExps"></div>
+    </div>
+    <div id="foSecProj" style="display:none">
+      <div class="focus-sec-h">Projetos e Portfólio</div>
+      <div id="foProjs"></div>
     </div>
     <div class="focus-bottom" id="foBottom" style="display:none">
       <div id="foSecEdu" style="display:none">
@@ -2047,9 +2092,56 @@ function _periodo(p) {
 }
 function _expHtml(exps) {
   return (exps||[]).map(function(e){
-    var buls=(e.bullets||[]).map(function(b){return '<li>'+_esc(b)+'</li>';}).join('');
+    var buls=(e.bullets||[]).filter(Boolean).map(function(b){return '<li>'+_esc(b)+'</li>';}).join('');
     var per=_periodo(e.periodo);
     return '<div class="exp-item"><div class="exp-row"><span class="exp-cargo">'+_esc(e.cargo||'')+'</span>'+(per?'<span class="exp-per">'+_esc(per)+'</span>':'')+'</div><div class="exp-emp">'+_esc(e.empresa||'')+'</div>'+(buls?'<ul class="exp-ul">'+buls+'</ul>':'')+' </div>';
+  }).join('');
+}
+
+/* Portfólio é digitado tanto como "behance.net/nome" quanto com o protocolo
+   inteiro. Sem protocolo o href vira caminho relativo e o link quebra no PDF;
+   com o protocolo à mostra o currículo fica poluído. Um resolve o href, o
+   outro resolve o rótulo. */
+// Também é a barreira de esquema dos links do currículo: esc() escapa aspas,
+// mas não impede um href "javascript:". Como só http(s) passa direto e todo o
+// resto ganha o prefixo https://, nenhum esquema executável sobrevive.
+function _href(url) {
+  var u = String(url || '').trim().replace(/^\/+/, '');
+  if (!u) return '';
+  return /^https?:\/\//i.test(u) ? u : 'https://' + u;
+}
+function _labelUrl(url) {
+  return String(url || '').trim().replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/+$/, '');
+}
+
+/* Situação anda colada no período em todos os templates. Sem ela,
+   "2023 — 2027" num currículo de 2026 é lido como curso já concluído. */
+function _eduPeriodo(e) {
+  return [e && e.periodo, e && e.situacao].filter(Boolean).join(' · ');
+}
+
+/* Projetos têm seção própria em todos os templates — nunca dentro de
+   "Experiência Profissional". Voluntariado ou trabalho acadêmico listado
+   junto de emprego é lido por recrutador como histórico de emprego, e o
+   currículo passa a afirmar algo que a pessoa não disse.
+   Reaproveita as classes de experiência: mesma tipografia, zero CSS novo. */
+function _projHtml(projetos) {
+  return (projetos||[]).map(function(p){
+    var buls=(p.bullets||[]).filter(Boolean).map(function(b){return '<li>'+_esc(b)+'</li>';}).join('');
+    var per=_periodo(p.periodo);
+    var sub=[p.contexto, p.link].filter(Boolean).map(_esc).join(' · ');
+    return '<div class="exp-item"><div class="exp-row"><span class="exp-cargo">'+_esc(p.nome||'')+'</span>'+(per?'<span class="exp-per">'+_esc(per)+'</span>':'')+'</div>'+(sub?'<div class="exp-emp">'+sub+'</div>':'')+(buls?'<ul class="exp-ul">'+buls+'</ul>':'')+' </div>';
+  }).join('');
+}
+
+// O minimalista desenha a própria linha do tempo (spine + dot) em vez de usar
+// .exp-item, então precisa da versão dele.
+function _mnProjHtml(projetos) {
+  return (projetos||[]).map(function(p, i, arr){
+    var buls=(p.bullets||[]).filter(Boolean).map(function(b){return '<li>'+_esc(b)+'</li>';}).join('');
+    var per=_periodo(p.periodo);
+    var sub=[p.contexto, p.link].filter(Boolean).map(_esc).join(' · ');
+    return '<div class="minimal-exp-item"><div class="minimal-exp-spine"><div class="minimal-exp-dot"></div>'+(i<arr.length-1?'<div class="minimal-exp-line"></div>':'')+'</div><div class="minimal-exp-body"><div class="minimal-exp-row"><span class="minimal-exp-cargo">'+_esc(p.nome||'')+'</span>'+(per?'<span class="minimal-exp-per">'+_esc(per)+'</span>':'')+'</div>'+(sub?'<div class="minimal-exp-emp">'+sub+'</div>':'')+(buls?'<ul class="minimal-exp-ul">'+buls+'</ul>':'')+'</div></div>';
   }).join('');
 }
 
@@ -2223,10 +2315,17 @@ function getContextKeywords() {
   };
 }
 
+// Projetos contam junto com experiência: para quem ainda não tem emprego
+// formal, o resultado numérico está justamente ali, e o indicador ficaria
+// vermelho para sempre se olhasse só experiencias.
 function hasMetricText() {
-  var exps = (_cvData && Array.isArray(_cvData.experiencias)) ? _cvData.experiencias : [];
-  return exps.some(function(e) {
-    return (e.bullets || []).some(function(b) { return /\d|%|R\$|milh|k\b/i.test(String(b || '')); });
+  var listas = ['experiencias', 'projetos'].map(function(campo) {
+    return (_cvData && Array.isArray(_cvData[campo])) ? _cvData[campo] : [];
+  });
+  return listas.some(function(itens) {
+    return itens.some(function(e) {
+      return (e.bullets || []).some(function(b) { return /\d|%|R\$|milh|k\b/i.test(String(b || '')); });
+    });
   });
 }
 
@@ -2344,17 +2443,27 @@ function downloadWordDoc() {
   if (c.telefone) contactParts.push(c.telefone);
   if (c.cidade)   contactParts.push(c.cidade);
   if (c.linkedin) contactParts.push(c.linkedin);
+  if (c.portfolio) contactParts.push(c.portfolio);
   var expHtml = (d.experiencias || []).map(function(e) {
-    var bullets = (e.bullets || []).map(function(b){ return '<li>' + _esc(b) + '</li>'; }).join('');
+    var bullets = (e.bullets || []).filter(Boolean).map(function(b){ return '<li>' + _esc(b) + '</li>'; }).join('');
     return '<p style="margin:0 0 2pt"><strong>' + _esc(e.cargo||'') + '</strong>' +
       (e.empresa ? ' &middot; ' + _esc(e.empresa) : '') +
       (e.periodo ? ' <span style="color:#666;">' + _esc(e.periodo) + '</span>' : '') + '</p>' +
       (bullets ? '<ul style="margin:2pt 0 8pt 18pt;padding:0">' + bullets + '</ul>' : '<p style="margin:0 0 8pt"></p>');
   }).join('');
   var eduHtml = (d.formacao || []).map(function(e) {
+    var detalhes = _esc(_eduPeriodo(e)).replace(' · ', ' &middot; ');
     return '<p style="margin:0 0 6pt"><strong>' + _esc(e.curso||'') + '</strong>' +
       (e.instituicao ? '<br><span style="color:#666;">' + _esc(e.instituicao) + '</span>' : '') +
-      (e.periodo ? ' &middot; ' + _esc(e.periodo) : '') + '</p>';
+      (detalhes ? ' &middot; ' + detalhes : '') + '</p>';
+  }).join('');
+  var projHtml = (d.projetos || []).map(function(e) {
+    var bullets = (e.bullets || []).filter(Boolean).map(function(b){ return '<li>' + _esc(b) + '</li>'; }).join('');
+    return '<p style="margin:0 0 2pt"><strong>' + _esc(e.nome||'') + '</strong>' +
+      (e.contexto ? ' &middot; ' + _esc(e.contexto) : '') +
+      (e.periodo ? ' <span style="color:#666;">' + _esc(e.periodo) + '</span>' : '') + '</p>' +
+      (e.link ? '<p style="margin:0 0 2pt;color:#666;font-size:9.5pt">' + _esc(e.link) + '</p>' : '') +
+      (bullets ? '<ul style="margin:2pt 0 8pt 18pt;padding:0">' + bullets + '</ul>' : '<p style="margin:0 0 8pt"></p>');
   }).join('');
   var cursosHtml = (d.cursos || []).map(function(e) {
     return '<p style="margin:0 0 6pt"><strong>' + _esc(e.nome||'') + '</strong>' +
@@ -2366,14 +2475,17 @@ function downloadWordDoc() {
   var sec = function(title, content) { return content ? '<h2 style="font-size:9.5pt;text-transform:uppercase;letter-spacing:.1em;color:#555;margin:14pt 0 4pt;border-bottom:1pt solid #ccc;padding-bottom:2pt">' + title + '</h2>' + content : ''; };
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#111;margin:2cm;line-height:1.4}ul{margin:2pt 0 8pt 18pt}li{margin:1pt 0}p{margin:0 0 4pt}</style></head><body>' +
     '<h1 style="font-size:18pt;margin:0 0 2pt">' + _esc(nome) + '</h1>' +
-    (d.cargo_desejado ? '<p style="color:#555;font-size:10pt">' + _esc(d.cargo_desejado) + '</p>' : '') +
+    (d.titulo_profissional ? '<p style="color:#555;font-size:10pt">' + _esc(d.titulo_profissional) + '</p>' : '') +
     (contactParts.length ? '<p style="font-size:9.5pt;color:#666;margin-top:4pt">' + contactParts.join(' | ') + '</p>' : '') +
+    // Ordem recomendada para currículo no Brasil: resumo → experiências →
+    // formação → competências → cursos e idiomas → projetos.
     sec('Resumo Profissional', d.resumo_profissional ? '<p>' + _esc(d.resumo_profissional) + '</p>' : '') +
     sec('Experiência Profissional', expHtml) +
     sec('Formação', eduHtml) +
+    sec('Habilidades', skills ? '<p>' + skills + '</p>' : '') +
     sec('Cursos e Especializações', cursosHtml) +
     sec('Idiomas', idiomasLine ? '<p>' + idiomasLine + '</p>' : '') +
-    sec('Habilidades', skills ? '<p>' + skills + '</p>' : '') +
+    sec('Projetos e Portfólio', projHtml) +
     '</body></html>';
   var blob = new Blob([html], { type: 'application/msword' });
   var url = URL.createObjectURL(blob);
@@ -2719,6 +2831,9 @@ function applySmartFix(type) {
   try { cv = JSON.parse(raw); } catch(e) { document.getElementById('noDataPage').style.display = 'flex'; document.getElementById('pageClassic').classList.remove('active'); return; }
 
   if (cv.nome) document.title = cv.nome + ' — Currículo';
+  // Currículos salvos antes desta regra também passam a sair cronológicos:
+  // ordena na leitura, sem migration.
+  if (window.VagaAIOnboarding) window.VagaAIOnboarding.ordenarCv(cv);
   _cvData = cv;
   // Captura o flag de origem-análise AGORA (síncrono, antes de initOptimizedMode
   // consumi-lo) e agenda a restauração do passo de forma independente: assim ela
@@ -2746,7 +2861,8 @@ function applySmartFix(type) {
   var cItems = [];
   if (c.email)    cItems.push('<li><span class="sb-ic"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span><a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></li>');
   if (c.telefone) cItems.push('<li><span class="sb-ic"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.4 2 2 0 0 1 3.6 2.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>' + esc(c.telefone) + '</li>');
-  if (c.linkedin) { var lt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); cItems.push('<li><span class="sb-ic"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span><a href="' + esc(c.linkedin) + '" target="_blank">' + esc(lt) + '</a></li>'); }
+  if (c.linkedin) { var lt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); cItems.push('<li><span class="sb-ic"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span><a href="' + esc(_href(c.linkedin)) + '" target="_blank">' + esc(lt) + '</a></li>'); }
+  if (c.portfolio) cItems.push('<li><span class="sb-ic"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span><a href="' + esc(_href(c.portfolio)) + '" target="_blank">' + esc(_labelUrl(c.portfolio)) + '</a></li>');
   if (c.cidade)   cItems.push('<li><span class="sb-ic"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>' + esc(c.cidade) + '</li>');
   document.getElementById('clContatos').innerHTML = cItems.join('');
 
@@ -2757,11 +2873,12 @@ function applySmartFix(type) {
   if (cv.formacao && cv.formacao.length) {
     show('clSecEdu');
     document.getElementById('clEdu').innerHTML = cv.formacao.map(function(e){
-      return '<div><div class="sb-edu-curso">' + esc(e.curso||'') + '</div><div class="sb-edu-inst">' + esc(e.instituicao||'') + '</div>' + (e.periodo ? '<div class="sb-edu-per">' + esc(e.periodo) + '</div>' : '') + '</div>';
+      return '<div><div class="sb-edu-curso">' + esc(e.curso||'') + '</div><div class="sb-edu-inst">' + esc(e.instituicao||'') + '</div>' + (_eduPeriodo(e) ? '<div class="sb-edu-per">' + esc(_eduPeriodo(e)) + '</div>' : '') + '</div>';
     }).join('');
   }
   if (cv.resumo_profissional) { show('clSecResumo'); txt('clResumo', cv.resumo_profissional); }
   if (cv.experiencias && cv.experiencias.length) { show('clSecExp'); document.getElementById('clExps').innerHTML = expHtml(cv.experiencias); }
+  if (cv.projetos && cv.projetos.length) { show('clSecProj'); document.getElementById('clProjs').innerHTML = _projHtml(cv.projetos); }
 
   /* ── Contact snippet builders ──────────────────────────── */
   var SVG_EMAIL = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>';
@@ -2775,18 +2892,20 @@ function applySmartFix(type) {
   var mContacts = [];
   if (c.email)    mContacts.push('<div class="mod-contact-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> <a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></div>');
   if (c.telefone) mContacts.push('<div class="mod-contact-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.4 2 2 0 0 1 3.6 2.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> ' + esc(c.telefone) + '</div>');
-  if (c.linkedin) { var mlt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); mContacts.push('<div class="mod-contact-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> <a href="' + esc(c.linkedin) + '" target="_blank">' + esc(mlt) + '</a></div>'); }
+  if (c.linkedin) { var mlt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); mContacts.push('<div class="mod-contact-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> <a href="' + esc(_href(c.linkedin)) + '" target="_blank">' + esc(mlt) + '</a></div>'); }
+  if (c.portfolio) mContacts.push('<div class="mod-contact-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> <a href="' + esc(_href(c.portfolio)) + '" target="_blank">' + esc(_labelUrl(c.portfolio)) + '</a></div>');
   if (c.cidade)   mContacts.push('<div class="mod-contact-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ' + esc(c.cidade) + '</div>');
   document.getElementById('modContatos').innerHTML = mContacts.join('');
 
   if (cv.resumo_profissional) { show('modSecResumo'); txt('modResumo', cv.resumo_profissional); }
   if (cv.experiencias && cv.experiencias.length) { show('modSecExp'); document.getElementById('modExps').innerHTML = expHtml(cv.experiencias); }
+  if (cv.projetos && cv.projetos.length) { show('modSecProj'); document.getElementById('modProjs').innerHTML = _projHtml(cv.projetos); }
 
   var hasBottom = false;
   if (cv.formacao && cv.formacao.length) {
     show('modSecEdu'); hasBottom = true;
     document.getElementById('modEdu').innerHTML = cv.formacao.map(function(e){
-      return '<div class="mod-edu-item"><div class="mod-edu-curso">' + esc(e.curso||'') + '</div><div class="mod-edu-inst">' + esc(e.instituicao||'') + '</div>' + (e.periodo ? '<div class="mod-edu-per">' + esc(e.periodo) + '</div>' : '') + '</div>';
+      return '<div class="mod-edu-item"><div class="mod-edu-curso">' + esc(e.curso||'') + '</div><div class="mod-edu-inst">' + esc(e.instituicao||'') + '</div>' + (_eduPeriodo(e) ? '<div class="mod-edu-per">' + esc(_eduPeriodo(e)) + '</div>' : '') + '</div>';
     }).join('');
   }
   if (cv.habilidades && cv.habilidades.length) {
@@ -2800,13 +2919,15 @@ function applySmartFix(type) {
   var exCI = [];
   if (c.email)    exCI.push('<div class="exec-ci">' + SVG_EMAIL + ' <a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></div>');
   if (c.telefone) exCI.push('<div class="exec-ci">' + SVG_PHONE + ' ' + esc(c.telefone) + '</div>');
-  if (c.linkedin) { var exlt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); exCI.push('<div class="exec-ci">' + SVG_LINK + ' <a href="' + esc(c.linkedin) + '" target="_blank">' + esc(exlt) + '</a></div>'); }
+  if (c.linkedin) { var exlt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); exCI.push('<div class="exec-ci">' + SVG_LINK + ' <a href="' + esc(_href(c.linkedin)) + '" target="_blank">' + esc(exlt) + '</a></div>'); }
+  if (c.portfolio) exCI.push('<div class="exec-ci">' + SVG_LINK + ' <a href="' + esc(_href(c.portfolio)) + '" target="_blank">' + esc(_labelUrl(c.portfolio)) + '</a></div>');
   if (c.cidade)   exCI.push('<div class="exec-ci">' + SVG_LOC + ' ' + esc(c.cidade) + '</div>');
   document.getElementById('exContatos').innerHTML = exCI.join('');
   if (cv.resumo_profissional) { show('exSecResumo'); txt('exResumo', cv.resumo_profissional); }
   if (cv.experiencias && cv.experiencias.length) { show('exSecExp'); document.getElementById('exExps').innerHTML = expHtml(cv.experiencias); }
+  if (cv.projetos && cv.projetos.length) { show('exSecProj'); document.getElementById('exProjs').innerHTML = _projHtml(cv.projetos); }
   var exHasBottom = false;
-  if (cv.formacao && cv.formacao.length) { show('exSecEdu'); exHasBottom = true; document.getElementById('exEdu').innerHTML = cv.formacao.map(function(e){ return '<div class="exec-edu-item"><div class="exec-edu-curso">' + esc(e.curso||'') + '</div><div class="exec-edu-inst">' + esc(e.instituicao||'') + '</div>' + (e.periodo ? '<div class="exec-edu-per">' + esc(e.periodo) + '</div>' : '') + '</div>'; }).join(''); }
+  if (cv.formacao && cv.formacao.length) { show('exSecEdu'); exHasBottom = true; document.getElementById('exEdu').innerHTML = cv.formacao.map(function(e){ return '<div class="exec-edu-item"><div class="exec-edu-curso">' + esc(e.curso||'') + '</div><div class="exec-edu-inst">' + esc(e.instituicao||'') + '</div>' + (_eduPeriodo(e) ? '<div class="exec-edu-per">' + esc(_eduPeriodo(e)) + '</div>' : '') + '</div>'; }).join(''); }
   if (cv.habilidades && cv.habilidades.length) { show('exSecSkills'); exHasBottom = true; document.getElementById('exSkills').innerHTML = cv.habilidades.slice(0,20).map(function(s){ return '<span class="exec-tag">' + esc(s) + '</span>'; }).join(''); }
   if (exHasBottom) show('exBottom', 'grid');
 
@@ -2815,34 +2936,38 @@ function applySmartFix(type) {
   var cpCI = [];
   if (c.email)    cpCI.push('<li>' + SVG_EMAIL + '<a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></li>');
   if (c.telefone) cpCI.push('<li>' + SVG_PHONE + esc(c.telefone) + '</li>');
-  if (c.linkedin) { var cplt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); cpCI.push('<li>' + SVG_LINK + '<a href="' + esc(c.linkedin) + '" target="_blank">' + esc(cplt) + '</a></li>'); }
+  if (c.linkedin) { var cplt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); cpCI.push('<li>' + SVG_LINK + '<a href="' + esc(_href(c.linkedin)) + '" target="_blank">' + esc(cplt) + '</a></li>'); }
+  if (c.portfolio) cpCI.push('<li>' + SVG_LINK + '<a href="' + esc(_href(c.portfolio)) + '" target="_blank">' + esc(_labelUrl(c.portfolio)) + '</a></li>');
   if (c.cidade)   cpCI.push('<li>' + SVG_LOC + esc(c.cidade) + '</li>');
   document.getElementById('cpContatos').innerHTML = cpCI.join('');
   if (cv.habilidades && cv.habilidades.length) { show('cpSecSkills'); document.getElementById('cpSkills').innerHTML = cv.habilidades.slice(0,18).map(function(s){ return '<span class="compact-tag">' + esc(s) + '</span>'; }).join(''); }
-  if (cv.formacao && cv.formacao.length) { show('cpSecEdu'); document.getElementById('cpEdu').innerHTML = cv.formacao.map(function(e){ return '<div style="margin-bottom:.55rem"><div class="compact-edu-curso">' + esc(e.curso||'') + '</div><div class="compact-edu-inst">' + esc(e.instituicao||'') + '</div>' + (e.periodo ? '<div class="compact-edu-per">' + esc(e.periodo) + '</div>' : '') + '</div>'; }).join(''); }
+  if (cv.formacao && cv.formacao.length) { show('cpSecEdu'); document.getElementById('cpEdu').innerHTML = cv.formacao.map(function(e){ return '<div style="margin-bottom:.55rem"><div class="compact-edu-curso">' + esc(e.curso||'') + '</div><div class="compact-edu-inst">' + esc(e.instituicao||'') + '</div>' + (_eduPeriodo(e) ? '<div class="compact-edu-per">' + esc(_eduPeriodo(e)) + '</div>' : '') + '</div>'; }).join(''); }
   if (cv.resumo_profissional) { show('cpSecResumo'); txt('cpResumo', cv.resumo_profissional); }
   if (cv.experiencias && cv.experiencias.length) { show('cpSecExp'); document.getElementById('cpExps').innerHTML = expHtml(cv.experiencias); }
+  if (cv.projetos && cv.projetos.length) { show('cpSecProj'); document.getElementById('cpProjs').innerHTML = _projHtml(cv.projetos); }
 
   /* ── MINIMALISTA template ───────────────────────────────── */
   txt('mnNome', cv.nome); txt('mnRole', cv.titulo_profissional);
   var mnCI = [];
   if (c.email)    mnCI.push('<div class="minimal-ci">' + SVG_EMAIL + ' <a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></div>');
   if (c.telefone) mnCI.push('<div class="minimal-ci">' + SVG_PHONE + ' ' + esc(c.telefone) + '</div>');
-  if (c.linkedin) { var mnlt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); mnCI.push('<div class="minimal-ci">' + SVG_LINK + ' <a href="' + esc(c.linkedin) + '" target="_blank">' + esc(mnlt) + '</a></div>'); }
+  if (c.linkedin) { var mnlt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); mnCI.push('<div class="minimal-ci">' + SVG_LINK + ' <a href="' + esc(_href(c.linkedin)) + '" target="_blank">' + esc(mnlt) + '</a></div>'); }
+  if (c.portfolio) mnCI.push('<div class="minimal-ci">' + SVG_LINK + ' <a href="' + esc(_href(c.portfolio)) + '" target="_blank">' + esc(_labelUrl(c.portfolio)) + '</a></div>');
   if (c.cidade)   mnCI.push('<div class="minimal-ci">' + SVG_LOC + ' ' + esc(c.cidade) + '</div>');
   document.getElementById('mnContatos').innerHTML = mnCI.join('');
   if (cv.resumo_profissional) { show('mnSecResumo'); txt('mnResumo', cv.resumo_profissional); }
   if (cv.experiencias && cv.experiencias.length) {
     show('mnSecExp');
     var mnExpHtml = (cv.experiencias || []).map(function(e, i, arr) {
-      var buls = (e.bullets || []).map(function(b){ return '<li>' + esc(b) + '</li>'; }).join('');
+      var buls = (e.bullets || []).filter(Boolean).map(function(b){ return '<li>' + esc(b) + '</li>'; }).join('');
       var mnP=_periodo(e.periodo);
       return '<div class="minimal-exp-item"><div class="minimal-exp-spine"><div class="minimal-exp-dot"></div>' + (i < arr.length-1 ? '<div class="minimal-exp-line"></div>' : '') + '</div><div class="minimal-exp-body"><div class="minimal-exp-row"><span class="minimal-exp-cargo">' + esc(e.cargo||'') + '</span>' + (mnP?'<span class="minimal-exp-per">'+esc(mnP)+'</span>':'') + '</div><div class="minimal-exp-emp">' + esc(e.empresa||'') + '</div>' + (buls ? '<ul class="minimal-exp-ul">' + buls + '</ul>' : '') + '</div></div>';
     }).join('');
     document.getElementById('mnExps').innerHTML = mnExpHtml;
   }
+  if (cv.projetos && cv.projetos.length) { show('mnSecProj'); document.getElementById('mnProjs').innerHTML = _mnProjHtml(cv.projetos); }
   var mnHasBottom = false;
-  if (cv.formacao && cv.formacao.length) { show('mnSecEdu'); mnHasBottom = true; document.getElementById('mnEdu').innerHTML = cv.formacao.map(function(e){ return '<div class="minimal-edu-item"><div class="minimal-edu-curso">' + esc(e.curso||'') + '</div><div class="minimal-edu-inst">' + esc(e.instituicao||'') + '</div>' + (e.periodo ? '<div class="minimal-edu-per">' + esc(e.periodo) + '</div>' : '') + '</div>'; }).join(''); }
+  if (cv.formacao && cv.formacao.length) { show('mnSecEdu'); mnHasBottom = true; document.getElementById('mnEdu').innerHTML = cv.formacao.map(function(e){ return '<div class="minimal-edu-item"><div class="minimal-edu-curso">' + esc(e.curso||'') + '</div><div class="minimal-edu-inst">' + esc(e.instituicao||'') + '</div>' + (_eduPeriodo(e) ? '<div class="minimal-edu-per">' + esc(_eduPeriodo(e)) + '</div>' : '') + '</div>'; }).join(''); }
   if (cv.habilidades && cv.habilidades.length) { show('mnSecSkills'); mnHasBottom = true; document.getElementById('mnSkills').innerHTML = cv.habilidades.slice(0,20).map(function(s){ return '<span class="minimal-tag">' + esc(s) + '</span>'; }).join(''); }
   if (mnHasBottom) show('mnBottom', 'grid');
 
@@ -2851,13 +2976,15 @@ function applySmartFix(type) {
   var foCI2 = [];
   if (c.email)    foCI2.push('<div class="focus-ci">' + SVG_EMAIL + ' <a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></div>');
   if (c.telefone) foCI2.push('<div class="focus-ci">' + SVG_PHONE + ' ' + esc(c.telefone) + '</div>');
-  if (c.linkedin) { var folt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); foCI2.push('<div class="focus-ci">' + SVG_LINK + ' <a href="' + esc(c.linkedin) + '" target="_blank">' + esc(folt) + '</a></div>'); }
+  if (c.linkedin) { var folt = c.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//i,'linkedin.com/'); foCI2.push('<div class="focus-ci">' + SVG_LINK + ' <a href="' + esc(_href(c.linkedin)) + '" target="_blank">' + esc(folt) + '</a></div>'); }
+  if (c.portfolio) foCI2.push('<div class="focus-ci">' + SVG_LINK + ' <a href="' + esc(_href(c.portfolio)) + '" target="_blank">' + esc(_labelUrl(c.portfolio)) + '</a></div>');
   if (c.cidade)   foCI2.push('<div class="focus-ci">' + SVG_LOC + ' ' + esc(c.cidade) + '</div>');
   document.getElementById('foContatos').innerHTML = foCI2.join('');
   if (cv.resumo_profissional) { show('foSecResumo'); txt('foResumo', cv.resumo_profissional); }
   if (cv.experiencias && cv.experiencias.length) { show('foSecExp'); document.getElementById('foExps').innerHTML = expHtml(cv.experiencias); }
+  if (cv.projetos && cv.projetos.length) { show('foSecProj'); document.getElementById('foProjs').innerHTML = _projHtml(cv.projetos); }
   var foHasBottom = false;
-  if (cv.formacao && cv.formacao.length) { show('foSecEdu'); foHasBottom = true; document.getElementById('foEdu').innerHTML = cv.formacao.map(function(e){ return '<div class="focus-edu-item"><div class="focus-edu-curso">' + esc(e.curso||'') + '</div><div class="focus-edu-inst">' + esc(e.instituicao||'') + '</div>' + (e.periodo ? '<div class="focus-edu-per">' + esc(e.periodo) + '</div>' : '') + '</div>'; }).join(''); }
+  if (cv.formacao && cv.formacao.length) { show('foSecEdu'); foHasBottom = true; document.getElementById('foEdu').innerHTML = cv.formacao.map(function(e){ return '<div class="focus-edu-item"><div class="focus-edu-curso">' + esc(e.curso||'') + '</div><div class="focus-edu-inst">' + esc(e.instituicao||'') + '</div>' + (_eduPeriodo(e) ? '<div class="focus-edu-per">' + esc(_eduPeriodo(e)) + '</div>' : '') + '</div>'; }).join(''); }
   if (cv.habilidades && cv.habilidades.length) { show('foSecSkills'); foHasBottom = true; document.getElementById('foSkills').innerHTML = cv.habilidades.slice(0,20).map(function(s){ return '<span class="focus-tag">' + esc(s) + '</span>'; }).join(''); }
   if (foHasBottom) show('foBottom', 'grid');
 
@@ -3225,6 +3352,9 @@ function pushHistory() {
   if (_cvHistory.length > 30) _cvHistory.shift();
 }
 function applyFullCvData(data) {
+  // Cronológico inverso garantido no dado, não só na tela: o que o editor
+  // mostra é exatamente o que sai no PDF e no Word.
+  if (window.VagaAIOnboarding) window.VagaAIOnboarding.ordenarCv(data);
   _cvData = data;
   reRenderNome(data.nome);
   reRenderRole(data.titulo_profissional);
@@ -3233,6 +3363,7 @@ function applyFullCvData(data) {
   reRenderSkills(mergedSkillsTags(data));
   reRenderExp(data.experiencias || []);
   reRenderEdu(data.formacao || []);
+  reRenderProj(data.projetos || []);
   renderCvContext(_cvContext);
   setTimeout(addPageBreakIndicator, 200);
   setTimeout(updateCvQualityDashboard, 260);
@@ -3811,6 +3942,7 @@ function syncStep2Form() {
   set('sf_tel',    c.telefone);
   set('sf_cidade', c.cidade);
   set('sf_li',     c.linkedin);
+  set('sf_portfolio', c.portfolio);
   var cnt = document.getElementById('sf_resumo_count');
   if (cnt) cnt.textContent = String(_cvData.resumo_profissional || '').length + ' caracteres';
 }
@@ -3826,6 +3958,7 @@ function sfOnChange() {
   _cvData.contato.telefone     = g('sf_tel');
   _cvData.contato.cidade       = g('sf_cidade');
   _cvData.contato.linkedin     = g('sf_li');
+  _cvData.contato.portfolio    = g('sf_portfolio');
 
   reRenderNome(_cvData.nome);
   reRenderRole(_cvData.titulo_profissional);
@@ -3873,9 +4006,19 @@ function renderStep3() {
       eduEl.innerHTML = '<div class="csv-metric-warn">Nenhuma formação ainda. Clique em "Adicionar" abaixo.</div>';
     } else {
       eduEl.innerHTML = edu.map(function(e) {
-        return '<div class="csv-item-card"><div style="flex:1;min-width:0"><div class="csv-item-name">' + _esc(e.curso || '—') + '</div><div class="csv-item-sub">' + _esc(e.instituicao || '') + '</div></div></div>';
+        return '<div class="csv-item-card"><div style="flex:1;min-width:0"><div class="csv-item-name">' + _esc(e.curso || '—') + '</div><div class="csv-item-sub">' + _esc([e.instituicao, e.situacao].filter(Boolean).join(' · ')) + '</div></div></div>';
       }).join('');
     }
+  }
+
+  var projEl = document.getElementById('s3ProjList');
+  if (projEl) {
+    var proj = (_cvData && Array.isArray(_cvData.projetos)) ? _cvData.projetos : [];
+    projEl.innerHTML = proj.length
+      ? proj.map(function(p) {
+          return '<div class="csv-item-card"><div style="flex:1;min-width:0"><div class="csv-item-name">' + _esc(p.nome || '—') + '</div><div class="csv-item-sub">' + _esc([p.contexto, p.periodo].filter(Boolean).join(' · ')) + '</div></div></div>';
+        }).join('')
+      : '<div class="csv-metric-warn">Nenhum projeto ainda. Opcional, mas conta muito se a experiência formal for curta.</div>';
   }
 
   var sklEl = document.getElementById('s3SkillsList');
@@ -3942,41 +4085,47 @@ function reRenderContact(c) {
   var cl=[];
   if(c.email) cl.push('<li><span class="sb-ic">'+SVG_E+'</span><a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></li>');
   if(c.telefone) cl.push('<li><span class="sb-ic">'+SVG_P+'</span>'+_esc(c.telefone)+'</li>');
-  if(c.linkedin) cl.push('<li><span class="sb-ic">'+SVG_L+'</span><a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></li>');
+  if(c.linkedin) cl.push('<li><span class="sb-ic">'+SVG_L+'</span><a href="'+_esc(_href(c.linkedin))+'" target="_blank">'+_esc(lt)+'</a></li>');
+  if(c.portfolio) cl.push('<li><span class="sb-ic">'+SVG_L+'</span><a href="'+_esc(_href(c.portfolio))+'" target="_blank">'+_esc(_labelUrl(c.portfolio))+'</a></li>');
   if(c.cidade) cl.push('<li><span class="sb-ic">'+SVG_M+'</span>'+_esc(c.cidade)+'</li>');
   var clC=document.getElementById('clContatos'); if(clC) clC.innerHTML=cl.join('');
   // Modern / Exec contacts
   var mci=[];
   if(c.email) mci.push('<div class="mod-contact-item">'+SVG_E+' <a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></div>');
   if(c.telefone) mci.push('<div class="mod-contact-item">'+SVG_P+' '+_esc(c.telefone)+'</div>');
-  if(c.linkedin) mci.push('<div class="mod-contact-item">'+SVG_L+' <a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></div>');
+  if(c.linkedin) mci.push('<div class="mod-contact-item">'+SVG_L+' <a href="'+_esc(_href(c.linkedin))+'" target="_blank">'+_esc(lt)+'</a></div>');
+  if(c.portfolio) mci.push('<div class="mod-contact-item">'+SVG_L+' <a href="'+_esc(_href(c.portfolio))+'" target="_blank">'+_esc(_labelUrl(c.portfolio))+'</a></div>');
   if(c.cidade) mci.push('<div class="mod-contact-item">'+SVG_M+' '+_esc(c.cidade)+'</div>');
   var modC=document.getElementById('modContatos'); if(modC) modC.innerHTML=mci.join('');
   var exCI=[];
   if(c.email) exCI.push('<div class="exec-ci">'+SVG_E+' <a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></div>');
   if(c.telefone) exCI.push('<div class="exec-ci">'+SVG_P+' '+_esc(c.telefone)+'</div>');
-  if(c.linkedin) exCI.push('<div class="exec-ci">'+SVG_L+' <a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></div>');
+  if(c.linkedin) exCI.push('<div class="exec-ci">'+SVG_L+' <a href="'+_esc(_href(c.linkedin))+'" target="_blank">'+_esc(lt)+'</a></div>');
+  if(c.portfolio) exCI.push('<div class="exec-ci">'+SVG_L+' <a href="'+_esc(_href(c.portfolio))+'" target="_blank">'+_esc(_labelUrl(c.portfolio))+'</a></div>');
   if(c.cidade) exCI.push('<div class="exec-ci">'+SVG_M+' '+_esc(c.cidade)+'</div>');
   var exC=document.getElementById('exContatos'); if(exC) exC.innerHTML=exCI.join('');
   // Compact sidebar
   var cpCI=[];
   if(c.email) cpCI.push('<li>'+SVG_E+'<a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></li>');
   if(c.telefone) cpCI.push('<li>'+SVG_P+_esc(c.telefone)+'</li>');
-  if(c.linkedin) cpCI.push('<li>'+SVG_L+'<a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></li>');
+  if(c.linkedin) cpCI.push('<li>'+SVG_L+'<a href="'+_esc(_href(c.linkedin))+'" target="_blank">'+_esc(lt)+'</a></li>');
+  if(c.portfolio) cpCI.push('<li>'+SVG_L+'<a href="'+_esc(_href(c.portfolio))+'" target="_blank">'+_esc(_labelUrl(c.portfolio))+'</a></li>');
   if(c.cidade) cpCI.push('<li>'+SVG_M+_esc(c.cidade)+'</li>');
   var cpC=document.getElementById('cpContatos'); if(cpC) cpC.innerHTML=cpCI.join('');
   // Minimal
   var mnCI=[];
   if(c.email) mnCI.push('<div class="minimal-ci">'+SVG_E+' <a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></div>');
   if(c.telefone) mnCI.push('<div class="minimal-ci">'+SVG_P+' '+_esc(c.telefone)+'</div>');
-  if(c.linkedin) mnCI.push('<div class="minimal-ci">'+SVG_L+' <a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></div>');
+  if(c.linkedin) mnCI.push('<div class="minimal-ci">'+SVG_L+' <a href="'+_esc(_href(c.linkedin))+'" target="_blank">'+_esc(lt)+'</a></div>');
+  if(c.portfolio) mnCI.push('<div class="minimal-ci">'+SVG_L+' <a href="'+_esc(_href(c.portfolio))+'" target="_blank">'+_esc(_labelUrl(c.portfolio))+'</a></div>');
   if(c.cidade) mnCI.push('<div class="minimal-ci">'+SVG_M+' '+_esc(c.cidade)+'</div>');
   var mnC=document.getElementById('mnContatos'); if(mnC) mnC.innerHTML=mnCI.join('');
   // Focado
   var foCI=[];
   if(c.email) foCI.push('<div class="focus-ci">'+SVG_E+' <a href="mailto:'+_esc(c.email)+'">'+_esc(c.email)+'</a></div>');
   if(c.telefone) foCI.push('<div class="focus-ci">'+SVG_P+' '+_esc(c.telefone)+'</div>');
-  if(c.linkedin) foCI.push('<div class="focus-ci">'+SVG_L+' <a href="'+_esc(c.linkedin)+'" target="_blank">'+_esc(lt)+'</a></div>');
+  if(c.linkedin) foCI.push('<div class="focus-ci">'+SVG_L+' <a href="'+_esc(_href(c.linkedin))+'" target="_blank">'+_esc(lt)+'</a></div>');
+  if(c.portfolio) foCI.push('<div class="focus-ci">'+SVG_L+' <a href="'+_esc(_href(c.portfolio))+'" target="_blank">'+_esc(_labelUrl(c.portfolio))+'</a></div>');
   if(c.cidade) foCI.push('<div class="focus-ci">'+SVG_M+' '+_esc(c.cidade)+'</div>');
   var foC=document.getElementById('foContatos'); if(foC) foC.innerHTML=foCI.join('');
 }
@@ -4017,7 +4166,7 @@ function reRenderExp(exps) {
   var mnE=document.getElementById('mnExps');
   if(mnE) {
     mnE.innerHTML=(exps||[]).map(function(e,i,arr){
-      var buls=(e.bullets||[]).map(function(b){return '<li>'+_esc(b)+'</li>';}).join('');
+      var buls=(e.bullets||[]).filter(Boolean).map(function(b){return '<li>'+_esc(b)+'</li>';}).join('');
       var mnPer=_periodo(e.periodo);
       return '<div class="minimal-exp-item"><div class="minimal-exp-spine"><div class="minimal-exp-dot"></div>'+(i<arr.length-1?'<div class="minimal-exp-line"></div>':'')+'</div><div class="minimal-exp-body"><div class="minimal-exp-row"><span class="minimal-exp-cargo">'+_esc(e.cargo||'')+'</span>'+(mnPer?'<span class="minimal-exp-per">'+_esc(mnPer)+'</span>':'')+'</div><div class="minimal-exp-emp">'+_esc(e.empresa||'')+'</div>'+(buls?'<ul class="minimal-exp-ul">'+buls+'</ul>':'')+'</div></div>';
     }).join('');
@@ -4027,13 +4176,24 @@ function reRenderExp(exps) {
   });
 }
 
+function reRenderProj(projetos) {
+  projetos = projetos || [];
+  ['clProjs','modProjs','exProjs','cpProjs','foProjs'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.innerHTML=_projHtml(projetos);
+  });
+  var mnP=document.getElementById('mnProjs'); if(mnP) mnP.innerHTML=_mnProjHtml(projetos);
+  ['clSecProj','modSecProj','exSecProj','cpSecProj','mnSecProj','foSecProj'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.style.display=projetos.length?'block':'none';
+  });
+}
+
 function reRenderEdu(edu) {
-  var clE=document.getElementById('clEdu'); if(clE) clE.innerHTML=edu.map(function(e){return '<div><div class="sb-edu-curso">'+_esc(e.curso||'')+'</div><div class="sb-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="sb-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
-  var modE=document.getElementById('modEdu'); if(modE) modE.innerHTML=edu.map(function(e){return '<div class="mod-edu-item"><div class="mod-edu-curso">'+_esc(e.curso||'')+'</div><div class="mod-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="mod-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
-  var exE=document.getElementById('exEdu'); if(exE) exE.innerHTML=edu.map(function(e){return '<div class="exec-edu-item"><div class="exec-edu-curso">'+_esc(e.curso||'')+'</div><div class="exec-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="exec-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
-  var cpE=document.getElementById('cpEdu'); if(cpE) cpE.innerHTML=edu.map(function(e){return '<div style="margin-bottom:.55rem"><div class="compact-edu-curso">'+_esc(e.curso||'')+'</div><div class="compact-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="compact-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
-  var mnE=document.getElementById('mnEdu'); if(mnE) mnE.innerHTML=edu.map(function(e){return '<div class="minimal-edu-item"><div class="minimal-edu-curso">'+_esc(e.curso||'')+'</div><div class="minimal-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="minimal-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
-  var foE=document.getElementById('foEdu'); if(foE) foE.innerHTML=edu.map(function(e){return '<div class="focus-edu-item"><div class="focus-edu-curso">'+_esc(e.curso||'')+'</div><div class="focus-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(e.periodo?'<div class="focus-edu-per">'+_esc(e.periodo)+'</div>':'')+'</div>';}).join('');
+  var clE=document.getElementById('clEdu'); if(clE) clE.innerHTML=edu.map(function(e){return '<div><div class="sb-edu-curso">'+_esc(e.curso||'')+'</div><div class="sb-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(_eduPeriodo(e)?'<div class="sb-edu-per">'+_esc(_eduPeriodo(e))+'</div>':'')+'</div>';}).join('');
+  var modE=document.getElementById('modEdu'); if(modE) modE.innerHTML=edu.map(function(e){return '<div class="mod-edu-item"><div class="mod-edu-curso">'+_esc(e.curso||'')+'</div><div class="mod-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(_eduPeriodo(e)?'<div class="mod-edu-per">'+_esc(_eduPeriodo(e))+'</div>':'')+'</div>';}).join('');
+  var exE=document.getElementById('exEdu'); if(exE) exE.innerHTML=edu.map(function(e){return '<div class="exec-edu-item"><div class="exec-edu-curso">'+_esc(e.curso||'')+'</div><div class="exec-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(_eduPeriodo(e)?'<div class="exec-edu-per">'+_esc(_eduPeriodo(e))+'</div>':'')+'</div>';}).join('');
+  var cpE=document.getElementById('cpEdu'); if(cpE) cpE.innerHTML=edu.map(function(e){return '<div style="margin-bottom:.55rem"><div class="compact-edu-curso">'+_esc(e.curso||'')+'</div><div class="compact-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(_eduPeriodo(e)?'<div class="compact-edu-per">'+_esc(_eduPeriodo(e))+'</div>':'')+'</div>';}).join('');
+  var mnE=document.getElementById('mnEdu'); if(mnE) mnE.innerHTML=edu.map(function(e){return '<div class="minimal-edu-item"><div class="minimal-edu-curso">'+_esc(e.curso||'')+'</div><div class="minimal-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(_eduPeriodo(e)?'<div class="minimal-edu-per">'+_esc(_eduPeriodo(e))+'</div>':'')+'</div>';}).join('');
+  var foE=document.getElementById('foEdu'); if(foE) foE.innerHTML=edu.map(function(e){return '<div class="focus-edu-item"><div class="focus-edu-curso">'+_esc(e.curso||'')+'</div><div class="focus-edu-inst">'+_esc(e.instituicao||'')+'</div>'+(_eduPeriodo(e)?'<div class="focus-edu-per">'+_esc(_eduPeriodo(e))+'</div>':'')+'</div>';}).join('');
   ['clSecEdu','modSecEdu','exSecEdu','cpSecEdu','mnSecEdu','foSecEdu'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.style.display=edu.length?'block':'none';
   });
@@ -4102,7 +4262,8 @@ function openEdit(section) {
       +'<div class="ef-group"><div class="ef-label">E-mail</div><input class="ef-input" id="ef_email" type="email" value="'+_esc(c.email||'')+'"></div>'
       +'<div class="ef-row"><div class="ef-group"><div class="ef-label">Telefone</div><input class="ef-input" id="ef_tel" value="'+_esc(c.telefone||'')+'"></div>'
       +'<div class="ef-group"><div class="ef-label">Cidade</div><input class="ef-input" id="ef_cidade" value="'+_esc(c.cidade||'')+'"></div></div>'
-      +'<div class="ef-group"><div class="ef-label">LinkedIn (URL)</div><input class="ef-input" id="ef_li" value="'+_esc(c.linkedin||'')+'"></div>';
+      +'<div class="ef-group"><div class="ef-label">LinkedIn (URL)</div><input class="ef-input" id="ef_li" value="'+_esc(c.linkedin||'')+'"></div>'
+      +'<div class="ef-group"><div class="ef-label">Portfólio ou site (opcional)</div><input class="ef-input" id="ef_portfolio" value="'+_esc(c.portfolio||'')+'"></div>';
   } else if(section==='skills') {
     title.textContent='Habilidades';
     var skills=(_cvData.habilidades||[]).slice();
@@ -4116,6 +4277,9 @@ function openEdit(section) {
   } else if(section==='edu') {
     title.textContent='Formação acadêmica';
     renderEduEditor();
+  } else if(section==='proj') {
+    title.textContent='Projetos e portfólio';
+    renderProjEditor();
   }
 }
 
@@ -4136,6 +4300,7 @@ function saveEdit() {
     _cvData.contato.telefone=(document.getElementById('ef_tel').value||'').trim();
     _cvData.contato.cidade=(document.getElementById('ef_cidade').value||'').trim();
     _cvData.contato.linkedin=(document.getElementById('ef_li').value||'').trim();
+    _cvData.contato.portfolio=(document.getElementById('ef_portfolio').value||'').trim();
     reRenderNome(_cvData.nome);
     reRenderRole(_cvData.titulo_profissional);
     reRenderResumo(_cvData.resumo_profissional);
@@ -4156,6 +4321,17 @@ function saveEdit() {
   } else if(_editSection==='edu') {
     saveEduEditor();
     reRenderEdu(_cvData.formacao||[]);
+  } else if(_editSection==='proj') {
+    saveProjEditor();
+    reRenderProj(_cvData.projetos||[]);
+  }
+  // Ordena antes de persistir: cargo novo digitado por último não pode ficar
+  // no fim da lista só porque foi o último a ser preenchido.
+  if (window.VagaAIOnboarding) {
+    window.VagaAIOnboarding.ordenarCv(_cvData);
+    if(_editSection==='exp') reRenderExp(_cvData.experiencias||[]);
+    if(_editSection==='edu') reRenderEdu(_cvData.formacao||[]);
+    if(_editSection==='proj') reRenderProj(_cvData.projetos||[]);
   }
   saveCvData();
   closeEdit();
@@ -4279,6 +4455,9 @@ function renderEduEditor() {
       +'<div class="ef-group"><div class="ef-label">Curso</div><input class="ef-input" id="efed_curso_'+i+'" value="'+_esc(e.curso||'')+'"></div>'
       +'<div class="ef-row"><div class="ef-group"><div class="ef-label">Instituição</div><input class="ef-input" id="efed_inst_'+i+'" value="'+_esc(e.instituicao||'')+'"></div>'
       +'<div class="ef-group"><div class="ef-label">Período</div><input class="ef-input" id="efed_per_'+i+'" value="'+_esc(e.periodo||'')+'"></div></div>'
+      +'<div class="ef-group"><div class="ef-label">Situação</div><select class="ef-input" id="efed_sit_'+i+'">'
+      +['','Concluído','Cursando','Trancado'].map(function(op){return '<option value="'+op+'"'+((e.situacao||'')===op?' selected':'')+'>'+(op||'Não informar')+'</option>';}).join('')
+      +'</select></div>'
       +'<button class="ef-card-rm" onclick="efRemoveEdu('+i+')">🗑 Remover</button>'
       +'</div></div>';
   }).join('');
@@ -4292,9 +4471,60 @@ function efRemoveEdu(idx) {
 }
 function efAddEdu() {
   if(!_cvData.formacao) _cvData.formacao=[];
-  _cvData.formacao.push({curso:'',instituicao:'',periodo:''});
+  _cvData.formacao.push({curso:'',instituicao:'',periodo:'',situacao:''});
   renderEduEditor();
   efToggle('efed_'+(_cvData.formacao.length-1));
+}
+
+/* ── Projects editor ────────────────────────────────────────
+   Projetos renderizavam nos 6 templates mas não tinham entrada de edição
+   aqui: a pessoa via a seção no documento e não conseguia mexer sem voltar
+   para o hub. */
+function renderProjEditor() {
+  var projetos=(_cvData.projetos||[]);
+  var html=projetos.map(function(p,i){
+    return '<div class="ef-card" id="efpr_'+i+'">'
+      +'<div class="ef-card-head" onclick="efToggle(\'efpr_'+i+'\')">'
+      +'<span class="ef-card-name">'+_esc(p.nome||'Sem título')+(p.contexto?' — '+_esc(p.contexto):'')+'</span>'
+      +'<span class="ef-card-arr" id="efpr_'+i+'_arr">▼</span></div>'
+      +'<div class="ef-card-body collapsed" id="efpr_'+i+'_body">'
+      +'<div class="ef-group"><div class="ef-label">Nome do projeto</div><input class="ef-input" id="efpr_nome_'+i+'" value="'+_esc(p.nome||'')+'"></div>'
+      +'<div class="ef-row"><div class="ef-group"><div class="ef-label">Tipo</div><input class="ef-input" id="efpr_ctx_'+i+'" placeholder="Voluntariado, Freelance, Acadêmico" value="'+_esc(p.contexto||'')+'"></div>'
+      +'<div class="ef-group"><div class="ef-label">Período</div><input class="ef-input" id="efpr_per_'+i+'" value="'+_esc(p.periodo||'')+'"></div></div>'
+      +'<div class="ef-group"><div class="ef-label">Link (opcional)</div><input class="ef-input" id="efpr_link_'+i+'" value="'+_esc(p.link||'')+'"></div>'
+      +'<div class="ef-group"><div class="ef-label">O que você fez e o que gerou (uma por linha)</div><textarea class="ef-textarea" id="efpr_bul_'+i+'" rows="4">'+_esc((p.bullets||[]).join('\n'))+'</textarea></div>'
+      +'<button class="ef-card-rm" onclick="efRemoveProj('+i+')">🗑 Remover</button>'
+      +'</div></div>';
+  }).join('');
+  html+='<button class="ef-card-add" onclick="efAddProj()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Adicionar projeto</button>';
+  document.getElementById('editBody').innerHTML=html;
+}
+function efRemoveProj(idx) {
+  if(!_cvData.projetos) return;
+  _cvData.projetos.splice(idx,1);
+  renderProjEditor();
+}
+function efAddProj() {
+  if(!_cvData.projetos) _cvData.projetos=[];
+  _cvData.projetos.push({nome:'',contexto:'',periodo:'',link:'',bullets:[]});
+  renderProjEditor();
+  efToggle('efpr_'+(_cvData.projetos.length-1));
+}
+function saveProjEditor() {
+  var projetos=_cvData.projetos||[];
+  projetos.forEach(function(p,i){
+    var nomeEl=document.getElementById('efpr_nome_'+i);
+    var ctxEl=document.getElementById('efpr_ctx_'+i);
+    var perEl=document.getElementById('efpr_per_'+i);
+    var linkEl=document.getElementById('efpr_link_'+i);
+    var bulEl=document.getElementById('efpr_bul_'+i);
+    if(nomeEl) p.nome=nomeEl.value.trim();
+    if(ctxEl)  p.contexto=ctxEl.value.trim();
+    if(perEl)  p.periodo=perEl.value.trim();
+    if(linkEl) p.link=linkEl.value.trim();
+    if(bulEl)  p.bullets=bulEl.value.split('\n').map(function(b){return b.trim();}).filter(Boolean);
+  });
+  _cvData.projetos=projetos.filter(function(p){return p.nome;});
 }
 function saveEduEditor() {
   var edu=_cvData.formacao||[];
@@ -4305,6 +4535,8 @@ function saveEduEditor() {
     if(cursoEl) e.curso=cursoEl.value.trim();
     if(instEl)  e.instituicao=instEl.value.trim();
     if(perEl)   e.periodo=perEl.value.trim();
+    var sitEl=document.getElementById('efed_sit_'+i);
+    if(sitEl)   e.situacao=sitEl.value;
   });
   _cvData.formacao=edu.filter(function(e){return e.curso||e.instituicao;});
 }

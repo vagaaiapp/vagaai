@@ -381,8 +381,8 @@
       jobTitle: 'Mostre qual vaga você quer avaliar',
       jobSub: 'Cole o link ou a descrição. A VagaAI organiza os requisitos e prepara a comparação.',
       jobCta: 'Usar esta vaga no diagnóstico →',
-      cvTitle: 'Envie o currículo que você pretende usar nesta candidatura',
-      cvSub: 'Vamos comparar sua experiência real com os requisitos desta vaga.',
+      cvTitle: 'Envie o currículo que será sua base',
+      cvSub: 'Ele vira seu currículo base na VagaAI. Comparamos sua experiência real com os requisitos desta vaga e criamos uma versão direcionada, sem alterar a base.',
       cvCta: 'Gerar meu diagnóstico completo →',
       quickTitle: 'Conte sua experiência para esta vaga',
       quickSub: 'Escreva do seu jeito. A VagaAI organiza o conteúdo sem inventar experiências.',
@@ -397,7 +397,7 @@
       implication: 'Sem critérios claros, você pode perder energia em vagas que não combinam com seu momento.',
       payoff: 'Seu currículo fica estruturado e seu radar de vagas nasce com cargo, local e preferências.',
       importTitle: 'Comece pelo currículo que você já tem',
-      importSub: 'A VagaAI extrai os dados para você apenas revisar, sem recomeçar do zero.',
+      importSub: 'A VagaAI extrai os dados para você apenas revisar, sem recomeçar do zero. O resultado vira seu currículo base.',
       importCta: 'Revisar meus dados extraídos →',
       formTitle: 'Revise o perfil que orientará currículo e alertas',
       formSub: 'Leva alguns minutos: confirme seus dados para que o currículo e o radar usem o mesmo objetivo profissional.',
@@ -648,11 +648,205 @@
     };
   }
 
+  /* ── Currículo base: texto → campos estruturados ───────────────────────
+     Os dois funis e a primeira análise do /app gravam o mesmo registro em
+     cv_saves, então precisam produzir o mesmo formato. Guardar só o texto
+     fazia o hub "Meu Currículo" abrir com "0% completo" para quem tinha
+     acabado de entregar um currículo inteiro — e deixava o painel de
+     posicionamento sem nada para ler.
+
+     O texto original nunca é descartado: viaja em raw_text ao lado dos
+     campos. Os campos são o que a plataforma consegue operar; o raw_text é
+     o currículo como a pessoa escreveu. */
+
+  /* ── Ordem cronológica inversa ─────────────────────────────────────────
+     Formato recomendado para currículo no Brasil, e até aqui garantido só
+     por sorte: nada no código ordenava nada. Na prática, quem conseguia um
+     emprego novo e o adicionava via editor o via entrar ABAIXO dos empregos
+     antigos, porque a lista era gravada na ordem do DOM. */
+
+  var MESES_PT = {
+    jan: 1, fev: 2, mar: 3, abr: 4, mai: 5, jun: 6,
+    jul: 7, ago: 8, set: 9, out: 10, nov: 11, dez: 12
+  };
+
+  // Piso para períodos em curso. Fica acima de qualquer data real (dez/2099 =
+  // 209912), então emprego atual sempre vence emprego encerrado.
+  var EM_CURSO = 900000;
+
+  function resolverMes(texto, data) {
+    if (data.mes >= 1 && data.mes <= 12) return data.mes;
+    // "Dez 2022": nome do mês logo antes do ano.
+    var antes = texto.slice(Math.max(0, data.idx - 12), data.idx).toLowerCase();
+    var nome = antes.match(/([a-zà-ú]{3,})[^a-zà-ú]*$/);
+    var mes = nome ? MESES_PT[nome[1].slice(0, 3)] : null;
+    return (mes >= 1 && mes <= 12) ? mes : 12; // só o ano: assume dezembro
+  }
+
+  // Devolve um número comparável, ou null quando o texto não permite concluir
+  // nada. Períodos são texto livre: o parser precisa aguentar "2021 — 2024",
+  // "Jan 2020 – Dez 2022", "03/2019 a 08/2021", "2023 - atual" e "2022".
+  function periodoOrdem(periodo) {
+    var texto = String(periodo == null ? '' : periodo).trim();
+    if (!texto) return null;
+    var emCurso = /\b(atual|atualmente|presente|momento|hoje|current|present)\b/i.test(texto);
+
+    var datas = [];
+    var re = /(?:(\d{1,2})[\/\-.]\s*)?((?:19|20)\d{2})/g;
+    var achado;
+    while ((achado = re.exec(texto))) {
+      datas.push({ mes: achado[1] ? Number(achado[1]) : null, ano: Number(achado[2]), idx: achado.index });
+    }
+    if (!datas.length) return emCurso ? EM_CURSO : null;
+
+    // Encerrado ordena pelo FIM; em curso ordena pelo INÍCIO — dois empregos
+    // atuais empatariam para sempre se o fim fosse a chave, e o mais recente
+    // ficaria abaixo do antigo.
+    var alvo = emCurso ? datas[0] : datas[datas.length - 1];
+    var ordem = alvo.ano * 100 + resolverMes(texto, alvo);
+    return emCurso ? EM_CURSO + ordem : ordem;
+  }
+
+  // Entradas sem período legível NÃO são reposicionadas: ficam ancoradas no
+  // índice original e as datadas se reorganizam ao redor delas. Reordenar o
+  // que não se entende é pior do que manter como a pessoa escreveu.
+  function ordenarPorPeriodo(itens) {
+    var lista = (itens || []).map(function (item, i) {
+      return { item: item, i: i, ordem: periodoOrdem(item && item.periodo) };
+    });
+    var datadas = lista.filter(function (e) { return e.ordem !== null; });
+    if (datadas.length < 2) return lista.map(function (e) { return e.item; });
+
+    var posicoes = datadas.map(function (e) { return e.i; }).sort(function (a, b) { return a - b; });
+    datadas.sort(function (a, b) {
+      // Comparação explícita: Infinity - Infinity daria NaN e quebraria a
+      // ordenação quando houvesse dois períodos "atual".
+      if (a.ordem !== b.ordem) return a.ordem > b.ordem ? -1 : 1;
+      return a.i - b.i;
+    });
+    var saida = lista.slice();
+    datadas.forEach(function (entrada, k) { saida[posicoes[k]] = entrada; });
+    return saida.map(function (e) { return e.item; });
+  }
+
+  // Aplica a ordem a todas as listas datadas do currículo de uma vez.
+  function ordenarCv(cvData) {
+    if (!cvData || typeof cvData !== 'object') return cvData;
+    ['experiencias', 'formacao', 'cursos', 'projetos'].forEach(function (campo) {
+      if (Array.isArray(cvData[campo])) cvData[campo] = ordenarPorPeriodo(cvData[campo]);
+    });
+    return cvData;
+  }
+
+  function formToCvData(form, rawText) {
+    form = form || {};
+    var cargo = String(form.cargo || '').trim();
+    var experiencia = String(form.exp || '').trim();
+    var formacao = String(form.form || '').trim();
+    var data = {
+      nome: String(form.nome || '').trim(),
+      titulo_profissional: cargo,
+      resumo_profissional: '',
+      contato: {
+        email: String(form.email || '').trim(),
+        telefone: String(form.tel || '').trim(),
+        linkedin: '',
+        portfolio: '',
+        cidade: String(form.cidade || '').trim()
+      },
+      experiencias: [],
+      formacao: [],
+      cursos: [],
+      idiomas: [],
+      projetos: [],
+      habilidades: String(form.skills || '')
+        .split(/[,;\n]/)
+        .map(function (item) { return item.trim(); })
+        .filter(Boolean)
+    };
+    /* O extrator devolve as experiências já separadas (empresa, período,
+       bullets). Antes só existia o bloco de texto corrido, e três empregos
+       viravam UMA entrada sem empresa e sem período — o que também tornava
+       impossível ordenar cronologicamente. O texto corrido continua como
+       plano B: quando a IA não consegue separar, é melhor um bloco honesto
+       do que empresas inventadas. */
+    // O filtro roda ANTES de decidir usar a lista: um array só com entradas
+    // vazias voltava [] e ainda assim pulava o plano B, apagando a experiência
+    // inteira da pessoa. Lista que não sobrevive ao filtro é lista inexistente.
+    var experienciasLimpas = (Array.isArray(form.experiencias) ? form.experiencias : []).map(function (e) {
+      e = e || {};
+      return {
+        cargo: String(e.cargo || '').trim(),
+        empresa: String(e.empresa || '').trim(),
+        periodo: String(e.periodo || '').trim(),
+        bullets: (Array.isArray(e.bullets) ? e.bullets : [])
+          .map(function (b) { return String(b || '').trim(); })
+          .filter(Boolean)
+      };
+    }).filter(function (e) { return e.cargo || e.empresa || e.bullets.length; });
+
+    if (experienciasLimpas.length) {
+      data.experiencias = experienciasLimpas;
+    } else if (experiencia) {
+      data.experiencias = [{
+        cargo: cargo || 'Experiência profissional',
+        empresa: '',
+        periodo: '',
+        bullets: experiencia
+          .split(/\n+/)
+          .map(function (line) { return line.replace(/^[-•]\s*/, '').trim(); })
+          .filter(Boolean)
+      }];
+    }
+
+    var formacoesLimpas = (Array.isArray(form.formacao) ? form.formacao : []).map(function (f) {
+      f = f || {};
+      return {
+        curso: String(f.curso || '').trim(),
+        instituicao: String(f.instituicao || '').trim(),
+        periodo: String(f.periodo || '').trim(),
+        situacao: String(f.situacao || '').trim()
+      };
+    }).filter(function (f) { return f.curso; });
+
+    if (formacoesLimpas.length) {
+      data.formacao = formacoesLimpas;
+    } else if (formacao) {
+      data.formacao = [{ curso: formacao, instituicao: '', periodo: '', situacao: '' }];
+    }
+
+    if (rawText) data.raw_text = String(rawText).slice(0, 30000);
+    return ordenarCv(data);
+  }
+
+  // Falha aqui nunca é fatal: quem chama cai no raw_text puro, que continua
+  // sendo um currículo base válido — só menos navegável.
+  async function structureCvFromText(raw, options) {
+    var text = String(raw || '').trim();
+    if (text.length < 50) return null;
+    options = options || {};
+    var fetchFn = options.fetchFn || (typeof fetch === 'function' ? fetch.bind(globalThis) : null);
+    if (!fetchFn) return null;
+    try {
+      var response = await fetchFn('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'onboarding_cv_extract', cv: text.slice(0, 15000) })
+      });
+      if (!response.ok) throw new Error('extract_' + response.status);
+      var payload = await response.json();
+      if (!payload || !payload.form) return null;
+      return formToCvData(payload.form, text);
+    } catch (error) {
+      return null;
+    }
+  }
+
   async function persistBaseCv(session, options) {
     var state = read();
     var cv = state.cv || {};
-    var cvData = cv.data || (cv.raw ? { raw_text: String(cv.raw).slice(0, 30000) } : null);
-    if (!session || !session.user || !cvData || state.baseCvPersistedAt) {
+    var rawText = cv.raw ? String(cv.raw).slice(0, 30000) : '';
+    if (!session || !session.user || (!cv.data && !rawText) || state.baseCvPersistedAt) {
       return { saved: false, reason: 'not_available', state: state };
     }
     options = options || {};
@@ -667,6 +861,12 @@
     if (rows && rows[0]) {
       return { saved: false, reason: 'base_exists', state: write({ baseCvPersistedAt: new Date().toISOString() }) };
     }
+    // A consulta acima vem antes da estruturação de propósito: quem já tem
+    // base não gasta uma chamada de IA para nada.
+    var cvData = cv.data ? Object.assign({}, cv.data) : null;
+    if (!cvData) cvData = await structureCvFromText(rawText, options);
+    if (!cvData) cvData = {};
+    if (rawText && !cvData.raw_text) cvData.raw_text = rawText;
     var name = String((cvData && cvData.nome) || cv.name || 'Meu currículo').slice(0, 80);
     var response = await fetchFn(supabaseUrl + '/rest/v1/cv_saves', {
       method: 'POST',
@@ -804,6 +1004,11 @@
     syncThemeButton: syncThemeButton,
     stageProductData: stageProductData,
     claimAnalysis: claimAnalysis,
+    formToCvData: formToCvData,
+    structureCvFromText: structureCvFromText,
+    periodoOrdem: periodoOrdem,
+    ordenarPorPeriodo: ordenarPorPeriodo,
+    ordenarCv: ordenarCv,
     persistBaseCv: persistBaseCv,
     provisionTracker: provisionTracker,
     provisionAlert: provisionAlert,

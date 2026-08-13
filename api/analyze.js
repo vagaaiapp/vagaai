@@ -70,6 +70,15 @@ function normalizeJobUrl(value) {
   }
 }
 
+// "Concluído", "Cursando" ou "Trancado" — nada além disso entra. A IA às vezes
+// devolve "em andamento", "previsão 2027" ou uma frase inteira, e isso iria
+// direto para o currículo como se fosse um rótulo do sistema.
+const SITUACOES_FORMACAO = ['Concluído', 'Cursando', 'Trancado'];
+function normalizeSituacao(valor) {
+  const texto = String(valor || '').trim();
+  return SITUACOES_FORMACAO.find(s => s.toLowerCase() === texto.toLowerCase()) || '';
+}
+
 function attachJobMetadata(result, jobUrl) {
   const normalizedUrl = normalizeJobUrl(jobUrl);
   return {
@@ -1075,8 +1084,15 @@ REGRAS:
 - "skills" deve ser uma lista curta separada por vírgulas.
 - Responda somente com JSON válido, sem markdown.
 
+SOBRE "experiencias" E "formacao" (listas estruturadas):
+- Uma entrada por emprego/curso REAL encontrado no currículo. Ordene da mais recente para a mais antiga.
+- "bullets" reproduz as atividades já escritas no currículo. Não crie bullets, não crie números, não melhore redação aqui.
+- Se o currículo não deixa claro onde termina um emprego e começa outro, prefira DEVOLVER AS LISTAS VAZIAS a chutar empresa, cargo ou data. O texto corrido em "exp"/"form" já é o plano B — separar errado é pior do que não separar.
+- "situacao" só quando o currículo disser explicitamente: "Concluído", "Cursando" ou "Trancado". Nunca deduza pelo ano.
+- Campo sem informação no currículo = string vazia. Nunca preencha por semelhança ou probabilidade.
+
 FORMATO EXATO:
-{"nome":"","cargo":"","exp":"","form":"","skills":"","email":"","tel":"","cidade":""}
+{"nome":"","cargo":"","exp":"","form":"","skills":"","email":"","tel":"","cidade":"","experiencias":[{"cargo":"","empresa":"","periodo":"","bullets":[""]}],"formacao":[{"curso":"","instituicao":"","periodo":"","situacao":""}]}
 
 CURRÍCULO:
 ${rawCv}`;
@@ -1091,7 +1107,9 @@ ${rawCv}`;
         },
         body: JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
-          max_tokens: 1800,
+          // Subiu junto com as listas estruturadas: com 1800 a resposta era
+          // truncada em currículos longos e o JSON chegava inválido.
+          max_tokens: 3000,
           temperature: 0,
           messages: [{ role: 'user', content: extractPrompt }],
         }),
@@ -1122,6 +1140,35 @@ ${rawCv}`;
       const skills = Array.isArray(parsed.skills)
         ? parsed.skills.map(value => String(value || '').trim()).filter(Boolean).join(', ')
         : String(parsed.skills || '').trim();
+      // Limites de tamanho aplicados no servidor: o cliente renderiza isso
+      // direto num currículo, e resposta de IA não é entrada confiável.
+      const MAX_EXPERIENCIAS = 12;
+      const MAX_FORMACOES = 10;
+      const MAX_BULLETS = 8;
+
+      const experiencias = (Array.isArray(parsed.experiencias) ? parsed.experiencias : [])
+        .slice(0, MAX_EXPERIENCIAS)
+        .map(item => ({
+          cargo: String(item?.cargo || '').trim().slice(0, 200),
+          empresa: String(item?.empresa || '').trim().slice(0, 200),
+          periodo: String(item?.periodo || '').trim().slice(0, 80),
+          bullets: (Array.isArray(item?.bullets) ? item.bullets : [])
+            .map(b => String(b || '').trim().slice(0, 400))
+            .filter(Boolean)
+            .slice(0, MAX_BULLETS),
+        }))
+        .filter(item => item.cargo || item.empresa || item.bullets.length);
+
+      const formacoes = (Array.isArray(parsed.formacao) ? parsed.formacao : [])
+        .slice(0, MAX_FORMACOES)
+        .map(item => ({
+          curso: String(item?.curso || '').trim().slice(0, 200),
+          instituicao: String(item?.instituicao || '').trim().slice(0, 200),
+          periodo: String(item?.periodo || '').trim().slice(0, 80),
+          situacao: normalizeSituacao(item?.situacao),
+        }))
+        .filter(item => item.curso);
+
       const form = {
         nome: String(parsed.nome || '').trim().slice(0, 200),
         cargo: String(parsed.cargo || '').trim().slice(0, 200),
@@ -1131,6 +1178,8 @@ ${rawCv}`;
         email: String(parsed.email || '').trim().slice(0, 200),
         tel: String(parsed.tel || '').trim().slice(0, 60),
         cidade: String(parsed.cidade || '').trim().slice(0, 120),
+        experiencias,
+        formacao: formacoes,
       };
       return res.status(200).json({ form });
     } catch (err) {
@@ -1208,9 +1257,13 @@ ${obSkills ? `Habilidades: ${obSkills}` : 'Habilidades: não informadas'}
 
 TAREFA:
 - Transforme o texto informal de experiência em bullets profissionais (verbo de ação no passado + o que fazia). Só inclua métricas que o candidato escreveu.
+- Um bullet por atividade real relatada. Não desdobre uma atividade em três para encher a seção, nem invente atividade típica do cargo que o candidato não citou.
+- Ordene experiências e formação da mais recente para a mais antiga.
 - Se o candidato não separou empresa/cargo/período claramente, faça a melhor interpretação do texto — mas não invente o que não dá para inferir; deixe o campo como string vazia.
 - Resumo profissional: 3-4 linhas conectando o perfil real ao cargo desejado, sem inventar senioridade ou anos de experiência.
 - Habilidades: liste as informadas; se o candidato não informou nenhuma, use array vazio.
+- Projetos: só preencha se o candidato citar projeto pessoal, voluntariado, freela, trabalho acadêmico ou iniciação científica. Nunca transforme emprego em projeto, nem projeto em emprego — a seção de projetos existe justamente para não inflar a experiência formal. Se não houver nenhum, use array vazio.
+- Situação da formação: só preencha se o candidato disser se concluiu, está cursando ou trancou. Nunca deduza pelo ano.
 
 Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato exato:
 {
@@ -1221,9 +1274,12 @@ Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato
     { "cargo": "<cargo>", "empresa": "<empresa>", "periodo": "<período ou string vazia>", "bullets": ["<bullet 1>", "<bullet 2>"] }
   ],
   "formacao": [
-    { "curso": "<curso>", "instituicao": "<instituição>", "periodo": "<período ou string vazia>" }
+    { "curso": "<curso>", "instituicao": "<instituição>", "periodo": "<período ou string vazia>", "situacao": "<Concluído, Cursando ou Trancado — só se o candidato disser; senão string vazia>" }
   ],
-  "habilidades": ["<skill 1>", "<skill 2>"]
+  "habilidades": ["<skill 1>", "<skill 2>"],
+  "projetos": [
+    { "nome": "<projeto>", "contexto": "<Voluntariado, Freelance, Acadêmico...>", "periodo": "<período ou string vazia>", "link": "<URL ou string vazia>", "bullets": ["<o que fez e o que gerou>"] }
+  ]
 }`;
 
     try {
@@ -1270,6 +1326,7 @@ Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato
           email:    String(obContato.email || '').slice(0, 200),
           telefone: String(obContato.telefone || '').slice(0, 60),
           linkedin: String(obContato.linkedin || '').slice(0, 300),
+          portfolio: String(obContato.portfolio || '').slice(0, 300),
           cidade:   String(obContato.cidade || '').slice(0, 120),
         },
         resumo_profissional: String(obCv.resumo_profissional || '').slice(0, 2000),
@@ -1277,14 +1334,22 @@ Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato
           cargo:    String(e?.cargo || '').slice(0, 200),
           empresa:  String(e?.empresa || '').slice(0, 200),
           periodo:  String(e?.periodo || '').slice(0, 100),
-          bullets:  Array.isArray(e?.bullets) ? e.bullets.slice(0, 6).map(b => String(b).slice(0, 500)) : [],
+          bullets:  Array.isArray(e?.bullets) ? e.bullets.map(b => String(b || '').trim().slice(0, 500)).filter(Boolean).slice(0, 6) : [],
         })) : [],
         formacao: Array.isArray(obCv.formacao) ? obCv.formacao.slice(0, 6).map(f => ({
           curso:       String(f?.curso || '').slice(0, 200),
           instituicao: String(f?.instituicao || '').slice(0, 200),
           periodo:     String(f?.periodo || '').slice(0, 100),
+          situacao:    normalizeSituacao(f?.situacao),
         })) : [],
         habilidades: Array.isArray(obCv.habilidades) ? obCv.habilidades.slice(0, 20).map(s => String(s).slice(0, 100)) : [],
+        projetos: Array.isArray(obCv.projetos) ? obCv.projetos.slice(0, 8).map(p => ({
+          nome:     String(p?.nome || '').slice(0, 200),
+          contexto: String(p?.contexto || '').slice(0, 120),
+          periodo:  String(p?.periodo || '').slice(0, 100),
+          link:     String(p?.link || '').slice(0, 300),
+          bullets:  Array.isArray(p?.bullets) ? p.bullets.map(b => String(b || '').trim().slice(0, 500)).filter(Boolean).slice(0, 6) : [],
+        })).filter(p => p.nome) : [],
       };
 
       // Só uma geração concluída consome a franquia gratuita do navegador.
@@ -1496,6 +1561,10 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
   const prompt = `Você é um especialista em recrutamento e sistemas ATS (Applicant Tracking System). Analise a compatibilidade entre o currículo e a vaga abaixo e gere uma versão otimizada do currículo.
 
 ⚠️ REGRA ABSOLUTA ANTI-ALUCINAÇÃO: O cv_otimizado deve conter SOMENTE informações presentes no CURRÍCULO fornecido. NUNCA invente experiências, anos de carreira, certificações, números, métricas, habilidades ou realizações ausentes do CV original. Otimize a redação e as keywords — jamais os fatos.
+- Não crie bullets novos. Reescreva os que existem; se um cargo não tinha atividades descritas, devolva "bullets" vazio em vez de imaginar o que a pessoa fazia.
+- Não transforme requisito da vaga em experiência do candidato. Uma keyword da vaga só entra num bullet se o currículo já sustentar aquilo.
+- Não converta responsabilidade em resultado: "responsável por campanhas" não vira "aumentou o desempenho das campanhas".
+- Mantenha empresas, cargos e períodos exatamente como estão no currículo. Ordene da experiência mais recente para a mais antiga.
 
 VAGA:
 ${job}
@@ -1539,6 +1608,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
       "email": "<email se disponível, senão string vazia>",
       "telefone": "<telefone se disponível, senão string vazia>",
       "linkedin": "<URL do LinkedIn se disponível, senão string vazia>",
+      "portfolio": "<URL de portfólio/site se disponível, senão string vazia>",
       "cidade": "<cidade e estado se disponível, senão string vazia>"
     },
     "resumo_profissional": "<3 a 5 linhas de resumo profissional otimizado para ATS, incorporando naturalmente as principais keywords da vaga sem forçar>",
@@ -1558,10 +1628,20 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
       {
         "curso": "<nome do curso>",
         "instituicao": "<nome da instituição>",
-        "periodo": "<ano de conclusão ou período>"
+        "periodo": "<ano de conclusão ou período>",
+        "situacao": "<Concluído, Cursando ou Trancado — SOMENTE se o currículo disser; senão string vazia>"
       }
     ],
-    "habilidades": ["<skill técnica 1>", "<skill 2>", "<keyword da vaga incorporada naturalmente>"]
+    "habilidades": ["<skill técnica 1>", "<skill 2>", "<keyword da vaga incorporada naturalmente>"],
+    "projetos": [
+      {
+        "nome": "<nome do projeto, voluntariado, freela ou trabalho acadêmico>",
+        "contexto": "<tipo: Voluntariado, Freelance, Acadêmico, Projeto pessoal...>",
+        "periodo": "<período ou string vazia>",
+        "link": "<URL se o currículo trouxer, senão string vazia>",
+        "bullets": ["<o que foi feito e o que gerou — NUNCA invente resultado>"]
+      }
+    ]
   },
   "briefing_empresa": {
     "o_que_valorizam": [

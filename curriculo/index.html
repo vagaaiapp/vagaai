@@ -9,7 +9,9 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script defer src="/_vercel/insights/script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/onboarding/shared.js"></script>
 <script src="/js/cv-voice.js"></script>
+<script src="/js/cv-completude.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -78,6 +80,12 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;fon
 .sec-title svg{color:var(--green)}
 .profile-main-label{font-size:9.5px;font-weight:900;letter-spacing:.11em;text-transform:uppercase;color:var(--green);margin-bottom:6px}.profile-purpose{font-size:11px;color:var(--muted);margin-top:6px;max-width:390px;line-height:1.45}.profile-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;flex:1 0 100%;width:100%;min-width:0;padding-top:2px}.profile-actions .save-btn{grid-column:1/-1}.profile-actions .save-status{grid-column:1/-1!important;text-align:center!important;margin:0;min-height:0}.profile-actions .save-status:empty{display:none}.profile-danger{grid-column:1/-1;border:0;background:none;color:var(--red);font:700 11px Manrope,sans-serif;cursor:pointer;padding:4px}.profile-danger:hover{text-decoration:underline}
 .versions-intro{font-size:12px;color:var(--muted);line-height:1.5;margin-top:5px}.version-tabs{display:flex;gap:6px;margin-top:14px}.version-tab{border:1px solid var(--border);border-radius:999px;background:var(--surface2);color:var(--muted);padding:6px 10px;font:700 11px Manrope,sans-serif;cursor:pointer}.version-tab.active{border-color:var(--green-border);background:var(--green-dim);color:var(--green)}.version-list{display:grid;gap:8px;margin-top:12px}.version-row{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:11px;background:var(--surface2)}.version-row-copy{flex:1;min-width:0}.version-row-copy b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.version-row-copy>span{display:block;margin-top:3px;color:var(--muted);font-size:11px}.version-meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}.version-chip{font-size:9.5px;font-weight:800;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:3px 7px;background:var(--surface)}.version-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px}.version-action{border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);padding:7px 9px;font:700 10.5px Manrope,sans-serif;cursor:pointer;white-space:nowrap}.version-action.primary{border-color:var(--green-border);background:var(--green-dim);color:var(--green)}.version-action.danger{color:var(--red)}.versions-more{width:100%;margin-top:10px;border:1px dashed var(--border);border-radius:9px;background:none;color:var(--muted);padding:8px;font:700 11px Manrope,sans-serif;cursor:pointer}
+.version-group{border:1px solid var(--border);border-radius:11px;background:var(--surface2);overflow:hidden}.version-group .version-row{border:0;border-radius:0;background:none}.version-group-toggle{width:100%;border:0;border-top:1px dashed var(--border);background:none;color:var(--muted);padding:8px;font:700 10.5px Manrope,sans-serif;cursor:pointer;text-align:left;padding-left:12px}.version-group-toggle:hover{color:var(--green)}.version-sub{border-top:1px dashed var(--border);background:var(--surface)}.version-sub .version-row{border:0;border-radius:0;background:none;padding-left:24px}.version-sub .version-row+.version-row{border-top:1px solid var(--border)}
+.raw-cv{white-space:pre-wrap;font-family:inherit;font-size:12px;line-height:1.6;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;max-height:340px;overflow:auto;margin-top:.7rem}
+.raw-cv-remove{margin-top:.7rem}
+.metric-hint{margin-top:6px;font-size:11px;line-height:1.45;color:var(--muted);border-left:2px solid var(--green-border);padding-left:8px}
+.f-note{font-size:11.5px;line-height:1.5;color:var(--muted);margin:.2rem 0 .8rem}
+.sec-empty-cta{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:.4rem}
 .sec-edit{font-size:12.5px;font-weight:700;color:var(--green);background:none;border:none;cursor:pointer}
 .sec-edit:hover{text-decoration:underline}
 .sec-empty{color:var(--muted);font-size:13px;margin-top:.4rem}
@@ -178,10 +186,16 @@ var _versionsById = {};
 var _versionStatusByAnalysis = {};
 var _versionView = 'active';
 var _showAllVersions = false;
+var _versionsCapped = false;
+var _versionGroups = [];
+var _expandedGroups = {};
+var VERSIONS_LIMIT = 200;
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function toast(msg, isErr){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.toggle('err',!!isErr); t.classList.add('vis'); clearTimeout(t._tm); t._tm=setTimeout(function(){t.classList.remove('vis');},3000); }
-function emptyCv(){ return { nome:'', contato:{email:'',telefone:'',linkedin:'',cidade:''}, titulo_profissional:'', resumo_profissional:'', experiencias:[], formacao:[], cursos:[], idiomas:[], habilidades:[] }; }
+function emptyCv(){ return { nome:'', contato:{email:'',telefone:'',linkedin:'',portfolio:'',cidade:''}, titulo_profissional:'', resumo_profissional:'', experiencias:[], formacao:[], cursos:[], idiomas:[], habilidades:[], projetos:[] }; }
+
+var SITUACOES_FORMACAO = ['', 'Concluído', 'Cursando', 'Trancado'];
 
 /* ── Init ── */
 (async function init(){
@@ -231,13 +245,17 @@ function normalize(d) {
   }
   var base = emptyCv();
   base.nome = d.nome || '';
-  base.contato = Object.assign({email:'',telefone:'',linkedin:'',cidade:''}, d.contato || {});
+  base.contato = Object.assign({email:'',telefone:'',linkedin:'',portfolio:'',cidade:''}, d.contato || {});
   base.titulo_profissional = d.titulo_profissional || '';
   base.resumo_profissional = d.resumo_profissional || '';
   base.experiencias = Array.isArray(d.experiencias) ? d.experiencias : [];
   base.formacao = Array.isArray(d.formacao) ? d.formacao : [];
   base.cursos = Array.isArray(d.cursos) ? d.cursos : [];
   base.idiomas = Array.isArray(d.idiomas) ? d.idiomas : [];
+  base.projetos = Array.isArray(d.projetos) ? d.projetos : [];
+  // Ordena em toda leitura: currículos gravados antes desta regra passam a
+  // sair cronológicos sem precisar de migration nem de ação da pessoa.
+  if (window.VagaAIOnboarding) window.VagaAIOnboarding.ordenarCv(base);
   base.habilidades = Array.isArray(d.habilidades) ? d.habilidades.map(function(s){ return typeof s === 'string' ? s : (s && s.nome) || ''; }).filter(Boolean) : [];
   if (d.raw_text) base.raw_text = String(d.raw_text);
   return base;
@@ -250,7 +268,7 @@ function cvToText(d) {
   if (d.nome) L.push(d.nome);
   if (d.titulo_profissional) L.push(d.titulo_profissional);
   var c = d.contato || {};
-  var ct = [c.email, c.telefone, c.linkedin, c.cidade].filter(Boolean).join(' | ');
+  var ct = [c.email, c.telefone, c.linkedin, c.portfolio, c.cidade].filter(Boolean).join(' | ');
   if (ct) L.push(ct);
   if (d.resumo_profissional) { L.push(''); L.push('RESUMO PROFISSIONAL'); L.push(d.resumo_profissional); }
   if ((d.experiencias||[]).length) {
@@ -262,7 +280,10 @@ function cvToText(d) {
   }
   if ((d.formacao||[]).length) {
     L.push(''); L.push('FORMAÇÃO ACADÊMICA');
-    d.formacao.forEach(function(e){ L.push([e.curso, e.instituicao].filter(Boolean).join(' — ') + (e.periodo ? ' (' + e.periodo + ')' : '')); });
+    d.formacao.forEach(function(e){
+      var detalhes = [e.periodo, e.situacao].filter(Boolean).join(' · ');
+      L.push([e.curso, e.instituicao].filter(Boolean).join(' — ') + (detalhes ? ' (' + detalhes + ')' : ''));
+    });
   }
   if ((d.cursos||[]).length) {
     L.push(''); L.push('CURSOS E ESPECIALIZAÇÕES');
@@ -273,14 +294,28 @@ function cvToText(d) {
     d.idiomas.forEach(function(e){ L.push([e.idioma, e.nivel].filter(Boolean).join(' — ')); });
   }
   if ((d.habilidades||[]).length) { L.push(''); L.push('HABILIDADES'); L.push(d.habilidades.join(', ')); }
+  if ((d.projetos||[]).length) {
+    L.push(''); L.push('PROJETOS E PORTFÓLIO');
+    d.projetos.forEach(function(e){
+      var cabecalho = [e.nome, e.contexto].filter(Boolean).join(' — ') + (e.periodo ? ' (' + e.periodo + ')' : '');
+      L.push(cabecalho);
+      if (e.link) L.push(e.link);
+      (e.bullets || []).forEach(function(b){ if (b) L.push('- ' + b); });
+    });
+  }
   if (d.raw_text) { L.push(''); L.push('CONTEÚDO DO CURRÍCULO IMPORTADO'); L.push(d.raw_text); }
   return L.join('\n');
 }
 
+// Currículo importado como arquivo: o conteúdo ESTÁ aqui, só não foi separado
+// em campos. Contar como zero fazia a barra abrir em "0% completo" para quem
+// tinha acabado de entregar um currículo inteiro — a leitura mais errada que a
+// tela podia dar. Nome e título continuam exigindo dado estruturado: esses a
+// plataforma realmente não sabe enquanto ninguém extrair.
+/* Regra de completude mora em /js/cv-completude.js — o painel mostra o mesmo
+   percentual e duas cópias divergiriam na primeira mudança de critério. */
 function completude(d) {
-  var checks = [!!d.nome, !!d.titulo_profissional, !!d.resumo_profissional, (d.experiencias||[]).length>0, (d.formacao||[]).length>0, (d.habilidades||[]).length>0];
-  var done = checks.filter(Boolean).length;
-  return Math.round(done / checks.length * 100);
+  return (window.VagaAICv && window.VagaAICv.completude) ? window.VagaAICv.completude(d) : 0;
 }
 
 /* ── Persistência (rascunho local sempre; nuvem só se logado) ── */
@@ -367,21 +402,30 @@ function render() {
       '<button class="btn btn-ghost" onclick="document.getElementById(\'uploadInput\').click()">Enviar arquivo (PDF, Word ou TXT)</button></div>';
   }
 
+  // O que a pessoa enviou é o currículo dela — mostrado por inteiro, como
+  // chegou. Os campos estruturados abaixo complementam (é o que a plataforma
+  // consegue operar em análises e versões por vaga), não substituem.
   if (d.raw_text) {
-    html += '<div class="sec-card"><div class="sec-head"><div class="sec-title">Currículo enviado</div><button class="sec-edit" onclick="startFromScratch()">Preencher campos manualmente</button></div>' +
-      '<p class="sec-empty">Você enviou um arquivo pronto. Pra ativar o diagnóstico de mercado e edição por seção, prencha os campos estruturados abaixo.</p>' +
-      '<pre style="white-space:pre-wrap;font-size:12px;color:var(--muted);max-height:160px;overflow:auto;margin-top:.6rem;font-family:inherit">' + esc(d.raw_text.slice(0,1200)) + (d.raw_text.length>1200?'…':'') + '</pre></div>';
+    html += '<div class="sec-card"><div class="sec-head"><div class="sec-title">Seu currículo, como você enviou</div><button class="sec-edit" onclick="scrollToCvDetails()">Ir para os campos</button></div>' +
+      '<p class="sec-empty">Guardamos o conteúdo exatamente como estava no seu arquivo. Os campos abaixo são o que conseguimos organizar a partir dele — quanto mais completos, melhor ficam as análises e as versões para cada vaga.</p>' +
+      '<pre class="raw-cv">' + esc(d.raw_text) + '</pre>' +
+      '<button class="btn btn-ghost raw-cv-remove" onclick="removeRawCv()">Remover conteúdo enviado</button></div>';
   }
 
   html += '<div id="cvDetailsStart"></div>';
+  // Ordem recomendada para currículo no Brasil: contato → cargo → resumo →
+  // experiências → formação → competências → cursos e idiomas → projetos.
+  // O resumo era a última seção do editor: a parte mais lida do currículo
+  // era a que a pessoa menos via enquanto editava.
   html += secDadosPessoais(d);
   html += secObjetivo(d);
+  html += secResumo(d);
   html += secExperiencias(d);
   html += secFormacao(d);
+  html += secHabilidades(d);
   html += secCursos(d);
   html += secIdiomas(d);
-  html += secHabilidades(d);
-  html += secResumo(d);
+  html += secProjetos(d);
 
   document.getElementById('mainArea').innerHTML = html;
   updateSaveUI();
@@ -389,10 +433,16 @@ function render() {
   loadVersionsPanel();
 }
 
-function startFromScratch() {
+// Antes isto era o botão "Preencher campos manualmente" e apagava o texto
+// enviado sem perguntar — a pessoa clicava esperando ir para os campos e
+// perdia o conteúdo do próprio arquivo. Agora remover é uma ação explícita.
+function removeRawCv() {
+  var ok = window.confirm('Remover o conteúdo enviado?\n\nOs campos que você já preencheu continuam como estão. O texto original do arquivo será apagado — para recuperá-lo, você precisará enviar o arquivo de novo.');
+  if (!ok) return;
   delete _cvData.raw_text;
   markDirty();
   render();
+  toast('Conteúdo enviado removido. Os campos preenchidos foram mantidos.');
 }
 
 /* ── Upload de currículo pronto (PDF/Word/TXT → texto) ── */
@@ -444,21 +494,18 @@ async function handleUploadFile(input) {
   }
   text = (text || '').trim();
   if (text.length < 120) { toast('Não encontramos texto suficiente no arquivo. Verifique se o currículo não é uma imagem escaneada.', true); return; }
-  _cvData = emptyCv();
-  _cvData.raw_text = text.slice(0, 30000);
+  // Mapeamento centralizado no shared.js: o mesmo formToCvData atende os dois
+  // funis, o /app e este upload. Antes cada ponto montava o cv_data do seu
+  // jeito, e a experiência virava um bloco só, sem empresa nem período.
+  var estruturado = null;
   try {
     var extractRes = await fetch('/api/analyze', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ action:'onboarding_cv_extract', cv:text.slice(0,15000) }) });
     var extracted = extractRes.ok ? await extractRes.json() : null;
-    var f = extracted && extracted.form || {};
-    _cvData.nome = String(f.nome || '').trim();
-    _cvData.titulo_profissional = String(f.cargo || '').trim();
-    _cvData.contato = { email:String(f.email || '').trim(), telefone:String(f.tel || '').trim(), linkedin:'', cidade:String(f.cidade || '').trim() };
-    _cvData.habilidades = String(f.skills || '').split(/[,;\n]/).map(function(s){return s.trim();}).filter(Boolean);
-    var expText = String(f.exp || '').trim();
-    var formText = String(f.form || '').trim();
-    if (expText) _cvData.experiencias = [{ cargo:_cvData.titulo_profissional || 'Experiência profissional', empresa:'', periodo:'', bullets:expText.split(/\n+/).map(function(s){return s.replace(/^[-•]\s*/, '').trim();}).filter(Boolean) }];
-    if (formText) _cvData.formacao = [{ curso:formText, instituicao:'', periodo:'' }];
+    if (extracted && extracted.form && window.VagaAIOnboarding) {
+      estruturado = window.VagaAIOnboarding.formToCvData(extracted.form, text);
+    }
   } catch(e) { /* o texto integral continua preservado como fonte */ }
+  _cvData = normalize(estruturado || { raw_text: text.slice(0, 30000) });
   markDirty();
   render();
   toast('✓ Currículo importado e organizado — revise antes de salvar');
@@ -513,8 +560,11 @@ async function loadVersionsPanel() {
     return;
   }
   try {
-    var response = await sb.from('analyses').select('id,score,result,created_at,archived_at').eq('user_id', _session.user.id).order('created_at', { ascending:false }).limit(100);
+    var response = await sb.from('analyses').select('id,score,result,created_at,archived_at').eq('user_id', _session.user.id).order('created_at', { ascending:false }).limit(VERSIONS_LIMIT);
     if (response.error) throw response.error;
+    // Antes o corte era silencioso: quem passava do limite via versões
+    // desaparecerem da lista sem nenhuma explicação.
+    _versionsCapped = (response.data || []).length >= VERSIONS_LIMIT;
     var rows = (response.data || []).filter(function(row){ return row.result && row.result.cv_otimizado; });
     _versionsById = {};
     rows.forEach(function(row){ _versionsById[row.id] = row; });
@@ -534,6 +584,80 @@ function versionStatusLabel(status) {
   return labels[status] || 'Analisada';
 }
 
+/* Reanalisar a mesma vaga cria uma análise nova, e cada análise carrega sua
+   própria cópia do currículo. Listadas uma a uma, três tentativas na mesma
+   vaga viravam três linhas idênticas — 46 linhas para ~15 oportunidades
+   reais. A lista passa a ser por VAGA; as tentativas anteriores continuam
+   acessíveis, recolhidas dentro do grupo. */
+function versionGroupKey(row) {
+  var info = (row.result && row.result.job_info) || {};
+  var url = String(info.job_url || '').trim().toLowerCase();
+  if (url) return 'u:' + url;
+  var empresa = String(info.empresa || '').trim().toLowerCase();
+  var cargo = String(info.titulo || info.cargo || '').trim().toLowerCase();
+  if (empresa || cargo) return 'v:' + empresa + '|' + cargo;
+  return 'a:' + row.id; // sem identificação da vaga: fica sozinha, nunca agrupa errado
+}
+
+function versionTime(row) {
+  var result = row.result || {};
+  return Date.parse(result.cv_version_updated_at || row.created_at || 0) || 0;
+}
+
+function groupVersions(rows) {
+  var order = [];
+  var byKey = {};
+  rows.forEach(function(row){
+    var key = versionGroupKey(row);
+    if (!byKey[key]) { byKey[key] = []; order.push(key); }
+    byKey[key].push(row);
+  });
+  return order.map(function(key){
+    var items = byKey[key].slice().sort(function(a, b){ return versionTime(b) - versionTime(a); });
+    return { key: key, latest: items[0], items: items };
+  });
+}
+
+function versionCopyHtml(row, siblingCount) {
+  var result = row.result || {};
+  var info = result.job_info || {};
+  var title = info.titulo || info.cargo || 'Vaga analisada';
+  var company = info.empresa || 'Empresa não informada';
+  var date = new Date(result.cv_version_updated_at || row.created_at).toLocaleDateString('pt-BR');
+  var scoreValue = row.score == null ? result.score : row.score;
+  var score = scoreValue == null ? '—' : Math.round(Number(scoreValue)) + '%';
+  var analysisState = row.archived_at ? 'Análise arquivada' : versionStatusLabel(_versionStatusByAnalysis[row.id]);
+  var countChip = siblingCount > 1 ? '<span class="version-chip">' + siblingCount + ' versões</span>' : '';
+  return '<div class="version-row-copy"><b>' + esc(title) + '</b><span>' + esc(company) + ' · atualizada em ' + date + '</span>' +
+    '<div class="version-meta"><span class="version-chip">Score ' + esc(score) + '</span><span class="version-chip">' + esc(analysisState) + '</span>' + countChip + '</div></div>';
+}
+
+function versionActionsHtml(row) {
+  return _versionView === 'archived'
+    ? '<button class="version-action" onclick="changeVersionState(\'' + row.id + '\',\'restore\')">Restaurar</button><button class="version-action danger" onclick="changeVersionState(\'' + row.id + '\',\'delete\')">Excluir definitivamente</button>'
+    : '<button class="version-action primary" onclick="openCvVersion(\'' + row.id + '\')">Editar e baixar</button><button class="version-action" onclick="changeVersionState(\'' + row.id + '\',\'archive\')">Arquivar</button><button class="version-action danger" onclick="changeVersionState(\'' + row.id + '\',\'delete\')">Excluir</button>';
+}
+
+// O índice vem do array renderizado, não a chave: chaves carregam URL de vaga
+// e quebrariam o atributo onclick com aspas.
+function versionGroupHtml(group, index) {
+  var head = '<div class="version-row">' + versionCopyHtml(group.latest, group.items.length) +
+    '<div class="version-actions">' + versionActionsHtml(group.latest) + '</div></div>';
+  var extra = group.items.length - 1;
+  if (extra < 1) return '<div class="version-group">' + head + '</div>';
+  var expanded = !!_expandedGroups[group.key];
+  var label = expanded
+    ? 'Ocultar versões anteriores'
+    : 'Ver ' + extra + (extra > 1 ? ' versões anteriores' : ' versão anterior') + ' desta vaga';
+  var toggle = '<button class="version-group-toggle" onclick="toggleVersionGroup(' + index + ')">' + label + '</button>';
+  var sub = expanded
+    ? '<div class="version-sub">' + group.items.slice(1).map(function(item){
+        return '<div class="version-row">' + versionCopyHtml(item, 0) + '<div class="version-actions">' + versionActionsHtml(item) + '</div></div>';
+      }).join('') + '</div>'
+    : '';
+  return '<div class="version-group">' + head + toggle + sub + '</div>';
+}
+
 function renderVersionsPanel() {
   var panel = document.getElementById('versionsPanel');
   if (!panel) return;
@@ -541,36 +665,42 @@ function renderVersionsPanel() {
   var active = rows.filter(function(row){ return !row.result.cv_version_archived_at; });
   var archived = rows.filter(function(row){ return !!row.result.cv_version_archived_at; });
   var visible = _versionView === 'archived' ? archived : active;
-  var shown = _showAllVersions ? visible : visible.slice(0,8);
+  _versionGroups = groupVersions(visible);
+  var shown = _showAllVersions ? _versionGroups : _versionGroups.slice(0, 8);
   var intro = '<p class="versions-intro">Cópias direcionadas para oportunidades específicas. Cada uma fica ligada à sua vaga e nunca altera o currículo base.</p>';
   var tabs = '<div class="version-tabs"><button class="version-tab ' + (_versionView === 'active' ? 'active' : '') + '" onclick="setVersionView(\'active\')">Ativas (' + active.length + ')</button><button class="version-tab ' + (_versionView === 'archived' ? 'active' : '') + '" onclick="setVersionView(\'archived\')">Arquivadas (' + archived.length + ')</button></div>';
   var head = '<div class="sec-head"><div class="sec-title">2 · Currículos para vagas</div><span class="save-status">' + rows.length + ' no total</span></div>' + intro + tabs;
   if (!rows.length) {
-    panel.innerHTML = head + '<p class="sec-empty">Quando você adaptar o currículo para uma vaga, a nova versão aparecerá aqui sem substituir o currículo base.</p>';
+    panel.innerHTML = head + '<div class="sec-empty-cta"><p class="sec-empty">Quando você adaptar o currículo para uma vaga, a nova versão aparece aqui — sem substituir o currículo base.</p>' +
+      '<button class="btn btn-ghost" onclick="adaptarParaVaga()">Adaptar para uma vaga</button></div>';
     return;
   }
-  if (!visible.length) {
+  if (!_versionGroups.length) {
     panel.innerHTML = head + '<p class="sec-empty">' + (_versionView === 'archived' ? 'Nenhuma versão arquivada.' : 'Nenhuma versão ativa.') + '</p>';
     return;
   }
-  var list = shown.map(function(row){
-    var result = row.result || {};
-    var info = result.job_info || {};
-    var title = info.titulo || info.cargo || 'Vaga analisada';
-    var company = info.empresa || 'Empresa não informada';
-    var versionDate = result.cv_version_updated_at || row.created_at;
-    var date = new Date(versionDate).toLocaleDateString('pt-BR');
-    var scoreValue = row.score == null ? result.score : row.score;
-    var score = scoreValue == null ? '—' : Math.round(Number(scoreValue)) + '%';
-    var status = versionStatusLabel(_versionStatusByAnalysis[row.id]);
-    var analysisState = row.archived_at ? 'Análise arquivada' : status;
-    var actions = _versionView === 'archived'
-      ? '<button class="version-action" onclick="changeVersionState(\'' + row.id + '\',\'restore\')">Restaurar</button><button class="version-action danger" onclick="changeVersionState(\'' + row.id + '\',\'delete\')">Excluir definitivamente</button>'
-      : '<button class="version-action primary" onclick="openCvVersion(\'' + row.id + '\')">Editar e baixar</button><button class="version-action" onclick="changeVersionState(\'' + row.id + '\',\'archive\')">Arquivar</button><button class="version-action danger" onclick="changeVersionState(\'' + row.id + '\',\'delete\')">Excluir</button>';
-    return '<div class="version-row"><div class="version-row-copy"><b>' + esc(title) + '</b><span>' + esc(company) + ' · atualizada em ' + date + '</span><div class="version-meta"><span class="version-chip">Score ' + esc(score) + '</span><span class="version-chip">' + esc(analysisState) + '</span></div></div><div class="version-actions">' + actions + '</div></div>';
-  }).join('');
-  var more = visible.length > 8 ? '<button class="versions-more" onclick="toggleAllVersions()">' + (_showAllVersions ? 'Mostrar menos' : 'Ver todas as ' + visible.length + ' versões') + '</button>' : '';
-  panel.innerHTML = head + '<div class="version-list">' + list + '</div>' + more;
+  var list = shown.map(function(group, index){ return versionGroupHtml(group, index); }).join('');
+  var more = _versionGroups.length > 8
+    ? '<button class="versions-more" onclick="toggleAllVersions()">' + (_showAllVersions ? 'Mostrar menos' : 'Ver todas as ' + _versionGroups.length + ' vagas') + '</button>'
+    : '';
+  var capped = _versionsCapped
+    ? '<p class="sec-empty">Mostrando as ' + VERSIONS_LIMIT + ' análises mais recentes. Versões mais antigas que isso não aparecem nesta lista.</p>'
+    : '';
+  panel.innerHTML = head + '<div class="version-list">' + list + '</div>' + more + capped;
+}
+
+function toggleVersionGroup(index) {
+  var group = _versionGroups[index];
+  if (!group) return;
+  _expandedGroups[group.key] = !_expandedGroups[group.key];
+  renderVersionsPanel();
+}
+
+function adaptarParaVaga() {
+  if (_isEmbedded && window.parent && window.parent !== window) {
+    try { window.parent.postMessage({ type:'vagaai-nav', frame:true, href:'/app?cv=base', id:'app' }, '*'); return; } catch(e) {}
+  }
+  location.href = '/app?cv=base';
 }
 
 function setVersionView(view) {
@@ -642,9 +772,9 @@ function secHead(icon, title, editFn) {
 
 function secDadosPessoais(d) {
   var c = d.contato || {};
-  var items = [c.email, c.telefone, c.linkedin, c.cidade].filter(Boolean);
+  var items = [c.email, c.telefone, c.linkedin, c.portfolio, c.cidade].filter(Boolean);
   return '<div class="sec-card">' + secHead('user','Dados pessoais','editDadosPessoais()') +
-    (items.length ? '<div class="tag-row">' + items.map(function(i){return '<span class="tag">'+esc(i)+'</span>';}).join('') + '</div>' : '<div class="sec-empty">Adicione seu e-mail, telefone, LinkedIn e cidade.</div>') +
+    (items.length ? '<div class="tag-row">' + items.map(function(i){return '<span class="tag">'+esc(i)+'</span>';}).join('') + '</div>' : '<div class="sec-empty">Adicione seu e-mail, telefone, LinkedIn, portfólio e cidade.</div>') +
     '</div>';
 }
 
@@ -654,12 +784,28 @@ function secObjetivo(d) {
     '</div>';
 }
 
+/* Um bullet sem nenhum número quase sempre descreve tarefa, não resultado —
+   e resultado é o que diferencia currículo no Brasil. O aviso é só um convite:
+   quem responde é a pessoa. A IA continua proibida de inventar métrica, então
+   este é o único caminho honesto para o número aparecer. */
+function bulletSemNumero(texto) { return !/\d/.test(String(texto || '')); }
+
+function metricaHint(bullets) {
+  var faltando = (bullets || []).filter(function(b){ return b && bulletSemNumero(b); }).length;
+  if (!faltando) return '';
+  return faltando > 1
+    ? faltando + ' atividades sem número — quanto, quantos, em quanto tempo?'
+    : '1 atividade sem número — quanto, quantos, em quanto tempo?';
+}
+
 function secExperiencias(d) {
   var exps = d.experiencias || [];
   var body = exps.length ? exps.map(function(e){
+    var hint = metricaHint(e.bullets);
     return '<div class="sec-item"><div class="sec-item-title">' + esc(e.cargo||'') + (e.empresa?' — '+esc(e.empresa):'') + '</div>' +
       (e.periodo ? '<div class="sec-item-sub">' + esc(e.periodo) + '</div>' : '') +
       ((e.bullets||[]).filter(Boolean).length ? '<ul>' + e.bullets.filter(Boolean).map(function(b){return '<li>'+esc(b)+'</li>';}).join('') + '</ul>' : '') +
+      (hint ? '<div class="metric-hint">' + esc(hint) + '</div>' : '') +
       '</div>';
   }).join('') : '<div class="sec-empty">Adicione suas experiências profissionais.</div>';
   return '<div class="sec-card">' + secHead('briefcase','Experiências profissionais','editExperiencias()') + body + '</div>';
@@ -668,9 +814,25 @@ function secExperiencias(d) {
 function secFormacao(d) {
   var arr = d.formacao || [];
   var body = arr.length ? arr.map(function(e){
-    return '<div class="sec-item"><div class="sec-item-title">' + esc(e.curso||'') + '</div><div class="sec-item-sub">' + [esc(e.instituicao||''), esc(e.periodo||'')].filter(Boolean).join(' · ') + '</div></div>';
+    return '<div class="sec-item"><div class="sec-item-title">' + esc(e.curso||'') + '</div><div class="sec-item-sub">' + [esc(e.instituicao||''), esc(e.periodo||''), esc(e.situacao||'')].filter(Boolean).join(' · ') + '</div></div>';
   }).join('') : '<div class="sec-empty">Adicione sua formação acadêmica.</div>';
   return '<div class="sec-card">' + secHead('grad','Formação acadêmica','editFormacao()') + body + '</div>';
+}
+
+/* Para quem ainda não tem emprego formal, isto não é complemento: é o
+   currículo. Seção própria, nunca misturada com experiência profissional —
+   voluntariado listado como emprego é lido por recrutador como emprego. */
+function secProjetos(d) {
+  var arr = d.projetos || [];
+  var body = arr.length ? arr.map(function(e){
+    var sub = [esc(e.contexto||''), esc(e.periodo||'')].filter(Boolean).join(' · ');
+    return '<div class="sec-item"><div class="sec-item-title">' + esc(e.nome||'') + '</div>' +
+      (sub ? '<div class="sec-item-sub">' + sub + '</div>' : '') +
+      (e.link ? '<div class="sec-item-sub">' + esc(e.link) + '</div>' : '') +
+      ((e.bullets||[]).filter(Boolean).length ? '<ul>' + e.bullets.filter(Boolean).map(function(b){return '<li>'+esc(b)+'</li>';}).join('') + '</ul>' : '') +
+      '</div>';
+  }).join('') : '<div class="sec-empty">Projetos pessoais, voluntariado, freelas, trabalhos acadêmicos ou iniciação científica. Conta muito quando a experiência formal ainda é curta.</div>';
+  return '<div class="sec-card">' + secHead('doc','Projetos e portfólio','editProjetos()') + body + '</div>';
 }
 
 function secCursos(d) {
@@ -705,6 +867,13 @@ function secResumo(d) {
 function openModal(html) { document.getElementById('modalContent').innerHTML = html; document.getElementById('modalBg').classList.add('open'); }
 function closeModal() { document.getElementById('modalBg').classList.remove('open'); }
 
+// Chamada ao salvar cada lista: o emprego novo, que o editor sempre insere no
+// fim do formulário, sobe para o topo assim que a pessoa salva.
+function ordenarLista(campo) {
+  if (!window.VagaAIOnboarding || !Array.isArray(_cvData[campo])) return;
+  _cvData[campo] = window.VagaAIOnboarding.ordenarPorPeriodo(_cvData[campo]);
+}
+
 function saveAndClose(applyFn) {
   applyFn();
   markDirty();
@@ -721,14 +890,16 @@ function editDadosPessoais() {
     '<div class="f-grid2"><div class="f-row"><label>E-mail</label><input id="mEmail" value="' + esc(c.email) + '"></div>' +
     '<div class="f-row"><label>Telefone</label><input id="mTel" value="' + esc(c.telefone) + '"></div></div>' +
     '<div class="f-grid2"><div class="f-row"><label>LinkedIn</label><input id="mLinkedin" value="' + esc(c.linkedin) + '"></div>' +
-    '<div class="f-row"><label>Cidade</label><input id="mCidade" value="' + esc(c.cidade) + '"></div></div>' +
+    '<div class="f-row"><label>Cidade</label><input id="mCidade" placeholder="Ex: São Paulo - SP" value="' + esc(c.cidade) + '"></div></div>' +
+    '<div class="f-row"><label>Portfólio ou site (opcional)</label><input id="mPortfolio" placeholder="behance.net/seunome, github.com/seunome, seusite.com.br" value="' + esc(c.portfolio) + '"></div>' +
+    '<p class="f-note">Não inclua CPF, RG, endereço completo, data de nascimento ou estado civil — não são avaliados e expõem seus dados à toa.</p>' +
     '<div class="modal-actions"><button class="btn btn-primary" onclick="saveDadosPessoais()">Salvar</button><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button></div>'
   );
 }
 function saveDadosPessoais() {
   saveAndClose(function(){
     _cvData.nome = document.getElementById('mNome').value.trim();
-    _cvData.contato = { email: document.getElementById('mEmail').value.trim(), telefone: document.getElementById('mTel').value.trim(), linkedin: document.getElementById('mLinkedin').value.trim(), cidade: document.getElementById('mCidade').value.trim() };
+    _cvData.contato = { email: document.getElementById('mEmail').value.trim(), telefone: document.getElementById('mTel').value.trim(), linkedin: document.getElementById('mLinkedin').value.trim(), portfolio: document.getElementById('mPortfolio').value.trim(), cidade: document.getElementById('mCidade').value.trim() };
   });
 }
 
@@ -773,8 +944,19 @@ function expRowHtml(i, e) {
     '<div class="f-grid2"><div class="f-row"><label>Cargo</label><input class="e-cargo" value="' + esc(e.cargo) + '"></div>' +
     '<div class="f-row"><label>Empresa</label><input class="e-empresa" value="' + esc(e.empresa) + '"></div></div>' +
     '<div class="f-row"><label>Período</label><input class="e-periodo" placeholder="Ex: 2021 — 2024" value="' + esc(e.periodo) + '"></div>' +
-    '<div class="f-row"><label>Principais atividades (uma por linha)</label><textarea class="e-bullets" id="cvvb_' + i + '" rows="3">' + esc((e.bullets||[]).join('\n')) + '</textarea>' +
+    '<div class="f-row"><label>Principais atividades e resultados (uma por linha)</label><textarea class="e-bullets" id="cvvb_' + i + '" rows="3" oninput="updateMetricHint(this)">' + esc((e.bullets||[]).join('\n')) + '</textarea>' +
+    '<div class="metric-hint"' + (metricaHint(e.bullets) ? '' : ' style="display:none"') + '>' + esc(metricaHint(e.bullets)) + '</div>' +
     cvVoiceBlock('cvvb_' + i, 'bullets', i, 'Conte o que você fazia nesse cargo e o que entregou — a IA transforma em linhas de currículo.') + '</div></div>';
+}
+
+function updateMetricHint(ta) {
+  var row = ta.closest('.list-row');
+  var el = row && row.querySelector('.metric-hint');
+  if (!el) return;
+  var bullets = ta.value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+  var hint = metricaHint(bullets);
+  el.textContent = hint;
+  el.style.display = hint ? '' : 'none';
 }
 
 /* Entrada por voz (/js/cv-voice.js). Devolve '' se o módulo não carregou —
@@ -824,14 +1006,15 @@ function saveExperiencias() {
         bullets: r.querySelector('.e-bullets').value.split('\n').map(function(s){return s.trim();}).filter(Boolean)
       };
     }).filter(function(e){ return e.cargo || e.empresa; });
+    ordenarLista('experiencias');
   });
 }
 
 function editFormacao() {
-  var rows = (_cvData.formacao || []).map(function(e,i){ return simpleRowHtml('f', i, e, 'curso', 'Curso', 'instituicao', 'Instituição'); }).join('');
+  var rows = (_cvData.formacao || []).map(function(e,i){ return simpleRowHtml('f', i, e, 'curso', 'Curso', 'instituicao', 'Instituição', true); }).join('');
   openModal('<h3>Formação acadêmica</h3><div id="listRows">' + rows + '</div>' +
-    '<button class="add-row-btn" onclick="addSimpleRow(\'f\',\'curso\',\'Curso\',\'instituicao\',\'Instituição\')">+ Adicionar formação</button>' +
-    '<div class="modal-actions"><button class="btn btn-primary" onclick="saveSimpleList(\'formacao\',\'f\',\'curso\',\'instituicao\')">Salvar</button><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button></div>');
+    '<button class="add-row-btn" onclick="addSimpleRow(\'f\',\'curso\',\'Curso\',\'instituicao\',\'Instituição\',true)">+ Adicionar formação</button>' +
+    '<div class="modal-actions"><button class="btn btn-primary" onclick="saveSimpleList(\'formacao\',\'f\',\'curso\',\'instituicao\',true)">Salvar</button><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button></div>');
 }
 function editCursos() {
   var rows = (_cvData.cursos || []).map(function(e,i){ return simpleRowHtml('c', i, e, 'nome', 'Curso / especialização', 'instituicao', 'Instituição'); }).join('');
@@ -839,21 +1022,70 @@ function editCursos() {
     '<button class="add-row-btn" onclick="addSimpleRow(\'c\',\'nome\',\'Curso / especialização\',\'instituicao\',\'Instituição\')">+ Adicionar curso</button>' +
     '<div class="modal-actions"><button class="btn btn-primary" onclick="saveSimpleList(\'cursos\',\'c\',\'nome\',\'instituicao\')">Salvar</button><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button></div>');
 }
-function simpleRowHtml(ns, i, e, k1, l1, k2, l2) {
+// comSituacao só vale para formação acadêmica: "cursando" x "concluído" muda
+// como recrutador e filtro leem o candidato. Curso livre não tem essa leitura.
+function simpleRowHtml(ns, i, e, k1, l1, k2, l2, comSituacao) {
   e = e || {};
+  var situacao = comSituacao
+    ? '<div class="f-row"><label>Situação</label><select class="' + ns + '-situacao">' +
+      SITUACOES_FORMACAO.map(function(s){
+        return '<option value="' + esc(s) + '"' + (e.situacao === s ? ' selected' : '') + '>' + (s || 'Não informar') + '</option>';
+      }).join('') + '</select></div>'
+    : '';
   return '<div class="list-row" data-i="' + i + '"><button class="list-row-remove" onclick="this.closest(\'.list-row\').remove()">✕ remover</button>' +
     '<div class="f-row"><label>' + l1 + '</label><input class="' + ns + '-k1" value="' + esc(e[k1]) + '"></div>' +
     '<div class="f-grid2"><div class="f-row"><label>' + l2 + '</label><input class="' + ns + '-k2" value="' + esc(e[k2]) + '"></div>' +
-    '<div class="f-row"><label>Período</label><input class="' + ns + '-periodo" placeholder="Ex: 2019 — 2023" value="' + esc(e.periodo) + '"></div></div></div>';
+    '<div class="f-row"><label>Período</label><input class="' + ns + '-periodo" placeholder="Ex: 2019 — 2023" value="' + esc(e.periodo) + '"></div></div>' +
+    situacao + '</div>';
 }
-function addSimpleRow(ns, k1, l1, k2, l2) { document.getElementById('listRows').insertAdjacentHTML('beforeend', simpleRowHtml(ns, Date.now(), {}, k1, l1, k2, l2)); }
-function saveSimpleList(field, ns, k1, k2) {
+function addSimpleRow(ns, k1, l1, k2, l2, comSituacao) { document.getElementById('listRows').insertAdjacentHTML('beforeend', simpleRowHtml(ns, Date.now(), {}, k1, l1, k2, l2, comSituacao)); }
+function saveSimpleList(field, ns, k1, k2, comSituacao) {
   saveAndClose(function(){
     var rows = document.querySelectorAll('#listRows .list-row');
     _cvData[field] = Array.from(rows).map(function(r){
       var o = {}; o[k1] = r.querySelector('.'+ns+'-k1').value.trim(); o[k2] = r.querySelector('.'+ns+'-k2').value.trim(); o.periodo = r.querySelector('.'+ns+'-periodo').value.trim();
+      if (comSituacao) {
+        var sel = r.querySelector('.'+ns+'-situacao');
+        o.situacao = sel ? sel.value : '';
+      }
       return o;
     }).filter(function(o){ return o[k1]; });
+    ordenarLista(field);
+  });
+}
+
+function editProjetos() {
+  var rows = (_cvData.projetos || []).map(function(e,i){ return projetoRowHtml(i, e); }).join('');
+  openModal('<h3>Projetos e portfólio</h3>' +
+    '<p class="f-note">Projetos pessoais, voluntariado, freelas, trabalhos acadêmicos, iniciação científica ou resultados em projetos digitais.</p>' +
+    '<div id="listRows">' + rows + '</div>' +
+    '<button class="add-row-btn" onclick="addProjetoRow()">+ Adicionar projeto</button>' +
+    '<div class="modal-actions"><button class="btn btn-primary" onclick="saveProjetos()">Salvar</button><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button></div>');
+}
+function projetoRowHtml(i, e) {
+  e = e || {};
+  return '<div class="list-row" data-i="' + i + '"><button class="list-row-remove" onclick="this.closest(\'.list-row\').remove()">✕ remover</button>' +
+    '<div class="f-grid2"><div class="f-row"><label>Nome do projeto</label><input class="p-nome" value="' + esc(e.nome) + '"></div>' +
+    '<div class="f-row"><label>Tipo</label><input class="p-contexto" placeholder="Ex: Voluntariado, Freelance, Acadêmico" value="' + esc(e.contexto) + '"></div></div>' +
+    '<div class="f-grid2"><div class="f-row"><label>Período</label><input class="p-periodo" placeholder="Ex: 2024" value="' + esc(e.periodo) + '"></div>' +
+    '<div class="f-row"><label>Link (opcional)</label><input class="p-link" value="' + esc(e.link) + '"></div></div>' +
+    '<div class="f-row"><label>O que você fez e o que gerou (uma por linha)</label><textarea class="p-bullets" rows="3" oninput="updateMetricHint(this)">' + esc((e.bullets||[]).join('\n')) + '</textarea>' +
+    '<div class="metric-hint"' + (metricaHint(e.bullets) ? '' : ' style="display:none"') + '>' + esc(metricaHint(e.bullets)) + '</div></div></div>';
+}
+function addProjetoRow() { document.getElementById('listRows').insertAdjacentHTML('beforeend', projetoRowHtml(Date.now(), {})); }
+function saveProjetos() {
+  saveAndClose(function(){
+    var rows = document.querySelectorAll('#listRows .list-row');
+    _cvData.projetos = Array.from(rows).map(function(r){
+      return {
+        nome: r.querySelector('.p-nome').value.trim(),
+        contexto: r.querySelector('.p-contexto').value.trim(),
+        periodo: r.querySelector('.p-periodo').value.trim(),
+        link: r.querySelector('.p-link').value.trim(),
+        bullets: r.querySelector('.p-bullets').value.split('\n').map(function(s){return s.trim();}).filter(Boolean)
+      };
+    }).filter(function(p){ return p.nome; });
+    ordenarLista('projetos');
   });
 }
 

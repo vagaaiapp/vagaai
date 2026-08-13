@@ -418,8 +418,7 @@ async function getFreshToken() {
       document.getElementById('mainSection').style.display = 'block';
       var badge = document.getElementById('planBadge');
       if (badge) { badge.textContent = sub.plan === 'pro' ? 'Pro' : 'Starter'; badge.style.display = ''; }
-      var savedCv = null;
-      try { savedCv = localStorage.getItem('vagaai_cv'); } catch(e) {}
+      var savedCv = readBaseCv();
       if (savedCv) { var link = document.getElementById('cvSavedLink'); if (link) link.style.display = ''; }
       await loadCartaContext();
     }
@@ -742,22 +741,54 @@ function loadScript(src) {
   });
 }
 
+/* O hub /curriculo grava o currículo base em 'vagaai_cv_base'; só fluxos
+   antigos escreviam em 'vagaai_cv'. Lendo apenas a chave antiga, quem montou o
+   currículo pelo hub nunca via o link "usar meu currículo salvo" aqui. */
+function readBaseCv() {
+  var keys = ['vagaai_cv_base', 'vagaai_cv'];
+  for (var i = 0; i < keys.length; i++) {
+    try {
+      var v = localStorage.getItem(keys[i]);
+      if (v) return v;
+    } catch(e) { return null; }
+  }
+  return null;
+}
+
 function loadSavedCv(e) {
   e.preventDefault();
   try {
-    var raw = localStorage.getItem('vagaai_cv');
+    var raw = readBaseCv();
     if (!raw) return;
     var cv = JSON.parse(raw);
     var parts = [];
-    function pl(label, val) { var t = typeof val === 'string' ? val.trim() : (Array.isArray(val) ? val.join(', ') : ''); if (t) parts.push(label + ': ' + t); }
+    function pl(label, val) {
+      var t = typeof val === 'string' ? val.trim() : (Array.isArray(val) ? val.join(', ') : '');
+      if (t) parts.push(label + ': ' + t);
+    }
     if (cv.nome) parts.push('Nome: ' + cv.nome);
     pl('Título', cv.titulo_profissional || cv.cargo_objetivo || cv.titulo);
     pl('Resumo', cv.resumo_profissional || cv.objetivo || cv.resumo);
-    pl('Experiências', cv.experiencias);
-    pl('Formação', cv.formacao || cv.educacao);
+    // experiencias/formacao/cursos são arrays de OBJETOS no currículo base.
+    // Passá-los por join() rendia "[object Object]" na carta inteira.
+    var exps = (cv.experiencias || []).map(function(e) {
+      var cab = [e.cargo, e.empresa].filter(Boolean).join(' — ');
+      var per = e.periodo ? ' (' + e.periodo + ')' : '';
+      var bul = (e.bullets || []).filter(Boolean).map(function(b){ return '  · ' + b; }).join('\n');
+      return (cab + per + (bul ? '\n' + bul : '')).trim();
+    }).filter(Boolean);
+    if (exps.length) parts.push('Experiências:\n' + exps.join('\n'));
+    var forms = (cv.formacao || cv.educacao || []).map(function(f) {
+      return typeof f === 'string' ? f : [f.curso, f.instituicao, f.periodo].filter(Boolean).join(' — ');
+    }).filter(Boolean);
+    if (forms.length) parts.push('Formação: ' + forms.join('; '));
     pl('Habilidades', cv.habilidades || cv.skills || cv.competencias);
-    pl('Idiomas', cv.idiomas);
-    var text = parts.join('\n');
+    var idiomas = (cv.idiomas || []).map(function(i) {
+      return typeof i === 'string' ? i : [i.idioma, i.nivel].filter(Boolean).join(' (') + (i.nivel ? ')' : '');
+    }).filter(Boolean);
+    if (idiomas.length) parts.push('Idiomas: ' + idiomas.join(', '));
+    // Currículo importado sem estruturação: o texto cru é tudo que existe.
+    var text = parts.length ? parts.join('\n') : String(cv.raw_text || '').trim();
     if (text) setCvText(text, cv.nome ? 'Currículo - ' + cv.nome : 'Currículo salvo');
   } catch(err) {}
 }

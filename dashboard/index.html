@@ -18,6 +18,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/onboarding/shared.js"></script>
+<script src="/js/cv-completude.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1227,7 +1228,6 @@ body.frame-fullscreen .sidebar { display: none !important; }
 
 /* ── Painel V2 ─────────────────────────────────────────────── */
 .pg-greeting { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:28px; padding-top:4px; }
-.pg-eyebrow { font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--gb-emerald); margin-bottom:7px; }
 .pg-title { font-family: Lora, Georgia, serif; font-size:30px; font-weight:700; color:var(--t1); margin-bottom:7px; letter-spacing:-.3px; line-height:1.2; }
 .pg-sub { font-size:13px; color:var(--t2); }
 .pg-date { font-size:12px; color:var(--t3); white-space:nowrap; padding-top:6px; }
@@ -1262,7 +1262,6 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .pba-btn-ghost:hover { background:rgba(255,255,255,.12); }
 .pba-right { position:relative; z-index:1; align-self:stretch; }
 .pba-priority { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:22px 24px; height:100%; display:flex; flex-direction:column; justify-content:space-between; }
-.pba-priority-eyebrow { font-size:11px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:rgba(134,165,149,.7); margin-bottom:12px; }
 .pba-priority-cargo { font-size:14px; font-weight:800; color:#fff; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .pba-priority-empresa { font-size:11px; color:rgba(170,196,181,.65); margin-bottom:20px; }
 .pba-score-row { display:flex; align-items:center; gap:14px; }
@@ -1270,23 +1269,54 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .pba-ring-inner { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#fff; }
 .pba-score-label { font-size:12px; font-weight:700; color:#c8f0d2; margin-bottom:3px; }
 .pba-score-sub { font-size:11px; color:rgba(200,230,210,.5); }
-.psa-section { margin-bottom:28px; }
-.psa-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px; }
-.psa-title { font-size:16px; font-weight:700; color:var(--t1); margin-bottom:3px; }
-.psa-sub-txt { font-size:12px; color:var(--t3); }
 .psa-link { font-size:12px; font-weight:600; color:var(--gb-emerald); text-decoration:none; white-space:nowrap; padding-top:4px; }
-.psa-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-.psa-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); padding:18px 20px; box-shadow:var(--sh-card); display:flex; flex-direction:column; }
-.psa-badge { font-size:11px; font-weight:700; padding:2px 9px; border-radius:20px; width:fit-content; margin-bottom:12px; }
-.psa-badge-hoje { background:#fef3c7; color:#92400e; }
-.psa-badge-amanha { background:#dbeafe; color:#1e40af; }
-.psa-badge-impacto { background:#fee2e2; color:#991b1b; }
-.psa-badge-ok { background:var(--s-grn-bg); color:var(--gb-emerald); }
-.psa-ico { width:20px; height:20px; margin-bottom:8px; display:block; color:var(--text-muted); }
-.psa-ico svg { width:20px; height:20px; }
-.psa-card-title { font-size:13px; font-weight:700; color:var(--t1); margin-bottom:5px; }
-.psa-card-desc { font-size:11.5px; color:var(--t2); line-height:1.45; flex:1; margin-bottom:14px; }
-.psa-cta { font-size:11.5px; font-weight:700; color:var(--gb-emerald); text-decoration:none; background:none; border:none; cursor:pointer; padding:0; text-align:left; }
+
+/* ── Rótulo de bloco ─────────────────────────────────────────
+   Substitui o par título+subtítulo que cada seção repetia. O número
+   marca a ordem de leitura real do painel (material → ação → registro). */
+.blk-label { display:flex; align-items:baseline; gap:9px; margin-bottom:11px; }
+.blk-num { font-size:10.5px; font-weight:800; letter-spacing:.05em; color:var(--gb-bright); background:var(--gb-forest); border-radius:5px; padding:2px 6px; flex-shrink:0; font-variant-numeric:tabular-nums; }
+/* No escuro o fundo do selo (--gb-forest) fica quase igual ao fundo da página
+   e o número parecia solto; o tom esverdeado devolve o contorno do chip. */
+[data-theme="dark"] .blk-num { background:rgba(78,206,145,.14); }
+.blk-title { font-size:14.5px; font-weight:700; color:var(--t1); letter-spacing:-.1px; }
+.blk-link { font-size:12px; font-weight:600; color:var(--gb-emerald); text-decoration:none; white-space:nowrap; margin-left:auto; }
+[data-theme="dark"] .blk-link { color:var(--gb-bright); }
+.blk-link:hover { text-decoration:underline; }
+
+/* ── Bloco 01 · Seu material ─────────────────────────────────
+   Currículo base, lacunas do mercado e versões por vaga. Faixa de três
+   colunas coladas (gap:1px sobre o fundo da borda) e não três cards
+   soltos: são leituras do mesmo objeto, não três assuntos. */
+.mat-section { margin-bottom:26px; }
+.mat-strip { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; box-shadow:var(--sh-card); }
+.mat-tile { background:var(--bg-card); padding:16px 18px; display:flex; flex-direction:column; gap:7px; min-width:0; }
+.mat-lbl { font-size:10.5px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:var(--t3); }
+.mat-val { font-size:21px; font-weight:800; color:var(--t1); line-height:1.1; letter-spacing:-.4px; font-variant-numeric:tabular-nums; }
+.mat-val small { font-size:12.5px; font-weight:600; color:var(--t2); letter-spacing:0; }
+.mat-sub { font-size:11.5px; color:var(--t3); line-height:1.45; }
+.mat-bar { height:5px; border-radius:20px; background:var(--bg-sub); border:1px solid var(--border); overflow:hidden; }
+.mat-bar i { display:block; height:100%; background:var(--gb-emerald); border-radius:20px; transition:width .5s cubic-bezier(.4,0,.2,1); }
+/* --gb-emerald é escuro demais sobre o card escuro: a barra sumia. */
+[data-theme="dark"] .mat-bar i { background:var(--gb-bright); }
+.mat-cta { font-size:12px; font-weight:700; color:var(--gb-emerald); background:none; border:none; padding:0; cursor:pointer; text-align:left; align-self:flex-start; font-family:inherit; margin-top:auto; }
+[data-theme="dark"] .mat-cta { color:var(--gb-bright); }
+.mat-cta:hover { text-decoration:underline; }
+.mat-chips { display:flex; flex-wrap:wrap; gap:5px; }
+.mat-chip { font-size:11px; font-weight:700; background:var(--s-amb-bg); border:1px solid rgba(196,125,10,.28); color:#a5680c; padding:2px 8px; border-radius:20px; white-space:nowrap; }
+[data-theme="dark"] .mat-chip { background:rgba(255,209,102,.1); border-color:rgba(255,209,102,.35); color:#ffd166; }
+.mat-chip-ok { background:var(--s-grn-bg); border-color:rgba(26,122,74,.28); color:var(--s-grn); }
+[data-theme="dark"] .mat-chip-ok { background:rgba(78,206,145,.12); border-color:rgba(78,206,145,.35); color:var(--gb-bright); }
+
+/* ── Linha de sugestão secundária ────────────────────────────
+   O que antes eram cards-dica com o mesmo peso da ação real. */
+/* Texto corrido em --t3 fica ilegível no tema escuro (#3d5c47 sobre #0d1610);
+   --t3 serve para legenda curta, não para a frase inteira da linha. */
+.hint-row { display:flex; align-items:center; gap:11px; flex-wrap:wrap; margin-top:12px; padding:11px 16px; border:1px dashed var(--border); border-radius:var(--r-sm); font-size:12.5px; color:var(--t2); background:var(--bg-card); }
+.hint-row b { font-weight:700; color:var(--t1); }
+.hint-cta { font-size:12px; font-weight:700; color:var(--gb-emerald); background:none; border:none; padding:0; cursor:pointer; margin-left:auto; font-family:inherit; white-space:nowrap; }
+[data-theme="dark"] .hint-cta { color:var(--gb-bright); }
+.hint-cta:hover { text-decoration:underline; }
 .opp-section { margin-bottom:28px; }
 .opp-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px; }
 .opp-title { font-size:16px; font-weight:700; color:var(--t1); margin-bottom:3px; }
@@ -1325,8 +1355,15 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .opp-action-when { font-size:11px; color:var(--t3); margin-top:2px; }
 .opp-item-chevron { color:var(--t3); justify-self:center; }
 .funil-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); padding:18px 20px; }
+.funil-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:2px; }
 .funil-title-t { font-size:13.5px; font-weight:700; color:var(--t1); margin-bottom:2px; }
-.funil-sub-t { font-size:11px; color:var(--t3); margin-bottom:16px; }
+.funil-sub-t { font-size:11px; color:var(--t3); margin-bottom:16px; line-height:1.45; }
+/* Seletor de período: o recorte fixo de 30 dias zerava o funil ao lado de uma
+   lista não vazia, sem oferecer forma de ver o histórico. */
+.funil-period { display:flex; gap:3px; flex-shrink:0; }
+.funil-per-btn { font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:20px; border:1px solid var(--border); background:var(--bg-card); color:var(--t3); cursor:pointer; font-family:inherit; transition:all .15s; }
+.funil-per-btn:hover { color:var(--t1); border-color:var(--t3); }
+.funil-per-btn.on { background:var(--gb-emerald); border-color:var(--gb-emerald); color:#fff; }
 .funil-pipe { display:flex; flex-direction:column; align-items:center; gap:8px; margin-bottom:14px; width:100%; }
 .funil-stage { display:flex; flex-direction:column; align-items:center; gap:4px; width:100%; }
 .funil-stage-label { display:flex; align-items:baseline; justify-content:center; gap:5px; }
@@ -1356,7 +1393,9 @@ body.frame-fullscreen .sidebar { display: none !important; }
   .sb-profile-info { display: none; }
   .sb-btn { justify-content: center; padding: 11px; width: 48px; gap: 0; }
   .sb-profile-row { justify-content: center; padding: 5px; }
-  .psa-grid { grid-template-columns: repeat(2, 1fr); }
+  .mat-strip { grid-template-columns: repeat(2, 1fr); }
+  /* Em duas colunas o terceiro bloco sobraria sozinho numa linha pela metade. */
+  .mat-tile:last-child { grid-column: 1 / -1; }
   .opp-cols { grid-template-columns: 1fr; }
   .funil-card { display: none; }
   .interview-hero { grid-template-columns:1fr; padding:34px 32px; }
@@ -1382,7 +1421,7 @@ body.frame-fullscreen .sidebar { display: none !important; }
   .main { margin-left: 0; min-width: 0; }
   .header { display: none; }
   .content { padding: 82px 16px 104px; }
-  .psa-grid { grid-template-columns: 1fr; }
+  .mat-strip { grid-template-columns: 1fr; }
   .opp-cols { grid-template-columns: 1fr; }
   .pg-title { font-size: 27px; }
   .al-title { font-size: 27px; }
@@ -1792,15 +1831,8 @@ body.cd-modal-open { overflow:hidden; }
 .al-metric-lbl { font-size:11px; color:var(--t3); margin-bottom:2px; }
 .al-metric-sub { font-size:11px; color:var(--gb-emerald); font-weight:700; }
 .al-metric-na { font-size:11px; color:var(--t3); font-style:italic; }
-.cv-gap-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); padding:18px 20px; box-shadow:var(--sh-card); margin-bottom:20px; }
-.cv-gap-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:10px; }
-.cv-gap-title { font-size:13px; font-weight:800; color:var(--t1); }
-.cv-gap-sub { font-size:12px; color:var(--t3); margin-top:3px; max-width:520px; }
-.cv-gap-link { font-size:12px; font-weight:700; color:var(--gb-emerald); text-decoration:none; white-space:nowrap; }
-.cv-gap-link:hover { text-decoration:underline; }
-.cv-gap-chips { display:flex; flex-wrap:wrap; gap:7px; }
-.cv-gap-chip { font-size:11.5px; font-weight:700; background:#fffbf2; border:1px solid rgba(196,125,10,.28); color:#a5680c; padding:4px 10px; border-radius:20px; }
-[data-theme="dark"] .cv-gap-chip { background:rgba(255,209,102,.1); border-color:rgba(255,209,102,.35); color:#ffd166; }
+/* Os estilos .cv-gap-* saíram junto com o card: as lacunas de mercado agora são
+   um bloco da faixa "Seu material" (.mat-*) na Visão geral. */
 .al-main-grid { display:grid; grid-template-columns:520px minmax(0,1fr); gap:16px; align-items:start; }
 .al-summary-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); overflow:hidden; }
 .al-sum-head { padding:15px 18px 13px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; }
@@ -2455,27 +2487,45 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     <!-- GREETING -->
     <div class="pg-greeting">
       <div>
-        <div class="pg-eyebrow">Seu painel de candidaturas</div>
         <h1 class="pg-title" id="pgGreeting">Carregando...</h1>
-        <p class="pg-sub" id="pgActionSub"> </p>
       </div>
       <div class="pg-date" id="pgDate"></div>
     </div>
 
-    <!-- PRÓXIMA MELHOR AÇÃO -->
+    <!-- ── 01 · SEU MATERIAL ──
+         Currículo base, lacunas do mercado e versões por vaga. Vem antes da
+         ação porque a qualidade do currículo base determina a qualidade de
+         tudo que vem depois: análise, alerta e versão direcionada. -->
+    <div class="mat-section">
+      <div class="blk-label">
+        <span class="blk-num">01</span>
+        <span class="blk-title">Seu material</span>
+        <a href="#" class="blk-link" onclick="switchDashTab('curriculo');return false;">Abrir Meu Currículo →</a>
+      </div>
+      <div class="mat-strip" id="matStrip">
+        <div class="mat-tile"><div class="mat-sub">Carregando...</div></div>
+        <div class="mat-tile"><div class="mat-sub"> </div></div>
+        <div class="mat-tile"><div class="mat-sub"> </div></div>
+      </div>
+    </div>
+
+    <!-- ── 02 · FAÇA AGORA ── -->
+    <div class="blk-label">
+      <span class="blk-num">02</span>
+      <span class="blk-title">Faça agora</span>
+    </div>
     <div class="pba-card">
       <div class="pba-left">
-        <div class="pba-eyebrow"><span class="pba-eyebrow-dot"></span>Próxima melhor ação</div>
+        <div class="pba-eyebrow"><span class="pba-eyebrow-dot"></span>Maior ganho possível hoje</div>
         <h2 class="pba-title" id="pbaTitle">Carregando...</h2>
         <p class="pba-desc" id="pbaDesc"> </p>
         <div class="pba-btns">
-          <button class="pba-btn-primary" id="pbaBtnPrimary" onclick="switchDashTab('app')">Otimizar CV agora →</button>
+          <button class="pba-btn-primary" id="pbaBtnPrimary" onclick="switchDashTab('app')">Analisar uma vaga →</button>
           <button class="pba-btn-ghost" id="pbaBtnSecondary" onclick="openCandidaturasFiltered('todas')">Ver candidaturas</button>
         </div>
       </div>
       <div class="pba-right">
         <div class="pba-priority">
-          <div class="pba-priority-eyebrow">Candidatura prioritária</div>
           <div class="pba-priority-cargo" id="pbaCargo">—</div>
           <div class="pba-priority-empresa" id="pbaEmpresa">—</div>
           <div class="pba-score-row">
@@ -2497,30 +2547,15 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       </div>
     </div>
 
-    <!-- PRECISA DA SUA ATENÇÃO -->
-    <div class="psa-section">
-      <div class="psa-header">
-        <div>
-          <div class="psa-title">Precisa da sua atenção</div>
-          <div class="psa-sub-txt">Ações organizadas por urgência e impacto.</div>
-        </div>
-        <a href="#" class="psa-link" onclick="openCandidaturasFiltered('todas');return false;">Gerenciar próximas ações →</a>
-      </div>
-      <div class="psa-grid" id="psaGrid">
-        <div class="psa-card"><div class="psa-card-desc" style="color:var(--t3)">Carregando...</div></div>
-        <div class="psa-card"><div class="psa-card-desc" style="color:var(--t3)"> </div></div>
-        <div class="psa-card"><div class="psa-card-desc" style="color:var(--t3)"> </div></div>
-      </div>
-    </div>
-
-    <!-- SUAS OPORTUNIDADES -->
-    <div class="opp-section">
-      <div class="opp-header">
-        <div>
-          <div class="opp-title">Suas oportunidades</div>
-          <div class="opp-sub-txt">Vagas analisadas, candidaturas enviadas e próximas ações em uma única visão.</div>
-        </div>
-        <a href="#" class="psa-link" onclick="openCandidaturasFiltered('todas');return false;">Abrir rastreador completo →</a>
+    <!-- ── 03 · SUAS OPORTUNIDADES ──
+         A seção "Precisa da sua atenção" deixou de existir: a ação seguinte de
+         cada vaga já é calculada por nextAction() e agora aparece só na linha
+         da própria vaga, em vez de duplicada em cards acima. -->
+    <div class="opp-section" style="margin-top:26px">
+      <div class="blk-label">
+        <span class="blk-num">03</span>
+        <span class="blk-title">Suas oportunidades</span>
+        <a href="#" class="blk-link" onclick="openCandidaturasFiltered('todas');return false;">Abrir rastreador completo →</a>
       </div>
       <div class="opp-cols">
         <div class="opp-list-card">
@@ -2543,14 +2578,22 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           </div>
         </div>
         <div class="funil-card">
-          <div class="funil-title-t">Seu funil</div>
-          <div class="funil-sub-t">Últimos 30 dias</div>
+          <div class="funil-head">
+            <div class="funil-title-t">Seu funil</div>
+            <div class="funil-period" id="funilPeriod" role="group" aria-label="Período do funil">
+              <button class="funil-per-btn on" data-dias="30" onclick="setFunilPeriod(30)">30d</button>
+              <button class="funil-per-btn" data-dias="90" onclick="setFunilPeriod(90)">90d</button>
+              <button class="funil-per-btn" data-dias="0" onclick="setFunilPeriod(0)">Tudo</button>
+            </div>
+          </div>
+          <div class="funil-sub-t" id="funilSub">Últimos 30 dias</div>
           <div class="funil-pipe" id="funilPipe"></div>
           <div class="funil-divider"></div>
           <div class="funil-insight-lbl">✦ Insight da VagaAI</div>
           <div class="funil-insight-txt" id="funilInsight">Analise mais vagas para receber insights personalizados.</div>
         </div>
       </div>
+      <div class="hint-row" id="painelHint" style="display:none"></div>
     </div>
 
   </div><!-- /tab-painel -->
@@ -2800,17 +2843,9 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         </div>
       </div>
 
-      <!-- Seu currículo x o mercado -->
-      <div class="cv-gap-card" id="cvGapCard" style="display:none">
-        <div class="cv-gap-head">
-          <div>
-            <div class="cv-gap-title">Seu currículo × o mercado</div>
-            <div class="cv-gap-sub" id="cvGapSub">Carregando…</div>
-          </div>
-          <a class="cv-gap-link" href="#" onclick="switchDashTab('curriculo');return false;">Editar currículo →</a>
-        </div>
-        <div class="cv-gap-chips" id="cvGapChips"></div>
-      </div>
+      <!-- "Seu currículo × o mercado" foi promovido para o bloco 01 da Visão
+           geral (#matStrip): é o insight que melhora sozinho a cada análise e
+           quase ninguém chegava até aqui para vê-lo. -->
 
       <!-- Main grid -->
       <div class="al-clean-grid">
@@ -3098,7 +3133,7 @@ async function init() {
     window._perfilData = { email, displayName };
     window._userName = displayName;
 
-    await Promise.all([loadSubscriptionData(), loadAnalyses(), loadKanban(), loadAlerts(), loadCvGapCard()]);
+    await Promise.all([loadSubscriptionData(), loadAnalyses(), loadKanban(), loadAlerts(), loadCvBase()]);
   } catch(e) {
     console.error('init error:', e);
     var loadEl = document.getElementById('pageLoading');
@@ -3142,25 +3177,14 @@ function buildPainelV2(analyses, tracked) {
     pgDate.textContent = days[now.getDay()] + ', ' + now.getDate() + ' de ' + months[now.getMonth()];
   }
 
-  var actionCount = buildAttentionCards(analyses, tracked);
-  // PBA priority-4 (anyBest) also represents an actionable recommendation — count it
-  var hasAnyAnalysis = analyses.some(function(a){ return a.score > 0; });
-  var hasPbaAction = actionCount > 0 || hasAnyAnalysis;
-  var pgActionSub = document.getElementById('pgActionSub');
-  if (pgActionSub) {
-    if (!hasAnyAnalysis && tracked.length === 0) {
-      pgActionSub.textContent = 'Analise sua primeira vaga para começar.';
-    } else if (hasPbaAction) {
-      var total = actionCount + (actionCount === 0 && hasAnyAnalysis ? 1 : 0);
-      pgActionSub.textContent = 'Você tem ' + total + ' ' + (total === 1 ? 'ação que pode' : 'ações que podem') + ' aumentar suas chances esta semana.';
-    } else {
-      pgActionSub.textContent = 'Tudo em dia! Continue analisando vagas para aumentar suas chances.';
-    }
-  }
-
-  buildPBACard(analyses, tracked);
+  buildMaterialStrip();
+  // buildPBACard devolve a vaga que escolheu. Antes, ela e os cards de
+  // "Precisa da sua atenção" rodavam o mesmo filtro de forma independente e
+  // exibiam a MESMA vaga duas vezes — agora nada abaixo repete a escolha.
+  _pbaChosen = buildPBACard(analyses, tracked);
   renderOppList();
   buildFunilCard(analyses, tracked);
+  buildSecondaryHint();
 }
 
 function updatePBAPriority(score, cargo, empresa, subText) {
@@ -3184,6 +3208,8 @@ function updatePBAPriority(score, cargo, empresa, subText) {
   if (empEl) empEl.textContent = empresa || '—';
 }
 
+/* Devolve { analysisId, trackerId } da vaga escolhida — usado para impedir que
+   qualquer outro bloco do painel fale da mesma oportunidade de novo. */
 function buildPBACard(analyses, tracked) {
   var titleEl = document.getElementById('pbaTitle');
   var descEl = document.getElementById('pbaDesc');
@@ -3220,6 +3246,7 @@ function buildPBACard(analyses, tracked) {
     if (btnPri) { btnPri.textContent = 'Treinar entrevista →'; (function(aid){ btnPri.onclick = function(){ switchDashTab('entrevista', '/entrevista' + (aid ? '?analysis_id=' + encodeURIComponent(aid) : '')); }; })(interviewJob.analysis_id); }
     if (btnSec) { btnSec.textContent = 'Ver candidatura'; (function(tid, aid){ btnSec.onclick = function(){ openCandidaturasSmart({ trackerId: tid, analysisId: aid, openDetail: true, view: 'lista' }); }; })(interviewJob.id, interviewJob.analysis_id); }
     updatePBAPriority(interviewJob.score || (a ? a.score : 0), cargo, emp || '', hasDate ? 'Entrevista marcada' : 'Em entrevista');
+    return { analysisId: interviewJob.analysis_id || null, trackerId: interviewJob.id || null };
   } else if (followUpJob) {
     var a = analyses.find(function(x){ return x.id === followUpJob.analysis_id; });
     var cargo = followUpJob.cargo || 'essa vaga';
@@ -3229,103 +3256,197 @@ function buildPBACard(analyses, tracked) {
     if (btnPri) { btnPri.textContent = 'Registrar follow-up →'; (function(tid){ btnPri.onclick = function(){ openCandidaturaByTracker(tid, 'aplicada'); }; })(followUpJob.id); }
     if (btnSec) { btnSec.textContent = 'Ver candidaturas'; btnSec.onclick = function(){ openCandidaturasFiltered('aplicada'); }; }
     updatePBAPriority(followUpJob.score || (a ? a.score : 0), cargo, emp || '', followUpJob._days + ' dias sem retorno');
-  } else if (untrackedBest) {
-    var r = untrackedBest.result || {};
+    return { analysisId: followUpJob.analysis_id || null, trackerId: followUpJob.id || null };
+  } else if (untrackedBest || anyBest) {
+    var alvo = untrackedBest || anyBest;
+    var r = alvo.result || {};
     var ji = r.job_info || {};
-    var cargo = ji.cargo || (untrackedBest.job_excerpt ? untrackedBest.job_excerpt.slice(0,40) : 'essa vaga');
-    var emp = ji.empresa || 'Empresa';
+    var cargo = ji.cargo || (alvo.job_excerpt ? alvo.job_excerpt.slice(0,40) : 'essa vaga');
+    var emp = ji.empresa || (untrackedBest ? 'Empresa' : '');
     var missing = (r.keywords_faltando || []).length;
-    if (titleEl) titleEl.textContent = 'Aumente seu score na vaga de ' + cargo;
-    if (descEl) descEl.textContent = 'Seu currículo ainda não menciona ' + (missing > 0 ? missing + ' requisito' + (missing > 1 ? 's importantes' : ' importante') : 'alguns requisitos') + ' da vaga. Com esses ajustes, sua aderência pode subir significativamente.';
-    if (btnPri) { btnPri.textContent = 'Otimizar CV agora →'; btnPri.onclick = function(){ switchDashTab('app'); }; }
-    if (btnSec) { btnSec.textContent = 'Ver análise completa'; (function(aid){ btnSec.onclick = function(){ openCandidaturaByAnalysis(aid, 'so_analise'); }; })(untrackedBest.id); }
-    updatePBAPriority(untrackedBest.score, cargo, emp, missing + ' requisito' + (missing !== 1 ? 's' : '') + ' ausente' + (missing !== 1 ? 's' : ''));
-  } else if (anyBest) {
-    var r = anyBest.result || {};
-    var ji = r.job_info || {};
-    var cargo = ji.cargo || (anyBest.job_excerpt ? anyBest.job_excerpt.slice(0,40) : 'essa vaga');
-    var emp = ji.empresa || '';
-    var missing = (r.keywords_faltando || []).length;
-    if (titleEl) titleEl.textContent = 'Aumente seu score na vaga de ' + cargo;
-    if (descEl) descEl.textContent = 'Revise sua melhor análise e otimize o currículo para aumentar sua compatibilidade com essa vaga.';
-    if (btnPri) { btnPri.textContent = 'Otimizar CV agora →'; btnPri.onclick = function(){ switchDashTab('app'); }; }
-    if (btnSec) { btnSec.textContent = 'Ver candidatura'; (function(aid){ btnSec.onclick = function(){ openCandidaturaByAnalysis(aid, 'todas'); }; })(anyBest.id); }
-    updatePBAPriority(anyBest.score, cargo, emp, missing > 0 ? missing + ' requisito' + (missing > 1 ? 's' : '') + ' ausente' + (missing > 1 ? 's' : '') : 'Boa compatibilidade');
+    // O currículo direcionado desta vaga já existe dentro da análise. Mandar o
+    // usuário para o formulário em branco custava a ele recolar a vaga inteira
+    // justamente no clique de maior intenção.
+    var temVersao = !!r.cv_otimizado;
+    if (titleEl) {
+      titleEl.textContent = missing > 0
+        ? 'Seu CV não menciona ' + missing + ' requisito' + (missing > 1 ? 's' : '') + ' desta vaga'
+        : 'Aumente seu score na vaga de ' + cargo;
+    }
+    if (descEl) {
+      descEl.textContent = temVersao
+        ? 'A versão direcionada para ' + cargo + (emp ? ' na ' + emp : '') + ' já está pronta na sua conta. Ajuste os pontos marcados e envie a candidatura.'
+        : 'Com esses ajustes no currículo, sua aderência a esta vaga pode subir significativamente.';
+    }
+    if (btnPri) {
+      if (temVersao) {
+        btnPri.textContent = 'Abrir o CV desta vaga →';
+        (function(aid){ btnPri.onclick = function(){ openSavedCv(aid); }; })(alvo.id);
+      } else {
+        btnPri.textContent = 'Otimizar meu currículo →';
+        btnPri.onclick = function(){ switchDashTab('app'); };
+      }
+    }
+    if (btnSec) { btnSec.textContent = 'Ver análise completa'; (function(aid){ btnSec.onclick = function(){ openCandidaturaByAnalysis(aid, untrackedBest ? 'so_analise' : 'todas'); }; })(alvo.id); }
+    updatePBAPriority(alvo.score, cargo, emp, missing > 0
+      ? missing + ' requisito' + (missing !== 1 ? 's' : '') + ' ausente' + (missing !== 1 ? 's' : '')
+      : 'Boa compatibilidade');
+    var tj = tracked.find(function(t){ return t.analysis_id === alvo.id; });
+    return { analysisId: alvo.id, trackerId: tj ? tj.id : null };
   } else {
     if (titleEl) titleEl.textContent = 'Analise sua primeira vaga';
     if (descEl) descEl.textContent = 'Cole a descrição de uma vaga e seu currículo para receber diagnóstico completo de compatibilidade ATS.';
     if (btnPri) { btnPri.textContent = 'Analisar uma vaga →'; btnPri.onclick = function(){ switchDashTab('app'); }; }
     if (btnSec) btnSec.style.display = 'none';
     updatePBAPriority(0, '—', '—', 'Nenhuma análise ainda');
+    return null;
   }
 }
 
-function buildAttentionCards(analyses, tracked) {
-  var cards = [];
-  var now = Date.now();
+/* ── Bloco 01 · Seu material ──────────────────────────────────────────────
+   Currículo base, lacunas do mercado e versões por vaga. Nenhum dos três custa
+   chamada de IA: completude sai do cv_saves, as lacunas cruzam as
+   keywords_faltando das análises com o texto do CV, e as versões já vêm
+   dentro de analyses.result.cv_otimizado. */
+var _cvBase = null;        // linha de cv_saves do usuário (1 por conta)
+var _cvBaseLoaded = false; // separa "ainda carregando" de "não existe"
 
-  // Detect follow-up (status aplicado ou aplicada > 5 dias)
-  var followUp = null;
-  tracked.forEach(function(t) {
-    if (normalizeStatus(t.status) !== 'aplicada') return;
-    var d = Math.floor((now - new Date(t.updated_at || t.created_at).getTime()) / 86400000);
-    if (d >= 5 && (!followUp || d > followUp._days)) followUp = Object.assign({ _days: d }, t);
-  });
+function matTile(label, bodyHtml) {
+  return '<div class="mat-tile"><div class="mat-lbl">' + label + '</div>' + bodyHtml + '</div>';
+}
 
-  // Detect interview
-  var interviewJob = tracked.find(function(t){ return normalizeStatus(t.status) === 'entrevista'; });
+function buildMaterialStrip() {
+  var strip = document.getElementById('matStrip');
+  if (!strip) return;
+  var analyses = window._lastAnalysesData || [];
+  var cvData = _cvBase && _cvBase.cv_data;
+  var tiles = [];
 
-  // Detect untracked analysis (not applied)
-  var untrackedAnalysis = analyses.filter(function(a) {
-    return a.score > 0 && !tracked.find(function(t){ return t.analysis_id === a.id; });
-  }).sort(function(a,b){ return b.score - a.score; })[0] || null;
-
-  var actionCount = 0;
-
-  if (followUp) {
-    actionCount++;
-    var cargo = followUp.cargo || 'essa vaga';
-    var emp = followUp.empresa || cargo;
-    cards.push('<div class="psa-card"><div class="psa-badge psa-badge-hoje">Hoje</div><div class="psa-ico">✉️</div>' +
-      '<div class="psa-card-title">Faça follow-up com ' + escHtml(emp) + '</div>' +
-      '<div class="psa-card-desc">Você se candidatou há ' + followUp._days + ' dias e ainda não registrou um retorno.</div>' +
-      '<button class="psa-cta" onclick="openCandidaturaByTracker(\'' + escAttr(followUp.id) + '\',\'aplicada\')">Registrar follow-up →</button></div>');
+  /* Tile 1 — currículo base */
+  if (!_cvBaseLoaded) {
+    tiles.push(matTile('Currículo base', '<div class="mat-sub">Carregando…</div>'));
+  } else if (!cvData) {
+    tiles.push(matTile('Currículo base',
+      '<div class="mat-val">—</div>' +
+      '<div class="mat-sub">Você ainda não tem um currículo base. Ele alimenta as análises, os alertas e as versões por vaga.</div>' +
+      '<button class="mat-cta" onclick="switchDashTab(\'curriculo\')">Criar currículo base →</button>'));
+  } else {
+    var pct = (window.VagaAICv && window.VagaAICv.completude) ? window.VagaAICv.completude(cvData) : 0;
+    var faltam = (window.VagaAICv && window.VagaAICv.completudeFaltantes) ? window.VagaAICv.completudeFaltantes(cvData) : [];
+    var quando = '';
+    if (_cvBase.updated_at) {
+      var dias = Math.floor((Date.now() - new Date(_cvBase.updated_at).getTime()) / 86400000);
+      quando = dias <= 0 ? 'atualizado hoje' : dias === 1 ? 'atualizado ontem' : 'atualizado há ' + dias + ' dias';
+    }
+    var sub = faltam.length
+      ? 'Falta ' + escHtml(faltam.slice(0,2).join(' e ').toLowerCase()) + (quando ? ' · ' + quando : '')
+      : (quando || 'Perfil completo');
+    tiles.push(matTile('Currículo base',
+      '<div class="mat-val">' + pct + '<small>%</small></div>' +
+      '<div class="mat-bar"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="mat-sub">' + sub + '</div>' +
+      '<button class="mat-cta" onclick="switchDashTab(\'curriculo\')">' + (faltam.length ? 'Completar perfil →' : 'Revisar currículo →') + '</button>'));
   }
 
-  if (interviewJob) {
-    actionCount++;
-    var cargo = interviewJob.cargo || 'essa vaga';
-    var emp = interviewJob.empresa ? ' na ' + interviewJob.empresa : '';
-    cards.push('<div class="psa-card"><div class="psa-badge psa-badge-amanha">Entrevista</div><div class="psa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></div>' +
-      '<div class="psa-card-title">Prepare sua entrevista</div>' +
-      '<div class="psa-card-desc">' + (interviewJob.interview_at ? 'Entrevista em ' + escHtml(formatInterviewAt(interviewJob.interview_at)) + ' — ' : 'Em processo de entrevista para ') + escHtml(cargo) + escHtml(emp) + '. Use o simulador para chegar preparado.</div>' +
-      '<button class="psa-cta" onclick="switchDashTab(\'entrevista\',\'/entrevista' + (interviewJob.analysis_id ? '?analysis_id=' + encodeURIComponent(interviewJob.analysis_id) : '') + '\')">Treinar entrevista →</button></div>');
+  /* Tile 2 — lacunas do mercado (promovido da aba Alertas) */
+  if (!_cvBaseLoaded) {
+    tiles.push(matTile('Lacunas do mercado', '<div class="mat-sub"> </div>'));
+  } else if (!cvData || !analyses.length) {
+    tiles.push(matTile('Lacunas do mercado',
+      '<div class="mat-val">—</div>' +
+      '<div class="mat-sub">' + (!cvData
+        ? 'Salve seu currículo base para comparar seu perfil com o que as vagas pedem.'
+        : 'Analise sua primeira vaga para começarmos a mapear o que o mercado pede.') + '</div>' +
+      '<button class="mat-cta" onclick="switchDashTab(\'' + (cvData ? 'app' : 'curriculo') + '\')">' + (cvData ? 'Analisar uma vaga →' : 'Criar currículo base →') + '</button>'));
+  } else {
+    var freq = {};
+    analyses.forEach(function(a) {
+      ((a.result || {}).keywords_faltando || []).forEach(function(k) {
+        var key = String(k).trim();
+        if (key) freq[key] = (freq[key] || 0) + 1;
+      });
+    });
+    var cvText = _cvTextFromData(cvData).toLowerCase();
+    var gaps = Object.keys(freq)
+      .filter(function(k){ return cvText.indexOf(k.toLowerCase()) === -1; })
+      .sort(function(a,b){ return freq[b] - freq[a]; });
+    var nVagas = analyses.length;
+    if (!gaps.length) {
+      tiles.push(matTile('Lacunas do mercado',
+        '<div class="mat-val">0 <small>lacunas</small></div>' +
+        '<div class="mat-chips"><span class="mat-chip mat-chip-ok">Perfil alinhado</span></div>' +
+        '<div class="mat-sub">Seu currículo já cobre as competências pedidas nas ' + nVagas + ' vaga' + (nVagas !== 1 ? 's' : '') + ' que você analisou.</div>'));
+    } else {
+      var chips = gaps.slice(0, 3).map(function(k) {
+        return '<span class="mat-chip">' + escHtml(k) + (freq[k] > 1 ? ' ×' + freq[k] : '') + '</span>';
+      });
+      if (gaps.length > 3) chips.push('<span class="mat-chip">+' + (gaps.length - 3) + '</span>');
+      tiles.push(matTile('Lacunas do mercado',
+        '<div class="mat-val">' + gaps.length + ' <small>competência' + (gaps.length !== 1 ? 's' : '') + '</small></div>' +
+        '<div class="mat-chips">' + chips.join('') + '</div>' +
+        '<div class="mat-sub">Pedidas nas ' + nVagas + ' vaga' + (nVagas !== 1 ? 's' : '') + ' que você analisou e ausentes no seu currículo base.</div>' +
+        '<button class="mat-cta" onclick="switchDashTab(\'curriculo\')">Ver lacunas →</button>'));
+    }
   }
 
-  if (untrackedAnalysis) {
-    actionCount++;
-    var r = untrackedAnalysis.result || {};
-    var ji = r.job_info || {};
-    var cargo = ji.cargo || (untrackedAnalysis.job_excerpt ? untrackedAnalysis.job_excerpt.slice(0,40) : 'essa vaga');
-    var emp = ji.empresa ? ' na ' + ji.empresa : '';
-    cards.push('<div class="psa-card"><div class="psa-badge psa-badge-impacto">Alto impacto</div><div class="psa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>' +
-      '<div class="psa-card-title">Complete a candidatura</div>' +
-      '<div class="psa-card-desc">Seu CV foi analisado para ' + escHtml(cargo) + escHtml(emp) + ', mas a candidatura ainda não foi enviada.</div>' +
-      '<button class="psa-cta" onclick="openCandidaturaByAnalysis(\'' + escAttr(untrackedAnalysis.id) + '\',\'so_analise\')">Continuar candidatura →</button></div>');
+  /* Tile 3 — versões por vaga */
+  var versoes = analyses.filter(function(a) {
+    var r = a.result || {};
+    return r.cv_otimizado && !r.cv_version_archived_at;
+  }).length;
+  if (!versoes) {
+    tiles.push(matTile('Versões por vaga',
+      '<div class="mat-val">0</div>' +
+      '<div class="mat-sub">Ao adaptar o currículo para uma vaga, a versão direcionada aparece aqui. Seu currículo base nunca é alterado.</div>' +
+      '<button class="mat-cta" onclick="switchDashTab(\'app\')">Adaptar para uma vaga →</button>'));
+  } else {
+    tiles.push(matTile('Versões por vaga',
+      '<div class="mat-val">' + versoes + ' <small>currículo' + (versoes !== 1 ? 's' : '') + '</small></div>' +
+      '<div class="mat-sub">Direcionados a vagas específicas. Seu currículo base permanece intacto.</div>' +
+      '<button class="mat-cta" onclick="switchDashTab(\'curriculo\')">Ver versões →</button>'));
   }
 
-  // Fill remaining slots with tips
-  var tips = [
-    '<div class="psa-card"><div class="psa-badge psa-badge-ok">✓ Dica</div><div class="psa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg></div><div class="psa-card-title">Rastreie suas candidaturas</div><div class="psa-card-desc">Mantenha as candidaturas atualizadas para receber lembretes de follow-up automáticos.</div><button class="psa-cta" onclick="openCandidaturasFiltered(\'todas\')">Ver candidaturas →</button></div>',
-    '<div class="psa-card"><div class="psa-badge psa-badge-ok">✓ Dica</div><div class="psa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div><div class="psa-card-title">Configure alertas de vagas</div><div class="psa-card-desc">Receba vagas compatíveis com seu perfil toda semana diretamente no e-mail.</div><button class="psa-cta" onclick="switchDashTab(\'alertas\')">Configurar alertas →</button></div>',
-    '<div class="psa-card"><div class="psa-badge psa-badge-ok">✓ Dica</div><div class="psa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></div><div class="psa-card-title">Analise mais vagas</div><div class="psa-card-desc">Quanto mais vagas você analisar, mais preciso fica o Insight da VagaAI sobre seu perfil.</div><button class="psa-cta" onclick="switchDashTab(\'app\')">Nova análise →</button></div>'
-  ];
-  var tipIdx = 0;
-  while (cards.length < 3) { cards.push(tips[tipIdx++ % tips.length]); }
+  strip.innerHTML = tiles.join('');
+}
 
-  var grid = document.getElementById('psaGrid');
-  if (grid) grid.innerHTML = cards.slice(0,3).join('');
-  return actionCount;
+/* ── Sugestão secundária ──────────────────────────────────────────────────
+   Substitui os antigos cards-dica. Eles ocupavam a grade inteira com o mesmo
+   peso visual da ação real porque o código forçava três cards; aqui existe no
+   máximo uma linha, e só quando há de fato algo pendente. */
+var _pbaChosen = null;
+
+function buildSecondaryHint() {
+  var row = document.getElementById('painelHint');
+  if (!row) return;
+  var analyses = window._lastAnalysesData || [];
+  var tracked = _kTracked || [];
+  var chosenId = _pbaChosen && _pbaChosen.analysisId;
+
+  var hint = null;
+  var semAlerta = !_alertProfile || _alertProfile.ativo === false;
+  // Outras análises que ainda não viraram candidatura, fora a que o bloco 02 já trata.
+  var pendentes = analyses.filter(function(a) {
+    if (!a.score || String(a.id) === String(chosenId)) return false;
+    return !tracked.find(function(t){ return t.analysis_id === a.id; });
+  }).length;
+
+  if (semAlerta) {
+    hint = {
+      txt: '<b>Alertas de vagas ainda não configurados</b> — receba oportunidades compatíveis com seu perfil toda semana.',
+      cta: 'Configurar →',
+      fn: "switchDashTab('alertas')"
+    };
+  } else if (pendentes > 0) {
+    hint = {
+      txt: '<b>' + pendentes + ' análise' + (pendentes !== 1 ? 's' : '') + ' sem candidatura</b> — vagas que você avaliou mas ainda não enviou.',
+      cta: 'Ver todas →',
+      fn: "openCandidaturasFiltered('so_analise')"
+    };
+  }
+
+  if (!hint) { row.style.display = 'none'; row.innerHTML = ''; return; }
+  row.innerHTML = '<span>' + hint.txt + '</span><button class="hint-cta" onclick="' + hint.fn + '">' + hint.cta + '</button>';
+  row.style.display = '';
 }
 
 function renderOppList() {
@@ -3403,17 +3524,41 @@ function renderOppList() {
   }).join('');
 }
 
+/* Janela do funil. 0 = todo o histórico. Antes era fixa em 30 dias: quem
+   analisou vagas há mais tempo via 0/0/0/0 ao lado de uma lista não vazia,
+   sem nenhuma forma de enxergar o próprio histórico. */
+var _funilDias = 30;
+
+function setFunilPeriod(dias) {
+  _funilDias = dias;
+  document.querySelectorAll('#funilPeriod .funil-per-btn').forEach(function(b) {
+    b.classList.toggle('on', String(b.dataset.dias) === String(dias));
+  });
+  buildFunilCard(window._lastAnalysesData || [], _kTracked || []);
+}
+
 function buildFunilCard(analyses, tracked) {
   var pipe = document.getElementById('funilPipe');
   var insightEl = document.getElementById('funilInsight');
   if (!pipe) return;
 
-  var thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-  var recentAnalyses = analyses.filter(function(a) { return new Date(a.created_at).getTime() >= thirtyDaysAgo; });
-  var recentIds = recentAnalyses.map(function(a){ return a.id; });
+  var desde = _funilDias > 0 ? Date.now() - _funilDias * 24 * 60 * 60 * 1000 : 0;
+  var recentAnalyses = analyses.filter(function(a) { return new Date(a.created_at).getTime() >= desde; });
   var recentTracked = tracked.filter(function(t) {
-    return new Date(t.created_at || t.updated_at).getTime() >= thirtyDaysAgo;
+    return new Date(t.created_at || t.updated_at).getTime() >= desde;
   });
+
+  var subEl = document.getElementById('funilSub');
+  if (subEl) {
+    // Zerar o funil ao lado de uma lista com itens era uma contradição visual
+    // sem explicação — o card agora diz por que está vazio.
+    if (_funilDias > 0 && !recentAnalyses.length && analyses.length) {
+      subEl.textContent = 'Sem atividade nos últimos ' + _funilDias + ' dias — suas ' + analyses.length +
+        ' análise' + (analyses.length !== 1 ? 's são mais antigas' : ' é mais antiga') + '.';
+    } else {
+      subEl.textContent = _funilDias > 0 ? 'Últimos ' + _funilDias + ' dias' : 'Todo o histórico';
+    }
+  }
 
   var total = recentAnalyses.length;
   var candidaturas = recentTracked.filter(function(t){
@@ -3446,20 +3591,23 @@ function buildFunilCard(analyses, tracked) {
   }).join('');
 
   if (insightEl) {
+    // O texto acompanha a janela escolhida — dizer "últimos 30 dias" enquanto o
+    // usuário olha "Tudo" seria uma contradição dentro do mesmo card.
+    var janela = _funilDias > 0 ? 'nos últimos ' + _funilDias + ' dias' : 'no seu histórico';
     var txt = 'Analise mais vagas para receber insights personalizados.';
-    if (total >= 3) {
+    if (total >= 2) {
       var convRate = candidaturas > 0 ? Math.round((entrevistas / candidaturas) * 100) : 0;
       if (candidaturas === 0) {
-        txt = 'Você analisou ' + total + ' vagas nos últimos 30 dias mas ainda não iniciou nenhuma candidatura. Escolha as de maior score para começar.';
+        txt = 'Você analisou ' + total + ' vagas ' + janela + ' mas ainda não iniciou nenhuma candidatura. Comece pelas de maior score.';
       } else if (entrevistas === 0 && candidaturas >= 2) {
-        txt = 'Nenhuma entrevista nos últimos 30 dias. Considere fazer follow-up nas candidaturas aplicadas.';
+        txt = 'Nenhuma entrevista ' + janela + '. Considere fazer follow-up nas candidaturas aplicadas.';
       } else if (entrevistas > 0 && candidaturas > 0) {
         txt = convRate + '% das candidaturas avançaram para entrevista (' + entrevistas + ' de ' + candidaturas + '). Use o simulador para se preparar.';
       } else {
         txt = 'Priorize vagas com score acima de 70% para maximizar suas chances de retorno.';
       }
-    } else if (analyses.length >= 3 && total === 0) {
-      txt = 'Todas as suas análises são de mais de 30 dias. Continue analisando vagas regularmente.';
+    } else if (analyses.length >= 2 && total === 0 && _funilDias > 0) {
+      txt = 'Suas análises são mais antigas que essa janela. Troque para “Tudo” ou analise novas vagas.';
     }
     insightEl.textContent = txt;
   }
@@ -4788,44 +4936,20 @@ function _cvTextFromData(d) {
   return parts.filter(Boolean).join(' ');
 }
 
-async function loadCvGapCard() {
-  var card = document.getElementById('cvGapCard');
-  if (!card || !currentUserId) return;
+/* Carrega o currículo base do usuário. As lacunas de mercado, que antes eram
+   calculadas aqui e renderizadas na aba Alertas, agora vivem no bloco 01 da
+   Visão geral (buildMaterialStrip) e reaproveitam as análises já carregadas —
+   uma consulta a menos. */
+async function loadCvBase() {
+  if (!currentUserId) return;
   try {
-    var cvRes = await sb.from('cv_saves').select('cv_data').eq('user_id', currentUserId).order('updated_at', { ascending:false }).limit(1);
-    var cvData = cvRes && cvRes.data && cvRes.data[0] && cvRes.data[0].cv_data;
-    if (!cvData) return; // sem currículo salvo ainda — não mostra o card (evita empurrar algo que não dá pra agir)
-
-    var anRes = await sb.from('analyses').select('result').eq('user_id', currentUserId).order('created_at', { ascending: false }).limit(50);
-    var rows = (anRes && anRes.data) || [];
-    if (!rows.length) return;
-
-    var freq = {};
-    rows.forEach(function(row){
-      var res = row.result || {};
-      (res.keywords_faltando || []).forEach(function(k){
-        var key = String(k).trim();
-        if (!key) return;
-        freq[key] = (freq[key] || 0) + 1;
-      });
-    });
-    var cvText = _cvTextFromData(cvData).toLowerCase();
-    var gaps = Object.keys(freq)
-      .filter(function(k){ return cvText.indexOf(k.toLowerCase()) === -1; })
-      .sort(function(a,b){ return freq[b] - freq[a]; })
-      .slice(0, 6);
-
-    var sub = document.getElementById('cvGapSub');
-    var chips = document.getElementById('cvGapChips');
-    if (!gaps.length) {
-      sub.textContent = 'Baseado nas ' + rows.length + ' vaga(s) analisadas, seu currículo já cobre as competências mais pedidas. 👏';
-      chips.innerHTML = '';
-    } else {
-      sub.textContent = 'Baseado nas ' + rows.length + ' vaga(s) que você analisou, seu currículo ainda não menciona:';
-      chips.innerHTML = gaps.map(function(k){ return '<span class="cv-gap-chip">' + escHtml(k) + (freq[k]>1 ? ' ×' + freq[k] : '') + '</span>'; }).join('');
-    }
-    card.style.display = '';
-  } catch(e) { /* silencioso — card só reforça info, não é crítico pro resto da aba */ }
+    var cvRes = await sb.from('cv_saves').select('cv_data,updated_at').eq('user_id', currentUserId).order('updated_at', { ascending:false }).limit(1);
+    _cvBase = (cvRes && cvRes.data && cvRes.data[0]) || null;
+  } catch(e) {
+    _cvBase = null; // silencioso — a faixa cai no estado vazio, o resto do painel segue
+  }
+  _cvBaseLoaded = true;
+  buildMaterialStrip();
 }
 
 /* ── Load & render ────────────────────────────────────────────── */
@@ -4887,6 +5011,9 @@ async function loadAlerts() {
     }
   } catch(e) { _alertCache = null; }
   renderAlertPage();
+  // A sugestão secundária do painel depende de _alertProfile, que carrega em
+  // paralelo com as análises — reavalia agora que o perfil chegou.
+  buildSecondaryHint();
 }
 
 // Entitlements de alertas do plano atual (fonte: /api/subscription). Fallback: free.

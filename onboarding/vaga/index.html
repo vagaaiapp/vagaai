@@ -426,8 +426,8 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
   <!-- ETAPA 3 — Currículo -->
   <section class="ob-step" id="step3">
     <div class="ob-eyebrow">Etapa 3</div>
-    <h1 id="cvStepTitle">Agora seu currículo</h1>
-    <p class="ob-sub" id="cvStepSub">Envie o arquivo ou cole o texto — o que for mais rápido pra você.</p>
+    <h1 id="cvStepTitle">Agora seu currículo base</h1>
+    <p class="ob-sub" id="cvStepSub">Envie o arquivo ou cole o texto. Ele vira seu currículo base — e é dele que saem as versões para cada vaga.</p>
     <div id="existingCvPanel">
     <div class="ob-methods">
       <button class="ob-method" id="mUpload" onclick="openCvUpload()">
@@ -660,6 +660,7 @@ var state = {
   cv: '',
   cvName: '',
   generatedCv: null,
+  baseCv: null,
   quickForm: {},
   alertDraft: {
     cargo: '',
@@ -688,7 +689,7 @@ function saveState() {
         hasJob: state.hasJob,
         intent: state.intent,
         job: { raw: state.job, url: state.jobUrl, preview: state.preview },
-        cv: { raw: state.cv, name: state.cvName, data: state.generatedCv, form: state.quickForm },
+        cv: { raw: state.cv, name: state.cvName, data: state.generatedCv || state.baseCv, form: state.quickForm },
         analysis: state.result,
         alertDraft: state.alertDraft,
         nextAction: state.result ? 'save_analysis' : 'continue_onboarding',
@@ -1238,6 +1239,29 @@ function showPaste() {
   document.getElementById('cvInput').focus();
 }
 
+/* O currículo que a pessoa traz aqui vira o currículo BASE dela depois do
+   cadastro (shared.js → persistBaseCv). Sem esta estruturação, o base nascia
+   como um bloco de texto: o hub abria com "0% completo" e o painel de
+   posicionamento ficava vazio para quem acabou de entregar um currículo.
+
+   Roda em paralelo com a análise — o diagnóstico só precisa do texto, então
+   estruturar não pode custar segundos ao usuário. O texto original é
+   preservado dentro do próprio cv_data (raw_text). */
+var _baseCvStructuredFor = '';
+function scheduleBaseCvStructure() {
+  var raw = String(state.cv || '').trim();
+  if (raw.length < 50 || raw === _baseCvStructuredFor) return;
+  if (!OB || typeof OB.structureCvFromText !== 'function') return;
+  _baseCvStructuredFor = raw;
+  OB.structureCvFromText(raw).then(function(data) {
+    // Currículo trocado no meio do caminho: o resultado desta chamada não
+    // vale mais para o texto que está na tela agora.
+    if (!data || String(state.cv || '').trim() !== raw) return;
+    state.baseCv = data;
+    saveState();
+  });
+}
+
 function openCvUpload() {
   var input = document.getElementById('cvFile');
   input.value = '';
@@ -1343,6 +1367,7 @@ async function handleCvFile(input) {
     state.cv = text;
     state.cvName = file.name;
     saveState();
+    scheduleBaseCvStructure();
     updateJourneySummary();
     okEl.textContent = '✓ ' + file.name + ' — ' + text.length + ' caracteres lidos';
     document.getElementById('mUpload').classList.add('on');
@@ -1557,6 +1582,9 @@ async function startAnalysis() {
     return;
   }
   saveState();
+  // Cobre o caminho "colar texto", que não passa por handleCvFile. Sem await:
+  // termina durante a análise, muito antes do cadastro.
+  scheduleBaseCvStructure();
 
   track('onboarding_vaga_pasted', { job_chars: state.job.length });
   resetStep4(); // pode estar exibindo erro/limite/interrupção de uma tentativa anterior

@@ -1373,10 +1373,18 @@ function cvToText(d) {
 async function saveCvToProfileIfFirst(cvText) {
   if (!authSession || _myCv || !cvText || cvText.length < 100) return;
   try {
-    var payload = { user_id: authSession.user.id, name: 'Meu currículo', cv_data: { raw_text: cvText.slice(0, 30000) }, template: 'upload', updated_at: new Date().toISOString() };
     var existing = await sb.from('cv_saves').select('id').eq('user_id', authSession.user.id).order('updated_at', { ascending: false }).limit(1);
     var current = existing && existing.data && existing.data[0];
     if (current) { _myCv = current; return; }
+    // Estruturado, não só texto: é o mesmo formato que o hub "Meu Currículo"
+    // edita e que o painel de posicionamento lê. Guardar o bloco cru fazia o
+    // hub abrir com "0% completo" para quem acabou de analisar com um
+    // currículo inteiro. O texto original vai junto, em raw_text.
+    var structured = window.VagaAIOnboarding && window.VagaAIOnboarding.structureCvFromText
+      ? await window.VagaAIOnboarding.structureCvFromText(cvText)
+      : null;
+    var cvData = structured || { raw_text: cvText.slice(0, 30000) };
+    var payload = { user_id: authSession.user.id, name: (cvData.nome || 'Meu currículo').slice(0, 80), cv_data: cvData, template: structured ? 'perfil' : 'upload', updated_at: new Date().toISOString() };
     var r = await sb.from('cv_saves').insert(payload).select().single();
     if (r && r.data) {
       _myCv = r.data;
@@ -1403,7 +1411,12 @@ async function loadSavedCvsForApp(session) {
     var box = document.getElementById('savedCvPreview');
     box.textContent = text.slice(0, 700) + (text.length > 700 ? '…' : '');
 
-    // Nunca troca a aba automaticamente — só oferece a opção; quem decide é o usuário
+    // Nunca troca a aba automaticamente — só oferece a opção; quem decide é o
+    // usuário. Exceção: ?cv=base é um pedido explícito, vindo do botão
+    // "Adaptar para uma vaga" do hub Meu Currículo.
+    try {
+      if (new URLSearchParams(location.search).get('cv') === 'base') switchCvMode('salvo');
+    } catch(e) {}
   } catch(e) { /* silencioso — o fluxo original (colar/upload) continua funcionando normalmente */ }
 }
 

@@ -223,6 +223,245 @@ describe('Onboarding adaptativo', () => {
     assert.equal(alertCalls, 0);
   });
 
+  it('converte o formulário extraído no formato que o hub edita', () => {
+    const { api } = createOnboarding();
+    const data = api.formToCvData(
+      {
+        nome: 'Maria Silva',
+        cargo: 'Analista de Dados',
+        email: 'maria@example.com',
+        tel: '(11) 90000-0000',
+        cidade: 'São Paulo - SP',
+        skills: 'SQL, Python; Power BI',
+        exp: '- Analista na Empresa X\n- Estágio na Empresa Y',
+        form: 'Estatística — USP'
+      },
+      'texto original do currículo'
+    );
+
+    assert.equal(data.nome, 'Maria Silva');
+    assert.equal(data.titulo_profissional, 'Analista de Dados');
+    assert.equal(data.contato.email, 'maria@example.com');
+    assert.equal(data.contato.cidade, 'São Paulo - SP');
+    // join em vez de deepEqual: os arrays nascem dentro do vm e não são
+    // reference-equal com os protótipos deste realm.
+    assert.equal(data.habilidades.join('|'), 'SQL|Python|Power BI');
+    assert.equal(
+      data.experiencias[0].bullets.join('|'),
+      'Analista na Empresa X|Estágio na Empresa Y'
+    );
+    assert.equal(data.formacao[0].curso, 'Estatística — USP');
+    assert.equal(data.raw_text, 'texto original do currículo');
+  });
+
+  it('estrutura o currículo base quando o funil entrega só o texto cru', async () => {
+    const { api } = createOnboarding();
+    api.write({ cv: { raw: 'Maria Silva\nAnalista de Dados\n' + 'experiência relevante '.repeat(12) } });
+
+    const calls = [];
+    let saved = null;
+    const fetchFn = async (url, options = {}) => {
+      calls.push(url);
+      if (url === '/api/analyze') {
+        return response(200, { form: { nome: 'Maria Silva', cargo: 'Analista de Dados' } });
+      }
+      if (url.includes('/rest/v1/cv_saves?')) return response(200, []);
+      if (url.endsWith('/rest/v1/cv_saves')) {
+        saved = JSON.parse(options.body);
+        return response(201, [{ id: 'cv-1' }]);
+      }
+      return response(404, {});
+    };
+
+    const result = await api.persistBaseCv(
+      { access_token: 'token', user: { id: 'user-3' } },
+      { supabaseUrl: 'https://supabase.example', anonKey: 'anon', fetchFn }
+    );
+
+    assert.equal(result.saved, true);
+    assert.ok(calls.includes('/api/analyze'));
+    assert.equal(saved.cv_data.nome, 'Maria Silva');
+    assert.equal(saved.name, 'Maria Silva');
+    assert.ok(saved.cv_data.raw_text, 'o texto original acompanha os campos estruturados');
+  });
+
+  it('preserva o texto original quando a estruturação falha', async () => {
+    const { api } = createOnboarding();
+    api.write({ cv: { raw: 'Currículo em texto puro ' + 'com conteúdo suficiente '.repeat(6) } });
+
+    let saved = null;
+    const result = await api.persistBaseCv(
+      { access_token: 'token', user: { id: 'user-4' } },
+      {
+        supabaseUrl: 'https://supabase.example',
+        anonKey: 'anon',
+        fetchFn: async (url, options = {}) => {
+          if (url === '/api/analyze') return response(502, {});
+          if (url.includes('/rest/v1/cv_saves?')) return response(200, []);
+          if (url.endsWith('/rest/v1/cv_saves')) {
+            saved = JSON.parse(options.body);
+            return response(201, [{ id: 'cv-2' }]);
+          }
+          return response(404, {});
+        }
+      }
+    );
+
+    assert.equal(result.saved, true);
+    assert.match(saved.cv_data.raw_text, /Currículo em texto puro/);
+  });
+
+  it('não gasta chamada de IA quando a pessoa já tem currículo base', async () => {
+    const { api } = createOnboarding();
+    api.write({ cv: { raw: 'Currículo qualquer ' + 'com texto suficiente '.repeat(6) } });
+
+    const calls = [];
+    const result = await api.persistBaseCv(
+      { access_token: 'token', user: { id: 'user-5' } },
+      {
+        supabaseUrl: 'https://supabase.example',
+        anonKey: 'anon',
+        fetchFn: async (url) => {
+          calls.push(url);
+          if (url.includes('/rest/v1/cv_saves?')) return response(200, [{ id: 'cv-existente' }]);
+          return response(404, {});
+        }
+      }
+    );
+
+    assert.equal(result.saved, false);
+    assert.equal(result.reason, 'base_exists');
+    assert.ok(!calls.includes('/api/analyze'));
+  });
+
+  it('ordena períodos em texto livre pelo fim do intervalo', () => {
+    const { api } = createOnboarding();
+    const casos = [
+      ['2021 — 2024', 202412],
+      ['Jan 2020 – Dez 2022', 202212],
+      ['03/2019 a 08/2021', 202108],
+      ['2022', 202212],
+      ['', null],
+      ['6 meses', null]
+    ];
+    casos.forEach(([texto, esperado]) => {
+      assert.equal(api.periodoOrdem(texto), esperado, `período "${texto}"`);
+    });
+
+    // Em curso sempre acima de encerrado, e entre dois atuais vence quem
+    // começou depois — senão o emprego novo ficaria abaixo do antigo.
+    assert.ok(api.periodoOrdem('2023 - atual') > api.periodoOrdem('2024 — 2025'));
+    assert.ok(api.periodoOrdem('2026 - atual') > api.periodoOrdem('2023 - atual'));
+    assert.ok(api.periodoOrdem('Atualmente') > api.periodoOrdem('2024 — 2025'));
+  });
+
+  it('põe a experiência mais recente no topo', () => {
+    const { api } = createOnboarding();
+    const ordenado = api.ordenarPorPeriodo([
+      { cargo: 'Estágio', periodo: '2018 — 2019' },
+      { cargo: 'Analista', periodo: '2019 — 2023' },
+      { cargo: 'Coordenador', periodo: '2023 - atual' }
+    ]);
+    assert.equal(
+      ordenado.map((e) => e.cargo).join(' > '),
+      'Coordenador > Analista > Estágio'
+    );
+  });
+
+  it('não reposiciona entradas cujo período não dá para entender', () => {
+    const { api } = createOnboarding();
+    const ordenado = api.ordenarPorPeriodo([
+      { cargo: 'Antigo', periodo: '2015 — 2017' },
+      { cargo: 'Sem data', periodo: '' },
+      { cargo: 'Recente', periodo: '2022 — 2024' }
+    ]);
+    // "Sem data" fica ancorado no índice 1; só as datadas se reorganizam.
+    assert.equal(
+      ordenado.map((e) => e.cargo).join(' > '),
+      'Recente > Sem data > Antigo'
+    );
+  });
+
+  it('desempata dois empregos atuais pela data de início', () => {
+    const { api } = createOnboarding();
+    // Cenário real: a pessoa é promovida e registra o cargo novo. Ele entra no
+    // fim do formulário e precisa subir para cima do cargo atual antigo.
+    const ordenado = api.ordenarPorPeriodo([
+      { cargo: 'Coordenador', periodo: '2023 - atual' },
+      { cargo: 'Velho', periodo: '2010 — 2012' },
+      { cargo: 'Gerente', periodo: '2026 - atual' }
+    ]);
+    assert.equal(
+      ordenado.map((e) => e.cargo).join(' > '),
+      'Gerente > Coordenador > Velho'
+    );
+  });
+
+  it('monta uma experiência por emprego quando o extrator separa', () => {
+    const { api } = createOnboarding();
+    const data = api.formToCvData({
+      nome: 'Maria Silva',
+      cargo: 'Analista',
+      exp: 'bloco de texto que não deve ser usado',
+      experiencias: [
+        { cargo: 'Estágio', empresa: 'Empresa A', periodo: '2018 — 2019', bullets: ['Apoio ao time', ''] },
+        { cargo: 'Analista', empresa: 'Empresa B', periodo: '2019 — 2024', bullets: ['Gestão de campanhas'] }
+      ],
+      formacao: [{ curso: 'Publicidade', instituicao: 'UFES', periodo: '2014 — 2018', situacao: 'Concluído' }]
+    }, 'texto original');
+
+    assert.equal(data.experiencias.length, 2, 'cada emprego vira uma entrada');
+    assert.equal(data.experiencias[0].cargo, 'Analista', 'mais recente primeiro');
+    assert.equal(data.experiencias[0].empresa, 'Empresa B');
+    assert.equal(data.experiencias[1].bullets.length, 1, 'bullet vazio não entra');
+    assert.equal(data.formacao[0].situacao, 'Concluído');
+  });
+
+  it('cai no bloco de texto quando a lista vem só com entradas vazias', () => {
+    const { api } = createOnboarding();
+    // A lista tinha length > 0, o branch era tomado, o filtro esvaziava tudo e
+    // o plano B nunca rodava: a experiência inteira sumia sem erro nenhum.
+    const data = api.formToCvData({
+      nome: 'Maria',
+      cargo: 'Analista',
+      exp: 'Trabalhei na Empresa A\nDepois na Empresa B',
+      form: 'Publicidade — UFES',
+      experiencias: [{ cargo: '', empresa: '', bullets: [] }],
+      formacao: [{ curso: '' }]
+    }, 'texto');
+
+    assert.equal(data.experiencias.length, 1, 'lista vazia após o filtro precisa cair no texto');
+    assert.equal(data.experiencias[0].bullets.length, 2);
+    assert.equal(data.formacao.length, 1);
+    assert.equal(data.formacao[0].curso, 'Publicidade — UFES');
+  });
+
+  it('cai no bloco de texto quando o extrator não consegue separar', () => {
+    const { api } = createOnboarding();
+    const data = api.formToCvData({
+      nome: 'Maria Silva',
+      cargo: 'Analista',
+      exp: 'Trabalhei na Empresa A\nDepois na Empresa B',
+      experiencias: []
+    }, 'texto original');
+
+    assert.equal(data.experiencias.length, 1, 'um bloco honesto em vez de empresas chutadas');
+    assert.equal(data.experiencias[0].empresa, '', 'não inventa empresa');
+    assert.equal(data.experiencias[0].bullets.length, 2);
+  });
+
+  it('os dois funis entregam currículo base estruturado', () => {
+    assert.match(vagaHtml, /function scheduleBaseCvStructure/);
+    assert.match(vagaHtml, /OB\.structureCvFromText\(raw\)/);
+    assert.match(curriculoHtml, /action:'onboarding_cv_extract'/);
+  });
+
+  it('nomeia o currículo base antes do cadastro', () => {
+    assert.match(vagaHtml, /id="cvStepTitle">Agora seu currículo base</);
+    assert.match(curriculoHtml, /id="step2Title">Vamos montar seu currículo base</);
+    assert.match(sharedSource, /cvTitle: 'Envie o currículo que será sua base'/);
+  });
+
   it('mantém uma saída explícita após importar o currículo', () => {
     assert.match(curriculoHtml, /id="importNext"[^>]*onclick="continueAfterImport\(\)"/);
     assert.match(curriculoHtml, /function continueAfterImport\(\)/);
