@@ -20,6 +20,12 @@ const CRON_SECRET = process.env.CRON_SECRET;
 // UNSUBSCRIBE_SECRET é separado do CRON_SECRET para isolamento de comprometimento
 const UNSUBSCRIBE_SECRET = process.env.UNSUBSCRIBE_SECRET;
 
+// Teto de perfis lidos por execução do cron. Não é o limite de processamento —
+// quem controla isso é o deadline do laço — mas evita trazer a fila inteira
+// pela rede quando o acúmulo é grande. Folgado de propósito: a ordenação por
+// next_run_at garante que o excedente encabeça a fila na próxima execução.
+const CRON_MAX_PROFILES = 300;
+
 // Hash de identidade da vaga: título + empresa normalizados (sem localização).
 // Localização varia entre fontes ("São Paulo, SP" vs "São Paulo, Estado de São Paulo")
 // e quebrava o dedup, reenviando a mesma vaga. O 3º argumento é aceito por
@@ -2446,10 +2452,22 @@ export default async function handler(req, res) {
       profiles = await r.json();
       if (!profiles?.length) return res.status(404).json({ error: 'Perfil de alerta não encontrado. Configure o perfil primeiro.' });
     } else {
-      // Cron: usuários ativos cujo next_run_at já passou (ou ainda não foi calculado)
+      // Cron: usuários ativos cujo next_run_at já passou (ou ainda não foi calculado).
+      //
+      // A ordenação não é cosmética. O cron roda 1x/dia com maxDuration de 60s e
+      // cada usuário consulta 19 fontes: cabem poucas dezenas por execução. Sem
+      // ORDER BY, o PostgREST devolve na ordem física da tabela — sempre os
+      // mesmos primeiro — e quem ficava de fora do corte nunca era alcançado,
+      // porque no dia seguinte a fila vinha idêntica. Como dia_envio tem default
+      // sexta, os vencimentos ainda se concentram num dia só, o que torna o
+      // corte mais provável do que uma distribuição uniforme sugeriria.
+      //
+      // next_run_at.asc.nullsfirst = quem esperou mais vai primeiro, e quem
+      // nunca recebeu (null) vem antes de todos. Isso transforma inanição
+      // permanente em rodízio: o que não coube hoje encabeça a fila amanhã.
       const nowIso = new Date().toISOString();
       const r = await fetch(
-        `${SUPABASE_URL}/rest/v1/job_alert_profiles?ativo=eq.true&or=(next_run_at.is.null,next_run_at.lte.${encodeURIComponent(nowIso)})&select=*`,
+        `${SUPABASE_URL}/rest/v1/job_alert_profiles?ativo=eq.true&or=(next_run_at.is.null,next_run_at.lte.${encodeURIComponent(nowIso)})&select=*&order=next_run_at.asc.nullsfirst&limit=${CRON_MAX_PROFILES}`,
         { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
       );
       profiles = await r.json();
@@ -2463,11 +2481,26 @@ export default async function handler(req, res) {
     // Deadline global do invocation: reserva ~10s dos 60s de maxDuration para o
     // re-ranking por IA não arriscar estourar o tempo e derrubar lotes seguintes.
     const runDeadline = Date.now() + 50000;
+    // Quantos ficaram para a próxima execução por falta de tempo. Antes esse
+    // número não existia: a função era morta pela plataforma no meio de um lote,
+    // devolvia 200 com o que tinha dado tempo, e o acúmulo era invisível.
+    let pendentes = 0;
+    let maiorLote = 0;
     for (let i = 0; i < profiles.length; i += BATCH_SIZE) {
+      // Só começa um lote se couber no tempo restante, medido pelo lote mais
+      // demorado até aqui. O primeiro sempre roda — sem ele a execução não faria
+      // nada e a fila só cresceria.
+      if (i > 0 && runDeadline - Date.now() < maiorLote) {
+        pendentes = profiles.length - i;
+        console.warn(`send-alerts: parando por tempo com ${pendentes} perfil(is) na fila — serão os primeiros na próxima execução`);
+        break;
+      }
+      const loteIniciadoEm = Date.now();
       const slice = profiles.slice(i, i + BATCH_SIZE);
       const settledBatch = await Promise.allSettled(
         slice.map(p => processUserAlert(p, { skipSideEffects: isTest, isDemand, deadline: runDeadline }))
       );
+      maiorLote = Math.max(maiorLote, Date.now() - loteIniciadoEm);
       settledBatch.forEach((s, idx) => {
         const profile = slice[idx];
         if (s.status === 'fulfilled') {
@@ -2481,6 +2514,11 @@ export default async function handler(req, res) {
           results.push({ user: profile.user_id, error: msg, sent: false });
         }
       });
+    }
+    // Fila cheia: o teto da consulta foi atingido, então há mais perfis vencidos
+    // além dos que sequer foram lidos.
+    if (!isTest && !isDemand && profiles.length >= CRON_MAX_PROFILES) {
+      console.warn(`send-alerts: fila atingiu o teto de ${CRON_MAX_PROFILES} perfis — considere aumentar a frequência do cron`);
     }
 
     // Modo manual (test ou demand): resposta explícita para o frontend
@@ -2522,7 +2560,7 @@ export default async function handler(req, res) {
       }
     }
 
-    return res.status(200).json({ ok: true, processed: results.length, results });
+    return res.status(200).json({ ok: true, processed: results.length, pending: pendentes, queued: profiles.length, results });
   } catch (err) {
     console.error('send-alerts error:', err);
     return res.status(500).json({ error: err.message });

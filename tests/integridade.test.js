@@ -145,6 +145,151 @@ describe('Integridade entre páginas', () => {
   });
 });
 
+describe('Crons têm limite e ordem', () => {
+  const API = FONTES.filter((f) => f.rel.startsWith('api/'));
+
+  it('nenhuma paginação de base roda sem teto de páginas', () => {
+    // Paginar a base inteira faz o custo crescer com o total de cadastros e não
+    // com os destinatários: a função passa a ser morta pelo maxDuration sem
+    // erro nenhum, e os e-mails simplesmente param de sair.
+    //
+    // A regra mira paginação, não todo `while(true)`: readBodyLimited em
+    // fetch-job.js é um leitor de stream com dois cortes (fim do corpo e teto
+    // de bytes), que é justamente um laço já limitado.
+    for (const { rel, src } of API) {
+      if (!/\bpage\+\+/.test(src)) continue;
+      // O teto vale como constante nomeada ou literal (webhook.js usa `page <= 5`).
+      assert.match(src, /page\s*<=?\s*([A-Z_]{3,}|\d+)/,
+        `${rel}: pagina sem teto — precisa de um limite de páginas`);
+    }
+  });
+
+  it('a fila do cron de alertas é ordenada e limitada', () => {
+    const src = read('api/send-alerts.js');
+    const consulta = src.match(/job_alert_profiles\?ativo=eq\.true[^`]*/);
+    assert.ok(consulta, 'consulta do cron não encontrada');
+    // Sem ORDER BY, o PostgREST devolve na ordem física e os mesmos usuários
+    // ficam sempre no início: quem não cabe no corte nunca é alcançado.
+    assert.match(consulta[0], /order=next_run_at\.asc/, 'fila sem ordenação: causa inanição da cauda');
+    assert.match(consulta[0], /limit=/, 'fila sem teto de leitura');
+    // E o laço precisa parar sozinho antes do maxDuration, não ser morto.
+    assert.match(src, /runDeadline - Date\.now\(\) < maiorLote/);
+  });
+
+  it('todo cron declara maxDuration', () => {
+    const vercel = JSON.parse(read('vercel.json'));
+    const funcs = vercel.functions || {};
+    for (const cron of vercel.crons || []) {
+      const arquivo = cron.path.replace(/^\//, '') + '.js';
+      assert.ok(funcs[arquivo] && funcs[arquivo].maxDuration,
+        `${arquivo} roda em cron sem maxDuration declarado`);
+    }
+  });
+});
+
+describe('Paginação de usuários do onboarding', () => {
+  function carregar() {
+    const src = read('api/cron-onboarding.js');
+    const partes = ['const MAX_PAGINAS', 'function direcaoDaPagina', 'async function getUsersCreatedAround']
+      .map((assinatura) => {
+        const i = src.indexOf(assinatura);
+        assert.ok(i >= 0, `não achei: ${assinatura}`);
+        const fim = src.indexOf('\n}\n', i);
+        return assinatura.startsWith('const') ? src.slice(i, src.indexOf('\n', i) + 1) : src.slice(i, fim + 3);
+      });
+    const sandbox = { Date, Number, Math, JSON, console };
+    sandbox.SUPABASE_URL = 'https://x';
+    sandbox.SUPABASE_SERVICE_KEY = 'k';
+    return { sandbox, codigo: partes.join('\n') };
+  }
+
+  // Base sintética: 3 páginas cheias, do mais novo para o mais antigo.
+  function paginasDesc(totalPaginas, perPage) {
+    return (url) => {
+      const page = Number((url.match(/page=(\d+)/) || [])[1]);
+      const users = [];
+      for (let i = 0; i < perPage; i++) {
+        const idx = (page - 1) * perPage + i;
+        users.push({ id: 'u' + idx, created_at: new Date(Date.now() - idx * 60 * 60 * 1000).toISOString() });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ users: page <= totalPaginas ? users : [] }) });
+    };
+  }
+
+  it('para de paginar assim que passa da janela', async () => {
+    const { sandbox, codigo } = carregar();
+    const paginasPedidas = [];
+    sandbox.fetch = (url) => { paginasPedidas.push(Number((url.match(/page=(\d+)/) || [])[1])); return paginasDesc(50, 10)(url); };
+    vm.runInNewContext(codigo + '\nvar _f = getUsersCreatedAround;', sandbox);
+
+    // Janela em torno de 2 dias atrás; com 10 usuários por página de 1h em 1h,
+    // a janela acaba bem antes da 50ª página.
+    const achados = await sandbox._f(2, 12);
+    assert.ok(paginasPedidas.length < 50, `paginou ${paginasPedidas.length} páginas — deveria cortar cedo`);
+    assert.ok(Array.isArray(achados));
+  });
+
+  it('respeita o teto de páginas mesmo sem conseguir detectar a ordem', async () => {
+    const { sandbox, codigo } = carregar();
+    let chamadas = 0;
+    // Todas as páginas com a MESMA data: direcaoDaPagina não decide o sentido.
+    sandbox.fetch = () => {
+      chamadas++;
+      const users = Array.from({ length: 10 }, (_, i) => ({ id: 'u' + i, created_at: new Date().toISOString() }));
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ users }) });
+    };
+    vm.runInNewContext(codigo + '\nvar _f = getUsersCreatedAround;\nvar _max = MAX_PAGINAS;', sandbox);
+    await sandbox._f(2, 12);
+    assert.ok(chamadas <= sandbox._max, `paginou ${chamadas} vezes, acima do teto ${sandbox._max}`);
+  });
+
+  it('detecta a direção da página pelos próprios dados', () => {
+    const { sandbox, codigo } = carregar();
+    vm.runInNewContext(codigo + '\nvar _d = direcaoDaPagina;', sandbox);
+    assert.equal(sandbox._d([300, 200, 100]), 'desc');
+    assert.equal(sandbox._d([100, 200, 300]), 'asc');
+    assert.equal(sandbox._d([100]), null, 'uma data só não define direção');
+    assert.equal(sandbox._d([]), null);
+  });
+});
+
+describe('Falha de envio de alerta é visível', () => {
+  function carregar(historico) {
+    const src = read('dashboard/index.html');
+    const fn = src.match(/function ultimaFalhaDeEnvio\(\)[\s\S]*?\n\}/);
+    assert.ok(fn, 'ultimaFalhaDeEnvio não encontrada');
+    const sandbox = { Date, _alertHistory: historico };
+    vm.runInNewContext(fn[0] + '\nvar _r = ultimaFalhaDeEnvio();', sandbox);
+    return sandbox._r;
+  }
+
+  it('avisa quando o último envio falhou', () => {
+    // send-alerts grava status:'failed' quando o provedor recusa o e-mail, mas
+    // o painel só olhava 'sent': quem tinha entrega falhando via "0 alertas
+    // enviados" e nenhuma pista do motivo.
+    const r = carregar([
+      { sent_at: '2026-08-01T10:00:00Z', status: 'sent' },
+      { sent_at: '2026-08-08T10:00:00Z', status: 'failed' }
+    ]);
+    assert.ok(r);
+    assert.equal(r.status, 'failed');
+  });
+
+  it('não alarma por falha antiga já superada', () => {
+    const r = carregar([
+      { sent_at: '2026-08-01T10:00:00Z', status: 'failed' },
+      { sent_at: '2026-08-08T10:00:00Z', status: 'sent' }
+    ]);
+    assert.equal(r, null);
+  });
+
+  it('não quebra com histórico vazio ou malformado', () => {
+    assert.equal(carregar([]), null);
+    assert.equal(carregar([{ status: 'failed' }]), null, 'registro sem data não conta');
+    assert.equal(carregar(null), null);
+  });
+});
+
 describe('Currículo base como fonte única', () => {
   it('as páginas que usam o currículo o buscam no banco, não só no navegador', () => {
     // localStorage é cache do dispositivo. Páginas que liam só o cache diziam

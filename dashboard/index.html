@@ -5099,13 +5099,38 @@ function renderAlertStatus(p) {
     return;
   }
   if (p.ativo) {
+    // Falha de envio tem prioridade sobre "ativo": o alerta pode estar
+    // configurado e mesmo assim não chegar (e-mail recusado pelo provedor).
+    // job_alert_history já registrava status:'failed', mas o painel só olhava
+    // 'sent' — quem tinha envio falhando via "0 alertas enviados" e não tinha
+    // como descobrir o motivo.
+    var falha = ultimaFalhaDeEnvio();
+    if (falha) {
+      badge.classList.add('paused');
+      txt.textContent = 'Último envio falhou — ' + formatDateShort(falha.sent_at);
+      badge.title = 'A VagaAI encontrou vagas, mas o e-mail não pôde ser entregue. Confirme se o endereço da sua conta está correto.';
+      return;
+    }
     badge.classList.add('active');
+    badge.removeAttribute('title');
     var freqLabels = { diario: 'Alerta diário ativo', semanal: 'Alerta semanal ativo', quinzenal: 'Alerta quinzenal ativo', mensal: 'Alerta mensal ativo' };
     txt.textContent = freqLabels[p.frequencia] || 'Alerta ativo';
   } else {
     badge.classList.add('paused');
+    badge.removeAttribute('title');
     txt.textContent = 'Alerta pausado';
   }
+}
+
+/* Devolve a falha mais recente somente se for o último evento do histórico —
+   uma falha antiga já seguida de envio bem-sucedido não é problema atual. */
+function ultimaFalhaDeEnvio() {
+  var hist = (_alertHistory || []).filter(function(h){ return h && h.sent_at; });
+  if (!hist.length) return null;
+  var maisRecente = hist.reduce(function(a, b){
+    return new Date(b.sent_at).getTime() > new Date(a.sent_at).getTime() ? b : a;
+  });
+  return maisRecente.status === 'failed' ? maisRecente : null;
 }
 
 // Mesma hora-âncora do backend (send-alerts.js): o cron diário entrega de manhã,

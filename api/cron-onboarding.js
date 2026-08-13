@@ -8,6 +8,23 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
+// Teto duro de páginas: mesmo que a detecção de ordem falhe, a execução termina.
+const MAX_PAGINAS = 25;
+
+// Direção da paginação a partir dos próprios dados. O endpoint admin do GoTrue
+// não documenta ordenação estável, então em vez de assumir "mais novo primeiro"
+// nós medimos: comparar a primeira e a última data da página diz o sentido, e
+// o corte antecipado passa a ser seguro nos dois casos.
+function direcaoDaPagina(datas) {
+  if (datas.length < 2) return null;
+  return datas[0] >= datas[datas.length - 1] ? 'desc' : 'asc';
+}
+
+/* Busca usuários criados numa janela em torno de N dias atrás.
+   Antes, varria a base INTEIRA todo dia — o custo crescia com o total de
+   cadastros, não com o punhado de destinatários, e o cron (sem maxDuration
+   próprio) ia parar de completar conforme a base crescesse, deixando de enviar
+   sem nenhum erro. Agora para assim que a paginação passa da janela. */
 async function getUsersCreatedAround(daysAgo, windowHours = 12) {
   const targetMs = Date.now() - daysAgo * 24 * 60 * 60 * 1000;
   const minMs = targetMs - windowHours * 60 * 60 * 1000;
@@ -17,7 +34,7 @@ async function getUsersCreatedAround(daysAgo, windowHours = 12) {
   let page = 1;
   const perPage = 1000;
 
-  while (true) {
+  while (page <= MAX_PAGINAS) {
     const res = await fetch(
       `${SUPABASE_URL}/auth/v1/admin/users?page=${page}&per_page=${perPage}`,
       { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
@@ -26,12 +43,23 @@ async function getUsersCreatedAround(daysAgo, windowHours = 12) {
     const data = await res.json();
     const pageUsers = data.users || [];
 
+    const datas = [];
     for (const u of pageUsers) {
       const t = new Date(u.created_at).getTime();
+      if (!Number.isFinite(t)) continue;
+      datas.push(t);
       if (t >= minMs && t <= maxMs) users.push(u);
     }
 
     if (pageUsers.length < perPage) break;
+
+    // Passou da janela? O que vem depois está ainda mais longe dela.
+    const direcao = direcaoDaPagina(datas);
+    const maisAntigoDaPagina = datas.length ? Math.min(...datas) : null;
+    const maisNovoDaPagina = datas.length ? Math.max(...datas) : null;
+    if (direcao === 'desc' && maisAntigoDaPagina !== null && maisAntigoDaPagina < minMs) break;
+    if (direcao === 'asc'  && maisNovoDaPagina  !== null && maisNovoDaPagina  > maxMs) break;
+
     page++;
   }
 
@@ -229,11 +257,14 @@ const CONDITIONS = {
   },
 };
 
+// Mesma correção de getUsersCreatedAround: aqui só interessam cadastros a
+// partir de minMs, então não há motivo para continuar paginando depois de
+// alcançar usuários mais antigos que isso.
 async function getUsersCreatedSince(minMs) {
   const users = [];
   let page = 1;
   const perPage = 1000;
-  while (true) {
+  while (page <= MAX_PAGINAS) {
     const res = await fetch(
       `${SUPABASE_URL}/auth/v1/admin/users?page=${page}&per_page=${perPage}`,
       { headers: _sbHeaders() }
@@ -241,11 +272,23 @@ async function getUsersCreatedSince(minMs) {
     if (!res.ok) break;
     const data = await res.json();
     const pageUsers = data.users || [];
+    const datas = [];
     for (const u of pageUsers) {
       const t = new Date(u.created_at).getTime();
+      if (!Number.isFinite(t)) continue;
+      datas.push(t);
       if (t >= minMs) users.push(u);
     }
     if (pageUsers.length < perPage) break;
+
+    // Só existe piso aqui (minMs), não teto: em ordem decrescente, uma página
+    // inteiramente anterior ao piso encerra a busca. Em ordem crescente não dá
+    // para cortar cedo — os relevantes ficam no fim —, então segue até o teto
+    // de páginas.
+    const direcao = direcaoDaPagina(datas);
+    const maisAntigoDaPagina = datas.length ? Math.min(...datas) : null;
+    if (direcao === 'desc' && maisAntigoDaPagina !== null && maisAntigoDaPagina < minMs) break;
+
     page++;
   }
   return users;
