@@ -195,6 +195,61 @@ describe('Superfície pública', () => {
   });
 });
 
+describe('Elementos referenciados existem', () => {
+  /* getElementById de um id que não existe no markup e uma falha muda: o codigo
+     e guardado (if (el)), entao o recurso simplesmente nao aparece — sem erro,
+     sem log. Foi assim que o botao "Adicionar ao rastreador" de /app e a faixa
+     de progresso de /cv ficaram invisiveis com o codigo inteiro funcionando.
+
+     Este teste e um ratchet: a lista abaixo e a divida conhecida em 13/08/2026.
+     Qualquer id novo sem markup quebra a suite. Tirar um daqui exige restaurar
+     o markup — nunca ampliar a lista sem uma razao escrita. */
+  const ORFAOS_CONHECIDOS = {
+    'app/index.html': [
+      'appUserDropdown',   // dropdown do usuario: substituido pela sidebar compartilhada
+      'alertVagaNotice',   // criado em runtime via notice.id = ... (nao e orfao de fato)
+    ],
+    'dashboard/index.html': [
+      'alMHora',           // campo de hora do modal de alerta, removido do formulario
+    ],
+    'cv/index.html': [
+      // Card de contexto da vaga: o CSS (.job-summary*) foi dimensionado para um
+      // painel lateral que nao existe mais. Restaurar exige decidir onde ele mora
+      // no layout atual, nao so recolocar a marcacao.
+      'jobSummaryCard', 'jobSummaryRole', 'jobSummaryCompany',
+      'jobSummaryText', 'jobSummaryScore', 'jobSummaryChips', 'jobSummaryLink',
+      // s3ReforcarIA() nao e chamada de lugar nenhum: religar o botao significa
+      // decidir se a acao (que altera o CV da pessoa) deve existir.
+      's3AiBtn', 's3AiBtnLabel',
+      'pdfPreflightOverlay', // ausencia e tratada como "fechado" — default seguro
+      'sf_resumo_count',     // contador de caracteres do resumo
+    ],
+  };
+
+  it('nenhum id novo referenciado sem markup', () => {
+    for (const [pagina, conhecidos] of Object.entries(ORFAOS_CONHECIDOS)) {
+      const src = read(pagina);
+      const referenciados = new Set(
+        [...src.matchAll(/getElementById\(\s*['"]([^'"]+)['"]\s*\)/g)].map((m) => m[1])
+      );
+      // Conta como presente o id posto em runtime (el.id = 'x'), nao so o atributo.
+      const existe = (id) => src.includes(`id="${id}"`) || src.includes(`id='${id}'`)
+        || new RegExp(`\\.id\\s*=\\s*['"]${id}['"]`).test(src);
+      const novos = [...referenciados].filter((id) => !existe(id) && !conhecidos.includes(id));
+      assert.deepEqual(novos, [], `${pagina}: id referenciado sem markup`);
+    }
+  });
+
+  it('os recursos restaurados continuam com markup', () => {
+    // Regressao direta: estes tres sumiram uma vez e o produto perdeu a funcao.
+    assert.match(read('app/index.html'), /id="trackerCTA"/);
+    assert.match(read('app/index.html'), /id="trackerAddBtn"/);
+    assert.match(read('cv/index.html'), /id="s4ProgressStrip"/);
+    // E o contêiner precisa ter a classe que tem CSS, senão renderiza sem estilo.
+    assert.match(read('cv/index.html'), /class="s4-progress-strip" id="s4ProgressStrip"/);
+  });
+});
+
 describe('Shell do dashboard', () => {
   it('a base injetada é a URL do documento, não a origem', () => {
     // O shell escreve o HTML da página num iframe about:blank, então precisa de

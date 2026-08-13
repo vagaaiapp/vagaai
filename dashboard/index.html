@@ -3125,10 +3125,17 @@ async function init() {
     currentSession = session;
     currentUserId = session.user.id;
     if (window.VagaAIOnboarding) {
-      await window.VagaAIOnboarding.consume(session, {
+      // O retorno era descartado. Se claimAnalysis falhasse, a pessoa terminava
+      // o funil, criava a conta e caía num painel vazio, sem explicação — como
+      // se o trabalho tivesse sumido. O dado não some (o estado local sobrevive
+      // e o consume retenta no próximo load), então basta dizer isso.
+      var handoff = await window.VagaAIOnboarding.consume(session, {
         supabaseUrl: SUPABASE_URL,
         anonKey: SUPABASE_ANON
       });
+      if (handoff && handoff.errors && handoff.errors.length) {
+        _onboardingIncompleto = handoff.errors.map(function(e){ return e.stage; });
+      }
     }
     var email = session.user.email || '';
     var displayName = (session.user.user_metadata && session.user.user_metadata.full_name) || email.split('@')[0];
@@ -3156,7 +3163,21 @@ async function init() {
   }
   document.getElementById('pageLoading').classList.add('hidden');
   openRequestedDashboardTab();
+  avisarOnboardingIncompleto();
   maybeStartDashTour();
+}
+
+/* Etapas do handoff do onboarding que falharam nesta carga. */
+var _onboardingIncompleto = null;
+
+function avisarOnboardingIncompleto() {
+  if (!_onboardingIncompleto || !_onboardingIncompleto.length) return;
+  // Nada foi perdido: o estado do funil continua no navegador e o consume roda
+  // de novo a cada abertura do painel. O aviso existe para a pessoa não achar
+  // que a análise que ela acabou de fazer evaporou.
+  var oQue = _onboardingIncompleto.indexOf('analysis') > -1 ? 'sua primeira análise' : 'alguns dados do seu cadastro';
+  showToast('Ainda estamos salvando ' + oQue + '. Recarregue em instantes se não aparecer.', 'error');
+  _onboardingIncompleto = null;
 }
 
 /* ── Painel V2 ─────────────────────────────── */
@@ -4742,85 +4763,34 @@ function openTrackerEdit(job) {
   }
 }
 
-function openAnalysisModal(job) {
-  var a = job.analyses || {};
-  var r = a.result || {};
-  var cv = r.cv_otimizado || {};
-  var jobInfo = r.job_info || {};
-  var fatores = r.fatores || {};
-  var keywords_ok = (r.keywords_encontradas || []).join(', ') || '—';
-  var keywords_falt = (r.keywords_faltando || []).join(', ') || '—';
-  // escHtml escapa & < >, mas não impede href="javascript:...". O link da vaga
-  // vem do campo do usuário E do feed externo de vagas (saveRecommendedJob),
-  // então precisa passar pela mesma validação de esquema do resto do arquivo.
-  var jobUrlSafe = safeExternalUrl(job.job_url);
+/* openAnalysisModal foi removida: aparecia uma unica vez no repositorio,
+   a propria definicao, e nunca era chamada. Cerca de 90 linhas construindo um
+   modal de analise que ninguem via — e que reusava os mesmos ids tk* do modal
+   de rastreio, o que deixava saveTrackerModal exposto a ler o campo errado se
+   os dois chegassem a coexistir no DOM. */
 
-  var modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = '<div class="modal-box" style="max-width:680px;max-height:85vh;overflow-y:auto">' +
-    '<button class="modal-close">✕</button>' +
-    '<div class="modal-title">' + escHtml(job.cargo || 'Análise') + ' — ' + escHtml(job.empresa || '') + '</div>' +
-
-    // Score + nivel
-    '<div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">' +
-      '<div style="background:var(--bg-sub);border-radius:var(--r-sm);padding:14px 20px;flex:1;text-align:center">' +
-        '<div style="font-size:28px;font-weight:800;color:var(--gb-emerald)">' + (r.score || job.score || '—') + '</div>' +
-        '<div style="font-size:11px;color:var(--t3);margin-top:2px">Score ATS</div>' +
-      '</div>' +
-      '<div style="background:var(--bg-sub);border-radius:var(--r-sm);padding:14px 20px;flex:1;text-align:center">' +
-        '<div style="font-size:18px;font-weight:700">' + escHtml(r.nivel || '—') + '</div>' +
-        '<div style="font-size:11px;color:var(--t3);margin-top:2px">Nível</div>' +
-      '</div>' +
-      (jobUrlSafe ? '<a href="' + escHtml(jobUrlSafe) + '" target="_blank" rel="noopener" style="display:flex;align-items:center;padding:14px 20px;background:var(--s-grn-bg);border:1.5px solid var(--gb-emerald);border-radius:var(--r-sm);color:var(--gb-emerald);font-weight:700;font-size:13px;text-decoration:none">🔗 Ver vaga</a>' : '') +
-    '</div>' +
-
-    // Resumo
-    (r.resumo ? '<div style="margin-bottom:16px"><div class="modal-label" style="margin-bottom:6px">Resumo da análise</div><div style="font-size:13px;color:var(--t2);line-height:1.6;background:var(--bg-sub);padding:12px;border-radius:var(--r-sm)">' + escHtml(r.resumo) + '</div></div>' : '') +
-
-    // Keywords
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">' +
-      '<div><div class="modal-label" style="margin-bottom:6px;color:var(--s-grn)">✓ Keywords encontradas</div><div style="font-size:12px;color:var(--t2);background:var(--s-grn-bg);padding:10px;border-radius:var(--r-sm);line-height:1.7">' + escHtml(keywords_ok) + '</div></div>' +
-      '<div><div class="modal-label" style="margin-bottom:6px;color:var(--s-red)">✗ Keywords faltando</div><div style="font-size:12px;color:var(--t2);background:var(--s-red-bg);padding:10px;border-radius:var(--r-sm);line-height:1.7">' + escHtml(keywords_falt) + '</div></div>' +
-    '</div>' +
-
-    // CV Otimizado
-    (cv.resumo_profissional ? '<div style="margin-bottom:16px"><div class="modal-label" style="margin-bottom:8px">CV Otimizado</div>' +
-      '<div style="background:var(--bg-sub);padding:14px;border-radius:var(--r-sm);font-size:13px;line-height:1.6">' +
-        '<div style="font-size:15px;font-weight:700;margin-bottom:4px">' + escHtml(cv.titulo_profissional || '') + '</div>' +
-        '<div style="color:var(--t3);margin-bottom:10px">' + escHtml(cv.nome || '') + ' · ' + escHtml((cv.contato || {}).email || '') + '</div>' +
-        '<div style="color:var(--t2)">' + escHtml(cv.resumo_profissional) + '</div>' +
-      '</div>' +
-      (cv.habilidades && cv.habilidades.length ? '<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px">' + cv.habilidades.map(function(h){ return '<span style="background:var(--bg-card);border:1px solid var(--border);padding:3px 10px;border-radius:20px;font-size:11px">' + escHtml(h) + '</span>'; }).join('') + '</div>' : '') +
-    '</div>' : '') +
-
-    // Sugestões
-    (r.sugestoes && r.sugestoes.length ? '<div><div class="modal-label" style="margin-bottom:8px">Sugestões</div><ul style="padding-left:18px;font-size:13px;color:var(--t2);line-height:1.8">' + r.sugestoes.map(function(s){ return '<li>' + escHtml(s) + '</li>'; }).join('') + '</ul></div>' : '') +
-
-  '</div>';
-
-  document.body.appendChild(modal);
-  modal.querySelector('.modal-close').addEventListener('click', function() { modal.remove(); });
-  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
-}
-
+/* Le os campos DENTRO do modal recebido, nao pelo documento inteiro.
+   openTrackerEdit e openQuickTrack constroem campos com os MESMOS ids tk*;
+   com getElementById global, o save pegava o primeiro do DOM — se os dois
+   chegassem a coexistir, gravava os dados do modal errado sem avisar. */
 async function saveTrackerModal(modal, editId) {
-  var empresa = document.getElementById('tkEmpresa').value.trim();
+  var empresa = modal.querySelector('#tkEmpresa').value.trim();
   if (!empresa) { showToast('Digite a empresa', 'error'); return; }
 
-  var status = document.getElementById('tkStatus').value;
+  var status = modal.querySelector('#tkStatus').value;
   var body = {
     empresa,
-    cargo: document.getElementById('tkCargo').value.trim(),
-    score: parseInt(document.getElementById('tkScore').value) || 0,
+    cargo: modal.querySelector('#tkCargo').value.trim(),
+    score: parseInt(modal.querySelector('#tkScore').value) || 0,
     status: status,
-    salario: document.getElementById('tkSalario').value.trim() || null,
-    job_url: document.getElementById('tkUrl').value.trim() || null,
-    nota: document.getElementById('tkNota').value.trim() || null,
+    salario: modal.querySelector('#tkSalario').value.trim() || null,
+    job_url: modal.querySelector('#tkUrl').value.trim() || null,
+    nota: modal.querySelector('#tkNota').value.trim() || null,
     updated_at: new Date().toISOString()
   };
   // interview_at: only read when status = entrevista (field is visible)
   if (status === 'entrevista') {
-    var iAtEl = document.getElementById('tkInterviewAt');
+    var iAtEl = modal.querySelector('#tkInterviewAt');
     if (iAtEl) {
       body.interview_at = iAtEl.value ? new Date(iAtEl.value).toISOString() : null;
     }
@@ -4829,7 +4799,7 @@ async function saveTrackerModal(modal, editId) {
   if (!editId) {
     body.user_id = currentUserId;
     body.created_at = new Date().toISOString();
-    var aidEl = document.getElementById('tkAnalysisId');
+    var aidEl = modal.querySelector('#tkAnalysisId');
     if (aidEl && aidEl.value) body.analysis_id = aidEl.value;
   }
 

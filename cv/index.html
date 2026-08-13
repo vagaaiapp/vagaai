@@ -1379,6 +1379,10 @@ html.no-photo .mod-header{display:block}
       <p class="csv-sub" id="s4Subtitle">Baixe seus materiais, envie para a vaga e acompanhe a candidatura — tudo a partir daqui.</p>
     </div>
     <div class="csv-body">
+      <!-- s4RenderProgress() é chamada de 5 pontos do fluxo, mas escrevia num
+           elemento que não existia: a faixa de progresso da candidatura
+           (CV baixado · Carta gerada · Enviado) nunca aparecia. -->
+      <div class="s4-progress-strip" id="s4ProgressStrip"></div>
       <!-- Review banner — shown only when coming from analysis -->
       <div id="s4ReviewBanner" style="display:none"></div>
       <!-- Download standalone — shown when no review banner (fluxo direto) -->
@@ -4005,13 +4009,10 @@ function renderStep3() {
       expEl.innerHTML = exp.map(function(e) {
         return '<div class="csv-item-card"><div style="flex:1;min-width:0"><div class="csv-item-name">' + _esc(e.cargo || '—') + '</div><div class="csv-item-sub">' + _esc(e.empresa || '') + (e.periodo ? ' · ' + _esc(e.periodo) : '') + '</div></div></div>';
       }).join('');
-      var warn = document.getElementById('s3ExpWarn');
-      var warnTxt = document.getElementById('s3WarnText');
-      if (warn && warnTxt) {
-        var noMetrics = exp.some(function(e){ return !(e.bullets || []).some(function(b){ return /\d/.test(b); }); });
-        warn.style.display = noMetrics ? '' : 'none';
-        warnTxt.textContent = 'Adicione métricas (ex: "aumentei 30%") para melhorar o ATS';
-      }
+      // O aviso de "sem métricas" vive em s3RenderSmartWarns, que escreve em
+      // #s3SmartWarns junto com os outros alertas do passo. Este bloco era o
+      // mecanismo anterior e apontava para #s3ExpWarn/#s3WarnText, que não
+      // existem mais no markup — rodava a cada render sem efeito nenhum.
     }
   }
 
