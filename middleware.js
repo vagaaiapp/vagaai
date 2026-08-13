@@ -123,6 +123,9 @@ async function handleSitemap() {
   const staticPages = [
     { loc: '/', changefreq: 'weekly', priority: '1.0' },
     { loc: '/app', changefreq: 'monthly', priority: '0.9' },
+    // Página de captação, indexável (index, follow) e até aqui fora do sitemap:
+    // ficava dependendo de link interno para ser descoberta.
+    { loc: '/criar-curriculo', changefreq: 'monthly', priority: '0.8' },
     { loc: '/paraempresas', changefreq: 'monthly', priority: '0.6' },
     { loc: '/blog', changefreq: 'weekly', priority: '0.7' },
     { loc: '/termos', changefreq: 'monthly', priority: '0.4' },

@@ -131,11 +131,6 @@ const IP_FREE_LIMIT = 1; // 1 análise gratuita por IP a cada 30 dias
 
 // Liberação temporária para testes internos. Remove este bloco após 04/08/2026
 // (23:59:59 BRT). Não afeta usuários autenticados, planos ou outros IPs.
-const TEMP_TEST_IP = '128.201.40.237';
-const TEMP_TEST_IP_EXPIRES_AT = Date.parse('2026-08-05T02:59:59.999Z');
-function hasTemporaryTestAccess(ip) {
-  return ip === TEMP_TEST_IP && Date.now() <= TEMP_TEST_IP_EXPIRES_AT;
-}
 
 async function checkRateLimit(ip) {
   // Usa a SERVICE key: a tabela ip_rate_limits tem RLS habilitada e nega anon,
@@ -1060,7 +1055,7 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
     }
 
     const extractIp = clientIp(req);
-    if (!hasTemporaryTestAccess(extractIp) && !(await checkAndCountLimit({
+    if (!(await checkAndCountLimit({
       key: `ip:${extractIp}:obcvextract`,
       limit: OB_CV_EXTRACT_IP_LIMIT,
       windowMs: OB_CV_EXTRACT_WINDOW_MS,
@@ -1216,11 +1211,10 @@ ${rawCv}`;
     }
 
     const obIp = clientIp(req);
-    const obHasTemporaryTestAccess = hasTemporaryTestAccess(obIp);
     const obAnonHash = createHash('sha256').update(obAnonId).digest('hex').slice(0, 32);
     const obAnonKey = `anon:${obAnonHash}:obcv`;
 
-    if (!obHasTemporaryTestAccess && !(await isWithinLimit({
+    if (!(await isWithinLimit({
       key: obAnonKey,
       limit: OB_CV_ANON_LIMIT,
       windowMs: OB_CV_WINDOW_MS,
@@ -1232,7 +1226,7 @@ ${rawCv}`;
       });
     }
 
-    if (!obHasTemporaryTestAccess && !(await checkAndCountLimit({
+    if (!(await checkAndCountLimit({
       key: `ip:${obIp}:obcv-abuse`,
       limit: OB_CV_IP_ABUSE_LIMIT,
       windowMs: OB_CV_IP_ABUSE_WINDOW_MS,
@@ -1353,9 +1347,7 @@ Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato
       };
 
       // Só uma geração concluída consome a franquia gratuita do navegador.
-      if (!obHasTemporaryTestAccess) {
-        await countLimit({ key: obAnonKey, windowMs: OB_CV_WINDOW_MS });
-      }
+      await countLimit({ key: obAnonKey, windowMs: OB_CV_WINDOW_MS });
       return res.status(200).json({ cv: obClean });
     } catch (err) {
       console.error('onboarding_cv error:', err.message);
@@ -1519,9 +1511,6 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
     } else {
       // Anônimo: aplica rate limit mesmo em cache hit
       const _ip = clientIp(req);
-      if (hasTemporaryTestAccess(_ip)) {
-        return res.status(200).json(cachedResult);
-      }
       const { allowed } = await checkRateLimit(_ip);
       if (!allowed) {
         return res.status(429).json({ error: 'limite_atingido' });
@@ -1550,11 +1539,9 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
     }
   } else {
     _ip = clientIp(req);
-    if (!hasTemporaryTestAccess(_ip)) {
-      const { allowed } = await checkRateLimit(_ip);
-      if (!allowed) {
-        return res.status(429).json({ error: 'limite_atingido' });
-      }
+    const { allowed } = await checkRateLimit(_ip);
+    if (!allowed) {
+      return res.status(429).json({ error: 'limite_atingido' });
     }
   }
 
@@ -1786,7 +1773,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
         result._credits_remaining = credRows[0]?.credits ?? null;
       } catch (_) {}
     } else {
-      if (!hasTemporaryTestAccess(_ip)) await recordIpUsage(_ip);
+      await recordIpUsage(_ip);
     }
 
     // Score comparativo — benchmark interno

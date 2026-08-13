@@ -145,6 +145,52 @@ describe('Integridade entre páginas', () => {
   });
 });
 
+describe('Superfície pública', () => {
+  it('nenhum endereço IP público hardcoded no código de servidor', () => {
+    // O repositório é público. Um bypass de rate limit "temporário" deixou um
+    // IP residencial no fonte por semanas depois de expirar — endereço pessoal
+    // exposto, e um atalho de autorização que ninguém lembrava de remover.
+    // Restrito a código de servidor/compartilhado: HTML tem SVG e CSS inline
+    // que produzem falso positivo.
+    const alvo = FONTES.filter((f) => /^(api|lib|js)\//.test(f.rel) || f.rel === 'middleware.js');
+    const privado = /^(0\.|10\.|127\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|22[4-9]\.|2[3-5]\d\.)/;
+    // Endpoints de metadados de nuvem: aparecem no denylist de SSRF do
+    // fetch-job.js, ou seja, são controle de segurança e não atalho.
+    const DENYLIST_CONHECIDO = new Set(['100.100.100.200']);
+    for (const { rel, src } of alvo) {
+      const ips = [...src.matchAll(/\b(\d{1,3}(?:\.\d{1,3}){3})\b/g)]
+        .map((m) => m[1])
+        .filter((ip) => ip.split('.').every((o) => Number(o) <= 255))
+        .filter((ip) => !privado.test(ip) && !DENYLIST_CONHECIDO.has(ip));
+      assert.deepEqual(ips, [], `${rel}: IP público hardcoded`);
+    }
+  });
+
+  it('toda página indexável está no sitemap', () => {
+    // Página com robots "index, follow" fora do sitemap depende de link interno
+    // para ser descoberta — foi o caso de /criar-curriculo.
+    const middleware = read('middleware.js');
+    const dinamicas = ['/blog/post']; // entram no sitemap via blog_posts
+    for (const { rel, src } of FONTES) {
+      if (!/\.html$/.test(rel)) continue;
+      if (!/name="robots"\s+content="index/.test(src)) continue;
+      const rota = rel === 'index.template.html' ? '/' : '/' + rel.replace(/\/index\.html$/, '').replace(/\.html$/, '');
+      if (dinamicas.includes(rota)) continue;
+      const alvo = rota === '/' ? `loc: '/'` : `loc: '${rota}'`;
+      assert.ok(middleware.includes(alvo), `${rota} é indexável mas não está no sitemap (middleware.js)`);
+    }
+  });
+
+  it('o limite sem cadastro não acusa quem nunca analisou', () => {
+    // O limite é por IP, e CGNAT de operadora móvel faz milhares de pessoas
+    // saírem pelo mesmo endereço: "você já usou" é dito a quem acabou de chegar.
+    const app = read('app/index.html');
+    assert.doesNotMatch(app, /Você já usou sua análise gratuita'/,
+      'a mensagem do limite anônimo voltou a culpar o usuário');
+    assert.match(app, /uma por rede a cada 30 dias/);
+  });
+});
+
 describe('Crons têm limite e ordem', () => {
   const API = FONTES.filter((f) => f.rel.startsWith('api/'));
 
