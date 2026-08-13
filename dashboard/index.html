@@ -6350,7 +6350,15 @@ async function _showShellFrame(href, activeId) {
     var embeddedHref = location.origin + embeddedUrl;
     var embedScript = '<script>window.__VAGAAI_EMBEDDED__=true;window.__VAGAAI_EMBEDDED_URL__=' + JSON.stringify(embeddedHref) + ';try{history.replaceState(null,"",' + JSON.stringify(embeddedHref) + ')}catch(e){}<\/script>';
     var shellNavGuard = '<script>(function(){document.addEventListener("click",function(ev){var a=ev.target&&ev.target.closest?ev.target.closest("a[href]"):null;if(!a)return;var raw=a.getAttribute("href")||"";if(!raw||raw.charAt(0)==="#")return;var url;try{url=new URL(raw,location.origin)}catch(e){return}if(url.origin!==location.origin)return;var id=null;var href=null;if(url.pathname==="/app"||(url.pathname==="/dashboard"&&url.hash==="#app")){id="app";href="/app"+url.search}else if(url.pathname==="/curriculo"||url.pathname==="/cv"||(url.pathname==="/dashboard"&&url.hash==="#curriculo")){id="curriculo";href=url.pathname+url.search}else if(url.pathname==="/carta"||(url.pathname==="/dashboard"&&url.hash==="#carta")){id="carta";href="/carta"+url.search}else if(url.pathname==="/entrevista"||(url.pathname==="/dashboard"&&url.hash==="#entrevista")){id="entrevistas";href="/entrevista"+url.search}if(!id)return;ev.preventDefault();parent.postMessage({type:"vagaai-nav",frame:true,id:id,href:href},location.origin)},true)})();<\/script>';
-    html = html.replace(/(<head[^>]*>)/i, '$1<base href="' + location.origin + '">' + embedScript + shellNavGuard);
+    // A base precisa ser a URL REAL do documento, não só a origem. Link de
+    // âncora (href="#algo") resolve contra a base, então com base na origem
+    // "#formSection" virava "https://dominio/#formSection": clicar em "Revisar
+    // os dados antes da análise" tirava a pessoa de /app e carregava a landing
+    // page dentro do iframe, perdendo a vaga e o currículo já preenchidos.
+    // Com a URL completa, a âncora volta a apontar para a própria página, e a
+    // resolução de caminhos relativos não muda (as páginas do shell estão todas
+    // na raiz, então o diretório-base continua sendo "/").
+    html = html.replace(/(<head[^>]*>)/i, '$1<base href="' + embeddedHref + '">' + embedScript + shellNavGuard);
     var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
     if (doc) { doc.open(); doc.write(html); doc.close(); }
   } catch(e) {

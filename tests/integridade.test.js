@@ -95,7 +95,11 @@ describe('Integridade entre páginas', () => {
     const validado = (expr, src) => {
       if (INTRINSECOS.test(expr) || VALIDADORES.test(expr)) return true;
       return (expr.match(/[A-Za-z_$][\w$]*/g) || []).some((id) =>
-        new RegExp(`\\b${id}\\s*=\\s*(safeExternalUrl|_href)\\(`).test(src)
+        // valor validado por helper...
+        new RegExp(`\\b${id}\\s*=\\s*(safeExternalUrl|_href)\\(`).test(src) ||
+        // ...ou construído a partir da própria origem da página, que não pode
+        // carregar esquema executável (ex.: var x = location.origin + rota).
+        new RegExp(`\\b${id}\\s*=\\s*location\\.origin\\s*\\+`).test(src)
       );
     };
 
@@ -188,6 +192,44 @@ describe('Superfície pública', () => {
     assert.doesNotMatch(app, /Você já usou sua análise gratuita'/,
       'a mensagem do limite anônimo voltou a culpar o usuário');
     assert.match(app, /uma por rede a cada 30 dias/);
+  });
+});
+
+describe('Shell do dashboard', () => {
+  it('a base injetada é a URL do documento, não a origem', () => {
+    // O shell escreve o HTML da página num iframe about:blank, então precisa de
+    // <base> para resolver caminhos. Com base na ORIGEM, href="#formSection"
+    // resolvia para "https://dominio/#formSection": clicar em "Revisar os dados
+    // antes da análise" trocava /app pela landing page dentro do iframe e
+    // perdia a vaga e o currículo já digitados.
+    const dash = read('dashboard/index.html');
+    const injecao = dash.match(/html = html\.replace\(\/\(<head\[\^>\]\*>\)\/i,[^;]+;/);
+    assert.ok(injecao, 'injeção da base não encontrada');
+    assert.match(injecao[0], /<base href="' \+ embeddedHref \+ '"/,
+      'a base voltou a ser a origem — âncoras saem da página');
+    assert.doesNotMatch(injecao[0], /<base href="' \+ location\.origin/);
+  });
+
+  it('âncora resolve para a própria página com a base corrigida', () => {
+    // Mesmo cálculo que o navegador faz, para provar o comportamento e não só
+    // a presença da string no fonte.
+    const base = 'https://www.vagaai.app.br/app?embedded=1';
+    assert.equal(new URL('#formSection', base).href, 'https://www.vagaai.app.br/app?embedded=1#formSection');
+    // E a resolução de caminhos não muda em relação à base antiga.
+    const origem = 'https://www.vagaai.app.br';
+    for (const caminho of ['/js/cv-base.js', 'favicon.svg', '/curriculo']) {
+      assert.equal(new URL(caminho, base).href, new URL(caminho, origem).href, caminho);
+    }
+  });
+
+  it('toda âncora das páginas do shell aponta para um id existente', () => {
+    // Âncora para id inexistente não navega — o clique simplesmente não faz nada.
+    for (const pagina of ['app/index.html', 'curriculo/index.html', 'carta/index.html', 'entrevista/index.html']) {
+      const src = read(pagina);
+      for (const m of src.matchAll(/href="#([A-Za-z][\w-]*)"/g)) {
+        assert.ok(src.includes(`id="${m[1]}"`), `${pagina}: âncora #${m[1]} sem alvo`);
+      }
+    }
   });
 });
 
