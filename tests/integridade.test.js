@@ -195,6 +195,62 @@ describe('Superfície pública', () => {
   });
 });
 
+describe('Funções órfãs', () => {
+  /* Funcao declarada e nunca chamada de lugar nenhum. Nao e so codigo morto: e
+     armadilha. renderManualItem PARECIA o renderizador da lista de
+     candidaturas, e uma acao adicionada nela nunca chegava a tela — quem monta
+     a lista e renderCandList. O mesmo padrao aparece em varias funcoes que
+     perderam o ponto de entrada em trocas de layout: o recurso existe inteiro
+     no codigo e some da interface sem erro.
+
+     Ratchet: a lista e a divida em 13/08/2026. Funcao orfa nova quebra a suite. */
+  const ORFAS_CONHECIDAS = {
+    'app/index.html': ['toggleAppDropdown', 'closeAppDropdown', 'renderList'],
+    'cv/index.html': [
+      'cvSaveToCloud',        // usa spCloudSaveBtn — painel lateral removido
+      'goBackToDashboardTab', 'fitToOnePage',
+      'applySmartFix',        // aplicar correção sugerida
+      's4SaveCloud',          // salvar currículo na nuvem no passo 4
+      '_closePanelMob',
+    ],
+    'dashboard/index.html': [
+      'setVagasFilter', 'renderFilterBar', 'renderVagasList',  // wrappers da lista antiga
+      'openTracker',
+      'saveRecommendedJob',   // salvar vaga do alerta — a grade só analisa, abre ou descarta
+      'openJobAnalysis', '_saveJobFromCache',
+      'renderKwTags', 'handleKwInput', 'removeKw', 'setFreq',  // stubs vazios do editor de alerta
+      'addToTracker', 'saveTracker',
+    ],
+    'entrevista/index.html': ['_jobInfoToText'],
+  };
+
+  it('nenhuma função órfã nova', () => {
+    const declaradas = (src) =>
+      [...src.matchAll(/^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/gm)].map((m) => m[1]);
+    const TUDO = FONTES.map((f) => f.src).join('\n');
+
+    for (const [pagina, conhecidas] of Object.entries(ORFAS_CONHECIDAS)) {
+      const src = read(pagina);
+      const orfas = [...new Set(declaradas(src))].filter((nome) => {
+        const usos = (TUDO.match(new RegExp('\\b' + nome + '\\b', 'g')) || []).length;
+        return usos <= 1; // só a própria declaração
+      });
+      const novas = orfas.filter((n) => !conhecidas.includes(n));
+      assert.deepEqual(novas, [], `${pagina}: função declarada e nunca chamada`);
+    }
+  });
+
+  it('a ação de analisar vaga sem análise está no renderizador vivo', () => {
+    // Regressão do erro que originou este teste: a ação foi parar em
+    // renderManualItem (morta) e nunca renderizou.
+    const dash = read('dashboard/index.html');
+    const detalhe = dash.match(/function renderCandDetail\([\s\S]*?\n\}/);
+    assert.ok(detalhe, 'renderCandDetail não encontrada');
+    assert.match(detalhe[0], /buildTrackerAnalyzeUrl/, 'a ação não está no painel de detalhe');
+    assert.doesNotMatch(dash, /function renderManualItem/, 'o renderizador morto voltou');
+  });
+});
+
 describe('Elementos referenciados existem', () => {
   /* getElementById de um id que não existe no markup e uma falha muda: o codigo
      e guardado (if (el)), entao o recurso simplesmente nao aparece — sem erro,

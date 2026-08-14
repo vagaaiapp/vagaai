@@ -4248,6 +4248,19 @@ function renderCandDetail(item) {
     acts += '<button class="cd-btn" data-url="/carta?analysis_id='+encodeURIComponent(item.analysisData.id)+'" onclick="switchDashTab(\'carta\',this.dataset.url)">Carta para vaga</button>';
     if (r.cv_otimizado) acts += '<button class="cd-btn" onclick="openSavedCv(\''+escAttr(item.analysisData.id)+'\')">Abrir currículo</button>';
   }
+  if (!item.analysisData) {
+    // Vaga adicionada à mão: o painel não oferecia ação nenhuma além de editar
+    // e remover. Para analisar, a pessoa ia ao formulário em branco e recolava
+    // uma URL que o tracker já guardava em job_url. Mesmos parâmetros que os
+    // alertas usam, e a URL passa por safeExternalUrl.
+    // Sem análise o item vem do tracker, então job_url e salário estão em
+    // trackerData (mergeApplications não os promove para o topo).
+    var _td = item.trackerData || {};
+    var _anUrl = buildTrackerAnalyzeUrl({
+      job_url: _td.job_url, cargo: item.cargo, empresa: item.empresa, salario: _td.salario
+    });
+    acts += '<button class="cd-btn cd-cta" data-url="'+escAttr(_anUrl)+'" onclick="openAnalyzerInDashboard(this.dataset.url)">⚡ Analisar vaga →</button>';
+  }
   if (item.hasTracker) {
     acts += '<button class="cd-btn" onclick="openTrackerEditById(\''+escAttr(item.trackerId)+'\')">Editar</button>';
   } else if (item.analysisData) {
@@ -4476,14 +4489,8 @@ function candCalNext() { _candCalMonth++; if (_candCalMonth>11){_candCalMonth=0;
 
 function confirmDeleteTracker(id) { showConfirm('Remover candidatura?', 'Ela sairá do seu rastreador.', function(){ deleteTracker(id); }); }
 
-function toggleVagaDetail(analysisId) {
-  var detail = document.getElementById('vd-' + analysisId);
-  var chevron = document.getElementById('vc-' + analysisId);
-  if (!detail) return;
-  var isOpen = detail.style.display !== 'none';
-  detail.style.display = isOpen ? 'none' : 'block';
-  if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-}
+/* toggleVagaDetail saiu junto: seu unico chamador era renderAnalysisItem, e os
+   elementos vd-/vc- que ela abria eram criados la dentro. */
 
 /* ── Backward compat shims ── */
 function setVagasFilter(f) { setCandFilter(f); }
@@ -4492,92 +4499,11 @@ function renderFilterBar() { renderCandChips(mergeApplications()); }
 function renderVagasList() { var all = mergeApplications(); renderCandList(filterApplications(all), all); }
 function renderTrackedJobs() { candRender(); }
 
-function renderAnalysisItem(a, tracked) {
-  var r = a.result || {};
-  var ji = r.job_info || {};
-  var cargo = ji.cargo || (a.job_excerpt ? a.job_excerpt.slice(0,40) : 'Análise');
-  var empresa = ji.empresa || 'Empresa';
-  var s = a.score || 0;
-  var bg = s >= 70 ? 'var(--s-grn-bg)' : s >= 40 ? 'var(--s-amb-bg)' : 'var(--s-red-bg)';
-  var clr = s >= 70 ? 'var(--s-grn)' : s >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
-  var nivel = r.nivel || (s >= 70 ? 'Alto' : s >= 40 ? 'Médio' : 'Baixo');
-  var atsTag = s >= 70 ? '<span class="sc-status good" style="font-size:11px">ATS ✓</span>' : s >= 40 ? '<span class="sc-status med" style="font-size:11px">ATS Parcial</span>' : '<span class="sc-status bad" style="font-size:11px">ATS ✗</span>';
-  var tj = tracked.find(function(t){ return t.analysis_id === a.id; });
-  var curStatus = tj ? (tj.status || '') : '';
-  var selectHtml = buildStatusSelect(curStatus, a.id, null);
-  var statusBadge = curStatus
-    ? '<span style="font-size:11px;font-weight:600;color:' + (STATUS_COLORS[curStatus]||'var(--t2)') + ';background:' + (STATUS_BG[curStatus]||'var(--bg-sub)') + ';padding:2px 8px;border-radius:10px">' + (STATUS_LABELS[curStatus]||curStatus) + '</span>'
-    : '<span style="font-size:11px;color:var(--t3)">Sem status</span>';
-
-  // Detail panel
-  var fatores = Array.isArray(r.fatores) ? r.fatores : [];
-  var barsHtml = fatores.slice(0, 6).map(function(f) {
-    var pct = Math.round((f.valor || 0) * 100);
-    var bc = pct >= 70 ? 'var(--s-grn)' : pct >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
-    return '<div class="mv-bar-row"><div class="mv-bar-lbl">' + escHtml(f.nome || '') + '</div><div class="mv-bar-track"><div class="mv-bar-fill" style="width:' + pct + '%;background:' + bc + '"></div></div><div class="mv-bar-val" style="color:' + bc + '">' + pct + '%</div></div>';
-  }).join('');
-  var kwFalt = Array.isArray(r.keywords_faltando) ? r.keywords_faltando : [];
-  var kwOk = Array.isArray(r.keywords_encontradas) ? r.keywords_encontradas : [];
-  var kwFaltHtml = kwFalt.slice(0,8).map(function(k){ return '<span class="sc-status bad" style="font-size:11px">' + escHtml(k) + '</span>'; }).join('');
-  var kwOkHtml = kwOk.slice(0,8).map(function(k){ return '<span class="sc-status good" style="font-size:11px">' + escHtml(k) + '</span>'; }).join('');
-  var salario = tj && tj.salario ? escHtml(tj.salario) : '';
-  var jobUrl = tj && tj.job_url ? tj.job_url : '';
-  var nota = tj && tj.nota ? escHtml(tj.nota) : '';
-  var resumo = r.resumo ? escHtml(r.resumo.slice(0, 200)) + (r.resumo.length > 200 ? '…' : '') : '';
-  var detailDisplay = _vagasExpanded[a.id] ? 'block' : 'none';
-  var chevronRot = _vagasExpanded[a.id] ? 'rotate(180deg)' : 'rotate(0deg)';
-
-  var detailHtml = '<div id="vd-' + escAttr(a.id) + '" class="mv-detail" style="display:' + detailDisplay + '">';
-  // Score breakdown
-  if (barsHtml) {
-    detailHtml += '<div class="vd-section"><div class="vd-lbl">Score por área</div><div class="mv-bars" style="grid-template-columns:1fr 1fr;gap:6px 16px">' + barsHtml + '</div></div>';
-  }
-  // Keywords
-  if (kwFalt.length || kwOk.length) {
-    detailHtml += '<div class="vd-section">';
-    if (kwFalt.length) detailHtml += '<div class="vd-lbl">Keywords ausentes no CV <span style="color:var(--s-red);font-weight:600">(' + kwFalt.length + ')</span></div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">' + kwFaltHtml + '</div>';
-    if (kwOk.length) detailHtml += '<div class="vd-lbl">Keywords presentes <span style="color:var(--s-grn);font-weight:600">(' + kwOk.length + ')</span></div><div style="display:flex;flex-wrap:wrap;gap:5px">' + kwOkHtml + '</div>';
-    detailHtml += '</div>';
-  }
-  // Resumo
-  if (resumo) {
-    detailHtml += '<div class="vd-section"><div class="vd-lbl">Resumo da análise</div><div style="font-size:12px;color:var(--t2);line-height:1.5">' + resumo + '</div></div>';
-  }
-  // Meta (salário, url, nota) — só se rastreado
-  if (tj) {
-    detailHtml += '<div class="vd-section" style="display:flex;gap:12px;flex-wrap:wrap">';
-    if (salario) detailHtml += '<div style="font-size:11px;color:var(--t2)"><span style="color:var(--t3)">Salário:</span> ' + salario + '</div>';
-    if (jobUrl) detailHtml += '<a href="' + escAttr(jobUrl) + '" target="_blank" style="font-size:11px;color:var(--gb-emerald);font-weight:600">Ver vaga →</a>';
-    if (nota) detailHtml += '<div style="font-size:11px;color:var(--t2)"><span style="color:var(--t3)">Nota:</span> ' + nota + '</div>';
-    detailHtml += '</div>';
-  }
-  // Actions
-  detailHtml += '<div class="vd-section vd-actions">';
-  if (tj) {
-    detailHtml += '<button class="vd-btn" onclick="openTrackerEdit(_kTracked.find(function(x){return x.id===\'' + escAttr(tj.id) + '\';}))" >Editar detalhes</button>';
-  }
-  detailHtml += '<button class="vd-btn vd-btn-primary" onclick="switchDashTab(\'app\')">Otimizar CV →</button>';
-  detailHtml += '<button class="vd-btn" onclick="window.print()">Imprimir CV</button>';
-  detailHtml += '</div></div>';
-
-  return '<div class="mv-item" style="flex-direction:column;padding:0">' +
-    '<div style="display:flex;align-items:flex-start;gap:14px;padding:14px 20px">' +
-    '<div class="mv-score" style="background:' + bg + ';color:' + clr + ';margin-top:2px">' + s + '%</div>' +
-    '<div class="mv-body">' +
-      '<div class="mv-cargo">' + escHtml(cargo) + '</div>' +
-      '<div class="mv-emp">' + escHtml(empresa) + ' · ' + escHtml(nivel) + '</div>' +
-      '<div class="mv-tags" style="margin-top:6px">' + atsTag + statusBadge + '</div>' +
-    '</div>' +
-    '<div class="mv-right" style="gap:8px">' +
-      selectHtml +
-      '<button onclick="toggleVagaDetail(\'' + escAttr(a.id) + '\')" style="background:none;border:1px solid var(--border);border-radius:8px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">' +
-        '<svg id="vc-' + escAttr(a.id) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12" style="transition:.2s;transform:' + chevronRot + '"><polyline points="6 9 12 15 18 9"/></svg>' +
-      '</button>' +
-    '</div>' +
-    '</div>' +
-    detailHtml +
-    '</div>';
-}
+/* renderAnalysisItem e renderManualItem foram removidas: nenhuma das duas era
+   chamada. Quem monta a lista de candidaturas e renderCandList, que constroi as
+   proprias linhas (.cand-row). As duas sobreviveram a uma troca de layout e viraram
+   uma armadilha: parecem o renderizador da lista, e uma acao adicionada nelas nunca
+   chega a tela. A acao de analisar vaga sem analise vive em renderCandDetail. */
 
 /* Vaga adicionada à mão já traz link, cargo e empresa. Mandar o usuário para o
    analisador em branco fazia ele recolar uma URL que a plataforma já tinha —
@@ -4593,25 +4519,6 @@ function buildTrackerAnalyzeUrl(j) {
   return '/app' + (params.length ? '?' + params.join('&') : '');
 }
 
-function renderManualItem(j) {
-  var jid = j.id || '';
-  var selectHtml = buildStatusSelect(j.status || '', null, jid);
-  var analyzeUrl = buildTrackerAnalyzeUrl(j);
-  return '<div class="mv-item">' +
-    '<div style="width:44px;height:44px;border-radius:8px;background:var(--bg-sub);border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;margin-top:2px;flex-shrink:0">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="color:var(--t3)"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>' +
-    '</div>' +
-    '<div class="mv-body">' +
-      '<div class="mv-cargo">' + escHtml(j.cargo || '—') + '</div>' +
-      '<div class="mv-emp">' + escHtml(j.empresa || '—') + '</div>' +
-      '<div class="mv-tags"><span class="sc-status" style="font-size:11px;background:var(--bg-sub);color:var(--t3)">Sem análise</span>' +
-        '<button onclick="openAnalyzerInDashboard(this.dataset.url)" data-url="' + escAttr(analyzeUrl) + '" style="font-size:11px;color:var(--gb-emerald);background:none;border:none;cursor:pointer;padding:0;font-weight:700">⚡ Analisar</button>' +
-        '<button onclick="openTrackerEditById(\'' + escAttr(jid) + '\')" style="font-size:11px;color:var(--gb-emerald);background:none;border:none;cursor:pointer;padding:0;font-weight:600">Editar</button>' +
-        '<button onclick="deleteTracker(\'' + escAttr(jid) + '\')" style="font-size:11px;color:var(--s-red);background:none;border:none;cursor:pointer;padding:0;font-weight:600">Remover</button>' +
-      '</div>' +
-    '</div>' +
-    '<div class="mv-right">' + selectHtml + '</div></div>';
-}
 
 function openTrackerEditById(id) {
   var j = (_kTracked || []).find(function(x){ return x.id === id; });
