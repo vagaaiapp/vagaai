@@ -95,6 +95,17 @@ textarea::placeholder,input::placeholder{color:var(--muted)}
 .highlights-title{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
 .highlight-tag{display:inline-flex;align-items:center;gap:.3rem;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);margin:.2rem .2rem 0 0}
 .word-count{font-size:11px;color:var(--muted);margin-top:.5rem;text-align:right}
+.carta-porque{margin-top:.35rem}
+.carta-porque textarea{min-height:60px}
+.carta-porque-dica{font-size:11.5px;color:var(--muted);margin-top:.3rem;line-height:1.45}
+.fmt-tabs{display:flex;gap:4px;margin-bottom:.7rem;border:1px solid var(--border);border-radius:9px;padding:3px;background:var(--surface2)}
+.fmt-tab{flex:1;border:0;background:none;color:var(--muted);font:700 11.5px Manrope,sans-serif;padding:.45rem .3rem;border-radius:7px;cursor:pointer;transition:.15s}
+.fmt-tab.on{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(7,18,9,.08)}
+.fmt-dica{font-size:11px;color:var(--muted);margin-bottom:.5rem}
+.rd-prova{display:flex;flex-wrap:wrap;gap:6px;margin:.6rem 0 .2rem}
+.rd-prova-item{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green)}
+.rd-prova-item.lacuna{background:var(--yellow-dim);border-color:rgba(176,125,26,.35);color:#8a6410}
+[data-theme="dark"] .rd-prova-item.lacuna{color:#ffd166}
 .error-box{background:var(--red-dim);border:1px solid var(--red-border);border-radius:8px;padding:.75rem 1rem;color:#ff8f8f;font-size:13px;margin-top:.75rem;display:none}
 .error-box.show{display:block}
 .pro-gate{background:var(--surface);border:1px solid var(--yellow-border,rgba(255,209,102,0.3));border-radius:14px;padding:2.5rem 2rem;text-align:center}
@@ -308,6 +319,15 @@ textarea::placeholder,input::placeholder{color:var(--muted)}
               <button class="tom-btn" id="tom-criativo" onclick="setTom('criativo')">Criativo</button>
             </div>
           </div>
+          <div class="field carta-porque">
+            <label>Por que essa vaga te interessa? <span style="font-weight:400;color:var(--muted)">— opcional</span></label>
+            <textarea id="porqueInput" rows="2" maxlength="400" placeholder="Uma frase basta. Pode escrever mal, a gente ajeita."></textarea>
+            <!-- E a unica coisa que a IA nao tem como inventar. Recrutador
+                 identifica carta automatica pela ausencia de especificidade, nao
+                 pelo uso de IA — e opcional de proposito, para nao criar atrito
+                 num formulario que hoje tem dois campos. -->
+            <div class="carta-porque-dica">Sem isso a carta sai boa. Com isso, ela sai sua.</div>
+          </div>
           <div class="error-box" id="errorBox"></div>
           <button class="btn-generate" id="btnGenerate" onclick="generate()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -359,7 +379,14 @@ textarea::placeholder,input::placeholder{color:var(--muted)}
               </div>
             </div>
             <div class="rd-subject" id="subjectBox"></div>
+            <div class="fmt-tabs" id="fmtTabs" style="display:none">
+              <button class="fmt-tab on" data-fmt="carta" onclick="setFormato('carta')">E-mail</button>
+              <button class="fmt-tab" data-fmt="curta" onclick="setFormato('curta')">Formulário</button>
+              <button class="fmt-tab" data-fmt="mensagem" onclick="setFormato('mensagem')">LinkedIn</button>
+            </div>
+            <div class="fmt-dica" id="fmtDica"></div>
             <div class="rd-text" id="letterText"></div>
+            <div class="rd-prova" id="provaWrap"></div>
             <div class="rd-word-count" id="wordCount"></div>
             <div class="rd-highlights" id="highlightsWrap"></div>
           </div>
@@ -381,6 +408,11 @@ var sb = window.supabase.createClient(
 var _session = null;
 var _tom = 'direto';
 var _cartaTexto = '';
+// Resultado da analise que originou esta carta. Alimenta o prompt com os
+// requisitos comprovados, os ausentes e o briefing da empresa.
+var _cartaAnalise = null;
+var _cartaFormatos = {};
+var _formatoAtivo = 'carta';
 var _cartaAssunto = '';
 var _autoGenerateFromAnalysis = false;
 
@@ -536,6 +568,7 @@ async function loadCartaContext() {
       var rows = await res.json();
       if (Array.isArray(rows) && rows.length) {
         var analysis = rows[0];
+        _cartaAnalise = analysis.result || null;
         var jobText = _analysisToJobText(analysis);
         var cvText = _analysisToCvText(analysis);
         if (jobText) document.getElementById('jobInput').value = jobText;
@@ -813,7 +846,17 @@ async function generate() {
     var res = await fetch('/api/cover-letter', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _t },
-      body: JSON.stringify({ job, cv, tom: _tom })
+      body: JSON.stringify({
+        job, cv, tom: _tom,
+        motivacao: (document.getElementById('porqueInput').value || '').trim(),
+        // So os campos que o prompt usa — nao o result inteiro.
+        analise: _cartaAnalise ? {
+          score: _cartaAnalise.score,
+          keywords_encontradas: _cartaAnalise.keywords_encontradas,
+          keywords_faltando: _cartaAnalise.keywords_faltando,
+          briefing_empresa: _cartaAnalise.briefing_empresa
+        } : null
+      })
     });
     var data = await res.json();
 
@@ -830,8 +873,29 @@ async function generate() {
 
     document.getElementById('resultAssunto').textContent = 'Carta gerada — ' + esc(data.assunto || '');
     document.getElementById('subjectBox').innerHTML = '<strong>Assunto sugerido:</strong> ' + esc(data.assunto || '');
-    document.getElementById('letterText').textContent = data.carta || '';
+    _cartaFormatos = {
+      carta: data.carta || '',
+      curta: data.curta || '',
+      mensagem: data.mensagem || ''
+    };
+    // So mostra as abas se a IA devolveu as reducoes; sem elas, uma carta so.
+    var temFormatos = !!(_cartaFormatos.curta && _cartaFormatos.mensagem);
+    document.getElementById('fmtTabs').style.display = temFormatos ? '' : 'none';
+    setFormato('carta');
     document.getElementById('wordCount').textContent = (data.palavras || 0) + ' palavras';
+
+    /* Prova de que a carta usou a analise. E o que separa esta carta de uma
+       gerada em qualquer lugar: ela cita requisitos que a plataforma ja
+       verificou no curriculo, e diz qual lacuna enderecou. */
+    var prova = [];
+    var citados = Array.isArray(data.requisitos_citados) ? data.requisitos_citados.filter(Boolean) : [];
+    if (citados.length && data.requisitos_total) {
+      prova.push('<span class="rd-prova-item">✓ Menciona ' + citados.length + ' dos ' + data.requisitos_total + ' requisitos que você atende</span>');
+    }
+    if (data.lacuna_enderecada) {
+      prova.push('<span class="rd-prova-item lacuna">Responde à lacuna de ' + esc(data.lacuna_enderecada) + '</span>');
+    }
+    document.getElementById('provaWrap').innerHTML = prova.join('');
 
     var hw = document.getElementById('highlightsWrap');
     if (data.destaques && data.destaques.length) {
@@ -853,9 +917,31 @@ async function generate() {
   }
 }
 
+var FMT_DICA = {
+  carta: 'Para enviar por e-mail. Inclua o assunto sugerido acima.',
+  curta: 'Cabe em campo de formulário (Gupy, Vagas.com).',
+  mensagem: 'Para mensagem direta no LinkedIn.'
+};
+
+function setFormato(f) {
+  if (!_cartaFormatos[f]) f = 'carta';
+  _formatoAtivo = f;
+  _cartaTexto = _cartaFormatos[f] || '';
+  document.getElementById('letterText').textContent = _cartaTexto;
+  var dica = document.getElementById('fmtDica');
+  var temTabs = document.getElementById('fmtTabs').style.display !== 'none';
+  dica.textContent = temTabs ? (FMT_DICA[f] || '') : '';
+  document.querySelectorAll('#fmtTabs .fmt-tab').forEach(function(b) {
+    b.classList.toggle('on', b.dataset.fmt === f);
+  });
+  // Contagem acompanha o formato aberto.
+  var wc = document.getElementById('wordCount');
+  if (wc && f !== 'carta') wc.textContent = _cartaTexto.length + ' caracteres';
+}
+
 function copyCarta() {
   if (!_cartaTexto) return;
-  var full = 'Assunto: ' + _cartaAssunto + '\n\n' + _cartaTexto;
+  var full = _formatoAtivo === 'carta' ? ('Assunto: ' + _cartaAssunto + '\n\n' + _cartaTexto) : _cartaTexto;
   navigator.clipboard.writeText(full).then(function() {
     var t = document.getElementById('copiedToast');
     t.classList.add('show');
@@ -865,7 +951,7 @@ function copyCarta() {
 
 function downloadCarta() {
   if (!_cartaTexto) return;
-  var content = 'Assunto: ' + _cartaAssunto + '\n\n' + _cartaTexto;
+  var content = _formatoAtivo === 'carta' ? ('Assunto: ' + _cartaAssunto + '\n\n' + _cartaTexto) : _cartaTexto;
   var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');

@@ -62,9 +62,48 @@ export default async function handler(req, res) {
 
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
 
-  const { job, cv, tom } = req.body || {};
+  const { job, cv, tom, analise, motivacao } = req.body || {};
   if (!job || job.length < 50) return res.status(400).json({ error: 'Vaga muito curta' });
   if (!cv || cv.length < 50) return res.status(400).json({ error: 'CV muito curto' });
+
+  /* A analise ja sabe quais requisitos o curriculo comprova, quais faltam e o
+     que a empresa valoriza. Sem isso a carta e escrita de texto cru — ou seja,
+     igual a de qualquer gerador generico, que e justamente o que recrutador
+     descarta. Tudo aqui e opcional: sem analise, o prompt volta ao formato
+     antigo. */
+  const lista = (v, max) => (Array.isArray(v) ? v : [])
+    .map(x => String(x == null ? '' : x).trim())
+    .filter(Boolean)
+    .slice(0, max);
+
+  const an = analise && typeof analise === 'object' ? analise : {};
+  const atende  = lista(an.keywords_encontradas, 12);
+  const faltam  = lista(an.keywords_faltando, 6);
+  const brief   = an.briefing_empresa && typeof an.briefing_empresa === 'object' ? an.briefing_empresa : {};
+  const valoriza = lista(brief.o_que_valorizam, 4).concat(lista(brief.buscam_em_candidatos, 3));
+  const score = Number(an.score);
+  const temScore = Number.isFinite(score) && score >= 0 && score <= 100;
+
+  // Motivacao e a unica coisa que a IA nao pode inventar — e o que separa uma
+  // carta que parece de robo de uma que parece de gente.
+  const porque = String(motivacao || '').trim().slice(0, 400);
+
+  /* Estrategia pelo score: quando a aderência e baixa, a carta precisa DEFENDER
+     a candidatura em vez de listar encaixes que o recrutador nao vai ver no CV.
+     E onde a carta mais muda o resultado. */
+  let estrategia;
+  if (!temScore)      estrategia = 'Conecte o que o currículo comprova aos requisitos da vaga.';
+  else if (score >= 75) estrategia = 'A aderência já e alta (' + Math.round(score) + '%). Seja curto e direto: reforce os dois encaixes mais fortes e não tente convencer de nada — o currículo já convence.';
+  else if (score >= 50) estrategia = 'Aderência intermediária (' + Math.round(score) + '%). Lidere pelos requisitos comprovados e mostre como a experiência adjacente cobre o resto.';
+  else                  estrategia = 'Aderência baixa (' + Math.round(score) + '%). Não esconda a lacuna: reconheça-a em uma frase, sem se desculpar, e use o resto da carta para mostrar por que a pessoa ainda entrega o resultado que a vaga precisa.';
+
+  const blocoAnalise = [
+    atende.length  ? 'REQUISITOS QUE O CURRÍCULO COMPROVA (cite ao menos 3 destes, com o contexto real do CV): ' + atende.join(', ') : '',
+    faltam.length  ? 'REQUISITOS AUSENTES (NUNCA afirme possuí-los; no máximo enderece o principal): ' + faltam.join(', ') : '',
+    valoriza.length? 'O QUE A EMPRESA VALORIZA (use no parágrafo de alinhamento, sem repetir literalmente): ' + valoriza.join(', ') : '',
+    'ESTRATÉGIA: ' + estrategia,
+    porque ? 'MOTIVAÇÃO DITA PELA PRÓPRIA PESSOA (use como base do gancho de abertura; corrija a redação, preserve o sentido e NUNCA invente detalhe que ela não disse): "' + porque + '"' : ''
+  ].filter(Boolean).join('\n');
 
   const tomText = tom === 'formal' ? 'formal e profissional' : tom === 'criativo' ? 'criativo e diferenciado' : 'profissional e direto';
 
@@ -75,21 +114,33 @@ export default async function handler(req, res) {
 TOM: ${tomText}
 VAGA: ${job.slice(0, 2500)}
 CURRÍCULO: ${cv.slice(0, 2500)}
+${blocoAnalise}
 
 Escreva uma carta de apresentação que:
 1. Abre com um gancho forte (NÃO comece com "Prezado(a)")
 2. Conecta APENAS as experiências presentes no CV com os requisitos da vaga
 3. Demonstra alinhamento com a empresa baseado no que o CV comprova
-4. Tem entre 200-280 palavras
+4. Tem entre 250-400 palavras (padrão brasileiro), 3 a 5 parágrafos
 5. Termina com um chamado à ação claro
 6. Não fabrica conquistas: só mencione métricas e realizações que estão literalmente no CV
+7. Evita as expressões que denunciam texto automático: "venho por meio desta",
+   "proven track record", "apaixonado por", "profissional proativo", "trabalho
+   bem em equipe". Prefira frase curta e fato concreto.
+
+Além da carta completa, produza duas reduções do MESMO argumento (não um texto novo):
+- "curta": até 1200 caracteres, para colar em campo de formulário (Gupy, Vagas.com)
+- "mensagem": 3 parágrafos curtos, até 600 caracteres, para mensagem de LinkedIn
 
 Retorne APENAS este JSON (sem markdown):
 {
   "assunto": "<sugestão de assunto para o email>",
   "carta": "<texto completo da carta, com quebras de parágrafo usando \\n\\n>",
+  "curta": "<versão para campo de formulário>",
+  "mensagem": "<versão para LinkedIn>",
+  "requisitos_citados": ["<requisito da lista COMPROVA que a carta realmente menciona>"],
+  "lacuna_enderecada": "<requisito ausente que a carta enderecou, ou string vazia>",
   "destaques": ["<ponto forte 1 destacado na carta>", "<ponto forte 2>", "<ponto forte 3>"],
-  "palavras": <contagem de palavras>
+  "palavras": <contagem de palavras da carta completa>
 }`;
 
   try {
@@ -102,7 +153,7 @@ Retorne APENAS este JSON (sem markdown):
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5',
-        max_tokens: 1500,
+        max_tokens: 2600,
         temperature: 0.6,
         messages: [{ role: 'user', content: prompt }],
       }),
@@ -113,6 +164,10 @@ Retorne APENAS este JSON (sem markdown):
     const text = data.content?.[0]?.text || '';
     const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const result = JSON.parse(clean);
+    // A tela mostra "menciona X dos Y requisitos que voce atende" — Y vem daqui,
+    // nao da IA, para o numero nao depender de alucinacao.
+    result.requisitos_total = atende.length;
+    result.usou_analise = atende.length > 0 || faltam.length > 0;
     return res.status(200).json(result);
   } catch (err) {
     console.error('cover-letter.js error:', err);

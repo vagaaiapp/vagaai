@@ -678,3 +678,56 @@ describe('Números coerentes entre telas', () => {
     assert.ok(razao(t3[1], '#0d1610') >= 4.5, `--t3 escuro ${t3[1]}: ${razao(t3[1], '#0d1610').toFixed(2)}:1`);
   });
 });
+
+describe('Carta de apresentação usa a análise', () => {
+  const api = () => read('api/cover-letter.js');
+  const front = () => read('carta/index.html');
+
+  it('o prompt recebe requisitos comprovados, ausentes e briefing', () => {
+    // Sem isso a carta é escrita de texto cru — igual à de qualquer gerador
+    // genérico, que é justamente o que recrutador descarta.
+    const s = api();
+    assert.match(s, /keywords_encontradas/, 'prompt ignora o que o CV comprova');
+    assert.match(s, /keywords_faltando/, 'prompt ignora as lacunas');
+    assert.match(s, /briefing_empresa/, 'prompt ignora o briefing da empresa');
+    assert.match(s, /REQUISITOS QUE O CURR[Í\u00cd]CULO COMPROVA/);
+    // A lacuna nunca pode virar afirmação de que a pessoa possui o requisito.
+    assert.match(s, /NUNCA afirme possu/);
+  });
+
+  it('a estratégia da carta muda com o score', () => {
+    // A carta importa mais quando a aderência é baixa: 49% dos gestores dizem
+    // que uma carta forte garante entrevista a quem parece fraco no papel.
+    const s = api();
+    assert.match(s, /score >= 75/);
+    assert.match(s, /score >= 50/);
+    assert.match(s, /N[ã\u00e3]o esconda a lacuna/);
+  });
+
+  it('a motivação da pessoa entra sem poder ser inventada', () => {
+    const s = api();
+    assert.match(s, /MOTIVA[Ç\u00c7][Ã\u00c3]O DITA PELA PR[Ó\u00d3]PRIA PESSOA/);
+    assert.match(s, /NUNCA invente detalhe que ela n[ã\u00e3]o disse/);
+    // Opcional: não pode virar campo obrigatório e criar atrito.
+    assert.doesNotMatch(front(), /porqueInput[^>]*required/);
+    assert.match(front(), /id="porqueInput"/);
+  });
+
+  it('devolve os três formatos e o front sabe alterná-los', () => {
+    const s = api();
+    for (const campo of ['"curta"', '"mensagem"', '"requisitos_citados"', '"lacuna_enderecada"']) {
+      assert.ok(s.includes(campo), `resposta sem ${campo}`);
+    }
+    const f = front();
+    assert.match(f, /function setFormato/);
+    assert.match(f, /data-fmt="curta"/);
+    assert.match(f, /data-fmt="mensagem"/);
+    // O assunto só faz sentido no formato de e-mail.
+    assert.match(f, /_formatoAtivo === 'carta' \? \('Assunto: '/);
+  });
+
+  it('o total de requisitos vem do servidor, não da IA', () => {
+    // "Menciona X dos Y" — se Y viesse do modelo, seria alucinável.
+    assert.match(api(), /result\.requisitos_total = atende\.length/);
+  });
+});
