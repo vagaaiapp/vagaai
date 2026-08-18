@@ -892,8 +892,13 @@ async function generate() {
     if (citados.length && data.requisitos_total) {
       prova.push('<span class="rd-prova-item">✓ Menciona ' + citados.length + ' dos ' + data.requisitos_total + ' requisitos que você atende</span>');
     }
-    if (data.lacuna_enderecada) {
-      prova.push('<span class="rd-prova-item lacuna">Responde à lacuna de ' + esc(data.lacuna_enderecada) + '</span>');
+    // O modelo as vezes devolve a explicacao inteira no lugar do nome do
+    // requisito; o chip corta para caber sem depender do prompt acertar.
+    var lac = String(data.lacuna_enderecada || '').trim().split(/[—\-–(:;]/)[0].trim();
+    if (lac && lac.length <= 60) {
+      prova.push('<span class="rd-prova-item lacuna">Responde à lacuna de ' + esc(lac) + '</span>');
+    } else if (lac) {
+      prova.push('<span class="rd-prova-item lacuna">Enderecou a principal lacuna</span>');
     }
     document.getElementById('provaWrap').innerHTML = prova.join('');
 

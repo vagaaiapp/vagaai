@@ -726,6 +726,16 @@ describe('Carta de apresentação usa a análise', () => {
     assert.match(f, /_formatoAtivo === 'carta' \? \('Assunto: '/);
   });
 
+  it('o chip da lacuna nao quebra com resposta verbosa do modelo', () => {
+    // Na primeira chamada real o modelo devolveu a explicacao inteira no campo
+    // em vez do nome do requisito. O prompt pede curto, mas a tela nao pode
+    // depender disso.
+    const f = front();
+    assert.match(f, /lac\.length <= 60/, 'sem guarda de tamanho no chip');
+    assert.match(f, /Enderecou a principal lacuna/, 'sem fallback para texto longo');
+    assert.match(api(), /no maximo 4 palavras/, 'prompt nao restringe o campo');
+  });
+
   it('o total de requisitos vem do servidor, não da IA', () => {
     // "Menciona X dos Y" — se Y viesse do modelo, seria alucinável.
     assert.match(api(), /result\.requisitos_total = atende\.length/);

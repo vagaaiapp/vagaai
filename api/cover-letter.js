@@ -138,7 +138,7 @@ Retorne APENAS este JSON (sem markdown):
   "curta": "<versão para campo de formulário>",
   "mensagem": "<versão para LinkedIn>",
   "requisitos_citados": ["<requisito da lista COMPROVA que a carta realmente menciona>"],
-  "lacuna_enderecada": "<requisito ausente que a carta enderecou, ou string vazia>",
+  "lacuna_enderecada": "<APENAS o nome do requisito ausente que a carta enderecou, no maximo 4 palavras. String vazia se nenhum foi enderecado. NAO explique como foi feito.>",
   "destaques": ["<ponto forte 1 destacado na carta>", "<ponto forte 2>", "<ponto forte 3>"],
   "palavras": <contagem de palavras da carta completa>
 }`;
