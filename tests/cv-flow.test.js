@@ -68,8 +68,8 @@ describe('Fluxo canônico de currículo', () => {
   });
 
   it('deixa explícito o currículo principal e permite gerenciar seu ciclo de vida', () => {
-    assert.match(curriculo, /Currículo base/);
-    assert.match(curriculo, /Excluir currículo base/);
+    assert.match(curriculo, /Currículo principal/);
+    assert.match(curriculo, /Excluir meu currículo/);
     assert.match(curriculo, /function deleteBaseCv/);
     assert.match(curriculo, /function changeVersionState\(id, action\)/);
     assert.match(curriculo, /cv_version_archived_at/);
@@ -90,8 +90,8 @@ describe('Fluxo canônico de currículo', () => {
     assert.match(cv, /function applyCvSourceUi/);
     assert.match(cv, /Currículo para vaga/);
     assert.match(cv, /Currículo base/);
-    assert.match(curriculo, /1 · Currículo base/);
-    assert.match(curriculo, /2 · Currículos para vagas/);
+    assert.match(curriculo, /1 · Currículo principal/);
+    assert.match(curriculo, /2 · Currículos feitos para vagas/);
   });
 
   it('mantém o posicionamento de mercado no topo do hub', () => {

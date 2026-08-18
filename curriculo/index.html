@@ -343,15 +343,15 @@ function render() {
   var initials = (d.nome || '?').trim().split(/\s+/).slice(0,2).map(function(w){return w[0]||'';}).join('').toUpperCase() || '?';
 
   var html = '';
-  html += '<div class="gap-panel" id="gapPanel"><div class="gap-title">Posicionamento de mercado</div><div class="gap-empty">Carregando...</div></div>';
+  html += '<div class="gap-panel" id="gapPanel"><div class="gap-title">Como seu currículo se compara</div><div class="gap-empty">Carregando...</div></div>';
   html += '<div class="profile-head">';
   html += '<div class="profile-avatar">' + esc(initials) + '</div>';
-  html += '<div style="flex:1;min-width:160px"><div class="profile-main-label">1 · Currículo base</div><div class="profile-name">' + esc(d.nome || 'Seu nome aqui') + '</div><div class="profile-role">' + esc(d.titulo_profissional || 'Adicione seu objetivo profissional') + '</div><div class="profile-purpose">Seu conteúdo mestre e geral. Ele alimenta análises e alertas, mas não deve ser adaptado para uma vaga específica.</div></div>';
+  html += '<div style="flex:1;min-width:160px"><div class="profile-main-label">1 · Currículo principal</div><div class="profile-name">' + esc(d.nome || 'Seu nome aqui') + '</div><div class="profile-role">' + esc(d.titulo_profissional || 'Adicione seu objetivo profissional') + '</div><div class="profile-purpose">Seu conteúdo mestre e geral. Ele alimenta análises e alertas, mas não deve ser adaptado para uma vaga específica.</div></div>';
   html += '<div class="completude-wrap"><div class="completude-label"><span>Perfil completo</span><span>' + pct + '%</span></div><div class="completude-bar"><div class="completude-fill" style="width:' + pct + '%"></div></div></div>';
-  html += '<div class="profile-actions"><button class="save-btn" id="saveBtn" onclick="saveProfile()">Salvar currículo base</button><button class="btn btn-ghost" onclick="scrollToCvDetails()">Editar conteúdo base</button><button class="btn btn-ghost" onclick="document.getElementById(\'uploadInput\').click()">Substituir arquivo</button><button class="btn btn-ghost" style="grid-column:1/-1" onclick="openAdvancedEditor()">Escolher modelo e baixar CV base</button><button class="profile-danger" onclick="deleteBaseCv()">Excluir currículo base</button><div class="save-status" id="saveStatus" style="grid-column:1/-1;text-align:right"></div></div>';
+  html += '<div class="profile-actions"><button class="save-btn" id="saveBtn" onclick="saveProfile()">Salvar meu currículo</button><button class="btn btn-ghost" onclick="scrollToCvDetails()">Editar o conteúdo</button><button class="btn btn-ghost" onclick="document.getElementById(\'uploadInput\').click()">Substituir arquivo</button><button class="btn btn-ghost" style="grid-column:1/-1" onclick="openAdvancedEditor()">Escolher modelo e baixar</button><button class="profile-danger" onclick="deleteBaseCv()">Excluir meu currículo</button><div class="save-status" id="saveStatus" style="grid-column:1/-1;text-align:right"></div></div>';
   html += '</div>';
 
-  html += '<div class="sec-card" id="versionsPanel"><div class="sec-head"><div class="sec-title">2 · Currículos para vagas</div></div><p class="versions-intro">Cópias direcionadas para oportunidades específicas. Cada uma fica ligada à sua vaga e nunca altera o currículo base.</p><p class="sec-empty">Carregando currículos vinculados às suas análises...</p></div>';
+  html += '<div class="sec-card" id="versionsPanel"><div class="sec-head"><div class="sec-title">2 · Currículos feitos para vagas</div></div><p class="versions-intro">Cópias direcionadas para oportunidades específicas. Cada uma fica ligada à sua vaga e nunca altera o currículo base.</p><p class="sec-empty">Carregando currículos vinculados às suas análises...</p></div>';
 
   // Perfil ainda vazio: oferece importar um currículo pronto em vez de
   // obrigar a digitar tudo — caminho rápido pra quem já tem o arquivo.
@@ -514,7 +514,7 @@ async function loadVersionsPanel() {
   var panel = document.getElementById('versionsPanel');
   if (!panel) return;
   if (!_session) {
-    panel.innerHTML = '<div class="sec-head"><div class="sec-title">2 · Currículos para vagas</div></div><p class="versions-intro">Cópias direcionadas para oportunidades específicas. Cada uma fica ligada à sua vaga e nunca altera o currículo base.</p><p class="sec-empty">Crie sua conta para organizar aqui os currículos direcionados para cada vaga.</p>';
+    panel.innerHTML = '<div class="sec-head"><div class="sec-title">2 · Currículos feitos para vagas</div></div><p class="versions-intro">Cópias direcionadas para oportunidades específicas. Cada uma fica ligada à sua vaga e nunca altera o currículo base.</p><p class="sec-empty">Crie sua conta para organizar aqui os currículos direcionados para cada vaga.</p>';
     return;
   }
   try {
@@ -533,7 +533,7 @@ async function loadVersionsPanel() {
     }
     renderVersionsPanel();
   } catch(e) {
-    panel.innerHTML = '<div class="sec-head"><div class="sec-title">2 · Currículos para vagas</div></div><p class="versions-intro">Cópias direcionadas para oportunidades específicas. Cada uma fica ligada à sua vaga e nunca altera o currículo base.</p><p class="sec-empty">Não foi possível carregar os currículos agora.</p>';
+    panel.innerHTML = '<div class="sec-head"><div class="sec-title">2 · Currículos feitos para vagas</div></div><p class="versions-intro">Cópias direcionadas para oportunidades específicas. Cada uma fica ligada à sua vaga e nunca altera o currículo base.</p><p class="sec-empty">Não foi possível carregar os currículos agora.</p>';
   }
 }
 
@@ -633,7 +633,7 @@ function renderVersionsPanel() {
   var shown = _showAllVersions ? _versionGroups : _versionGroups.slice(0, 8);
   var intro = '<p class="versions-intro">Cópias direcionadas para oportunidades específicas. Cada uma fica ligada à sua vaga e nunca altera o currículo base.</p>';
   var tabs = '<div class="version-tabs"><button class="version-tab ' + (_versionView === 'active' ? 'active' : '') + '" onclick="setVersionView(\'active\')">Ativas (' + active.length + ')</button><button class="version-tab ' + (_versionView === 'archived' ? 'active' : '') + '" onclick="setVersionView(\'archived\')">Arquivadas (' + archived.length + ')</button></div>';
-  var head = '<div class="sec-head"><div class="sec-title">2 · Currículos para vagas</div><span class="save-status">' + rows.length + ' no total</span></div>' + intro + tabs;
+  var head = '<div class="sec-head"><div class="sec-title">2 · Currículos feitos para vagas</div><span class="save-status">' + rows.length + ' no total</span></div>' + intro + tabs;
   if (!rows.length) {
     panel.innerHTML = head + '<div class="sec-empty-cta"><p class="sec-empty">Quando você adaptar o currículo para uma vaga, a nova versão aparece aqui — sem substituir o currículo base.</p>' +
       '<button class="btn btn-ghost" onclick="adaptarParaVaga()">Adaptar para uma vaga</button></div>';
@@ -1080,7 +1080,7 @@ function saveIdiomas() {
    fez na plataforma com o texto do currículo atual: mostra o que o
    mercado dele pede com frequência e o currículo ainda não cobre. */
 function gapHeroShell(sub, metricsHtml, sideHtml) {
-  return '<div class="gap-copy"><div class="gap-title">Posicionamento de mercado</div>' +
+  return '<div class="gap-copy"><div class="gap-title">Como seu currículo se compara</div>' +
     '<h2 class="gap-h2">Veja como seu currículo se compara ao que o mercado pede.</h2>' +
     '<p class="gap-sub">' + sub + '</p>' +
     (metricsHtml ? '<div class="gap-metrics">' + metricsHtml + '</div>' : '') +

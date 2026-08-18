@@ -649,7 +649,7 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
 <div class="container">
   <div class="app-intro">
     <div>
-      <div class="app-eyebrow">Análise inteligente de candidatura</div>
+      
       <h1 class="page-title" id="pageTitle">Prepare seu currículo para esta vaga.</h1>
       <p class="page-sub" id="pageSub">Adicione a oportunidade e seu currículo. A VagaAI compara os dois, identifica lacunas e mostra o que priorizar antes de se candidatar.</p>
     </div>
@@ -826,14 +826,14 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
             <svg viewBox="0 0 64 64"><circle class="analysis-ring-bg" cx="32" cy="32" r="28"/><circle class="analysis-ring-fill" cx="32" cy="32" r="28"/></svg>
             <div class="analysis-ring-label">74<small>/ 100</small></div>
           </div>
-          <div class="analysis-score-copy"><strong>Score de aderência</strong><span>Requisitos, experiência e palavras-chave comparados em segundos.</span></div>
+          <div class="analysis-score-copy"><strong>Quanto seu currículo combina</strong><span>Requisitos, experiência e palavras-chave comparados em segundos.</span></div>
         </div>
       </div>
       <div class="analysis-deliverables">
-        <div class="analysis-deliverable"><div class="analysis-check">✓</div><div><strong>Diagnóstico da vaga</strong><span>Pontos fortes e lacunas prioritárias.</span></div></div>
-        <div class="analysis-deliverable"><div class="analysis-check">✓</div><div><strong>Currículo otimizado</strong><span>Versão direcionada para a oportunidade.</span></div></div>
-        <div class="analysis-deliverable"><div class="analysis-check">✓</div><div><strong>Keywords para ATS</strong><span>Termos presentes e ausentes no currículo.</span></div></div>
-        <div class="analysis-deliverable"><div class="analysis-check">✓</div><div><strong>Briefing da empresa</strong><span>Contexto para avançar melhor preparado.</span></div></div>
+        <div class="analysis-deliverable"><div class="analysis-check">✓</div><div><strong>O que a vaga pede</strong><span>Pontos fortes e lacunas prioritárias.</span></div></div>
+        <div class="analysis-deliverable"><div class="analysis-check">✓</div><div><strong>Currículo ajustado para a vaga</strong><span>Versão direcionada para a oportunidade.</span></div></div>
+        <div class="analysis-deliverable"><div class="analysis-check">✓</div><div><strong>Palavras que os sistemas de RH procuram</strong><span>Termos presentes e ausentes no currículo.</span></div></div>
+        <div class="analysis-deliverable"><div class="analysis-check">✓</div><div><strong>Sobre a empresa</strong><span>Contexto para avançar melhor preparado.</span></div></div>
       </div>
     </section>
     <section class="analysis-side-card analysis-tip-card">
@@ -953,7 +953,7 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
     <div class="briefing-section" id="briefingSection">
       <div class="briefing-badge"><span class="ic"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></span> Incluso no seu plano</div>
       <div style="display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;margin-bottom:.3rem">
-        <div class="briefing-header">Briefing da empresa</div>
+        <div class="briefing-header">Sobre a empresa</div>
         <button class="briefing-expand-btn" id="briefingExpandBtn" onclick="expandBriefing()" style="display:none;flex-shrink:0">Ver briefing completo →</button>
       </div>
       <div class="briefing-sub">Resumo rápido para decidir se vale avançar e como se preparar.</div>
@@ -999,7 +999,7 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
     <!-- UPSELL -->
     <div class="upsell" id="upsellSection">
       <div class="upsell-label">Desbloqueie o resultado completo</div>
-      <div class="upsell-title">CV otimizado + Briefing da empresa</div>
+      <div class="upsell-title">CV otimizado + Sobre a empresa</div>
       <p class="upsell-sub">Você viu o diagnóstico. Agora receba o currículo reescrito para passar pelo ATS + um briefing com o que a empresa valoriza e o que falar na entrevista.</p>
       <div class="upsell-plans" id="upsellPlans"></div>
     </div>
@@ -2403,7 +2403,7 @@ function showResult(d) {
     }
   }
 
-  // 10. Briefing da empresa — completo para pagos, teaser para anônimos
+  // 10. Sobre a empresa — completo para pagos, teaser para anônimos
   var briefingSection = document.getElementById('briefingSection');
   if (!isAnonymous && d.briefing_empresa) {
     renderBriefing(d.briefing_empresa, false);

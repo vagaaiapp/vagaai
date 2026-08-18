@@ -1311,7 +1311,8 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .mat-section { margin-bottom:26px; }
 .mat-strip { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; box-shadow:var(--sh-card); }
 .mat-tile { background:var(--bg-card); padding:16px 18px; display:flex; flex-direction:column; gap:7px; min-width:0; }
-.mat-lbl { font-size:10.5px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:var(--t3); }
+.mat-lbl { display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:var(--t3); }
+.mat-ico { width:15px; height:15px; flex-shrink:0; }
 .mat-val { font-size:21px; font-weight:800; color:var(--t1); line-height:1.1; letter-spacing:-.4px; font-variant-numeric:tabular-nums; }
 .mat-val small { font-size:12.5px; font-weight:600; color:var(--t2); letter-spacing:0; }
 .mat-sub { font-size:11.5px; color:var(--t3); line-height:1.45; }
@@ -1327,6 +1328,32 @@ body.frame-fullscreen .sidebar { display: none !important; }
 [data-theme="dark"] .mat-chip { background:rgba(255,209,102,.1); border-color:rgba(255,209,102,.35); color:#ffd166; }
 .mat-chip-ok { background:var(--s-grn-bg); border-color:rgba(26,122,74,.28); color:var(--s-grn); }
 [data-theme="dark"] .mat-chip-ok { background:rgba(78,206,145,.12); border-color:rgba(78,206,145,.35); color:var(--gb-bright); }
+
+/* ── Bloco 02 · Suas ferramentas ────────────────────
+   Panorama do resto da plataforma num relance. Cada bloco traz UM número e
+   para onde ir — sem isso, a pessoa só descobre o estado de cada ferramenta
+   entrando numa por uma. */
+.fer-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.fer-card {
+  display:flex; align-items:center; gap:11px; width:100%; text-align:left;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r-sm);
+  padding:13px 15px; cursor:pointer; font-family:inherit; transition:all .15s;
+  box-shadow:var(--sh-card);
+}
+.fer-card:hover { border-color:var(--gb-emerald); transform:translateY(-1px); }
+.fer-card:focus-visible { outline:2px solid var(--gb-emerald); outline-offset:2px; }
+.fer-ico {
+  width:34px; height:34px; border-radius:9px; flex-shrink:0;
+  display:grid; place-items:center; background:var(--s-grn-bg); color:var(--gb-emerald);
+}
+[data-theme="dark"] .fer-ico { color:var(--gb-bright); }
+.fer-ico svg { width:17px; height:17px; }
+.fer-txt { min-width:0; }
+.fer-val { font-size:17px; font-weight:800; color:var(--t1); line-height:1.15; letter-spacing:-.3px; font-variant-numeric:tabular-nums; }
+.fer-val small { font-size:11.5px; font-weight:600; color:var(--t2); letter-spacing:0; }
+.fer-lbl { font-size:11.5px; color:var(--t2); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+@media (max-width:1023px) { .fer-strip { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:768px)  { .fer-strip { grid-template-columns:repeat(2,1fr); } }
 
 /* ── Linha de sugestão secundária ────────────────────────────
    O que antes eram cards-dica com o mesmo peso da ação real. */
@@ -2257,12 +2284,12 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
   </div>
   <div class="sb-section-label" aria-hidden="true">Seu espaço</div>
   <nav class="sb-nav" role="navigation" aria-label="Navegação principal">
-    <button class="sb-btn active" data-tab="painel" onclick="switchDashTab('painel')" aria-label="Visão geral" aria-current="page">
+    <button class="sb-btn active" data-tab="painel" onclick="switchDashTab('painel')" aria-label="Início" aria-current="page">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
         <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
       </svg>
-      <span>Visão geral</span>
+      <span>Início</span>
     </button>
     <button class="sb-btn" data-tab="app" onclick="switchDashTab('app')" aria-label="Analisar vaga">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -2275,7 +2302,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
       </svg>
-      <span>Meu Currículo</span>
+      <span>Meu currículo</span>
     </button>
     <button class="sb-btn" data-tab="vagas" onclick="switchDashTab('vagas')" aria-label="Candidaturas">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -2283,26 +2310,26 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       </svg>
       <span>Candidaturas</span>
     </button>
-    <button class="sb-btn" data-tab="entrevistas" onclick="switchDashTab('entrevistas')" aria-label="Entrevistas">
+    <button class="sb-btn" data-tab="entrevistas" onclick="switchDashTab('entrevistas')" aria-label="Treino de entrevista">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
         <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
         <line x1="12" y1="19" x2="12" y2="22"/>
       </svg>
-      <span>Entrevistas</span>
+      <span>Treino de entrevista</span>
     </button>
-    <button class="sb-btn" data-tab="carta" onclick="switchDashTab('carta')" aria-label="Carta para vaga">
+    <button class="sb-btn" data-tab="carta" onclick="switchDashTab('carta')" aria-label="Carta de apresentação">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <rect x="2" y="4" width="20" height="16" rx="2"/>
         <path d="m22 7-10 7L2 7"/>
       </svg>
-      <span>Carta para vaga</span>
+      <span>Carta de apresentação</span>
     </button>
-    <button class="sb-btn" data-tab="alertas" onclick="switchDashTab('alertas')" aria-label="Alertas">
+    <button class="sb-btn" data-tab="alertas" onclick="switchDashTab('alertas')" aria-label="Vagas para você">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
       </svg>
-      <span>Alertas</span>
+      <span>Vagas para você</span>
     </button>
     <button class="sb-btn" data-tab="plano" onclick="switchDashTab('plano')" aria-label="Conta e plano">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -2360,7 +2387,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     <nav class="dm-drawer-nav" aria-label="Navegação completa">
       <button class="dm-drawer-btn active" data-tab="painel" onclick="switchDashTab('painel')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-        <span>Visão geral</span>
+        <span>Início</span>
       </button>
       <button class="dm-drawer-btn" data-tab="app" onclick="switchDashTab('app')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
@@ -2368,7 +2395,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       </button>
       <button class="dm-drawer-btn" data-tab="curriculo" onclick="switchDashTab('curriculo')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Meu Currículo</span>
+        <span>Meu currículo</span>
       </button>
       <button class="dm-drawer-btn" data-tab="vagas" onclick="switchDashTab('vagas')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
@@ -2376,15 +2403,15 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       </button>
       <button class="dm-drawer-btn" data-tab="entrevistas" onclick="switchDashTab('entrevistas')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-        <span>Entrevistas</span>
+        <span>Treino de entrevista</span>
       </button>
       <button class="dm-drawer-btn" data-tab="carta" onclick="switchDashTab('carta')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
-        <span>Carta para vaga</span>
+        <span>Carta de apresentação</span>
       </button>
       <button class="dm-drawer-btn" data-tab="alertas" onclick="switchDashTab('alertas')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-        <span>Alertas</span>
+        <span>Vagas para você</span>
       </button>
       <button class="dm-drawer-btn" data-tab="plano" onclick="switchDashTab('plano')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
@@ -2401,7 +2428,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     </button>
   </aside>
   <nav class="dm-bottom" aria-label="Navegação principal mobile">
-    <button class="dm-bottom-btn active" data-tab="painel" onclick="switchDashTab('painel')" aria-label="Visão geral">
+    <button class="dm-bottom-btn active" data-tab="painel" onclick="switchDashTab('painel')" aria-label="Início">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
       <span>Início</span>
     </button>
@@ -2413,9 +2440,9 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
       <span>Candid.</span>
     </button>
-    <button class="dm-bottom-btn" data-tab="alertas" onclick="switchDashTab('alertas')" aria-label="Alertas">
+    <button class="dm-bottom-btn" data-tab="alertas" onclick="switchDashTab('alertas')" aria-label="Vagas para você">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-      <span>Alertas</span>
+      <span>Vagas</span>
     </button>
     <button class="dm-bottom-btn" data-tab="plano" onclick="switchDashTab('plano')" aria-label="Conta">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
@@ -2519,7 +2546,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     <div class="mat-section">
       <div class="blk-label">
         <span class="blk-num">01</span>
-        <span class="blk-title">Seu material</span>
+        <span class="blk-title">Seu currículo</span>
         <a href="#" class="blk-link" onclick="switchDashTab('curriculo');return false;">Abrir Meu Currículo →</a>
       </div>
       <div class="mat-strip" id="matStrip">
@@ -2529,14 +2556,23 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       </div>
     </div>
 
-    <!-- ── 02 · FAÇA AGORA ── -->
+    <!-- ── 02 · SUAS FERRAMENTAS ── -->
+    <div class="mat-section">
+      <div class="blk-label">
+        <span class="blk-num">02</span>
+        <span class="blk-title">Suas ferramentas</span>
+      </div>
+      <div class="fer-strip" id="ferStrip"></div>
+    </div>
+
+    <!-- ── 03 · FAÇA AGORA ── -->
     <div class="blk-label">
-      <span class="blk-num">02</span>
+      <span class="blk-num">03</span>
       <span class="blk-title">Faça agora</span>
     </div>
     <div class="pba-card">
       <div class="pba-left">
-        <div class="pba-eyebrow"><span class="pba-eyebrow-dot"></span>Maior ganho possível hoje</div>
+        <div class="pba-eyebrow"><span class="pba-eyebrow-dot"></span>Comece por aqui</div>
         <h2 class="pba-title" id="pbaTitle">Carregando...</h2>
         <p class="pba-desc" id="pbaDesc"> </p>
         <div class="pba-btns">
@@ -2573,8 +2609,8 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
          da própria vaga, em vez de duplicada em cards acima. -->
     <div class="opp-section" style="margin-top:26px">
       <div class="blk-label">
-        <span class="blk-num">03</span>
-        <span class="blk-title">Suas oportunidades</span>
+        <span class="blk-num">04</span>
+        <span class="blk-title">Suas vagas</span>
         <a href="#" class="blk-link" onclick="openCandidaturasFiltered('todas');return false;">Abrir rastreador completo →</a>
       </div>
       <div class="opp-cols">
@@ -2599,7 +2635,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         </div>
         <div class="funil-card">
           <div class="funil-head">
-            <div class="funil-title-t">Seu funil</div>
+            <div class="funil-title-t">Como está indo</div>
             <div class="funil-period" id="funilPeriod" role="group" aria-label="Período do funil">
               <button class="funil-per-btn on" data-dias="30" onclick="setFunilPeriod(30)">30d</button>
               <button class="funil-per-btn" data-dias="90" onclick="setFunilPeriod(90)">90d</button>
@@ -2609,7 +2645,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           <div class="funil-sub-t" id="funilSub">Últimos 30 dias</div>
           <div class="funil-pipe" id="funilPipe"></div>
           <div class="funil-divider"></div>
-          <div class="funil-insight-lbl">✦ Insight da VagaAI</div>
+          <div class="funil-insight-lbl">✦ O que os números dizem</div>
           <div class="funil-insight-txt" id="funilInsight">Analise mais vagas para receber insights personalizados.</div>
         </div>
       </div>
@@ -2625,7 +2661,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       <!-- Header -->
       <div class="cand-header">
         <div class="cand-header-left">
-          <div class="cand-eyebrow">Rastreador inteligente</div>
+          
           <h1 class="cand-title">Suas candidaturas</h1>
         </div>
         <div class="cand-header-right">
@@ -2644,7 +2680,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       <!-- Summary cards -->
       <div class="cand-summary">
         <div class="cand-priority">
-          <div class="cp-eyebrow">Ação prioritária</div>
+          <div class="cp-eyebrow">Comece por aqui</div>
           <div class="cp-title" id="cpTitle">Carregando…</div>
           <div class="cp-sub" id="cpSub"></div>
           <button class="cp-cta" id="cpCta">—</button>
@@ -2740,7 +2776,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     <div class="interview-page">
       <div class="interview-hero">
         <div class="interview-hero-copy">
-          <div class="interview-eyebrow">Simulador com IA</div>
+          <div class="interview-eyebrow">Treino de entrevista</div>
           <h1 class="interview-title">Treine antes da entrevista real.</h1>
           <p class="interview-sub">Vagas marcadas como "Em entrevista" ou "Oferta" aparecem aqui para você treinar antes da conversa real. Perguntas personalizadas com base no cargo, empresa e pontos fracos da análise.</p>
           <div class="interview-metrics">
@@ -2796,8 +2832,8 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       <!-- Header -->
       <div class="al-page-header">
         <div>
-          <div class="al-eyebrow">Seu radar de oportunidades</div>
-          <h1 class="al-title">Alertas de vagas</h1>
+          
+          <h1 class="al-title">Vagas para você</h1>
           <p class="al-desc">Defina o que procura uma vez. A VagaAI monitora oportunidades, prioriza as mais compatíveis e entrega uma seleção pronta para você avaliar.</p>
         </div>
         <div class="al-header-right">
@@ -2817,7 +2853,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       <div class="al-command-center">
         <div class="al-next-card" id="alNextCard">
           <div>
-            <div class="al-next-label">Próxima seleção</div>
+            <div class="al-next-label">Próximo envio</div>
             <div class="al-next-date" id="alNextDate">Configure o alerta</div>
             <div class="al-next-meta" id="alNextMeta">Nenhum alerta ativo</div>
           </div>
@@ -2825,8 +2861,8 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         <div class="al-command-quality" id="alCommandQuality">
           <div class="al-command-ring"><strong id="alCommandQualityValue">—</strong></div>
           <div>
-            <div class="al-command-quality-title">Qualidade do alerta</div>
-            <div class="al-command-quality-sub">Complete suas preferências para melhorar a precisão.</div>
+            <div class="al-command-quality-title">Quanto combina com você</div>
+            <div class="al-command-quality-sub">Quanto mais você contar sobre o que procura, melhores as vagas.</div>
           </div>
         </div>
         <div class="al-command-actions">
@@ -3223,6 +3259,7 @@ function buildPainelV2(analyses, tracked) {
   // "Precisa da sua atenção" rodavam o mesmo filtro de forma independente e
   // exibiam a MESMA vaga duas vezes — agora nada abaixo repete a escolha.
   _pbaChosen = buildPBACard(analyses, tracked);
+  buildFerramentas();
   renderOppList();
   buildFunilCard(analyses, tracked);
   buildSecondaryHint();
@@ -3320,7 +3357,7 @@ function buildPBACard(analyses, tracked) {
     var temVersao = !!r.cv_otimizado;
     if (titleEl) {
       titleEl.textContent = missing > 0
-        ? 'Seu CV não menciona ' + missing + ' requisito' + (missing > 1 ? 's' : '') + ' desta vaga'
+        ? 'Faltam ' + missing + ' coisa' + (missing > 1 ? 's' : '') + ' que esta vaga pede'
         : 'Aumente seu score na vaga de ' + cargo;
     }
     if (descEl) {
@@ -3361,8 +3398,21 @@ function buildPBACard(analyses, tracked) {
 var _cvBase = null;        // linha de cv_saves do usuário (1 por conta)
 var _cvBaseLoaded = false; // separa "ainda carregando" de "não existe"
 
-function matTile(label, bodyHtml) {
-  return '<div class="mat-tile"><div class="mat-lbl">' + label + '</div>' + bodyHtml + '</div>';
+/* Icones de traco, no mesmo estilo dos do menu (stroke, sem preenchimento).
+   Tres blocos de texto lado a lado exigiam leitura para diferenciar; o icone
+   da a distincao antes da leitura. Herda a cor do rotulo, entao nao vira
+   enfeite nem compete com o numero. */
+var MAT_ICONES = {
+  curriculo: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/>',
+  falta:     '<path d="M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  versoes:   '<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M4 16V5a1 1 0 0 1 1-1h11"/>'
+};
+
+function matTile(label, bodyHtml, icone) {
+  var svg = MAT_ICONES[icone]
+    ? '<svg class="mat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + MAT_ICONES[icone] + '</svg>'
+    : '';
+  return '<div class="mat-tile"><div class="mat-lbl">' + svg + '<span>' + label + '</span></div>' + bodyHtml + '</div>';
 }
 
 function buildMaterialStrip() {
@@ -3374,12 +3424,12 @@ function buildMaterialStrip() {
 
   /* Tile 1 — currículo base */
   if (!_cvBaseLoaded) {
-    tiles.push(matTile('Currículo base', '<div class="mat-sub">Carregando…</div>'));
+    tiles.push(matTile('Currículo principal', '<div class="mat-sub">Carregando…</div>', 'curriculo'));
   } else if (!cvData) {
-    tiles.push(matTile('Currículo base',
+    tiles.push(matTile('Currículo principal',
       '<div class="mat-val">—</div>' +
-      '<div class="mat-sub">Você ainda não tem um currículo base. Ele alimenta as análises, os alertas e as versões por vaga.</div>' +
-      '<button class="mat-cta" onclick="switchDashTab(\'curriculo\')">Criar currículo base →</button>'));
+      '<div class="mat-sub">Você ainda não tem um currículo salvo. Ele é usado nas análises, nos alertas e nos currículos que você adapta para cada vaga.</div>' +
+      '<button class="mat-cta" onclick="switchDashTab(\'curriculo\')">Criar meu currículo →</button>', 'curriculo'));
   } else {
     var pct = (window.VagaAICv && window.VagaAICv.completude) ? window.VagaAICv.completude(cvData) : 0;
     var faltam = (window.VagaAICv && window.VagaAICv.completudeFaltantes) ? window.VagaAICv.completudeFaltantes(cvData) : [];
@@ -3391,23 +3441,23 @@ function buildMaterialStrip() {
     var sub = faltam.length
       ? 'Falta ' + escHtml(faltam.slice(0,2).join(' e ').toLowerCase()) + (quando ? ' · ' + quando : '')
       : (quando || 'Perfil completo');
-    tiles.push(matTile('Currículo base',
-      '<div class="mat-val">' + pct + '<small>%</small></div>' +
+    tiles.push(matTile('Currículo principal',
+      '<div class="mat-val">' + pct + '<small>% completo</small></div>' +
       '<div class="mat-bar"><i style="width:' + pct + '%"></i></div>' +
       '<div class="mat-sub">' + sub + '</div>' +
-      '<button class="mat-cta" onclick="switchDashTab(\'curriculo\')">' + (faltam.length ? 'Completar perfil →' : 'Revisar currículo →') + '</button>'));
+      '<button class="mat-cta" onclick="switchDashTab(\'curriculo\')">' + (faltam.length ? 'Completar currículo →' : 'Revisar currículo →') + '</button>'));
   }
 
   /* Tile 2 — lacunas do mercado (promovido da aba Alertas) */
   if (!_cvBaseLoaded) {
-    tiles.push(matTile('Lacunas do mercado', '<div class="mat-sub"> </div>'));
+    tiles.push(matTile('O que falta no seu currículo', '<div class="mat-sub"> </div>', 'falta'));
   } else if (!cvData || !analyses.length) {
-    tiles.push(matTile('Lacunas do mercado',
+    tiles.push(matTile('O que falta no seu currículo',
       '<div class="mat-val">—</div>' +
       '<div class="mat-sub">' + (!cvData
-        ? 'Salve seu currículo base para comparar seu perfil com o que as vagas pedem.'
-        : 'Analise sua primeira vaga para começarmos a mapear o que o mercado pede.') + '</div>' +
-      '<button class="mat-cta" onclick="switchDashTab(\'' + (cvData ? 'app' : 'curriculo') + '\')">' + (cvData ? 'Analisar uma vaga →' : 'Criar currículo base →') + '</button>'));
+        ? 'Salve seu currículo para comparar com o que as vagas pedem.'
+        : 'Analise sua primeira vaga para vermos o que costuma ser pedido.') + '</div>' +
+      '<button class="mat-cta" onclick="switchDashTab(\'' + (cvData ? 'app' : 'curriculo') + '\')">' + (cvData ? 'Analisar uma vaga →' : 'Criar meu currículo →') + '</button>'));
   } else {
     // Mesmo cálculo que o hero de /curriculo — módulo compartilhado para as duas
     // telas nunca mostrarem números diferentes para o mesmo currículo.
@@ -3416,22 +3466,22 @@ function buildMaterialStrip() {
     var gaps = lac.gaps;
     var nVagas = lac.totalVagas;
     if (!gaps.length) {
-      tiles.push(matTile('Lacunas do mercado',
-        '<div class="mat-val">0 <small>lacunas</small></div>' +
+      tiles.push(matTile('O que falta no seu currículo',
+        '<div class="mat-val">0 <small>itens</small></div>' +
         '<div class="mat-chips"><span class="mat-chip mat-chip-ok">Perfil alinhado</span></div>' +
-        '<div class="mat-sub">Seu currículo já cobre as competências pedidas nas ' + nVagas + ' vaga' + (nVagas !== 1 ? 's' : '') + ' que você analisou.</div>'));
+        '<div class="mat-sub">Seu currículo já traz tudo que as ' + nVagas + ' vaga' + (nVagas !== 1 ? 's' : '') + ' que você analisou pedem.</div>', 'falta'));
     } else {
       var chips = gaps.slice(0, 3).map(function(k) {
         return '<span class="mat-chip">' + escHtml(k) + (freq[k] > 1 ? ' ×' + freq[k] : '') + '</span>';
       });
       if (gaps.length > 3) chips.push('<span class="mat-chip">+' + (gaps.length - 3) + '</span>');
-      tiles.push(matTile('Lacunas do mercado',
-        '<div class="mat-val">' + gaps.length + ' <small>competência' + (gaps.length !== 1 ? 's' : '') + '</small></div>' +
+      tiles.push(matTile('O que falta no seu currículo',
+        '<div class="mat-val">' + gaps.length + ' <small>' + (gaps.length !== 1 ? 'itens' : 'item') + '</small></div>' +
         '<div class="mat-chips">' + chips.join('') + '</div>' +
-        '<div class="mat-sub">Pedidas nas ' + nVagas + ' vaga' + (nVagas !== 1 ? 's' : '') + ' que você analisou e ausentes no seu currículo base.</div>' +
+        '<div class="mat-sub">' + (nVagas !== 1 ? 'As ' + nVagas + ' vagas que você analisou pedem' : 'A vaga que você analisou pede') + ' isso, e seu currículo não menciona.</div>' +
         // Aponta para o painel de posicionamento do hub, que mostra a lista
         // completa e as métricas. Aqui é o resumo; lá é o detalhe.
-        '<button class="mat-cta" onclick="switchDashTab(\'curriculo\',\'/curriculo?foco=lacunas\')">Ver lacunas →</button>'));
+        '<button class="mat-cta" onclick="switchDashTab(\'curriculo\',\'/curriculo?foco=lacunas\')">Ver o que falta →</button>', 'falta'));
     }
   }
 
@@ -3441,15 +3491,15 @@ function buildMaterialStrip() {
     return r.cv_otimizado && !r.cv_version_archived_at;
   }).length;
   if (!versoes) {
-    tiles.push(matTile('Versões por vaga',
+    tiles.push(matTile('Currículos feitos para vagas',
       '<div class="mat-val">0</div>' +
-      '<div class="mat-sub">Ao adaptar o currículo para uma vaga, a versão direcionada aparece aqui. Seu currículo base nunca é alterado.</div>' +
-      '<button class="mat-cta" onclick="switchDashTab(\'app\')">Adaptar para uma vaga →</button>'));
+      '<div class="mat-sub">Quando você adapta o currículo para uma vaga, ele fica guardado aqui. O seu currículo principal não muda.</div>' +
+      '<button class="mat-cta" onclick="switchDashTab(\'app\')">Adaptar para uma vaga →</button>', 'versoes'));
   } else {
-    tiles.push(matTile('Versões por vaga',
+    tiles.push(matTile('Currículos feitos para vagas',
       '<div class="mat-val">' + versoes + ' <small>currículo' + (versoes !== 1 ? 's' : '') + '</small></div>' +
-      '<div class="mat-sub">Direcionados a vagas específicas. Seu currículo base permanece intacto.</div>' +
-      '<button class="mat-cta" onclick="switchDashTab(\'curriculo\')">Ver versões →</button>'));
+      '<div class="mat-sub">Adaptados para vagas específicas. O seu currículo principal não muda.</div>' +
+      '<button class="mat-cta" onclick="switchDashTab(\'curriculo\')">Ver currículos →</button>', 'versoes'));
   }
 
   strip.innerHTML = tiles.join('');
@@ -3460,6 +3510,66 @@ function buildMaterialStrip() {
    peso visual da ação real porque o código forçava três cards; aqui existe no
    máximo uma linha, e só quando há de fato algo pendente. */
 var _pbaChosen = null;
+
+/* ── Bloco 02 · Suas ferramentas ───────────────────────────────
+   Um número por ferramenta, lido do que o painel já carregou — nenhuma
+   consulta nova. Carta de apresentação fica de fora de propósito: a API não
+   guarda as cartas geradas, então não existe número honesto para mostrar. */
+var FER_ICONES = {
+  analises:    '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15h6"/>',
+  candidaturas:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>',
+  entrevistas: '<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/>',
+  alertas:     '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>'
+};
+
+function ferCard(icone, valor, unidade, rotulo, acao) {
+  return '<button class="fer-card" onclick="' + acao + '" aria-label="' + escAttr(rotulo) + '">' +
+    '<span class="fer-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + FER_ICONES[icone] + '</svg></span>' +
+    '<span class="fer-txt"><span class="fer-val">' + escHtml(String(valor)) + (unidade ? ' <small>' + escHtml(unidade) + '</small>' : '') + '</span>' +
+    '<span class="fer-lbl">' + escHtml(rotulo) + '</span></span></button>';
+}
+
+function buildFerramentas() {
+  var strip = document.getElementById('ferStrip');
+  if (!strip) return;
+  var analyses = window._lastAnalysesData || [];
+  var tracked = _kTracked || [];
+
+  var vagas = (window.VagaAICv && window.VagaAICv.contarVagasDistintas)
+    ? window.VagaAICv.contarVagasDistintas(analyses) : analyses.length;
+
+  var ativas = tracked.filter(function(t) {
+    var ns = normalizeStatus(t.status);
+    return ns && ns !== 'recusada' && ns !== 'encerrada';
+  }).length;
+
+  var entrevistas = tracked.filter(function(t) {
+    var ns = normalizeStatus(t.status);
+    return ns === 'entrevista' || ns === 'oferta';
+  }).length;
+
+  // Alertas: mostra QUANDO chega, que é a informação que a pessoa quer —
+  // não um contador. Sem alerta ativo, o card vira o convite para criar.
+  var alertaVal, alertaUni, alertaLbl;
+  if (!_alertProfile || !_alertProfile.ativo) {
+    alertaVal = 'Desligado'; alertaUni = ''; alertaLbl = 'Vagas para você';
+  } else {
+    var prox = null;
+    try { prox = calculateNextAlertRun(_alertProfile, _alertExtended); } catch(e) {}
+    if (prox) {
+      var dias = Math.ceil((prox.getTime() - Date.now()) / 86400000);
+      alertaVal = dias <= 0 ? 'Hoje' : dias === 1 ? 'Amanhã' : 'Em ' + dias;
+      alertaUni = dias > 1 ? 'dias' : '';
+    } else { alertaVal = 'Ativo'; alertaUni = ''; }
+    alertaLbl = 'Próximo envio de vagas';
+  }
+
+  strip.innerHTML =
+    ferCard('analises', vagas, vagas === 1 ? 'vaga' : 'vagas', 'Vagas analisadas', "switchDashTab('app')") +
+    ferCard('candidaturas', ativas, '', 'Candidaturas ativas', "openCandidaturasFiltered('todas')") +
+    ferCard('entrevistas', entrevistas, '', 'Entrevistas marcadas', "switchDashTab('entrevistas')") +
+    ferCard('alertas', alertaVal, alertaUni, alertaLbl, "switchDashTab('alertas')");
+}
 
 function buildSecondaryHint() {
   var row = document.getElementById('painelHint');
@@ -3544,11 +3654,11 @@ function renderOppList() {
   /* Usa as tabelas globais de status (que já incluem valores novos e antigos) */
   var STATUS_BG_OPP = STATUS_BG;
   var STATUS_CLR_OPP = STATUS_COLORS;
-  function statusLabel(s) { return s ? (STATUS_LABELS[s] || s) : 'Só análise'; }
+  function statusLabel(s) { return s ? (STATUS_LABELS[s] || s) : 'Analisada, não enviada'; }
 
   function nextAction(rawStatus, updatedAt) {
     var status = normalizeStatus(rawStatus);
-    if (!status) return { lbl:'Iniciar candidatura', when:'Sem prazo' };
+    if (!status) return { lbl:'Enviar candidatura', when:'Sem prazo' };
     if (status === 'quero_aplicar') return { lbl:'Analisar vaga', when:'Pendente' };
     if (status === 'analisada' || status === 'cv_pronto') return { lbl:'Enviar candidatura', when:'Pendente' };
     if (status === 'aplicada') {
@@ -4948,6 +5058,7 @@ async function loadAlerts() {
     }
   } catch(e) { _alertCache = null; }
   renderAlertPage();
+  buildFerramentas();
   // A sugestão secundária do painel depende de _alertProfile, que carrega em
   // paralelo com as análises — reavalia agora que o perfil chegou.
   buildSecondaryHint();
@@ -4998,7 +5109,7 @@ function renderAlertCommandQuality(p, ext) {
     if (!p) subEl.textContent = 'Crie seu primeiro alerta para começar o monitoramento.';
     else if (score >= 90) subEl.textContent = 'Seu radar está completo e pronto para encontrar vagas precisas.';
     else if (q.recommendations.length) subEl.textContent = 'Próximo ajuste: ' + q.recommendations.join(' e ') + '.';
-    else subEl.textContent = 'Complete suas preferências para melhorar a precisão.';
+    else subEl.textContent = 'Quanto mais você contar sobre o que procura, melhores as vagas.';
   }
 }
 
