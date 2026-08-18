@@ -620,8 +620,14 @@ function renderVersionsPanel() {
   var panel = document.getElementById('versionsPanel');
   if (!panel) return;
   var rows = Object.keys(_versionsById).map(function(id){ return _versionsById[id]; }).filter(function(row){ return row && row.result && row.result.cv_otimizado; });
-  var active = rows.filter(function(row){ return !row.result.cv_version_archived_at; });
-  var archived = rows.filter(function(row){ return !!row.result.cv_version_archived_at; });
+  /* Arquivar a analise arquiva a versao junto. Antes o split olhava so
+     cv_version_archived_at e ignorava a coluna archived_at da analise: numa
+     conta com 53 de 55 analises arquivadas, o hub anunciava "Ativas (46)"
+     enquanto o painel dizia "Versoes por vaga: 0" — o painel filtra
+     archived_at. As versoes continuam acessiveis na aba Arquivadas. */
+  var versaoArquivada = function(row){ return !!row.result.cv_version_archived_at || !!row.archived_at; };
+  var active = rows.filter(function(row){ return !versaoArquivada(row); });
+  var archived = rows.filter(versaoArquivada);
   var visible = _versionView === 'archived' ? archived : active;
   _versionGroups = groupVersions(visible);
   var shown = _showAllVersions ? _versionGroups : _versionGroups.slice(0, 8);

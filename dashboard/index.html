@@ -42,7 +42,12 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 
   --t1: #071209;
   --t2: #3d5c47;
-  --t3: #7a9886;
+  /* Contraste: #7a9886 media 3,15:1 sobre o card branco — abaixo do minimo
+     4,5:1 do WCAG AA para texto corrido. E o token de TODO texto secundario
+     do painel ("PRIMIZIE · ha 51 dias", rotulos do funil), entao a falha
+     valia para a interface inteira. #547560 mede 5,13:1 sobre branco e
+     4,77:1 sobre o fundo, mantendo-se mais claro que --t2. */
+  --t3: #547560;
 
   --s-red:    #d94f4f;
   --s-red-bg: #fef0f0;
@@ -69,7 +74,8 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
   --border-soft:#152018;
   --t1: #ddeae0;
   --t2: #6d9b7a;
-  --t3: #3d5c47;
+  /* 2,48:1 sobre o card escuro. #6d8b78 mede 4,93:1. */
+  --t3: #6d8b78;
   --s-red-bg: rgba(217,79,79,.12);
   --s-amb-bg: rgba(196,125,10,.12);
   --s-grn-bg: rgba(26,122,74,.15);
@@ -3298,7 +3304,16 @@ function buildPBACard(analyses, tracked) {
     var ji = r.job_info || {};
     var cargo = ji.cargo || (alvo.job_excerpt ? alvo.job_excerpt.slice(0,40) : 'essa vaga');
     var emp = ji.empresa || (untrackedBest ? 'Empresa' : '');
+    /* keywords_faltando vem crua da IA e nao sabe o que ja esta no curriculo.
+       Numa conta real, 6 das 16 "faltantes" (Meta Ads, Google Ads, Conversao,
+       Otimizacao, Analise de dados, PR) estavam no CV — o card dizia 16
+       enquanto a faixa logo acima dizia 10, para a mesma analise. Agora os dois
+       usam o mesmo cruzamento. Sem curriculo base carregado, cai no numero cru:
+       loadCvBase re-renderiza o painel quando termina. */
     var missing = (r.keywords_faltando || []).length;
+    if (_cvBase && _cvBase.cv_data && window.VagaAICv && window.VagaAICv.calcularLacunas) {
+      missing = window.VagaAICv.calcularLacunas(_cvBase.cv_data, [alvo]).gaps.length;
+    }
     // O currículo direcionado desta vaga já existe dentro da análise. Mandar o
     // usuário para o formulário em branco custava a ele recolar a vaga inteira
     // justamente no clique de maior intenção.
@@ -3459,8 +3474,12 @@ function buildSecondaryHint() {
   // painel escondê-la enquanto a aba Alertas mostrava o alerta como inativo.
   var semAlerta = !_alertProfile || !_alertProfile.ativo;
   // Outras análises que ainda não viraram candidatura, fora a que o bloco 02 já trata.
+  // Conta TODAS as analises sem candidatura, inclusive a que o bloco 02
+  // destaca. Excluir a escolhida fazia o painel dizer "1" enquanto a aba
+  // Candidaturas dizia "2 analises nao rastreadas" — o mesmo fato com dois
+  // numeros na mesma sessao. A dica e um resumo, nao uma repeticao do card.
   var pendentes = analyses.filter(function(a) {
-    if (!a.score || String(a.id) === String(chosenId)) return false;
+    if (!a.score) return false;
     return !tracked.find(function(t){ return t.analysis_id === a.id; });
   }).length;
 
@@ -3490,7 +3509,18 @@ function renderOppList() {
   if (!container) return;
 
   var now = Date.now();
-  var sorted = analyses.slice().sort(function(a,b){ return b.score - a.score; }).slice(0, 5);
+  /* Uma linha por VAGA, nao por analise. Reanalisar a mesma vaga cria outra
+     analise, e a lista mostrava a mesma oportunidade repetida — duas linhas
+     identicas de "Gerente de Marketing · PRIMIZIE". Mantem a analise mais
+     recente de cada vaga, que e a que reflete o curriculo atual. */
+  var porVaga = {};
+  analyses.forEach(function(a) {
+    var k = window.VagaAICv && window.VagaAICv.chaveDaVaga ? window.VagaAICv.chaveDaVaga(a) : a.id;
+    var atual = porVaga[k];
+    if (!atual || new Date(a.created_at).getTime() > new Date(atual.created_at).getTime()) porVaga[k] = a;
+  });
+  var unicas = Object.keys(porVaga).map(function(k){ return porVaga[k]; });
+  var sorted = unicas.sort(function(a,b){ return b.score - a.score; }).slice(0, 5);
 
   var filtered = sorted.filter(function(a) {
     if (_oppFilter === 'todas') return true;
@@ -3590,7 +3620,10 @@ function buildFunilCard(analyses, tracked) {
       subEl.textContent = 'Sem atividade nos últimos ' + _funilDias + ' dias — suas ' + analyses.length +
         ' análise' + (analyses.length !== 1 ? 's são mais antigas' : ' é mais antiga') + '.';
     } else {
-      subEl.textContent = _funilDias > 0 ? 'Últimos ' + _funilDias + ' dias' : 'Todo o histórico';
+      // Analises arquivadas nao entram em loadAnalyses, entao "todo o histórico"
+      // sempre foi "todo o histórico ativo". Com 53 de 55 arquivadas, dizer
+      // "Todo o histórico" e mostrar 2 parecia bug.
+      subEl.textContent = _funilDias > 0 ? 'Últimos ' + _funilDias + ' dias' : 'Todo o histórico (sem arquivadas)';
     }
   }
 
@@ -4850,7 +4883,10 @@ async function loadCvBase() {
     _cvBase = null; // silencioso — a faixa cai no estado vazio, o resto do painel segue
   }
   _cvBaseLoaded = true;
-  buildMaterialStrip();
+  // Re-renderiza o painel inteiro, nao so a faixa: buildPBACard tambem depende
+  // do curriculo base para nao inflar a contagem de requisitos faltantes.
+  if (window._lastAnalysesData) buildPainelV2(window._lastAnalysesData, _kTracked || []);
+  else buildMaterialStrip();
 }
 
 /* ── Load & render ────────────────────────────────────────────── */

@@ -49,6 +49,26 @@
     return L.filter(Boolean).join('\n');
   }
 
+  /* Identidade da VAGA, nao da analise. Reanalisar a mesma vaga cria uma
+     analise nova: contar analises fazia o painel dizer "2 vagas" para uma
+     vaga so analisada duas vezes. Mesma chave que o hub usa para agrupar
+     curriculos por vaga. */
+  function chaveDaVaga(row) {
+    var info = (row && row.result && row.result.job_info) || {};
+    var url = String(info.job_url || '').trim().toLowerCase();
+    if (url) return 'u:' + url;
+    var empresa = String(info.empresa || '').trim().toLowerCase();
+    var cargo = String(info.titulo || info.cargo || '').trim().toLowerCase();
+    if (empresa || cargo) return 'v:' + empresa + '|' + cargo;
+    return 'a:' + ((row && row.id) || Math.random()); // sem identificacao: nunca agrupa errado
+  }
+
+  function contarVagasDistintas(analises) {
+    var vistas = {};
+    (analises || []).forEach(function (row) { vistas[chaveDaVaga(row)] = true; });
+    return Object.keys(vistas).length;
+  }
+
   /* cvData: objeto cv_saves.cv_data. analises: linhas com .result.keywords_faltando.
      Devolve gaps ordenadas por frequência (mais pedidas primeiro). */
   function calcularLacunas(cvData, analises) {
@@ -73,12 +93,15 @@
       freq: freq,
       cobertas: todas.length - gaps.length,
       totalCompetencias: todas.length,
-      totalVagas: analises.length
+      totalVagas: contarVagasDistintas(analises),
+      totalAnalises: analises.length
     };
   }
 
   global.VagaAICv = global.VagaAICv || {};
   global.VagaAICv.cvParaTexto = cvParaTexto;
   global.VagaAICv.calcularLacunas = calcularLacunas;
+  global.VagaAICv.chaveDaVaga = chaveDaVaga;
+  global.VagaAICv.contarVagasDistintas = contarVagasDistintas;
   global.VagaAICv.ANALISES_QUERY = ANALISES_QUERY;
 })(typeof window !== 'undefined' ? window : this);

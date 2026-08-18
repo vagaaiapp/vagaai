@@ -602,3 +602,72 @@ describe('Cálculo de lacunas', () => {
     assert.equal(r.totalVagas, 3);
   });
 });
+
+describe('Números coerentes entre telas', () => {
+  function modulo() {
+    const sandbox = { window: {} };
+    vm.runInNewContext(read('js/cv-lacunas.js'), sandbox, { filename: 'js/cv-lacunas.js' });
+    return sandbox.window.VagaAICv;
+  }
+  const vaga = (empresa, cargo, kw, id) => ({
+    id, created_at: '2026-08-01T00:00:00Z',
+    result: { job_info: { empresa, cargo }, keywords_faltando: kw }
+  });
+
+  it('conta vagas distintas, não análises', () => {
+    // Reanalisar a mesma vaga cria outra análise. O painel dizia "2 vagas" para
+    // uma vaga só, analisada duas vezes.
+    const { calcularLacunas, contarVagasDistintas } = modulo();
+    const duas = [vaga('PRIMIZIE', 'Gerente de Marketing', ['SQL'], 'a1'),
+                  vaga('PRIMIZIE', 'Gerente de Marketing', ['CRM'], 'a2')];
+    assert.equal(contarVagasDistintas(duas), 1);
+    const r = calcularLacunas({ nome: 'Ana' }, duas);
+    assert.equal(r.totalVagas, 1, 'totalVagas deve ser por vaga');
+    assert.equal(r.totalAnalises, 2, 'totalAnalises preserva a contagem crua');
+    // Vagas realmente diferentes continuam separadas
+    assert.equal(contarVagasDistintas([...duas, vaga('Acme', 'Dev', [], 'a3')]), 2);
+  });
+
+  it('sem identificação da vaga, nunca agrupa errado', () => {
+    const { contarVagasDistintas } = modulo();
+    const anonimas = [{ id: 'x', result: {} }, { id: 'y', result: {} }];
+    assert.equal(contarVagasDistintas(anonimas), 2);
+  });
+
+  it('a contagem de requisitos do bloco 02 cruza com o currículo', () => {
+    // keywords_faltando vem crua da IA: numa conta real, 6 das 16 "faltantes"
+    // estavam no CV. O card dizia 16 e a faixa acima dizia 10.
+    const dash = read('dashboard/index.html');
+    const pba = dash.match(/function buildPBACard\([\s\S]*?\n\}/);
+    assert.ok(pba);
+    assert.match(pba[0], /VagaAICv\.calcularLacunas\(_cvBase\.cv_data, \[alvo\]\)/,
+      'buildPBACard voltou a usar keywords_faltando cru');
+    // E o painel precisa re-renderizar quando o currículo base chega
+    assert.match(dash, /_cvBaseLoaded = true;[\s\S]{0,400}buildPainelV2\(window\._lastAnalysesData/);
+  });
+
+  it('a lista de oportunidades mostra uma linha por vaga', () => {
+    assert.match(read('dashboard/index.html'), /chaveDaVaga\(a\)[\s\S]{0,300}var sorted = unicas/);
+  });
+
+  it('versão de análise arquivada não conta como ativa', () => {
+    // O hub anunciava "Ativas (46)" com as 46 vindas de análises arquivadas,
+    // enquanto o painel dizia 0.
+    assert.match(read('curriculo/index.html'),
+      /versaoArquivada = function\(row\)\{ return !!row\.result\.cv_version_archived_at \|\| !!row\.archived_at; \}/);
+  });
+
+  it('texto secundário passa no contraste mínimo nos dois temas', () => {
+    const dash = read('dashboard/index.html');
+    const t3 = [...dash.matchAll(/--t3:\s*(#[0-9a-f]{6})/gi)].map((m) => m[1].toLowerCase());
+    assert.equal(t3.length, 2, 'esperado um --t3 por tema');
+    const hex = (h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16));
+    const lum = ([r, g, b]) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+    const razao = (a, b) => { const x = lum(hex(a)), y = lum(hex(b));
+      return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+    // claro sobre card branco; escuro sobre card #0d1610
+    assert.ok(razao(t3[0], '#ffffff') >= 4.5, `--t3 claro ${t3[0]}: ${razao(t3[0], '#ffffff').toFixed(2)}:1`);
+    assert.ok(razao(t3[1], '#0d1610') >= 4.5, `--t3 escuro ${t3[1]}: ${razao(t3[1], '#0d1610').toFixed(2)}:1`);
+  });
+});
