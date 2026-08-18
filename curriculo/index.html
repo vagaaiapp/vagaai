@@ -1117,11 +1117,11 @@ async function loadGapPanel() {
     var lac = window.VagaAICv.calcularLacunas(_cvData, rows);
     var freq = lac.freq;
     var gaps = lac.gaps;
-    var metricsHtml = metric(rows.length, 'vagas analisadas') + metric(lac.cobertas, 'competências em comum') + metric(gaps.length, 'lacunas identificadas');
+    var metricsHtml = metric(lac.totalVagas, 'vagas analisadas') + metric(lac.cobertas, 'competências em comum') + metric(gaps.length, 'lacunas identificadas');
 
     if (!gaps.length) {
       panel.innerHTML = gapHeroShell(
-        'Baseado nas ' + rows.length + ' vaga(s) que você já analisou, seu currículo já cobre as competências mais pedidas pelo mercado. 👏',
+        'Baseado nas ' + lac.totalVagas + ' vaga(s) que você já analisou, seu currículo já cobre as competências mais pedidas pelo mercado. 👏',
         metricsHtml,
         '<div class="gap-side-label">Lacunas identificadas</div><div class="gap-empty">Nenhuma lacuna no momento</div>'
       );
@@ -1129,7 +1129,7 @@ async function loadGapPanel() {
     }
     var top = gaps.slice(0, 8);
     panel.innerHTML = gapHeroShell(
-      'Baseado nas ' + rows.length + ' vaga(s) que você já analisou, seu currículo ainda não menciona estas competências — conforme você analisa mais vagas, esse painel fica mais preciso.',
+      'Baseado nas ' + lac.totalVagas + ' vaga(s) que você já analisou, seu currículo ainda não menciona estas competências — conforme você analisa mais vagas, esse painel fica mais preciso.',
       metricsHtml,
       '<div class="gap-side-label">Lacunas identificadas</div><div class="gap-chips">' + top.map(function(k){ return '<span class="gap-chip">' + esc(k) + (freq[k]>1 ? ' <b>×' + freq[k] + '</b>' : '') + '</span>'; }).join('') + '</div>'
     );

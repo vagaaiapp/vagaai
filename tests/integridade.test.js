@@ -650,6 +650,15 @@ describe('Números coerentes entre telas', () => {
     assert.match(read('dashboard/index.html'), /chaveDaVaga\(a\)[\s\S]{0,300}var sorted = unicas/);
   });
 
+  it('o hub conta vagas distintas, não análises', () => {
+    // O módulo agrupava certo, mas o hub interpolava rows.length e dizia
+    // "2 vaga(s)" enquanto o painel dizia "1 vaga" — mesma divergência, outra tela.
+    const c = read('curriculo/index.html');
+    assert.ok(!c.includes("rows.length + ' vaga(s)"), 'hub voltou a contar análises');
+    assert.ok(c.includes("lac.totalVagas + ' vaga(s)"), 'hub não usa a contagem por vaga');
+    assert.ok(c.includes("metric(lac.totalVagas, 'vagas analisadas')"), 'métrica do hero ainda conta análises');
+  });
+
   it('versão de análise arquivada não conta como ativa', () => {
     // O hub anunciava "Ativas (46)" com as 46 vindas de análises arquivadas,
     // enquanto o painel dizia 0.
