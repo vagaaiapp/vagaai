@@ -269,11 +269,9 @@ describe('Elementos referenciados existem', () => {
       'alMHora',           // campo de hora do modal de alerta, removido do formulario
     ],
     'cv/index.html': [
-      // Card de contexto da vaga: o CSS (.job-summary*) foi dimensionado para um
-      // painel lateral que nao existe mais. Restaurar exige decidir onde ele mora
-      // no layout atual, nao so recolocar a marcacao.
-      'jobSummaryCard', 'jobSummaryRole', 'jobSummaryCompany',
-      'jobSummaryText', 'jobSummaryScore', 'jobSummaryChips', 'jobSummaryLink',
+      // jobSummary* saiu: o contexto da vaga vive no widget da navegacao
+      // (cn-ats-widget), que mostra score, cargo, empresa, palavras a priorizar
+      // e agora o link para reabrir o anuncio.
       // s3ReforcarIA() nao e chamada de lugar nenhum: religar o botao significa
       // decidir se a acao (que altera o CV da pessoa) deve existir.
       's3AiBtn', 's3AiBtnLabel',

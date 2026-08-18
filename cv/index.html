@@ -666,6 +666,9 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 .cn-job-title{font-size:12px;font-weight:800;color:#fff;line-height:1.3;margin-top:.65rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .cn-job-company{font-size:10px;color:rgba(255,255,255,.38);margin-top:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cn-job-tip{font-size:9.5px;color:rgba(255,255,255,.32);line-height:1.45;margin-top:.55rem;padding-top:.55rem;border-top:1px solid rgba(255,255,255,.07)}
+.cn-job-link{display:inline-flex;align-items:center;gap:4px;margin-top:7px;color:var(--app-emerald);font-size:10.5px;font-weight:800;text-decoration:none}
+.cn-job-link:hover{text-decoration:underline}
+.cn-job-link[hidden]{display:none}
 /* Accordion */
 .csv-accordion{border:1px solid var(--app-border);border-radius:10px;overflow:hidden}
 .csv-accordion-hd{width:100%;display:flex;align-items:center;justify-content:space-between;padding:.65rem .9rem;background:transparent;border:none;cursor:pointer;font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;color:var(--app-t2);text-align:left;transition:background .15s}
@@ -1164,6 +1167,9 @@ html.no-photo .mod-header{display:block}
       <div class="cn-job-title" id="cnJobTitle">—</div>
       <div class="cn-job-company" id="cnJobCompany">—</div>
       <div class="cn-job-tip" id="cnJobTip">Currículo conectado à análise atual.</div>
+      <!-- Único item do card antigo que o widget não tinha: reabrir o anúncio
+           enquanto se escreve o currículo. A URL passa por safeExternalUrl. -->
+      <a class="cn-job-link" id="cnJobLink" target="_blank" rel="noopener" hidden>Ver a vaga →</a>
     </div>
     <div class="cn-saved-indicator" id="cnSavedIndicator" style="display:none"><i></i> Alterações salvas</div>
     <button class="cn-theme-btn" onclick="typeof toggleAppTheme==='function'?toggleAppTheme():toggleTheme()">
@@ -1445,10 +1451,10 @@ html.no-photo .mod-header{display:block}
       </div>
       <!-- Legacy hidden IDs -->
       <div style="display:none" aria-hidden="true">
-        <span id="cvQualityScore"></span><span id="cvQualityFill"></span><span id="cvQualityCopy"></span>
+        <!-- cvQuality* e appSidebarScore* saíram: os únicos leitores eram as escritas removidas de renderCvContext. -->
         <span id="cvPageCount"></span><span id="cvKeywordCount"></span>
         <span id="pdfStatusBadge"></span><span id="pdfStatusCopy"></span><span id="pdfStatusFoot"></span>
-        <div id="cvChecklist"></div><span id="appSidebarScore"></span><span id="appSidebarScoreFill"></span><span id="appSidebarScoreCopy"></span>
+        <div id="cvChecklist"></div>
         <button id="tplBtnClassic" style="display:none"></button>
         <button id="tplBtnModern" style="display:none"></button>
         <button id="tplBtnExec" style="display:none"></button>
@@ -2162,81 +2168,15 @@ function _mnProjHtml(projetos) {
   }).join('');
 }
 
+/* O contexto da vaga vive no widget do rodapé da navegação (cn-ats-widget),
+   que fica visível nas quatro etapas e já mostra score, cargo, empresa e as
+   palavras a priorizar. Esta função mantinha duas heranças de layouts
+   anteriores: escrevia score e cópia em spans do bloco "Legacy hidden IDs"
+   (display:none) e montava um #jobSummaryCard cujo markup nunca existiu — saia
+   no `if (!card) return` logo na primeira linha. Removidas as duas; sobra a
+   chamada que de fato pinta a tela. */
 function renderCvContext(context) {
-  var score = Number(context && context.score);
-  var safeScore = Number.isFinite(score) ? Math.max(0, Math.min(100, Math.round(score))) : null;
-  var scoreLabel = safeScore == null ? '—' : safeScore + '%';
-  var qualityScore = document.getElementById('cvQualityScore');
-  var qualityFill = document.getElementById('cvQualityFill');
-  var sidebarScore = document.getElementById('appSidebarScore');
-  var sidebarFill = document.getElementById('appSidebarScoreFill');
-  if (qualityScore) qualityScore.textContent = scoreLabel;
-  if (qualityFill) qualityFill.style.width = (safeScore == null ? 0 : safeScore) + '%';
-  if (sidebarScore) sidebarScore.textContent = scoreLabel;
-  if (sidebarFill) sidebarFill.style.width = (safeScore == null ? 0 : safeScore) + '%';
-
-  var qualityCopy = document.getElementById('cvQualityCopy');
-  var sidebarCopy = document.getElementById('appSidebarScoreCopy');
-  var copy = safeScore == null
-    ? 'Currículo estruturado para leitura por sistemas de recrutamento.'
-    : safeScore >= 75
-      ? 'Boa aderência à vaga e estrutura favorável para sistemas ATS.'
-      : safeScore >= 50
-        ? 'Aderência intermediária. Revise os requisitos e palavras-chave destacados.'
-        : 'Aderência baixa. Priorize os requisitos e palavras-chave ausentes.';
-  if (qualityCopy) qualityCopy.textContent = copy;
-  if (sidebarCopy) sidebarCopy.textContent = copy;
   updateNavAtsScore();
-
-  var card = document.getElementById('jobSummaryCard');
-  if (!card) return;
-  var info = context && context.job_info && typeof context.job_info === 'object' ? context.job_info : {};
-  var role = String(info.cargo || '').trim();
-  var company = String(info.empresa || '').trim();
-  var summary = String(context && context.resumo || '').trim();
-  var level = String(context && context.nivel || '').trim();
-  var salary = String(info.salario || '').trim();
-  var benefits = Array.isArray(info.beneficios)
-    ? info.beneficios.filter(function(item){ return String(item || '').trim(); }).slice(0, 2)
-    : [];
-  var url = String(info.job_url || '').trim();
-  var validUrl = /^https?:\/\//i.test(url);
-  if (!role && !company && !summary) {
-    card.hidden = true;
-    updateNavAtsScore();
-    return;
-  }
-
-  document.getElementById('jobSummaryRole').textContent = role || 'Oportunidade analisada';
-  document.getElementById('jobSummaryCompany').textContent = company || 'Empresa não informada';
-  var summaryEl = document.getElementById('jobSummaryText');
-  summaryEl.textContent = summary;
-  summaryEl.hidden = !summary;
-
-  var scoreEl = document.getElementById('jobSummaryScore');
-  var scoreText = safeScore == null ? level : safeScore + '% de aderência';
-  scoreEl.textContent = scoreText;
-  scoreEl.hidden = !scoreText;
-
-  var chips = [];
-  if (salary && !/^n[aã]o informado$/i.test(salary)) chips.push(salary);
-  benefits.forEach(function(item){ chips.push(String(item).trim()); });
-  if (level && chips.indexOf(level) === -1) chips.push(level);
-  var chipsEl = document.getElementById('jobSummaryChips');
-  chipsEl.replaceChildren();
-  chips.slice(0, 3).forEach(function(label) {
-    var chip = document.createElement('span');
-    chip.className = 'job-summary-chip';
-    chip.textContent = label;
-    chipsEl.appendChild(chip);
-  });
-  chipsEl.hidden = !chipsEl.childElementCount;
-
-  var link = document.getElementById('jobSummaryLink');
-  link.hidden = !validUrl;
-  if (validUrl) link.href = url;
-  else link.removeAttribute('href');
-  card.hidden = false;
 }
 
 function getActiveCvPage() {
@@ -3890,6 +3830,8 @@ function updateNavAtsScore() {
     if (baseTitle) baseTitle.textContent = 'Seu conteúdo mestre';
     if (baseCompany) baseCompany.textContent = 'Sem vínculo com vaga';
     if (baseTip) baseTip.textContent = 'Use este conteúdo para gerar versões direcionadas.';
+    var baseLink = document.getElementById('cnJobLink');
+    if (baseLink) { baseLink.hidden = true; baseLink.removeAttribute('href'); }
     return;
   }
   var identity = getCvContextIdentity();
@@ -3919,6 +3861,14 @@ function updateNavAtsScore() {
       : 'Currículo conectado à análise atual.';
   }
   if (valEl) valEl.style.color = !hasScore ? 'var(--app-emerald)' : score >= 70 ? 'var(--app-emerald)' : score >= 40 ? '#e5a93a' : '#e05a5a';
+  // Reabrir o anuncio enquanto escreve o curriculo era o unico item util do
+  // card removido. safeExternalUrl garante que so http(s) vira link.
+  var linkEl = document.getElementById('cnJobLink');
+  if (linkEl) {
+    var urlVaga = safeExternalUrl(identity.job_url);
+    linkEl.hidden = !urlVaga;
+    if (urlVaga) linkEl.href = urlVaga; else linkEl.removeAttribute('href');
+  }
 }
 
 function applyCvSourceUi() {
