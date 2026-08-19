@@ -3880,8 +3880,10 @@ function buildFunilCard(analyses, tracked) {
     // Zerar o funil ao lado de uma lista com itens era uma contradição visual
     // sem explicação — o card agora diz por que está vazio.
     if (_funilDias > 0 && !recentAnalyses.length && analyses.length) {
-      subEl.textContent = 'Sem atividade nos últimos ' + _funilDias + ' dias — suas ' + analyses.length +
-        ' análise' + (analyses.length !== 1 ? 's são mais antigas' : ' é mais antiga') + '.';
+      var antigas = (window.VagaAICv && window.VagaAICv.contarVagasDistintas)
+        ? window.VagaAICv.contarVagasDistintas(analyses) : analyses.length;
+      subEl.textContent = 'Sem atividade nos últimos ' + _funilDias + ' dias — sua' +
+        (antigas !== 1 ? 's ' + antigas + ' vagas analisadas são mais antigas' : ' vaga analisada é mais antiga') + '.';
     } else {
       // Analises arquivadas nao entram em loadAnalyses, entao "todo o histórico"
       // sempre foi "todo o histórico ativo". Com 53 de 55 arquivadas, dizer
@@ -3890,7 +3892,15 @@ function buildFunilCard(analyses, tracked) {
     }
   }
 
-  var total = recentAnalyses.length;
+  /* Vagas distintas, não análises. Os três estágios seguintes contam linhas do
+     rastreador, que são uma por vaga; contar análises no primeiro misturava as
+     unidades no mesmo funil — reanalisar a mesma vaga depois de trocar o CV
+     virava "2 analisadas → 1 candidatura", uma conversão de 50% que nunca
+     existiu. Era também o número que discordava da pilha do topo e da lista de
+     vagas na mesma dobra. Mesma função que o resto do painel usa. */
+  var total = (window.VagaAICv && window.VagaAICv.contarVagasDistintas)
+    ? window.VagaAICv.contarVagasDistintas(recentAnalyses)
+    : recentAnalyses.length;
   var candidaturas = recentTracked.filter(function(t){
     var ns = normalizeStatus(t.status);
     return ns && ns !== 'quero_aplicar' && ns !== 'analisada';
@@ -3942,7 +3952,7 @@ function buildFunilCard(analyses, tracked) {
     if (total >= 2) {
       var convRate = candidaturas > 0 ? Math.round((entrevistas / candidaturas) * 100) : 0;
       if (candidaturas === 0) {
-        txt = 'Você analisou ' + total + ' vagas ' + janela + ' mas ainda não iniciou nenhuma candidatura. Comece pelas de maior score.';
+        txt = 'Você analisou ' + total + ' vaga' + (total !== 1 ? 's ' : ' ') + janela + ' mas ainda não iniciou nenhuma candidatura. Comece pela' + (total !== 1 ? 's de maior score.' : ' aba Candidaturas.');
       } else if (entrevistas === 0 && candidaturas >= 2) {
         txt = 'Nenhuma entrevista ' + janela + '. Considere fazer follow-up nas candidaturas aplicadas.';
       } else if (entrevistas > 0 && candidaturas > 0) {
