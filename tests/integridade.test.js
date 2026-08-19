@@ -835,7 +835,7 @@ describe('CSS do painel: armadilhas que só aparecem renderizadas', () => {
   const dash = read('dashboard/index.html');
 
   it('valor e rótulo empilham: <span> precisa de display:block', () => {
-    for (const classe of ['fer-val', 'fer-lbl', 'mat-val', 'mat-lbl']) {
+    for (const classe of ['fer-nome', 'fer-estado', 'bus-num', 'bus-lbl', 'mat-val', 'mat-lbl']) {
       const regra = dash.match(new RegExp(`^\.${classe} \{([^}]*)\}`, 'm'));
       if (!regra) continue; // classe pode ter sido removida
       const ehSpan = new RegExp(`<span class="${classe}"`).test(dash);

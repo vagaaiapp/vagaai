@@ -213,6 +213,8 @@ body.frame-fullscreen .sidebar { display: none !important; }
   display: flex; flex-direction: column; gap: 8px;
 }
 
+.sb-support { display:block; text-decoration:none; cursor:pointer; transition:border-color .15s, color .15s; }
+.sb-support:hover { border-color:rgba(255,255,255,.18); color:rgba(255,255,255,.6); }
 .sb-support {
   background: rgba(255,255,255,.035);
   border: 1px solid rgba(255,255,255,.07);
@@ -1252,6 +1254,18 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .pg-title { font-family: Lora, Georgia, serif; font-size:30px; font-weight:700; color:var(--t1); margin-bottom:7px; letter-spacing:-.3px; line-height:1.2; }
 .pg-sub { font-size:13px; color:var(--t2); }
 .pg-date { font-size:12px; color:var(--t3); white-space:nowrap; padding-top:6px; }
+/* ── Faixa de estado ─────────────────────────────────────────
+   O cumprimento era o maior elemento da tela e nao carregava informacao
+   nenhuma. As pilhas abaixo dele respondem "onde eu estou" antes de qualquer
+   rolagem: quantas vagas correm, quantas entrevistas, quando chega o proximo
+   envio de alertas. Cada uma leva ao lugar que a resolve. */
+.pg-pills { display:flex; flex-wrap:wrap; gap:7px; margin-top:9px; }
+.pg-pill { display:inline-flex; align-items:center; gap:7px; font-size:11.5px; font-weight:600; color:var(--t2); background:var(--bg-card); border:1px solid var(--border); border-radius:20px; padding:5px 12px; cursor:pointer; font-family:inherit; transition:border-color .15s, color .15s; }
+.pg-pill:hover { border-color:var(--gb-emerald); color:var(--t1); }
+.pg-pill b { font-weight:800; color:var(--t1); }
+.pg-pill-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; background:var(--gb-emerald); }
+[data-theme="dark"] .pg-pill-dot { background:var(--gb-bright); }
+.pg-pill-off .pg-pill-dot { background:var(--t3); }
 .pba-card {
   background: linear-gradient(120deg,#0b2b1a,#176c45);
   border-radius: var(--r);
@@ -1293,14 +1307,14 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .psa-link { font-size:12px; font-weight:600; color:var(--gb-emerald); text-decoration:none; white-space:nowrap; padding-top:4px; }
 
 /* ── Rótulo de bloco ─────────────────────────────────────────
-   Substitui o par título+subtítulo que cada seção repetia. O número
-   marca a ordem de leitura real do painel (material → ação → registro). */
-.blk-label { display:flex; align-items:baseline; gap:9px; margin-bottom:11px; }
-.blk-num { font-size:10.5px; font-weight:800; letter-spacing:.05em; color:var(--gb-bright); background:var(--gb-forest); border-radius:5px; padding:2px 6px; flex-shrink:0; font-variant-numeric:tabular-nums; }
-/* No escuro o fundo do selo (--gb-forest) fica quase igual ao fundo da página
-   e o número parecia solto; o tom esverdeado devolve o contorno do chip. */
-[data-theme="dark"] .blk-num { background:rgba(78,206,145,.14); }
+   Substitui o par título+subtítulo que cada seção repetia. Os selos 01-04
+   saíram: numerar dá ar de formulário e prometia uma sequência que o usuário
+   nunca percorre — ele entra pela ação, não pelo passo 1. A hierarquia agora
+   é tipográfica, e a ordem das seções carrega o sentido sozinha. */
+.blk-label { display:flex; align-items:baseline; gap:10px; margin-bottom:11px; }
 .blk-title { font-size:14.5px; font-weight:700; color:var(--t1); letter-spacing:-.1px; }
+/* Seletor de período mora no rótulo da seção "Sua busca". */
+.blk-label .funil-period { margin-left:auto; align-self:center; }
 .blk-link { font-size:12px; font-weight:600; color:var(--gb-emerald); text-decoration:none; white-space:nowrap; margin-left:auto; }
 [data-theme="dark"] .blk-link { color:var(--gb-bright); }
 .blk-link:hover { text-decoration:underline; }
@@ -1330,10 +1344,12 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .mat-chip-ok { background:var(--s-grn-bg); border-color:rgba(26,122,74,.28); color:var(--s-grn); }
 [data-theme="dark"] .mat-chip-ok { background:rgba(78,206,145,.12); border-color:rgba(78,206,145,.35); color:var(--gb-bright); }
 
-/* ── Bloco 02 · Suas ferramentas ────────────────────
-   Panorama do resto da plataforma num relance. Cada bloco traz UM número e
-   para onde ir — sem isso, a pessoa só descobre o estado de cada ferramenta
-   entrando numa por uma. */
+/* ── Suas ferramentas ───────────────────────────────
+   Antes eram quatro contadores (vagas, candidaturas, entrevistas, alertas) —
+   números, não ferramentas, e três deles repetiam o funil. Pior: carta de
+   apresentação e treino de entrevista não apareciam em lugar nenhum do painel,
+   então quem assina Pro via três dos cinco produtos que paga. Agora cada card
+   é uma ferramenta, com o nome em primeiro plano e o estado embaixo. */
 .fer-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
 .fer-card {
   display:flex; align-items:center; gap:11px; width:100%; text-align:left;
@@ -1351,10 +1367,13 @@ body.frame-fullscreen .sidebar { display: none !important; }
 [data-theme="dark"] .fer-ico { color:var(--gb-bright); }
 .fer-ico svg { width:17px; height:17px; }
 .fer-txt { min-width:0; }
-.fer-val { display:block; font-size:17px; font-weight:800; color:var(--t1); line-height:1.15; letter-spacing:-.3px; font-variant-numeric:tabular-nums; }
-.fer-val small { font-size:11.5px; font-weight:600; color:var(--t2); letter-spacing:0; }
-.fer-lbl { display:block; font-size:11.5px; color:var(--t2); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-@media (max-width:1023px) { .fer-strip { grid-template-columns:repeat(2,1fr); } }
+/* <span> sem display de bloco cola valor e rótulo na mesma linha
+   ("1 vagaVagas analisadas"). Ratchet em tests/integridade.test.js. */
+.fer-nome { display:flex; align-items:center; gap:6px; font-size:13.5px; font-weight:800; color:var(--t1); line-height:1.2; letter-spacing:-.2px; }
+.fer-estado { display:block; font-size:11.5px; color:var(--t2); margin-top:3px; line-height:1.35; }
+.fer-selo { font-size:9.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--s-amb); background:var(--s-amb-bg); border:1px solid rgba(196,125,10,.28); border-radius:20px; padding:1px 6px; flex-shrink:0; }
+.fer-card-lock .fer-ico { background:var(--bg-sub); color:var(--t3); }
+@media (max-width:1023px) { .fer-strip { grid-template-columns:repeat(2,1fr); } .bus-strip { grid-template-columns:repeat(2,1fr); row-gap:18px; } }
 @media (max-width:768px)  { .fer-strip { grid-template-columns:repeat(2,1fr); } }
 
 /* ── Linha de sugestão secundária ────────────────────────────
@@ -1370,7 +1389,8 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .opp-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px; }
 .opp-title { font-size:16px; font-weight:700; color:var(--t1); margin-bottom:3px; }
 .opp-sub-txt { font-size:12px; color:var(--t3); }
-.opp-cols { display:grid; grid-template-columns:1fr 310px; gap:16px; align-items:start; }
+/* Uma coluna: o funil que ocupava os 310px da direita virou faixa própria. */
+.opp-cols { display:grid; grid-template-columns:1fr; gap:16px; align-items:start; }
 .opp-list-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); overflow:hidden; display:flex; flex-direction:column; }
 .opp-footer { padding:12px 18px; border-top:1px solid var(--border); margin-top:auto; }
 .opp-footer-btn { display:block; width:100%; background:transparent; border:1px solid var(--border); border-radius:8px; padding:9px 14px; font-size:12px; font-weight:600; color:var(--t2); cursor:pointer; transition:all .15s; text-align:center; font-family:inherit; }
@@ -1403,31 +1423,37 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .opp-action-lbl { font-size:11px; font-weight:700; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .opp-action-when { font-size:11px; color:var(--t3); margin-top:2px; }
 .opp-item-chevron { color:var(--t3); justify-self:center; }
-.funil-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); padding:18px 20px; }
-.funil-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:2px; }
-.funil-title-t { font-size:13.5px; font-weight:700; color:var(--t1); margin-bottom:2px; }
-.funil-sub-t { font-size:11px; color:var(--t3); margin-bottom:16px; line-height:1.45; }
+/* ── Sua busca ───────────────────────────────────────────────
+   O funil era uma coluna de 310px espremida ao lado da lista de vagas, com
+   trapézios empilhados, e sumia por completo abaixo de 1023px — a única
+   leitura de progresso da busca não existia no tablet nem no celular. Agora é
+   faixa de largura inteira, e substitui os quatro contadores soltos que
+   diziam a mesma coisa em outro formato. */
+.bus-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); padding:16px 20px 15px; }
+.bus-sub { font-size:11px; color:var(--t3); margin-bottom:15px; line-height:1.45; }
+.bus-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+.bus-stage { display:flex; flex-direction:column; gap:7px; min-width:0; text-align:left; background:none; border:none; padding:0; font-family:inherit; cursor:pointer; }
+.bus-stage:focus-visible { outline:2px solid var(--gb-emerald); outline-offset:3px; border-radius:4px; }
+.bus-lbl { display:block; font-size:10.5px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:var(--t3); }
+.bus-num { display:block; font-size:22px; font-weight:800; line-height:1; letter-spacing:-.5px; font-variant-numeric:tabular-nums; }
+.bus-bar { height:6px; border-radius:20px; background:var(--bg-sub); border:1px solid var(--border); overflow:hidden; }
+.bus-bar i { display:block; height:100%; border-radius:20px; transition:width .65s cubic-bezier(.4,0,.2,1); }
+.bus-stage:hover .bus-lbl { color:var(--t1); }
+/* Estado vazio: quem nunca analisou via quatro zeros — o painel provava que
+   estava vazio em vez de dizer para que serve. */
+.bus-empty { font-size:12.5px; color:var(--t2); line-height:1.6; }
+.bus-empty b { color:var(--t1); font-weight:700; }
+.bus-foot { display:flex; align-items:baseline; gap:9px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border); flex-wrap:wrap; }
+.bus-foot-lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--s-amb); white-space:nowrap; }
 /* Seletor de período: o recorte fixo de 30 dias zerava o funil ao lado de uma
    lista não vazia, sem oferecer forma de ver o histórico. */
 .funil-period { display:flex; gap:3px; flex-shrink:0; }
 .funil-per-btn { font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:20px; border:1px solid var(--border); background:var(--bg-card); color:var(--t3); cursor:pointer; font-family:inherit; transition:all .15s; }
 .funil-per-btn:hover { color:var(--t1); border-color:var(--t3); }
 .funil-per-btn.on { background:var(--gb-emerald); border-color:var(--gb-emerald); color:#fff; }
-.funil-pipe { display:flex; flex-direction:column; align-items:center; gap:8px; margin-bottom:14px; width:100%; }
-.funil-stage { display:flex; flex-direction:column; align-items:center; gap:4px; width:100%; }
-.funil-stage-label { display:flex; align-items:baseline; justify-content:center; gap:5px; }
-.funil-stage-num { font-size:13px; font-weight:800; }
-.funil-stage-lbl { font-size:11px; font-weight:600; color:var(--t3); }
-.funil-trapezoid { height:28px; clip-path:polygon(0% 0%, 100% 0%, 95% 100%, 5% 100%); transition:width .65s cubic-bezier(.4,0,.2,1); min-width:6px; }
-.funil-divider { height:1px; background:var(--border); margin:14px 0; }
-.funil-insight-lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--s-amb); margin-bottom:7px; }
-.funil-insight-txt { font-size:11.5px; color:var(--t2); line-height:1.5; }
+.funil-insight-txt { font-size:11.5px; color:var(--t2); line-height:1.5; min-width:180px; flex:1; }
 
 /* ── Responsividade ─────────────────────────────────────────── */
-@media (max-width: 1200px) {
-  .opp-cols { grid-template-columns: 1fr 230px; }
-}
-
 @media (max-width: 1023px) {
   :root { --sb: 72px; }
   .sidebar { padding: 22px 10px 16px; align-items: center; }
@@ -1445,8 +1471,6 @@ body.frame-fullscreen .sidebar { display: none !important; }
   .mat-strip { grid-template-columns: repeat(2, 1fr); }
   /* Em duas colunas o terceiro bloco sobraria sozinho numa linha pela metade. */
   .mat-tile:last-child { grid-column: 1 / -1; }
-  .opp-cols { grid-template-columns: 1fr; }
-  .funil-card { display: none; }
   .interview-hero { grid-template-columns:1fr; padding:34px 32px; }
   .int-row { grid-template-columns:54px minmax(0,1fr); }
   .int-status, .int-actions { grid-column:2; justify-content:flex-start; }
@@ -1505,7 +1529,6 @@ body.frame-fullscreen .sidebar { display: none !important; }
   }
   .opp-action-lbl,
   .opp-action-when { white-space:normal; overflow:visible; text-overflow:clip; font-size:12px; }
-  .funil-card { display: none; }
 }
 
 @media (max-width: 1023px) {
@@ -2341,9 +2364,13 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     </button>
   </nav>
   <div class="sb-bottom">
-    <div class="sb-support" aria-hidden="true">
+    <!-- Era um <div aria-hidden> sem clique: tinha borda, fundo e uma promessa
+         ("veja dicas"), mas cursor:auto e nenhum destino. Agora leva ao blog,
+         que é onde as dicas realmente estão. Abre em aba nova para não
+         derrubar a sessão do painel. -->
+    <a class="sb-support" href="/blog" target="_blank" rel="noopener">
       <strong>Precisa de ajuda?</strong>Veja dicas para melhorar suas candidaturas.
-    </div>
+    </a>
     <div class="sb-profile-row" onclick="toggleDropdown()" role="button" aria-haspopup="true" aria-expanded="false" aria-label="Menu da conta">
       <button class="sb-avatar" id="avatarBtn" style="border:none;pointer-events:none" tabindex="-1" aria-hidden="true">
         <span id="avatarInitials">?</span>
@@ -2533,43 +2560,21 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
   <!-- ══ PAINEL ══ -->
   <div id="tab-painel" class="tab active">
 
-    <!-- GREETING -->
+    <!-- ── CABEÇALHO DE ESTADO ──
+         "Boa tarde, João" sozinho era o maior elemento da tela sem dizer nada.
+         As pilhas abaixo respondem "onde eu estou" antes de qualquer rolagem. -->
     <div class="pg-greeting">
       <div>
         <h1 class="pg-title" id="pgGreeting">Carregando...</h1>
+        <div class="pg-pills" id="pgPills"></div>
       </div>
       <div class="pg-date" id="pgDate"></div>
     </div>
 
-    <!-- ── 01 · SEU MATERIAL ──
-         Currículo base, lacunas do mercado e versões por vaga. Vem antes da
-         ação porque a qualidade do currículo base determina a qualidade de
-         tudo que vem depois: análise, alerta e versão direcionada. -->
-    <div class="mat-section">
-      <div class="blk-label">
-        <span class="blk-num">01</span>
-        <span class="blk-title">Seu currículo</span>
-        <a href="#" class="blk-link" onclick="switchDashTab('curriculo');return false;">Abrir Meu Currículo →</a>
-      </div>
-      <div class="mat-strip" id="matStrip">
-        <div class="mat-tile"><div class="mat-sub">Carregando...</div></div>
-        <div class="mat-tile"><div class="mat-sub"> </div></div>
-        <div class="mat-tile"><div class="mat-sub"> </div></div>
-      </div>
-    </div>
-
-    <!-- ── 02 · SUAS FERRAMENTAS ── -->
-    <div class="mat-section">
-      <div class="blk-label">
-        <span class="blk-num">02</span>
-        <span class="blk-title">Suas ferramentas</span>
-      </div>
-      <div class="fer-strip" id="ferStrip"></div>
-    </div>
-
-    <!-- ── 03 · FAÇA AGORA ── -->
+    <!-- ── FAÇA AGORA ──
+         Sobe para o topo. É o único bloco que diz o que fazer, e o usuário
+         entra no painel por ele — não pelo inventário do que ele já tem. -->
     <div class="blk-label">
-      <span class="blk-num">03</span>
       <span class="blk-title">Faça agora</span>
     </div>
     <div class="pba-card">
@@ -2605,13 +2610,61 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       </div>
     </div>
 
-    <!-- ── 03 · SUAS OPORTUNIDADES ──
+    <!-- ── SEU CURRÍCULO ──
+         Fica logo abaixo da ação porque é ele que a alimenta: as lacunas do
+         terceiro bloco são exatamente os requisitos que o card verde manda
+         cobrir. Separar os dois obrigava a pessoa a ligar os pontos sozinha. -->
+    <div class="mat-section" style="margin-top:26px">
+      <div class="blk-label">
+        <span class="blk-title">Seu currículo</span>
+        <a href="#" class="blk-link" onclick="switchDashTab('curriculo');return false;">Abrir Meu Currículo →</a>
+      </div>
+      <div class="mat-strip" id="matStrip">
+        <div class="mat-tile"><div class="mat-sub">Carregando...</div></div>
+        <div class="mat-tile"><div class="mat-sub"> </div></div>
+        <div class="mat-tile"><div class="mat-sub"> </div></div>
+      </div>
+    </div>
+
+    <!-- ── SUAS FERRAMENTAS ──
+         Eram quatro contadores; agora são as quatro ferramentas de verdade,
+         carta de apresentação e treino de entrevista inclusive. Os números que
+         estavam aqui viraram o funil de "Sua busca", logo abaixo. -->
+    <div class="mat-section">
+      <div class="blk-label">
+        <span class="blk-title">Suas ferramentas</span>
+      </div>
+      <div class="fer-strip" id="ferStrip"></div>
+    </div>
+
+    <!-- ── SUA BUSCA ──
+         O funil saiu da coluna de 310px (onde sumia inteiro abaixo de 1023px)
+         e virou faixa de largura cheia. -->
+    <div class="mat-section">
+      <div class="blk-label">
+        <span class="blk-title">Sua busca</span>
+        <div class="funil-period" id="funilPeriod" role="group" aria-label="Período do funil">
+          <button class="funil-per-btn on" data-dias="30" onclick="setFunilPeriod(30)">30d</button>
+          <button class="funil-per-btn" data-dias="90" onclick="setFunilPeriod(90)">90d</button>
+          <button class="funil-per-btn" data-dias="0" onclick="setFunilPeriod(0)">Tudo</button>
+        </div>
+      </div>
+      <div class="bus-card">
+        <div class="bus-sub" id="funilSub">Últimos 30 dias</div>
+        <div class="bus-strip" id="funilPipe"></div>
+        <div class="bus-foot">
+          <span class="bus-foot-lbl">✦ O que os números dizem</span>
+          <span class="funil-insight-txt" id="funilInsight">Analise mais vagas para receber insights personalizados.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SUAS VAGAS ──
          A seção "Precisa da sua atenção" deixou de existir: a ação seguinte de
          cada vaga já é calculada por nextAction() e agora aparece só na linha
          da própria vaga, em vez de duplicada em cards acima. -->
-    <div class="opp-section" style="margin-top:26px">
+    <div class="opp-section">
       <div class="blk-label">
-        <span class="blk-num">04</span>
         <span class="blk-title">Suas vagas</span>
         <a href="#" class="blk-link" onclick="openCandidaturasFiltered('todas');return false;">Abrir rastreador completo →</a>
       </div>
@@ -2634,21 +2687,6 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           <div class="opp-footer">
             <button class="opp-footer-btn" onclick="openCandidaturasFiltered('todas')">Ver todas as oportunidades →</button>
           </div>
-        </div>
-        <div class="funil-card">
-          <div class="funil-head">
-            <div class="funil-title-t">Como está indo</div>
-            <div class="funil-period" id="funilPeriod" role="group" aria-label="Período do funil">
-              <button class="funil-per-btn on" data-dias="30" onclick="setFunilPeriod(30)">30d</button>
-              <button class="funil-per-btn" data-dias="90" onclick="setFunilPeriod(90)">90d</button>
-              <button class="funil-per-btn" data-dias="0" onclick="setFunilPeriod(0)">Tudo</button>
-            </div>
-          </div>
-          <div class="funil-sub-t" id="funilSub">Últimos 30 dias</div>
-          <div class="funil-pipe" id="funilPipe"></div>
-          <div class="funil-divider"></div>
-          <div class="funil-insight-lbl">✦ O que os números dizem</div>
-          <div class="funil-insight-txt" id="funilInsight">Analise mais vagas para receber insights personalizados.</div>
         </div>
       </div>
       <div class="hint-row" id="painelHint" style="display:none"></div>
@@ -3256,6 +3294,7 @@ function buildPainelV2(analyses, tracked) {
     pgDate.textContent = days[now.getDay()] + ', ' + now.getDate() + ' de ' + months[now.getMonth()];
   }
 
+  buildStatusPills(analyses, tracked);
   buildMaterialStrip();
   // buildPBACard devolve a vaga que escolheu. Antes, ela e os cards de
   // "Precisa da sua atenção" rodavam o mesmo filtro de forma independente e
@@ -3265,6 +3304,65 @@ function buildPainelV2(analyses, tracked) {
   renderOppList();
   buildFunilCard(analyses, tracked);
   buildSecondaryHint();
+}
+
+/* ── Faixa de estado ──────────────────────────────────────────────────────
+   Três fatos curtos sob o cumprimento, e nenhum deles inventado: só entra a
+   pilha que tem número real. Um painel que abre com "Boa tarde" e mais nada
+   obriga a pessoa a rolar para descobrir se algo mudou desde ontem. */
+function statusPill(txt, fn, off) {
+  return '<button class="pg-pill' + (off ? ' pg-pill-off' : '') + '" onclick="' + fn + '">' +
+    '<span class="pg-pill-dot"></span>' + txt + '</button>';
+}
+
+function buildStatusPills(analyses, tracked) {
+  var el = document.getElementById('pgPills');
+  if (!el) return;
+  var pills = [];
+
+  var ativas = tracked.filter(function(t) {
+    var ns = normalizeStatus(t.status);
+    return ns && ns !== 'recusada' && ns !== 'encerrada';
+  }).length;
+  var entrevistas = tracked.filter(function(t) {
+    var ns = normalizeStatus(t.status);
+    return ns === 'entrevista' || ns === 'oferta';
+  }).length;
+
+  if (ativas > 0) {
+    pills.push(statusPill('<b>' + ativas + '</b> vaga' + (ativas !== 1 ? 's' : '') + ' em andamento',
+      "openCandidaturasFiltered('rastreadas')"));
+  } else if (analyses.length) {
+    var vagas = (window.VagaAICv && window.VagaAICv.contarVagasDistintas)
+      ? window.VagaAICv.contarVagasDistintas(analyses) : analyses.length;
+    pills.push(statusPill('<b>' + vagas + '</b> vaga' + (vagas !== 1 ? 's' : '') + ' analisada' + (vagas !== 1 ? 's' : '') + ', nenhuma enviada',
+      "openCandidaturasFiltered('so_analise')", true));
+  }
+
+  if (entrevistas > 0) {
+    pills.push(statusPill('<b>' + entrevistas + '</b> entrevista' + (entrevistas !== 1 ? 's' : '') + ' marcada' + (entrevistas !== 1 ? 's' : ''),
+      "openCandidaturasFiltered('entrevista')"));
+  }
+
+  pills.push(alertaPill());
+  el.innerHTML = pills.join('');
+}
+
+/* Estado dos alertas em texto de relógio, não contador: a pessoa quer saber
+   quando chega, não quantos já chegaram. */
+function alertaEstado() {
+  if (!_alertProfile || !_alertProfile.ativo) return { txt: 'Alertas de vaga desligados', off: true };
+  var prox = null;
+  try { prox = calculateNextAlertRun(_alertProfile, _alertExtended); } catch(e) {}
+  if (!prox) return { txt: 'Alertas de vaga ativos', off: false };
+  var dias = Math.ceil((prox.getTime() - Date.now()) / 86400000);
+  var quando = dias <= 0 ? 'hoje' : dias === 1 ? 'amanhã' : 'em ' + dias + ' dias';
+  return { txt: 'Próximas vagas ' + quando, off: false, curto: quando };
+}
+
+function alertaPill() {
+  var e = alertaEstado();
+  return statusPill(e.txt, "switchDashTab('alertas')", e.off);
 }
 
 function updatePBAPriority(score, cargo, empresa, subText) {
@@ -3358,14 +3456,17 @@ function buildPBACard(analyses, tracked) {
     // justamente no clique de maior intenção.
     var temVersao = !!r.cv_otimizado;
     if (titleEl) {
+      /* Era "Faltam 10 coisas que esta vaga pede" — o maior texto do painel
+         abria com um déficit. O fato é o mesmo; a moldura passa a ser o que
+         dá para fazer com ele. */
       titleEl.textContent = missing > 0
-        ? 'Faltam ' + missing + ' coisa' + (missing > 1 ? 's' : '') + ' que esta vaga pede'
+        ? 'Cubra mais ' + missing + ' requisito' + (missing > 1 ? 's' : '') + ' desta vaga'
         : 'Aumente seu score na vaga de ' + cargo;
     }
     if (descEl) {
       descEl.textContent = temVersao
         ? 'A versão direcionada para ' + cargo + (emp ? ' na ' + emp : '') + ' já está pronta na sua conta. Ajuste os pontos marcados e envie a candidatura.'
-        : 'Com esses ajustes no currículo, sua aderência a esta vaga pode subir significativamente.';
+        : 'São os requisitos que ' + (emp ? emp + ' ' : 'a vaga ') + 'pede e o seu currículo ainda não menciona. Incluí-los é o caminho mais direto para subir sua aderência.';
     }
     if (btnPri) {
       if (temVersao) {
@@ -3400,7 +3501,16 @@ function buildPBACard(analyses, tracked) {
 var _cvBase = null;        // linha de cv_saves do usuário (1 por conta)
 var _cvBaseLoaded = false; // separa "ainda carregando" de "não existe"
 
-/* Icones de traco, no mesmo estilo dos do menu (stroke, sem preenchimento).
+/* As duas primeiras lajotas mediam coisas diferentes com a mesma palavra. A
+   primeira dizia "100% completo" (cadastro preenchido) e a segunda, a 40cm de
+   distância, "10 itens" sob o título "O que falta no seu currículo" (requisitos
+   que as vagas pedem e o CV não menciona). Lado a lado isso lê como erro do
+   sistema — um currículo não pode estar 100% completo e faltando 10 coisas.
+   São eixos distintos e agora têm nomes distintos: "preenchido" para o
+   cadastro, "o que as vagas pedem" para as lacunas. A palavra "falta" aparece
+   em um lugar só.
+
+   Icones de traco, no mesmo estilo dos do menu (stroke, sem preenchimento).
    Tres blocos de texto lado a lado exigiam leitura para diferenciar; o icone
    da a distincao antes da leitura. Herda a cor do rotulo, entao nao vira
    enfeite nem compete com o numero. */
@@ -3441,10 +3551,10 @@ function buildMaterialStrip() {
       quando = dias <= 0 ? 'atualizado hoje' : dias === 1 ? 'atualizado ontem' : 'atualizado há ' + dias + ' dias';
     }
     var sub = faltam.length
-      ? 'Falta ' + escHtml(faltam.slice(0,2).join(' e ').toLowerCase()) + (quando ? ' · ' + quando : '')
-      : (quando || 'Perfil completo');
+      ? 'Falta preencher: ' + escHtml(faltam.slice(0,2).join(' e ').toLowerCase()) + (quando ? ' · ' + quando : '')
+      : (quando || 'Todos os campos preenchidos');
     tiles.push(matTile('Currículo principal',
-      '<div class="mat-val">' + pct + '<small>% completo</small></div>' +
+      '<div class="mat-val">' + pct + '<small>% preenchido</small></div>' +
       '<div class="mat-bar"><i style="width:' + pct + '%"></i></div>' +
       '<div class="mat-sub">' + sub + '</div>' +
       '<button class="mat-cta" onclick="switchDashTab(\'curriculo\')">' + (faltam.length ? 'Completar currículo →' : 'Revisar currículo →') + '</button>', 'curriculo'));
@@ -3452,9 +3562,9 @@ function buildMaterialStrip() {
 
   /* Tile 2 — lacunas do mercado (promovido da aba Alertas) */
   if (!_cvBaseLoaded) {
-    tiles.push(matTile('O que falta no seu currículo', '<div class="mat-sub"> </div>', 'falta'));
+    tiles.push(matTile('O que as vagas pedem', '<div class="mat-sub"> </div>', 'falta'));
   } else if (!cvData || !analyses.length) {
-    tiles.push(matTile('O que falta no seu currículo',
+    tiles.push(matTile('O que as vagas pedem',
       '<div class="mat-val">—</div>' +
       '<div class="mat-sub">' + (!cvData
         ? 'Salve seu currículo para comparar com o que as vagas pedem.'
@@ -3468,8 +3578,8 @@ function buildMaterialStrip() {
     var gaps = lac.gaps;
     var nVagas = lac.totalVagas;
     if (!gaps.length) {
-      tiles.push(matTile('O que falta no seu currículo',
-        '<div class="mat-val">0 <small>itens</small></div>' +
+      tiles.push(matTile('O que as vagas pedem',
+        '<div class="mat-val">0 <small>termos</small></div>' +
         '<div class="mat-chips"><span class="mat-chip mat-chip-ok">Perfil alinhado</span></div>' +
         '<div class="mat-sub">Seu currículo já traz tudo que as ' + nVagas + ' vaga' + (nVagas !== 1 ? 's' : '') + ' que você analisou pedem.</div>', 'falta'));
     } else {
@@ -3477,13 +3587,13 @@ function buildMaterialStrip() {
         return '<span class="mat-chip">' + escHtml(k) + (freq[k] > 1 ? ' ×' + freq[k] : '') + '</span>';
       });
       if (gaps.length > 3) chips.push('<span class="mat-chip">+' + (gaps.length - 3) + '</span>');
-      tiles.push(matTile('O que falta no seu currículo',
-        '<div class="mat-val">' + gaps.length + ' <small>' + (gaps.length !== 1 ? 'itens' : 'item') + '</small></div>' +
+      tiles.push(matTile('O que as vagas pedem',
+        '<div class="mat-val">' + gaps.length + ' <small>' + (gaps.length !== 1 ? 'termos ausentes' : 'termo ausente') + '</small></div>' +
         '<div class="mat-chips">' + chips.join('') + '</div>' +
         '<div class="mat-sub">' + (nVagas !== 1 ? 'As ' + nVagas + ' vagas que você analisou pedem' : 'A vaga que você analisou pede') + ' isso, e seu currículo não menciona.</div>' +
         // Aponta para o painel de posicionamento do hub, que mostra a lista
         // completa e as métricas. Aqui é o resumo; lá é o detalhe.
-        '<button class="mat-cta" onclick="switchDashTab(\'curriculo\',\'/curriculo?foco=lacunas\')">Ver o que falta →</button>', 'falta'));
+        '<button class="mat-cta" onclick="switchDashTab(\'curriculo\',\'/curriculo?foco=lacunas\')">Ver a lista completa →</button>', 'falta'));
     }
   }
 
@@ -3513,22 +3623,35 @@ function buildMaterialStrip() {
    máximo uma linha, e só quando há de fato algo pendente. */
 var _pbaChosen = null;
 
-/* ── Bloco 02 · Suas ferramentas ───────────────────────────────
-   Um número por ferramenta, lido do que o painel já carregou — nenhuma
-   consulta nova. Carta de apresentação fica de fora de propósito: a API não
-   guarda as cartas geradas, então não existe número honesto para mostrar. */
+/* ── Suas ferramentas ──────────────────────────────────────────────────────
+   Eram quatro contadores: vagas analisadas, candidaturas ativas, entrevistas
+   marcadas e próximo envio. Três problemas de uma vez. Os três primeiros
+   repetiam, em outro formato, o mesmo funil que já existia na tela. O bloco se
+   chamava "ferramentas" mas não abria ferramenta nenhuma — abria números. E
+   duas das cinco ferramentas do produto, carta de apresentação e treino de
+   entrevista, não apareciam em ponto algum do painel: quem assina Pro e cai no
+   Início via três dos cinco produtos que paga, e só descobria o resto se
+   varresse o menu lateral.
+
+   Agora cada card é uma ferramenta — nome em primeiro plano, estado embaixo.
+   Nenhuma delas exibe contador inventado: nem carta nem treino são
+   persistidos no banco (cover-letter.js e interview.js só geram e devolvem),
+   então o card mostra o que dá para fazer com ela, não um número falso. */
 var FER_ICONES = {
   analises:    '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15h6"/>',
-  candidaturas:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>',
+  carta:       '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/>',
   entrevistas: '<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/>',
   alertas:     '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>'
 };
 
-function ferCard(icone, valor, unidade, rotulo, acao) {
-  return '<button class="fer-card" onclick="' + acao + '" aria-label="' + escAttr(rotulo) + '">' +
+function ferCard(icone, nome, estado, acao, selo) {
+  return '<button class="fer-card' + (selo ? ' fer-card-lock' : '') + '" onclick="' + acao + '"' +
+    ' aria-label="' + escAttr(nome + ' — ' + (selo ? 'disponível no plano ' + selo : estado)) + '">' +
     '<span class="fer-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + FER_ICONES[icone] + '</svg></span>' +
-    '<span class="fer-txt"><span class="fer-val">' + escHtml(String(valor)) + (unidade ? ' <small>' + escHtml(unidade) + '</small>' : '') + '</span>' +
-    '<span class="fer-lbl">' + escHtml(rotulo) + '</span></span></button>';
+    '<span class="fer-txt">' +
+      '<span class="fer-nome">' + escHtml(nome) + (selo ? '<span class="fer-selo">' + escHtml(selo) + '</span>' : '') + '</span>' +
+      '<span class="fer-estado">' + escHtml(estado) + '</span>' +
+    '</span></button>';
 }
 
 function buildFerramentas() {
@@ -3539,38 +3662,35 @@ function buildFerramentas() {
 
   var vagas = (window.VagaAICv && window.VagaAICv.contarVagasDistintas)
     ? window.VagaAICv.contarVagasDistintas(analyses) : analyses.length;
-
-  var ativas = tracked.filter(function(t) {
-    var ns = normalizeStatus(t.status);
-    return ns && ns !== 'recusada' && ns !== 'encerrada';
-  }).length;
-
   var entrevistas = tracked.filter(function(t) {
     var ns = normalizeStatus(t.status);
     return ns === 'entrevista' || ns === 'oferta';
   }).length;
 
-  // Alertas: mostra QUANDO chega, que é a informação que a pessoa quer —
-  // não um contador. Sem alerta ativo, o card vira o convite para criar.
-  var alertaVal, alertaUni, alertaLbl;
-  if (!_alertProfile || !_alertProfile.ativo) {
-    alertaVal = 'Desligado'; alertaUni = ''; alertaLbl = 'Vagas para você';
-  } else {
-    var prox = null;
-    try { prox = calculateNextAlertRun(_alertProfile, _alertExtended); } catch(e) {}
-    if (prox) {
-      var dias = Math.ceil((prox.getTime() - Date.now()) / 86400000);
-      alertaVal = dias <= 0 ? 'Hoje' : dias === 1 ? 'Amanhã' : 'Em ' + dias;
-      alertaUni = dias > 1 ? 'dias' : '';
-    } else { alertaVal = 'Ativo'; alertaUni = ''; }
-    alertaLbl = 'Próximo envio de vagas';
-  }
+  /* Mesma regra do menu lateral (marcarItensPagosNoMenu). Enquanto a
+     assinatura não carregou, nenhum selo aparece: piscar um cadeado errado
+     para quem paga é pior que mostrá-lo meio segundo depois — loadSubscriptionData
+     re-renderiza a faixa quando termina. */
+  var sub = window._subscriptionData;
+  var plano = sub && sub.plan;
+  var ent = (sub && sub.entitlements) || {};
+  var seloCarta = (plano && plano === 'free') ? 'Starter' : '';
+  var seloTreino = (plano && !(plano === 'pro' || ent.simulador_entrevista)) ? 'Pro' : '';
+
+  var estCarta = seloCarta ? 'Escreva a carta a partir da vaga analisada'
+    : analyses.length ? 'Gere a partir de qualquer vaga analisada'
+    : 'Analise uma vaga para gerar a primeira';
+  var estTreino = seloTreino ? 'Simule a entrevista da vaga antes do dia'
+    : entrevistas > 0 ? entrevistas + ' entrevista' + (entrevistas !== 1 ? 's' : '') + ' marcada' + (entrevistas !== 1 ? 's' : '') + ' — treine antes'
+    : 'Simule as perguntas que a vaga deve cobrar';
 
   strip.innerHTML =
-    ferCard('analises', vagas, vagas === 1 ? 'vaga' : 'vagas', 'Vagas analisadas', "switchDashTab('app')") +
-    ferCard('candidaturas', ativas, '', 'Candidaturas ativas', "openCandidaturasFiltered('todas')") +
-    ferCard('entrevistas', entrevistas, '', 'Entrevistas marcadas', "switchDashTab('entrevistas')") +
-    ferCard('alertas', alertaVal, alertaUni, alertaLbl, "switchDashTab('alertas')");
+    ferCard('analises', 'Analisar vaga',
+      vagas ? vagas + ' vaga' + (vagas !== 1 ? 's' : '') + ' analisada' + (vagas !== 1 ? 's' : '') : 'Comece pela primeira vaga',
+      "switchDashTab('app')") +
+    ferCard('carta', 'Carta de apresentação', estCarta, "switchDashTab('carta')", seloCarta) +
+    ferCard('entrevistas', 'Treino de entrevista', estTreino, "switchDashTab('entrevistas')", seloTreino) +
+    ferCard('alertas', 'Vagas para você', alertaEstado().txt, "switchDashTab('alertas')");
 }
 
 function buildSecondaryHint() {
@@ -3754,23 +3874,37 @@ function buildFunilCard(analyses, tracked) {
   }).length;
   var ofertas = recentTracked.filter(function(t){ return normalizeStatus(t.status) === 'oferta'; }).length;
   var maxN = Math.max(total, candidaturas, 1);
+  var escuro = document.documentElement.getAttribute('data-theme') === 'dark';
+
+  /* Quem nunca analisou via quatro zeros: o painel provava que estava vazio em
+     vez de dizer para que a faixa serve. Só vale para conta sem histórico
+     nenhum — com análises fora da janela, os zeros são informação real e a
+     linha acima já explica o recorte. */
+  if (!analyses.length && !tracked.length) {
+    pipe.innerHTML = '<div class="bus-empty" style="grid-column:1/-1">' +
+      'Aqui você acompanha <b>quantas vagas viraram candidatura, entrevista e oferta</b>. ' +
+      'A faixa começa a se preencher na sua primeira análise.</div>';
+    if (insightEl) insightEl.textContent = 'Analise uma vaga para começar a medir sua busca.';
+    return;
+  }
 
   var stages = [
-    { lbl:'Analisadas',   num:total,        clr:'#0d5031' },
-    { lbl:'Candidaturas', num:candidaturas, clr:'#1a7a4a' },
-    { lbl:'Entrevistas',  num:entrevistas,  clr:'#2cba74' },
-    { lbl:'Ofertas',      num:ofertas,      clr:'#4ece91' }
+    /* No tema escuro os dois primeiros tons (#0d5031, #1a7a4a) ficam quase
+       invisíveis sobre o fundo do card; a escala clareia junto com o tema. */
+    { lbl:'Analisadas',   num:total,        clr:escuro ? '#2f9c66' : '#0d5031', filtro:'todas' },
+    { lbl:'Candidaturas', num:candidaturas, clr:escuro ? '#3cb87c' : '#1a7a4a', filtro:'rastreadas' },
+    { lbl:'Entrevistas',  num:entrevistas,  clr:'#2cba74', filtro:'entrevista' },
+    { lbl:'Ofertas',      num:ofertas,      clr:'#4ece91', filtro:'oferta' }
   ];
 
   pipe.innerHTML = stages.map(function(st) {
-    var pct = Math.max(st.num > 0 ? 14 : 5, Math.round((st.num / maxN) * 100));
-    return '<div class="funil-stage">' +
-      '<div class="funil-stage-label">' +
-        '<span class="funil-stage-lbl">' + st.lbl + ':</span>' +
-        '<span class="funil-stage-num" style="color:' + st.clr + '">' + st.num + '</span>' +
-      '</div>' +
-      '<div class="funil-trapezoid" style="width:' + pct + '%;background:' + st.clr + '"></div>' +
-    '</div>';
+    var pct = st.num > 0 ? Math.max(8, Math.round((st.num / maxN) * 100)) : 0;
+    return '<button class="bus-stage" onclick="openCandidaturasFiltered(\'' + st.filtro + '\')"' +
+      ' aria-label="' + escAttr(st.num + ' ' + st.lbl.toLowerCase()) + '">' +
+      '<span class="bus-lbl">' + st.lbl + '</span>' +
+      '<span class="bus-num" style="color:' + st.clr + '">' + st.num + '</span>' +
+      '<span class="bus-bar"><i style="width:' + pct + '%;background:' + st.clr + '"></i></span>' +
+    '</button>';
   }).join('');
 
   if (insightEl) {
@@ -6653,6 +6787,9 @@ async function loadSubscriptionData() {
     var sub = await res.json();
     window._subscriptionData = sub;
     marcarItensPagosNoMenu(sub);
+    // A faixa de ferramentas mostra selo de plano nos cards de carta e treino,
+    // e o painel costuma montar antes desta resposta chegar.
+    buildFerramentas();
     var planLabels = { pro: 'Pro', starter: 'Starter', free: 'Grátis' };
     var planLabel = planLabels[sub.plan] || sub.plan || 'Grátis';
     // Hero metrics
@@ -6864,6 +7001,12 @@ function toggleTheme() {
   document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
   localStorage.setItem('vagaai_theme', isDark ? 'light' : 'dark');
   _syncThemeIcons();
+  /* As barras do funil recebem a cor por style inline (uma por estágio), então
+     não acompanham a troca de variável como o resto da tela. Sem isto, quem
+     alterna o tema com o painel aberto fica com a escala do tema anterior. */
+  if (document.getElementById('funilPipe')) {
+    try { buildFunilCard(window._lastAnalysesData || [], _kTracked || []); } catch (e) {}
+  }
 }
 _syncThemeIcons();
 
