@@ -1404,7 +1404,10 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .opp-chip-active { background:var(--gb-emerald); color:#fff; border-color:var(--gb-emerald); }
 .opp-item {
   display:grid;
-  grid-template-columns:42px minmax(0,1.5fr) 100px minmax(110px,.8fr) 18px;
+  /* A coluna do status era fixa em 100px, mas "Analisada, não enviada" tem
+     white-space:nowrap e ~130px — o pill vazava por cima da ação seguinte.
+     `auto` dimensiona pelo conteúdo real; a folga sai da coluna do cargo. */
+  grid-template-columns:42px minmax(0,1.5fr) auto minmax(110px,.8fr) 18px;
   gap:12px;
   align-items:center;
   padding:13px 18px;
@@ -3360,6 +3363,16 @@ function alertaEstado() {
   return { txt: 'Próximas vagas ' + quando, off: false, curto: quando };
 }
 
+/* As pilhas do topo e a faixa de ferramentas leem o MESMO alertaEstado(), mas
+   o painel monta antes de loadAlertProfile() responder. Enquanto só a faixa
+   re-renderizava, a tela abria dizendo "Alertas de vaga desligados" no topo e
+   "Próximas vagas em 2 dias" trinta pixels abaixo — o mesmo fato com dois
+   estados na mesma dobra. As duas andam juntas a partir daqui. */
+function refreshEstadoPainel() {
+  buildStatusPills(window._lastAnalysesData || [], _kTracked || []);
+  buildFerramentas();
+}
+
 function alertaPill() {
   var e = alertaEstado();
   return statusPill(e.txt, "switchDashTab('alertas')", e.off);
@@ -3828,6 +3841,7 @@ function renderOppList() {
    analisou vagas há mais tempo via 0/0/0/0 ao lado de uma lista não vazia,
    sem nenhuma forma de enxergar o próprio histórico. */
 var _funilDias = 30;
+var _funilAutoAjustado = false;
 
 function setFunilPeriod(dias) {
   _funilDias = dias;
@@ -3847,6 +3861,19 @@ function buildFunilCard(analyses, tracked) {
   var recentTracked = tracked.filter(function(t) {
     return new Date(t.created_at || t.updated_at).getTime() >= desde;
   });
+
+  /* Abrir sempre em 30d fazia o painel de quem tem só histórico mais antigo
+     começar com 0/0/0/0 — de novo o painel provando que está vazio, agora com
+     uma nota de rodapé explicando o vazio. Na primeira montagem, se a janela
+     padrão não pega nada e existe histórico, começa em "Tudo". Depois disso
+     quem manda é o clique do usuário. */
+  if (!_funilAutoAjustado) {
+    _funilAutoAjustado = true;
+    if (_funilDias === 30 && analyses.length && !recentAnalyses.length) {
+      setFunilPeriod(0);
+      return;
+    }
+  }
 
   var subEl = document.getElementById('funilSub');
   if (subEl) {
@@ -5198,9 +5225,9 @@ async function loadAlerts() {
     }
   } catch(e) { _alertCache = null; }
   renderAlertPage();
-  buildFerramentas();
-  // A sugestão secundária do painel depende de _alertProfile, que carrega em
-  // paralelo com as análises — reavalia agora que o perfil chegou.
+  // Pilhas de estado e faixa de ferramentas dependem de _alertProfile, que
+  // carrega em paralelo com as análises — reavalia agora que o perfil chegou.
+  refreshEstadoPainel();
   buildSecondaryHint();
 }
 
@@ -6789,7 +6816,7 @@ async function loadSubscriptionData() {
     marcarItensPagosNoMenu(sub);
     // A faixa de ferramentas mostra selo de plano nos cards de carta e treino,
     // e o painel costuma montar antes desta resposta chegar.
-    buildFerramentas();
+    refreshEstadoPainel();
     var planLabels = { pro: 'Pro', starter: 'Starter', free: 'Grátis' };
     var planLabel = planLabels[sub.plan] || sub.plan || 'Grátis';
     // Hero metrics
