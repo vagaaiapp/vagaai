@@ -870,3 +870,61 @@ describe('CSS do painel: armadilhas que só aparecem renderizadas', () => {
       'Liste as propriedades da transition em vez de usar `all`.');
   });
 });
+
+/* O banco isola contas por RLS (auth.uid() = user_id em toda tabela de
+   usuário). O navegador não isolava nada: o currículo, a foto, a última vaga
+   colada e o estado do onboarding ficavam em localStorage sem dono, e logout()
+   só chamava signOut(). Num computador compartilhado a próxima pessoa abria o
+   Treino de entrevista com o CV da anterior já no campo. Ver /js/sessao.js. */
+describe('Cache do navegador não atravessa contas', () => {
+  const sessao = read('js/sessao.js');
+
+  // Páginas autenticadas que leem dados pessoais do localStorage.
+  const PAGINAS = [
+    'dashboard/index.html', 'app/index.html', 'cv/index.html',
+    'carta/index.html', 'entrevista/index.html', 'curriculo/index.html',
+  ];
+
+  it('toda página autenticada carrega o módulo e adota a sessão', () => {
+    for (const p of PAGINAS) {
+      const src = read(p);
+      assert.match(src, /src="\/js\/sessao\.js"/, `${p} não carrega /js/sessao.js`);
+      assert.match(src, /VagaAISessao\.adotar\(/, `${p} não chama VagaAISessao.adotar()`);
+    }
+  });
+
+  it('todo logout limpa o cache pessoal antes de encerrar a sessão', () => {
+    for (const p of ['dashboard/index.html', 'app/index.html', 'carta/index.html', 'entrevista/index.html']) {
+      const src = read(p);
+      assert.match(src, /VagaAISessao\.limpar\(\)/, `${p} faz signOut sem limpar o cache`);
+    }
+  });
+
+  /* Ratchet: chave nova de dado pessoal precisa entrar na lista de limpeza.
+     Sem isto, o próximo `localStorage.setItem('vagaai_algo', cv)` reabre o
+     mesmo vazamento sem que nenhum teste perceba. */
+  it('nenhuma chave vagaai_* de dado pessoal fica fora da limpeza', () => {
+    // Preferências do aparelho — seguem a pessoa que senta no computador, não a conta.
+    const DO_APARELHO = new Set([
+      'vagaai_theme', 'vagaai-theme', 'vagaai_cookie_consent',
+      'vagaai_cv_tpl', 'vagaai_ob_anon_id', 'vagaai_cache_dono',
+    ]);
+
+    const encontradas = new Set();
+    const arquivos = ['sidebar.js', 'cookie-consent.js', 'onboarding/shared.js', ...PAGINAS];
+    for (const f of arquivos) {
+      let src;
+      try { src = read(f); } catch { continue; }
+      for (const m of src.matchAll(/localStorage\.setItem\(\s*['"`](vagaai[_-][a-z0-9_]+)/gi)) {
+        encontradas.add(m[1]);
+      }
+    }
+
+    const fora = [...encontradas].filter(
+      (k) => !DO_APARELHO.has(k) && !sessao.includes(`'${k}'`)
+    );
+    assert.deepEqual(fora, [],
+      `chave gravada mas nunca limpa na troca de conta: ${fora.join(', ')}. ` +
+      'Adicione a PESSOAIS em js/sessao.js, ou a DO_APARELHO aqui se for preferência do aparelho.');
+  });
+});

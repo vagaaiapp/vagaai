@@ -10,6 +10,7 @@
 <script defer src="/_vercel/insights/script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/onboarding/shared.js"></script>
+<script src="/js/sessao.js"></script>
 <script src="/js/cv-voice.js"></script>
 <script src="/js/cv-completude.js"></script>
 <script src="/js/eventos.js"></script>
@@ -203,6 +204,10 @@ var SITUACOES_FORMACAO = ['', 'Concluído', 'Cursando', 'Trancado'];
 (async function init(){
   var s = await sb.auth.getSession();
   _session = s && s.data && s.data.session;
+  // Cache do navegador pertence a uma conta só — ver /js/sessao.js. Roda antes
+  // de qualquer leitura de rascunho para não abrir o editor com o currículo de
+  // quem usou o computador antes.
+  if (_session && window.VagaAISessao) VagaAISessao.adotar(_session.user.id);
   // Fora do painel (funil público /criar-curriculo, link direto), mostra uma
   // nav mínima — sem ela o visitante ficava numa página sem logo nem saída.
   if (!_isEmbedded) {

@@ -37,6 +37,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/onboarding/shared.js"></script>
+<script src="/js/sessao.js"></script>
 <script src="/js/cv-voice.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1057,7 +1058,10 @@ function closeAppDropdown() {
   var trigger = document.querySelector('.app-profile');
   if (trigger) trigger.setAttribute('aria-expanded', 'false');
 }
-function appLogout() { sb.auth.signOut().then(function(){ window.location.href = '/login'; }); }
+function appLogout() {
+  if (window.VagaAISessao) VagaAISessao.limpar();
+  sb.auth.signOut().then(function(){ window.location.href = '/login'; });
+}
 window.logout = appLogout;
 
 // Embedded detection (when loaded inside dashboard shell)
@@ -1094,6 +1098,10 @@ async function initAuth() {
         return;
       }
       authSession = session;
+      // Cache do navegador pertence a uma conta só. Se a anterior era de
+      // outra pessoa (computador compartilhado), apaga antes que qualquer
+      // tela leia currículo, vaga ou foto de quem usou o aparelho antes.
+      if (window.VagaAISessao) VagaAISessao.adotar(session.user.id);
       await loadUserCredits(session);
       await loadSavedCvsForApp(session);
       // Redireciona "Início" para o painel quando logado

@@ -18,6 +18,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/onboarding/shared.js"></script>
+<script src="/js/sessao.js"></script>
 <script src="/js/cv-completude.js"></script>
 <script src="/js/eventos.js"></script>
 <script src="/js/cv-lacunas.js"></script>
@@ -3212,6 +3213,10 @@ async function init() {
     }
     currentSession = session;
     currentUserId = session.user.id;
+      // Cache do navegador pertence a uma conta só. Se a anterior era de
+      // outra pessoa (computador compartilhado), apaga antes que qualquer
+      // tela leia currículo, vaga ou foto de quem usou o aparelho antes.
+    if (window.VagaAISessao) VagaAISessao.adotar(currentUserId);
     if (window.VagaAIOnboarding) {
       // O retorno era descartado. Se claimAnalysis falhasse, a pessoa terminava
       // o funil, criava a conta e caía num painel vazio, sem explicação — como
@@ -7219,6 +7224,9 @@ async function doAlterarEmail() {
 function closeDeleteConfirm() { document.getElementById('delConfirm').classList.add('hidden'); }
 
 function logout() {
+  // signOut() derruba o token, mas o currículo, a foto e a última vaga
+  // continuavam no localStorage para a próxima pessoa que entrasse.
+  if (window.VagaAISessao) VagaAISessao.limpar();
   sb.auth.signOut().then(function() {
     window.location.href = '/login';
   });

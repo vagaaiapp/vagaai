@@ -12,6 +12,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <script src="/cookie-consent.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/onboarding/shared.js"></script>
+<script src="/js/sessao.js"></script>
 <script src="/js/cv-voice.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1831,6 +1832,8 @@ async function _initSbSession() {
   try {
     var r = await _sb.auth.getSession();
     _sbSession = (r && r.data && r.data.session) ? r.data.session : null;
+    // Antes de qualquer leitura de vagaai_cv/vagaai_cv_base/vagaai_cv_photo.
+    if (_sbSession && window.VagaAISessao) VagaAISessao.adotar(_sbSession.user.id);
   } catch(e) { _sbSession = null; }
   return _sbSession;
 }
