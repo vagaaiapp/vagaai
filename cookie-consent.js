@@ -11,11 +11,18 @@
   function setConsent(granted) {
     try { localStorage.setItem(KEY, granted ? 'granted' : 'denied'); } catch (e) {}
     if (typeof window.gtag === 'function') {
+      // ad_* ficavam presos em 'denied' mesmo com o "Aceitar" clicado. Com
+      // isso o Google Ads não consegue OBSERVAR conversão nenhuma — cai para
+      // modelagem, que precisa de volume para acertar e degrada o Smart Bidding
+      // justamente no começo da campanha, quando há pouca conversão. O texto do
+      // banner agora declara a finalidade publicitária, que é o que torna esse
+      // consentimento válido (LGPD Art. 8º: finalidade específica e informada).
+      var v = granted ? 'granted' : 'denied';
       window.gtag('consent', 'update', {
-        analytics_storage: granted ? 'granted' : 'denied',
-        ad_storage: 'denied',
-        ad_user_data: 'denied',
-        ad_personalization: 'denied',
+        analytics_storage: v,
+        ad_storage: v,
+        ad_user_data: v,
+        ad_personalization: v,
       });
     }
     var el = document.getElementById('vg-cookie-banner');
@@ -38,8 +45,9 @@
     } catch (e) {}
     bar.innerHTML =
       '<div style="font-size:13px;line-height:1.55;color:#cdd8d1">' +
-      'Usamos cookies para entender o uso do site e melhorar sua experiência. ' +
-      'Você pode aceitar ou recusar os cookies de análise. ' +
+      'Usamos cookies para entender o uso do site, melhorar sua experiência e ' +
+      'medir os resultados das nossas campanhas de publicidade. ' +
+      'Você pode aceitar ou recusar — recusar não limita nenhum recurso. ' +
       '<a href="/termos#privacidade" style="color:#3ecf8e;text-decoration:underline">Política de Privacidade</a>.' +
       '</div>' +
       '<div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">' +

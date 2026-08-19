@@ -928,3 +928,45 @@ describe('Cache do navegador não atravessa contas', () => {
       'Adicione a PESSOAIS em js/sessao.js, ou a DO_APARELHO aqui se for preferência do aparelho.');
   });
 });
+
+/* Instrumentação que decide se verba de anúncio vira aprendizado. A /obrigado
+   é a única página que sabe que houve receita e não tinha GA4 nem tag de
+   conversão — disparava só window.va(), que o Google não enxerga. */
+describe('Rastreamento de conversão', () => {
+  const obrigado = read('obrigado/index.html');
+  const consent = read('cookie-consent.js');
+
+  it('a página de pagamento confirmado carrega o GA4', () => {
+    assert.match(obrigado, /googletagmanager\.com\/gtag\/js\?id=G-/,
+      '/obrigado sem GA4: a conversão não chega ao Google');
+    assert.match(obrigado, /gtag\('consent','default'/,
+      '/obrigado sem Consent Mode: o padrão negado precisa valer aqui também');
+  });
+
+  it('a página de pagamento dispara purchase e tem ponto para a tag do Ads', () => {
+    assert.match(obrigado, /gtag\('event',\s*'purchase'/, 'sem evento purchase no GA4');
+    assert.match(obrigado, /var ADS_ID\s*=/, 'sem ponto de configuração do Google Ads');
+    assert.match(obrigado, /send_to:\s*ADS_ID/, 'ADS_ID declarado mas não usado no envio');
+  });
+
+  it('a mesma compra não conta duas vezes ao recarregar', () => {
+    assert.match(obrigado, /sessionStorage\.(get|set)Item\(\s*chave/,
+      'sem trava de recarga: F5 na /obrigado contaria a venda de novo');
+  });
+
+  /* Com ad_storage preso em 'denied' o Ads não observa conversão — cai para
+     modelagem, que é justamente o que falha com pouco volume no início. */
+  it('aceitar os cookies libera os sinais de publicidade', () => {
+    const bloco = consent.match(/gtag\('consent',\s*'update',\s*\{[\s\S]*?\}\)/);
+    assert.ok(bloco, 'cookie-consent.js sem consent update');
+    for (const sinal of ['ad_storage', 'ad_user_data']) {
+      assert.doesNotMatch(bloco[0], new RegExp(`${sinal}:\s*'denied'`),
+        `${sinal} fixo em 'denied' mesmo com o "Aceitar" clicado`);
+    }
+  });
+
+  it('o banner declara a finalidade publicitária do consentimento', () => {
+    assert.match(consent, /public|campanh|an[úu]ncio/i,
+      'consentimento para ad_* precisa de finalidade informada no texto do banner');
+  });
+});

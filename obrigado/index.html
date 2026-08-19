@@ -8,6 +8,19 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Google Analytics 4 + Consent Mode v2, mesmo setup da landing e do /app.
+     Esta página não tinha NENHUM dos dois: disparava só window.va(), que é
+     Vercel Analytics e o Google não enxerga. Resultado: a página que confirma
+     o pagamento — a única que sabe que houve receita — era invisível para o
+     Ads, então não havia como otimizar campanha por cliente, só por clique. -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XCT8K58VWF"></script>
+<script>
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
+gtag('consent','default',{ad_storage:'denied',analytics_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
+try{if(localStorage.getItem('vagaai_cookie_consent')==='granted')gtag('consent','update',{analytics_storage:'granted',ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted'});}catch(e){}
+gtag('js',new Date());gtag('config','G-XCT8K58VWF');
+</script>
+<script src="/cookie-consent.js" defer></script>
 <script defer src="/_vercel/insights/script.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -92,7 +105,46 @@ nav{position:fixed;top:0;left:0;right:0;background:rgba(10,15,13,0.92);backdrop-
 </div>
 
 <script>
-try { window.va && window.va('event', { name: 'purchase_success' }); } catch(e) {}
+/* ── Conversão ────────────────────────────────────────────────────────────
+   PARA LIGAR O GOOGLE ADS: crie a ação de conversão em Google Ads → Metas →
+   Conversões → Nova ação → Site, e cole aqui os dois valores que ele mostrar.
+   Enquanto ADS_ID estiver vazio nada é enviado ao Ads — o GA4 já registra. */
+var ADS_ID    = '';   // ex.: 'AW-123456789'
+var ADS_LABEL = '';   // ex.: 'AbC-D_efGhIjKlM'
+
+(function() {
+  var params = new URLSearchParams(window.location.search);
+
+  /* Recarregar a página não pode contar a mesma venda de novo. A chave é a
+     sessão do Stripe quando ela vem na URL; sem ela, cai para a própria query,
+     que já distingue compras diferentes (plano vs créditos, preços). */
+  var chave = 'vg_conv_' + (params.get('session_id') || params.get('checkout') || window.location.search || 'default');
+  var jaContou = false;
+  try { jaContou = sessionStorage.getItem(chave) === '1'; } catch(e) {}
+
+  // Só manda `value` quando o preço realmente veio na URL: mandar número
+  // chutado envenena o lance por valor, que é pior do que não mandar nada.
+  var precoRaw = params.get('price');
+  var valor = precoRaw ? parseFloat(precoRaw.replace(/\./g, '').replace(',', '.')) : null;
+  if (!isFinite(valor) || valor <= 0) valor = null;
+
+  var payload = { currency: 'BRL', transaction_id: params.get('session_id') || undefined };
+  if (valor !== null) payload.value = valor;
+
+  if (!jaContou) {
+    try { sessionStorage.setItem(chave, '1'); } catch(e) {}
+    try { if (typeof gtag === 'function') gtag('event', 'purchase', payload); } catch(e) {}
+    try {
+      if (typeof gtag === 'function' && ADS_ID && ADS_LABEL) {
+        var ads = { send_to: ADS_ID + '/' + ADS_LABEL, currency: 'BRL' };
+        if (valor !== null) ads.value = valor;
+        if (payload.transaction_id) ads.transaction_id = payload.transaction_id;
+        gtag('event', 'conversion', ads);
+      }
+    } catch(e) {}
+  }
+  try { window.va && window.va('event', { name: 'purchase_success' }); } catch(e) {}
+})();
 
 // Mostra detalhes da compra via URL params (?credits=10&price=39%2C90)
 (function() {

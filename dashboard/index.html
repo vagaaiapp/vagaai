@@ -2889,9 +2889,12 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
             <span class="al-status-dot" aria-hidden="true"></span>
             <span id="alStatusText">Carregando…</span>
           </div>
-          <button class="al-new-btn" id="alNewBtn" onclick="openAlertEditModal()" aria-label="Criar novo alerta">
+          <!-- O rótulo é definido em renderAlertUsage(): dizia "Criar novo
+               alerta" mesmo com um perfil salvo, mas abre o editor do único que
+               existe e salvar substitui o anterior. -->
+          <button class="al-new-btn" id="alNewBtn" onclick="openAlertEditModal()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Criar novo alerta
+            <span id="alNewBtnLbl">Criar alerta</span>
           </button>
         </div>
       </div>
@@ -5267,6 +5270,17 @@ function renderAlertUsage() {
   var unit = (max === 1) ? 'alerta ativo' : 'alertas ativos';
   el.textContent = active + ' de ' + maxLabel + ' ' + unit;
   el.style.display = '';
+
+  // Com um perfil salvo o botão edita, não cria: prometer "novo" e devolver o
+  // formulário preenchido do alerta atual é contradição na mesma tela.
+  var btnLbl = document.getElementById('alNewBtnLbl');
+  var btn = document.getElementById('alNewBtn');
+  if (btnLbl && btn) {
+    var jaTem = !!(_alertProfile && _alertProfile.cargo_desejado);
+    var podeCriarOutro = (max == null) || active < max;
+    btnLbl.textContent = jaTem ? (podeCriarOutro ? 'Criar novo alerta' : 'Editar alerta') : 'Criar alerta';
+    btn.setAttribute('aria-label', btnLbl.textContent);
+  }
 }
 
 function renderAlertPage() {
