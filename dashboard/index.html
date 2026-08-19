@@ -1451,6 +1451,18 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .bus-foot-lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--s-amb); white-space:nowrap; }
 /* Seletor de período: o recorte fixo de 30 dias zerava o funil ao lado de uma
    lista não vazia, sem oferecer forma de ver o histórico. */
+/* Histórico de treinos: leitura de progresso, não ação — fica sóbrio para não
+   competir com a lista de vagas onde a pessoa começa um treino novo. */
+.trh-box { margin-top:16px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card); padding:17px 20px; }
+.trh-titulo { font-size:13.5px; font-weight:700; color:var(--t1); }
+.trh-sub { font-size:11.5px; color:var(--t3); margin:2px 0 13px; }
+.trh-lista { display:flex; flex-direction:column; gap:1px; background:var(--border-soft); border:1px solid var(--border-soft); border-radius:var(--r-sm); overflow:hidden; }
+.trh-item { display:grid; grid-template-columns:52px minmax(0,1fr) auto; gap:12px; align-items:center; background:var(--bg-card); padding:11px 14px; }
+.trh-nota { font-size:13px; font-weight:800; text-align:center; border-radius:7px; padding:5px 0; font-variant-numeric:tabular-nums; }
+.trh-txt { min-width:0; }
+.trh-cargo { font-size:12.5px; font-weight:600; color:var(--t1); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.trh-meta { font-size:11px; color:var(--t3); margin-top:2px; }
+.trh-quando { font-size:11px; color:var(--t3); white-space:nowrap; }
 .funil-period { display:flex; gap:3px; flex-shrink:0; }
 .funil-per-btn { font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:20px; border:1px solid var(--border); background:var(--bg-card); color:var(--t3); cursor:pointer; font-family:inherit; transition:all .15s; }
 .funil-per-btn:hover { color:var(--t1); border-color:var(--t3); }
@@ -1678,6 +1690,7 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .clh-lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--t3); }
 .cand-row { display:grid; grid-template-columns:44px minmax(0,1.5fr) 115px 100px minmax(120px,.9fr) 28px; gap:10px; align-items:center; padding:12px 18px; border-bottom:1px solid var(--border-soft); cursor:pointer; transition:background .12s; }
 .cand-row:last-child { border-bottom:none; }
+.cr-reanalises { display:inline-block; margin-left:7px; font-size:10px; font-weight:700; letter-spacing:.03em; color:var(--t3); background:var(--bg-sub); border:1px solid var(--border); border-radius:20px; padding:1px 7px; vertical-align:1px; white-space:nowrap; }
 .cand-row:hover { background:var(--bg-sub); }
 .cand-row.cr-selected { background:var(--s-grn-bg); }
 .cr-score { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0; }
@@ -2880,6 +2893,11 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           <div style="padding:36px;text-align:center;color:var(--t3);font-size:13px">Carregando…</div>
         </div>
       </div>
+
+      <!-- Treinos ja feitos. A lista acima e "onde treinar"; esta e "o que voce
+           ja treinou" — sem ela, a pessoa nao ve a propria evolucao e o treino
+           volta a parecer descartavel. -->
+      <div class="trh-box" id="treinoHistorico" style="display:none"></div>
     </div>
   </div>
 
@@ -3965,15 +3983,37 @@ function buildFunilCard(analyses, tracked) {
   var total = (window.VagaAICv && window.VagaAICv.contarVagasDistintas)
     ? window.VagaAICv.contarVagasDistintas(recentAnalyses)
     : recentAnalyses.length;
-  var candidaturas = recentTracked.filter(function(t){
+  /* Os tres estagios seguintes contam VAGAS distintas, nao linhas do rastreador.
+     Rastrear duas analises da mesma vaga (reanalisou depois de mexer no CV e
+     marcou as duas) fazia o funil somar 2 candidaturas para 1 vaga analisada —
+     conversao de 200%. A lista de Candidaturas ja agrupa por vaga desde a mesma
+     mudanca; aqui o funil passa a contar igual. A chave e a mesma de la e a do
+     painel: VagaAICv.chaveDaVaga sobre a analise ligada ao tracker. */
+  var chaveVagaFunil = (window.VagaAICv && window.VagaAICv.chaveDaVaga)
+    ? window.VagaAICv.chaveDaVaga : null;
+
+  function vagasDistintasDe(trackers) {
+    if (!chaveVagaFunil) return trackers.length;
+    var vistas = {};
+    trackers.forEach(function(t) {
+      var a = analyses.filter(function(x){ return x.id === t.analysis_id; })[0];
+      // Tracker sem analise (candidatura criada na mao) e uma vaga por si so.
+      vistas[a ? chaveVagaFunil(a) : 't:' + t.id] = true;
+    });
+    return Object.keys(vistas).length;
+  }
+
+  var candidaturas = vagasDistintasDe(recentTracked.filter(function(t){
     var ns = normalizeStatus(t.status);
     return ns && ns !== 'quero_aplicar' && ns !== 'analisada';
-  }).length;
-  var entrevistas = recentTracked.filter(function(t){
+  }));
+  var entrevistas = vagasDistintasDe(recentTracked.filter(function(t){
     var ns = normalizeStatus(t.status);
     return ns === 'entrevista' || ns === 'oferta';
-  }).length;
-  var ofertas = recentTracked.filter(function(t){ return normalizeStatus(t.status) === 'oferta'; }).length;
+  }));
+  var ofertas = vagasDistintasDe(recentTracked.filter(function(t){
+    return normalizeStatus(t.status) === 'oferta';
+  }));
   var maxN = Math.max(total, candidaturas, 1);
   var escuro = document.documentElement.getAttribute('data-theme') === 'dark';
 
@@ -4138,21 +4178,69 @@ function mergeApplications() {
   var trackedByAnalysis = {};
   tracked.forEach(function(t) { if (t.analysis_id) trackedByAnalysis[t.analysis_id] = t; });
 
+  /* Uma linha por VAGA, nao por analise. Reanalisar a mesma vaga depois de
+     trocar o curriculo criava duas linhas para a mesma oportunidade: a pessoa
+     podia marcar uma como enviada e deixar a outra em "analisada", e o funil
+     chegava a contar duas candidaturas para uma vaga so — conversao acima de
+     100%. Era tambem a ultima tela que ainda contava analise onde o painel
+     conta vaga.
+
+     Agrupa pela MESMA chave que o painel usa (VagaAICv.chaveDaVaga: url da
+     vaga, ou empresa+cargo, ou o id quando nao ha identificacao — sem
+     identificacao nunca agrupa, para nao juntar vagas diferentes). O historico
+     nao some: a linha guarda todas as analises do grupo e diz quantas foram. */
+  var chaveVaga = (window.VagaAICv && window.VagaAICv.chaveDaVaga)
+    ? window.VagaAICv.chaveDaVaga
+    : function(a) { return 'a:' + a.id; };
+
+  var grupos = {};
+  var ordemGrupos = [];
   analyses.forEach(function(a) {
-    var tj = trackedByAnalysis[a.id];
-    var r = a.result || {};
+    var k = chaveVaga(a);
+    if (!grupos[k]) { grupos[k] = { analises: [], trackers: [] }; ordemGrupos.push(k); }
+    grupos[k].analises.push(a);
+    var t = trackedByAnalysis[a.id];
+    if (t) grupos[k].trackers.push(t);
+  });
+
+  // Quanto o status avancou no funil — usado para escolher o tracker que manda
+  // quando a pessoa rastreou mais de uma analise da mesma vaga.
+  var AVANCO = { oferta:5, entrevista:4, em_processo:3, aplicada:2, cv_pronto:1, quero_aplicar:1, analisada:0, recusada:0, encerrada:0 };
+
+  ordemGrupos.forEach(function(k) {
+    var g = grupos[k];
+    // Mais recente primeiro: e a analise que reflete o curriculo atual.
+    var analises = g.analises.slice().sort(function(x, y) {
+      return new Date(y.created_at || 0) - new Date(x.created_at || 0);
+    });
+
+    /* O tracker que manda e o mais avancado do grupo. Se a pessoa marcou uma
+       analise como "aplicada" e reanalisou depois, a vaga esta aplicada — nao
+       volta para "analisada" so porque a analise mais nova nao tem tracker. */
+    var tj = g.trackers.slice().sort(function(x, y) {
+      return (AVANCO[normalizeStatus(y.status)] || 0) - (AVANCO[normalizeStatus(x.status)] || 0);
+    })[0] || null;
+
+    // A linha abre a analise que tem o tracker; sem tracker, a mais recente.
+    var principal = (tj && analises.filter(function(a){ return a.id === tj.analysis_id; })[0]) || analises[0];
+
+    var r = principal.result || {};
     var ji = r.job_info || {};
     var rawStatus = tj ? (tj.status || '') : '';
     var status = rawStatus ? normalizeStatus(rawStatus) : 'analisada';
-    var updatedAt = tj ? (tj.updated_at || tj.created_at || a.created_at) : a.created_at;
+    var updatedAt = tj ? (tj.updated_at || tj.created_at || principal.created_at) : principal.created_at;
     var daysSince = updatedAt ? Math.floor((Date.now() - new Date(updatedAt).getTime()) / 86400000) : 0;
+
     items.push({
-      id: a.id, trackerId: tj ? tj.id : null,
-      cargo: ji.cargo || (a.job_excerpt ? a.job_excerpt.slice(0,50) : 'Análise'),
+      id: principal.id, trackerId: tj ? tj.id : null,
+      cargo: ji.cargo || (principal.job_excerpt ? principal.job_excerpt.slice(0,50) : 'Análise'),
       empresa: ji.empresa || 'Empresa',
-      score: a.score || 0, status: status,
-      daysSince: Math.max(0, daysSince), updatedAt: updatedAt, createdAt: a.created_at,
-      hasTracker: !!tj, trackerData: tj || null, analysisData: a, result: r
+      // Score da analise mais recente: e o que vale depois de mexer no curriculo.
+      score: analises[0].score || 0, status: status,
+      daysSince: Math.max(0, daysSince), updatedAt: updatedAt, createdAt: principal.created_at,
+      hasTracker: !!tj, trackerData: tj || null, analysisData: principal, result: r,
+      // Historico preservado, so nao duplicado como linha propria.
+      analisesDaVaga: analises, vezesAnalisada: analises.length
     });
   });
 
@@ -4348,6 +4436,57 @@ function getInterviewItems() {
   });
 }
 
+/* ── Treinos já feitos ────────────────────────────────────────────────
+   As sessões passaram a ser gravadas (migração 026). Só concluídas entram:
+   quem abriu e abandonou não treinou, e listar abandono como treino inflaria
+   a própria evolução da pessoa. */
+var _treinoHist = null;
+
+async function loadTreinoHistorico() {
+  if (!currentSession || !currentUserId) return;
+  try {
+    var res = await fetch(
+      SUPABASE_URL + '/rest/v1/interview_sessions?user_id=eq.' + currentUserId +
+      '&finished_at=not.is.null&select=id,cargo,empresa,nota_media,respondidas,total,finished_at' +
+      '&order=finished_at.desc&limit=20',
+      { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token } }
+    );
+    _treinoHist = res.ok ? await res.json() : [];
+  } catch (e) { _treinoHist = []; }
+  renderTreinoHistorico();
+}
+
+function renderTreinoHistorico() {
+  var box = document.getElementById('treinoHistorico');
+  if (!box) return;
+  if (!Array.isArray(_treinoHist) || !_treinoHist.length) { box.style.display = 'none'; return; }
+
+  box.style.display = '';
+  box.innerHTML =
+    '<div class="trh-titulo">Treinos que você já fez</div>' +
+    '<div class="trh-sub">Nota média de cada simulação, da mais recente para a mais antiga.</div>' +
+    '<div class="trh-lista">' +
+    _treinoHist.map(function(t) {
+      var nota = t.nota_media == null ? null : Number(t.nota_media);
+      // Mesma escala de cor do resultado do simulador (0–5).
+      var cor = nota == null ? 'var(--t3)' : nota >= 4 ? 'var(--s-grn)' : nota >= 3 ? 'var(--s-amb)' : 'var(--s-red)';
+      var fundo = nota == null ? 'var(--bg-sub)' : nota >= 4 ? 'var(--s-grn-bg)' : nota >= 3 ? 'var(--s-amb-bg)' : 'var(--s-red-bg)';
+      var dias = Math.floor((Date.now() - new Date(t.finished_at).getTime()) / 86400000);
+      var quando = dias <= 0 ? 'hoje' : dias === 1 ? 'ontem' : dias < 30 ? 'há ' + dias + ' dias'
+        : new Date(t.finished_at).toLocaleDateString('pt-BR');
+      return '<div class="trh-item">' +
+        '<div class="trh-nota" style="background:' + fundo + ';color:' + cor + '">' + (nota == null ? '—' : nota.toFixed(1)) + '</div>' +
+        '<div class="trh-txt">' +
+          '<div class="trh-cargo">' + escHtml(t.cargo || 'Treino de entrevista') + '</div>' +
+          '<div class="trh-meta">' + (t.empresa ? escHtml(t.empresa) + ' · ' : '') +
+            t.respondidas + ' de ' + t.total + ' perguntas</div>' +
+        '</div>' +
+        '<div class="trh-quando">' + escHtml(quando) + '</div>' +
+      '</div>';
+    }).join('') +
+    '</div>';
+}
+
 function renderInterviewHub() {
   var body = document.getElementById('interviewListBody');
   if (!body) return;
@@ -4539,7 +4678,11 @@ function renderCandList(filtered, all) {
     var sel = _candSelectedId === item.id ? ' cr-selected' : '';
     return '<div class="cand-row'+sel+'" onclick="openCandDetail(\''+escAttr(item.id)+'\')">'+
       '<div class="cr-score" style="background:'+sbg+';color:'+sclr+'">'+escHtml(scoreStr)+'</div>'+
-      '<div class="cr-job"><div class="cr-cargo">'+escHtml(item.cargo)+'</div><div class="cr-empresa">'+escHtml(item.empresa)+'</div></div>'+
+      '<div class="cr-job"><div class="cr-cargo">'+escHtml(item.cargo)+'</div><div class="cr-empresa">'+escHtml(item.empresa)+
+        // A linha agrupa as analises da mesma vaga; sem dizer quantas foram, o
+        // agrupamento esconderia que a pessoa reanalisou depois de mexer no CV.
+        (item.vezesAnalisada > 1 ? '<span class="cr-reanalises" title="Esta vaga foi analisada '+item.vezesAnalisada+' vezes">'+item.vezesAnalisada+'× analisada</span>' : '')+
+      '</div></div>'+
       '<span class="cr-status-pill" style="background:'+stBg+';color:'+stClr+'">'+escHtml(stLbl)+'</span>'+
       '<div class="cr-updated">'+upd+'</div>'+
       '<div class="cr-next"><div class="cr-next-txt'+naClass+'">'+escHtml(na.text)+'</div><div class="cr-next-when">'+escHtml(na.when)+'</div></div>'+
@@ -6843,7 +6986,12 @@ function switchDashTab(tab, href) {
   if (bcSec) bcSec.textContent = labels[tab] || tab;
   if (bcSub) bcSub.textContent = subs[tab] || '';
   if (tab === 'plano') loadSubscriptionData();
-  if (tab === 'entrevistas') renderInterviewHub();
+  if (tab === 'entrevistas') {
+    renderInterviewHub();
+    // Uma vez por sessão: só muda quando a pessoa termina um treino, e isso
+    // acontece no iframe de /entrevista, não aqui.
+    if (_treinoHist === null) loadTreinoHistorico();
+  }
   if (tab === 'vagas') loadAnalyses();
   try { history.replaceState(null, '', '#' + tab); } catch(e) {}
 }

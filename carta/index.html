@@ -336,6 +336,10 @@ textarea::placeholder,input::placeholder{color:var(--muted)}
             Gerar carta de apresentação
           </button>
         </div>
+
+        <!-- Cartas ja escritas. Fica na coluna de entrada porque e alternativa
+             a gerar uma nova, nao complemento do resultado. -->
+        <div class="hist-box" id="histCartas" style="display:none"></div>
       </div>
 
       <!-- Result / info panel -->
@@ -402,11 +406,27 @@ textarea::placeholder,input::placeholder{color:var(--muted)}
 
 <div class="copied-toast" id="copiedToast">✓ Copiado para a área de transferência!</div>
 
+<style>
+/* Histórico de cartas. Lista sóbria de propósito: é caminho de reuso, não a
+   ação principal da tela — competir visualmente com "Gerar carta" empurraria
+   a pessoa a reabrir quando ela quer escrever uma nova. */
+.hist-box { margin-top:16px; border:1px solid var(--border,rgba(255,255,255,.09)); border-radius:10px; padding:15px 16px; background:var(--card,rgba(255,255,255,.02)); }
+.hist-titulo { font-size:13px; font-weight:700; margin-bottom:2px; }
+.hist-sub { font-size:11.5px; opacity:.6; margin-bottom:11px; line-height:1.45; }
+.hist-lista { display:flex; flex-direction:column; gap:6px; max-height:260px; overflow-y:auto; }
+.hist-item { display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:none; border:1px solid transparent; border-radius:8px; padding:8px 10px; cursor:pointer; font-family:inherit; color:inherit; transition:border-color .15s, background .15s; }
+.hist-item:hover { border-color:var(--green,#3ecf8e); background:rgba(62,207,142,.06); }
+.hist-item:focus-visible { outline:2px solid var(--green,#3ecf8e); outline-offset:2px; }
+.hist-item-txt { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.hist-item-cargo { font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.hist-item-meta { font-size:11px; opacity:.55; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.hist-item-abrir { font-size:11.5px; font-weight:700; color:var(--green,#3ecf8e); flex-shrink:0; }
+</style>
 <script>
-var sb = window.supabase.createClient(
-  'https://kbcjchjepgejdezeuwwh.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA'
-);
+// Extraidas para constante: o par url+chave aparecia colado em cada fetch.
+var _SUPA_URL_CARTA  = 'https://kbcjchjepgejdezeuwwh.supabase.co';
+var _SUPA_ANON_CARTA = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
+var sb = window.supabase.createClient(_SUPA_URL_CARTA, _SUPA_ANON_CARTA);
 var _session = null;
 var _tom = 'direto';
 var _cartaTexto = '';
@@ -441,6 +461,9 @@ async function getFreshToken() {
   // pessoa (computador compartilhado), apaga antes que a tela leia o
   // currículo ou a vaga de quem usou o aparelho antes.
   if (window.VagaAISessao) VagaAISessao.adotar(_session.user.id);
+
+  // Lista de cartas ja escritas — leitura pura, nao bloqueia a tela.
+  carregarHistoricoCartas();
 
   // Update sidebar user info
   try {
@@ -622,6 +645,81 @@ function _vagaColadaCargo(txt) {
 }
 function _vagaColadaEmpresa(txt) {
   try { return (extractJobPreview(txt || '', '').empresa || '').trim(); } catch (e) { return ''; }
+}
+
+/* ── Cartas já escritas ────────────────────────────────────────────────
+   As cartas passaram a ser gravadas (migração 026), mas gravar sem poder
+   reabrir não serve de nada: quem se candidata a 20 vagas precisa reaproveitar
+   o que ja escreveu em vez de gerar tudo de novo — e gerar de novo custa IA e
+   devolve texto diferente. Reabrir e leitura pura do banco: nenhuma chamada de
+   IA, nenhum credito consumido. */
+var _historicoCartas = [];
+
+async function carregarHistoricoCartas() {
+  var box = document.getElementById('histCartas');
+  if (!box || !_session) return;
+  try {
+    var res = await fetch(
+      _SUPA_URL_CARTA + '/rest/v1/cover_letters?select=id,cargo,empresa,assunto,carta,curta,mensagem,requisitos_citados,requisitos_total,created_at&order=created_at.desc&limit=30',
+      { headers: { apikey: _SUPA_ANON_CARTA, Authorization: 'Bearer ' + _session.access_token } }
+    );
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    _historicoCartas = await res.json();
+  } catch (e) {
+    _historicoCartas = [];
+  }
+  renderHistoricoCartas();
+}
+
+function renderHistoricoCartas() {
+  var box = document.getElementById('histCartas');
+  if (!box) return;
+  if (!_historicoCartas.length) { box.style.display = 'none'; return; }
+
+  box.style.display = '';
+  box.innerHTML =
+    '<div class="hist-titulo">Cartas que você já escreveu</div>' +
+    '<div class="hist-sub">Reabrir não gasta análise nem gera texto novo.</div>' +
+    '<div class="hist-lista">' +
+    _historicoCartas.map(function (c, i) {
+      var quando = _histQuando(c.created_at);
+      var nome = (c.cargo || '').trim() || (c.assunto || '').trim() || 'Carta sem título';
+      var onde = (c.empresa || '').trim();
+      return '<button class="hist-item" onclick="reabrirCarta(' + i + ')">' +
+        '<span class="hist-item-txt">' +
+          '<span class="hist-item-cargo">' + esc(nome) + '</span>' +
+          '<span class="hist-item-meta">' + (onde ? esc(onde) + ' · ' : '') + esc(quando) + '</span>' +
+        '</span>' +
+        '<span class="hist-item-abrir">Reabrir</span>' +
+      '</button>';
+    }).join('') +
+    '</div>';
+}
+
+function _histQuando(iso) {
+  if (!iso) return '';
+  var dias = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (dias <= 0) return 'hoje';
+  if (dias === 1) return 'ontem';
+  if (dias < 30) return 'há ' + dias + ' dias';
+  return new Date(iso).toLocaleDateString('pt-BR');
+}
+
+function reabrirCarta(i) {
+  var c = _historicoCartas[i];
+  if (!c) return;
+  // A tela espera o mesmo formato que a API devolve.
+  mostrarCarta({
+    carta: c.carta || '',
+    curta: c.curta || '',
+    mensagem: c.mensagem || '',
+    assunto: c.assunto || '',
+    requisitos_citados: c.requisitos_citados || [],
+    requisitos_total: c.requisitos_total || 0,
+    palavras: (c.carta || '').split(/\s+/).filter(Boolean).length,
+    destaques: null
+  });
+  document.getElementById('rdCartaWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function extractJobPreview(text, url) {
@@ -919,6 +1017,32 @@ async function generate() {
     }
     if (!res.ok || data.error) throw new Error(data.message || data.error || 'Erro ao gerar');
 
+    mostrarCarta(data);
+
+    // Distingue a carta que usou a analise da que foi escrita de texto cru —
+    // e o que permite medir se a integracao com a analise vale a pena.
+    if (window.vagaaiTrack) vagaaiTrack('carta_gerada', {
+      tom: _tom,
+      usou_analise: !!data.usou_analise,
+      com_motivacao: !!(document.getElementById('porqueInput').value || '').trim(),
+      palavras: data.palavras || 0
+    });
+    carregarHistoricoCartas();
+
+  } catch(e) {
+    errEl.textContent = e.message || 'Erro inesperado. Tente novamente.';
+    errEl.classList.add('show');
+    setStep(1);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Gerar carta de apresentação';
+  }
+}
+
+/* Pinta a carta na tela. Mesma funcao para a recem-gerada e para uma reaberta
+   do historico: se fossem dois caminhos, a carta salva apareceria diferente da
+   original e a pessoa nao confiaria no que guardou. */
+function mostrarCarta(data) {
     _cartaTexto = data.carta || '';
     _cartaAssunto = data.assunto || '';
 
@@ -959,26 +1083,9 @@ async function generate() {
         + data.destaques.map(function(d){ return '<span class="highlight-tag">✓ ' + esc(d) + '</span>'; }).join('');
     }
 
-    // Distingue a carta que usou a analise da que foi escrita de texto cru —
-    // e o que permite medir se a integracao com a analise vale a pena.
-    if (window.vagaaiTrack) vagaaiTrack('carta_gerada', {
-      tom: _tom,
-      usou_analise: !!data.usou_analise,
-      com_motivacao: !!(document.getElementById('porqueInput').value || '').trim(),
-      palavras: data.palavras || 0
-    });
     document.getElementById('rdChecklist').style.display = 'none';
     document.getElementById('rdCartaWrap').classList.add('show');
     setStep(3);
-
-  } catch(e) {
-    errEl.textContent = e.message || 'Erro inesperado. Tente novamente.';
-    errEl.classList.add('show');
-    setStep(1);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Gerar carta de apresentação';
-  }
 }
 
 var FMT_DICA = {
