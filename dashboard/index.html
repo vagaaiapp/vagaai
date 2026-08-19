@@ -1515,7 +1515,10 @@ body.frame-fullscreen .sidebar { display: none !important; }
   .opp-chips::-webkit-scrollbar { display:none; }
   .opp-chip { flex:0 0 auto; font-size:12px; padding:6px 12px; }
   .opp-item {
-    grid-template-columns:46px minmax(0,1fr) 88px 18px;
+    /* Mesmo defeito da regra base: coluna fixa menor que o pill de status
+       mais longo, que tem nowrap. `auto` mede o conteúdo; o cargo fica com o
+       resto e já quebra em duas linhas nesta faixa. */
+    grid-template-columns:46px minmax(0,1fr) auto 18px;
     gap:8px 10px;
     padding:15px 16px;
     align-items:start;
