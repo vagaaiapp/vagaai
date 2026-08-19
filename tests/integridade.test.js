@@ -741,3 +741,60 @@ describe('Carta de apresentação usa a análise', () => {
     assert.match(api(), /result\.requisitos_total = atende\.length/);
   });
 });
+
+describe('Eventos de produto', () => {
+  function helper() {
+    const enviados = [];
+    const sandbox = { window: { gtag: (t, n, p) => enviados.push({ n, p }) } };
+    sandbox.window.parent = sandbox.window;
+    vm.runInNewContext(read('js/eventos.js'), sandbox);
+    return { track: sandbox.window.vagaaiTrack, enviados };
+  }
+
+  it('nunca deixa dado pessoal sair nos parâmetros', () => {
+    // LGPD: o Consent Mode já barra o envio sem aceite, mas o parâmetro não
+    // pode carregar nome, e-mail ou texto de currículo em hipótese nenhuma.
+    const { track, enviados } = helper();
+    track('carta_gerada', {
+      tom: 'direto', nome: 'João Victor', email: 'a@b.com',
+      cv: 'texto do currículo', curriculo: 'idem', telefone: '11999999999'
+    });
+    // Object.assign traz do realm do vm para o do teste antes de comparar.
+    assert.deepEqual(Object.assign({}, enviados[0].p), { tom: 'direto' });
+  });
+
+  it('descarta objeto e trunca string longa', () => {
+    const { track, enviados } = helper();
+    track('x', { obj: { a: 1 }, longa: 'y'.repeat(300), num: 7 });
+    assert.equal(enviados[0].p.obj, undefined);
+    assert.equal(enviados[0].p.longa.length, 80);
+    assert.equal(enviados[0].p.num, 7);
+  });
+
+  it('não quebra quando não há gtag na página', () => {
+    const sandbox = { window: {} };
+    sandbox.window.parent = sandbox.window;
+    vm.runInNewContext(read('js/eventos.js'), sandbox);
+    assert.doesNotThrow(() => sandbox.window.vagaaiTrack('qualquer', { a: 1 }));
+  });
+
+  it('os passos do funil que faltavam agora disparam', () => {
+    const esperado = {
+      'curriculo_salvo': ['curriculo/index.html', 'app/index.html'],
+      'carta_gerada': ['carta/index.html'],
+      'alerta_configurado': ['dashboard/index.html'],
+      'checkout_iniciado': ['dashboard/index.html', 'index.template.html'],
+    };
+    for (const [evento, arquivos] of Object.entries(esperado)) {
+      for (const arq of arquivos) {
+        assert.ok(read(arq).includes(`'${evento}'`), `${arq} não dispara ${evento}`);
+      }
+    }
+  });
+
+  it('as páginas que disparam eventos carregam o helper', () => {
+    for (const p of ['dashboard/index.html', 'carta/index.html', 'curriculo/index.html']) {
+      assert.match(read(p), /src="\/js\/eventos\.js"/, `${p} sem o helper`);
+    }
+  });
+});

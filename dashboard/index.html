@@ -19,6 +19,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/onboarding/shared.js"></script>
 <script src="/js/cv-completude.js"></script>
+<script src="/js/eventos.js"></script>
 <script src="/js/cv-lacunas.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -6102,6 +6103,7 @@ function _alRenderModalTags() {
 }
 
 async function saveAlertProfile() {
+  var existiaAlerta = !!_alertProfile;
   var cargoEl = document.getElementById('alMCargo');
   var cargo   = cargoEl ? cargoEl.value.trim() : '';
   if (!cargo) { showToast('Informe o cargo ou área desejada.', 'error'); if(cargoEl) cargoEl.focus(); return; }
@@ -6169,6 +6171,14 @@ async function saveAlertProfile() {
     // Update local state
     _alertProfile = Object.assign(_alertProfile || {}, body);
     _alertKeywords = _alMKw;
+    // Sem isso nao da para saber quantos chegam a configurar o alerta, que e o
+    // recurso mais usado da plataforma. `existia` e lido ANTES do upsert, la em
+    // cima: depois dele _alertProfile ja esta preenchido e a distincao entre
+    // primeiro alerta e edicao se perde.
+    if (window.vagaaiTrack) vagaaiTrack('alerta_configurado', {
+      frequencia: (_alertProfile && _alertProfile.frequencia) || 'semanal',
+      primeira_vez: !existiaAlerta
+    });
     closeAlertModal();
     showToast('Alerta salvo com sucesso!');
     _alLive('Alerta salvo com sucesso.');
@@ -6520,6 +6530,13 @@ function openRequestedDashboardTab() {
 
 /* ── Stripe helpers ─────────────────────────────────────────────── */
 function openAuthCheckout(baseUrl) {
+  // A landing page ja registrava checkout_iniciado; o upgrade de dentro do
+  // produto nao registrava nada — o caminho mais provavel de conversao era
+  // justamente o invisivel.
+  if (window.vagaaiTrack) vagaaiTrack('checkout_iniciado', {
+    origem: 'app',
+    plano_atual: (window._subscriptionData && window._subscriptionData.plan) || 'free'
+  });
   // Já assinante: payment links não impedem 2ª assinatura paralela (dupla
   // cobrança). Quem tem plano pago gerencia upgrade/downgrade pelo Portal.
   var _sub = window._subscriptionData;

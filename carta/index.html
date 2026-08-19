@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/cv-base.js"></script>
+<script src="/js/eventos.js"></script>
 <script defer src="/_vercel/insights/script.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -908,6 +909,14 @@ async function generate() {
         + data.destaques.map(function(d){ return '<span class="highlight-tag">✓ ' + esc(d) + '</span>'; }).join('');
     }
 
+    // Distingue a carta que usou a analise da que foi escrita de texto cru —
+    // e o que permite medir se a integracao com a analise vale a pena.
+    if (window.vagaaiTrack) vagaaiTrack('carta_gerada', {
+      tom: _tom,
+      usou_analise: !!data.usou_analise,
+      com_motivacao: !!(document.getElementById('porqueInput').value || '').trim(),
+      palavras: data.palavras || 0
+    });
     document.getElementById('rdChecklist').style.display = 'none';
     document.getElementById('rdCartaWrap').classList.add('show');
     setStep(3);

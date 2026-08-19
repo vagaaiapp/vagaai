@@ -12,6 +12,7 @@
 <script src="/onboarding/shared.js"></script>
 <script src="/js/cv-voice.js"></script>
 <script src="/js/cv-completude.js"></script>
+<script src="/js/eventos.js"></script>
 <script src="/js/cv-lacunas.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -310,6 +311,9 @@ async function saveProfile() {
     _cv = r.data;
     _dirty = false;
     try { localStorage.setItem(BASE_KEY, JSON.stringify(_cvData)); localStorage.removeItem(DRAFT_KEY); localStorage.removeItem(DRAFT_AT_KEY); } catch(e) {}
+    // Passo do funil que nao aparecia em lugar nenhum. So a completude,
+    // nunca o conteudo do curriculo.
+    if (window.vagaaiTrack) vagaaiTrack('curriculo_salvo', { origem: 'hub', completude: completude(_cvData) });
     toast('✓ Currículo salvo');
     updateSaveUI();
     loadGapPanel();

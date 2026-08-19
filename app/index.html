@@ -1407,6 +1407,7 @@ async function saveCvToProfileIfFirst(cvText) {
     if (r && r.data) {
       _myCv = r.data;
       try { localStorage.setItem('vagaai_cv_base', JSON.stringify(r.data.cv_data)); } catch(e) {}
+      track('curriculo_salvo', { origem: 'primeira_analise', estruturado: !!structured });
       var tab = document.getElementById('tabSalvoCV');
       if (tab) tab.style.display = '';
       appToast('✓ Currículo salvo no seu perfil — nas próximas análises é só usar "Meu currículo"', 'success');
