@@ -1824,7 +1824,12 @@ function escEmail(s) {
 
 // Salva as vagas do último envio no cache (dashboard lê daqui, sem nova busca às APIs).
 // On-demand: mescla com o cache existente para não apagar vagas de envios anteriores.
-async function upsertAlertCache(userId, jobs, { isDemand = false } = {}) {
+/* Uma linha por alerta (PK user_id + alert_id, migração 025). Antes era uma
+   por usuário: com dois alertas da mesma conta no mesmo lote paralelo de 5, os
+   dois faziam ler-mesclar-gravar na mesma linha e um sobrescrevia a mesclagem
+   do outro. Separado por alerta, cada um tem sua própria lista — e o painel
+   consegue dizer de qual alerta veio cada vaga. */
+async function upsertAlertCache(userId, alertId, jobs, { isDemand = false } = {}) {
   const nowIso = new Date().toISOString();
   const normalize = j => ({
     title: j.title, company: j.company || j.employer || j.companyName || '',
@@ -1844,7 +1849,7 @@ async function upsertAlertCache(userId, jobs, { isDemand = false } = {}) {
   // mesclam com o cache existente, em vez de apagar a lista a cada envio.
   try {
     const existing = await fetch(
-      `${SUPABASE_URL}/rest/v1/job_alert_cache?user_id=eq.${userId}&select=jobs`,
+      `${SUPABASE_URL}/rest/v1/job_alert_cache?user_id=eq.${userId}&alert_id=eq.${alertId}&select=jobs`,
       { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
     );
     if (existing.ok) {
@@ -1884,6 +1889,7 @@ async function upsertAlertCache(userId, jobs, { isDemand = false } = {}) {
 
   const row = {
     user_id: userId,
+    alert_id: alertId,
     jobs: JSON.stringify(mergedJobs),
     cached_at: nowIso,
     source: isDemand ? 'demand' : 'cron',
@@ -2001,6 +2007,11 @@ Para cada vaga dê um score de 0 a 100 de compatibilidade, pesando aderência de
 // options.isDemand=true → on-demand real (dedup, mark sent, atualiza next_run, salva cache)
 // options.deadline=ms → guarda de tempo p/ pular a IA e não estourar o maxDuration
 async function processUserAlert(profile, options = {}) {
+  /* Os carimbos de execução (last_run_at, next_run_at, ultimo_envio) são
+     gravados por `id=eq.${profile.id}`, nunca por user_id. Enquanto havia um
+     perfil por conta os dois filtros eram equivalentes; com a migração 025 uma
+     conta tem vários, e filtrar por usuário empurraria o next_run_at de TODOS
+     os alertas a cada envio — os outros nunca chegariam a enviar. */
   const isTest = options.skipSideEffects === true;
   const isDemand = options.isDemand === true;
   const userId = profile.user_id;
@@ -2146,7 +2157,7 @@ async function processUserAlert(profile, options = {}) {
     if (!isTest) {
       const now = new Date();
       const nextRun = calculateNextRun(effectiveProfile, now);
-      await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?user_id=eq.${userId}`, {
+      await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?id=eq.${profile.id}`, {
         method: 'PATCH',
         headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
         body: JSON.stringify({
@@ -2185,7 +2196,7 @@ async function processUserAlert(profile, options = {}) {
     if (!isTest) {
       const now = new Date();
       const nextRun = calculateNextRun(effectiveProfile, now);
-      await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?user_id=eq.${userId}`, {
+      await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?id=eq.${profile.id}`, {
         method: 'PATCH',
         headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
         body: JSON.stringify({ last_run_at: now.toISOString(), next_run_at: nextRun ? nextRun.toISOString() : null }),
@@ -2289,7 +2300,7 @@ async function processUserAlert(profile, options = {}) {
     const now = new Date();
     const nextRun = calculateNextRun(effectiveProfile, now);
     await markJobsSent(userId, jobs);
-    await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?user_id=eq.${userId}`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?id=eq.${profile.id}`, {
       method: 'PATCH',
       headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
       body: JSON.stringify({
@@ -2302,10 +2313,10 @@ async function processUserAlert(profile, options = {}) {
     fetch(`${SUPABASE_URL}/rest/v1/job_alert_history`, {
       method: 'POST',
       headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ user_id: userId, sent_at: now.toISOString(), jobs_count: jobs.length, status: 'sent', diagnostics: { sourceCounts, rawCount, dedupCount, newCount, strictCount, relaxedCount, aiRescored: jobs.some(j => j._ai_scored) || false } }),
+      body: JSON.stringify({ user_id: userId, alert_id: profile.id, sent_at: now.toISOString(), jobs_count: jobs.length, status: 'sent', diagnostics: { sourceCounts, rawCount, dedupCount, newCount, strictCount, relaxedCount, aiRescored: jobs.some(j => j._ai_scored) || false } }),
     }).catch(e => console.warn('job_alert_history insert failed:', e.message));
     // Atualiza cache do dashboard
-    await upsertAlertCache(userId, jobs, { isDemand });
+    await upsertAlertCache(userId, profile.id, jobs, { isDemand });
   }
 
   return {
@@ -2445,8 +2456,17 @@ export default async function handler(req, res) {
     let profiles;
 
     if ((isTest || isDemand) && manualUserId) {
-      // Modo manual: só para o usuário autenticado (já validado acima)
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?user_id=eq.${manualUserId}&select=*`, {
+      // Modo manual: só para o usuário autenticado (já validado acima).
+      // Com vários alertas por conta (migração 025), `alert_id` escolhe um;
+      // sem ele, roda todos os ativos — é o "buscar agora" do topo da página.
+      // O filtro por id vem junto com o de user_id de propósito: o id sozinho
+      // bastaria para achar a linha, mas exigir os dois garante que um id de
+      // outra conta não seja processado nem que o token seja do dono.
+      const alertId = typeof req.query.alert_id === 'string' ? req.query.alert_id.trim() : '';
+      const filtro = alertId
+        ? `user_id=eq.${manualUserId}&id=eq.${encodeURIComponent(alertId)}`
+        : `user_id=eq.${manualUserId}&ativo=eq.true`;
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/job_alert_profiles?${filtro}&select=*`, {
         headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` }
       });
       profiles = await r.json();

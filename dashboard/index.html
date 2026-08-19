@@ -2036,6 +2036,17 @@ body.cd-modal-open { overflow:hidden; }
 .al-lock-hint { display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--gb-emerald); background:var(--s-grn-bg); border:1px solid var(--gb-emerald); border-radius:6px; padding:0 6px; margin-left:6px; vertical-align:middle; line-height:1.5; }
 .al-locked { opacity:.5; pointer-events:none; }
 .al-help { font-size:12px; color:var(--t3); margin-top:10px; line-height:1.55; }
+.al-switch { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+.al-sw-chip { display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:600; color:var(--t2); background:var(--bg-card); border:1px solid var(--border); border-radius:20px; padding:6px 13px; cursor:pointer; font-family:inherit; transition:border-color .15s, color .15s; max-width:230px; }
+.al-sw-chip:hover { border-color:var(--gb-emerald); color:var(--t1); }
+.al-sw-chip.on { border-color:var(--gb-emerald); color:var(--t1); background:var(--s-grn-bg); font-weight:700; }
+.al-sw-chip span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.al-sw-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; background:var(--gb-emerald); }
+.al-sw-chip.off .al-sw-dot { background:var(--t3); }
+.al-sw-add { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--gb-emerald); background:none; border:1px dashed var(--border); border-radius:20px; padding:6px 13px; cursor:pointer; font-family:inherit; }
+.al-sw-add:hover { border-color:var(--gb-emerald); }
+.al-sw-add[disabled] { color:var(--t3); cursor:default; border-style:solid; }
+[data-theme="dark"] .al-sw-add:not([disabled]) { color:var(--gb-bright); }
 .al-usage { font-size:12px; font-weight:700; color:var(--t2); background:var(--bg-sub); border:1px solid var(--border); border-radius:20px; padding:5px 13px; white-space:nowrap; }
 .al-modal-body input:disabled, .al-modal-body select:disabled { opacity:.5; cursor:not-allowed; background:var(--bg-sub); }
 .al-conflict-warn { font-size:11px; color:var(--s-amb); background:var(--s-amb-bg); border:1px solid #f1dfb9; border-radius:7px; padding:8px 11px; display:none; }
@@ -2898,6 +2909,11 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           </button>
         </div>
       </div>
+
+      <!-- Faixa de selecao: uma conta pode ter varios alertas (migracao 025).
+           Trocar de chip so muda o alerta em foco; a pagina inteira abaixo
+           continua sendo a visao daquele alerta. -->
+      <div class="al-switch" id="alSwitch" style="display:none"></div>
 
       <!-- Command center -->
       <div class="al-command-center">
@@ -5135,7 +5151,14 @@ async function deleteTracker(id) {
 }
 
 /* ── Alert state ─────────────────────────────────────────────── */
-var _alertProfile   = null;   // from Supabase
+/* A conta agora tem varios alertas (migracao 025). _alertProfiles e a lista;
+   _alertProfile continua sendo "o alerta em foco" — e o que todo o resto da
+   pagina ja le, entao trocar de alerta e trocar esse ponteiro e re-renderizar,
+   sem reescrever as telas de status, qualidade, metricas e previa de e-mail. */
+var _alertProfiles  = [];     // todos os alertas da conta
+var _alertSelId     = null;   // id do alerta em foco
+var _alModoNovo     = false;  // modal aberto para criar, nao para editar
+var _alertProfile   = null;   // o alerta em foco (from Supabase)
 var _alertExtended  = {};     // from localStorage (extended prefs)
 var _alertHistory   = [];     // job_alert_history (envios reais) — alimenta métricas
 var _alertCache     = null;   // job_alert_cache — histórico de oportunidades exibidas no dashboard
@@ -5205,25 +5228,10 @@ async function loadAlerts() {
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     var rows = await res.json();
-    _alertProfile = (Array.isArray(rows) && rows[0]) ? rows[0] : null;
-    if (_alertProfile) {
-      // Populate _alertExtended from Supabase columns (authoritative); fall back to localStorage for missing fields
-      var p = _alertProfile;
-      if (p.contrato_tipos !== undefined)   _alertExtended.contrato_tipos  = p.contrato_tipos  || _alertExtended.contrato_tipos  || [];
-      if (p.formato !== undefined)          _alertExtended.formato         = p.formato          || _alertExtended.formato          || '';
-      if (p.empresas_interesse !== undefined) _alertExtended.empresas      = p.empresas_interesse || _alertExtended.empresas      || [];
-      if (p.setores_preferidos !== undefined) _alertExtended.setores       = p.setores_preferidos || _alertExtended.setores       || [];
-      if (p.filtros_negativos !== undefined) {
-        try {
-          var fn = typeof p.filtros_negativos === 'string' ? JSON.parse(p.filtros_negativos) : (p.filtros_negativos || {});
-          if (fn.filtros_neg !== undefined)   _alertExtended.filtros_neg     = fn.filtros_neg    || _alertExtended.filtros_neg    || [];
-          if (fn.neg_palavras !== undefined)  _alertExtended.neg_palavras    = fn.neg_palavras   || _alertExtended.neg_palavras   || [];
-        } catch(e) { /* campo corrompido no banco — ignora, usa localStorage ou vazio */ }
-      }
-      if (p.dia_envio !== undefined && p.dia_envio !== null) _alertExtended.dia_envio       = p.dia_envio;
-      if (p.horario_envio !== undefined && p.horario_envio !== null) _alertExtended.horario_envio = p.horario_envio;
-    }
+    _alertProfiles = Array.isArray(rows) ? rows.slice().sort(_alOrdem) : [];
+    _alFocar(_alertSelId, { render: false });
   } catch(e) {
+    _alertProfiles = [];
     _alertProfile = null;
     showToast('Não foi possível carregar seus alertas. Tente novamente.', 'error');
   }
@@ -5236,14 +5244,10 @@ async function loadAlerts() {
   } catch(e) { _alertHistory = []; }
   // Histórico/cache de vagas encontradas (alimenta a grade do dashboard)
   try {
-    var cres = await fetch(SUPABASE_URL + '/rest/v1/job_alert_cache?user_id=eq.' + currentUserId + '&select=jobs,cached_at,last_manual_at,source', {
+    var cres = await fetch(SUPABASE_URL + '/rest/v1/job_alert_cache?user_id=eq.' + currentUserId + '&select=alert_id,jobs,cached_at,last_manual_at,source', {
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token }
     });
-    var cdata = cres.ok ? (await cres.json()) : [];
-    _alertCache = cdata[0] || null;
-    if (_alertCache && typeof _alertCache.jobs === 'string') {
-      try { _alertCache.jobs = JSON.parse(_alertCache.jobs); } catch(e) { _alertCache.jobs = []; }
-    }
+    _alertCache = _alMesclarCaches(cres.ok ? (await cres.json()) : []);
   } catch(e) { _alertCache = null; }
   renderAlertPage();
   // Pilhas de estado e faixa de ferramentas dependem de _alertProfile, que
@@ -5265,7 +5269,8 @@ function renderAlertUsage() {
   if (!el) return;
   var ent = _alEnt();
   var max = ent.max_active_alerts; // null = ilimitado
-  var active = (_alertProfile && _alertProfile.ativo) ? 1 : 0;
+  // Contava 0 ou 1 porque so existia um perfil por conta.
+  var active = _alertProfiles.filter(function(p){ return p.ativo; }).length;
   var maxLabel = (max == null) ? '∞' : String(max);
   var unit = (max === 1) ? 'alerta ativo' : 'alertas ativos';
   el.textContent = active + ' de ' + maxLabel + ' ' + unit;
@@ -5280,12 +5285,42 @@ function renderAlertUsage() {
     var podeCriarOutro = (max == null) || active < max;
     btnLbl.textContent = jaTem ? (podeCriarOutro ? 'Criar novo alerta' : 'Editar alerta') : 'Criar alerta';
     btn.setAttribute('aria-label', btnLbl.textContent);
+    // Com vaga no plano, o botao do topo cria de fato; sem vaga, edita o atual.
+    btn.onclick = function(){ openAlertEditModal(jaTem && podeCriarOutro ? 'novo' : undefined); };
   }
+}
+
+/* A faixa so aparece quando ha o que escolher OU quando cabe mais de um: com
+   um alerta so e teto 1 (plano gratuito) ela seria enfeite. */
+function renderAlertSwitch() {
+  var el = document.getElementById('alSwitch');
+  if (!el) return;
+  var max = _alEnt().max_active_alerts;
+  var cabeMais = (max == null) || _alertProfiles.filter(function(p){ return p.ativo; }).length < max;
+
+  if (_alertProfiles.length < 2 && !(cabeMais && _alertProfiles.length === 1)) {
+    el.style.display = 'none'; el.innerHTML = ''; return;
+  }
+
+  var chips = _alertProfiles.map(function(p) {
+    return '<button class="al-sw-chip' + (p.id === _alertSelId ? ' on' : '') + (p.ativo ? '' : ' off') +
+      '" onclick="selecionarAlerta(\'' + escAttr(p.id) + '\')"' +
+      ' aria-pressed="' + (p.id === _alertSelId ? 'true' : 'false') + '">' +
+      '<span class="al-sw-dot"></span><span>' + escHtml(_alNomeDe(p)) + '</span></button>';
+  });
+
+  chips.push('<button class="al-sw-add" onclick="openAlertEditModal(\'novo\')"' +
+    (cabeMais ? '' : ' disabled title="Seu plano ja esta no limite de alertas ativos"') +
+    '>+ Novo alerta</button>');
+
+  el.innerHTML = chips.join('');
+  el.style.display = '';
 }
 
 function renderAlertPage() {
   var p = _alertProfile;
   var ext = _alertExtended;
+  renderAlertSwitch();
   renderAlertUsage();
   renderAlertStatus(p);
   renderAlertNextSend(p, ext);
@@ -6024,7 +6059,83 @@ async function _saveJobFromCache(job) {
   } catch(e) { showToast('Erro ao salvar vaga.', 'error'); }
 }
 
-/* ── Toggle active / Delete ─────────────────────────────────────── */
+/* -- Varios alertas por conta --------------------------------------------
+   O alerta em foco alimenta toda a pagina; a faixa de selecao so troca o
+   ponteiro. Ordem estavel (ativos primeiro, depois por criacao) para a lista
+   nao dancar a cada render. */
+function _alOrdem(a, b) {
+  var av = (a.ativo ? 0 : 1), bv = (b.ativo ? 0 : 1);
+  if (av !== bv) return av - bv;
+  return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+}
+
+function _alNomeDe(p) {
+  if (!p) return 'Alerta';
+  return (p.nome && p.nome.trim())
+    || (p.cargo_desejado && p.cargo_desejado.trim())
+    || 'Alerta sem nome';
+}
+
+/* Hidrata _alertExtended a partir das colunas do alerta em foco. O banco e a
+   fonte autoritativa; o localStorage so cobre campo ausente. */
+function _alAplicarExtended(p) {
+  if (!p) return;
+  if (p.contrato_tipos !== undefined)     _alertExtended.contrato_tipos = p.contrato_tipos || _alertExtended.contrato_tipos || [];
+  if (p.formato !== undefined)            _alertExtended.formato        = p.formato        || _alertExtended.formato        || '';
+  if (p.empresas_interesse !== undefined) _alertExtended.empresas       = p.empresas_interesse || _alertExtended.empresas   || [];
+  if (p.setores_preferidos !== undefined) _alertExtended.setores        = p.setores_preferidos || _alertExtended.setores    || [];
+  if (p.filtros_negativos !== undefined) {
+    try {
+      var fn = typeof p.filtros_negativos === 'string' ? JSON.parse(p.filtros_negativos) : (p.filtros_negativos || {});
+      if (fn.filtros_neg !== undefined)  _alertExtended.filtros_neg  = fn.filtros_neg  || _alertExtended.filtros_neg  || [];
+      if (fn.neg_palavras !== undefined) _alertExtended.neg_palavras = fn.neg_palavras || _alertExtended.neg_palavras || [];
+    } catch(e) { /* campo corrompido no banco — ignora, usa localStorage ou vazio */ }
+  }
+  if (p.dia_envio !== undefined && p.dia_envio !== null)         _alertExtended.dia_envio     = p.dia_envio;
+  if (p.horario_envio !== undefined && p.horario_envio !== null) _alertExtended.horario_envio = p.horario_envio;
+}
+
+function _alFocar(id, opts) {
+  var o = opts || {};
+  _alertProfile = _alertProfiles.filter(function(p){ return p.id === id; })[0] || _alertProfiles[0] || null;
+  _alertSelId = _alertProfile ? _alertProfile.id : null;
+  _alAplicarExtended(_alertProfile);
+  if (o.render !== false) renderAlertPage();
+}
+
+function selecionarAlerta(id) { _alFocar(id); }
+
+/* A grade mostra as vagas de TODOS os alertas, cada uma marcada com a origem —
+   quem tem "Vendedora SP" e "Atendente SP" precisa saber qual trouxe o que.
+   Mesma vaga achada por dois alertas aparece uma vez, com a mais recente. */
+function _alMesclarCaches(linhas) {
+  if (!Array.isArray(linhas) || !linhas.length) return null;
+  var nomePorId = {};
+  _alertProfiles.forEach(function(p){ nomePorId[p.id] = _alNomeDe(p); });
+
+  var mapa = {}, cachedAt = null, lastManual = null, source = null;
+  linhas.forEach(function(linha) {
+    var jobs = linha.jobs;
+    if (typeof jobs === 'string') { try { jobs = JSON.parse(jobs); } catch(e) { jobs = []; } }
+    if (!Array.isArray(jobs)) jobs = [];
+    var rotulo = nomePorId[linha.alert_id] || 'Alerta';
+    jobs.forEach(function(j) {
+      var chave = j.url || j.link || ((j.title || '') + '|' + (j.company || ''));
+      var atual = mapa[chave];
+      var marcado = Object.assign({}, j, { _alerta: rotulo, _alerta_id: linha.alert_id });
+      if (!atual || new Date(marcado.last_seen_at || 0) > new Date(atual.last_seen_at || 0)) mapa[chave] = marcado;
+    });
+    if (!cachedAt   || new Date(linha.cached_at || 0)      > new Date(cachedAt))   cachedAt   = linha.cached_at;
+    if (!lastManual || new Date(linha.last_manual_at || 0) > new Date(lastManual)) lastManual = linha.last_manual_at;
+    source = linha.source || source;
+  });
+
+  var todas = Object.keys(mapa).map(function(k){ return mapa[k]; })
+    .sort(function(a,b){ return new Date(b.last_seen_at || 0) - new Date(a.last_seen_at || 0); });
+  return { jobs: todas, cached_at: cachedAt, last_manual_at: lastManual, source: source };
+}
+
+/* -- Toggle active / Delete ------------------------------------- */
 async function toggleAlertActive() {
   if (!_alertProfile) return;
   var newVal = !_alertProfile.ativo;
@@ -6035,12 +6146,20 @@ async function toggleAlertActive() {
       var nextRun = calculateNextAlertRun(Object.assign({}, _alertProfile, { ativo: true }), _alertExtended);
       if (nextRun) patch.next_run_at = nextRun.toISOString();
     }
-    var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?user_id=eq.' + currentUserId, {
+    // Por id, nao por user_id: filtrar por usuario pausaria TODOS os alertas.
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?id=eq.' + encodeURIComponent(_alertProfile.id), {
       method: 'PATCH',
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
       body: JSON.stringify(patch)
     });
-    if (!res.ok) { showToast('Erro ao atualizar alerta.', 'error'); return; }
+    if (!res.ok) {
+      // O trigger trg_max_active_alerts barra reativacao acima do teto do plano.
+      var txt = await res.text().catch(function(){ return ''; });
+      showToast(/limite_alertas/.test(txt)
+        ? 'Seu plano ja esta no limite de alertas ativos. Pause outro antes de reativar este.'
+        : 'Erro ao atualizar alerta.', 'error');
+      return;
+    }
     _alertProfile.ativo = newVal;
     if (patch.next_run_at) _alertProfile.next_run_at = patch.next_run_at;
     showToast(newVal ? 'Alerta reativado!' : 'Alerta pausado.');
@@ -6054,25 +6173,40 @@ function confirmDeleteAlert() {
 }
 
 async function deleteAlertProfile() {
+  if (!_alertProfile || !_alertProfile.id) return;
+  var alvo = _alertProfile.id;
   try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?user_id=eq.' + currentUserId, {
+    // Por id: por user_id apagaria todos os alertas da conta de uma vez.
+    var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?id=eq.' + encodeURIComponent(alvo), {
       method: 'DELETE',
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, Prefer: 'return=minimal' }
     });
     if (!res.ok && res.status !== 204) { showToast('Erro ao excluir alerta.', 'error'); return; }
-    _alertProfile = null;
-    _alertExtended = {};
-    try { localStorage.removeItem('vagaai_alert_ext'); } catch(e) {}
+    _alertProfiles = _alertProfiles.filter(function(p){ return p.id !== alvo; });
+    // Sobrou algum? Foca nele. Senao zera o estado como antes.
+    if (_alertProfiles.length) {
+      _alFocar(null);
+    } else {
+      _alertProfile = null;
+      _alertSelId = null;
+      _alertExtended = {};
+      try { localStorage.removeItem('vagaai_alert_ext'); } catch(e) {}
+      renderAlertPage();
+    }
     showToast('Alerta excluído.');
-    renderAlertPage();
   } catch(e) { showToast('Erro ao excluir.', 'error'); }
 }
 
 /* ── Edit modal ─────────────────────────────────────────────────── */
-function openAlertEditModal() {
-  var p   = _alertProfile || {};
+/* modo === 'novo' abre em branco para criar mais um; sem argumento, edita o
+   alerta em foco. Antes so existia o segundo caso, e o botao "Criar novo
+   alerta" devolvia o formulario preenchido do unico alerta que existia. */
+function openAlertEditModal(modo) {
+  _alModoNovo = (modo === 'novo');
+  var p   = _alModoNovo ? {} : (_alertProfile || {});
   var ext = _alertExtended || {};
   _alMKw       = Array.isArray(p.keywords) ? p.keywords.slice() : [];
+  if (_alModoNovo) { _alMKw = []; ext = {}; }
   _alMEmpresas = Array.isArray(ext.empresas) ? ext.empresas.slice() : [];
   _alMSetores  = Array.isArray(ext.setores)  ? ext.setores.slice()  : [];
   _alMNegPal   = Array.isArray(ext.neg_palavras) ? ext.neg_palavras.slice() : [];
@@ -6111,13 +6245,17 @@ function openAlertEditModal() {
     '<div class="al-modal-overlay" id="alModal" role="dialog" aria-modal="true" aria-labelledby="alModalTitle">'+
     '<div class="al-modal-box">'+
       '<div class="al-modal-head">'+
-        '<span class="al-modal-title" id="alModalTitle">'+(p.cargo_desejado?'Editar alerta':'Criar alerta')+'</span>'+
+        '<span class="al-modal-title" id="alModalTitle">'+(_alModoNovo?'Novo alerta':(p.cargo_desejado?'Editar alerta':'Criar alerta'))+'</span>'+
         '<button class="al-modal-close-btn" onclick="closeAlertModal()" aria-label="Fechar modal">✕</button>'+
       '</div>'+
       '<div class="al-modal-body">'+
 
         '<div class="al-modal-section">'+
           '<div class="al-modal-section-title">Cargo e Perfil</div>'+
+          '<div class="al-form-row">'+
+            // Com varios alertas a pessoa precisa distinguir um do outro na faixa.
+            '<div class="al-field"><label for="alMNome">Nome do alerta</label><input id="alMNome" type="text" value="'+escHtml(p.nome||'')+'" placeholder="ex: Vendedora em SP" oninput="_alCheckDirty()"></div>'+
+          '</div>'+
           '<div class="al-form-row">'+
             '<div class="al-field"><label for="alMCargo">Cargo ou área desejada</label><input id="alMCargo" type="text" value="'+escHtml(p.cargo_desejado||'')+'" placeholder="ex: Marketing Digital" oninput="_alCheckDirty()"></div>'+
             '<div class="al-field"><label for="alMNivel">Senioridade'+advBadge+'</label><select id="alMNivel" onchange="_alCheckDirty()"'+advAttr+'>'+
@@ -6302,6 +6440,8 @@ function _alRenderModalTags() {
 
 async function saveAlertProfile() {
   var existiaAlerta = !!_alertProfile;
+  // null = criar; id = editar aquele alerta.
+  var alvoId = _alModoNovo ? null : (_alertProfile && _alertProfile.id) || null;
   var cargoEl = document.getElementById('alMCargo');
   var cargo   = cargoEl ? cargoEl.value.trim() : '';
   if (!cargo) { showToast('Informe o cargo ou área desejada.', 'error'); if(cargoEl) cargoEl.focus(); return; }
@@ -6323,12 +6463,15 @@ async function saveAlertProfile() {
   var formato   = Array.from(document.querySelectorAll('#alMFormato .on')||[]).map(function(e){ return e.textContent; });
   // Compute next_run_at for new/reactivated profile
   var extPreview = Object.assign({}, _alertExtended, { dia_envio: dia, horario_envio: hora });
-  // Preserve existing ativo state; only default to true on first creation (no existing profile)
-  var currentAtivo = (_alertProfile && _alertProfile.ativo !== undefined) ? _alertProfile.ativo : true;
+  // Preserve existing ativo state; only default to true on first creation
+  var currentAtivo = (!alvoId || !_alertProfile || _alertProfile.ativo === undefined)
+    ? true : _alertProfile.ativo;
   var nextRun = calculateNextAlertRun({ ativo: currentAtivo, frequencia: freq }, extPreview);
   // Persist core + extended fields to Supabase in a single upsert
+  var nomeEl = document.getElementById('alMNome');
   var body = {
     user_id: currentUserId,
+    nome: nomeEl ? nomeEl.value.trim() : '',
     email: currentSession.user.email,
     cargo_desejado: cargo,
     nivel: nivel,
@@ -6350,12 +6493,38 @@ async function saveAlertProfile() {
   var saveBtn = document.getElementById('alMSaveBtn');
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Salvando…'; }
   try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles', {
-      method: 'POST',
-      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify(body)
-    });
-    if (!res.ok && res.status !== 204) throw new Error('HTTP ' + res.status);
+    /* Criar e editar deixaram de ser a mesma requisicao. Enquanto a PK era
+       user_id, o upsert resolvia os dois casos — e era exatamente por isso que
+       "criar novo alerta" substituia o anterior. */
+    var res;
+    if (alvoId) {
+      var patch = Object.assign({}, body);
+      delete patch.user_id;  // dono nao muda, e a coluna dispara o trigger
+      res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles?id=eq.' + encodeURIComponent(alvoId), {
+        method: 'PATCH',
+        headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+        body: JSON.stringify(patch)
+      });
+    } else {
+      res = await fetch(SUPABASE_URL + '/rest/v1/job_alert_profiles', {
+        method: 'POST',
+        headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+        body: JSON.stringify(body)
+      });
+    }
+    if (!res.ok && res.status !== 204) {
+      var errTxt = await res.text().catch(function(){ return ''; });
+      // O teto por plano e aplicado por trigger no banco, nao so no cliente.
+      if (/limite_alertas/.test(errTxt)) {
+        showToast('Seu plano ja esta no limite de alertas ativos. Pause um antes de criar outro.', 'error');
+        var btnLim = document.getElementById('alMSaveBtn');
+        if (btnLim) { btnLim.disabled = false; btnLim.textContent = 'Salvar alterações'; }
+        return;
+      }
+      throw new Error('HTTP ' + res.status);
+    }
+    var salvo = await res.json().catch(function(){ return null; });
+    var salvoRow = Array.isArray(salvo) ? salvo[0] : salvo;
     // Mirror to local state and localStorage cache
     _alertExtended.contrato_tipos  = contTipos;
     _alertExtended.filtros_neg     = filtNeg;
@@ -6366,8 +6535,17 @@ async function saveAlertProfile() {
     _alertExtended.dia_envio       = dia;
     _alertExtended.horario_envio   = hora;
     _alSaveExt();
-    // Update local state
-    _alertProfile = Object.assign(_alertProfile || {}, body);
+    // Estado local: substitui o alerta editado ou anexa o recem-criado, e
+    // deixa o foco nele para a pessoa ver o que acabou de salvar.
+    var linha = salvoRow || Object.assign({ id: alvoId }, body);
+    var idx = -1;
+    _alertProfiles.forEach(function(p, i){ if (p.id === linha.id) idx = i; });
+    if (idx >= 0) _alertProfiles[idx] = Object.assign({}, _alertProfiles[idx], linha);
+    else _alertProfiles.push(linha);
+    _alertProfiles.sort(_alOrdem);
+    _alertSelId = linha.id;
+    _alertProfile = _alertProfiles.filter(function(p){ return p.id === linha.id; })[0] || linha;
+    _alModoNovo = false;
     _alertKeywords = _alMKw;
     // Sem isso nao da para saber quantos chegam a configurar o alerta, que e o
     // recurso mais usado da plataforma. `existia` e lido ANTES do upsert, la em

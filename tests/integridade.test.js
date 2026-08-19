@@ -970,3 +970,48 @@ describe('Rastreamento de conversão', () => {
       'consentimento para ad_* precisa de finalidade informada no texto do banner');
   });
 });
+
+
+/* O teto de alertas por plano vive em DOIS lugares: lib/entitlements.js (o que
+   a interface mostra) e public.max_alertas_do_plano() no banco (o que o trigger
+   trg_max_active_alerts realmente aplica). A policy de RLS de job_alert_profiles
+   e FOR ALL com auth.uid() = user_id, entao o navegador insere direto via
+   PostgREST — limite so no cliente nao limita nada. Se os dois numeros
+   divergirem, a tela promete um numero e o banco recusa outro. */
+describe('Teto de alertas: interface e banco contam a mesma coisa', () => {
+  const ents = read('lib/entitlements.js');
+  const sql = read('migrations/025_multi_alerta.sql');
+
+  const doJs = (plano) => {
+    const bloco = ents.match(new RegExp(`\\b${plano}:\\s*\\{[\\s\\S]*?\\n  \\}`));
+    assert.ok(bloco, `plano ${plano} nao encontrado em entitlements`);
+    const m = bloco[0].match(/max_active_alerts:\s*(\d+|null)/);
+    assert.ok(m, `max_active_alerts ausente no plano ${plano}`);
+    return m[1];
+  };
+
+  it('free, starter e pro têm o mesmo teto nos dois lados', () => {
+    // CASE plan WHEN 'pro' THEN 10 WHEN 'starter' THEN 3 ELSE 1 END
+    const caso = sql.match(/CASE v_plan WHEN 'pro' THEN (\d+) WHEN 'starter' THEN (\d+)/);
+    assert.ok(caso, 'max_alertas_do_plano nao declara os tetos esperados');
+    const noBanco = { pro: caso[1], starter: caso[2], free: '1' };
+
+    for (const plano of ['free', 'starter', 'pro']) {
+      assert.equal(doJs(plano), noBanco[plano],
+        `${plano}: entitlements diz ${doJs(plano)} e o banco aplica ${noBanco[plano]}`);
+    }
+  });
+
+  it('nenhum plano promete alertas ilimitados', () => {
+    // null = sem teto. Cada alerta consulta 20 fontes e passa por IA, diariamente
+    // no Pro: sem teto e custo sem teto num plano de preco fixo.
+    assert.doesNotMatch(ents, /max_active_alerts:\s*null/,
+      'max_active_alerts: null volta a prometer alerta ilimitado');
+  });
+
+  it('o limite é aplicado por trigger, não apenas pelo cliente', () => {
+    assert.match(sql, /CREATE TRIGGER trg_max_active_alerts/, 'trigger de limite ausente');
+    assert.match(sql, /REVOKE EXECUTE ON FUNCTION public\.max_alertas_do_plano/,
+      'SECURITY DEFINER em public sem REVOKE fica executavel por qualquer usuario via /rpc');
+  });
+});

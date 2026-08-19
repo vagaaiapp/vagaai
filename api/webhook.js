@@ -414,6 +414,32 @@ export default async function handler(req, res) {
     if (!r.ok) {
       throw new Error(`upsertSubscription: Supabase ${r.status} — ${await r.text()}`);
     }
+
+    /* Quem cancela o Pro pode ter 10 alertas ativos e passar a ter direito a 1.
+       A função desativa o excedente mantendo os dados: apagar destruiria a
+       configuração que a pessoa montou, e ela volta esperando encontrar tudo.
+       Preserva os usados mais recentemente. Falha aqui não pode derrubar o
+       webhook — a assinatura já foi gravada, e o Stripe re-tentaria o evento
+       inteiro por causa de um efeito colateral secundário. */
+    try {
+      const lim = await fetch(`${SUPABASE_URL}/rest/v1/rpc/aplicar_limite_alertas`, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ p_user_id: userId }),
+      });
+      if (lim.ok) {
+        const n = await lim.json().catch(() => 0);
+        if (n > 0) console.log(`aplicar_limite_alertas: ${n} alerta(s) desativado(s) para ${userId} (plano ${plan}/${status})`);
+      } else {
+        console.warn('aplicar_limite_alertas falhou:', lim.status, await lim.text());
+      }
+    } catch (e) {
+      console.warn('aplicar_limite_alertas erro:', e.message);
+    }
   }
 
   // ── Busca user_id pelo customer_id ou email ───────────────────────────────────
