@@ -614,6 +614,16 @@ async function loadCartaContext() {
   }
 }
 
+/* Cargo e empresa a partir da vaga colada, para a carta salva nao entrar no
+   historico sem nome. Reaproveita o parser da previa; se ele nao achar nada,
+   devolve vazio e a coluna fica NULL — melhor sem nome que com nome errado. */
+function _vagaColadaCargo(txt) {
+  try { return (extractJobPreview(txt || '', '').cargo || '').trim(); } catch (e) { return ''; }
+}
+function _vagaColadaEmpresa(txt) {
+  try { return (extractJobPreview(txt || '', '').empresa || '').trim(); } catch (e) { return ''; }
+}
+
 function extractJobPreview(text, url) {
   var cargoFromUrl = '', empresaFromUrl = '', platform = '';
   try {
@@ -864,10 +874,12 @@ async function generate() {
         job, cv, tom: _tom,
         motivacao: (document.getElementById('porqueInput').value || '').trim(),
         // Identificacao da vaga: sem isso a carta salva vira um texto solto no
-        // historico, sem dizer para qual vaga foi escrita.
+        // historico, sem dizer para qual vaga foi escrita. Quando a pessoa cola
+        // a vaga em vez de vir de uma analise, nao ha job_info — extrai do
+        // proprio texto, que e o mesmo parser que ja alimenta a previa na tela.
         analysis_id: _cartaAnalysisId || null,
-        cargo: _cartaCargo || null,
-        empresa: _cartaEmpresa || null,
+        cargo: _cartaCargo || _vagaColadaCargo(job) || null,
+        empresa: _cartaEmpresa || _vagaColadaEmpresa(job) || null,
         // So os campos que o prompt usa — nao o result inteiro.
         analise: _cartaAnalise ? {
           score: _cartaAnalise.score,
