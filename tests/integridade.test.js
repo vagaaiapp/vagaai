@@ -1067,3 +1067,47 @@ describe('Carta e treino ficam guardados', () => {
     assert.equal(donos.length, 2, 'esperava USING por dono nas duas tabelas');
   });
 });
+
+
+/* extractJobPreview alimenta a previa na tela e, desde que as cartas passaram a
+   ser salvas, tambem o nome com que a carta entra no historico. A empresa so
+   era lida da URL — quem COLA a vaga ficava sempre sem empresa. Estes casos sao
+   os formatos que as pessoas realmente colam. */
+describe('Leitura de cargo e empresa da vaga colada', () => {
+  const src = read('carta/index.html');
+  const corpo = src.match(/function extractJobPreview\(text, url\) \{[\s\S]*?\n\}/);
+  assert.ok(corpo, 'extractJobPreview nao encontrada em carta/index.html');
+  const ctx = { URL };
+  vm.createContext(ctx);
+  vm.runInContext(corpo[0] + '\nglobalThis.__parse = extractJobPreview;', ctx);
+  const parse = (t) => ctx.__parse(t, '');
+
+  it('LinkedIn: cargo, empresa e local em linhas seguidas', () => {
+    const r = parse('Gerente de Marketing\nPRIMIZIE\nSão Paulo, SP · Híbrido\n\nSobre a vaga\nBuscamos alguém com experiência em Growth.');
+    assert.equal(r.cargo, 'Gerente de Marketing');
+    assert.equal(r.empresa, 'PRIMIZIE');
+  });
+
+  it('Gupy: empresa antes do bloco de requisitos', () => {
+    const r = parse('Analista de Dados Pleno\nGrupo Boticário\nRemoto\n\nRequisitos\n- SQL avançado\n- Python');
+    assert.equal(r.cargo, 'Analista de Dados Pleno');
+    assert.equal(r.empresa, 'Grupo Boticário');
+  });
+
+  it('não confunde cidade com empresa', () => {
+    const r = parse('Desenvolvedor Backend\nBelo Horizonte, MG\nCLT\n\nAtividades\nManter APIs REST.');
+    assert.notEqual(r.empresa, 'Belo Horizonte, MG');
+  });
+
+  it('não confunde título de seção com empresa', () => {
+    const r = parse('Coordenador Comercial\nSobre a vaga\nProcuramos um profissional para liderar o time de vendas da região sul.');
+    assert.notEqual(r.empresa, 'Sobre a vaga');
+  });
+
+  it('não inventa empresa quando a vaga vem num parágrafo só', () => {
+    const r = parse('Vaga: Gerente de Marketing na PRIMIZIE. Buscamos profissional com experiência em Growth Marketing e gestão de campanhas pagas.');
+    // Uma linha só: nao ha linha seguinte de onde tirar a empresa. Vazio e a
+    // resposta certa — melhor sem nome que com nome errado.
+    assert.equal(r.empresa, '');
+  });
+});

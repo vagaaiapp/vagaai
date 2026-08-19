@@ -652,11 +652,31 @@ function extractJobPreview(text, url) {
     for (var i = 0; i < Math.min(lines.length, 20); i++) { if (lines[i].length > 4 && lines[i].length < 90 && cargoRE.test(lines[i])) { cargo = lines[i]; break; } }
     if (!cargo) { for (var j = 0; j < Math.min(lines.length, 6); j++) { if (lines[j].length > 4 && lines[j].length < 70) { cargo = lines[j]; break; } } }
   }
-  var empresa = empresaFromUrl;
-  if (!empresa && platform) empresa = 'via ' + platform;
-  var modalidade = '', cidade = '';
   var regiaoRE = /\b(remoto|remote|home.?office|h[ií]brido|presencial|hybrid|on.?site)\b/i;
   var cidadeRE = /\b(s[aã]o paulo|rio de janeiro|belo horizonte|curitiba|porto alegre|bras[ií]lia|salvador|campinas|fortaleza|recife|manaus|goi[aâ]nia|minas gerais|s\.?\s*p\.?|r\.?\s*j\.?)\b/i;
+  var empresa = empresaFromUrl;
+  /* A empresa so era lida da URL: quem COLA a vaga — a maioria, e o caminho de
+     quem nao passou pelo analisador — ficava sempre sem empresa, na previa da
+     tela e, depois que as cartas passaram a ser salvas, tambem no historico do
+     que ja foi escrito. Nos anuncios colados ela vem logo abaixo do cargo.
+     Pega essa linha, com filtros para nao confundir com local, secao ou frase
+     de descricao. Sem candidata boa, fica vazio: melhor sem nome que errado. */
+  if (!empresa) {
+    var secaoRE = /^(sobre|requisito|responsabilidad|atividade|benefici|diferencia|o que|buscamos|procuramos|descri[cç]|vaga|perfil|hor[aá]rio|sal[aá]rio|regime|contrata|local)/i;
+    var iCargo = lines.indexOf(cargo);
+    for (var e = iCargo + 1; iCargo >= 0 && e <= iCargo + 2 && e < lines.length; e++) {
+      var cand = lines[e].replace(/\s*[·|–—-]\s*$/, '').trim();
+      if (cand.length < 2 || cand.length > 60) continue;
+      if (regiaoRE.test(cand) || cidadeRE.test(cand)) continue;
+      if (/[:.!?]$/.test(cand)) continue;
+      if (secaoRE.test(cand)) continue;
+      if (/\d{3,}/.test(cand)) continue;
+      empresa = cand;
+      break;
+    }
+  }
+  if (!empresa && platform) empresa = 'via ' + platform;
+  var modalidade = '', cidade = '';
   for (var n = 0; n < lines.length; n++) {
     if (!modalidade) { var mm = lines[n].match(regiaoRE); if (mm) modalidade = mm[0]; }
     if (!cidade)     { var cm = lines[n].match(cidadeRE);  if (cm) cidade = cm[0]; }
