@@ -1338,7 +1338,8 @@ body.frame-fullscreen .sidebar { display: none !important; }
 .fer-card {
   display:flex; align-items:center; gap:11px; width:100%; text-align:left;
   background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r-sm);
-  padding:13px 15px; cursor:pointer; font-family:inherit; transition:all .15s;
+  padding:13px 15px; cursor:pointer; font-family:inherit;
+  transition:border-color .15s, transform .15s, box-shadow .15s;
   box-shadow:var(--sh-card);
 }
 .fer-card:hover { border-color:var(--gb-emerald); transform:translateY(-1px); }
@@ -1350,9 +1351,9 @@ body.frame-fullscreen .sidebar { display: none !important; }
 [data-theme="dark"] .fer-ico { color:var(--gb-bright); }
 .fer-ico svg { width:17px; height:17px; }
 .fer-txt { min-width:0; }
-.fer-val { font-size:17px; font-weight:800; color:var(--t1); line-height:1.15; letter-spacing:-.3px; font-variant-numeric:tabular-nums; }
+.fer-val { display:block; font-size:17px; font-weight:800; color:var(--t1); line-height:1.15; letter-spacing:-.3px; font-variant-numeric:tabular-nums; }
 .fer-val small { font-size:11.5px; font-weight:600; color:var(--t2); letter-spacing:0; }
-.fer-lbl { font-size:11.5px; color:var(--t2); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.fer-lbl { display:block; font-size:11.5px; color:var(--t2); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 @media (max-width:1023px) { .fer-strip { grid-template-columns:repeat(2,1fr); } }
 @media (max-width:768px)  { .fer-strip { grid-template-columns:repeat(2,1fr); } }
 
@@ -3584,15 +3585,19 @@ function buildSecondaryHint() {
   // calculateNextAlertRun). Com `=== false`, um perfil com ativo NULL fazia o
   // painel escondê-la enquanto a aba Alertas mostrava o alerta como inativo.
   var semAlerta = !_alertProfile || !_alertProfile.ativo;
-  // Outras análises que ainda não viraram candidatura, fora a que o bloco 02 já trata.
   // Conta TODAS as analises sem candidatura, inclusive a que o bloco 02
-  // destaca. Excluir a escolhida fazia o painel dizer "1" enquanto a aba
-  // Candidaturas dizia "2 analises nao rastreadas" — o mesmo fato com dois
-  // numeros na mesma sessao. A dica e um resumo, nao uma repeticao do card.
-  var pendentes = analyses.filter(function(a) {
+  // destaca: excluir a escolhida fazia o painel dizer "1" enquanto a aba
+  // Candidaturas dizia "2" — o mesmo fato com dois numeros na mesma sessao.
+  // Agrupa por vaga, e nao por analise: reanalisar a mesma vaga (trocou o CV e
+  // rodou de novo) e uma vaga pendente, nao duas. Sem isso a dica dizia
+  // "2 analises" logo acima da lista de vagas, que mostrava 1 linha.
+  var semCandidatura = analyses.filter(function(a) {
     if (!a.score) return false;
     return !tracked.find(function(t){ return t.analysis_id === a.id; });
-  }).length;
+  });
+  var pendentes = window.VagaAICv && window.VagaAICv.contarVagasDistintas
+    ? window.VagaAICv.contarVagasDistintas(semCandidatura)
+    : semCandidatura.length;
 
   if (semAlerta) {
     hint = {
@@ -3602,7 +3607,7 @@ function buildSecondaryHint() {
     };
   } else if (pendentes > 0) {
     hint = {
-      txt: '<b>' + pendentes + ' análise' + (pendentes !== 1 ? 's' : '') + ' sem candidatura</b> — vagas que você avaliou mas ainda não enviou.',
+      txt: '<b>' + pendentes + ' vaga' + (pendentes !== 1 ? 's' : '') + ' sem candidatura</b> — você analisou, mas ainda não marcou como enviada.',
       cta: 'Ver todas →',
       fn: "openCandidaturasFiltered('so_analise')"
     };

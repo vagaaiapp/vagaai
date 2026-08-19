@@ -825,3 +825,48 @@ describe('Eventos de produto', () => {
     }
   });
 });
+
+/* Dois bugs do painel que só apareceram na tela, nunca no código: um <span> de
+   valor sem display:block colando no rótulo ("1 vagaVagas analisadas"), e um
+   `transition:all` segurando o background antigo quando o tema muda com a tela
+   já renderizada. Nenhum dos dois quebra teste de comportamento — só ratchet
+   de CSS pega. */
+describe('CSS do painel: armadilhas que só aparecem renderizadas', () => {
+  const dash = read('dashboard/index.html');
+
+  it('valor e rótulo empilham: <span> precisa de display:block', () => {
+    for (const classe of ['fer-val', 'fer-lbl', 'mat-val', 'mat-lbl']) {
+      const regra = dash.match(new RegExp(`^\.${classe} \{([^}]*)\}`, 'm'));
+      if (!regra) continue; // classe pode ter sido removida
+      const ehSpan = new RegExp(`<span class="${classe}"`).test(dash);
+      if (!ehSpan) continue; // se virou <div>, já é bloco por padrão
+      assert.match(regra[1], /display\s*:\s*(block|flex|grid)/,
+        `.${classe} é <span> e não declara display de bloco: valor e rótulo saem na mesma linha`);
+    }
+  });
+
+  /* Dívida conhecida, não meta zerada. O Chrome mantém o valor antigo do
+     background quando a custom property muda sob `transition:all` — provado no
+     par .fer-card (transition:all, ficava branco no escuro) contra .mat-tile
+     (sem transition, atualiza), mesmo arquivo e mesma var. Estas regras têm o
+     mesmo defeito latente e só aparecem para quem troca de tema com a tela
+     aberta. Trocar as 12 de uma vez mexeria no hover de componentes que ninguém
+     revisou; o ratchet impede que a lista cresça. */
+  const FUNDO_PRESO_NO_TEMA = [
+    '.icon-btn', '.mv-track-btn', '.vf-chip', '.job-card', '.opp-chip',
+    '.funil-per-btn', '.cc-chip', '.kk-card', '.al-sum-btn', '.al-qf',
+    '.al-jact-btn', '.tour-balloon',
+  ];
+
+  it('nenhum card novo entra na lista de fundo preso ao tema', () => {
+    const regras = dash.match(/^\.[a-z-]+ \{[^}]*\}/gm) || [];
+    const suspeitas = regras
+      .filter((r) => /background\s*:\s*var\(--bg-card\)/.test(r))
+      .filter((r) => /transition\s*:\s*all/.test(r))
+      .map((r) => r.slice(0, r.indexOf(' {')));
+    const novas = suspeitas.filter((c) => !FUNDO_PRESO_NO_TEMA.includes(c));
+    assert.deepEqual(novas, [],
+      `regra nova com fundo preso ao tema anterior: ${novas.join(', ')}. ` +
+      'Liste as propriedades da transition em vez de usar `all`.');
+  });
+});
