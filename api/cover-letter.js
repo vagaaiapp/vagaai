@@ -161,11 +161,33 @@ Retorne APENAS este JSON (sem markdown):
 
     if (!response.ok) throw new Error(`Anthropic ${response.status}`);
     const data = await response.json();
+
+    /* A resposta passou de um texto para tres (carta, curta e mensagem) mais a
+       lista de requisitos citados. Truncada, o JSON chega invalido e o
+       JSON.parse abaixo estoura num 500 generico — a pessoa perde a geracao sem
+       saber por que. analyze.js ja checava isso; aqui faltava. */
+    if (data.stop_reason === 'max_tokens') {
+      console.error('cover-letter: resposta truncada (max_tokens)');
+      return res.status(500).json({ error: 'A carta ficou incompleta. Tente novamente.' });
+    }
+
     const text = data.content?.[0]?.text || '';
     const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const result = JSON.parse(clean);
     // A tela mostra "menciona X dos Y requisitos que voce atende" — Y vem daqui,
     // nao da IA, para o numero nao depender de alucinacao.
+    /* O modelo devolve quais requisitos citou, mas nada o impede de listar item
+       que nao estava na lista, ou de repetir. Sem filtrar, a tela chegaria a
+       mostrar "Menciona 12 dos 9 requisitos que voce atende". O cruzamento e
+       feito aqui, contra a lista real que foi enviada no prompt. */
+    const norm = (v) => String(v == null ? '' : v).trim().toLowerCase();
+    const validos = new Set(atende.map(norm));
+    result.requisitos_citados = [...new Set(
+      (Array.isArray(result.requisitos_citados) ? result.requisitos_citados : [])
+        .map(x => String(x == null ? '' : x).trim())
+        .filter(x => x && validos.has(norm(x)))
+        .map(norm)
+    )].map(n => atende.find(a => norm(a) === n));
     result.requisitos_total = atende.length;
     result.usou_analise = atende.length > 0 || faltam.length > 0;
     return res.status(200).json(result);

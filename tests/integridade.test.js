@@ -736,6 +736,33 @@ describe('Carta de apresentação usa a análise', () => {
     assert.match(api(), /no maximo 4 palavras/, 'prompt nao restringe o campo');
   });
 
+  it('resposta truncada vira erro claro, nao 500 generico', () => {
+    // A resposta passou de um texto para tres. Truncada, o JSON chega invalido
+    // e o JSON.parse estoura — a pessoa perde a geracao sem saber por que.
+    const s = api();
+    assert.match(s, /data\.stop_reason === 'max_tokens'/);
+    assert.match(s, /A carta ficou incompleta/);
+  });
+
+  it('requisito citado que nao esta na lista real e descartado', () => {
+    // Sem o cruzamento, a tela poderia mostrar "Menciona 12 dos 9 requisitos".
+    const s = api();
+    const bloco = s.match(/const norm = \(v\)[\s\S]*?result\.requisitos_total/);
+    assert.ok(bloco, 'filtro de requisitos citados ausente');
+    const atende = ['SEO', 'Google Ads', 'Copywriting'];
+    const rodar = (citados) => {
+      const result = { requisitos_citados: citados };
+      eval(bloco[0].replace('result.requisitos_total', 'void 0'));
+      return result.requisitos_citados;
+    };
+    assert.deepEqual(rodar(['SEO', 'Kubernetes']), ['SEO'], 'nao filtrou item inventado');
+    assert.deepEqual(rodar(['SEO', 'seo']), ['SEO'], 'nao removeu duplicata');
+    assert.deepEqual(rodar(['google ads']), ['Google Ads'], 'nao normalizou a caixa');
+    assert.deepEqual(rodar('nao e array'), []);
+    // E o numero exibido nunca pode passar do total real.
+    assert.ok(rodar(['SEO','Google Ads','Copywriting','Extra']).length <= atende.length);
+  });
+
   it('o total de requisitos vem do servidor, não da IA', () => {
     // "Menciona X dos Y" — se Y viesse do modelo, seria alucinável.
     assert.match(api(), /result\.requisitos_total = atende\.length/);
