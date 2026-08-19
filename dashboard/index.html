@@ -3325,6 +3325,9 @@ function buildPainelV2(analyses, tracked) {
   }
 
   buildStatusPills(analyses, tracked);
+  // Uma vez por sessão: a contagem não muda enquanto a pessoa olha o painel, e
+  // as duas telas que a alteram (carta, entrevista) rodam em iframe próprio.
+  if (_cartasCount === null && _treinosCount === null) loadContagemFerramentas();
   buildMaterialStrip();
   // buildPBACard devolve a vaga que escolheu. Antes, ela e os cards de
   // "Precisa da sua atenção" rodavam o mesmo filtro de forma independente e
@@ -3541,6 +3544,39 @@ function buildPBACard(analyses, tracked) {
 var _cvBase = null;        // linha de cv_saves do usuário (1 por conta)
 var _cvBaseLoaded = false; // separa "ainda carregando" de "não existe"
 
+/* Contagem de cartas e treinos. null = ainda não carregou, e o card mostra a
+   promessa em vez de "0" — dizer zero antes de saber é pior que não dizer. */
+var _cartasCount  = null;
+var _treinosCount = null;
+
+/* PostgREST devolve o total no header Content-Range (`0-0/42`) quando pedimos
+   `Prefer: count=exact`. Contar assim não traz nenhuma linha — só o número. */
+function _contarDoHeader(res) {
+  var cr = (res.headers.get('content-range') || '');
+  var m = cr.match(/\/(\d+)$/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+async function loadContagemFerramentas() {
+  if (!currentSession || !currentUserId) return;
+  var h = {
+    apikey: SUPABASE_ANON,
+    Authorization: 'Bearer ' + currentSession.access_token,
+    Prefer: 'count=exact',
+    Range: '0-0'
+  };
+  try {
+    var rc = await fetch(SUPABASE_URL + '/rest/v1/cover_letters?user_id=eq.' + currentUserId + '&select=id', { headers: h });
+    if (rc.ok) _cartasCount = _contarDoHeader(rc);
+  } catch (e) {}
+  try {
+    // Só sessões concluídas: quem abriu e abandonou não "fez" um treino.
+    var rt = await fetch(SUPABASE_URL + '/rest/v1/interview_sessions?user_id=eq.' + currentUserId + '&finished_at=not.is.null&select=id', { headers: h });
+    if (rt.ok) _treinosCount = _contarDoHeader(rt);
+  } catch (e) {}
+  buildFerramentas();
+}
+
 /* As duas primeiras lajotas mediam coisas diferentes com a mesma palavra. A
    primeira dizia "100% completo" (cadastro preenchido) e a segunda, a 40cm de
    distância, "10 itens" sob o título "O que falta no seu currículo" (requisitos
@@ -3674,9 +3710,8 @@ var _pbaChosen = null;
    varresse o menu lateral.
 
    Agora cada card é uma ferramenta — nome em primeiro plano, estado embaixo.
-   Nenhuma delas exibe contador inventado: nem carta nem treino são
-   persistidos no banco (cover-letter.js e interview.js só geram e devolvem),
-   então o card mostra o que dá para fazer com ela, não um número falso. */
+   Carta e treino passaram a ser persistidos (migração 026), então os dois
+   deixaram de mostrar só a promessa e passam a mostrar o histórico real. */
 var FER_ICONES = {
   analises:    '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15h6"/>',
   carta:       '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/>',
@@ -3718,9 +3753,11 @@ function buildFerramentas() {
   var seloTreino = (plano && !(plano === 'pro' || ent.simulador_entrevista)) ? 'Pro' : '';
 
   var estCarta = seloCarta ? 'Escreva a carta a partir da vaga analisada'
+    : _cartasCount ? _cartasCount + ' carta' + (_cartasCount !== 1 ? 's' : '') + ' escrita' + (_cartasCount !== 1 ? 's' : '')
     : analyses.length ? 'Gere a partir de qualquer vaga analisada'
     : 'Analise uma vaga para gerar a primeira';
   var estTreino = seloTreino ? 'Simule a entrevista da vaga antes do dia'
+    : _treinosCount ? _treinosCount + ' treino' + (_treinosCount !== 1 ? 's' : '') + ' concluído' + (_treinosCount !== 1 ? 's' : '')
     : entrevistas > 0 ? entrevistas + ' entrevista' + (entrevistas !== 1 ? 's' : '') + ' marcada' + (entrevistas !== 1 ? 's' : '') + ' — treine antes'
     : 'Simule as perguntas que a vaga deve cobrar';
 

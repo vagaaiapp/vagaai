@@ -413,6 +413,9 @@ var _cartaTexto = '';
 // Resultado da analise que originou esta carta. Alimenta o prompt com os
 // requisitos comprovados, os ausentes e o briefing da empresa.
 var _cartaAnalise = null;
+var _cartaAnalysisId = '';   // vaga de origem, para a carta salva saber a que se refere
+var _cartaCargo = '';
+var _cartaEmpresa = '';
 var _cartaFormatos = {};
 var _formatoAtivo = 'carta';
 var _cartaAssunto = '';
@@ -576,6 +579,10 @@ async function loadCartaContext() {
       if (Array.isArray(rows) && rows.length) {
         var analysis = rows[0];
         _cartaAnalise = analysis.result || null;
+        _cartaAnalysisId = analysis.id || '';
+        var ji = (analysis.result && analysis.result.job_info) || {};
+        _cartaCargo = ji.cargo || '';
+        _cartaEmpresa = ji.empresa || '';
         var jobText = _analysisToJobText(analysis);
         var cvText = _analysisToCvText(analysis);
         if (jobText) document.getElementById('jobInput').value = jobText;
@@ -856,6 +863,11 @@ async function generate() {
       body: JSON.stringify({
         job, cv, tom: _tom,
         motivacao: (document.getElementById('porqueInput').value || '').trim(),
+        // Identificacao da vaga: sem isso a carta salva vira um texto solto no
+        // historico, sem dizer para qual vaga foi escrita.
+        analysis_id: _cartaAnalysisId || null,
+        cargo: _cartaCargo || null,
+        empresa: _cartaEmpresa || null,
         // So os campos que o prompt usa — nao o result inteiro.
         analise: _cartaAnalise ? {
           score: _cartaAnalise.score,

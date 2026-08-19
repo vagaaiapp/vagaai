@@ -1015,3 +1015,55 @@ describe('Teto de alertas: interface e banco contam a mesma coisa', () => {
       'SECURITY DEFINER em public sem REVOKE fica executavel por qualquer usuario via /rpc');
   });
 });
+
+
+/* Carta e treino eram descartáveis: cover-letter.js e interview.js só geravam e
+   devolviam, e o conteúdo morria ao fechar a aba. Dois dos cinco produtos do
+   plano pago não deixavam rastro — e era por isso que o painel não tinha número
+   honesto para mostrar deles. Migração 026 criou as tabelas; estes testes
+   impedem que a gravação seja removida sem que ninguém perceba. */
+describe('Carta e treino ficam guardados', () => {
+  const carta = read('api/cover-letter.js');
+  const entrevistaApi = read('api/interview.js');
+  const entrevistaFront = read('entrevista/index.html');
+  const sql = read('migrations/026_cartas_e_treinos.sql');
+
+  it('a API da carta grava antes de responder', () => {
+    assert.match(carta, /rest\/v1\/cover_letters/, 'cover-letter.js não escreve em cover_letters');
+    assert.match(carta, /result\.id = linha\[0\]\.id/, 'a resposta não devolve o id da carta salva');
+  });
+
+  it('a API do treino abre a sessão ao gerar as perguntas', () => {
+    assert.match(entrevistaApi, /rest\/v1\/interview_sessions/, 'interview.js não abre sessão');
+    assert.match(entrevistaApi, /result\.session_id = linha\[0\]\.id/, 'não devolve session_id ao cliente');
+  });
+
+  it('o treino é fechado quando a pessoa chega ao resultado', () => {
+    assert.match(entrevistaFront, /salvarSessaoTreino\(/, 'nada fecha a sessão no fim do treino');
+    assert.match(entrevistaFront, /finished_at:/, 'a sessão nunca recebe finished_at');
+  });
+
+  /* Gravar historico nao pode custar o produto: se o insert falhar, a pessoa
+     ainda precisa receber a carta e as perguntas que acabou de esperar. */
+  it('falha ao gravar não derruba a geração', () => {
+    assert.match(carta, /console\.warn\('cover_letters insert falhou:/,
+      'cover-letter.js: gravação sem tratamento de falha derruba a resposta');
+    assert.match(carta, /console\.warn\('cover_letters insert erro:/,
+      'cover-letter.js: gravação fora de try/catch');
+    assert.match(entrevistaApi, /console\.warn\('interview_sessions insert falhou:/,
+      'interview.js: gravação sem tratamento de falha derruba a resposta');
+    assert.match(entrevistaApi, /console\.warn\('interview_sessions insert erro:/,
+      'interview.js: gravação fora de try/catch');
+  });
+
+  it('as duas tabelas nascem com RLS de dono', () => {
+    for (const t of ['cover_letters', 'interview_sessions']) {
+      assert.match(sql, new RegExp(`ALTER TABLE public\\.${t}\\s+ENABLE ROW LEVEL SECURITY`),
+        `${t} sem RLS: qualquer conta leria as cartas e treinos das outras`);
+      assert.match(sql, new RegExp(`CREATE POLICY ${t}_owner`), `${t} sem policy de dono`);
+    }
+    // FOR ALL com auth.uid() = user_id nos dois sentidos (leitura e escrita).
+    const donos = sql.match(/USING \(\(SELECT auth\.uid\(\)\) = user_id\)/g) || [];
+    assert.equal(donos.length, 2, 'esperava USING por dono nas duas tabelas');
+  });
+});

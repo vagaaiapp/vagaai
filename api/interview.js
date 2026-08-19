@@ -330,7 +330,7 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Limite de uso atingido. Tente novamente mais tarde.' });
   }
 
-  const { job, cv, question, answer, audioBase64 } = req.body || {};
+  const { job, cv, question, answer, audioBase64, analysis_id, cargo, empresa } = req.body || {};
 
   try {
     if (action === 'generate') {
@@ -338,6 +338,43 @@ export default async function handler(req, res) {
       if (!job || job.length < 50) return res.status(400).json({ error: 'Vaga muito curta' });
       if (!cv || cv.length < 50) return res.status(400).json({ error: 'CV muito curto' });
       const result = await generateQuestions(job, cv);
+
+      /* A sessao nasce aqui e e fechada pelo navegador quando a pessoa responde
+         a ultima pergunta. Antes o treino inteiro vivia so em memoria: fechar a
+         aba apagava tudo, e o painel nao tinha numero honesto para mostrar.
+
+         Sessao abandonada fica com finished_at NULL de proposito — "comecou e
+         nao terminou" e informacao util, e apagar esconderia o abandono.
+         Falha de gravacao nao derruba a resposta: sem historico e ruim, sem as
+         perguntas recem-geradas e pior. */
+      try {
+        const abrir = await fetch(`${SUPABASE_URL}/rest/v1/interview_sessions`, {
+          method: 'POST',
+          headers: {
+            apikey: SUPABASE_SERVICE_KEY,
+            Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=representation',
+          },
+          body: JSON.stringify({
+            user_id: user.id,
+            analysis_id: typeof analysis_id === 'string' && analysis_id ? analysis_id : null,
+            cargo: typeof cargo === 'string' ? cargo.slice(0, 200) : null,
+            empresa: typeof empresa === 'string' ? empresa.slice(0, 200) : null,
+            perguntas: result.perguntas || [],
+            total: Array.isArray(result.perguntas) ? result.perguntas.length : 0,
+          }),
+        });
+        if (abrir.ok) {
+          const linha = await abrir.json().catch(() => null);
+          if (Array.isArray(linha) && linha[0]) result.session_id = linha[0].id;
+        } else {
+          console.warn('interview_sessions insert falhou:', abrir.status, await abrir.text());
+        }
+      } catch (e) {
+        console.warn('interview_sessions insert erro:', e.message);
+      }
+
       return res.status(200).json(result);
     }
 

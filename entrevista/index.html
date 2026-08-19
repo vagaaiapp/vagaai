@@ -347,6 +347,13 @@ async function getFreshToken() {
 }
 
 var _questions = [];
+/* Id da sessao gravada no banco. A linha nasce no generate (servidor) e e
+   fechada aqui quando a pessoa chega ao resultado — antes o treino inteiro
+   vivia so em memoria e fechar a aba apagava tudo. */
+var _sessionId = '';
+var _entrevAnalysisId = '';
+var _entrevCargo = '';
+var _entrevEmpresa = '';
 var _currentQ = 0;
 var _answers = [];
 var _jobText = '';
@@ -395,6 +402,10 @@ var _audioMode = '';
           showScreen('screenSetup');
         } else {
           var analysis = rows[0];
+          _entrevAnalysisId = analysis.id || '';
+          var jiCtx = (analysis.result && analysis.result.job_info) || {};
+          _entrevCargo = jiCtx.cargo || '';
+          _entrevEmpresa = jiCtx.empresa || '';
           var jobCtx = _analysisToJobText(analysis);
           var cvCtx = _analysisToCvText(analysis);
           document.getElementById('jobInput').value = jobCtx;
@@ -606,7 +617,13 @@ async function generateInterview(options) {
     var res = await fetch('/api/interview', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _t },
-      body: JSON.stringify({ action: 'generate', job, cv })
+      body: JSON.stringify({
+        action: 'generate', job, cv,
+        // Sem isso o treino salvo vira uma sessao solta, sem dizer de qual vaga.
+        analysis_id: _entrevAnalysisId || null,
+        cargo: _entrevCargo || null,
+        empresa: _entrevEmpresa || null
+      })
     });
     var data = await res.json();
 
@@ -615,6 +632,7 @@ async function generateInterview(options) {
     if (!res.ok || data.error) throw new Error(data.message || data.error || 'Erro ao gerar perguntas');
 
     _questions = data.perguntas || [];
+    _sessionId = data.session_id || '';
     _currentQ = 0;
     _answers = new Array(_questions.length).fill(null);
 
@@ -945,6 +963,33 @@ function showResult() {
 
   showScreen('screenResult');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  salvarSessaoTreino(answered.length, avgScore);
+}
+
+/* Fecha a sessao no banco. Roda depois de pintar a tela, nunca antes: o
+   resultado e o que a pessoa esperou, e gravar historico nao pode atrasar nem
+   derrubar a exibicao. Sem _sessionId (generate falhou ao gravar), sai calado —
+   perder o historico e aceitavel, quebrar a tela de resultado nao. */
+async function salvarSessaoTreino(respondidas, notaMedia) {
+  if (!_sessionId || !_session) return;
+  try {
+    await fetch(_SUPA_URL + '/rest/v1/interview_sessions?id=eq.' + encodeURIComponent(_sessionId), {
+      method: 'PATCH',
+      headers: {
+        apikey: _SUPA_ANON,
+        Authorization: 'Bearer ' + _session.access_token,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({
+        respostas: _answers,
+        respondidas: respondidas,
+        nota_media: notaMedia || null,
+        total: _questions.length,
+        finished_at: new Date().toISOString()
+      })
+    });
+  } catch (e) { /* historico e secundario — a tela de resultado ja esta na frente */ }
 }
 
 function restartInterview() {

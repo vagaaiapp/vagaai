@@ -62,7 +62,7 @@ export default async function handler(req, res) {
 
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
 
-  const { job, cv, tom, analise, motivacao } = req.body || {};
+  const { job, cv, tom, analise, motivacao, analysis_id, cargo, empresa } = req.body || {};
   if (!job || job.length < 50) return res.status(400).json({ error: 'Vaga muito curta' });
   if (!cv || cv.length < 50) return res.status(400).json({ error: 'CV muito curto' });
 
@@ -190,6 +190,47 @@ Retorne APENAS este JSON (sem markdown):
     )].map(n => atende.find(a => norm(a) === n));
     result.requisitos_total = atende.length;
     result.usou_analise = atende.length > 0 || faltam.length > 0;
+
+    /* Persistir e o ponto do recurso: ate aqui a carta so existia na aba aberta.
+       Quem se candidata a 20 vagas nao conseguia reler nem reaproveitar nenhuma,
+       e o painel nao tinha numero honesto para mostrar da ferramenta.
+
+       Gravado no servidor, nao no navegador: a carta fica salva mesmo se a
+       pessoa fechar a aba no meio, e o conteudo e o que a IA devolveu, sem
+       passar por edicao do cliente. Falha de gravacao nao derruba a resposta —
+       perder o historico e ruim, perder a carta recem-gerada e pior. */
+    try {
+      const salvar = await fetch(`${SUPABASE_URL}/rest/v1/cover_letters`, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          analysis_id: typeof analysis_id === 'string' && analysis_id ? analysis_id : null,
+          cargo: typeof cargo === 'string' ? cargo.slice(0, 200) : null,
+          empresa: typeof empresa === 'string' ? empresa.slice(0, 200) : null,
+          assunto: result.assunto || null,
+          carta: result.carta || '',
+          curta: result.curta || null,
+          mensagem: result.mensagem || null,
+          requisitos_citados: result.requisitos_citados || [],
+          requisitos_total: result.requisitos_total || 0,
+        }),
+      });
+      if (salvar.ok) {
+        const linha = await salvar.json().catch(() => null);
+        if (Array.isArray(linha) && linha[0]) result.id = linha[0].id;
+      } else {
+        console.warn('cover_letters insert falhou:', salvar.status, await salvar.text());
+      }
+    } catch (e) {
+      console.warn('cover_letters insert erro:', e.message);
+    }
+
     return res.status(200).json(result);
   } catch (err) {
     console.error('cover-letter.js error:', err);
