@@ -1,7 +1,8 @@
-/* VagaAI · indicador de carregamento compartilhado
-   Um meteorito percorre uma jornada descendente nas telas, módulos e ações. */
+/* VagaAI · carregador compartilhado com o foguete Lottie oficial. */
 :root {
-  --vagaai-comet-color: var(--gb-bright, var(--green-bright, var(--app-emerald, var(--ob-action, var(--green, #3ecf8e)))));
+  --vagaai-loader-emerald: #3ecf8e;
+  --vagaai-loader-dark: #0b7e52;
+  --vagaai-loader-mint: #8de9bb;
 }
 
 .spinner,
@@ -10,32 +11,16 @@
 .s4-pdf-spinner,
 .cvol-icon,
 .vagaai-comet {
-  --comet-w: 160px;
-  --comet-h: 96px;
-  --comet-tail-w: 72px;
-  --comet-tail-h: 38px;
-  --comet-head: 30px;
-  --comet-x: 30px;
-  --comet-y: 18px;
-  --comet-start-x: -55px;
-  --comet-start-y: -12px;
-  --comet-early-x: -29px;
-  --comet-early-y: -6px;
-  --comet-mid-x: 1px;
-  --comet-mid-y: 7px;
-  --comet-late-x: 31px;
-  --comet-late-y: 23px;
-  --comet-end-x: 43px;
-  --comet-end-y: 32px;
-  --comet-duration: 2.4s;
+  --rocket-loader-w: 176px;
+  --rocket-loader-h: 185px;
   position: relative !important;
   isolation: isolate;
   display: block !important;
-  width: var(--comet-w) !important;
-  height: var(--comet-h) !important;
-  min-width: var(--comet-w) !important;
-  min-height: var(--comet-h) !important;
-  flex: 0 0 var(--comet-w) !important;
+  width: var(--rocket-loader-w) !important;
+  height: var(--rocket-loader-h) !important;
+  min-width: var(--rocket-loader-w) !important;
+  min-height: var(--rocket-loader-h) !important;
+  flex: 0 0 var(--rocket-loader-w) !important;
   margin: 0 auto !important;
   padding: 0 !important;
   border: 0 !important;
@@ -49,53 +34,7 @@
   animation: none !important;
 }
 
-.vagaai-starfield {
-  position: absolute !important;
-  z-index: 0;
-  inset: 0 !important;
-  display: block !important;
-  width: auto !important;
-  height: auto !important;
-  pointer-events: none;
-  border: 0 !important;
-  background:
-    radial-gradient(circle at 9% 31%, rgba(78, 206, 145, .42) 0 1px, transparent 1.8px),
-    radial-gradient(circle at 22% 76%, rgba(11, 126, 82, .3) 0 1px, transparent 1.7px),
-    radial-gradient(circle at 37% 18%, rgba(141, 233, 187, .48) 0 1.2px, transparent 2px),
-    radial-gradient(circle at 51% 82%, rgba(78, 206, 145, .3) 0 1px, transparent 1.8px),
-    radial-gradient(circle at 67% 12%, rgba(11, 126, 82, .28) 0 1px, transparent 1.7px),
-    radial-gradient(circle at 84% 72%, rgba(141, 233, 187, .46) 0 1.2px, transparent 2px),
-    radial-gradient(circle at 94% 28%, rgba(78, 206, 145, .34) 0 1px, transparent 1.8px) !important;
-  opacity: .68;
-}
-
-.vagaai-starfield::before,
-.vagaai-starfield::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-.vagaai-starfield::before {
-  background:
-    radial-gradient(circle at 17% 16%, #8de9bb 0 1.5px, transparent 2.5px),
-    radial-gradient(circle at 48% 38%, #dffff0 0 1.2px, transparent 2.2px),
-    radial-gradient(circle at 73% 64%, #8de9bb 0 1.4px, transparent 2.4px),
-    radial-gradient(circle at 91% 48%, #dffff0 0 1.1px, transparent 2px);
-  animation: vagaai-stars-a 1.9s ease-in-out infinite !important;
-}
-
-.vagaai-starfield::after {
-  background:
-    radial-gradient(circle at 13% 57%, #dffff0 0 1.1px, transparent 2px),
-    radial-gradient(circle at 32% 89%, #8de9bb 0 1.4px, transparent 2.4px),
-    radial-gradient(circle at 62% 23%, #dffff0 0 1.2px, transparent 2.2px),
-    radial-gradient(circle at 82% 88%, #8de9bb 0 1.3px, transparent 2.3px);
-  animation: vagaai-stars-b 1.9s ease-in-out -.95s infinite !important;
-}
-
+/* Fallback discreto enquanto o player/JSON termina de carregar. */
 .spinner::before,
 .ob-spin::before,
 .ob-spin-sm::before,
@@ -104,17 +43,16 @@
 .vagaai-comet::before {
   content: "";
   position: absolute;
-  z-index: 1;
-  left: var(--comet-x);
-  top: var(--comet-y);
-  width: var(--comet-tail-w);
-  height: var(--comet-tail-h);
-  border-radius: 0;
-  clip-path: polygon(0 0, 100% 38%, 100% 100%, 53% 70%, 61% 100%, 42% 63%);
-  background: linear-gradient(155deg, #63e5aa 0%, var(--vagaai-comet-color) 48%, #0b7e52 100%);
-  filter: drop-shadow(-4px -1px 5px rgba(62, 207, 142, .26));
-  transform-origin: right center;
-  animation: vagaai-comet-tail var(--comet-duration) linear infinite !important;
+  z-index: 0;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  background: var(--vagaai-loader-emerald);
+  box-shadow: 0 0 0 6px rgba(62, 207, 142, .12), 0 8px 22px rgba(11, 126, 82, .18);
+  animation: vagaai-loader-fallback 1.1s ease-in-out infinite !important;
 }
 
 .spinner::after,
@@ -123,25 +61,40 @@
 .s4-pdf-spinner::after,
 .cvol-icon::after,
 .vagaai-comet::after {
-  content: "";
-  position: absolute;
-  z-index: 2;
-  left: calc(var(--comet-x) + var(--comet-tail-w) - (var(--comet-head) / 2));
-  top: calc(var(--comet-y) - ((var(--comet-head) - var(--comet-tail-h)) / 2));
-  width: var(--comet-head);
-  height: var(--comet-head);
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 63% 34%, #0b7e52 0 1.7px, transparent 2.2px),
-    radial-gradient(circle at 39% 62%, #19a66b 0 2.1px, transparent 2.8px),
-    radial-gradient(circle at 66% 71%, #0b7e52 0 1.3px, transparent 1.9px),
-    radial-gradient(circle at 50% 50%, #f8fffb 0 48%, transparent 50%),
-    linear-gradient(145deg, #63e5aa 0%, var(--vagaai-comet-color) 48%, #0b7e52 100%);
-  box-shadow:
-    0 0 0 1px rgba(11, 126, 82, .12),
-    0 0 12px 3px rgba(62, 207, 142, .32),
-    0 0 26px 7px rgba(62, 207, 142, .16);
-  animation: vagaai-comet-head var(--comet-duration) linear infinite !important;
+  content: none !important;
+}
+
+.vagaai-lottie-host {
+  position: absolute !important;
+  z-index: 1;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+
+.vagaai-lottie-host svg {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: visible !important;
+}
+
+.vagaai-lottie-ready > .vagaai-lottie-host {
+  opacity: 1;
+}
+
+.spinner.vagaai-lottie-ready::before,
+.ob-spin.vagaai-lottie-ready::before,
+.ob-spin-sm.vagaai-lottie-ready::before,
+.s4-pdf-spinner.vagaai-lottie-ready::before,
+.cvol-icon.vagaai-lottie-ready::before,
+.vagaai-comet.vagaai-lottie-ready::before {
+  content: none !important;
+  animation: none !important;
 }
 
 .loading-wrap > .spinner,
@@ -155,7 +108,7 @@
   margin-bottom: 0 !important;
 }
 
-.cvol-icon > :not(.vagaai-starfield) {
+.cvol-icon > :not(.vagaai-lottie-host) {
   display: none !important;
 }
 
@@ -163,34 +116,11 @@
 .s4-pdf-spinner,
 button .spinner,
 .vagaai-comet--sm {
-  --comet-w: 32px;
-  --comet-h: 20px;
-  --comet-tail-w: 18px;
-  --comet-tail-h: 10px;
-  --comet-head: 8px;
-  --comet-x: 3px;
-  --comet-y: 3px;
-  --comet-start-x: -6px;
-  --comet-start-y: -2px;
-  --comet-early-x: -3px;
-  --comet-early-y: -1px;
-  --comet-mid-x: 1px;
-  --comet-mid-y: 1px;
-  --comet-late-x: 4px;
-  --comet-late-y: 3px;
-  --comet-end-x: 6px;
-  --comet-end-y: 5px;
-  --comet-duration: 1.35s;
+  --rocket-loader-w: 32px;
+  --rocket-loader-h: 34px;
   display: inline-block !important;
   margin: 0 5px 0 0 !important;
   vertical-align: middle !important;
-}
-
-.ob-spin-sm > .vagaai-starfield,
-.s4-pdf-spinner > .vagaai-starfield,
-button .spinner > .vagaai-starfield,
-.vagaai-comet--sm > .vagaai-starfield {
-  display: none !important;
 }
 
 .s4-pdf-spinner {
@@ -212,30 +142,8 @@ button .spinner > .vagaai-starfield,
 .ga4-loading.vagaai-loading-leaf > .vagaai-comet,
 td.vagaai-loading-leaf > .vagaai-comet,
 .vagaai-loading-leaf.compact > .vagaai-comet {
-  --comet-w: 48px;
-  --comet-h: 30px;
-  --comet-tail-w: 25px;
-  --comet-tail-h: 14px;
-  --comet-head: 11px;
-  --comet-x: 5px;
-  --comet-y: 4px;
-  --comet-start-x: -10px;
-  --comet-start-y: -3px;
-  --comet-early-x: -5px;
-  --comet-early-y: -1px;
-  --comet-mid-x: 3px;
-  --comet-mid-y: 3px;
-  --comet-late-x: 8px;
-  --comet-late-y: 6px;
-  --comet-end-x: 10px;
-  --comet-end-y: 8px;
-  --comet-duration: 1.5s;
-}
-
-.ga4-loading.vagaai-loading-leaf > .vagaai-comet > .vagaai-starfield,
-td.vagaai-loading-leaf > .vagaai-comet > .vagaai-starfield,
-.vagaai-loading-leaf.compact > .vagaai-comet > .vagaai-starfield {
-  display: none !important;
+  --rocket-loader-w: 52px;
+  --rocket-loader-h: 55px;
 }
 
 .btn-refresh .refresh-comet {
@@ -250,41 +158,9 @@ td.vagaai-loading-leaf > .vagaai-comet > .vagaai-starfield,
   display: none !important;
 }
 
-@keyframes vagaai-comet-tail {
-  0% { opacity: 0; transform: translate(var(--comet-start-x), var(--comet-start-y)) rotate(19deg) scaleX(.12); }
-  8% { opacity: .78; }
-  32% { opacity: 1; transform: translate(var(--comet-early-x), var(--comet-early-y)) rotate(21deg) scaleX(.62); }
-  60% { opacity: 1; transform: translate(var(--comet-mid-x), var(--comet-mid-y)) rotate(23deg) scaleX(.92); }
-  82% { opacity: 1; transform: translate(var(--comet-late-x), var(--comet-late-y)) rotate(26deg) scaleX(1); }
-  92% { opacity: 1; transform: translate(var(--comet-end-x), var(--comet-end-y)) rotate(27deg) scaleX(.72); }
-  100% { opacity: 0; transform: translate(var(--comet-end-x), var(--comet-end-y)) rotate(27deg) scaleX(.58); }
-}
-
-@keyframes vagaai-comet-head {
-  0% { opacity: 0; transform: translate(var(--comet-start-x), var(--comet-start-y)) scale(.55); }
-  8% { opacity: .95; }
-  32% { opacity: 1; transform: translate(var(--comet-early-x), var(--comet-early-y)) scale(.86); }
-  60% { opacity: 1; transform: translate(var(--comet-mid-x), var(--comet-mid-y)) scale(1); }
-  82% {
-    opacity: 1;
-    transform: translate(var(--comet-late-x), var(--comet-late-y)) scale(1.04);
-    box-shadow:
-      0 0 0 2px rgba(141, 233, 187, .2),
-      0 0 16px 5px rgba(62, 207, 142, .38),
-      0 0 32px 10px rgba(62, 207, 142, .18);
-  }
-  92% { opacity: 1; transform: translate(var(--comet-end-x), var(--comet-end-y)) scale(.98); }
-  100% { opacity: 0; transform: translate(var(--comet-end-x), var(--comet-end-y)) scale(.72); }
-}
-
-@keyframes vagaai-stars-a {
-  0%, 100% { opacity: .22; transform: scale(.94); }
-  50% { opacity: 1; transform: scale(1.08); }
-}
-
-@keyframes vagaai-stars-b {
-  0%, 100% { opacity: .95; transform: scale(1.04); }
-  50% { opacity: .18; transform: scale(.92); }
+@keyframes vagaai-loader-fallback {
+  0%, 100% { opacity: .38; transform: scale(.72); }
+  50% { opacity: 1; transform: scale(1); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -294,26 +170,12 @@ td.vagaai-loading-leaf > .vagaai-comet > .vagaai-starfield,
   .s4-pdf-spinner::before,
   .cvol-icon::before,
   .vagaai-comet::before {
-    opacity: .8 !important;
-    transform: translate(var(--comet-mid-x), var(--comet-mid-y)) rotate(23deg) !important;
-    animation: none !important;
-  }
-
-  .spinner::after,
-  .ob-spin::after,
-  .ob-spin-sm::after,
-  .s4-pdf-spinner::after,
-  .cvol-icon::after,
-  .vagaai-comet::after {
-    opacity: 1 !important;
-    transform: translate(var(--comet-mid-x), var(--comet-mid-y)) !important;
-    animation: none !important;
-  }
-
-  .vagaai-starfield::before,
-  .vagaai-starfield::after {
-    opacity: .62 !important;
+    opacity: .9 !important;
     transform: none !important;
     animation: none !important;
+  }
+
+  .vagaai-lottie-host {
+    transition: none;
   }
 }
