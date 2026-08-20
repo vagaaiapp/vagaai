@@ -10,24 +10,24 @@
 .s4-pdf-spinner,
 .cvol-icon,
 .vagaai-comet {
-  --comet-w: 132px;
-  --comet-h: 72px;
-  --comet-tail-w: 60px;
-  --comet-tail-h: 6px;
-  --comet-head: 12px;
-  --comet-x: 24px;
+  --comet-w: 160px;
+  --comet-h: 96px;
+  --comet-tail-w: 72px;
+  --comet-tail-h: 38px;
+  --comet-head: 30px;
+  --comet-x: 30px;
   --comet-y: 18px;
-  --comet-start-x: -46px;
-  --comet-start-y: -10px;
-  --comet-early-x: -24px;
-  --comet-early-y: -5px;
-  --comet-mid-x: 2px;
+  --comet-start-x: -55px;
+  --comet-start-y: -12px;
+  --comet-early-x: -29px;
+  --comet-early-y: -6px;
+  --comet-mid-x: 1px;
   --comet-mid-y: 7px;
-  --comet-late-x: 28px;
-  --comet-late-y: 22px;
-  --comet-end-x: 40px;
-  --comet-end-y: 31px;
-  --comet-duration: 2.1s;
+  --comet-late-x: 31px;
+  --comet-late-y: 23px;
+  --comet-end-x: 43px;
+  --comet-end-y: 32px;
+  --comet-duration: 2.4s;
   position: relative !important;
   isolation: isolate;
   display: block !important;
@@ -49,6 +49,53 @@
   animation: none !important;
 }
 
+.vagaai-starfield {
+  position: absolute !important;
+  z-index: 0;
+  inset: 0 !important;
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  pointer-events: none;
+  border: 0 !important;
+  background:
+    radial-gradient(circle at 9% 31%, rgba(78, 206, 145, .42) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 22% 76%, rgba(11, 126, 82, .3) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 37% 18%, rgba(141, 233, 187, .48) 0 1.2px, transparent 2px),
+    radial-gradient(circle at 51% 82%, rgba(78, 206, 145, .3) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 67% 12%, rgba(11, 126, 82, .28) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 84% 72%, rgba(141, 233, 187, .46) 0 1.2px, transparent 2px),
+    radial-gradient(circle at 94% 28%, rgba(78, 206, 145, .34) 0 1px, transparent 1.8px) !important;
+  opacity: .68;
+}
+
+.vagaai-starfield::before,
+.vagaai-starfield::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.vagaai-starfield::before {
+  background:
+    radial-gradient(circle at 17% 16%, #8de9bb 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 48% 38%, #dffff0 0 1.2px, transparent 2.2px),
+    radial-gradient(circle at 73% 64%, #8de9bb 0 1.4px, transparent 2.4px),
+    radial-gradient(circle at 91% 48%, #dffff0 0 1.1px, transparent 2px);
+  animation: vagaai-stars-a 1.9s ease-in-out infinite !important;
+}
+
+.vagaai-starfield::after {
+  background:
+    radial-gradient(circle at 13% 57%, #dffff0 0 1.1px, transparent 2px),
+    radial-gradient(circle at 32% 89%, #8de9bb 0 1.4px, transparent 2.4px),
+    radial-gradient(circle at 62% 23%, #dffff0 0 1.2px, transparent 2.2px),
+    radial-gradient(circle at 82% 88%, #8de9bb 0 1.3px, transparent 2.3px);
+  animation: vagaai-stars-b 1.9s ease-in-out -.95s infinite !important;
+}
+
 .spinner::before,
 .ob-spin::before,
 .ob-spin-sm::before,
@@ -62,10 +109,10 @@
   top: var(--comet-y);
   width: var(--comet-tail-w);
   height: var(--comet-tail-h);
-  border-radius: 999px;
-  clip-path: polygon(0 50%, 100% 0, 100% 100%);
-  background: linear-gradient(90deg, transparent 0%, rgba(78, 206, 145, .06) 14%, rgba(78, 206, 145, .42) 48%, rgba(141, 233, 187, .84) 78%, #f4fff9 100%);
-  filter: drop-shadow(-5px -2px 6px rgba(62, 207, 142, .4));
+  border-radius: 0;
+  clip-path: polygon(0 0, 100% 38%, 100% 100%, 53% 70%, 61% 100%, 42% 63%);
+  background: linear-gradient(155deg, #63e5aa 0%, var(--vagaai-comet-color) 48%, #0b7e52 100%);
+  filter: drop-shadow(-4px -1px 5px rgba(62, 207, 142, .26));
   transform-origin: right center;
   animation: vagaai-comet-tail var(--comet-duration) linear infinite !important;
 }
@@ -83,14 +130,17 @@
   top: calc(var(--comet-y) - ((var(--comet-head) - var(--comet-tail-h)) / 2));
   width: var(--comet-head);
   height: var(--comet-head);
-  border-radius: 62% 38% 55% 45%;
-  background: radial-gradient(circle at 68% 62%, #fff 0 20%, #e3fff1 34%, #8de9bb 62%, rgba(62, 207, 142, .78) 100%);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 63% 34%, #0b7e52 0 1.7px, transparent 2.2px),
+    radial-gradient(circle at 39% 62%, #19a66b 0 2.1px, transparent 2.8px),
+    radial-gradient(circle at 66% 71%, #0b7e52 0 1.3px, transparent 1.9px),
+    radial-gradient(circle at 50% 50%, #f8fffb 0 48%, transparent 50%),
+    linear-gradient(145deg, #63e5aa 0%, var(--vagaai-comet-color) 48%, #0b7e52 100%);
   box-shadow:
-    -10px -5px 0 -3px rgba(212, 255, 233, .58),
-    -20px -10px 0 -4px rgba(141, 233, 187, .34),
-    0 0 0 2px rgba(141, 233, 187, .2),
-    0 0 12px 4px var(--vagaai-comet-color),
-    0 0 24px 7px rgba(62, 207, 142, .24);
+    0 0 0 1px rgba(11, 126, 82, .12),
+    0 0 12px 3px rgba(62, 207, 142, .32),
+    0 0 26px 7px rgba(62, 207, 142, .16);
   animation: vagaai-comet-head var(--comet-duration) linear infinite !important;
 }
 
@@ -105,7 +155,7 @@
   margin-bottom: 0 !important;
 }
 
-.cvol-icon > * {
+.cvol-icon > :not(.vagaai-starfield) {
   display: none !important;
 }
 
@@ -115,25 +165,32 @@ button .spinner,
 .vagaai-comet--sm {
   --comet-w: 32px;
   --comet-h: 20px;
-  --comet-tail-w: 20px;
-  --comet-tail-h: 3px;
-  --comet-head: 5px;
-  --comet-x: 5px;
-  --comet-y: 6px;
-  --comet-start-x: -8px;
-  --comet-start-y: -3px;
-  --comet-early-x: -4px;
+  --comet-tail-w: 18px;
+  --comet-tail-h: 10px;
+  --comet-head: 8px;
+  --comet-x: 3px;
+  --comet-y: 3px;
+  --comet-start-x: -6px;
+  --comet-start-y: -2px;
+  --comet-early-x: -3px;
   --comet-early-y: -1px;
-  --comet-mid-x: 2px;
-  --comet-mid-y: 2px;
-  --comet-late-x: 6px;
-  --comet-late-y: 5px;
-  --comet-end-x: 8px;
-  --comet-end-y: 7px;
+  --comet-mid-x: 1px;
+  --comet-mid-y: 1px;
+  --comet-late-x: 4px;
+  --comet-late-y: 3px;
+  --comet-end-x: 6px;
+  --comet-end-y: 5px;
   --comet-duration: 1.35s;
   display: inline-block !important;
   margin: 0 5px 0 0 !important;
   vertical-align: middle !important;
+}
+
+.ob-spin-sm > .vagaai-starfield,
+.s4-pdf-spinner > .vagaai-starfield,
+button .spinner > .vagaai-starfield,
+.vagaai-comet--sm > .vagaai-starfield {
+  display: none !important;
 }
 
 .s4-pdf-spinner {
@@ -155,24 +212,30 @@ button .spinner,
 .ga4-loading.vagaai-loading-leaf > .vagaai-comet,
 td.vagaai-loading-leaf > .vagaai-comet,
 .vagaai-loading-leaf.compact > .vagaai-comet {
-  --comet-w: 42px;
-  --comet-h: 28px;
-  --comet-tail-w: 28px;
-  --comet-tail-h: 3px;
-  --comet-head: 6px;
-  --comet-x: 8px;
-  --comet-y: 8px;
-  --comet-start-x: -12px;
-  --comet-start-y: -4px;
-  --comet-early-x: -6px;
-  --comet-early-y: -2px;
-  --comet-mid-x: 4px;
-  --comet-mid-y: 4px;
-  --comet-late-x: 9px;
-  --comet-late-y: 8px;
-  --comet-end-x: 12px;
-  --comet-end-y: 10px;
+  --comet-w: 48px;
+  --comet-h: 30px;
+  --comet-tail-w: 25px;
+  --comet-tail-h: 14px;
+  --comet-head: 11px;
+  --comet-x: 5px;
+  --comet-y: 4px;
+  --comet-start-x: -10px;
+  --comet-start-y: -3px;
+  --comet-early-x: -5px;
+  --comet-early-y: -1px;
+  --comet-mid-x: 3px;
+  --comet-mid-y: 3px;
+  --comet-late-x: 8px;
+  --comet-late-y: 6px;
+  --comet-end-x: 10px;
+  --comet-end-y: 8px;
   --comet-duration: 1.5s;
+}
+
+.ga4-loading.vagaai-loading-leaf > .vagaai-comet > .vagaai-starfield,
+td.vagaai-loading-leaf > .vagaai-comet > .vagaai-starfield,
+.vagaai-loading-leaf.compact > .vagaai-comet > .vagaai-starfield {
+  display: none !important;
 }
 
 .btn-refresh .refresh-comet {
@@ -204,16 +267,24 @@ td.vagaai-loading-leaf > .vagaai-comet,
   60% { opacity: 1; transform: translate(var(--comet-mid-x), var(--comet-mid-y)) scale(1); }
   82% {
     opacity: 1;
-    transform: translate(var(--comet-late-x), var(--comet-late-y)) scale(1.06);
+    transform: translate(var(--comet-late-x), var(--comet-late-y)) scale(1.04);
     box-shadow:
-      -11px -6px 0 -3px rgba(212, 255, 233, .64),
-      -22px -11px 0 -4px rgba(141, 233, 187, .38),
-      0 0 0 3px rgba(141, 233, 187, .22),
-      0 0 15px 5px var(--vagaai-comet-color),
-      0 0 30px 9px rgba(62, 207, 142, .26);
+      0 0 0 2px rgba(141, 233, 187, .2),
+      0 0 16px 5px rgba(62, 207, 142, .38),
+      0 0 32px 10px rgba(62, 207, 142, .18);
   }
   92% { opacity: 1; transform: translate(var(--comet-end-x), var(--comet-end-y)) scale(.98); }
   100% { opacity: 0; transform: translate(var(--comet-end-x), var(--comet-end-y)) scale(.72); }
+}
+
+@keyframes vagaai-stars-a {
+  0%, 100% { opacity: .22; transform: scale(.94); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+@keyframes vagaai-stars-b {
+  0%, 100% { opacity: .95; transform: scale(1.04); }
+  50% { opacity: .18; transform: scale(.92); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -236,6 +307,13 @@ td.vagaai-loading-leaf > .vagaai-comet,
   .vagaai-comet::after {
     opacity: 1 !important;
     transform: translate(var(--comet-mid-x), var(--comet-mid-y)) !important;
+    animation: none !important;
+  }
+
+  .vagaai-starfield::before,
+  .vagaai-starfield::after {
+    opacity: .62 !important;
+    transform: none !important;
     animation: none !important;
   }
 }

@@ -4,6 +4,25 @@
 
   var LOADING_TEXT = /^(carregando|gerando|processando|avaliando|montando|preparando|analisando|ainda processando)/i;
   var TAGS = 'div,td,p,span,strong,h1,h2';
+  var LOADERS = '.spinner,.ob-spin,.ob-spin-sm,.s4-pdf-spinner,.cvol-icon,.vagaai-comet';
+
+  function decorateLoader(loader) {
+    if (!loader || loader.nodeType !== 1) return;
+    for (var i = 0; i < loader.children.length; i++) {
+      if (loader.children[i].classList.contains('vagaai-starfield')) return;
+    }
+    var stars = document.createElement('span');
+    stars.className = 'vagaai-starfield';
+    stars.setAttribute('aria-hidden', 'true');
+    loader.insertBefore(stars, loader.firstChild);
+  }
+
+  function decorateLoaders(root) {
+    if (!root) return;
+    if (root.nodeType === 1 && root.matches(LOADERS)) decorateLoader(root);
+    var loaders = root.querySelectorAll ? root.querySelectorAll(LOADERS) : [];
+    for (var i = 0; i < loaders.length; i++) decorateLoader(loaders[i]);
+  }
 
   function directText(el) {
     var value = '';
@@ -36,11 +55,13 @@
     comet.className = 'vagaai-comet';
     comet.setAttribute('aria-hidden', 'true');
     el.insertBefore(comet, el.firstChild);
+    decorateLoader(comet);
     el.classList.add('vagaai-loading-leaf');
   }
 
   function scan(root) {
     if (!root) return;
+    decorateLoaders(root);
     if (root.nodeType === 1 && root.matches(TAGS)) enhanceElement(root);
     var nodes = root.querySelectorAll ? root.querySelectorAll(TAGS) : [];
     for (var i = 0; i < nodes.length; i++) enhanceElement(nodes[i]);

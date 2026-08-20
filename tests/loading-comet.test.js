@@ -40,25 +40,36 @@ test('o componente possui cauda, núcleo e alternativa sem movimento', () => {
 
 test('o meteorito percorre uma trajetória descendente', () => {
   const css = read('loading-comet.css');
-  assert.match(css, /--comet-start-y:\s*-10px[\s\S]*--comet-end-y:\s*31px/);
+  assert.match(css, /--comet-start-y:\s*-12px[\s\S]*--comet-end-y:\s*32px/);
   assert.match(css, /@keyframes vagaai-comet-tail[\s\S]*rotate\(19deg\)[\s\S]*rotate\(27deg\)/);
-  assert.match(css, /--comet-duration:\s*2\.1s/);
+  assert.match(css, /--comet-duration:\s*2\.4s/);
   assert.match(css, /clip-path:\s*polygon/);
 });
 
 test('a jornada preserva uma versão proporcional para ações compactas', () => {
   const css = read('loading-comet.css');
-  assert.match(css, /\.vagaai-comet--sm[\s\S]*--comet-start-y:\s*-3px[\s\S]*--comet-end-y:\s*7px/);
+  assert.match(css, /\.vagaai-comet--sm[\s\S]*--comet-start-y:\s*-2px[\s\S]*--comet-end-y:\s*5px/);
   assert.match(css, /--comet-duration:\s*1\.35s/);
-  assert.match(css, /82%[\s\S]*box-shadow:[\s\S]*--vagaai-comet-color/);
+  assert.match(css, /--comet-tail-h:\s*10px[\s\S]*--comet-head:\s*8px/);
 });
 
 test('o corpo maior permanece reconhecível durante a passagem suave', () => {
   const css = read('loading-comet.css');
-  assert.match(css, /--comet-w:\s*132px[\s\S]*--comet-head:\s*12px/);
-  assert.match(css, /radial-gradient\(circle at 68% 62%/);
+  assert.match(css, /--comet-w:\s*160px[\s\S]*--comet-head:\s*30px/);
+  assert.match(css, /radial-gradient\(circle at 63% 34%/);
   assert.match(css, /var\(--comet-duration\) linear infinite/);
   assert.match(css, /92%[\s\S]*100%[\s\S]*opacity:\s*0/);
+});
+
+test('o fundo estrelado pisca em camadas sem poluir ações compactas', () => {
+  const css = read('loading-comet.css');
+  const script = read('js/loading-comet.js');
+  assert.match(css, /\.vagaai-starfield::before[\s\S]*vagaai-stars-a/);
+  assert.match(css, /\.vagaai-starfield::after[\s\S]*vagaai-stars-b/);
+  assert.match(css, /button \.spinner > \.vagaai-starfield[\s\S]*display:\s*none/);
+  assert.match(script, /function decorateLoader/);
+  assert.match(script, /className = 'vagaai-starfield'/);
+  assert.match(script, /aria-hidden/);
 });
 
 test('os antigos círculos giratórios não permanecem nas páginas migradas', () => {
