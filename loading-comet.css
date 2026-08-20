@@ -1,5 +1,5 @@
 /* VagaAI · indicador de carregamento compartilhado
-   O mesmo cometa atende telas inteiras, módulos e ações compactas. */
+   Um meteorito percorre uma jornada descendente nas telas, módulos e ações. */
 :root {
   --vagaai-comet-color: var(--gb-bright, var(--green-bright, var(--app-emerald, var(--ob-action, var(--green, #3ecf8e)))));
 }
@@ -10,13 +10,24 @@
 .s4-pdf-spinner,
 .cvol-icon,
 .vagaai-comet {
-  --comet-w: 58px;
-  --comet-h: 38px;
-  --comet-tail-w: 42px;
+  --comet-w: 100px;
+  --comet-h: 52px;
+  --comet-tail-w: 44px;
   --comet-tail-h: 4px;
   --comet-head: 8px;
-  --comet-x: 3px;
-  --comet-y: 20px;
+  --comet-x: 20px;
+  --comet-y: 16px;
+  --comet-start-x: -38px;
+  --comet-start-y: -8px;
+  --comet-early-x: -18px;
+  --comet-early-y: -3px;
+  --comet-mid-x: 10px;
+  --comet-mid-y: 10px;
+  --comet-late-x: 23px;
+  --comet-late-y: 18px;
+  --comet-end-x: 30px;
+  --comet-end-y: 24px;
+  --comet-duration: 1.55s;
   position: relative !important;
   isolation: isolate;
   display: block !important;
@@ -53,10 +64,10 @@
   height: var(--comet-tail-h);
   border-radius: 999px;
   clip-path: polygon(0 50%, 100% 0, 100% 100%);
-  background: linear-gradient(90deg, transparent 0%, rgba(78, 206, 145, .1) 22%, rgba(78, 206, 145, .72) 72%, #dffff0 100%);
-  filter: drop-shadow(-2px -1px 4px rgba(62, 207, 142, .42));
+  background: linear-gradient(90deg, transparent 0%, rgba(78, 206, 145, .08) 18%, rgba(78, 206, 145, .52) 55%, rgba(141, 233, 187, .9) 82%, #f4fff9 100%);
+  filter: drop-shadow(-4px -2px 5px rgba(62, 207, 142, .46));
   transform-origin: right center;
-  animation: vagaai-comet-tail 1.05s cubic-bezier(.45, 0, .25, 1) infinite !important;
+  animation: vagaai-comet-tail var(--comet-duration) cubic-bezier(.34, 0, .18, 1) infinite !important;
 }
 
 .spinner::after,
@@ -75,12 +86,13 @@
   border-radius: 58% 42% 52% 48%;
   background: #f4fff9;
   box-shadow:
-    -7px -4px 0 -2px rgba(141, 233, 187, .58),
-    -14px -8px 0 -2.5px rgba(78, 206, 145, .32),
+    -7px -4px 0 -2px rgba(212, 255, 233, .72),
+    -14px -8px 0 -2.5px rgba(141, 233, 187, .5),
+    -21px -12px 0 -3px rgba(78, 206, 145, .28),
     0 0 0 2px rgba(78, 206, 145, .25),
     0 0 9px 3px var(--vagaai-comet-color),
     0 0 20px 5px rgba(62, 207, 142, .28);
-  animation: vagaai-comet-head 1.05s cubic-bezier(.45, 0, .25, 1) infinite !important;
+  animation: vagaai-comet-head var(--comet-duration) cubic-bezier(.34, 0, .18, 1) infinite !important;
 }
 
 .loading-wrap > .spinner,
@@ -107,8 +119,19 @@ button .spinner,
   --comet-tail-w: 18px;
   --comet-tail-h: 2px;
   --comet-head: 4px;
-  --comet-x: 1px;
-  --comet-y: 10px;
+  --comet-x: 5px;
+  --comet-y: 6px;
+  --comet-start-x: -7px;
+  --comet-start-y: -3px;
+  --comet-early-x: -3px;
+  --comet-early-y: -1px;
+  --comet-mid-x: 2px;
+  --comet-mid-y: 2px;
+  --comet-late-x: 5px;
+  --comet-late-y: 4px;
+  --comet-end-x: 7px;
+  --comet-end-y: 6px;
+  --comet-duration: 1.15s;
   display: inline-block !important;
   margin: 0 5px 0 0 !important;
   vertical-align: middle !important;
@@ -138,8 +161,19 @@ td.vagaai-loading-leaf > .vagaai-comet,
   --comet-tail-w: 24px;
   --comet-tail-h: 2px;
   --comet-head: 5px;
-  --comet-x: 2px;
-  --comet-y: 12px;
+  --comet-x: 7px;
+  --comet-y: 8px;
+  --comet-start-x: -10px;
+  --comet-start-y: -4px;
+  --comet-early-x: -5px;
+  --comet-early-y: -2px;
+  --comet-mid-x: 3px;
+  --comet-mid-y: 3px;
+  --comet-late-x: 7px;
+  --comet-late-y: 6px;
+  --comet-end-x: 10px;
+  --comet-end-y: 8px;
+  --comet-duration: 1.25s;
 }
 
 .btn-refresh .refresh-comet {
@@ -155,17 +189,31 @@ td.vagaai-loading-leaf > .vagaai-comet,
 }
 
 @keyframes vagaai-comet-tail {
-  0% { opacity: 0; transform: translate(-14px, -10px) rotate(28deg) scaleX(.18); }
-  18% { opacity: 1; }
-  62% { opacity: 1; transform: translate(4px, 4px) rotate(28deg) scaleX(1); }
-  100% { opacity: 0; transform: translate(16px, 11px) rotate(28deg) scaleX(.58); }
+  0% { opacity: 0; transform: translate(var(--comet-start-x), var(--comet-start-y)) rotate(22deg) scaleX(.06); }
+  12% { opacity: .92; }
+  38% { opacity: 1; transform: translate(var(--comet-early-x), var(--comet-early-y)) rotate(24deg) scaleX(.45); }
+  68% { opacity: 1; transform: translate(var(--comet-mid-x), var(--comet-mid-y)) rotate(27deg) scaleX(1); }
+  82% { opacity: 1; transform: translate(var(--comet-late-x), var(--comet-late-y)) rotate(29deg) scaleX(.82); }
+  100% { opacity: 0; transform: translate(var(--comet-end-x), var(--comet-end-y)) rotate(31deg) scaleX(.2); }
 }
 
 @keyframes vagaai-comet-head {
-  0% { opacity: 0; transform: translate(-14px, -10px) scale(.55); }
-  18% { opacity: 1; }
-  62% { opacity: 1; transform: translate(4px, 4px) scale(1.08); }
-  100% { opacity: 0; transform: translate(16px, 11px) scale(.35); }
+  0% { opacity: 0; transform: translate(var(--comet-start-x), var(--comet-start-y)) scale(.35); }
+  12% { opacity: 1; }
+  38% { opacity: 1; transform: translate(var(--comet-early-x), var(--comet-early-y)) scale(.78); }
+  68% { opacity: 1; transform: translate(var(--comet-mid-x), var(--comet-mid-y)) scale(1); }
+  82% {
+    opacity: 1;
+    transform: translate(var(--comet-late-x), var(--comet-late-y)) scale(1.18);
+    box-shadow:
+      -8px -5px 0 -2px rgba(212, 255, 233, .82),
+      -16px -9px 0 -2.5px rgba(141, 233, 187, .58),
+      -24px -14px 0 -3px rgba(78, 206, 145, .32),
+      0 0 0 3px rgba(141, 233, 187, .3),
+      0 0 13px 5px var(--vagaai-comet-color),
+      0 0 28px 8px rgba(62, 207, 142, .34);
+  }
+  100% { opacity: 0; transform: translate(var(--comet-end-x), var(--comet-end-y)) scale(.3); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -176,7 +224,7 @@ td.vagaai-loading-leaf > .vagaai-comet,
   .cvol-icon::before,
   .vagaai-comet::before {
     opacity: .8 !important;
-    transform: rotate(28deg) !important;
+    transform: translate(var(--comet-mid-x), var(--comet-mid-y)) rotate(27deg) !important;
     animation: none !important;
   }
 

@@ -40,9 +40,17 @@ test('o componente possui cauda, núcleo e alternativa sem movimento', () => {
 
 test('o meteorito percorre uma trajetória descendente', () => {
   const css = read('loading-comet.css');
-  assert.match(css, /@keyframes vagaai-comet-tail[\s\S]*translate\(-14px,\s*-10px\)[\s\S]*translate\(16px,\s*11px\)/);
-  assert.match(css, /rotate\(28deg\)/);
+  assert.match(css, /--comet-start-y:\s*-8px[\s\S]*--comet-end-y:\s*24px/);
+  assert.match(css, /@keyframes vagaai-comet-tail[\s\S]*rotate\(22deg\)[\s\S]*rotate\(31deg\)/);
+  assert.match(css, /--comet-duration:\s*1\.55s/);
   assert.match(css, /clip-path:\s*polygon/);
+});
+
+test('a jornada preserva uma versão proporcional para ações compactas', () => {
+  const css = read('loading-comet.css');
+  assert.match(css, /\.vagaai-comet--sm[\s\S]*--comet-start-y:\s*-3px[\s\S]*--comet-end-y:\s*6px/);
+  assert.match(css, /--comet-duration:\s*1\.15s/);
+  assert.match(css, /82%[\s\S]*box-shadow:[\s\S]*--vagaai-comet-color/);
 });
 
 test('os antigos círculos giratórios não permanecem nas páginas migradas', () => {
