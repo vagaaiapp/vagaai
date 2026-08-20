@@ -1360,77 +1360,80 @@ body.frame-fullscreen .sidebar { display: none !important; }
 [data-theme="dark"] .blk-link { color:var(--gb-bright); }
 .blk-link:hover { text-decoration:underline; }
 
-/* ── Bloco 01 · Seu material ─────────────────────────────────
-   Currículo base, lacunas do mercado e versões por vaga. Faixa de três
-   colunas coladas (gap:1px sobre o fundo da borda) e não três cards
-   soltos: são leituras do mesmo objeto, não três assuntos. */
-/* Respiro: o painel ganhou muito só afastando as seções. 30px é o ponto onde
-   o ganho visual ainda existe sem custar dobra demais. */
+/* ── Perfil de valor · currículo e ferramentas ───────────────
+   O currículo deixa de ser uma faixa de contadores e passa a ser o ativo que
+   alimenta toda a busca: completude, forças comprovadas e lacunas do mercado
+   aparecem na mesma composição. O rótulo do círculo explicita que o percentual
+   mede o preenchimento do currículo — nunca a aderência a uma vaga. */
 .mat-section { margin-bottom:26px; }
-.mat-strip { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; box-shadow:var(--sh-card); }
-.mat-tile { background:var(--bg-card); padding:16px 18px; display:flex; flex-direction:column; gap:7px; min-width:0; }
-.mat-lbl { display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:var(--t3); }
-.mat-ico { width:15px; height:15px; flex-shrink:0; }
-.mat-val { font-size:21px; font-weight:800; color:var(--t1); line-height:1.1; letter-spacing:-.4px; font-variant-numeric:tabular-nums; }
-.mat-val small { font-size:12.5px; font-weight:600; color:var(--t2); letter-spacing:0; }
-.mat-sub { font-size:11.5px; color:var(--t3); line-height:1.45; }
-.mat-bar { height:5px; border-radius:20px; background:var(--bg-sub); border:1px solid var(--border); overflow:hidden; }
-.mat-bar i { display:block; height:100%; background:var(--gb-emerald); border-radius:20px; transition:width .5s cubic-bezier(.4,0,.2,1); }
-/* --gb-emerald é escuro demais sobre o card escuro: a barra sumia. */
-[data-theme="dark"] .mat-bar i { background:var(--gb-bright); }
-.mat-cta { font-size:12px; font-weight:700; color:var(--gb-emerald); background:none; border:none; padding:0; cursor:pointer; text-align:left; align-self:flex-start; font-family:inherit; margin-top:auto; }
-[data-theme="dark"] .mat-cta { color:var(--gb-bright); }
-.mat-cta:hover { text-decoration:underline; }
-.mat-chips { display:flex; flex-wrap:wrap; gap:5px; }
-.mat-chip { font-size:11px; font-weight:700; background:var(--s-amb-bg); border:1px solid rgba(196,125,10,.28); color:#a5680c; padding:2px 8px; border-radius:20px; white-space:nowrap; }
-[data-theme="dark"] .mat-chip { background:rgba(255,209,102,.1); border-color:rgba(255,209,102,.35); color:#ffd166; }
-.mat-chip-ok { background:var(--s-grn-bg); border-color:rgba(26,122,74,.28); color:var(--s-grn); }
-[data-theme="dark"] .mat-chip-ok { background:rgba(78,206,145,.12); border-color:rgba(78,206,145,.35); color:var(--gb-bright); }
-
-/* ── Suas ferramentas ───────────────────────────────
-   Antes eram quatro contadores (vagas, candidaturas, entrevistas, alertas) —
-   números, não ferramentas, e três deles repetiam o funil. Pior: carta de
-   apresentação e treino de entrevista não apareciam em lugar nenhum do painel,
-   então quem assina Pro via três dos cinco produtos que paga. Agora cada card
-   é uma ferramenta, com o nome em primeiro plano e o estado embaixo. */
-.fer-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
-/* Peso visual sem barulho: um brilho no canto atrás do ícone dá corpo ao card
-   e mantém a altura. Deliberadamente contido — se os quatro ficarem pesados,
-   competem com o herói e a tela perde hierarquia. */
-.fer-card {
-  display:flex; align-items:center; gap:12px; width:100%; text-align:left;
-  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r-sm);
-  padding:15px 16px; cursor:pointer; font-family:inherit;
-  transition:border-color .15s, transform .15s, box-shadow .15s;
-  box-shadow:var(--sh-card);
-  position:relative; overflow:hidden;
-}
-.fer-card::before {
-  content:''; position:absolute; left:-30px; top:-46px;
-  width:118px; height:118px; border-radius:50%;
-  background:radial-gradient(circle, var(--s-grn-bg), transparent 70%);
-  pointer-events:none;
-}
-[data-theme="dark"] .fer-card::before { background:radial-gradient(circle, rgba(78,206,145,.10), transparent 70%); }
-.fer-card-lock::before { background:radial-gradient(circle, var(--s-amb-bg), transparent 70%); }
-.fer-card > * { position:relative; z-index:1; }
-.fer-card:hover { border-color:var(--gb-emerald); transform:translateY(-1px); }
-.fer-card:focus-visible { outline:2px solid var(--gb-emerald); outline-offset:2px; }
-.fer-ico {
-  width:34px; height:34px; border-radius:9px; flex-shrink:0;
-  display:grid; place-items:center; background:var(--s-grn-bg); color:var(--gb-emerald);
-}
+.profile-value-stage { overflow:hidden; border:1px solid var(--border); border-radius:var(--r); background:var(--bg-card); box-shadow:var(--sh-card); }
+.mat-strip { display:block; }
+.pv-hero { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(230px,.55fr); min-height:250px; color:#fff; background:linear-gradient(118deg,#082c1d 0%,#0b5135 72%,#106943 100%); }
+.pv-copy { position:relative; overflow:hidden; padding:30px 34px; }
+.pv-copy::after { content:'CV'; position:absolute; right:18px; bottom:-52px; color:rgba(255,255,255,.035); font-family:Lora,Georgia,serif; font-size:190px; font-weight:700; line-height:1; pointer-events:none; }
+.pv-copy > * { position:relative; z-index:1; }
+.pv-eyebrow { display:flex; align-items:center; gap:7px; color:var(--gb-bright); font-size:10px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; }
+.pv-eyebrow-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+.pv-title { max-width:690px; margin:14px 0 8px; font-family:Lora,Georgia,serif; font-size:25px; line-height:1.23; letter-spacing:-.25px; }
+.pv-desc { max-width:650px; color:#bfd9ca; font-size:12px; line-height:1.65; }
+.pv-metrics { display:flex; align-items:flex-start; gap:30px; margin-top:22px; }
+.pv-metric strong, .pv-metric span { display:block; }
+.pv-metric strong { font-family:Lora,Georgia,serif; font-size:24px; line-height:1; font-variant-numeric:tabular-nums; }
+.pv-metric span { margin-top:5px; color:#a8c8b6; font-size:10px; }
+.pv-copy-actions { display:flex; align-items:center; gap:12px; margin-top:20px; }
+.pv-primary { padding:10px 15px; border:0; border-radius:9px; background:var(--gb-bright); color:#052b1b; font-family:inherit; font-size:11px; font-weight:800; cursor:pointer; }
+.pv-updated { color:#a8c8b6; font-size:10px; }
+.pv-completion { display:grid; place-items:center; padding:24px; border-left:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.045); }
+.pv-ring { --pv-progress:0%; position:relative; width:158px; height:158px; display:grid; place-items:center; border-radius:50%; background:conic-gradient(var(--gb-bright) var(--pv-progress),rgba(255,255,255,.10) 0); box-shadow:0 20px 46px rgba(2,25,15,.2); }
+.pv-ring::before { content:''; position:absolute; inset:12px; border-radius:50%; background:#0b4a31; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); }
+.pv-ring-inner { position:relative; z-index:1; width:116px; text-align:center; }
+.pv-ring-inner strong, .pv-ring-inner span { display:block; }
+.pv-ring-inner strong { font-family:Lora,Georgia,serif; font-size:33px; line-height:1; font-variant-numeric:tabular-nums; }
+.pv-ring-inner span { margin-top:7px; color:#c0dacb; font-size:9px; line-height:1.35; text-transform:uppercase; letter-spacing:.06em; }
+.pv-lower { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr); }
+.pv-panel { min-width:0; padding:23px 28px; background:var(--bg-card); }
+.pv-panel + .pv-panel { border-left:1px solid var(--border); background:var(--bg-sub); }
+.pv-panel-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:15px; }
+.pv-panel-head h3 { font-size:13px; color:var(--t1); }
+.pv-panel-head p { margin-top:4px; color:var(--t3); font-size:10.5px; line-height:1.45; }
+.pv-link { flex-shrink:0; border:0; background:none; color:var(--gb-emerald); font-family:inherit; font-size:10.5px; font-weight:800; cursor:pointer; }
+[data-theme="dark"] .pv-link { color:var(--gb-bright); }
+.pv-strengths { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.pv-strength { min-width:0; padding:13px; border-radius:12px; background:var(--bg-sub); }
+.pv-strength b, .pv-strength span { display:block; }
+.pv-strength b { overflow:hidden; color:var(--t1); font-size:11px; text-overflow:ellipsis; white-space:nowrap; }
+.pv-strength span { margin-top:5px; color:var(--t3); font-size:9.5px; line-height:1.4; }
+.pv-empty { padding:14px; border:1px dashed var(--border); border-radius:11px; color:var(--t3); font-size:10.5px; line-height:1.5; }
+.pv-rank-list { list-style:none; margin:0; padding:0; }
+.pv-rank-item { display:grid; grid-template-columns:27px minmax(0,1fr) auto; align-items:center; gap:9px; padding:9px 0; border-bottom:1px solid var(--border); }
+.pv-rank-item:last-child { border-bottom:0; }
+.pv-rank-num { color:var(--gb-emerald); font-size:9.5px; font-weight:800; font-variant-numeric:tabular-nums; }
+[data-theme="dark"] .pv-rank-num { color:var(--gb-bright); }
+.pv-rank-name { overflow:hidden; color:var(--t1); font-size:10.5px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
+.pv-rank-freq { color:var(--s-amb); font-size:9.5px; white-space:nowrap; }
+.pv-market-foot { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; padding-top:13px; border-top:1px solid var(--border); }
+.pv-version-count { display:flex; align-items:baseline; gap:6px; color:var(--t2); font-size:9.5px; }
+.pv-version-count strong { color:var(--t1); font-family:Lora,Georgia,serif; font-size:20px; }
+.profile-value-tools { border-top:1px solid var(--border); }
+.profile-value-tools-head { display:flex; align-items:baseline; gap:9px; padding:13px 18px 0; }
+.profile-value-tools-head strong { color:var(--t1); font-size:12px; }
+.profile-value-tools-head span { color:var(--t3); font-size:9.5px; }
+.fer-strip { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); }
+.fer-card { position:relative; display:flex; align-items:center; gap:10px; min-width:0; width:100%; padding:15px 18px 17px; border:0; border-right:1px solid var(--border); background:transparent; color:var(--t1); font-family:inherit; text-align:left; cursor:pointer; transition:background .15s; }
+.fer-card:last-child { border-right:0; }
+.fer-card:hover { background:var(--bg-sub); }
+.fer-card:focus-visible { outline:2px solid var(--gb-emerald); outline-offset:-3px; }
+.fer-ico { width:33px; height:33px; display:grid; place-items:center; flex-shrink:0; border-radius:9px; background:var(--s-grn-bg); color:var(--gb-emerald); }
 [data-theme="dark"] .fer-ico { color:var(--gb-bright); }
-.fer-ico svg { width:17px; height:17px; }
-.fer-txt { min-width:0; }
-/* <span> sem display de bloco cola valor e rótulo na mesma linha
-   ("1 vagaVagas analisadas"). Ratchet em tests/integridade.test.js. */
-.fer-nome { display:flex; align-items:center; gap:6px; font-size:13.5px; font-weight:800; color:var(--t1); line-height:1.2; letter-spacing:-.2px; }
-.fer-estado { display:block; font-size:11.5px; color:var(--t2); margin-top:3px; line-height:1.35; }
-.fer-selo { font-size:9.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--s-amb); background:var(--s-amb-bg); border:1px solid rgba(196,125,10,.28); border-radius:20px; padding:1px 6px; flex-shrink:0; }
 .fer-card-lock .fer-ico { background:var(--bg-sub); color:var(--t3); }
-@media (max-width:1023px) { .fer-strip { grid-template-columns:repeat(2,1fr); } .bus-strip { grid-template-columns:repeat(2,1fr); row-gap:18px; } }
-@media (max-width:768px)  { .fer-strip { grid-template-columns:repeat(2,1fr); } }
+.fer-ico svg { width:16px; height:16px; }
+.fer-txt { min-width:0; padding-right:10px; }
+.fer-nome { display:flex; align-items:center; gap:5px; overflow:hidden; color:var(--t1); font-size:11.5px; font-weight:800; line-height:1.25; text-overflow:ellipsis; white-space:nowrap; }
+.fer-estado { display:block; overflow:hidden; margin-top:3px; color:var(--t3); font-size:9.5px; line-height:1.35; text-overflow:ellipsis; white-space:nowrap; }
+.fer-selo { flex-shrink:0; padding:1px 5px; border:1px solid rgba(196,125,10,.28); border-radius:20px; background:var(--s-amb-bg); color:var(--s-amb); font-size:8px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; }
+.fer-arrow { position:absolute; right:12px; top:14px; color:var(--gb-emerald); font-size:10px; }
+[data-theme="dark"] .fer-arrow { color:var(--gb-bright); }
+@media (max-width:1023px) { .bus-strip { grid-template-columns:repeat(2,1fr); row-gap:18px; } .pv-hero { grid-template-columns:minmax(0,1.25fr) minmax(210px,.75fr); } .pv-lower { grid-template-columns:1fr; } .pv-panel + .pv-panel { border-left:0; border-top:1px solid var(--border); } .fer-strip { grid-template-columns:repeat(2,1fr); } .fer-card:nth-child(2) { border-right:0; } .fer-card:nth-child(-n+2) { border-bottom:1px solid var(--border); } }
 
 /* ── Linha de sugestão secundária ────────────────────────────
    O que antes eram cards-dica com o mesmo peso da ação real. */
@@ -1555,9 +1558,6 @@ body.frame-fullscreen .sidebar { display: none !important; }
   .sb-profile-info { display: none; }
   .sb-btn { justify-content: center; padding: 11px; width: 48px; gap: 0; }
   .sb-profile-row { justify-content: center; padding: 5px; }
-  .mat-strip { grid-template-columns: repeat(2, 1fr); }
-  /* Em duas colunas o terceiro bloco sobraria sozinho numa linha pela metade. */
-  .mat-tile:last-child { grid-column: 1 / -1; }
   .interview-hero { grid-template-columns:1fr; padding:34px 32px; }
   .int-row { grid-template-columns:54px minmax(0,1fr); }
   .int-status, .int-actions { grid-column:2; justify-content:flex-start; }
@@ -1581,7 +1581,20 @@ body.frame-fullscreen .sidebar { display: none !important; }
   .main { margin-left: 0; min-width: 0; }
   .header { display: none; }
   .content { padding: 82px 16px 104px; }
-  .mat-strip { grid-template-columns: 1fr; }
+  .pv-hero { grid-template-columns:1fr; }
+  .pv-completion { border-left:0; border-top:1px solid rgba(255,255,255,.1); }
+  .pv-ring { width:142px; height:142px; }
+  .pv-copy { padding:25px 22px; }
+  .pv-title { font-size:22px; }
+  .pv-metrics { gap:18px; flex-wrap:wrap; }
+  .pv-panel { padding:20px; }
+  .pv-strengths { grid-template-columns:1fr; }
+  .profile-value-tools-head { align-items:flex-start; flex-direction:column; gap:3px; padding:13px 15px 0; }
+  .fer-strip { grid-template-columns:1fr; }
+  .fer-card { border-right:0; border-bottom:1px solid var(--border); }
+  .fer-card:nth-child(2) { border-right:0; }
+  .fer-card:nth-child(-n+2) { border-bottom:1px solid var(--border); }
+  .fer-card:last-child { border-bottom:0; }
   .opp-cols { grid-template-columns: 1fr; }
   .pg-title { font-size: 27px; }
   .al-title { font-size: 27px; }
@@ -2723,31 +2736,23 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       </div>
     </div>
 
-    <!-- ── SEU CURRÍCULO ──
-         Fica logo abaixo da ação porque é ele que a alimenta: as lacunas do
-         terceiro bloco são exatamente os requisitos que o card verde manda
-         cobrir. Separar os dois obrigava a pessoa a ligar os pontos sozinha. -->
-    <div class="mat-section" style="margin-top:26px">
+    <!-- ── PERFIL DE VALOR ──
+         Currículo, forças comprovadas, lacunas do mercado e ferramentas vivem
+         no mesmo bloco porque todas as ações partem do documento principal. -->
+    <div class="mat-section profile-value-section" style="margin-top:26px">
       <div class="blk-label">
         <span class="blk-title">Seu currículo</span>
         <a href="#" class="blk-link" onclick="switchDashTab('curriculo');return false;">Abrir Meu Currículo →</a>
       </div>
-      <div class="mat-strip" id="matStrip">
-        <div class="mat-tile"><div class="mat-sub">Carregando...</div></div>
-        <div class="mat-tile"><div class="mat-sub"> </div></div>
-        <div class="mat-tile"><div class="mat-sub"> </div></div>
+      <div class="profile-value-stage">
+        <div class="mat-strip" id="matStrip">
+          <div class="pv-hero"><div class="pv-copy"><div class="pv-eyebrow"><span class="pv-eyebrow-dot"></span>Perfil profissional</div><h2 class="pv-title">Carregando seu currículo...</h2></div><div class="pv-completion"><div class="pv-ring"><div class="pv-ring-inner"><strong>—</strong><span>Completude do currículo</span></div></div></div></div>
+        </div>
+        <div class="profile-value-tools">
+          <div class="profile-value-tools-head"><strong>Suas ferramentas</strong><span>Use seu currículo para avançar em cada etapa.</span></div>
+          <div class="fer-strip" id="ferStrip"></div>
+        </div>
       </div>
-    </div>
-
-    <!-- ── SUAS FERRAMENTAS ──
-         Eram quatro contadores; agora são as quatro ferramentas de verdade,
-         carta de apresentação e treino de entrevista inclusive. Os números que
-         estavam aqui viraram o funil de "Sua busca", logo abaixo. -->
-    <div class="mat-section">
-      <div class="blk-label">
-        <span class="blk-title">Suas ferramentas</span>
-      </div>
-      <div class="fer-strip" id="ferStrip"></div>
     </div>
 
     <!-- ── SUA BUSCA ──
@@ -3696,30 +3701,57 @@ async function loadContagemFerramentas() {
   buildFerramentas();
 }
 
-/* As duas primeiras lajotas mediam coisas diferentes com a mesma palavra. A
-   primeira dizia "100% completo" (cadastro preenchido) e a segunda, a 40cm de
-   distância, "10 itens" sob o título "O que falta no seu currículo" (requisitos
-   que as vagas pedem e o CV não menciona). Lado a lado isso lê como erro do
-   sistema — um currículo não pode estar 100% completo e faltando 10 coisas.
-   São eixos distintos e agora têm nomes distintos: "preenchido" para o
-   cadastro, "o que as vagas pedem" para as lacunas. A palavra "falta" aparece
-   em um lugar só.
+/* O Perfil de valor usa apenas dados já disponíveis no painel. As forças vêm
+   primeiro das competências comprovadas nas análises; sem análises, usa as
+   habilidades declaradas no currículo. Nenhum rótulo é inventado pela tela. */
+function pvNormalizarNome(valor) {
+  return String(valor || '').trim().replace(/\s+/g, ' ');
+}
 
-   Icones de traco, no mesmo estilo dos do menu (stroke, sem preenchimento).
-   Tres blocos de texto lado a lado exigiam leitura para diferenciar; o icone
-   da a distincao antes da leitura. Herda a cor do rotulo, entao nao vira
-   enfeite nem compete com o numero. */
-var MAT_ICONES = {
-  curriculo: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/>',
-  falta:     '<path d="M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
-  versoes:   '<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M4 16V5a1 1 0 0 1 1-1h11"/>'
-};
+function pvForcasDoCurriculo(cvData, analyses) {
+  var mapa = {};
+  function adicionar(nome, quantidade, origem) {
+    nome = pvNormalizarNome(nome);
+    if (!nome || nome.length > 48) return;
+    var chave = nome.toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (!mapa[chave]) mapa[chave] = { nome:nome, quantidade:0, origem:origem };
+    mapa[chave].quantidade += quantidade || 0;
+    if (origem === 'analise') mapa[chave].origem = 'analise';
+  }
 
-function matTile(label, bodyHtml, icone) {
-  var svg = MAT_ICONES[icone]
-    ? '<svg class="mat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + MAT_ICONES[icone] + '</svg>'
-    : '';
-  return '<div class="mat-tile"><div class="mat-lbl">' + svg + '<span>' + label + '</span></div>' + bodyHtml + '</div>';
+  (analyses || []).forEach(function(analysis) {
+    var r = analysis.result || {};
+    (Array.isArray(r.keywords_encontradas) ? r.keywords_encontradas : []).forEach(function(nome) {
+      adicionar(nome, 1, 'analise');
+    });
+  });
+
+  var habilidades = cvData && cvData.habilidades;
+  if (!Array.isArray(habilidades)) habilidades = String(habilidades || '').split(/[,;\n]/);
+  habilidades.forEach(function(item) {
+    var nome = typeof item === 'string' ? item : item && (item.nome || item.name || item.titulo);
+    adicionar(nome, 0, 'curriculo');
+  });
+
+  if (!Object.keys(mapa).length && cvData) {
+    if (Array.isArray(cvData.experiencias) && cvData.experiencias.length) adicionar('Experiência profissional', 0, 'secao');
+    if (Array.isArray(cvData.formacao) && cvData.formacao.length) adicionar('Formação', 0, 'secao');
+    if (cvData.resumo_profissional) adicionar('Resumo profissional', 0, 'secao');
+  }
+
+  return Object.keys(mapa).map(function(chave) { return mapa[chave]; }).sort(function(a, b) {
+    return b.quantidade - a.quantidade || a.nome.localeCompare(b.nome, 'pt-BR');
+  }).slice(0, 3);
+}
+
+function pvForcasHtml(forcas) {
+  if (!forcas.length) return '<div class="pv-empty">Complete seu currículo ou analise uma vaga para destacar aqui as forças que sua trajetória já comunica.</div>';
+  return '<div class="pv-strengths">' + forcas.map(function(forca) {
+    var contexto = forca.origem === 'analise'
+      ? (forca.quantidade > 1 ? 'Relevante em ' + forca.quantidade + ' vagas analisadas.' : 'Comprovada nas vagas analisadas.')
+      : forca.origem === 'secao' ? 'Seção preenchida no currículo.' : 'Competência presente no currículo.';
+    return '<div class="pv-strength"><b>' + escHtml(forca.nome) + '</b><span>' + contexto + '</span></div>';
+  }).join('') + '</div>';
 }
 
 function buildMaterialStrip() {
@@ -3727,89 +3759,84 @@ function buildMaterialStrip() {
   if (!strip) return;
   var analyses = window._lastAnalysesData || [];
   var cvData = _cvBase && _cvBase.cv_data;
-  var tiles = [];
 
-  /* Tile 1 — currículo base */
   if (!_cvBaseLoaded) {
-    tiles.push(matTile('Currículo principal', '<div class="mat-sub">Carregando…</div>', 'curriculo'));
-  } else if (!cvData) {
-    tiles.push(matTile('Currículo principal',
-      '<div class="mat-val">—</div>' +
-      '<div class="mat-sub">Você ainda não tem um currículo salvo. Ele é usado nas análises, nos alertas e nos currículos que você adapta para cada vaga.</div>' +
-      '<button class="mat-cta" onclick="switchDashTab(\'curriculo\')">Criar meu currículo →</button>', 'curriculo'));
-  } else {
-    var pct = (window.VagaAICv && window.VagaAICv.completude) ? window.VagaAICv.completude(cvData) : 0;
-    var faltam = (window.VagaAICv && window.VagaAICv.completudeFaltantes) ? window.VagaAICv.completudeFaltantes(cvData) : [];
-    var quando = '';
-    if (_cvBase.updated_at) {
-      var dias = Math.floor((Date.now() - new Date(_cvBase.updated_at).getTime()) / 86400000);
-      quando = dias <= 0 ? 'atualizado hoje' : dias === 1 ? 'atualizado ontem' : 'atualizado há ' + dias + ' dias';
-    }
-    var sub = faltam.length
-      ? 'Falta preencher: ' + escHtml(faltam.slice(0,2).join(' e ').toLowerCase()) + (quando ? ' · ' + quando : '')
-      : (quando || 'Todos os campos preenchidos');
-    tiles.push(matTile('Currículo principal',
-      '<div class="mat-val">' + pct + '<small>% preenchido</small></div>' +
-      '<div class="mat-bar"><i style="width:' + pct + '%"></i></div>' +
-      '<div class="mat-sub">' + sub + '</div>' +
-      '<button class="mat-cta" onclick="switchDashTab(\'curriculo\')">' + (faltam.length ? 'Completar currículo →' : 'Revisar currículo →') + '</button>', 'curriculo'));
+    strip.innerHTML = '<div class="pv-hero"><div class="pv-copy"><div class="pv-eyebrow"><span class="pv-eyebrow-dot"></span>Perfil profissional</div><h2 class="pv-title">Carregando seu currículo...</h2><p class="pv-desc">Estamos reunindo sua base profissional e os sinais das vagas analisadas.</p></div><div class="pv-completion"><div class="pv-ring"><div class="pv-ring-inner"><strong>—</strong><span>Completude do currículo</span></div></div></div></div>';
+    return;
   }
 
-  /* Tile 2 — lacunas do mercado (promovido da aba Alertas) */
-  if (!_cvBaseLoaded) {
-    tiles.push(matTile('O que as vagas pedem', '<div class="mat-sub"> </div>', 'falta'));
-  } else if (!cvData || !analyses.length) {
-    tiles.push(matTile('O que as vagas pedem',
-      '<div class="mat-val">—</div>' +
-      '<div class="mat-sub">' + (!cvData
-        ? 'Salve seu currículo para comparar com o que as vagas pedem.'
-        : 'Analise sua primeira vaga para vermos o que costuma ser pedido.') + '</div>' +
-      '<button class="mat-cta" onclick="switchDashTab(\'' + (cvData ? 'app' : 'curriculo') + '\')">' + (cvData ? 'Analisar uma vaga →' : 'Criar meu currículo →') + '</button>', 'falta'));
-  } else {
-    // Mesmo cálculo que o hero de /curriculo — módulo compartilhado para as duas
-    // telas nunca mostrarem números diferentes para o mesmo currículo.
-    var lac = window.VagaAICv.calcularLacunas(cvData, analyses);
-    var freq = lac.freq;
-    var gaps = lac.gaps;
-    var nVagas = lac.totalVagas;
-    if (!gaps.length) {
-      tiles.push(matTile('O que as vagas pedem',
-        '<div class="mat-val">0 <small>termos</small></div>' +
-        '<div class="mat-chips"><span class="mat-chip mat-chip-ok">Perfil alinhado</span></div>' +
-        '<div class="mat-sub">Seu currículo já traz tudo que as ' + nVagas + ' vaga' + (nVagas !== 1 ? 's' : '') + ' que você analisou pedem.</div>', 'falta'));
-    } else {
-      var chips = gaps.slice(0, 3).map(function(k) {
-        return '<span class="mat-chip">' + escHtml(k) + (freq[k] > 1 ? ' ×' + freq[k] : '') + '</span>';
-      });
-      if (gaps.length > 3) chips.push('<span class="mat-chip">+' + (gaps.length - 3) + '</span>');
-      tiles.push(matTile('O que as vagas pedem',
-        '<div class="mat-val">' + gaps.length + ' <small>' + (gaps.length !== 1 ? 'termos ausentes' : 'termo ausente') + '</small></div>' +
-        '<div class="mat-chips">' + chips.join('') + '</div>' +
-        '<div class="mat-sub">' + (nVagas !== 1 ? 'As ' + nVagas + ' vagas que você analisou pedem' : 'A vaga que você analisou pede') + ' isso, e seu currículo não menciona.</div>' +
-        // Aponta para o painel de posicionamento do hub, que mostra a lista
-        // completa e as métricas. Aqui é o resumo; lá é o detalhe.
-        '<button class="mat-cta" onclick="switchDashTab(\'curriculo\',\'/curriculo?foco=lacunas\')">Ver a lista completa →</button>', 'falta'));
-    }
+  var pct = cvData && window.VagaAICv && window.VagaAICv.completude ? window.VagaAICv.completude(cvData) : 0;
+  pct = Math.max(0, Math.min(100, Number(pct) || 0));
+  var faltam = cvData && window.VagaAICv && window.VagaAICv.completudeFaltantes ? window.VagaAICv.completudeFaltantes(cvData) : [];
+  var quando = '';
+  if (_cvBase && _cvBase.updated_at) {
+    var dias = Math.max(0, Math.floor((Date.now() - new Date(_cvBase.updated_at).getTime()) / 86400000));
+    quando = dias <= 0 ? 'Atualizado hoje' : dias === 1 ? 'Atualizado ontem' : 'Atualizado há ' + dias + ' dias';
   }
 
-  /* Tile 3 — versões por vaga */
+  var lac = cvData && analyses.length && window.VagaAICv && window.VagaAICv.calcularLacunas
+    ? window.VagaAICv.calcularLacunas(cvData, analyses)
+    : { freq:{}, gaps:[], totalVagas:0 };
+  var freq = lac.freq || {};
+  var gaps = Array.isArray(lac.gaps) ? lac.gaps : [];
+  var forcas = cvData ? pvForcasDoCurriculo(cvData, analyses) : [];
   var versoes = analyses.filter(function(a) {
     var r = a.result || {};
     return r.cv_otimizado && !r.cv_version_archived_at;
   }).length;
-  if (!versoes) {
-    tiles.push(matTile('Currículos feitos para vagas',
-      '<div class="mat-val">0</div>' +
-      '<div class="mat-sub">Quando você adapta o currículo para uma vaga, ele fica guardado aqui. O seu currículo principal não muda.</div>' +
-      '<button class="mat-cta" onclick="switchDashTab(\'app\')">Adaptar para uma vaga →</button>', 'versoes'));
+
+  var titulo = !cvData
+    ? 'Seu currículo pode ser o centro da sua busca.'
+    : pct >= 90
+      ? 'Seu currículo já conta uma história forte. Agora ele pode ser mais encontrado.'
+      : 'Seu currículo é sua base profissional. Complete-o para ampliar seu valor.';
+  var descricao = !cvData
+    ? 'Crie sua base profissional para analisar oportunidades, receber vagas e preparar versões direcionadas.'
+    : 'A base principal alimenta suas análises, cartas e entrevistas sem ser alterada pelas versões criadas para cada vaga.';
+  var acao = !cvData ? 'Criar meu currículo →' : faltam.length ? 'Completar currículo →' : 'Revisar currículo →';
+
+  var rankingHtml = '';
+  if (!cvData) {
+    rankingHtml = '<div class="pv-empty">Salve seu currículo para comparar sua trajetória com o que as vagas pedem.</div>';
+  } else if (!analyses.length) {
+    rankingHtml = '<div class="pv-empty">Analise sua primeira vaga para identificar quais termos aparecem com mais frequência no mercado.</div>';
+  } else if (!gaps.length) {
+    rankingHtml = '<div class="pv-empty">Seu perfil está alinhado: as vagas analisadas não trouxeram termos ausentes no currículo.</div>';
   } else {
-    tiles.push(matTile('Currículos feitos para vagas',
-      '<div class="mat-val">' + versoes + ' <small>currículo' + (versoes !== 1 ? 's' : '') + '</small></div>' +
-      '<div class="mat-sub">Adaptados para vagas específicas. O seu currículo principal não muda.</div>' +
-      '<button class="mat-cta" onclick="switchDashTab(\'curriculo\')">Ver currículos →</button>', 'versoes'));
+    rankingHtml = '<ol class="pv-rank-list">' + gaps.slice(0, 3).map(function(nome, indice) {
+      var quantidade = Number(freq[nome]) || 1;
+      return '<li class="pv-rank-item"><span class="pv-rank-num">' + String(indice + 1).padStart(2, '0') + '</span><span class="pv-rank-name">' + escHtml(nome) + '</span><span class="pv-rank-freq">' + (quantidade > 1 ? '×' + quantidade + ' vagas' : '1 vaga') + '</span></li>';
+    }).join('') + '</ol>';
   }
 
-  strip.innerHTML = tiles.join('');
+  var marketAction = !cvData
+    ? '<button class="pv-link" onclick="switchDashTab(\'curriculo\')">Criar currículo →</button>'
+    : gaps.length
+      ? '<button class="pv-link" onclick="switchDashTab(\'curriculo\',\'/curriculo?foco=lacunas\')">Ver os ' + gaps.length + ' termos →</button>'
+      : '<button class="pv-link" onclick="switchDashTab(\'app\')">Analisar outra vaga →</button>';
+  var versionAction = versoes
+    ? '<button class="pv-link" onclick="switchDashTab(\'curriculo\')">Ver versões →</button>'
+    : '<button class="pv-link" onclick="switchDashTab(\'app\')">Criar versão →</button>';
+
+  strip.innerHTML =
+    '<div class="pv-hero">' +
+      '<div class="pv-copy">' +
+        '<div class="pv-eyebrow"><span class="pv-eyebrow-dot"></span>Perfil profissional</div>' +
+        '<h2 class="pv-title">' + titulo + '</h2>' +
+        '<p class="pv-desc">' + descricao + '</p>' +
+        '<div class="pv-metrics">' +
+          '<div class="pv-metric"><strong>' + pct + '%</strong><span>base preenchida</span></div>' +
+          '<div class="pv-metric"><strong>' + forcas.length + '</strong><span>força' + (forcas.length !== 1 ? 's' : '') + ' em evidência</span></div>' +
+          '<div class="pv-metric"><strong>' + gaps.length + '</strong><span>termo' + (gaps.length !== 1 ? 's' : '') + ' para evoluir</span></div>' +
+        '</div>' +
+        '<div class="pv-copy-actions"><button class="pv-primary" onclick="switchDashTab(\'curriculo\')">' + acao + '</button>' + (quando ? '<span class="pv-updated">' + quando + '</span>' : '') + '</div>' +
+      '</div>' +
+      '<div class="pv-completion"><div class="pv-ring" style="--pv-progress:' + pct + '%" role="img" aria-label="Completude do currículo: ' + pct + ' por cento"><div class="pv-ring-inner"><strong>' + pct + '%</strong><span>Completude do currículo</span></div></div></div>' +
+    '</div>' +
+    '<div class="pv-lower">' +
+      '<section class="pv-panel"><div class="pv-panel-head"><div><h3>Forças que seu currículo já comunica</h3><p>Competências e seções comprovadas na sua trajetória.</p></div><button class="pv-link" onclick="switchDashTab(\'curriculo\')">Revisar currículo →</button></div>' + pvForcasHtml(forcas) + '</section>' +
+      '<section class="pv-panel"><div class="pv-panel-head"><div><h3>O mercado está procurando</h3><p>' + (gaps.length ? 'Prioridade por recorrência nas vagas analisadas.' : 'Compare sua base com as vagas que interessam.') + '</p></div>' + marketAction + '</div>' + rankingHtml + '<div class="pv-market-foot"><span class="pv-version-count"><strong>' + versoes + '</strong> currículo' + (versoes !== 1 ? 's' : '') + ' por vaga</span>' + versionAction + '</div></section>' +
+    '</div>';
 }
 
 /* ── Sugestão secundária ──────────────────────────────────────────────────
@@ -3845,7 +3872,7 @@ function ferCard(icone, nome, estado, acao, selo) {
     '<span class="fer-txt">' +
       '<span class="fer-nome">' + escHtml(nome) + (selo ? '<span class="fer-selo">' + escHtml(selo) + '</span>' : '') + '</span>' +
       '<span class="fer-estado">' + escHtml(estado) + '</span>' +
-    '</span></button>';
+    '</span><span class="fer-arrow" aria-hidden="true">→</span></button>';
 }
 
 function buildFerramentas() {
