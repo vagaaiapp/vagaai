@@ -1,0 +1,190 @@
+/* VagaAI · indicador de carregamento compartilhado
+   O mesmo cometa atende telas inteiras, módulos e ações compactas. */
+:root {
+  --vagaai-comet-color: var(--gb-bright, var(--green-bright, var(--app-emerald, var(--ob-action, var(--green, #3ecf8e)))));
+}
+
+.spinner,
+.ob-spin,
+.ob-spin-sm,
+.s4-pdf-spinner,
+.cvol-icon,
+.vagaai-comet {
+  --comet-w: 58px;
+  --comet-h: 38px;
+  --comet-tail-w: 42px;
+  --comet-tail-h: 3px;
+  --comet-head: 7px;
+  --comet-x: 3px;
+  --comet-y: 20px;
+  position: relative !important;
+  isolation: isolate;
+  display: block !important;
+  width: var(--comet-w) !important;
+  height: var(--comet-h) !important;
+  min-width: var(--comet-w) !important;
+  min-height: var(--comet-h) !important;
+  flex: 0 0 var(--comet-w) !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  overflow: visible !important;
+  animation: none !important;
+}
+
+.spinner::before,
+.ob-spin::before,
+.ob-spin-sm::before,
+.s4-pdf-spinner::before,
+.cvol-icon::before,
+.vagaai-comet::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: var(--comet-x);
+  top: var(--comet-y);
+  width: var(--comet-tail-w);
+  height: var(--comet-tail-h);
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent 0%, rgba(78, 206, 145, .12) 25%, rgba(78, 206, 145, .7) 78%, var(--vagaai-comet-color) 100%);
+  filter: drop-shadow(0 0 4px rgba(62, 207, 142, .38));
+  transform-origin: right center;
+  animation: vagaai-comet-tail 1.15s cubic-bezier(.45, 0, .25, 1) infinite !important;
+}
+
+.spinner::after,
+.ob-spin::after,
+.ob-spin-sm::after,
+.s4-pdf-spinner::after,
+.cvol-icon::after,
+.vagaai-comet::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: calc(var(--comet-x) + var(--comet-tail-w) - (var(--comet-head) / 2));
+  top: calc(var(--comet-y) - ((var(--comet-head) - var(--comet-tail-h)) / 2));
+  width: var(--comet-head);
+  height: var(--comet-head);
+  border-radius: 50%;
+  background: #f4fff9;
+  box-shadow:
+    0 0 0 2px rgba(78, 206, 145, .25),
+    0 0 8px 2px var(--vagaai-comet-color),
+    0 0 18px 4px rgba(62, 207, 142, .25);
+  animation: vagaai-comet-head 1.15s cubic-bezier(.45, 0, .25, 1) infinite !important;
+}
+
+.loading-wrap > .spinner,
+.loading > .spinner,
+.ob-loading > .ob-spin {
+  margin-bottom: 16px !important;
+}
+
+.page-loading > .spinner,
+.cvol-box > .cvol-icon {
+  margin-bottom: 0 !important;
+}
+
+.cvol-icon > * {
+  display: none !important;
+}
+
+.ob-spin-sm,
+.s4-pdf-spinner,
+button .spinner,
+.vagaai-comet--sm {
+  --comet-w: 26px;
+  --comet-h: 18px;
+  --comet-tail-w: 18px;
+  --comet-tail-h: 2px;
+  --comet-head: 4px;
+  --comet-x: 1px;
+  --comet-y: 10px;
+  display: inline-block !important;
+  margin: 0 5px 0 0 !important;
+  vertical-align: middle !important;
+}
+
+.s4-pdf-spinner {
+  margin-right: 0 !important;
+}
+
+.vagaai-loading-leaf {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.vagaai-loading-leaf > .vagaai-comet {
+  margin: 0 auto 4px !important;
+}
+
+.ga4-loading.vagaai-loading-leaf > .vagaai-comet,
+td.vagaai-loading-leaf > .vagaai-comet,
+.vagaai-loading-leaf.compact > .vagaai-comet {
+  --comet-w: 34px;
+  --comet-h: 22px;
+  --comet-tail-w: 24px;
+  --comet-tail-h: 2px;
+  --comet-head: 5px;
+  --comet-x: 2px;
+  --comet-y: 12px;
+}
+
+.btn-refresh .refresh-comet {
+  display: none !important;
+}
+
+.btn-refresh.spinning .refresh-comet {
+  display: inline-block !important;
+}
+
+.btn-refresh.spinning .ic {
+  display: none !important;
+}
+
+@keyframes vagaai-comet-tail {
+  0% { opacity: 0; transform: translate(-12px, 9px) rotate(-26deg) scaleX(.18); }
+  18% { opacity: 1; }
+  62% { opacity: 1; transform: translate(5px, -3px) rotate(-26deg) scaleX(1); }
+  100% { opacity: 0; transform: translate(15px, -9px) rotate(-26deg) scaleX(.58); }
+}
+
+@keyframes vagaai-comet-head {
+  0% { opacity: 0; transform: translate(-12px, 9px) scale(.45); }
+  18% { opacity: 1; }
+  62% { opacity: 1; transform: translate(5px, -3px) scale(1); }
+  100% { opacity: 0; transform: translate(15px, -9px) scale(.35); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner::before,
+  .ob-spin::before,
+  .ob-spin-sm::before,
+  .s4-pdf-spinner::before,
+  .cvol-icon::before,
+  .vagaai-comet::before {
+    opacity: .8 !important;
+    transform: rotate(-26deg) !important;
+    animation: none !important;
+  }
+
+  .spinner::after,
+  .ob-spin::after,
+  .ob-spin-sm::after,
+  .s4-pdf-spinner::after,
+  .cvol-icon::after,
+  .vagaai-comet::after {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}

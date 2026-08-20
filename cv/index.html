@@ -19,6 +19,8 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <title>Currículo Otimizado</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/loading-comet.css">
+<script src="/js/loading-comet.js" defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ─── Reset ───────────────────────────────────────────────── */
@@ -620,8 +622,6 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 .csv-ai-btn:hover{background:rgba(78,206,145,.15);border-color:var(--app-emerald)}
 .csv-dl-btn.small{padding:.4rem .8rem;font-size:12px}
 .s4-pdf-loading{display:flex;align-items:center;gap:.75rem;padding:.9rem 1rem;border-radius:10px;background:rgba(78,206,145,.06);border:1px solid rgba(78,206,145,.15);margin-top:.6rem;font-size:13px;color:var(--app-t2)}
-.s4-pdf-spinner{font-size:18px;color:var(--app-emerald);animation:spin .6s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
 @keyframes fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .s4-pdf-success{display:flex;align-items:flex-start;gap:.75rem;padding:.9rem 1rem;border-radius:10px;background:rgba(78,206,145,.07);border:1px solid rgba(78,206,145,.25);margin-top:.6rem}
 .s4-pdf-success-icon{width:32px;height:32px;border-radius:50%;background:rgba(78,206,145,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--app-emerald)}
@@ -631,8 +631,6 @@ body{background:var(--app-bg);color:var(--app-t1);transition:background .2s;marg
 #cvOptLoadOverlay{position:fixed;inset:0;z-index:9999;background:var(--app-bg);display:flex;align-items:center;justify-content:center;transition:opacity .38s,transform .38s}
 #cvOptLoadOverlay.cvol-out{opacity:0;transform:scale(.97);pointer-events:none}
 .cvol-box{display:flex;flex-direction:column;align-items:center;gap:1.5rem;max-width:380px;padding:2.5rem 2rem;text-align:center}
-.cvol-icon{width:56px;height:56px;border-radius:50%;background:rgba(78,206,145,.12);border:1px solid rgba(78,206,145,.25);display:flex;align-items:center;justify-content:center;color:var(--app-emerald);animation:cvol-pulse 1.6s ease-in-out infinite}
-@keyframes cvol-pulse{0%,100%{box-shadow:0 0 0 0 rgba(78,206,145,.25)}50%{box-shadow:0 0 0 10px rgba(78,206,145,0)}}
 .cvol-title{font-size:17px;font-weight:800;color:var(--app-t1);line-height:1.3}
 .cvol-steps{display:flex;flex-direction:column;gap:.55rem;width:100%;text-align:left}
 .cvol-step{display:flex;align-items:center;gap:.65rem;font-size:12.5px;color:var(--app-t3);opacity:.3;transition:opacity .3s,color .3s;padding:.3rem .5rem;border-radius:8px}
@@ -1418,7 +1416,7 @@ html.no-photo .mod-header{display:block}
       </div>
       <!-- PDF loading state -->
       <div class="s4-pdf-loading" id="s4PdfLoading" style="display:none">
-        <div class="s4-pdf-spinner">⠋</div>
+        <div class="s4-pdf-spinner" aria-hidden="true"></div>
         <span>Gerando seu PDF...</span>
       </div>
       <!-- PDF success state -->
@@ -3794,17 +3792,12 @@ function s4StartPdfDownload() {
   if (loading) loading.style.display = 'flex';
   if (dlRow) dlRow.style.display = 'none';
   if (success) success.style.display = 'none';
-  var frames = ['⠋','⠙','⠸','⠴','⠦','⠇'];
-  var fi = 0;
-  var spinEl = loading ? loading.querySelector('.s4-pdf-spinner') : null;
-  var spinTimer = spinEl ? setInterval(function() { fi = (fi+1)%frames.length; spinEl.textContent = frames[fi]; }, 120) : null;
   openPdfPreflight();
   var checkTimer = setInterval(function() {
     var overlay = document.getElementById('pdfPreflightOverlay') || document.querySelector('.pdf-preflight-overlay');
     var closed = !overlay || overlay.style.display === 'none' || !overlay.classList.contains('open');
     if (closed) {
       clearInterval(checkTimer);
-      if (spinTimer) clearInterval(spinTimer);
       if (loading) loading.style.display = 'none';
       if (success) success.style.display = 'flex';
       _s4Progress.cv = true;

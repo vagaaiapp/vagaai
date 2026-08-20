@@ -78,11 +78,19 @@
     var b = el(key,'_b'), l = el(key,'_l');
     if (!b) return;
     b.disabled = (state === 'busy');
-    b.className = 'cvmic-btn' + (state === 'rec' ? ' rec' : '');
+    b.className = 'cvmic-btn' + (state === 'rec' ? ' rec' : '') + (state === 'busy' ? ' busy' : '');
     if (l) l.textContent = label;
     var dot = b.querySelector('.cvmic-dot');
     if (state === 'rec' && !dot) { dot = document.createElement('span'); dot.className = 'cvmic-dot'; b.insertBefore(dot, b.firstChild); }
     if (state !== 'rec' && dot) dot.remove();
+    var comet = b.querySelector('.vagaai-comet');
+    if (state === 'busy' && !comet) {
+      comet = document.createElement('span');
+      comet.className = 'vagaai-comet vagaai-comet--sm';
+      comet.setAttribute('aria-hidden', 'true');
+      b.insertBefore(comet, b.firstChild);
+    }
+    if (state !== 'busy' && comet) comet.remove();
   }
 
   function pickMime() {

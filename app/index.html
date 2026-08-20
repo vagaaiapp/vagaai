@@ -17,6 +17,8 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://www.vagaai.app.br/app">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/loading-comet.css">
+<script src="/js/loading-comet.js" defer></script>
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.vagaai.app.br/app">
@@ -168,8 +170,6 @@ textarea::placeholder{color:var(--muted)}
 /* LOADING */
 .loading{display:none;flex-direction:column;align-items:center;gap:1.2rem;padding:3rem 0;text-align:center}
 .loading.show{display:flex}
-.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{color:var(--muted);font-size:14px}
 .loading-text strong{color:var(--text);display:block;font-size:16px;margin-bottom:.3rem}
 
@@ -1515,7 +1515,7 @@ async function gerarCV() {
 
   var btn = document.getElementById('btnGerarCV');
   btn.disabled = true;
-  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.06-5"/></svg> Gerando...';
+  btn.innerHTML = '<span class="vagaai-comet vagaai-comet--sm" aria-hidden="true"></span> Gerando...';
 
   try {
     var authHeader = {};
@@ -2026,7 +2026,7 @@ async function analyze() {
     var aBtn = document.getElementById('analyzeBtn');
     var st = document.getElementById('fetchStatus');
     aBtn.disabled = true;
-    aBtn.innerHTML = '<span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Carregando vaga…';
+    aBtn.innerHTML = '<span class="vagaai-comet vagaai-comet--sm" aria-hidden="true"></span> Carregando vaga…';
     st.textContent = 'Acessando o link da vaga…';
     st.style.color = 'var(--muted)';
     try {
@@ -2888,7 +2888,7 @@ async function checkVagaParam() {
   var notice = document.createElement('div');
   notice.id = 'alertVagaNotice';
   notice.style.cssText = 'background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px;padding:.75rem 1rem;font-size:13px;color:var(--green);display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;font-weight:600';
-  notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Vaga do seu alerta carregando…';
+  notice.innerHTML = '<span class="vagaai-comet vagaai-comet--sm" aria-hidden="true"></span> Vaga do seu alerta carregando…';
   var formSection = document.getElementById('formSection');
   formSection.insertBefore(notice, formSection.firstChild);
 
