@@ -13,8 +13,8 @@
   --comet-w: 58px;
   --comet-h: 38px;
   --comet-tail-w: 42px;
-  --comet-tail-h: 3px;
-  --comet-head: 7px;
+  --comet-tail-h: 4px;
+  --comet-head: 8px;
   --comet-x: 3px;
   --comet-y: 20px;
   position: relative !important;
@@ -52,10 +52,11 @@
   width: var(--comet-tail-w);
   height: var(--comet-tail-h);
   border-radius: 999px;
-  background: linear-gradient(90deg, transparent 0%, rgba(78, 206, 145, .12) 25%, rgba(78, 206, 145, .7) 78%, var(--vagaai-comet-color) 100%);
-  filter: drop-shadow(0 0 4px rgba(62, 207, 142, .38));
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(78, 206, 145, .1) 22%, rgba(78, 206, 145, .72) 72%, #dffff0 100%);
+  filter: drop-shadow(-2px -1px 4px rgba(62, 207, 142, .42));
   transform-origin: right center;
-  animation: vagaai-comet-tail 1.15s cubic-bezier(.45, 0, .25, 1) infinite !important;
+  animation: vagaai-comet-tail 1.05s cubic-bezier(.45, 0, .25, 1) infinite !important;
 }
 
 .spinner::after,
@@ -71,13 +72,15 @@
   top: calc(var(--comet-y) - ((var(--comet-head) - var(--comet-tail-h)) / 2));
   width: var(--comet-head);
   height: var(--comet-head);
-  border-radius: 50%;
+  border-radius: 58% 42% 52% 48%;
   background: #f4fff9;
   box-shadow:
+    -7px -4px 0 -2px rgba(141, 233, 187, .58),
+    -14px -8px 0 -2.5px rgba(78, 206, 145, .32),
     0 0 0 2px rgba(78, 206, 145, .25),
-    0 0 8px 2px var(--vagaai-comet-color),
-    0 0 18px 4px rgba(62, 207, 142, .25);
-  animation: vagaai-comet-head 1.15s cubic-bezier(.45, 0, .25, 1) infinite !important;
+    0 0 9px 3px var(--vagaai-comet-color),
+    0 0 20px 5px rgba(62, 207, 142, .28);
+  animation: vagaai-comet-head 1.05s cubic-bezier(.45, 0, .25, 1) infinite !important;
 }
 
 .loading-wrap > .spinner,
@@ -152,17 +155,17 @@ td.vagaai-loading-leaf > .vagaai-comet,
 }
 
 @keyframes vagaai-comet-tail {
-  0% { opacity: 0; transform: translate(-12px, 9px) rotate(-26deg) scaleX(.18); }
+  0% { opacity: 0; transform: translate(-14px, -10px) rotate(28deg) scaleX(.18); }
   18% { opacity: 1; }
-  62% { opacity: 1; transform: translate(5px, -3px) rotate(-26deg) scaleX(1); }
-  100% { opacity: 0; transform: translate(15px, -9px) rotate(-26deg) scaleX(.58); }
+  62% { opacity: 1; transform: translate(4px, 4px) rotate(28deg) scaleX(1); }
+  100% { opacity: 0; transform: translate(16px, 11px) rotate(28deg) scaleX(.58); }
 }
 
 @keyframes vagaai-comet-head {
-  0% { opacity: 0; transform: translate(-12px, 9px) scale(.45); }
+  0% { opacity: 0; transform: translate(-14px, -10px) scale(.55); }
   18% { opacity: 1; }
-  62% { opacity: 1; transform: translate(5px, -3px) scale(1); }
-  100% { opacity: 0; transform: translate(15px, -9px) scale(.35); }
+  62% { opacity: 1; transform: translate(4px, 4px) scale(1.08); }
+  100% { opacity: 0; transform: translate(16px, 11px) scale(.35); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -173,7 +176,7 @@ td.vagaai-loading-leaf > .vagaai-comet,
   .cvol-icon::before,
   .vagaai-comet::before {
     opacity: .8 !important;
-    transform: rotate(-26deg) !important;
+    transform: rotate(28deg) !important;
     animation: none !important;
   }
 

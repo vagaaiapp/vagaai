@@ -38,6 +38,13 @@ test('o componente possui cauda, núcleo e alternativa sem movimento', () => {
   assert.match(css, /\.vagaai-comet--sm/);
 });
 
+test('o meteorito percorre uma trajetória descendente', () => {
+  const css = read('loading-comet.css');
+  assert.match(css, /@keyframes vagaai-comet-tail[\s\S]*translate\(-14px,\s*-10px\)[\s\S]*translate\(16px,\s*11px\)/);
+  assert.match(css, /rotate\(28deg\)/);
+  assert.match(css, /clip-path:\s*polygon/);
+});
+
 test('os antigos círculos giratórios não permanecem nas páginas migradas', () => {
   const obsolete = /animation\s*:\s*(?:spin|obSpin|obSpinSm)|@keyframes\s+(?:spin|obSpin|obSpinSm)|[⠋⠙⠸⠴⠦⠇]/i;
   for (const file of [...pages, 'onboarding/funnel-polish.css']) {
