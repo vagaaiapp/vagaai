@@ -1288,7 +1288,11 @@ body.frame-fullscreen .sidebar { display: none !important; }
 [data-theme="dark"] .pg-pill-dot { background:var(--gb-bright); }
 .pg-pill-off .pg-pill-dot { background:var(--t3); }
 .pba-card {
-  background: linear-gradient(120deg,#0b2b1a,#176c45);
+  background-color:#13241b;
+  background-image:url('/assets/dashboard-faca-agora-editorial.webp');
+  background-size:cover;
+  background-position:center 67%;
+  background-repeat:no-repeat;
   border-radius: var(--r);
   padding: 28px 32px;
   margin-bottom: 26px;
@@ -1300,21 +1304,14 @@ body.frame-fullscreen .sidebar { display: none !important; }
   position: relative;
   overflow: hidden;
 }
-/* Arte do herói, gerada — nenhuma imagem para baixar, nítida em retina.
-   Duas fontes de luz suaves atrás do conteúdo dão profundidade ao verde chapado
-   sem competir com o texto. O motivo dos arcos vive dentro do SVG do anel, para
-   nascer do dado (o score) em vez de ser enfeite solto. */
+/* O degradê mantém a mensagem legível sobre a fotografia editorial e deixa o
+   ambiente de trabalho aparecer gradualmente no lado direito. */
 .pba-card::before {
   content:''; position:absolute; inset:0; pointer-events:none;
-  background:
-    radial-gradient(680px 320px at 78% -20%, rgba(89,225,164,.16), transparent 62%),
-    radial-gradient(420px 300px at 8% 118%, rgba(34,120,80,.30), transparent 66%);
+  background:linear-gradient(90deg,rgba(3,28,18,.86) 0%,rgba(3,31,19,.66) 48%,rgba(3,27,17,.24) 100%);
 }
 .pba-card::after {
-  content:''; width:280px; height:280px; border-radius:50%;
-  position:absolute; right:-100px; top:-130px;
-  background:rgba(89,225,164,.07);
-  pointer-events:none;
+  content:none;
 }
 .pba-left { min-width:0; position:relative; z-index:1; }
 .pba-eyebrow { display:flex; align-items:center; gap:7px; font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#86e4b7; margin-bottom:12px; }
@@ -1335,7 +1332,7 @@ body.frame-fullscreen .sidebar { display: none !important; }
    365px e o bloco "Suas ferramentas" caiu abaixo da dobra de 812px — Carta e
    Treino voltavam a exigir rolagem, que é justamente o problema corrigido
    antes. O anel continua sendo a âncora, num tamanho que cabe. */
-.pba-priority { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:17px 20px 19px; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:11px; }
+.pba-priority { background:rgba(3,34,21,.72); border:1px solid rgba(255,255,255,.14); border-radius:16px; padding:17px 20px 19px; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:11px; box-shadow:0 14px 34px rgba(2,24,15,.22); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
 .pba-priority-cargo { font-size:14px; font-weight:800; color:#fff; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
 .pba-priority-empresa { font-size:11px; color:rgba(170,196,181,.7); margin-bottom:0; }
 .pba-score-row { display:flex; flex-direction:column; align-items:center; gap:9px; }
@@ -1594,7 +1591,8 @@ body.frame-fullscreen .sidebar { display: none !important; }
   .interview-list-head, .interview-gate { flex-direction:column; align-items:stretch; }
   .interview-gate-actions { justify-content:flex-start; }
   .int-row { padding:16px; gap:12px; }
-  .pba-card { padding: 24px 20px; border-radius: 14px; }
+  .pba-card { padding: 24px 20px; border-radius: 14px; background-position:58% center; }
+  .pba-card::before { background:rgba(3,28,18,.76); }
   .bus-top { flex-direction:column; }
   .bus-strip { grid-template-columns:repeat(2,1fr); gap:20px 12px; }
   .bus-strip::before { display:none; }
