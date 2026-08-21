@@ -629,6 +629,7 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
 })();
 </script>
 <link rel="stylesheet" href="/assets/product-ui.css?v=20260821-editorial1">
+<link rel="stylesheet" href="/assets/analysis-guided.css?v=20260821-guided1">
 </head>
 <body data-vagaai-ui="analysis">
 
@@ -661,9 +662,9 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
     </div>
   </div>
   <div class="steps-bar">
-    <div class="step active" id="step1">1. Inserir dados</div>
-    <div class="step" id="step2">2. Analisando</div>
-    <div class="step" id="step3">3. Resultado</div>
+    <div class="step active" id="step1"><span class="step-number">1</span><span class="step-label">Inserir dados</span></div>
+    <div class="step" id="step2"><span class="step-number">2</span><span class="step-label">Análise</span></div>
+    <div class="step" id="step3"><span class="step-number">3</span><span class="step-label">Resultado</span></div>
   </div>
 
   <!-- LIMITE ATINGIDO -->
@@ -686,12 +687,9 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
   <section class="analysis-form-card">
     <div class="analysis-card-head">
       <div class="analysis-card-title">
-        <div class="analysis-section-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/></svg>
-        </div>
-        <div><h2>Prepare sua análise</h2><p>Adicione a oportunidade e escolha o currículo que será comparado.</p></div>
+        <div><h2>Prepare sua análise</h2><p>Dois dados são suficientes para começar.</p></div>
       </div>
-      <span class="analysis-status-pill">Etapa 1 de 3</span>
+      <span class="analysis-status-pill" id="analysisFormState">Falta adicionar a vaga</span>
     </div>
   <div id="freeNotice" class="free-notice">✓ Diagnóstico gratuito · Sem cadastro · Sem cartão</div>
 
@@ -700,11 +698,18 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
       <span style="font-size:1.4rem;flex-shrink:0">🎉</span>
       <div><strong>Conta criada!</strong> Use seu <strong style="color:var(--green)">crédito grátis</strong> para ver o CV otimizado e o briefing completo — os campos estão pré-preenchidos com sua última vaga.</div>
     </div>
-    <div class="field">
-      <label>Descrição da vaga <span>— Link ou texto completo</span></label>
-      <div class="url-row">
-        <input type="url" class="url-input" id="jobUrl" placeholder="Cole o link da vaga (LinkedIn, Gupy, Indeed…)" autocomplete="off">
-        <button class="btn-fetch" id="fetchBtn" onclick="fetchJobUrl()">Carregar</button>
+    <div class="field analysis-task analysis-task-job">
+      <div class="analysis-task-number">01</div>
+      <div class="analysis-task-title"><label for="jobUrl">Adicione a oportunidade</label><p>Use o link da vaga ou cole a descrição completa.</p></div>
+      <div class="job-mode-tabs" aria-label="Formato da vaga">
+        <button type="button" class="job-mode-tab active" id="jobModeLink" onclick="switchJobMode('link')">Link da vaga</button>
+        <button type="button" class="job-mode-tab" id="jobModeText" onclick="switchJobMode('texto', true)">Colar descrição</button>
+      </div>
+      <div class="job-mode-panel" id="jobLinkWrap">
+        <div class="url-row">
+          <input type="url" class="url-input" id="jobUrl" placeholder="Cole o link da vaga (LinkedIn, Gupy, Indeed…)" autocomplete="off">
+          <button class="btn-fetch" id="fetchBtn" onclick="fetchJobUrl()">Carregar vaga</button>
+        </div>
       </div>
       <div class="fetch-status" id="fetchStatus"></div>
 
@@ -720,23 +725,31 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
         <div class="job-preview-excerpt" id="jpExcerpt"></div>
       </div>
 
-      <!-- Textarea (visível por padrão, oculto após URL carregada) -->
-      <div id="jobTextWrap">
-        <div class="or-divider"><span>ou cole o texto abaixo</span></div>
-        <textarea id="jobInput" rows="3" placeholder="Ou cole aqui o texto da vaga (título, requisitos, responsabilidades...)"></textarea>
+      <!-- Texto manual: revelado pela escolha explícita ou como fallback da importação. -->
+      <div id="jobTextWrap" style="display:none">
+        <textarea id="jobInput" rows="3" placeholder="Cole aqui o título, responsabilidades e requisitos da oportunidade."></textarea>
+        <div class="char-count" id="jobCount">0 caracteres</div>
       </div>
-      <div class="char-count" id="jobCount">0 caracteres</div>
     </div>
 
-    <div class="field">
-      <label>Seu currículo <span>— Cole, envie um arquivo ou crie do zero com IA</span></label>
+    <div class="field analysis-task analysis-task-cv">
+      <div class="analysis-task-number">02</div>
+      <div class="analysis-task-title"><label>Escolha o currículo</label><p id="cvTaskHint">Envie, cole ou crie o documento que será comparado.</p></div>
 
-      <!-- Tabs: Tenho CV / Meu currículo / Criar CV -->
-      <div class="cv-mode-tabs">
-        <button class="cv-mode-tab active" id="tabTenhoCV" onclick="switchCvMode('tenho')">Já tenho currículo</button>
-        <button class="cv-mode-tab" id="tabSalvoCV" onclick="switchCvMode('salvo')" style="display:none">Meu currículo</button>
-        <button class="cv-mode-tab" id="tabCriarCV" onclick="switchCvMode('criar')">Criar do zero</button>
+      <div class="saved-cv-choice" id="savedCvChoice">
+        <div class="saved-cv-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16h12V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg></div>
+        <div class="saved-cv-copy"><strong id="savedCvChoiceName">Currículo principal</strong><span id="savedCvChoiceMeta">Pronto para ser comparado</span></div>
+        <div class="saved-cv-check">✓</div>
       </div>
+      <button class="cv-options-toggle" id="cvOptionsToggle" type="button" onclick="toggleCvOptions()">Trocar currículo ↓</button>
+
+      <div class="cv-options-panel" id="cvOptionsPanel">
+        <!-- Tabs: enviar/colar, currículo principal ou criar no editor -->
+        <div class="cv-mode-tabs">
+          <button class="cv-mode-tab active" id="tabTenhoCV" onclick="switchCvMode('tenho')">Enviar ou colar</button>
+          <button class="cv-mode-tab" id="tabSalvoCV" onclick="switchCvMode('salvo')" style="display:none">Currículo principal</button>
+          <button class="cv-mode-tab" id="tabCriarCV" onclick="switchCvMode('criar')">Criar do zero</button>
+        </div>
 
       <!-- Painel: Meu currículo (só aparece se o usuário já tiver um salvo) -->
       <div id="panelSalvoCV" style="display:none">
@@ -807,11 +820,15 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
           <p class="cv-builder-notice">A IA usa a descrição da vaga (se preenchida) para já otimizar o CV com as keywords certas.</p>
         </div>
       </div>
+      </div>
     </div>
 
-    <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">
-      <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Analisar agora — grátis
-    </button>
+    <div class="analysis-form-foot">
+      <div class="analysis-privacy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 11V7a5 5 0 0 1 10 0v4M5 11h14v10H5z"/></svg>Nada é alterado sem sua confirmação.</div>
+      <button class="btn-analyze" id="analyzeBtn" onclick="analyze()" aria-label="Analisar agora">
+        <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Analisar agora — grátis
+      </button>
+    </div>
 
     <div class="error-box" id="errorBox"></div>
   </div>
@@ -821,27 +838,16 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
     <section class="analysis-side-card analysis-value-card">
       <div class="analysis-value-top">
         <div class="analysis-value-kicker">O que você recebe</div>
-        <h3>Clareza antes de enviar seu currículo.</h3>
-        <p>Entenda sua aderência, o que está faltando e quais ajustes podem fortalecer sua candidatura.</p>
-        <div class="analysis-score-preview">
-          <div class="analysis-preview-ring">
-            <svg viewBox="0 0 64 64"><circle class="analysis-ring-bg" cx="32" cy="32" r="28"/><circle class="analysis-ring-fill" cx="32" cy="32" r="28"/></svg>
-            <div class="analysis-ring-label">74<small>/ 100</small></div>
-          </div>
-          <div class="analysis-score-copy"><strong>Quanto seu currículo combina</strong><span>Requisitos, experiência e palavras-chave comparados em segundos.</span></div>
-        </div>
+        <h3>Um diagnóstico para decidir antes de enviar.</h3>
+        <p>A análise transforma a descrição da vaga em prioridades claras para sua candidatura.</p>
       </div>
       <div class="analysis-deliverables">
-        <div class="analysis-deliverable"><div class="analysis-check">✓</div><div><strong>O que a vaga pede</strong><span>Pontos fortes e lacunas prioritárias.</span></div></div>
-        <div class="analysis-deliverable"><div class="analysis-check">✓</div><div><strong>Currículo ajustado para a vaga</strong><span>Versão direcionada para a oportunidade.</span></div></div>
-        <div class="analysis-deliverable"><div class="analysis-check">✓</div><div><strong>Palavras que os sistemas de RH procuram</strong><span>Termos presentes e ausentes no currículo.</span></div></div>
-        <div class="analysis-deliverable"><div class="analysis-check">✓</div><div><strong>Sobre a empresa</strong><span>Contexto para avançar melhor preparado.</span></div></div>
+        <div class="analysis-deliverable"><div class="analysis-deliverable-number">01</div><div><strong>Aderência à vaga</strong><span>Compatibilidade explicada por critérios.</span></div></div>
+        <div class="analysis-deliverable"><div class="analysis-deliverable-number">02</div><div><strong>Requisitos prioritários</strong><span>O que já aparece e o que ainda falta.</span></div></div>
+        <div class="analysis-deliverable"><div class="analysis-deliverable-number">03</div><div><strong>Palavras-chave</strong><span>Termos que os sistemas de RH procuram.</span></div></div>
+        <div class="analysis-deliverable"><div class="analysis-deliverable-number">04</div><div><strong>Currículo direcionado</strong><span>Uma versão preparada para a oportunidade.</span></div></div>
       </div>
-    </section>
-    <section class="analysis-side-card analysis-tip-card">
-      <div class="analysis-tip-head">Dica para um resultado mais preciso</div>
-      <p>Use a descrição completa da vaga e o currículo que você realmente pretende enviar.</p>
-      <a href="#formSection">Revisar os dados antes da análise →</a>
+      <div class="analysis-side-foot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg><span>O número de aderência só aparece depois da análise. Nenhum resultado de exemplo é apresentado como dado real.</span></div>
     </section>
   </aside>
   </div>
@@ -1201,6 +1207,7 @@ function updateCreditsUI() {
       : (userCredits <= 0 && freeMonthlyAvailable) ? 'Analisar agora — grátis'
       : 'Analisar agora — 1 crédito';
     btn.innerHTML = '<span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> ' + btnLabel;
+    btn.setAttribute('aria-label', btnLabel);
   }
   // Remove aviso "grátis sem cadastro"
   document.getElementById('freeNotice').style.display = 'none';
@@ -1341,6 +1348,20 @@ function showCvReceived(fileName, charCount) {
 }
 
 // ── CV Builder ───────────────────────────────────────────────────────────────
+function setCvOptionsOpen(open) {
+  var panel = document.getElementById('cvOptionsPanel');
+  var toggle = document.getElementById('cvOptionsToggle');
+  if (!panel) return;
+  panel.classList.toggle('collapsed', !open);
+  if (toggle) toggle.textContent = open ? 'Fechar opções ↑' : 'Trocar currículo ↓';
+}
+
+function toggleCvOptions() {
+  var panel = document.getElementById('cvOptionsPanel');
+  if (!panel) return;
+  setCvOptionsOpen(panel.classList.contains('collapsed'));
+}
+
 function switchCvMode(mode) {
   document.getElementById('tabTenhoCV').classList.toggle('active', mode === 'tenho');
   document.getElementById('tabSalvoCV').classList.toggle('active', mode === 'salvo');
@@ -1348,6 +1369,7 @@ function switchCvMode(mode) {
   document.getElementById('panelTenhoCV').style.display = mode === 'tenho' ? '' : 'none';
   document.getElementById('panelSalvoCV').style.display = mode === 'salvo' ? '' : 'none';
   document.getElementById('panelCriarCV').style.display = mode === 'criar' ? '' : 'none';
+  if (mode !== 'salvo') setCvOptionsOpen(true);
 }
 
 /* ── Currículos salvos (cv_saves) ──────────────────────────────────────────
@@ -1439,22 +1461,45 @@ async function loadSavedCvsForApp(session) {
     var box = document.getElementById('savedCvPreview');
     box.textContent = text.slice(0, 700) + (text.length > 700 ? '…' : '');
 
-    // Nunca troca a aba automaticamente — só oferece a opção; quem decide é o
-    // usuário. Exceção: ?cv=base é um pedido explícito, vindo do botão
-    // "Adaptar para uma vaga" do hub Meu Currículo.
+    var choice = document.getElementById('savedCvChoice');
+    var choiceName = document.getElementById('savedCvChoiceName');
+    var choiceMeta = document.getElementById('savedCvChoiceMeta');
+    var optionsToggle = document.getElementById('cvOptionsToggle');
+    var taskHint = document.getElementById('cvTaskHint');
+    if (choiceName) choiceName.textContent = _myCv.name || 'Currículo principal';
+    if (choiceMeta) {
+      var metaParts = [];
+      if (_myCv.updated_at) {
+        var days = Math.max(0, Math.floor((Date.now() - new Date(_myCv.updated_at).getTime()) / 86400000));
+        metaParts.push(days <= 0 ? 'Atualizado hoje' : days === 1 ? 'Atualizado ontem' : 'Atualizado há ' + days + ' dias');
+      }
+      if (window.VagaAICv && window.VagaAICv.completude) metaParts.push(window.VagaAICv.completude(_myCv.cv_data) + '% preenchido');
+      choiceMeta.textContent = metaParts.join(' · ') || 'Pronto para ser comparado';
+    }
+    if (choice) choice.style.display = 'flex';
+    if (optionsToggle) optionsToggle.style.display = 'block';
+    if (taskHint) taskHint.textContent = 'Seu documento principal está pronto para ser comparado.';
+
+    // A prévia aprovada transforma o currículo principal no caminho padrão.
+    // O texto é aplicado ao campo real usado pela análise; as demais opções
+    // continuam disponíveis em "Trocar currículo".
+    useSavedCv(true);
+    // Mantém o contrato explícito do atalho "Adaptar para uma vaga" do hub.
     try {
       if (new URLSearchParams(location.search).get('cv') === 'base') switchCvMode('salvo');
     } catch(e) {}
   } catch(e) { /* silencioso — o fluxo original (colar/upload) continua funcionando normalmente */ }
 }
 
-function useSavedCv() {
+function useSavedCv(silent) {
   if (!_myCv) return;
   var text = cvToText(_myCv.cv_data);
   cvEl.value = text;
   cvEl.dispatchEvent(new Event('input'));
-  switchCvMode('tenho');
-  appToast('✓ Seu currículo foi aplicado', 'success');
+  switchCvMode('salvo');
+  setCvOptionsOpen(false);
+  updateAnalysisFormState();
+  if (!silent) appToast('✓ Seu currículo foi aplicado', 'success');
 }
 
 /* ── Editar/criar currículo em /cv e voltar pra esta vaga ─────────────────
@@ -1493,12 +1538,14 @@ function restorePendingJobReturn() {
     document.getElementById('jobCount').textContent = pending.job.length + ' caracteres';
   }
   if (pending.jobUrl) document.getElementById('jobUrl').value = pending.jobUrl;
+  if (pending.job && !pending.jobUrl) switchJobMode('texto');
   if (newCv) {
     cvEl.value = cvToText(newCv);
     cvEl.dispatchEvent(new Event('input'));
     switchCvMode('tenho');
     appToast('✓ Currículo criado e aplicado a esta vaga!', 'success');
   }
+  updateAnalysisFormState();
 }
 
 async function gerarCV() {
@@ -1674,6 +1721,31 @@ function loadScript(src) {
 var jobEl = document.getElementById('jobInput');
 var cvEl = document.getElementById('cvInput');
 
+function switchJobMode(mode, focusField) {
+  var useText = mode === 'texto';
+  var linkTab = document.getElementById('jobModeLink');
+  var textTab = document.getElementById('jobModeText');
+  var linkWrap = document.getElementById('jobLinkWrap');
+  var textWrap = document.getElementById('jobTextWrap');
+  if (linkTab) linkTab.classList.toggle('active', !useText);
+  if (textTab) textTab.classList.toggle('active', useText);
+  if (linkWrap) linkWrap.style.display = useText ? 'none' : 'block';
+  if (textWrap) textWrap.style.display = useText ? 'block' : 'none';
+  if (focusField) {
+    var target = useText ? jobEl : document.getElementById('jobUrl');
+    if (target) target.focus();
+  }
+}
+
+function updateAnalysisFormState() {
+  var state = document.getElementById('analysisFormState');
+  if (!state) return;
+  var jobReady = !!((jobEl && jobEl.value.trim().length >= 50) || ((document.getElementById('jobUrl') || {}).value || '').trim());
+  var cvReady = !!(cvEl && cvEl.value.trim().length >= 100);
+  state.classList.toggle('ready', jobReady && cvReady);
+  state.textContent = !jobReady ? 'Falta adicionar a vaga' : !cvReady ? 'Falta escolher o currículo' : 'Dados prontos para analisar';
+}
+
 // Placeholder do link encurtado no mobile — o texto completo corta em ~375px
 try {
   if (window.matchMedia('(max-width:580px)').matches) {
@@ -1685,10 +1757,14 @@ jobEl.addEventListener('input', function() {
   document.getElementById('jobCount').textContent = this.value.length + ' caracteres';
   // Se o usuário editar manualmente, descarta o preview (não faz mais sentido)
   document.getElementById('jobPreview').classList.remove('show');
+  updateAnalysisFormState();
 });
 cvEl.addEventListener('input', function() {
   document.getElementById('cvCount').textContent = this.value.length + ' caracteres';
+  updateAnalysisFormState();
 });
+document.getElementById('jobUrl').addEventListener('input', updateAnalysisFormState);
+updateAnalysisFormState();
 
 function setStep(n) {
   [1,2,3].forEach(function(i) {
@@ -1965,14 +2041,15 @@ function showJobPreview(preview, charCount) {
   document.getElementById('jpExcerpt').textContent = preview.excerpt || '';
 
   document.getElementById('jobPreview').classList.add('show');
+  switchJobMode('link');
   document.getElementById('jobTextWrap').style.display = 'none';
   document.getElementById('fetchStatus').textContent = '';
+  updateAnalysisFormState();
 }
 
 function showJobTextArea() {
   document.getElementById('jobPreview').classList.remove('show');
-  document.getElementById('jobTextWrap').style.display = 'block';
-  document.getElementById('jobInput').focus();
+  switchJobMode('texto', true);
 }
 
 async function fetchJobUrl() {
@@ -1989,7 +2066,7 @@ async function fetchJobUrl() {
   st.textContent = '';
   // Esconde preview anterior se houver
   document.getElementById('jobPreview').classList.remove('show');
-  document.getElementById('jobTextWrap').style.display = 'block';
+  switchJobMode('link');
   try {
     var res = await fetch('/api/fetch-job?url=' + encodeURIComponent(url));
     var data = await res.json();
@@ -2003,17 +2080,19 @@ async function fetchJobUrl() {
     } else if (data.error === 'scraping_blocked' || res.status === 422) {
       st.innerHTML = '⚠ Esta plataforma bloqueia leitura automática. <strong>Cole o texto da vaga</strong> manualmente no campo abaixo.';
       st.style.color = 'var(--yellow)';
-      document.getElementById('jobInput').focus();
+      switchJobMode('texto', true);
     } else {
       st.textContent = 'Não foi possível extrair o texto. Cole a descrição manualmente abaixo.';
       st.style.color = 'var(--yellow)';
+      switchJobMode('texto', true);
     }
   } catch(e) {
     st.textContent = 'Erro ao carregar o link. Cole o texto manualmente.';
     st.style.color = 'var(--red)';
+    switchJobMode('texto', true);
   }
   btn.disabled = false;
-  btn.textContent = 'Carregar';
+  btn.textContent = 'Carregar vaga';
 }
 
 async function analyze() {
@@ -2045,7 +2124,7 @@ async function analyze() {
         aBtn.disabled = false;
         aBtn.innerHTML = '<span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Analisar agora — grátis';
         showError('Não foi possível carregar a vaga automaticamente (alguns sites bloqueiam acesso direto). Cole o texto da descrição da vaga no campo abaixo e tente novamente.');
-        jobEl.focus();
+        switchJobMode('texto', true);
         return;
       }
     } catch(e) {
@@ -2054,7 +2133,7 @@ async function analyze() {
       aBtn.disabled = false;
       aBtn.innerHTML = '<span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Analisar agora — grátis';
       showError('Não foi possível acessar esse link. Cole o texto da vaga diretamente no campo abaixo e tente novamente.');
-      jobEl.focus();
+      switchJobMode('texto', true);
       return;
     }
     aBtn.disabled = false;
@@ -2932,7 +3011,7 @@ async function checkVagaParam() {
       // Plataforma bloqueia scraping — pede texto manual com UX clara
       notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Esta plataforma bloqueia leitura automática. Cole o texto da vaga manualmente abaixo para continuar.';
       notice.style.background = 'var(--yellow-dim)'; notice.style.borderColor = 'var(--yellow-border,#c47d0a44)'; notice.style.color = 'var(--yellow)';
-      document.getElementById('jobInput').focus();
+      switchJobMode('texto', true);
     } else {
       if (hadFallback) {
         notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Vaga do alerta carregada com os dados disponíveis. Revise antes de analisar.';
@@ -2973,8 +3052,9 @@ initAuth().then(async function() {
       try {
         var lj = localStorage.getItem('vagaai_last_job') || '';
         var lc = localStorage.getItem('vagaai_last_cv') || '';
-        if (lj && jobEl) { jobEl.value = lj; document.getElementById('jobCount').textContent = lj.length + ' caracteres'; }
+        if (lj && jobEl) { jobEl.value = lj; document.getElementById('jobCount').textContent = lj.length + ' caracteres'; switchJobMode('texto'); }
         if (lc && cvEl) { cvEl.value = lc; document.getElementById('cvCount').textContent = lc.length + ' caracteres'; }
+        updateAnalysisFormState();
       } catch(e) {}
     }
     // Dispara sequência de onboarding (welcome email)

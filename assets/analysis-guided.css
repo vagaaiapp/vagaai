@@ -1,0 +1,399 @@
+/* VagaAI — análise guiada aprovada em preview local.
+   Escopo exclusivo da etapa de entrada; resultado, limites e integrações
+   continuam sob os estilos e contratos existentes. */
+body[data-vagaai-ui="analysis"] .container{
+  width:min(1140px,calc(100% - 64px));
+  max-width:none;
+  padding:44px 0 64px;
+}
+body[data-vagaai-ui="analysis"] .app-intro{
+  display:grid;
+  grid-template-columns:minmax(0,720px) auto;
+  align-items:end;
+  justify-content:space-between;
+  gap:32px;
+  margin-bottom:29px;
+}
+body[data-vagaai-ui="analysis"] .page-title{
+  font-size:clamp(34px,3.6vw,44px);
+  line-height:1.07;
+  letter-spacing:-.038em;
+}
+body[data-vagaai-ui="analysis"] .page-sub{
+  max-width:690px;
+  margin-top:10px;
+  color:var(--muted);
+  font-size:15.5px;
+  line-height:1.65;
+}
+body[data-vagaai-ui="analysis"] .app-safe-note{
+  padding-bottom:5px;
+  font-size:12px;
+}
+
+body[data-vagaai-ui="analysis"] .steps-bar{
+  position:relative;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  margin:0 5px 27px;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+body[data-vagaai-ui="analysis"] .steps-bar::before{
+  content:"";
+  position:absolute;
+  top:15px;
+  left:11%;
+  right:11%;
+  height:1px;
+  background:var(--border);
+}
+body[data-vagaai-ui="analysis"] .step{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  min-height:31px;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--muted);
+  font-size:12.5px;
+  font-weight:650;
+  letter-spacing:0;
+}
+body[data-vagaai-ui="analysis"] .step:not(:last-child)::after{display:none}
+body[data-vagaai-ui="analysis"] .step-number{
+  width:31px;
+  height:31px;
+  display:grid;
+  place-items:center;
+  border:1px solid var(--border);
+  border-radius:50%;
+  background:var(--surface);
+  color:var(--muted);
+  font-size:11px;
+  font-weight:700;
+}
+body[data-vagaai-ui="analysis"] .step.active,
+body[data-vagaai-ui="analysis"] .step.done{background:transparent;border:0;color:var(--text)}
+body[data-vagaai-ui="analysis"] .step.active .step-number{
+  border-color:var(--gb-emerald);
+  background:var(--gb-emerald);
+  color:#fff;
+  box-shadow:0 0 0 5px rgba(26,122,74,.1);
+}
+body[data-vagaai-ui="analysis"] .step.done .step-number{
+  border-color:var(--gb-mid);
+  color:var(--gb-emerald);
+}
+
+body[data-vagaai-ui="analysis"] .analysis-workspace{
+  grid-template-columns:minmax(0,1fr) 335px;
+  gap:28px;
+}
+body[data-vagaai-ui="analysis"] .analysis-form-card,
+body[data-vagaai-ui="analysis"] .analysis-side-card{
+  border-radius:18px;
+  box-shadow:none;
+}
+body[data-vagaai-ui="analysis"] .analysis-card-head{
+  align-items:flex-start;
+  padding:23px 27px;
+}
+body[data-vagaai-ui="analysis"] .analysis-section-icon{display:none}
+body[data-vagaai-ui="analysis"] .analysis-card-title{display:block}
+body[data-vagaai-ui="analysis"] .analysis-card-title h2{font-size:18px;letter-spacing:-.02em}
+body[data-vagaai-ui="analysis"] .analysis-card-title p{margin-top:4px;font-size:13px}
+body[data-vagaai-ui="analysis"] .analysis-status-pill{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:3px 0 0;
+  border-radius:0;
+  background:transparent;
+  color:var(--muted);
+  font-size:11.5px;
+  font-weight:500;
+}
+body[data-vagaai-ui="analysis"] .analysis-status-pill::before{
+  content:"";
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#d6a248;
+}
+body[data-vagaai-ui="analysis"] .analysis-status-pill.ready::before{background:var(--gb-mid)}
+body[data-vagaai-ui="analysis"] .analysis-form-card .free-notice{margin:16px 27px 0}
+
+body[data-vagaai-ui="analysis"] .form-section>.field.analysis-task{
+  position:relative;
+  gap:0;
+  padding:27px 27px 27px 83px;
+}
+body[data-vagaai-ui="analysis"] .analysis-task-number{
+  position:absolute;
+  top:28px;
+  left:28px;
+  color:var(--gb-emerald);
+  font:700 16px Lora,serif;
+}
+body[data-vagaai-ui="analysis"] .analysis-task-title>label{
+  display:block;
+  color:var(--text);
+  font-size:15px;
+  font-weight:800;
+  letter-spacing:-.01em;
+}
+body[data-vagaai-ui="analysis"] .analysis-task-title>p{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:12.5px;
+}
+body[data-vagaai-ui="analysis"] .job-mode-tabs{
+  display:inline-flex;
+  align-self:flex-start;
+  margin-top:17px;
+  padding:4px;
+  border-radius:10px;
+  background:var(--surface2);
+}
+body[data-vagaai-ui="analysis"] .job-mode-tab{
+  min-height:36px;
+  padding:0 14px;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:var(--muted);
+  font-size:12.5px;
+  font-weight:700;
+}
+body[data-vagaai-ui="analysis"] .job-mode-tab.active{
+  background:var(--surface);
+  color:var(--text);
+  box-shadow:0 1px 5px rgba(7,24,13,.09);
+}
+body[data-vagaai-ui="analysis"] .job-mode-panel{margin-top:12px}
+body[data-vagaai-ui="analysis"] .url-row{gap:9px}
+body[data-vagaai-ui="analysis"] .url-input{
+  height:48px;
+  padding:0 14px;
+  border-radius:11px;
+  background:var(--bg);
+  font-size:14px;
+}
+body[data-vagaai-ui="analysis"] .btn-fetch{
+  height:48px;
+  min-height:48px;
+  padding:0 17px;
+  border-radius:11px;
+  background:var(--surface);
+  color:var(--text);
+  font-size:12.5px;
+  font-weight:800;
+}
+body[data-vagaai-ui="analysis"] #jobTextWrap{margin-top:12px}
+body[data-vagaai-ui="analysis"] #jobInput{height:128px;min-height:128px}
+body[data-vagaai-ui="analysis"] .fetch-status:empty{display:none}
+body[data-vagaai-ui="analysis"] .fetch-status{margin-top:9px}
+body[data-vagaai-ui="analysis"] .job-preview{
+  margin-top:11px;
+  border-color:rgba(26,122,74,.32);
+  background:rgba(44,186,116,.055);
+  box-shadow:none;
+}
+
+body[data-vagaai-ui="analysis"] .saved-cv-choice{
+  display:none;
+  align-items:center;
+  gap:14px;
+  margin-top:17px;
+  padding:15px;
+  border:1px solid rgba(26,122,74,.42);
+  border-radius:13px;
+  background:rgba(44,186,116,.045);
+}
+body[data-vagaai-ui="analysis"] .saved-cv-icon{
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  flex:none;
+  border-radius:10px;
+  background:var(--green-dim);
+  color:var(--green);
+}
+body[data-vagaai-ui="analysis"] .saved-cv-icon svg{width:20px}
+body[data-vagaai-ui="analysis"] .saved-cv-copy{min-width:0}
+body[data-vagaai-ui="analysis"] .saved-cv-copy strong{display:block;font-size:13.5px}
+body[data-vagaai-ui="analysis"] .saved-cv-copy span{display:block;margin-top:2px;color:var(--muted);font-size:11.5px}
+body[data-vagaai-ui="analysis"] .saved-cv-check{
+  width:25px;
+  height:25px;
+  display:grid;
+  place-items:center;
+  flex:none;
+  margin-left:auto;
+  border-radius:50%;
+  background:var(--gb-emerald);
+  color:#fff;
+  font-size:12px;
+}
+body[data-vagaai-ui="analysis"] .cv-options-toggle{
+  display:none;
+  align-self:flex-start;
+  margin-top:10px;
+  border:0;
+  background:transparent;
+  color:var(--green);
+  font-size:12px;
+  font-weight:800;
+}
+body[data-vagaai-ui="analysis"] .cv-options-panel{margin-top:16px}
+body[data-vagaai-ui="analysis"] .cv-options-panel.collapsed{display:none}
+body[data-vagaai-ui="analysis"] .cv-mode-tabs{
+  margin-bottom:12px;
+  padding:4px;
+  border:0;
+  border-radius:11px;
+  background:var(--surface2);
+}
+body[data-vagaai-ui="analysis"] .cv-mode-tab{min-height:40px;font-size:12.5px}
+body[data-vagaai-ui="analysis"] #panelSalvoCV{
+  padding:14px;
+  border:1px solid var(--border);
+  border-radius:11px;
+  background:var(--surface2);
+}
+body[data-vagaai-ui="analysis"] #savedCvPreview{
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+
+body[data-vagaai-ui="analysis"] .analysis-form-foot{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  padding:19px 27px;
+  border-top:1px solid var(--border);
+  background:var(--bg);
+}
+body[data-vagaai-ui="analysis"] .analysis-privacy{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:var(--muted);
+  font-size:11.5px;
+}
+body[data-vagaai-ui="analysis"] .analysis-privacy svg{width:16px;flex:none;color:var(--green)}
+body[data-vagaai-ui="analysis"] .analysis-form-foot .btn-analyze{
+  width:auto;
+  min-width:0;
+  height:50px;
+  margin:0;
+  padding:0 22px;
+  font-size:13.5px;
+}
+body[data-vagaai-ui="analysis"] .error-box{margin:0 27px 20px}
+
+body[data-vagaai-ui="analysis"] .analysis-side{top:88px;gap:0}
+body[data-vagaai-ui="analysis"] .analysis-value-card{
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(148deg,#0c3922,#071b10 74%);
+}
+body[data-vagaai-ui="analysis"] .analysis-value-card::before,
+body[data-vagaai-ui="analysis"] .analysis-value-card::after{
+  content:"";
+  position:absolute;
+  pointer-events:none;
+  border:1px solid rgba(78,206,145,.12);
+  border-radius:50%;
+}
+body[data-vagaai-ui="analysis"] .analysis-value-card::before{width:220px;height:220px;right:-118px;top:-105px}
+body[data-vagaai-ui="analysis"] .analysis-value-card::after{width:160px;height:160px;right:-90px;top:-75px}
+body[data-vagaai-ui="analysis"] .analysis-value-top{position:relative;padding:26px 25px 23px}
+body[data-vagaai-ui="analysis"] .analysis-value-kicker{font-size:10.5px}
+body[data-vagaai-ui="analysis"] .analysis-value-top h3{
+  max-width:260px;
+  margin-top:10px;
+  font-size:23px;
+  line-height:1.23;
+  letter-spacing:-.025em;
+}
+body[data-vagaai-ui="analysis"] .analysis-value-top p{margin-top:10px;font-size:12.5px}
+body[data-vagaai-ui="analysis"] .analysis-deliverables{padding:8px 25px 11px;gap:0}
+body[data-vagaai-ui="analysis"] .analysis-deliverable{
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr);
+  gap:9px;
+  padding:14px 0;
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+body[data-vagaai-ui="analysis"] .analysis-deliverable:last-child{border-bottom:0}
+body[data-vagaai-ui="analysis"] .analysis-deliverable-number{color:var(--gb-bright);font:600 14px Lora,serif}
+body[data-vagaai-ui="analysis"] .analysis-deliverable strong{font-size:12.5px}
+body[data-vagaai-ui="analysis"] .analysis-deliverable span{margin-top:3px;font-size:11px}
+body[data-vagaai-ui="analysis"] .analysis-side-foot{
+  display:flex;
+  gap:8px;
+  padding:17px 25px 20px;
+  color:rgba(255,255,255,.52);
+  font-size:10.8px;
+  line-height:1.45;
+}
+body[data-vagaai-ui="analysis"] .analysis-side-foot svg{width:15px;flex:none;color:var(--gb-bright)}
+body[data-vagaai-ui="analysis"] .analysis-tip-card{display:none}
+
+@media(max-width:1100px){
+  body[data-vagaai-ui="analysis"] .container{width:min(960px,calc(100% - 42px))}
+  body[data-vagaai-ui="analysis"] .analysis-workspace{grid-template-columns:minmax(0,1fr) 300px;gap:20px}
+}
+@media(max-width:860px){
+  body[data-vagaai-ui="analysis"] .container{width:min(720px,calc(100% - 36px));padding-top:32px}
+  body[data-vagaai-ui="analysis"] .app-intro{display:block}
+  body[data-vagaai-ui="analysis"] .app-safe-note{display:flex;margin-top:13px}
+  body[data-vagaai-ui="analysis"] .analysis-workspace{grid-template-columns:1fr}
+  body[data-vagaai-ui="analysis"] .analysis-side{position:relative;grid-row:auto}
+  body[data-vagaai-ui="analysis"] .analysis-value-card{display:block}
+  body[data-vagaai-ui="analysis"] .analysis-value-top{border-right:0;border-bottom:1px solid rgba(255,255,255,.08)}
+  body[data-vagaai-ui="analysis"] .analysis-deliverables{display:grid;grid-template-columns:repeat(2,1fr);column-gap:20px}
+  body[data-vagaai-ui="analysis"] .analysis-deliverable:nth-last-child(-n+2){border-bottom:0}
+}
+@media(max-width:560px){
+  body[data-vagaai-ui="analysis"] .container{width:calc(100% - 28px);padding:24px 0 40px}
+  body[data-vagaai-ui="analysis"] .app-intro{margin-bottom:23px}
+  body[data-vagaai-ui="analysis"] .page-title{font-size:31px}
+  body[data-vagaai-ui="analysis"] .page-sub{font-size:14px}
+  body[data-vagaai-ui="analysis"] .app-safe-note{font-size:11.5px}
+  body[data-vagaai-ui="analysis"] .steps-bar{margin-bottom:20px}
+  body[data-vagaai-ui="analysis"] .step{gap:0}
+  body[data-vagaai-ui="analysis"] .step-label{display:none}
+  body[data-vagaai-ui="analysis"] .step-number{width:29px;height:29px}
+  body[data-vagaai-ui="analysis"] .analysis-card-head{padding:19px}
+  body[data-vagaai-ui="analysis"] .analysis-status-pill{display:none}
+  body[data-vagaai-ui="analysis"] .form-section>.field.analysis-task{padding:21px 18px}
+  body[data-vagaai-ui="analysis"] .analysis-task-number{position:static;margin-bottom:8px;font-size:14px}
+  body[data-vagaai-ui="analysis"] .url-row{flex-direction:column}
+  body[data-vagaai-ui="analysis"] .btn-fetch{width:100%}
+  body[data-vagaai-ui="analysis"] .saved-cv-choice{align-items:flex-start}
+  body[data-vagaai-ui="analysis"] .cv-mode-tabs{display:grid;grid-template-columns:1fr}
+  body[data-vagaai-ui="analysis"] .analysis-form-foot{
+    position:sticky;
+    bottom:0;
+    z-index:2;
+    display:block;
+    padding:14px 18px;
+  }
+  body[data-vagaai-ui="analysis"] .analysis-privacy{margin-bottom:10px}
+  body[data-vagaai-ui="analysis"] .analysis-form-foot .btn-analyze{width:100%}
+  body[data-vagaai-ui="analysis"] .analysis-deliverables{grid-template-columns:1fr}
+  body[data-vagaai-ui="analysis"] .analysis-deliverable:nth-last-child(2){border-bottom:1px solid rgba(255,255,255,.07)}
+}
