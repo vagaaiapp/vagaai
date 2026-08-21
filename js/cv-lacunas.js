@@ -69,16 +69,44 @@
     return Object.keys(vistas).length;
   }
 
+  /* Uma vaga pode ser reanalisada várias vezes. Para a leitura de mercado,
+     usamos somente o resultado mais recente de cada oportunidade: reprocessar
+     o mesmo anúncio não transforma uma evidência em tendência de mercado. */
+  function analisesDistintasPorVaga(analises) {
+    var porChave = {};
+    var ordem = [];
+    (Array.isArray(analises) ? analises : []).forEach(function (row) {
+      var chave = chaveDaVaga(row);
+      if (!porChave[chave]) {
+        porChave[chave] = row;
+        ordem.push(chave);
+        return;
+      }
+      var atual = Date.parse((porChave[chave] && porChave[chave].created_at) || 0) || 0;
+      var candidata = Date.parse((row && row.created_at) || 0) || 0;
+      if (candidata > atual) porChave[chave] = row;
+    });
+    return ordem.map(function (chave) { return porChave[chave]; });
+  }
+
   /* cvData: objeto cv_saves.cv_data. analises: linhas com .result.keywords_faltando.
      Devolve gaps ordenadas por frequência (mais pedidas primeiro). */
   function calcularLacunas(cvData, analises) {
     analises = Array.isArray(analises) ? analises : [];
+    var vagas = analisesDistintasPorVaga(analises);
     var freq = {};
-    analises.forEach(function (row) {
+    var nomes = {};
+    vagas.forEach(function (row) {
       var res = (row && row.result) || {};
+      var vistasNestaVaga = {};
       (res.keywords_faltando || []).forEach(function (k) {
         var chave = String(k == null ? '' : k).trim();
-        if (chave) freq[chave] = (freq[chave] || 0) + 1;
+        var normalizada = chave.toLocaleLowerCase('pt-BR');
+        if (!chave || vistasNestaVaga[normalizada]) return;
+        vistasNestaVaga[normalizada] = true;
+        if (!nomes[normalizada]) nomes[normalizada] = chave;
+        var nome = nomes[normalizada];
+        freq[nome] = (freq[nome] || 0) + 1;
       });
     });
 
@@ -93,7 +121,7 @@
       freq: freq,
       cobertas: todas.length - gaps.length,
       totalCompetencias: todas.length,
-      totalVagas: contarVagasDistintas(analises),
+      totalVagas: vagas.length,
       totalAnalises: analises.length
     };
   }
@@ -103,5 +131,6 @@
   global.VagaAICv.calcularLacunas = calcularLacunas;
   global.VagaAICv.chaveDaVaga = chaveDaVaga;
   global.VagaAICv.contarVagasDistintas = contarVagasDistintas;
+  global.VagaAICv.analisesDistintasPorVaga = analisesDistintasPorVaga;
   global.VagaAICv.ANALISES_QUERY = ANALISES_QUERY;
 })(typeof window !== 'undefined' ? window : this);

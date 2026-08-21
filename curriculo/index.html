@@ -145,7 +145,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;fon
 @media(max-width:560px){.f-grid2{grid-template-columns:1fr}.profile-head{flex-direction:column;align-items:flex-start}.save-btn{width:100%}.profile-actions{width:100%;min-width:0}.version-row{align-items:flex-start;flex-direction:column}.version-actions{width:100%;justify-content:flex-start}.version-action{flex:1}.version-row-copy{width:100%}}
 </style>
 <link rel="stylesheet" href="/assets/product-ui.css?v=20260821-editorial1">
-<link rel="stylesheet" href="/assets/curriculum-master.css?v=20260821-master2">
+<link rel="stylesheet" href="/assets/curriculum-master.css?v=20260821-master3">
 </head>
 <body data-vagaai-ui="curriculum">
 <div class="standalone-nav" id="standaloneNav">
@@ -158,7 +158,13 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;fon
 <div class="container">
   <div class="curriculum-page-head">
     <div><h1 class="page-title">Meus currículos</h1><p class="page-sub">Mantenha seu documento principal atualizado e crie versões direcionadas somente quando houver uma vaga.</p></div>
-    <div class="curriculum-updated" id="curriculumUpdated"></div>
+    <div class="curriculum-page-actions">
+      <div class="curriculum-updated" id="curriculumUpdated"></div>
+      <button class="curriculum-theme-btn" id="curriculumThemeBtn" onclick="toggleCurriculumTheme()" aria-label="Alternar tema claro ou escuro" title="Alternar tema">
+        <svg class="curriculum-theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        <svg class="curriculum-theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </button>
+    </div>
   </div>
 
   <div class="draft-banner" id="draftBanner">Você está editando sem estar logado — nada será perdido, mas <b>salve para não perder seu progresso</b> e poder usar esse currículo nas análises de vaga.</div>
@@ -197,6 +203,33 @@ var _versionsCapped = false;
 var _versionGroups = [];
 var _expandedGroups = {};
 var VERSIONS_LIMIT = 200;
+
+function syncCurriculumThemeButton() {
+  var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  var moon = document.querySelector('.curriculum-theme-moon');
+  var sun = document.querySelector('.curriculum-theme-sun');
+  if (moon) moon.style.display = dark ? 'none' : '';
+  if (sun) sun.style.display = dark ? '' : 'none';
+}
+function applyCurriculumTheme(theme, notifyParent) {
+  var next = theme === 'dark' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('vagaai_theme', next); } catch(e) {}
+  syncCurriculumThemeButton();
+  if (notifyParent && _isEmbedded) {
+    try { window.parent.postMessage({ type:'vagaai:theme-change', theme:next }, window.location.origin); } catch(e) {}
+  }
+}
+function toggleCurriculumTheme() {
+  var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  applyCurriculumTheme(dark ? 'light' : 'dark', true);
+}
+window.addEventListener('message', function(e) {
+  if (!e.data || e.data.type !== 'vagaai:theme-apply') return;
+  if (e.origin && e.origin !== window.location.origin) return;
+  applyCurriculumTheme(e.data.theme, false);
+});
+syncCurriculumThemeButton();
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function toast(msg, isErr){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.toggle('err',!!isErr); t.classList.add('vis'); clearTimeout(t._tm); t._tm=setTimeout(function(){t.classList.remove('vis');},3000); }
@@ -304,7 +337,7 @@ function cvBaseCount(d) {
 
 function profileStoryTitle(d) {
   var role = (d.titulo_profissional || '').trim();
-  return role ? 'Seu currículo está posicionado para ' + role + '.' : 'Construa um posicionamento profissional claro.';
+  return role ? 'Seu currículo se apresenta para oportunidades de ' + role + '.' : 'Construa um posicionamento profissional claro.';
 }
 
 function profileStoryText(d) {
@@ -322,7 +355,7 @@ function profileSkillsHtml(d) {
 function profileStoryHtml(d, pct) {
   var city = d.contato && d.contato.cidade ? d.contato.cidade : 'Não informada';
   var role = d.titulo_profissional || 'Adicione seu objetivo profissional';
-  return '<div class="profile-story"><div class="profile-kicker">O que seu currículo comunica</div>' +
+  return '<div class="profile-story"><div class="profile-kicker">Como seu currículo se apresenta</div>' +
     '<h3>' + esc(profileStoryTitle(d)) + '</h3><p>' + esc(profileStoryText(d)) + '</p>' +
     '<div class="profile-facts">' +
       '<div class="profile-fact"><span>Objetivo profissional</span><strong>' + esc(role) + '</strong></div>' +
@@ -1166,17 +1199,41 @@ function saveIdiomas() {
    mercado dele pede com frequência e o currículo ainda não cobre. */
 function metric(val, label) { return '<div><strong>' + esc(String(val)) + '</strong><span>' + esc(label) + '</span></div>'; }
 
-function marketRowsHtml(gaps, freq) {
+function marketRowsHtml(gaps, freq, totalVagas) {
   return '<div class="market-list">' + gaps.slice(0, 5).map(function(keyword, index){
     var count = Number(freq[keyword] || 1);
-    var recurrence = count > 1 ? count + ' ocorrências' : '1 ocorrência';
+    var recurrence = totalVagas === 1 ? 'Presente nesta vaga' : count + ' de ' + totalVagas + ' vagas';
     return '<div class="market-row"><b>' + String(index + 1).padStart(2, '0') + '</b><strong>' + esc(keyword) + '</strong><span>' + recurrence + '</span></div>';
   }).join('') + '</div>';
 }
 
-function gapHeroShell(title, sub, metricsHtml, rowsHtml) {
-  return '<div class="profile-kicker">Leitura do mercado</div><h3>' + esc(title) + '</h3><p>' + esc(sub) + '</p>' +
+function gapHeroShell(kicker, title, sub, metricsHtml, rowsHtml) {
+  return '<div class="profile-kicker">' + esc(kicker) + '</div><h3>' + esc(title) + '</h3><p>' + esc(sub) + '</p>' +
     (metricsHtml ? '<div class="market-scope">' + metricsHtml + '</div>' : '') + (rowsHtml || '');
+}
+
+function marketSampleContext(totalVagas) {
+  if (totalVagas === 1) return {
+    kicker: 'Leitura desta oportunidade',
+    title: 'O que esta vaga pede e seu currículo ainda não evidencia.',
+    coveredTitle: 'Seu currículo cobre os termos desta oportunidade.',
+    sub: 'Comparação baseada na vaga analisada. Conforme você analisar outras oportunidades, começaremos a identificar padrões mais confiáveis.',
+    termLabel: 'termos desta vaga'
+  };
+  if (totalVagas < 5) return {
+    kicker: 'Sinais iniciais da sua busca',
+    title: 'Padrões que começam a aparecer nas vagas analisadas.',
+    coveredTitle: 'Seu perfil cobre os principais sinais desta amostra.',
+    sub: 'Leitura baseada em ' + totalVagas + ' vagas distintas. A amostra ainda é inicial e ficará mais precisa conforme sua busca avançar.',
+    termLabel: 'termos na amostra'
+  };
+  return {
+    kicker: 'Tendências do seu mercado',
+    title: 'Onde seu perfil pode ganhar força.',
+    coveredTitle: 'Seu perfil cobre os termos mais recorrentes.',
+    sub: 'Leitura baseada em ' + totalVagas + ' vagas distintas, priorizando o que aparece com maior frequência nas oportunidades analisadas.',
+    termLabel: 'termos recorrentes'
+  };
 }
 
 function setProfileNext(message, actionLabel, action) {
@@ -1195,6 +1252,7 @@ async function loadGapPanel() {
   if (!_session) {
     if (usage) usage.textContent = 'Entre para comparar';
     panel.innerHTML = gapHeroShell(
+      'Leitura das oportunidades',
       'Conecte seu perfil ao mercado.',
       'Salve seu currículo (crie uma conta grátis) e, conforme você for analisando vagas, esse painel vai mostrando o que o mercado pede e seu currículo ainda não tem.',
       '', ''
@@ -1206,7 +1264,7 @@ async function loadGapPanel() {
     // Mesmo recorte que o painel usa (VagaAICv.ANALISES_QUERY): arquivadas de
     // fora e limite 200. Antes eram 50 sem filtro de arquivadas, e as duas telas
     // chegavam a números diferentes para o mesmo currículo.
-    var r = await sb.from('analyses').select('result').eq('user_id', _session.user.id)
+    var r = await sb.from('analyses').select('id,result,created_at').eq('user_id', _session.user.id)
       .is('archived_at', null)
       .order('created_at', { ascending: false })
       .limit(window.VagaAICv.ANALISES_QUERY.limite);
@@ -1214,6 +1272,7 @@ async function loadGapPanel() {
     if (!rows.length) {
       if (usage) usage.textContent = 'Nenhuma análise ainda';
       panel.innerHTML = gapHeroShell(
+        'Primeira leitura',
         'Sua leitura começa na primeira vaga.',
         'Analise pelo menos 1 vaga pra começarmos a te mostrar o que o mercado espera do seu perfil — esse painel se atualiza sozinho conforme você usa a plataforma.',
         metric(0, 'vagas analisadas') + metric('—', 'competências em comum') + metric('—', 'termos para avaliar'), ''
@@ -1224,13 +1283,15 @@ async function loadGapPanel() {
     var lac = window.VagaAICv.calcularLacunas(_cvData, rows);
     var freq = lac.freq;
     var gaps = lac.gaps;
+    var context = marketSampleContext(lac.totalVagas);
     if (usage) usage.textContent = lac.totalVagas + ' ' + (lac.totalVagas === 1 ? 'vaga analisada' : 'vagas analisadas');
-    var metricsHtml = metric(lac.totalVagas, 'vagas analisadas') + metric(lac.cobertas, 'competências em comum') + metric(gaps.length, 'termos para avaliar');
+    var metricsHtml = metric(lac.totalVagas, lac.totalVagas === 1 ? 'vaga analisada' : 'vagas analisadas') + metric(lac.cobertas, 'competências em comum') + metric(gaps.length, context.termLabel);
 
     if (!gaps.length) {
       panel.innerHTML = gapHeroShell(
-        'Seu perfil cobre os termos mais recorrentes.',
-        'Baseado nas ' + lac.totalVagas + ' vaga(s) que você já analisou, seu currículo já cobre as competências mais pedidas pelo mercado. 👏',
+        context.kicker,
+        context.coveredTitle,
+        context.sub,
         metricsHtml, ''
       );
       setProfileNext('Mantenha suas experiências atualizadas e continue analisando vagas para refinar esta leitura.', 'Revisar currículo');
@@ -1238,15 +1299,16 @@ async function loadGapPanel() {
     }
     var top = gaps.slice(0, 5);
     panel.innerHTML = gapHeroShell(
-      'Onde seu perfil pode ganhar força.',
-      'Baseado nas ' + lac.totalVagas + ' vaga(s) que você já analisou, seu currículo ainda não menciona estas competências — conforme você analisa mais vagas, esse painel fica mais preciso.',
+      context.kicker,
+      context.title,
+      context.sub,
       metricsHtml,
-      marketRowsHtml(top, freq)
+      marketRowsHtml(top, freq, lac.totalVagas)
     );
     setProfileNext('Revise se sua experiência comprova ' + top.slice(0, 2).join(' e ') + '. Inclua esses termos somente quando representarem algo que você realmente realizou.', 'Revisar currículo');
   } catch(e) {
     if (usage) usage.textContent = 'Comparação indisponível';
-    panel.innerHTML = gapHeroShell('Não foi possível carregar agora.', 'Seu currículo continua disponível para edição e download.', '', '');
+    panel.innerHTML = gapHeroShell('Leitura das oportunidades', 'Não foi possível carregar agora.', 'Seu currículo continua disponível para edição e download.', '', '');
     setProfileNext('Tente carregar a comparação novamente mais tarde.', 'Revisar currículo');
   }
   focarLacunasSePedido();

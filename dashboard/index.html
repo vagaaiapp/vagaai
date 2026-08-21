@@ -7393,6 +7393,11 @@ window.shellNavigate = function(item) {
 
 window.addEventListener('message', function(e) {
   if (!e.data) return;
+  if (e.data.type === 'vagaai:theme-change') {
+    if (e.origin && e.origin !== location.origin) return;
+    _setDashboardTheme(e.data.theme, false);
+    return;
+  }
   if (e.data.type === 'vagaai-nav') { window.shellNavigate(e.data); return; }
   if (e.data.type === 'vagaai-analysis-complete') { loadAnalyses(); return; }
 });
@@ -7816,10 +7821,10 @@ function _syncThemeIcons() {
   document.querySelectorAll('.theme-ico-moon').forEach(function (el) { el.style.display = dark ? 'none' : ''; });
   document.querySelectorAll('.theme-ico-sun').forEach(function (el) { el.style.display = dark ? '' : 'none'; });
 }
-function toggleTheme() {
-  var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
-  localStorage.setItem('vagaai_theme', isDark ? 'light' : 'dark');
+function _setDashboardTheme(theme, notifyFrame) {
+  var next = theme === 'dark' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('vagaai_theme', next);
   _syncThemeIcons();
   /* As barras do funil recebem a cor por style inline (uma por estágio), então
      não acompanham a troca de variável como o resto da tela. Sem isto, quem
@@ -7827,6 +7832,16 @@ function toggleTheme() {
   if (document.getElementById('funilPipe')) {
     try { buildFunilCard(window._lastAnalysesData || [], _kTracked || []); } catch (e) {}
   }
+  if (notifyFrame) {
+    var frame = document.getElementById('shellFrame');
+    if (frame && frame.contentWindow) {
+      try { frame.contentWindow.postMessage({ type:'vagaai:theme-apply', theme:next }, location.origin); } catch (e) {}
+    }
+  }
+}
+function toggleTheme() {
+  var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  _setDashboardTheme(isDark ? 'light' : 'dark', true);
 }
 _syncThemeIcons();
 

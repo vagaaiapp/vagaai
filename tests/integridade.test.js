@@ -626,6 +626,20 @@ describe('Números coerentes entre telas', () => {
     assert.equal(contarVagasDistintas([...duas, vaga('Acme', 'Dev', [], 'a3')]), 2);
   });
 
+  it('reanálise não multiplica recorrência e usa o resultado mais recente', () => {
+    const { calcularLacunas } = modulo();
+    const antiga = vaga('PRIMIZIE', 'Gerente de Marketing', ['SQL'], 'a1');
+    antiga.created_at = '2026-08-01T00:00:00Z';
+    const nova = vaga('PRIMIZIE', 'Gerente de Marketing', ['CRM', 'crm', 'CRM'], 'a2');
+    nova.created_at = '2026-08-02T00:00:00Z';
+    const r = calcularLacunas({ nome: 'Ana' }, [antiga, nova]);
+    assert.equal(r.totalVagas, 1);
+    assert.equal(r.totalAnalises, 2);
+    assert.deepEqual(Array.from(r.gaps), ['CRM']);
+    assert.equal(r.freq.CRM, 1, 'a mesma competência conta no máximo uma vez por vaga');
+    assert.equal(r.freq.SQL, undefined, 'o resultado antigo não deve contaminar a leitura atual');
+  });
+
   it('sem identificação da vaga, nunca agrupa errado', () => {
     const { contarVagasDistintas } = modulo();
     const anonimas = [{ id: 'x', result: {} }, { id: 'y', result: {} }];
@@ -653,8 +667,8 @@ describe('Números coerentes entre telas', () => {
     // "2 vaga(s)" enquanto o painel dizia "1 vaga" — mesma divergência, outra tela.
     const c = read('curriculo/index.html');
     assert.ok(!c.includes("rows.length + ' vaga(s)"), 'hub voltou a contar análises');
-    assert.ok(c.includes("lac.totalVagas + ' vaga(s)"), 'hub não usa a contagem por vaga');
-    assert.ok(c.includes("metric(lac.totalVagas, 'vagas analisadas')"), 'métrica do hero ainda conta análises');
+    assert.ok(c.includes("lac.totalVagas + ' ' + (lac.totalVagas === 1 ? 'vaga analisada' : 'vagas analisadas')"), 'hub não usa a contagem por vaga');
+    assert.ok(c.includes("metric(lac.totalVagas, lac.totalVagas === 1 ? 'vaga analisada' : 'vagas analisadas')"), 'métrica do hero ainda conta análises');
   });
 
   it('versão de análise arquivada não conta como ativa', () => {

@@ -15,12 +15,55 @@ body[data-vagaai-ui="curriculum"] .curriculum-page-head {
 
 body[data-vagaai-ui="curriculum"] .page-sub { max-width: 720px; }
 
+body[data-vagaai-ui="curriculum"] .curriculum-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+}
+
 body[data-vagaai-ui="curriculum"] .curriculum-updated {
   color: var(--muted);
   font-size: 13.5px;
   white-space: nowrap;
   padding-bottom: 4px;
 }
+
+body[data-vagaai-ui="curriculum"] .curriculum-theme-btn {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(26, 54, 35, .05);
+  transition: color .2s ease, border-color .2s ease, background .2s ease, transform .2s ease;
+}
+
+body[data-vagaai-ui="curriculum"] .curriculum-theme-btn:hover {
+  color: var(--green);
+  border-color: var(--green-border);
+  background: var(--green-dim);
+  transform: translateY(-1px);
+}
+
+body[data-vagaai-ui="curriculum"] .curriculum-theme-btn:focus-visible {
+  outline: 3px solid rgba(62, 207, 142, .24);
+  outline-offset: 2px;
+}
+
+body[data-vagaai-ui="curriculum"] .curriculum-theme-btn svg {
+  width: 18px;
+  height: 18px;
+  grid-area: 1 / 1;
+}
+
+body[data-vagaai-ui="curriculum"] .curriculum-theme-sun { display: none; }
 
 body[data-vagaai-ui="curriculum"] .profile-head.curriculum-master {
   display: grid;
@@ -460,6 +503,7 @@ body[data-vagaai-ui="curriculum"] .curriculum-details-content > .sec-card:first-
 @media (max-width: 560px) {
   body[data-vagaai-ui="curriculum"] .container { padding-inline: 14px; }
   body[data-vagaai-ui="curriculum"] .curriculum-page-head { align-items: flex-start; margin-bottom: 18px; }
+  body[data-vagaai-ui="curriculum"] .curriculum-page-actions { margin-left: auto; }
   body[data-vagaai-ui="curriculum"] .curriculum-updated { display: none; }
   body[data-vagaai-ui="curriculum"] .profile-head.curriculum-master { border-radius: 16px; }
   body[data-vagaai-ui="curriculum"] .curriculum-master-copy { padding: 25px 21px; }

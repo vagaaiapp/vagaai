@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const html = fs.readFileSync(path.join(root, 'curriculo', 'index.html'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'assets', 'curriculum-master.css'), 'utf8');
+const dashboard = fs.readFileSync(path.join(root, 'dashboard', 'index.html'), 'utf8');
 
 test('currículo principal é o ativo dominante e usa a fotografia aprovada', () => {
   assert.match(html, /class="profile-head curriculum-master"/);
@@ -29,8 +30,25 @@ test('leitura do mercado preserva dados e evita recomendar competências inventa
   assert.match(html, /VagaAICv\.calcularLacunas\(_cvData, rows\)/);
   assert.match(html, /lac\.totalVagas/);
   assert.match(html, /lac\.cobertas/);
+  assert.match(html, /function marketSampleContext\(totalVagas\)/);
+  assert.match(html, /Leitura desta oportunidade/);
+  assert.match(html, /Sinais iniciais da sua busca/);
+  assert.match(html, /Tendências do seu mercado/);
+  assert.match(html, /Presente nesta vaga/);
+  assert.doesNotMatch(html, /ocorrências/);
   assert.match(html, /Inclua esses termos somente quando representarem algo que você realmente realizou/);
   assert.doesNotMatch(html, /Alertas conectados/);
+});
+
+test('controle de tema permanece disponível no currículo e sincroniza com o shell', () => {
+  assert.match(html, /id="curriculumThemeBtn"/);
+  assert.match(html, /function toggleCurriculumTheme\(\)/);
+  assert.match(html, /vagaai:theme-change/);
+  assert.match(html, /vagaai:theme-apply/);
+  assert.match(css, /\.curriculum-theme-btn/);
+  assert.match(dashboard, /function _setDashboardTheme\(theme, notifyFrame\)/);
+  assert.match(dashboard, /e\.data\.type === 'vagaai:theme-change'/);
+  assert.match(dashboard, /type:'vagaai:theme-apply'/);
 });
 
 test('ações neutras e versões por vaga continuam separadas', () => {
