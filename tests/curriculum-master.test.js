@@ -47,3 +47,12 @@ test('layout aprovado tem os quatro tamanhos de validação e não vaza para out
   assert.match(css, /@media \(max-width: 820px\)/);
   assert.match(css, /@media \(max-width: 560px\)/);
 });
+
+test('perfil profissional usa escala editorial legível e não força etiquetas em caixa alta', () => {
+  assert.match(css, /\.profile-story h3,[\s\S]*font-size: clamp\(23px, 2\.2vw, 27px\)/);
+  assert.match(css, /\.profile-story > p,[\s\S]*font-size: 14px/);
+  assert.match(css, /\.profile-fact strong \{ display: block; font-size: 14px/);
+  assert.match(css, /\.market-row strong \{ font-size: 13\.5px/);
+  assert.match(css, /\.profile-kicker \{[\s\S]*text-transform: none/);
+  assert.match(css, /\.profile-main-label \{[\s\S]*text-transform: none/);
+});
