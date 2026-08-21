@@ -145,6 +145,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;fon
 @media(max-width:560px){.f-grid2{grid-template-columns:1fr}.profile-head{flex-direction:column;align-items:flex-start}.save-btn{width:100%}.profile-actions{width:100%;min-width:0}.version-row{align-items:flex-start;flex-direction:column}.version-actions{width:100%;justify-content:flex-start}.version-action{flex:1}.version-row-copy{width:100%}}
 </style>
 <link rel="stylesheet" href="/assets/product-ui.css?v=20260821-editorial1">
+<link rel="stylesheet" href="/assets/curriculum-master.css?v=20260821-master1">
 </head>
 <body data-vagaai-ui="curriculum">
 <div class="standalone-nav" id="standaloneNav">
@@ -155,8 +156,10 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;fon
   <a class="sn-link" id="snRight" href="/dashboard">Ir para o painel →</a>
 </div>
 <div class="container">
-  <h1 class="page-title">Meus currículos</h1>
-  <p class="page-sub">Mantenha um currículo base completo e crie versões direcionadas somente quando houver uma vaga.</p>
+  <div class="curriculum-page-head">
+    <div><h1 class="page-title">Meus currículos</h1><p class="page-sub">Mantenha seu documento principal atualizado e crie versões direcionadas somente quando houver uma vaga.</p></div>
+    <div class="curriculum-updated" id="curriculumUpdated"></div>
+  </div>
 
   <div class="draft-banner" id="draftBanner">Você está editando sem estar logado — nada será perdido, mas <b>salve para não perder seu progresso</b> e poder usar esse currículo nas análises de vaga.</div>
 
@@ -283,6 +286,52 @@ function completude(d) {
   return (window.VagaAICv && window.VagaAICv.completude) ? window.VagaAICv.completude(d) : 0;
 }
 
+function cvUpdatedLabel() {
+  if (_dirty) return 'Alterações pendentes';
+  if (!_cv || !_cv.updated_at) return 'Currículo ainda não salvo';
+  var updated = new Date(_cv.updated_at);
+  var days = Math.max(0, Math.floor((Date.now() - updated.getTime()) / 86400000));
+  if (!Number.isFinite(days) || days <= 0) return 'Atualizado hoje';
+  if (days === 1) return 'Atualizado ontem';
+  return 'Atualizado há ' + days + ' dias';
+}
+
+function cvBaseCount(d) {
+  var exps = (d.experiencias || []).length;
+  var education = (d.formacao || []).length;
+  return exps + ' ' + (exps === 1 ? 'experiência' : 'experiências') + ' · ' + education + ' ' + (education === 1 ? 'formação' : 'formações');
+}
+
+function profileStoryTitle(d) {
+  var role = (d.titulo_profissional || '').trim();
+  return role ? 'Seu currículo está posicionado para ' + role + '.' : 'Construa um posicionamento profissional claro.';
+}
+
+function profileStoryText(d) {
+  var summary = (d.resumo_profissional || '').trim();
+  if (summary) return summary;
+  return 'Organize objetivo, trajetória e competências para que o mercado entenda rapidamente o valor do seu perfil.';
+}
+
+function profileSkillsHtml(d) {
+  var skills = (d.habilidades || []).slice(0, 8);
+  if (!skills.length) return '<span class="profile-skill">Adicione suas competências</span>';
+  return skills.map(function(skill){ return '<span class="profile-skill">' + esc(skill) + '</span>'; }).join('');
+}
+
+function profileStoryHtml(d, pct) {
+  var city = d.contato && d.contato.cidade ? d.contato.cidade : 'Não informada';
+  var role = d.titulo_profissional || 'Adicione seu objetivo profissional';
+  return '<div class="profile-story"><div class="profile-kicker">O que seu currículo comunica</div>' +
+    '<h3>' + esc(profileStoryTitle(d)) + '</h3><p>' + esc(profileStoryText(d)) + '</p>' +
+    '<div class="profile-facts">' +
+      '<div class="profile-fact"><span>Objetivo profissional</span><strong>' + esc(role) + '</strong></div>' +
+      '<div class="profile-fact"><span>Localização</span><strong>' + esc(city) + '</strong></div>' +
+      '<div class="profile-fact"><span>Base do documento</span><strong>' + esc(cvBaseCount(d)) + '</strong></div>' +
+      '<div class="profile-fact"><span>Estado do perfil</span><strong>' + pct + '% estruturado</strong></div>' +
+    '</div><div class="profile-skills-title">Competências declaradas no currículo</div><div class="profile-skills">' + profileSkillsHtml(d) + '</div></div>';
+}
+
 /* ── Persistência (rascunho local sempre; nuvem só se logado) ── */
 function markDirty() {
   _dirty = true;
@@ -293,9 +342,13 @@ function markDirty() {
 function updateSaveUI() {
   var btn = document.getElementById('saveBtn');
   var st = document.getElementById('saveStatus');
+  var state = document.getElementById('masterSaveState');
+  var updated = document.getElementById('curriculumUpdated');
   if (!btn) return;
   btn.textContent = _session ? 'Salvar' : 'Salvar (criar conta)';
-  st.textContent = _dirty ? 'Alterações não salvas' : (_cv ? 'Salvo' : '');
+  st.textContent = _dirty ? 'Alterações não salvas' : (_cv ? 'Currículo salvo' : 'Salve para usar este currículo nas análises');
+  if (state) state.classList.toggle('show', _dirty || !_cv);
+  if (updated) updated.textContent = cvUpdatedLabel();
 }
 
 async function saveProfile() {
@@ -350,18 +403,27 @@ function maybeReturnToPendingJob() {
 function render() {
   var d = _cvData;
   var pct = completude(d);
-  var initials = (d.nome || '?').trim().split(/\s+/).slice(0,2).map(function(w){return w[0]||'';}).join('').toUpperCase() || '?';
+  var updated = document.getElementById('curriculumUpdated');
+  if (updated) updated.textContent = cvUpdatedLabel();
 
   var html = '';
-  html += '<div class="gap-panel" id="gapPanel"><div class="gap-title">Como seu currículo se compara</div><div class="gap-empty">Carregando...</div></div>';
-  html += '<div class="profile-head">';
-  html += '<div class="profile-avatar">' + esc(initials) + '</div>';
-  html += '<div style="flex:1;min-width:160px"><div class="profile-main-label">1 · Currículo principal</div><div class="profile-name">' + esc(d.nome || 'Seu nome aqui') + '</div><div class="profile-role">' + esc(d.titulo_profissional || 'Adicione seu objetivo profissional') + '</div><div class="profile-purpose">Seu conteúdo mestre e geral. Ele alimenta análises e alertas, mas não deve ser adaptado para uma vaga específica.</div></div>';
-  html += '<div class="completude-wrap"><div class="completude-label"><span>Perfil completo</span><span>' + pct + '%</span></div><div class="completude-bar"><div class="completude-fill" style="width:' + pct + '%"></div></div></div>';
-  html += '<div class="profile-actions"><button class="save-btn" id="saveBtn" onclick="saveProfile()">Salvar meu currículo</button><button class="btn btn-ghost" onclick="scrollToCvDetails()">Editar o conteúdo</button><button class="btn btn-ghost" onclick="document.getElementById(\'uploadInput\').click()">Substituir arquivo</button><button class="btn btn-ghost" style="grid-column:1/-1" onclick="openAdvancedEditor()">Escolher modelo e baixar</button><button class="profile-danger" onclick="deleteBaseCv()">Excluir meu currículo</button><div class="save-status" id="saveStatus" style="grid-column:1/-1;text-align:right"></div></div>';
-  html += '</div>';
-
-  html += '<div class="sec-card" id="versionsPanel"><div class="sec-head"><div class="sec-title">2 · Currículos feitos para vagas</div></div><p class="versions-intro">Cópias direcionadas para oportunidades específicas. Cada uma fica ligada à sua vaga e nunca altera o currículo base.</p><p class="sec-empty">Carregando currículos vinculados às suas análises...</p></div>';
+  html += '<section class="profile-head curriculum-master">' +
+    '<div class="curriculum-master-copy"><div class="profile-main-label">1 · Currículo principal</div>' +
+      '<div class="profile-name">' + esc(d.nome || 'Seu nome aqui') + '</div>' +
+      '<div class="profile-role">' + esc(d.titulo_profissional || 'Adicione seu objetivo profissional') + '</div>' +
+      '<div class="profile-purpose">Este é o seu documento mestre. Ele alimenta análises, alertas e versões para vagas, mas permanece neutro e não é alterado automaticamente.</div>' +
+      '<div class="master-completeness"><div class="master-completeness-value"><strong>' + pct + '%</strong><span>estrutura preenchida</span></div>' +
+        '<div><div class="completude-label"><span>Perfil completo</span><span>' + (pct >= 100 ? 'Pronto para usar' : 'Continue preenchendo') + '</span></div><div class="completude-bar"><div class="completude-fill" style="width:' + pct + '%"></div></div></div></div>' +
+      '<div class="profile-actions"><button class="btn master-primary" onclick="scrollToCvDetails()">' + ICON.doc + 'Abrir e editar currículo</button>' +
+        '<button class="btn btn-ghost" onclick="openAdvancedEditor()">' + ICON.doc + 'Escolher modelo e baixar</button>' +
+        '<details class="master-more"><summary>Mais opções ···</summary><div class="master-more-menu"><button onclick="document.getElementById(\'uploadInput\').click()">Substituir arquivo</button><button class="profile-danger" onclick="deleteBaseCv()">Excluir meu currículo</button></div></details></div>' +
+      '<div class="master-save-state" id="masterSaveState"><div class="save-status" id="saveStatus"></div><button class="save-btn" id="saveBtn" onclick="saveProfile()">Salvar meu currículo</button></div>' +
+    '</div>' +
+    '<div class="master-photo" role="img" aria-label="Ambiente profissional com um currículo impresso sobre uma mesa de trabalho"><div class="master-photo-copy"><span>Seu ativo profissional</span><strong>Um documento mestre para cada próxima oportunidade.</strong><small>A base permanece neutra; as adaptações vivem em versões separadas.</small></div></div>' +
+    '<div class="master-usage"><div class="master-usage-item">' + ICON.doc + '<div><strong>Fonte única do seu perfil</strong><span>As versões por vaga nunca substituem este documento.</span></div></div>' +
+      '<div class="master-usage-item">' + ICON.target + '<div><strong id="analysisUsageMetric">Carregando análises</strong><span>Leitura usada para comparar seu perfil.</span></div></div>' +
+      '<div class="master-usage-item">' + ICON.briefcase + '<div><strong id="versionUsageMetric">Carregando versões</strong><span>Cópias direcionadas e independentes.</span></div></div></div>' +
+    '</section>';
 
   // Perfil ainda vazio: oferece importar um currículo pronto em vez de
   // obrigar a digitar tudo — caminho rápido pra quem já tem o arquivo.
@@ -370,17 +432,20 @@ function render() {
       '<button class="btn btn-ghost" onclick="document.getElementById(\'uploadInput\').click()">Enviar arquivo (PDF, Word ou TXT)</button></div>';
   }
 
-  // O que a pessoa enviou é o currículo dela — mostrado por inteiro, como
-  // chegou. Os campos estruturados abaixo complementam (é o que a plataforma
-  // consegue operar em análises e versões por vaga), não substituem.
+  html += '<section class="curriculum-section"><div class="curriculum-section-head"><div><h2>Seu perfil profissional</h2><p>Uma leitura completa do que você apresenta hoje e de como isso conversa com o mercado.</p></div><button class="sec-edit" onclick="scrollToCvDetails()">Ver todos os dados →</button></div>' +
+    '<div class="gap-panel profile-intel" id="gapPanel"><div class="profile-overview">' + profileStoryHtml(d, pct) + '<div class="profile-market" id="marketProfile"><div class="profile-kicker">Leitura do mercado</div><h3>Carregando sua comparação...</h3><p>Organizando os dados das vagas que você analisou.</p></div></div><div class="profile-next" id="profileNext" style="display:none"></div></div></section>';
+
+  html += '<section class="curriculum-section"><div class="sec-card" id="versionsPanel"><div class="sec-head"><div class="sec-title">2 · Currículos feitos para vagas</div></div><p class="versions-intro">Cópias direcionadas para oportunidades específicas. Cada uma fica ligada à sua vaga e nunca altera o currículo base.</p><p class="sec-empty">Carregando currículos vinculados às suas análises...</p></div></section>';
+
+  html += '<details class="curriculum-details" id="cvDetailsDisclosure"' + (pct === 0 ? ' open' : '') + '><summary>Todos os dados do currículo</summary><div class="curriculum-details-content"><div id="cvDetailsStart"></div>';
+  // O conteúdo original enviado continua acessível, mas deixa de competir com
+  // a visão executiva do perfil no primeiro viewport.
   if (d.raw_text) {
-    html += '<div class="sec-card"><div class="sec-head"><div class="sec-title">Seu currículo, como você enviou</div><button class="sec-edit" onclick="scrollToCvDetails()">Ir para os campos</button></div>' +
-      '<p class="sec-empty">Guardamos o conteúdo exatamente como estava no seu arquivo. Os campos abaixo são o que conseguimos organizar a partir dele — quanto mais completos, melhor ficam as análises e as versões para cada vaga.</p>' +
+    html += '<div class="sec-card"><div class="sec-head"><div class="sec-title">Seu currículo, como você enviou</div></div>' +
+      '<p class="sec-empty">Guardamos o conteúdo exatamente como estava no seu arquivo. Os campos abaixo são o que conseguimos organizar a partir dele.</p>' +
       '<pre class="raw-cv">' + esc(d.raw_text) + '</pre>' +
       '<button class="btn btn-ghost raw-cv-remove" onclick="removeRawCv()">Remover conteúdo enviado</button></div>';
   }
-
-  html += '<div id="cvDetailsStart"></div>';
   // Ordem recomendada para currículo no Brasil: contato → cargo → resumo →
   // experiências → formação → competências → cursos e idiomas → projetos.
   // O resumo era a última seção do editor: a parte mais lida do currículo
@@ -394,6 +459,7 @@ function render() {
   html += secCursos(d);
   html += secIdiomas(d);
   html += secProjetos(d);
+  html += '</div></details>';
 
   document.getElementById('mainArea').innerHTML = html;
   updateSaveUI();
@@ -495,8 +561,10 @@ function openAdvancedEditor() {
 }
 
 function scrollToCvDetails() {
+  var disclosure = document.getElementById('cvDetailsDisclosure');
+  if (disclosure) disclosure.open = true;
   var target = document.getElementById('cvDetailsStart');
-  if (target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+  if (target) setTimeout(function(){ target.scrollIntoView({ behavior:'smooth', block:'start' }); }, 0);
 }
 
 async function deleteBaseCv() {
@@ -524,6 +592,8 @@ async function loadVersionsPanel() {
   var panel = document.getElementById('versionsPanel');
   if (!panel) return;
   if (!_session) {
+    var guestMetric = document.getElementById('versionUsageMetric');
+    if (guestMetric) guestMetric.textContent = 'Entre para organizar versões';
     panel.innerHTML = '<div class="sec-head"><div class="sec-title">2 · Currículos feitos para vagas</div></div><p class="versions-intro">Cópias direcionadas para oportunidades específicas. Cada uma fica ligada à sua vaga e nunca altera o currículo base.</p><p class="sec-empty">Crie sua conta para organizar aqui os currículos direcionados para cada vaga.</p>';
     return;
   }
@@ -543,6 +613,8 @@ async function loadVersionsPanel() {
     }
     renderVersionsPanel();
   } catch(e) {
+    var errorMetric = document.getElementById('versionUsageMetric');
+    if (errorMetric) errorMetric.textContent = 'Versões indisponíveis';
     panel.innerHTML = '<div class="sec-head"><div class="sec-title">2 · Currículos feitos para vagas</div></div><p class="versions-intro">Cópias direcionadas para oportunidades específicas. Cada uma fica ligada à sua vaga e nunca altera o currículo base.</p><p class="sec-empty">Não foi possível carregar os currículos agora.</p>';
   }
 }
@@ -630,6 +702,9 @@ function renderVersionsPanel() {
   var panel = document.getElementById('versionsPanel');
   if (!panel) return;
   var rows = Object.keys(_versionsById).map(function(id){ return _versionsById[id]; }).filter(function(row){ return row && row.result && row.result.cv_otimizado; });
+  var usage = document.getElementById('versionUsageMetric');
+  var distinctVersions = groupVersions(rows).length;
+  if (usage) usage.textContent = distinctVersions + ' ' + (distinctVersions === 1 ? 'versão por vaga' : 'versões por vaga');
   /* Arquivar a analise arquiva a versao junto. Antes o split olhava so
      cv_version_archived_at e ignorava a coluna archived_at da analise: numa
      conta com 53 de 55 analises arquivadas, o hub anunciava "Ativas (46)"
@@ -1089,22 +1164,42 @@ function saveIdiomas() {
    Cruza keywords_faltando de TODAS as análises de vaga que o usuário já
    fez na plataforma com o texto do currículo atual: mostra o que o
    mercado dele pede com frequência e o currículo ainda não cobre. */
-function gapHeroShell(sub, metricsHtml, sideHtml) {
-  return '<div class="gap-copy"><div class="gap-title">Como seu currículo se compara</div>' +
-    '<h2 class="gap-h2">Veja como seu currículo se compara ao que o mercado pede.</h2>' +
-    '<p class="gap-sub">' + sub + '</p>' +
-    (metricsHtml ? '<div class="gap-metrics">' + metricsHtml + '</div>' : '') +
-    '</div><div class="gap-side">' + sideHtml + '</div>';
-}
 function metric(val, label) { return '<div><strong>' + esc(String(val)) + '</strong><span>' + esc(label) + '</span></div>'; }
 
+function marketRowsHtml(gaps, freq) {
+  return '<div class="market-list">' + gaps.slice(0, 5).map(function(keyword, index){
+    var count = Number(freq[keyword] || 1);
+    var recurrence = count > 1 ? count + ' ocorrências' : '1 ocorrência';
+    return '<div class="market-row"><b>' + String(index + 1).padStart(2, '0') + '</b><strong>' + esc(keyword) + '</strong><span>' + recurrence + '</span></div>';
+  }).join('') + '</div>';
+}
+
+function gapHeroShell(title, sub, metricsHtml, rowsHtml) {
+  return '<div class="profile-kicker">Leitura do mercado</div><h3>' + esc(title) + '</h3><p>' + esc(sub) + '</p>' +
+    (metricsHtml ? '<div class="market-scope">' + metricsHtml + '</div>' : '') + (rowsHtml || '');
+}
+
+function setProfileNext(message, actionLabel, action) {
+  var next = document.getElementById('profileNext');
+  if (!next) return;
+  var handler = action === 'save' ? 'saveProfile()' : action === 'analysis' ? 'adaptarParaVaga()' : 'scrollToCvDetails()';
+  next.style.display = 'flex';
+  next.innerHTML = '<div class="profile-next-copy"><div class="profile-next-mark">✦</div><div><strong>Próxima melhoria recomendada</strong><span>' + esc(message) + '</span></div></div>' +
+    '<button onclick="' + handler + '">' + esc(actionLabel || 'Revisar currículo') + ' →</button>';
+}
+
 async function loadGapPanel() {
-  var panel = document.getElementById('gapPanel');
+  var panel = document.getElementById('marketProfile');
+  var usage = document.getElementById('analysisUsageMetric');
+  if (!panel) return;
   if (!_session) {
+    if (usage) usage.textContent = 'Entre para comparar';
     panel.innerHTML = gapHeroShell(
+      'Conecte seu perfil ao mercado.',
       'Salve seu currículo (crie uma conta grátis) e, conforme você for analisando vagas, esse painel vai mostrando o que o mercado pede e seu currículo ainda não tem.',
-      '', '<div class="gap-side-label">Lacunas identificadas</div><div class="gap-empty">Disponível após salvar seu currículo</div>'
+      '', ''
     );
+    setProfileNext('Salve o currículo para começar a acompanhar a aderência do seu perfil às vagas.', 'Salvar currículo', 'save');
     return;
   }
   try {
@@ -1117,34 +1212,42 @@ async function loadGapPanel() {
       .limit(window.VagaAICv.ANALISES_QUERY.limite);
     var rows = (r && r.data) || [];
     if (!rows.length) {
+      if (usage) usage.textContent = 'Nenhuma análise ainda';
       panel.innerHTML = gapHeroShell(
+        'Sua leitura começa na primeira vaga.',
         'Analise pelo menos 1 vaga pra começarmos a te mostrar o que o mercado espera do seu perfil — esse painel se atualiza sozinho conforme você usa a plataforma.',
-        metric(0, 'vagas analisadas') + metric('—', 'lacunas identificadas'),
-        '<div class="gap-side-label">Lacunas identificadas</div><div class="gap-empty">Analise sua primeira vaga pra começar</div>'
+        metric(0, 'vagas analisadas') + metric('—', 'competências em comum') + metric('—', 'termos para avaliar'), ''
       );
+      setProfileNext('Analise uma vaga para descobrir quais competências aparecem com mais frequência no seu mercado.', 'Analisar uma vaga', 'analysis');
       return;
     }
     var lac = window.VagaAICv.calcularLacunas(_cvData, rows);
     var freq = lac.freq;
     var gaps = lac.gaps;
-    var metricsHtml = metric(lac.totalVagas, 'vagas analisadas') + metric(lac.cobertas, 'competências em comum') + metric(gaps.length, 'lacunas identificadas');
+    if (usage) usage.textContent = lac.totalVagas + ' ' + (lac.totalVagas === 1 ? 'vaga analisada' : 'vagas analisadas');
+    var metricsHtml = metric(lac.totalVagas, 'vagas analisadas') + metric(lac.cobertas, 'competências em comum') + metric(gaps.length, 'termos para avaliar');
 
     if (!gaps.length) {
       panel.innerHTML = gapHeroShell(
+        'Seu perfil cobre os termos mais recorrentes.',
         'Baseado nas ' + lac.totalVagas + ' vaga(s) que você já analisou, seu currículo já cobre as competências mais pedidas pelo mercado. 👏',
-        metricsHtml,
-        '<div class="gap-side-label">Lacunas identificadas</div><div class="gap-empty">Nenhuma lacuna no momento</div>'
+        metricsHtml, ''
       );
+      setProfileNext('Mantenha suas experiências atualizadas e continue analisando vagas para refinar esta leitura.', 'Revisar currículo');
       return;
     }
-    var top = gaps.slice(0, 8);
+    var top = gaps.slice(0, 5);
     panel.innerHTML = gapHeroShell(
+      'Onde seu perfil pode ganhar força.',
       'Baseado nas ' + lac.totalVagas + ' vaga(s) que você já analisou, seu currículo ainda não menciona estas competências — conforme você analisa mais vagas, esse painel fica mais preciso.',
       metricsHtml,
-      '<div class="gap-side-label">Lacunas identificadas</div><div class="gap-chips">' + top.map(function(k){ return '<span class="gap-chip">' + esc(k) + (freq[k]>1 ? ' <b>×' + freq[k] + '</b>' : '') + '</span>'; }).join('') + '</div>'
+      marketRowsHtml(top, freq)
     );
+    setProfileNext('Revise se sua experiência comprova ' + top.slice(0, 2).join(' e ') + '. Inclua esses termos somente quando representarem algo que você realmente realizou.', 'Revisar currículo');
   } catch(e) {
-    panel.innerHTML = gapHeroShell('Não foi possível carregar agora.', '', '');
+    if (usage) usage.textContent = 'Comparação indisponível';
+    panel.innerHTML = gapHeroShell('Não foi possível carregar agora.', 'Seu currículo continua disponível para edição e download.', '', '');
+    setProfileNext('Tente carregar a comparação novamente mais tarde.', 'Revisar currículo');
   }
   focarLacunasSePedido();
 }

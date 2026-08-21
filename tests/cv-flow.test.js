@@ -94,11 +94,11 @@ describe('Fluxo canônico de currículo', () => {
     assert.match(curriculo, /2 · Currículos feitos para vagas/);
   });
 
-  it('mantém o posicionamento de mercado no topo do hub', () => {
+  it('valoriza o currículo principal antes da leitura de mercado e das versões', () => {
     const market = curriculo.indexOf('id="gapPanel"');
-    const base = curriculo.indexOf('class="profile-head"', market);
-    const versions = curriculo.indexOf('id="versionsPanel"', market);
-    assert.ok(market >= 0 && market < base && base < versions);
+    const base = curriculo.indexOf('class="profile-head curriculum-master"');
+    const versions = curriculo.indexOf('id="versionsPanel"');
+    assert.ok(base >= 0 && base < market && market < versions);
   });
 
   it('usa uma exportação neutra no currículo base', () => {
