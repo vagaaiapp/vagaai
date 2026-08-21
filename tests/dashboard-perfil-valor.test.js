@@ -15,11 +15,21 @@ test('Perfil de valor integra currículo e ferramentas sem alterar as outras se�
   assert.doesNotMatch(dashboard, /dashboard-curriculo-premium-5-preview/);
 });
 
-test('Início usa uma superfície contínua sem romper os contratos dinâmicos', () => {
+test('Início usa módulos com respiro sem romper os contratos dinâmicos', () => {
   assert.match(dashboard, /class="product-workspace"[\s\S]*?id="matStrip"[\s\S]*?id="ferStrip"[\s\S]*?id="funilPipe"[\s\S]*?id="oppList"[\s\S]*?\/product-workspace/);
   assert.match(dashboard, /\.product-workspace \.profile-value-stage,[\s\S]*?border:0;[\s\S]*?box-shadow:none/);
+  assert.match(dashboard, /\.product-workspace \{[^}]*display:flex;[^}]*gap:22px;/);
+  assert.match(dashboard, /\.product-workspace-section \{[^}]*border:1px solid var\(--border\);[^}]*border-radius:18px;/);
   assert.match(dashboard, /class="opp-list-kicker">Suas vagas/);
   assert.match(dashboard, /<small>Sua busca<\/small>/);
+});
+
+test('tipografia principal permanece legível sem depender de microtexto', () => {
+  assert.match(dashboard, /\.pv-title \{[^}]*font-size:26px;/);
+  assert.match(dashboard, /\.pv-desc \{[^}]*font-size:12px;/);
+  assert.match(dashboard, /\.profile-value-tools \.fer-nome \{ font-size:12px; \}/);
+  assert.match(dashboard, /\.bus-heading h3 \{[^}]*font-size:25px;/);
+  assert.match(dashboard, /\.product-workspace \.opp-list-title-t \{[^}]*font-size:25px;/);
 });
 
 test('indicador comunica completude do currículo e não score de vaga', () => {
