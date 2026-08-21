@@ -1,0 +1,266 @@
+/*
+ * VagaAI product interface foundation — editorial readability pass.
+ *
+ * This layer is deliberately visual-only. Page-specific selectors keep the
+ * existing markup, copy, analytics hooks and JavaScript contracts untouched.
+ */
+
+body[data-vagaai-ui] {
+  --vui-focus: #4ece91;
+  --vui-card-radius: 14px;
+  --vui-control-radius: 10px;
+  --vui-shadow: 0 1px 2px rgba(7, 18, 9, .04), 0 12px 34px rgba(7, 18, 9, .055);
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body[data-vagaai-ui] :is(button, a, input, textarea, select):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--vui-focus) 62%, transparent);
+  outline-offset: 3px;
+}
+
+body[data-vagaai-ui] :is(button, input, textarea, select) {
+  font-family: inherit;
+}
+
+body[data-vagaai-ui] :is(input, textarea, select) {
+  font-size: 16px;
+}
+
+body[data-vagaai-ui] .app-nav-item { font-size: 14px; min-height: 42px; }
+body[data-vagaai-ui] .app-nav-label { font-size: 10.5px; }
+body[data-vagaai-ui] .app-support { font-size: 12px; }
+body[data-vagaai-ui] .app-profile strong { font-size: 12.5px; }
+body[data-vagaai-ui] .app-profile span { font-size: 11.5px; }
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-vagaai-ui] *,
+  body[data-vagaai-ui] *::before,
+  body[data-vagaai-ui] *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* ── Dashboard and embedded product home ─────────────────────────────── */
+body[data-vagaai-ui="dashboard"] { font-size: 15px; }
+body[data-vagaai-ui="dashboard"] .sb-btn { font-size: 14px; min-height: 42px; }
+body[data-vagaai-ui="dashboard"] .sb-section-label { font-size: 10.5px; }
+body[data-vagaai-ui="dashboard"] .sb-support,
+body[data-vagaai-ui="dashboard"] .sb-support strong { font-size: 12px; }
+body[data-vagaai-ui="dashboard"] .sb-profile-info strong { font-size: 12.5px; }
+body[data-vagaai-ui="dashboard"] .sb-profile-info span { font-size: 11.5px; }
+body[data-vagaai-ui="dashboard"] .pg-title { font-size: clamp(31px, 3vw, 38px); }
+body[data-vagaai-ui="dashboard"] .pg-sub { font-size: 15px; line-height: 1.55; }
+body[data-vagaai-ui="dashboard"] .pg-date { font-size: 13px; }
+body[data-vagaai-ui="dashboard"] .pg-pill { font-size: 13px; padding: 7px 13px; }
+body[data-vagaai-ui="dashboard"] .pba-eyebrow { font-size: 11.5px; }
+body[data-vagaai-ui="dashboard"] .pba-title { font-size: clamp(27px, 2.5vw, 34px); line-height: 1.17; }
+body[data-vagaai-ui="dashboard"] .pba-desc { font-size: 15px; line-height: 1.7; }
+body[data-vagaai-ui="dashboard"] :is(.pba-btn-primary, .pba-btn-ghost) { font-size: 14px; min-height: 44px; padding-inline: 20px; }
+body[data-vagaai-ui="dashboard"] .pba-priority-cargo { font-size: 16px; }
+body[data-vagaai-ui="dashboard"] .pba-priority-empresa { font-size: 12.5px; }
+body[data-vagaai-ui="dashboard"] .pba-score-label { font-size: 14px; }
+body[data-vagaai-ui="dashboard"] .pba-score-sub { font-size: 12px; }
+body[data-vagaai-ui="dashboard"] .workspace-section-label h2 { font-size: 17px; }
+body[data-vagaai-ui="dashboard"] .workspace-section-link { font-size: 13px; }
+body[data-vagaai-ui="dashboard"] .pv-eyebrow { font-size: 11px; }
+body[data-vagaai-ui="dashboard"] .pv-title { font-size: clamp(27px, 2.3vw, 33px); }
+body[data-vagaai-ui="dashboard"] .pv-desc { font-size: 14.5px; }
+body[data-vagaai-ui="dashboard"] .pv-metric span { font-size: 11.5px; }
+body[data-vagaai-ui="dashboard"] .pv-primary { font-size: 13.5px; min-height: 42px; }
+body[data-vagaai-ui="dashboard"] .pv-updated { font-size: 11.5px; }
+body[data-vagaai-ui="dashboard"] .pv-panel-head h3 { font-size: 15px; }
+body[data-vagaai-ui="dashboard"] .pv-panel-head p { font-size: 12.5px; }
+body[data-vagaai-ui="dashboard"] .pv-link { font-size: 12.5px; }
+body[data-vagaai-ui="dashboard"] .pv-strength b { font-size: 13px; }
+body[data-vagaai-ui="dashboard"] .pv-strength span { font-size: 11.5px; }
+body[data-vagaai-ui="dashboard"] .pv-rank-num,
+body[data-vagaai-ui="dashboard"] .pv-rank-freq,
+body[data-vagaai-ui="dashboard"] .pv-version-count { font-size: 11.5px; }
+body[data-vagaai-ui="dashboard"] .pv-rank-name { font-size: 12.5px; }
+body[data-vagaai-ui="dashboard"] .profile-value-tools-head strong { font-size: 14px; }
+body[data-vagaai-ui="dashboard"] .profile-value-tools-head span { font-size: 11.5px; }
+body[data-vagaai-ui="dashboard"] .fer-nome { font-size: 13.5px; }
+body[data-vagaai-ui="dashboard"] .fer-estado { font-size: 11.5px; }
+body[data-vagaai-ui="dashboard"] .fer-selo { font-size: 9.5px; }
+body[data-vagaai-ui="dashboard"] .bus-heading small { font-size: 10.5px; }
+body[data-vagaai-ui="dashboard"] .bus-heading p { font-size: 14.5px; }
+body[data-vagaai-ui="dashboard"] .bus-lbl { font-size: 12.5px; }
+body[data-vagaai-ui="dashboard"] .bus-stage-sub { font-size: 11.5px; }
+body[data-vagaai-ui="dashboard"] .opp-list-title-t { font-size: 14px; }
+body[data-vagaai-ui="dashboard"] .opp-list-count-t { font-size: 11.5px; }
+body[data-vagaai-ui="dashboard"] .opp-chip { font-size: 11.5px; min-height: 34px; }
+body[data-vagaai-ui="dashboard"] .opp-item-cargo { font-size: 15px; }
+body[data-vagaai-ui="dashboard"] .opp-item-sub { font-size: 11.5px; }
+body[data-vagaai-ui="dashboard"] .opp-progress-top { font-size: 11px; }
+body[data-vagaai-ui="dashboard"] .opp-action-kicker { font-size: 9.5px; }
+body[data-vagaai-ui="dashboard"] .opp-action-lbl { font-size: 13px; }
+body[data-vagaai-ui="dashboard"] .opp-action-when { font-size: 11px; }
+body[data-vagaai-ui="dashboard"] :is(.card-ttl, .ai-title, .mv-outer-head h3, .score-card-head h3, .interview-list-head h3) { font-size: 17px; }
+body[data-vagaai-ui="dashboard"] :is(.card-sub, .j-desc, .ai-text, .amber-text, .score-card-head p, .mv-footer-note, .interview-list-head p) { font-size: 13.5px; }
+body[data-vagaai-ui="dashboard"] :is(.j-name, .mv-cargo, .int-cargo, .vaga-name) { font-size: 14.5px; }
+body[data-vagaai-ui="dashboard"] :is(.j-cta, .mv-track-btn, .mv-tracking, .vf-chip, .int-filter, .int-action) { font-size: 12.5px; min-height: 36px; }
+
+/* ── Vacancy analysis ───────────────────────────────────────────────── */
+body[data-vagaai-ui="analysis"] .container { max-width: 920px; padding-top: clamp(42px, 6vw, 72px); }
+body[data-vagaai-ui="analysis"] .page-title { font-size: clamp(34px, 5vw, 46px); letter-spacing: -.035em; }
+body[data-vagaai-ui="analysis"] .page-sub { font-size: 16px; line-height: 1.65; max-width: 680px; }
+body[data-vagaai-ui="analysis"] .steps-bar { margin-bottom: 3rem; }
+body[data-vagaai-ui="analysis"] .step { font-size: 13px; padding-block: .8rem; }
+body[data-vagaai-ui="analysis"] label { font-size: 14px; }
+body[data-vagaai-ui="analysis"] :is(.form-section, .result) { letter-spacing: -.005em; }
+body[data-vagaai-ui="analysis"] :is(.job-preview, .result-hero, .result-card, .next-step-card, .briefing-card, .upsell-card) { border-radius: var(--vui-card-radius); box-shadow: none; }
+body[data-vagaai-ui="analysis"] .analysis-card-title p { font-size: 13px; line-height: 1.5; }
+body[data-vagaai-ui="analysis"] .field > label span { font-size: 12.5px; }
+body[data-vagaai-ui="analysis"] :is(.char-count, .fetch-status, .or-divider, .upload-hint, .cv-received-chars) { font-size: 12.5px; }
+body[data-vagaai-ui="analysis"] :is(.job-preview-badge, .job-preview-edit, .job-preview-chip, .result-status-badge, .next-step-label, .score-projection-label, .plan-badge, .briefing-badge) { font-size: 12px; }
+body[data-vagaai-ui="analysis"] .job-preview-title { font-size: 17px; }
+body[data-vagaai-ui="analysis"] :is(.job-preview-company, .job-preview-excerpt, .priority-card-exp, .plan-desc, .plan-detalhes ul li, .briefing-sub, .briefing-block-list li, .score-resumo, .result-list li) { font-size: 13.5px; }
+body[data-vagaai-ui="analysis"] :is(.priority-card-titulo, .plan-titulo, .next-step-estimate strong) { font-size: 14.5px; }
+body[data-vagaai-ui="analysis"] :is(.btn-fetch, .upload-btn, .cv-mode-tab, .priority-card-link, .plan-expand-all, .briefing-expand-btn) { font-size: 13px; min-height: 40px; }
+body[data-vagaai-ui="analysis"] :is(.btn-analyze, .btn-gerar-cv, .btn-cv-primary, .btn-pro) { font-size: 15px; min-height: 50px; }
+body[data-vagaai-ui="analysis"] :is(.upsell-plan-badge, .upsell-quarterly-badge, .cvmic-status, .cv-builder-notice) { font-size: 12px; }
+body[data-vagaai-ui="analysis"] .analysis-value-kicker { font-size: 11.5px; }
+body[data-vagaai-ui="analysis"] .analysis-value-top p { font-size: 13px; }
+body[data-vagaai-ui="analysis"] .analysis-ring-label small { font-size: 10.5px; }
+body[data-vagaai-ui="analysis"] .analysis-score-copy strong { font-size: 13px; }
+body[data-vagaai-ui="analysis"] .analysis-score-copy span { font-size: 11.5px; }
+body[data-vagaai-ui="analysis"] .analysis-deliverable strong { font-size: 12.5px; }
+body[data-vagaai-ui="analysis"] .analysis-deliverable span { font-size: 11.5px; }
+body[data-vagaai-ui="analysis"] .analysis-tip-card p,
+body[data-vagaai-ui="analysis"] .analysis-tip-card a { font-size: 12px; }
+body[data-vagaai-ui="analysis"] :is(.next-step-microcopy, .score-breakdown-sub) { font-size: 12px; }
+
+/* ── Curriculum library ─────────────────────────────────────────────── */
+body[data-vagaai-ui="curriculum"] .page-title { font-size: clamp(32px, 5vw, 40px); letter-spacing: -.035em; }
+body[data-vagaai-ui="curriculum"] .page-sub { font-size: 15.5px; line-height: 1.65; }
+body[data-vagaai-ui="curriculum"] :is(.profile-head, .sec-card, .gap-panel, .version-row, .modal) { box-shadow: none; }
+body[data-vagaai-ui="curriculum"] .profile-name { font-size: 20px; }
+body[data-vagaai-ui="curriculum"] .profile-role { font-size: 14.5px; }
+body[data-vagaai-ui="curriculum"] .completude-label { font-size: 12.5px; }
+body[data-vagaai-ui="curriculum"] .gap-title { font-size: 11.5px; }
+body[data-vagaai-ui="curriculum"] .gap-h2 { font-size: clamp(28px, 4vw, 35px); }
+body[data-vagaai-ui="curriculum"] .gap-sub { font-size: 15px; }
+body[data-vagaai-ui="curriculum"] .gap-metrics span,
+body[data-vagaai-ui="curriculum"] .gap-side-label { font-size: 12px; }
+body[data-vagaai-ui="curriculum"] .sec-title { font-size: 16px; }
+body[data-vagaai-ui="curriculum"] .profile-main-label { font-size: 11px; }
+body[data-vagaai-ui="curriculum"] :is(.profile-purpose, .versions-intro, .raw-cv, .metric-hint, .f-note) { font-size: 13px; }
+body[data-vagaai-ui="curriculum"] :is(.version-row-copy b, .sec-item-title) { font-size: 14.5px; }
+body[data-vagaai-ui="curriculum"] :is(.version-row-copy > span, .version-chip, .sec-item-sub, .sec-item ul) { font-size: 12.5px; }
+body[data-vagaai-ui="curriculum"] :is(.version-tab, .version-action, .versions-more, .profile-danger, .sec-edit) { font-size: 12.5px; min-height: 36px; }
+body[data-vagaai-ui="curriculum"] .tag { font-size: 13px; }
+body[data-vagaai-ui="curriculum"] .f-row label { font-size: 13.5px; }
+
+/* ── CV editor workspace (document typography remains untouched) ───── */
+body[data-vagaai-ui="cv-editor"] { font-size: 15px; }
+body[data-vagaai-ui="cv-editor"] .app-crumb { font-size: 13.5px; }
+body[data-vagaai-ui="cv-editor"] .app-saved { font-size: 12px; }
+body[data-vagaai-ui="cv-editor"] :is(.app-outline-btn, .app-primary-btn) { font-size: 13px; min-height: 40px; }
+body[data-vagaai-ui="cv-editor"] .cn-brand-name { font-size: 17px; }
+body[data-vagaai-ui="cv-editor"] .cn-back { font-size: 12.5px; }
+body[data-vagaai-ui="cv-editor"] .cn-section-label { font-size: 10.5px; }
+body[data-vagaai-ui="cv-editor"] .cn-step-name { font-size: 14px; }
+body[data-vagaai-ui="cv-editor"] .cn-step-sub { font-size: 11.5px; }
+body[data-vagaai-ui="cv-editor"] .cn-saved-indicator { font-size: 12px; }
+body[data-vagaai-ui="cv-editor"] .cn-theme-btn { font-size: 12px; min-height: 38px; }
+body[data-vagaai-ui="cv-editor"] .csv-kicker { font-size: 11.5px; }
+body[data-vagaai-ui="cv-editor"] .csv-title { font-size: clamp(30px, 3vw, 36px); }
+body[data-vagaai-ui="cv-editor"] .csv-sub { font-size: 15px; }
+body[data-vagaai-ui="cv-editor"] :is(.csv-label, .csv-section-label, .csv-material-label, .cn-ats-label) { font-size: 12px; }
+body[data-vagaai-ui="cv-editor"] :is(.csv-help, .csv-photo-sub, .csv-char-count, .csv-inline-fb, .csv-smart-warn, .csv-ats-note, .csv-send-sub, .csv-send-manual, .csv-tracker-sub) { font-size: 12.5px; }
+body[data-vagaai-ui="cv-editor"] :is(.csv-item-name, .csv-photo-label, .csv-send-title, .csv-tracker-title) { font-size: 14px; }
+body[data-vagaai-ui="cv-editor"] .csv-item-sub { font-size: 12px; }
+body[data-vagaai-ui="cv-editor"] :is(.csv-btn-next, .csv-btn-prev, .csv-dl-btn, .csv-ai-btn, .csv-material-carta, .csv-send-btn, .csv-tracker-mark-btn) { font-size: 14px; min-height: 42px; }
+body[data-vagaai-ui="cv-editor"] :is(.csv-add-btn, .csv-accordion-hd, .csv-return-yes, .csv-return-no, .csv-tracker-select) { font-size: 13px; min-height: 38px; }
+body[data-vagaai-ui="cv-editor"] .job-summary-label { font-size: 10.5px; }
+body[data-vagaai-ui="cv-editor"] .job-summary-role { font-size: 13px; }
+body[data-vagaai-ui="cv-editor"] :is(.job-summary-company, .job-summary-text, .job-summary-link, .cv-quality-copy, .pdf-status-copy, .pdf-status-foot) { font-size: 11px; }
+body[data-vagaai-ui="cv-editor"] .preflight-title { font-size: 26px; }
+body[data-vagaai-ui="cv-editor"] .preflight-sub { font-size: 14px; }
+body[data-vagaai-ui="cv-editor"] :is(.pf-row, .pf-tip, .pf-btn) { font-size: 13px; }
+body[data-vagaai-ui="cv-editor"] :is(.sf-lbl, .s4-section-lbl, .s4-pillar-lbl) { font-size: 10.5px; }
+body[data-vagaai-ui="cv-editor"] :is(.sf-input, .se-add, .sp-cloud-btn) { font-size: 13px; }
+
+/* ── Interview simulator ─────────────────────────────────────────────── */
+body[data-vagaai-ui="interview"] .container { max-width: 940px; padding-top: clamp(42px, 6vw, 72px); }
+body[data-vagaai-ui="interview"] .page-title { font-size: clamp(34px, 5vw, 46px); }
+body[data-vagaai-ui="interview"] .page-sub { font-size: 16px; line-height: 1.65; }
+body[data-vagaai-ui="interview"] .field label { font-size: 12.5px; }
+body[data-vagaai-ui="interview"] :is(.btn-primary, .btn-eval, .btn-next, .pro-gate-btn) { font-size: 15px; min-height: 48px; }
+body[data-vagaai-ui="interview"] :is(.btn-ghost, .btn-skip, .btn-retry, .audio-btn, .btn-fetch) { font-size: 13.5px; min-height: 40px; }
+body[data-vagaai-ui="interview"] .question-text { font-size: clamp(23px, 3vw, 28px); }
+body[data-vagaai-ui="interview"] :is(.question-dica, .feedback-modelo, .feedback-resumo) { font-size: 14px; }
+body[data-vagaai-ui="interview"] :is(.feedback-list li, .feedback-dica, .result-sub, .interview-cargo) { font-size: 13px; }
+body[data-vagaai-ui="interview"] :is(.q-num, .q-cat, .q-nivel, .char-hint, .feedback-section-title, .result-score-label, .answer-summary-resumo) { font-size: 12px; }
+body[data-vagaai-ui="interview"] .answer-summary-q { font-size: 13.5px; }
+body[data-vagaai-ui="interview"] .result-title { font-size: 24px; }
+
+/* ── Cover letter workspace ─────────────────────────────────────────── */
+body[data-vagaai-ui="cover-letter"] { font-size: 16px; }
+body[data-vagaai-ui="cover-letter"] .container { padding-top: clamp(36px, 5vw, 60px); }
+body[data-vagaai-ui="cover-letter"] .page-title { font-size: clamp(32px, 4vw, 40px); }
+body[data-vagaai-ui="cover-letter"] .page-sub { font-size: 15.5px; line-height: 1.65; }
+body[data-vagaai-ui="cover-letter"] :is(.card, .letter-panel, .job-preview) { box-shadow: none; }
+body[data-vagaai-ui="cover-letter"] .card-title { font-size: 13px; }
+body[data-vagaai-ui="cover-letter"] .field label { font-size: 12.5px; }
+body[data-vagaai-ui="cover-letter"] :is(.btn-generate, .pro-gate-btn) { font-size: 15px; min-height: 48px; }
+body[data-vagaai-ui="cover-letter"] :is(.btn-fetch, .tom-btn, .btn-copy, .btn-download, .upload-btn) { font-size: 13px; min-height: 38px; }
+body[data-vagaai-ui="cover-letter"] .letter-title { font-size: 15px; }
+body[data-vagaai-ui="cover-letter"] .letter-text { font-size: 15px; line-height: 1.85; }
+body[data-vagaai-ui="cover-letter"] :is(.subject-box, .carta-porque-dica, .fmt-dica, .rd-check-desc, .rd-sub, .job-preview-excerpt, .hist-sub, .hist-item-meta) { font-size: 12.5px; }
+body[data-vagaai-ui="cover-letter"] :is(.highlights-title, .rd-eyebrow, .rd-highlights-title, .cv-label-row label) { font-size: 11.5px; }
+body[data-vagaai-ui="cover-letter"] :is(.highlight-tag, .rd-prova-item, .job-preview-badge, .job-preview-chip) { font-size: 12px; }
+body[data-vagaai-ui="cover-letter"] :is(.job-preview-title, .rd-title) { font-size: 17px; }
+body[data-vagaai-ui="cover-letter"] :is(.hist-titulo, .hist-item-cargo, .rd-check-title) { font-size: 14px; }
+
+/* ── Onboarding funnels ─────────────────────────────────────────────── */
+body[data-vagaai-ui="onboarding"] .ob-main { max-width: 680px; padding-top: clamp(42px, 6vw, 68px); }
+body[data-vagaai-ui="onboarding"] .ob-main.wide { max-width: 820px; }
+body[data-vagaai-ui="onboarding"] h1 { font-size: clamp(29px, 6vw, 39px); letter-spacing: -.035em; }
+body[data-vagaai-ui="onboarding"] .ob-sub { font-size: 16px; line-height: 1.65; }
+body[data-vagaai-ui="onboarding"] .ob-choice { border-radius: var(--vui-card-radius); padding: 18px 20px; }
+body[data-vagaai-ui="onboarding"] .ob-choice-t { font-size: 15.5px; }
+body[data-vagaai-ui="onboarding"] .ob-choice-d { font-size: 13.5px; }
+body[data-vagaai-ui="onboarding"] :is(label, .ob-diagnostic-title, .ob-method-t, .ob-item, .ob-locked-i, .ob-context-sub, .ob-radar-d, .ob-radar-check) { font-size: 13.5px; }
+body[data-vagaai-ui="onboarding"] :is(label small, .ob-hint, .ob-note, .ob-micro, .ob-plan-note, .ob-profile-l) { font-size: 12px; }
+body[data-vagaai-ui="onboarding"] .ob-btn { font-size: 16px; min-height: 54px; }
+body[data-vagaai-ui="onboarding"] :is(.ob-back, .ob-link, .ob-close) { font-size: 13.5px; }
+body[data-vagaai-ui="onboarding"] :is(.ob-context-title, .ob-context-t, .ob-radar-t, .ob-gate-t) { font-size: 20px; }
+body[data-vagaai-ui="onboarding"] .ob-modal-t { font-size: 24px; }
+body[data-vagaai-ui="onboarding"] .ob-modal-d { font-size: 14.5px; }
+body[data-vagaai-ui="onboarding"] .ob-journey-label-item { font-size: 11.5px; }
+body[data-vagaai-ui="onboarding"] .ob-journey-step-label { font-size: 11.5px !important; }
+body[data-vagaai-ui="onboarding"] .ob-journey-progress { font-size: 11.5px !important; }
+body[data-vagaai-ui="onboarding"] .ob-journey-toggle { font-size: 11px !important; min-height: 34px; }
+body[data-vagaai-ui="onboarding"] .ob-journey-label { font-size: 10.5px; }
+body[data-vagaai-ui="onboarding"] .ob-journey-value { font-size: 12px; }
+
+/* ── Authentication entry ───────────────────────────────────────────── */
+body[data-vagaai-ui="auth"] .card { border-radius: 18px; box-shadow: var(--vui-shadow); }
+body[data-vagaai-ui="auth"] .card-title { font-size: clamp(28px, 6vw, 34px); }
+body[data-vagaai-ui="auth"] .card-sub { font-size: 15px; }
+body[data-vagaai-ui="auth"] :is(.tab, label, .foot, .back) { font-size: 14px; }
+body[data-vagaai-ui="auth"] :is(.btn, .btn-google, .btn-outline) { min-height: 48px; font-size: 15px; }
+
+@media (max-width: 760px) {
+  body[data-vagaai-ui] { font-size: 15px; }
+  body[data-vagaai-ui="dashboard"] .pg-title { font-size: 30px; }
+  body[data-vagaai-ui="dashboard"] .pba-title { font-size: 28px; }
+  body[data-vagaai-ui="dashboard"] .pv-title { font-size: 27px; }
+  body[data-vagaai-ui="analysis"] .container,
+  body[data-vagaai-ui="interview"] .container,
+  body[data-vagaai-ui="cover-letter"] .container { padding-inline: 20px; }
+  body[data-vagaai-ui="analysis"] .page-title,
+  body[data-vagaai-ui="interview"] .page-title,
+  body[data-vagaai-ui="cover-letter"] .page-title { font-size: 32px; }
+  body[data-vagaai-ui="cv-editor"] .csv-title { font-size: 30px; }
+  body[data-vagaai-ui="onboarding"] .ob-main { padding-inline: 20px; }
+  body[data-vagaai-ui="analysis"] .analysis-side { grid-row: auto; }
+}

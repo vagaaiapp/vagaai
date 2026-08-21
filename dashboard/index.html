@@ -1641,203 +1641,246 @@ body.frame-fullscreen .sidebar { display: none !important; }
   .user-dropdown { left: 16px; bottom: 16px; }
 }
 
-/* ── Direção de produto · superfície contínua ─────────────────────────────
-   O painel tem um único destaque fotográfico. Currículo, ferramentas, jornada
-   e vagas deixam de competir como cards e passam a formar o mesmo espaço
-   profissional, dividido por hierarquia e bordas. */
-.pba-card {
-  min-height:278px; padding:0; gap:0;
-  grid-template-columns:minmax(0,1.35fr) minmax(310px,.65fr);
-  background-position:center; box-shadow:0 20px 45px rgba(5,33,22,.12);
-}
-.pba-card::before { background:linear-gradient(90deg,rgba(3,28,18,.98) 0%,rgba(3,34,22,.94) 43%,rgba(4,30,20,.62) 72%,rgba(3,24,16,.42) 100%); }
-.pba-left { display:flex; flex-direction:column; justify-content:center; padding:38px 40px; }
-.pba-eyebrow { margin-bottom:14px; font-size:9px; }
-.pba-title { max-width:610px; margin-bottom:8px; font-family:Lora,Georgia,serif; font-size:27px; line-height:1.22; letter-spacing:-.03em; }
-.pba-desc { max-width:610px; margin-bottom:23px; color:#bad1c3; font-size:11.5px; }
-.pba-right { margin:25px 27px 25px 0; border-left:1px solid rgba(255,255,255,.15); background:rgba(4,30,20,.45); backdrop-filter:blur(5px); }
-.pba-priority { position:relative; align-items:flex-start; justify-content:center; padding:36px 29px 24px; border:0; border-radius:0; background:transparent; box-shadow:none; text-align:left; backdrop-filter:none; }
-.pba-priority::before { content:'Vaga em foco'; position:absolute; top:21px; left:29px; color:#8eb09d; font-size:9px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; }
-.pba-priority-cargo { margin-top:10px; font-size:15px; }
-.pba-priority-empresa { color:#91aa9c; font-size:10px; }
-.pba-score-row { --pba-progress:0%; --pba-tone:#f87171; position:relative; width:100%; display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; gap:14px; margin-top:13px; padding-top:20px; padding-bottom:18px; border-top:1px solid rgba(255,255,255,.12); }
-.pba-score-row::after { content:''; position:absolute; left:0; right:0; bottom:0; height:4px; border-radius:4px; background:linear-gradient(90deg,var(--pba-tone) 0 var(--pba-progress),rgba(255,255,255,.12) var(--pba-progress) 100%); }
-.pba-ring-wrap { position:static; width:auto; height:auto; }
-.pba-ring-wrap svg { display:none; }
-.pba-ring-inner { position:static; display:block; font-family:Lora,Georgia,serif; font-size:34px; line-height:1; }
-.pba-score-label { margin:0 0 4px; color:#fff; font-size:10px; }
-.pba-score-sub { color:#8eab9a; font-size:9px; }
+/* ── Home editorial V2 aprovada ───────────────────────────────────────────
+   Tipografia confortável e superfícies com função clara substituem a antiga
+   compressão em microtexto. Os IDs, ações e dados dinâmicos permanecem os
+   mesmos; esta camada altera hierarquia e composição, não os contratos. */
+#tab-painel { width:100%; max-width:1240px; margin:0 auto; }
+#tab-painel .pg-title { font-size:34px; line-height:1.15; letter-spacing:-.035em; }
+#tab-painel .pg-avatar { width:51px; height:51px; border-radius:14px; font-size:14px; }
+#tab-painel .pg-pill { font-size:13px; padding:6px 12px; }
+#tab-painel .pg-date { font-size:13px; }
+#tab-painel .pg-plano { font-size:12px; }
+#tab-painel .blk-title { font-size:17px; }
 
-.product-workspace { overflow:visible; display:flex; flex-direction:column; gap:22px; margin-top:30px; margin-bottom:30px; }
-.product-workspace-section { overflow:hidden; margin:0; padding:0; border:1px solid var(--border); border-radius:18px; background:var(--bg-card); box-shadow:0 10px 30px rgba(8,37,23,.06); }
-[data-theme="dark"] .product-workspace-section { box-shadow:none; }
+.pba-card {
+  min-height:300px; padding:0; gap:0;
+  grid-template-columns:minmax(0,1.4fr) minmax(300px,.6fr);
+  background-position:center 68%; border-radius:18px;
+  box-shadow:0 18px 40px rgba(7,36,22,.14);
+}
+.pba-card::before { background:linear-gradient(90deg,rgba(3,27,17,.94) 0%,rgba(3,30,19,.84) 46%,rgba(3,26,17,.32) 100%); }
+.pba-left { display:flex; flex-direction:column; justify-content:center; padding:39px 42px; }
+.pba-eyebrow { margin-bottom:16px; color:#7be2ad; font-size:12px; letter-spacing:.08em; }
+.pba-eyebrow-dot { width:8px; height:8px; box-shadow:0 0 0 6px rgba(78,206,145,.1); }
+.pba-title { max-width:660px; margin-bottom:10px; font-family:Lora,Georgia,serif; font-size:34px; line-height:1.18; letter-spacing:-.035em; }
+.pba-title em { color:var(--gb-bright); font-style:normal; }
+.pba-desc { max-width:650px; margin-bottom:25px; color:#bfd2c7; font-size:15px; line-height:1.7; }
+.pba-btns { gap:11px; }
+.pba-btn-primary,.pba-btn-ghost { min-height:44px; padding:0 19px; border-radius:10px; font-size:14px; }
+.pba-right { display:flex; align-items:center; justify-content:center; align-self:stretch; margin:0; padding:28px 32px; border:0; background:transparent; backdrop-filter:none; }
+.pba-priority { width:100%; min-height:245px; padding:25px 26px; border:1px solid rgba(255,255,255,.14); border-radius:15px; background:rgba(3,31,19,.77); box-shadow:0 16px 36px rgba(0,18,10,.2); text-align:center; backdrop-filter:blur(10px); }
+.pba-job-meta { text-align:center; }
+.pba-priority-kicker { display:block; margin-bottom:4px; color:#8fb19d; font-size:12px; font-weight:700; }
+.pba-priority-cargo { margin:0; color:#fff; font-size:16px; }
+.pba-priority-empresa { margin-top:2px; color:#8fa99a; font-size:13px; }
+.pba-score-row { --pba-progress:0%; --pba-tone:#f87171; width:100%; display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:18px; padding:0; border:0; }
+.pba-score-row::after { display:none; }
+.pba-ring-wrap { position:relative; width:116px; height:116px; }
+.pba-ring-wrap svg { display:block; width:100%; height:100%; }
+.pba-ring-inner { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:Lora,Georgia,serif; font-size:35px; line-height:1; }
+.pba-score-label { margin:0; color:#fff; font-size:14px; }
+.pba-score-sub { color:#8eaa9a; font-size:12px; }
+
+.product-workspace { overflow:visible; display:flex; flex-direction:column; gap:42px; margin:42px 0 34px; }
+.workspace-section-label { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:13px; }
+.workspace-section-label h2 { margin:0; color:var(--t1); font-family:Manrope,sans-serif; font-size:17px; line-height:1.3; }
+.workspace-section-link { border:0; background:transparent; color:var(--gb-emerald); font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; }
+[data-theme="dark"] .workspace-section-link { color:var(--gb-bright); }
+.product-workspace-section { overflow:visible; margin:0; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
 .product-workspace .profile-value-stage,
 .product-workspace .bus-card,
-.product-workspace .opp-list-card { overflow:visible; border:0; border-radius:0; background:transparent; box-shadow:none; }
+.product-workspace .opp-list-card { overflow:hidden; border:1px solid var(--border); border-radius:18px; background:var(--bg-card); box-shadow:0 12px 32px rgba(8,35,22,.075); }
+[data-theme="dark"] .product-workspace .profile-value-stage,
+[data-theme="dark"] .product-workspace .bus-card,
+[data-theme="dark"] .product-workspace .opp-list-card { box-shadow:none; }
 .product-workspace .opp-section,
 .product-workspace .opp-list-card { width:100%; min-width:0; max-width:100%; }
 .product-workspace .bus-card::before,
 .product-workspace .opp-item::after { display:none; }
-.pv-loading { min-height:190px; padding:32px 34px; }
-.pv-summary { background:var(--bg-card); }
-.pv-summary-head { display:flex; align-items:flex-start; justify-content:space-between; gap:28px; padding:32px 34px 0; }
-.pv-summary-head > div { min-width:0; }
-.pv-eyebrow { color:var(--gb-emerald); font-size:10.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
-[data-theme="dark"] .pv-eyebrow { color:var(--gb-bright); }
-.pv-title { margin:7px 0 0; color:var(--t1); font-family:Lora,Georgia,serif; font-size:26px; line-height:1.18; letter-spacing:-.025em; }
-.pv-desc { max-width:760px; margin-top:7px; color:var(--t2); font-size:12px; line-height:1.6; }
-.pv-summary-grid { display:grid; grid-template-columns:minmax(240px,.7fr) minmax(280px,1fr) minmax(300px,1.05fr); gap:0; padding:30px 34px 34px; }
-.pv-completion-block { min-width:0; padding-right:34px; border-right:1px solid var(--border-soft); }
-.pv-completion-row { display:flex; align-items:flex-end; justify-content:space-between; gap:15px; }
-.pv-completion-row strong { color:var(--t1); font-family:Lora,Georgia,serif; font-size:46px; line-height:1; font-variant-numeric:tabular-nums; }
-.pv-completion-row span { color:var(--t2); font-size:10.5px; line-height:1.45; text-align:right; }
-.pv-progress { height:7px; margin-top:18px; overflow:hidden; border-radius:5px; background:var(--border-soft); }
-.pv-progress i { display:block; width:var(--pv-progress); height:100%; background:linear-gradient(90deg,var(--gb-emerald),var(--gb-bright)); }
-.pv-completion-foot { display:flex; justify-content:space-between; gap:12px; margin-top:13px; color:var(--t3); font-size:10.5px; }
-.pv-completion-block .pv-primary { margin-top:21px; padding:0; border-radius:0; background:transparent; color:var(--gb-emerald); font-size:11px; }
-[data-theme="dark"] .pv-completion-block .pv-primary { color:var(--gb-bright); }
-.pv-panel { min-width:0; padding:0 34px; background:transparent; }
-.pv-panel + .pv-panel { border-left:1px solid var(--border-soft); background:transparent; }
-.pv-panel-head { margin-bottom:14px; }
-.pv-panel-head h3 { color:var(--t2); font-size:10.5px; font-weight:800; letter-spacing:.065em; text-transform:uppercase; }
-.pv-panel-head p { margin-top:5px; color:var(--t3); font-size:10.5px; line-height:1.45; }
-.pv-panel-head .pv-link { align-self:flex-start; }
-.pv-strengths { display:grid; grid-template-columns:1fr; gap:0; }
-.pv-strength { display:flex; align-items:center; justify-content:space-between; gap:16px; min-width:0; padding:11px 0; border-bottom:0; border-radius:0; background:transparent; }
-.pv-strength:last-child { border-bottom:0; }
-.pv-strength b,.pv-strength span { margin:0; }
-.pv-strength b { overflow:visible; color:var(--t1); font-size:12px; line-height:1.35; text-overflow:clip; white-space:normal; }
-.pv-strength span { max-width:58%; color:var(--t3); font-size:10.5px; line-height:1.4; text-align:right; }
-.pv-empty { padding:14px 0; border:0; border-radius:0; color:var(--t3); font-size:11px; }
-.pv-rank-item { padding:10px 0; }
-.pv-rank-num,.pv-rank-freq { font-size:10.5px; }
-.pv-rank-name { font-size:11.5px; }
-.pv-market-foot { margin-top:14px; padding-top:13px; }
-.pv-version-count { font-size:10.5px; }
-.pv-version-count strong { font-family:Manrope,sans-serif; font-size:13px; }
-.pv-link { font-size:10.5px; }
-.profile-value-tools { padding:8px 16px 14px; border-top:1px solid var(--border-soft); }
-.profile-value-tools-head { display:none; }
-.profile-value-tools .fer-strip { gap:4px; }
-.profile-value-tools .fer-card { align-items:flex-start; min-height:72px; padding:16px 15px; border:0; border-radius:11px; }
-.profile-value-tools .fer-ico { width:36px; height:36px; }
-.profile-value-tools .fer-nome { font-size:12px; }
-.profile-value-tools .fer-estado { overflow:visible; margin-top:4px; padding-right:5px; font-size:10.5px; line-height:1.4; text-overflow:clip; white-space:normal; }
-.profile-value-tools .fer-arrow { top:17px; right:10px; font-size:11px; }
 
-.product-workspace .bus-card { padding:32px 34px 30px; }
-.product-workspace .bus-top { margin-bottom:30px; }
-.bus-heading small { margin-bottom:7px; font-size:10.5px; }
-.bus-heading h3 { margin-bottom:6px; font-size:25px; }
-.bus-heading p { font-size:11.5px; line-height:1.5; }
-.product-workspace .bus-num { width:44px; height:44px; margin-bottom:12px; box-shadow:none; font-size:16px; }
-.product-workspace .bus-strip::before { top:21px; height:2px; }
-.product-workspace .bus-lbl { font-size:10.5px; }
-.product-workspace .bus-stage-sub { font-size:10px; line-height:1.4; }
-.product-workspace .bus-foot { margin-top:28px; padding:15px 16px; border:0; border-radius:11px; background:var(--s-amb-bg); }
-.product-workspace .bus-foot-icon { width:30px; height:30px; border-radius:8px; font-size:14px; }
-.product-workspace .bus-foot-lbl { font-size:11px; }
-.product-workspace .funil-insight-txt { font-size:11.5px; }
-.product-workspace .bus-read-btn { font-size:10.5px; }
+.pv-loading { min-height:220px; padding:36px 40px; }
+.pv-summary { background:var(--bg-card); }
+.pv-summary-head { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(270px,.5fr); padding:0; }
+.pv-summary-story { min-width:0; padding:36px 40px; }
+.pv-eyebrow { color:var(--gb-emerald); font-size:12px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; }
+[data-theme="dark"] .pv-eyebrow { color:var(--gb-bright); }
+.pv-title { max-width:730px; margin:9px 0 0; color:var(--t1); font-family:Lora,Georgia,serif; font-size:29px; line-height:1.25; letter-spacing:-.025em; }
+.pv-desc { max-width:720px; margin-top:11px; color:var(--t2); font-size:15px; line-height:1.7; }
+.pv-story-actions { display:flex; align-items:center; gap:15px; margin-top:24px; }
+.pv-story-actions .pv-primary { min-height:42px; padding:0 17px; border:0; border-radius:9px; background:var(--gb-emerald); color:#fff; font-size:14px; }
+.pv-updated { color:var(--t3); font-size:13px; }
+.pv-completion-block { min-width:0; display:flex; flex-direction:column; justify-content:center; padding:34px 36px; border-left:1px solid var(--border); background:linear-gradient(145deg,var(--s-grn-bg),var(--bg-sub)); }
+.pv-completion-row { display:flex; align-items:flex-end; gap:12px; }
+.pv-completion-row strong { color:var(--t1); font-family:Lora,Georgia,serif; font-size:56px; line-height:.9; letter-spacing:-.05em; font-variant-numeric:tabular-nums; }
+.pv-completion-row span { padding-bottom:4px; color:var(--t2); font-size:13px; line-height:1.35; text-align:left; }
+.pv-progress { height:8px; margin-top:19px; overflow:hidden; border-radius:999px; background:var(--border); }
+.pv-progress i { display:block; width:var(--pv-progress); height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--gb-emerald),var(--gb-bright)); }
+.pv-completion-foot { display:block; margin-top:10px; color:var(--t3); font-size:13px; }
+.pv-summary-grid { display:grid; grid-template-columns:1fr 1fr; padding:0; border-top:1px solid var(--border); }
+.pv-panel { min-width:0; padding:30px 40px; background:transparent; }
+.pv-panel + .pv-panel { border-left:1px solid var(--border); background:transparent; }
+.pv-panel-head { align-items:flex-start; margin-bottom:18px; }
+.pv-panel-head h3 { color:var(--t1); font-size:17px; font-weight:800; letter-spacing:0; text-transform:none; }
+.pv-panel-head p { margin-top:4px; color:var(--t3); font-size:13px; line-height:1.5; }
+.pv-panel-head .pv-link { align-self:flex-start; }
+.pv-strengths { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; }
+.pv-strength { display:block; min-width:0; padding:10px 13px; border:1px solid var(--border); border-radius:9px; background:var(--bg-sub); }
+.pv-strength b,.pv-strength span { display:block; margin:0; text-align:left; }
+.pv-strength b { overflow:hidden; color:var(--t1); font-size:14px; line-height:1.35; text-overflow:ellipsis; white-space:nowrap; }
+.pv-strength span { max-width:none; margin-top:2px; color:var(--t3); font-size:12px; line-height:1.45; }
+.pv-empty { padding:14px 0; border:0; color:var(--t3); font-size:13px; line-height:1.55; }
+.pv-rank-item { grid-template-columns:31px minmax(0,1fr) auto; gap:10px; padding:9px 0; border-bottom:1px solid var(--border-soft); }
+.pv-rank-num { color:var(--gb-emerald); font-size:12px; }
+.pv-rank-name { color:var(--t1); font-size:14px; }
+.pv-rank-freq { color:var(--s-amb); font-size:12px; }
+.pv-market-foot { margin-top:14px; padding-top:13px; }
+.pv-version-count { color:var(--t2); font-size:12px; }
+.pv-version-count strong { font-family:Manrope,sans-serif; font-size:15px; }
+.pv-link { color:var(--gb-emerald); font-size:13px; }
+
+.profile-value-tools { padding:0; border-top:1px solid var(--border); }
+.profile-value-tools-head { display:flex; align-items:baseline; gap:10px; padding:18px 24px 4px; }
+.profile-value-tools-head strong { color:var(--t1); font-size:15px; }
+.profile-value-tools-head span { color:var(--t3); font-size:13px; }
+.profile-value-tools .fer-strip { gap:0; }
+.profile-value-tools .fer-card { align-items:center; min-height:78px; padding:18px 24px; border:0; border-right:1px solid var(--border); border-radius:0; }
+.profile-value-tools .fer-card:last-child { border-right:0; }
+.profile-value-tools .fer-ico { width:39px; height:39px; border-radius:10px; }
+.profile-value-tools .fer-ico svg { width:19px; height:19px; }
+.profile-value-tools .fer-nome { font-size:14px; }
+.profile-value-tools .fer-estado { overflow:hidden; margin-top:2px; padding:0; color:var(--t3); font-size:12px; line-height:1.4; text-overflow:ellipsis; white-space:nowrap; }
+.profile-value-tools .fer-selo { font-size:11px; }
+.profile-value-tools .fer-arrow { display:none; }
+
+.product-workspace .bus-card { padding:31px 34px 25px; }
+.product-workspace .bus-top { margin-bottom:27px; }
+.bus-heading small { margin-bottom:5px; font-size:12px; }
+.bus-heading h3 { margin-bottom:7px; font-size:27px; }
+.bus-heading p { font-size:14px; line-height:1.5; }
+.funil-per-btn { padding:6px 10px; border-radius:7px; font-size:12px; }
+.product-workspace .bus-num { width:52px; height:52px; margin-bottom:11px; box-shadow:0 5px 14px rgba(8,35,22,.06); font-size:19px; }
+.product-workspace .bus-strip::before { top:25px; height:3px; }
+.product-workspace .bus-lbl { font-size:13px; letter-spacing:0; text-transform:none; }
+.product-workspace .bus-stage-sub { font-size:12px; line-height:1.4; }
+.product-workspace .bus-foot { margin-top:27px; padding:14px 15px; border:1px solid rgba(196,125,10,.18); border-radius:11px; background:var(--s-amb-bg); }
+.product-workspace .bus-foot-icon { width:31px; height:31px; border-radius:9px; font-size:15px; }
+.product-workspace .bus-foot-lbl { font-size:13px; }
+.product-workspace .funil-insight-txt { font-size:13px; }
+.product-workspace .bus-read-btn { font-size:13px; }
 
 .product-workspace .opp-section { margin:0; }
-.product-workspace .opp-list-head { align-items:flex-end; padding:31px 34px 20px; }
-.opp-list-kicker { margin-bottom:7px; color:var(--gb-emerald); font-size:10.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
+.product-workspace .opp-list-head { align-items:center; padding:20px 24px; }
+.opp-list-kicker { margin-bottom:5px; color:var(--gb-emerald); font-size:12px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; }
 [data-theme="dark"] .opp-list-kicker { color:var(--gb-bright); }
-.product-workspace .opp-list-title-t { font-family:Lora,Georgia,serif; font-size:25px; }
-.product-workspace .opp-list-count-t { margin-top:5px; font-size:10.5px; }
+.product-workspace .opp-list-title-t { font-family:Lora,Georgia,serif; font-size:27px; line-height:1.2; }
+.product-workspace .opp-list-count-t { margin-top:5px; font-size:13px; }
 .opp-head-actions { display:flex; align-items:center; gap:14px; }
-.product-workspace .opp-chips { gap:0; padding:3px; border:1px solid var(--border); border-radius:9px; background:var(--bg-sub); }
-.product-workspace .opp-chip { padding:6px 12px; border:0; border-radius:6px; background:transparent; font-size:10.5px; }
-.product-workspace .opp-chip-active { background:var(--bg-card); color:var(--gb-emerald); box-shadow:0 2px 7px rgba(9,39,25,.08); }
-.opp-open-link { padding:0; border:0; background:transparent; color:var(--gb-emerald); font-size:10.5px; font-weight:800; cursor:pointer; }
+.product-workspace .opp-chips { gap:6px; padding:0; border:0; background:transparent; }
+.product-workspace .opp-chip { padding:7px 11px; border:1px solid var(--border); border-radius:999px; background:var(--bg-card); font-size:12px; }
+.product-workspace .opp-chip-active { border-color:var(--gb-emerald); background:var(--gb-emerald); color:#fff; box-shadow:none; }
+.opp-open-link { padding:0; border:0; background:transparent; color:var(--gb-emerald); font-size:13px; font-weight:800; cursor:pointer; }
 [data-theme="dark"] .opp-open-link { color:var(--gb-bright); }
-.product-workspace .opp-item { padding:20px 34px; background:transparent; }
-.product-workspace .opp-item:hover { background:var(--bg-sub); }
-.product-workspace .opp-item-score { width:54px; height:54px; border-radius:14px; font-size:12.5px; }
-.product-workspace .opp-item-cargo { font-size:12.5px; }
-.product-workspace .opp-item-sub { margin-top:5px; font-size:10.5px; }
-.product-workspace .opp-progress-top { font-size:10px; }
-.product-workspace .opp-step { height:5px; }
-.product-workspace .opp-action-kicker { font-size:9.5px; }
-.product-workspace .opp-action-lbl { font-size:11.5px; }
-.product-workspace .opp-action-when { font-size:10px; }
-.product-workspace .opp-footer { padding:15px 34px; }
-.product-workspace .opp-footer-btn { font-size:11.5px; }
-.product-workspace .hint-row { margin:0 34px 28px; padding:14px 16px; font-size:12px; }
+.product-workspace .opp-item { padding:22px 24px; background:linear-gradient(100deg,var(--bg-card) 0 76%,var(--s-grn-bg) 100%); }
+.product-workspace .opp-item:hover { background:linear-gradient(100deg,var(--bg-sub) 0 76%,var(--s-grn-bg) 100%); }
+.product-workspace .opp-item-score { width:62px; height:62px; border-radius:16px; font-size:16px; }
+.product-workspace .opp-item-cargo { font-size:15px; }
+.product-workspace .opp-item-sub { margin-top:3px; font-size:12px; }
+.product-workspace .opp-progress-top { margin-bottom:8px; font-size:12px; }
+.product-workspace .opp-step { height:7px; }
+.product-workspace .opp-action-kicker { font-size:12px; }
+.product-workspace .opp-action-lbl { font-size:13px; }
+.product-workspace .opp-action-when { font-size:12px; }
+.product-workspace .opp-footer { padding:14px 24px; }
+.product-workspace .opp-footer-btn { font-size:13px; }
+.product-workspace .hint-row { margin:13px 0 0; padding:14px 18px; font-size:13px; }
+.product-workspace .hint-cta { font-size:13px; }
 
 @media (max-width:1100px) {
   .pba-card { grid-template-columns:minmax(0,1.2fr) minmax(290px,.8fr); }
-  .pv-summary-grid { grid-template-columns:minmax(210px,.75fr) minmax(0,1.25fr); }
-  .pv-market-panel { grid-column:1/-1; margin-top:23px; padding:22px 0 0; border-top:1px solid var(--border); border-left:0!important; }
+  .pba-left { padding:34px 31px; }
+  .pba-title { font-size:30px; }
+  .pv-summary-grid { grid-template-columns:1fr; }
+  .pv-panel + .pv-panel { border-top:1px solid var(--border); border-left:0; }
   .profile-value-tools .fer-strip { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .profile-value-tools .fer-card:nth-child(2),
-  .profile-value-tools .fer-card:nth-child(-n+2) { border:0; }
+  .profile-value-tools .fer-card:nth-child(2) { border-right:0; }
+  .profile-value-tools .fer-card:nth-child(-n+2) { border-bottom:1px solid var(--border); }
   .opp-open-link { display:none; }
 }
 @media (min-width:769px) and (max-width:1100px) {
-  .product-workspace .opp-item {
-    grid-template-columns:46px minmax(130px,.9fr) minmax(190px,1.1fr) minmax(125px,.8fr) 14px;
-    gap:12px;
-    padding:18px 20px;
-  }
+  .product-workspace .opp-item { grid-template-columns:58px minmax(150px,.9fr) minmax(210px,1.1fr) minmax(145px,.8fr) 18px; gap:16px; padding:20px; }
 }
 @media (max-width:1023px) {
   .pba-card { grid-template-columns:1fr; }
-  .pba-left { padding:34px 32px; }
-  .pba-right { margin:0; border-top:1px solid rgba(255,255,255,.15); border-left:0; }
-  .pba-priority { padding:34px 32px 23px; }
-  .pba-priority::before { left:32px; top:19px; }
-  .pba-score-row { max-width:450px; }
+  .pba-right { padding:0 32px 28px; }
+  .pba-priority { min-height:0; display:grid; grid-template-columns:1fr 116px 1fr; align-items:center; gap:18px; text-align:left; }
+  .pba-job-meta { text-align:left; }
+  .pba-score-row { display:contents; }
+  .pba-ring-wrap { grid-column:2; grid-row:1; }
+  .pba-score-copy { grid-column:3; grid-row:1; text-align:right; }
 }
 @media (max-width:768px) {
-  .pba-card { border-radius:14px; background-position:58% center; }
+  #tab-painel .pg-title { font-size:27px; }
+  #tab-painel .pg-avatar { width:44px; height:44px; border-radius:12px; }
+  #tab-painel .pg-pill { font-size:12px; }
+  .pba-card { border-radius:15px; background-position:58% center; }
   .pba-card::before { background:linear-gradient(90deg,rgba(3,28,18,.92),rgba(3,28,18,.68)); }
   .pba-left { padding:29px 24px; }
-  .pba-title { font-size:23px; }
-  .pba-desc { font-size:10.5px; }
+  .pba-title { font-size:28px; }
+  .pba-desc { font-size:14px; }
   .pba-btns { align-items:stretch; flex-direction:column; }
   .pba-btn-primary,.pba-btn-ghost { width:100%; }
-  .pba-priority { padding:34px 24px 22px; }
-  .pba-priority::before { left:24px; }
-  .product-workspace { gap:14px; margin-top:22px; }
-  .product-workspace-section { border-radius:14px; }
-  .pv-summary-head { padding:25px 20px 0; }
-  .pv-title { font-size:22px; }
-  .pv-desc { font-size:11.5px; }
-  .pv-summary-grid { grid-template-columns:1fr; padding:20px; }
-  .pv-completion-block { padding:0 0 22px; border-right:0; border-bottom:1px solid var(--border); }
-  .pv-panel { padding:22px 0 0; }
-  .pv-panel + .pv-panel { margin-top:22px; border-top:1px solid var(--border); border-left:0; }
-  .profile-value-tools { margin-top:0; }
+  .pba-right { padding:0 17px 17px; }
+  .pba-priority { grid-template-columns:minmax(0,1fr) 88px; gap:5px 14px; padding:20px; }
+  .pba-job-meta { grid-column:1; }
+  .pba-ring-wrap { grid-column:2; width:84px; height:84px; }
+  .pba-ring-inner { font-size:27px; }
+  .pba-score-copy { grid-column:1; grid-row:2; text-align:left; }
+  .pba-priority-cargo { white-space:normal; }
+  .product-workspace { gap:34px; margin-top:34px; }
+  .product-workspace .profile-value-stage,
+  .product-workspace .bus-card,
+  .product-workspace .opp-list-card { border-radius:15px; }
+  .workspace-section-label { margin-bottom:10px; }
+  .workspace-section-label h2 { font-size:15px; }
+  .pv-summary-head { grid-template-columns:1fr; }
+  .pv-summary-story { padding:27px 23px; }
+  .pv-title { font-size:25px; }
+  .pv-desc { font-size:14px; }
+  .pv-story-actions { align-items:flex-start; flex-direction:column; }
+  .pv-completion-block { padding:27px 23px; border-top:1px solid var(--border); border-left:0; }
+  .pv-completion-row strong { font-size:49px; }
+  .pv-summary-grid { grid-template-columns:1fr; }
+  .pv-panel { padding:25px 23px; }
+  .pv-panel + .pv-panel { border-top:1px solid var(--border); border-left:0; }
+  .pv-panel-head { align-items:flex-start; flex-direction:column; gap:7px; }
+  .pv-strengths { grid-template-columns:1fr; }
+  .profile-value-tools-head { align-items:flex-start; flex-direction:column; gap:3px; padding:18px 22px 4px; }
   .profile-value-tools .fer-strip { grid-template-columns:1fr; }
-  .profile-value-tools .fer-card { border-right:0; border-bottom:1px solid var(--border); }
+  .profile-value-tools .fer-card { padding:17px 22px; border-right:0; border-bottom:1px solid var(--border); }
   .profile-value-tools .fer-card:last-child { border-bottom:0; }
-  .profile-value-tools { padding:4px 0; }
-  .profile-value-tools .fer-card { padding:17px 20px; border-radius:0; }
-  .product-workspace .bus-card { padding:25px 20px; }
-  .bus-heading h3 { font-size:22px; }
-  .bus-heading p { font-size:11px; }
-  .product-workspace .bus-strip { display:grid; grid-template-columns:1fr; gap:14px; }
-  .product-workspace .bus-strip::before { display:block; left:17px; right:auto; top:17px; bottom:17px; width:2px; height:auto; background:var(--border); }
-  .product-workspace .bus-stage { display:grid; grid-template-columns:44px minmax(0,1fr); grid-template-rows:auto auto; column-gap:13px; row-gap:2px; align-items:center; text-align:left; }
+  .product-workspace .bus-card { padding:25px 22px; }
+  .bus-heading h3 { font-size:25px; }
+  .bus-heading p { font-size:14px; }
+  .product-workspace .bus-strip { display:grid; grid-template-columns:1fr; gap:17px; }
+  .product-workspace .bus-strip::before { display:block; left:25px; right:auto; top:24px; bottom:24px; width:3px; height:auto; background:var(--border); }
+  .product-workspace .bus-stage { display:grid; grid-template-columns:52px minmax(0,1fr); grid-template-rows:auto auto; column-gap:14px; row-gap:2px; align-items:center; text-align:left; }
   .product-workspace .bus-num { grid-row:1/3; margin:0; }
   .product-workspace .bus-lbl { grid-column:2; grid-row:1; margin:0; }
   .product-workspace .bus-stage-sub { grid-column:2; grid-row:2; }
-  .product-workspace .bus-foot { align-items:flex-start; }
-  .product-workspace .bus-read-btn { display:none; }
-  .product-workspace .opp-list-head { align-items:flex-start; padding:25px 20px 18px; }
+  .product-workspace .bus-foot { align-items:flex-start; flex-wrap:wrap; }
+  .product-workspace .bus-read-btn { width:100%; margin-left:43px; text-align:left; }
+  .product-workspace .opp-list-head { align-items:flex-start; flex-direction:column; padding:20px; }
   .opp-head-actions { width:100%; align-items:flex-start; flex-direction:column; }
-  .opp-open-link { display:none; }
-  .product-workspace .opp-chips { overflow:visible; }
-  .product-workspace .opp-chip { font-size:10px; padding:6px 10px; }
-  .product-workspace .opp-item { padding:19px 20px; }
-  .product-workspace .opp-item-score { width:46px; height:46px; }
-  .product-workspace .opp-item-sub { font-size:10.5px; }
-  .product-workspace .opp-item-progress { padding-top:12px; }
-  .product-workspace .opp-item-action { padding-top:12px; }
-  .product-workspace .opp-footer { padding:15px 20px; }
-  .product-workspace .hint-row { margin:0 20px 20px; }
+  .product-workspace .opp-chips { overflow-x:auto; max-width:100%; }
+  .product-workspace .opp-item { grid-template-columns:54px minmax(0,1fr); gap:13px; padding:19px 20px; }
+  .product-workspace .opp-item-score { width:52px; height:52px; border-radius:13px; font-size:14px; }
+  .product-workspace .opp-item-cargo { white-space:normal; }
+  .product-workspace .opp-item-progress { grid-column:1/-1; padding-top:12px; }
+  .product-workspace .opp-item-action { grid-column:1/-1; padding-top:12px; border-left:0; border-top:1px solid var(--border); }
+  .product-workspace .opp-footer { padding:14px 20px; }
+  .product-workspace .hint-row { align-items:flex-start; flex-direction:column; }
+  .product-workspace .hint-cta { margin-left:0; }
 }
 
 /* ── Mobile navigation shell ───────────────────────────────── */
@@ -2508,8 +2551,9 @@ body.cd-modal-open { overflow:hidden; }
 <script>
 if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');
 </script>
+<link rel="stylesheet" href="/assets/product-ui.css?v=20260821-editorial1">
 </head>
-<body>
+<body data-vagaai-ui="dashboard">
 
 <!-- Modals -->
 <div class="cd-modal-overlay hidden" id="candDetailPanel" onclick="if(event.target===this)closeCandDetail()"></div>
@@ -2898,18 +2942,21 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     </div>
     <div class="pba-card">
       <div class="pba-left">
-        <div class="pba-eyebrow"><span class="pba-eyebrow-dot"></span>Comece por aqui</div>
+        <div class="pba-eyebrow"><span class="pba-eyebrow-dot"></span>Sua próxima melhor ação</div>
         <h2 class="pba-title" id="pbaTitle">Carregando...</h2>
         <p class="pba-desc" id="pbaDesc"> </p>
         <div class="pba-btns">
-          <button class="pba-btn-primary" id="pbaBtnPrimary" onclick="switchDashTab('app')">Analisar uma vaga →</button>
+          <button class="pba-btn-primary" id="pbaBtnPrimary" onclick="switchDashTab('app')">Analisar uma vaga</button>
           <button class="pba-btn-ghost" id="pbaBtnSecondary" onclick="openCandidaturasFiltered('todas')">Ver candidaturas</button>
         </div>
       </div>
       <div class="pba-right">
         <div class="pba-priority">
-          <div class="pba-priority-cargo" id="pbaCargo">—</div>
-          <div class="pba-priority-empresa" id="pbaEmpresa">—</div>
+          <div class="pba-job-meta">
+            <span class="pba-priority-kicker">Vaga em foco</span>
+            <div class="pba-priority-cargo" id="pbaCargo">—</div>
+            <div class="pba-priority-empresa" id="pbaEmpresa">—</div>
+          </div>
           <div class="pba-score-row">
             <div class="pba-ring-wrap">
               <!-- Os arcos externos são a arte do card, e nascem do próprio
@@ -2926,7 +2973,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
               </svg>
               <div class="pba-ring-inner" id="pbaScoreNum">—</div>
             </div>
-            <div>
+            <div class="pba-score-copy">
               <div class="pba-score-label" id="pbaScoreLabel">—</div>
               <div class="pba-score-sub" id="pbaScoreSub">—</div>
             </div>
@@ -2941,6 +2988,10 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
          alterar nenhum contrato dinâmico do painel. -->
     <div class="product-workspace">
     <div class="mat-section profile-value-section product-workspace-section">
+      <div class="workspace-section-label">
+        <h2>Seu currículo</h2>
+        <button class="workspace-section-link" onclick="switchDashTab('curriculo')">Abrir currículo</button>
+      </div>
       <div class="profile-value-stage">
         <div class="mat-strip" id="matStrip">
           <div class="pv-loading"><div class="pv-eyebrow">Seu ativo profissional</div><h2 class="pv-title">Carregando seu currículo...</h2><p class="pv-desc">Estamos reunindo sua base profissional e os sinais das vagas analisadas.</p></div>
@@ -3788,7 +3839,7 @@ function buildPBACard(analyses, tracked) {
     var iDateFmt = hasDate ? formatInterviewAt(interviewJob.interview_at) : '';
     if (titleEl) titleEl.textContent = 'Prepare-se para a entrevista de ' + cargo;
     if (descEl) descEl.textContent = (hasDate ? 'Entrevista em ' + iDateFmt + ' — ' + cargo + (emp ? ' na ' + emp : '') : 'Em processo de entrevista para ' + cargo + (emp ? ' na ' + emp : '')) + '. Use o simulador para chegar mais preparado e aumentar suas chances.';
-    if (btnPri) { btnPri.textContent = 'Treinar entrevista →'; (function(aid){ btnPri.onclick = function(){ switchDashTab('entrevista', '/entrevista' + (aid ? '?analysis_id=' + encodeURIComponent(aid) : '')); }; })(interviewJob.analysis_id); }
+    if (btnPri) { btnPri.textContent = 'Treinar entrevista'; (function(aid){ btnPri.onclick = function(){ switchDashTab('entrevista', '/entrevista' + (aid ? '?analysis_id=' + encodeURIComponent(aid) : '')); }; })(interviewJob.analysis_id); }
     if (btnSec) { btnSec.textContent = 'Ver candidatura'; (function(tid, aid){ btnSec.onclick = function(){ openCandidaturasSmart({ trackerId: tid, analysisId: aid, openDetail: true, view: 'lista' }); }; })(interviewJob.id, interviewJob.analysis_id); }
     updatePBAPriority(interviewJob.score || (a ? a.score : 0), cargo, emp || '', hasDate ? 'Entrevista marcada' : 'Em entrevista');
     return { analysisId: interviewJob.analysis_id || null, trackerId: interviewJob.id || null };
@@ -3798,7 +3849,7 @@ function buildPBACard(analyses, tracked) {
     var emp = followUpJob.empresa || '';
     if (titleEl) titleEl.textContent = 'Faça follow-up com ' + (emp || cargo);
     if (descEl) descEl.textContent = 'Você se candidatou há ' + followUpJob._days + ' dias e ainda não registrou um retorno. Um follow-up aumenta muito suas chances de resposta.';
-    if (btnPri) { btnPri.textContent = 'Registrar follow-up →'; (function(tid){ btnPri.onclick = function(){ openCandidaturaByTracker(tid, 'aplicada'); }; })(followUpJob.id); }
+    if (btnPri) { btnPri.textContent = 'Registrar follow-up'; (function(tid){ btnPri.onclick = function(){ openCandidaturaByTracker(tid, 'aplicada'); }; })(followUpJob.id); }
     if (btnSec) { btnSec.textContent = 'Ver candidaturas'; btnSec.onclick = function(){ openCandidaturasFiltered('aplicada'); }; }
     updatePBAPriority(followUpJob.score || (a ? a.score : 0), cargo, emp || '', followUpJob._days + ' dias sem retorno');
     return { analysisId: followUpJob.analysis_id || null, trackerId: followUpJob.id || null };
@@ -3826,9 +3877,13 @@ function buildPBACard(analyses, tracked) {
       /* Era "Faltam 10 coisas que esta vaga pede" — o maior texto do painel
          abria com um déficit. O fato é o mesmo; a moldura passa a ser o que
          dá para fazer com ele. */
-      titleEl.textContent = missing > 0
-        ? 'Cubra mais ' + missing + ' requisito' + (missing > 1 ? 's' : '') + ' desta vaga'
-        : 'Aumente seu score na vaga de ' + cargo;
+      if (missing > 0) {
+        titleEl.innerHTML = missing === 1
+          ? 'Cubra o <em>1 requisito</em> que ainda falta nesta vaga.'
+          : 'Cubra os <em>' + missing + ' requisitos</em> que ainda faltam nesta vaga.';
+      } else {
+        titleEl.textContent = 'Aumente seu score na vaga de ' + cargo;
+      }
     }
     if (descEl) {
       descEl.textContent = temVersao
@@ -3837,10 +3892,10 @@ function buildPBACard(analyses, tracked) {
     }
     if (btnPri) {
       if (temVersao) {
-        btnPri.textContent = 'Abrir o CV desta vaga →';
+        btnPri.textContent = 'Abrir o CV desta vaga';
         (function(aid){ btnPri.onclick = function(){ openSavedCv(aid); }; })(alvo.id);
       } else {
-        btnPri.textContent = 'Otimizar meu currículo →';
+        btnPri.textContent = 'Otimizar meu currículo';
         btnPri.onclick = function(){ switchDashTab('app'); };
       }
     }
@@ -3853,7 +3908,7 @@ function buildPBACard(analyses, tracked) {
   } else {
     if (titleEl) titleEl.textContent = 'Analise sua primeira vaga';
     if (descEl) descEl.textContent = 'Cole a descrição de uma vaga e seu currículo para receber diagnóstico completo de compatibilidade ATS.';
-    if (btnPri) { btnPri.textContent = 'Analisar uma vaga →'; btnPri.onclick = function(){ switchDashTab('app'); }; }
+    if (btnPri) { btnPri.textContent = 'Analisar uma vaga'; btnPri.onclick = function(){ switchDashTab('app'); }; }
     if (btnSec) btnSec.style.display = 'none';
     updatePBAPriority(0, '—', '—', 'Nenhuma análise ainda');
     return null;
@@ -3988,7 +4043,12 @@ function buildMaterialStrip() {
   var descricao = !cvData
     ? 'Crie sua base profissional para analisar oportunidades, receber vagas e preparar versões direcionadas.'
     : 'A base principal alimenta suas análises, cartas e entrevistas sem ser alterada pelas versões criadas para cada vaga.';
-  var acao = !cvData ? 'Criar meu currículo →' : faltam.length ? 'Completar currículo →' : 'Revisar currículo →';
+  var tituloEditorial = !cvData
+    ? 'Crie uma base profissional para direcionar sua busca.'
+    : pct === 100
+      ? 'Uma base completa para direcionar a cada oportunidade.'
+      : 'Fortaleça a base que direciona sua busca.';
+  var acao = !cvData ? 'Criar meu currículo' : faltam.length ? 'Completar currículo' : 'Revisar currículo';
 
   var rankingHtml = '';
   if (!cvData) {
@@ -4016,18 +4076,17 @@ function buildMaterialStrip() {
   strip.innerHTML =
     '<div class="pv-summary">' +
       '<div class="pv-summary-head">' +
-        '<div><div class="pv-eyebrow">Seu ativo profissional</div><h2 class="pv-title">Currículo principal</h2><p class="pv-desc">' + descricao + '</p></div>' +
-        '<button class="pv-link" onclick="switchDashTab(\'curriculo\')">Abrir currículo →</button>' +
-      '</div>' +
-      '<div class="pv-summary-grid">' +
+        '<div class="pv-summary-story"><div class="pv-eyebrow">Seu ativo profissional</div><h2 class="pv-title">' + tituloEditorial + '</h2><p class="pv-desc">' + descricao + '</p>' +
+          '<div class="pv-story-actions"><button class="pv-primary" onclick="switchDashTab(\'curriculo\')">' + acao + '</button>' + (quando ? '<span class="pv-updated">' + quando + '</span>' : '') + '</div></div>' +
         '<section class="pv-completion-block" role="img" aria-label="Completude do currículo: ' + pct + ' por cento">' +
           '<div class="pv-completion-row"><strong>' + pct + '%</strong><span>completude<br>do currículo</span></div>' +
           '<div class="pv-progress" style="--pv-progress:' + pct + '%"><i></i></div>' +
-          '<div class="pv-completion-foot"><span>' + (!cvData ? 'Currículo ainda não criado' : pct === 100 ? 'Base preenchida' : faltam.length + ' campo' + (faltam.length !== 1 ? 's' : '') + ' pendente' + (faltam.length !== 1 ? 's' : '')) + '</span>' + (quando ? '<span>' + quando + '</span>' : '') + '</div>' +
-          '<button class="pv-primary" onclick="switchDashTab(\'curriculo\')">' + acao + '</button>' +
+          '<div class="pv-completion-foot"><span>' + (!cvData ? 'Currículo ainda não criado' : pct === 100 ? 'Todos os campos essenciais preenchidos' : faltam.length + ' campo' + (faltam.length !== 1 ? 's' : '') + ' pendente' + (faltam.length !== 1 ? 's' : '')) + '</span></div>' +
         '</section>' +
-        '<section class="pv-panel pv-strength-panel"><div class="pv-panel-head"><div><h3>Forças em evidência</h3><p>Competências comprovadas na sua trajetória.</p></div></div>' + pvForcasHtml(forcas) + '</section>' +
-        '<section class="pv-panel pv-market-panel"><div class="pv-panel-head"><div><h3>O mercado está procurando</h3><p>' + (gaps.length ? 'Prioridade por recorrência nas vagas analisadas.' : 'Compare sua base com as vagas que interessam.') + '</p></div>' + marketAction + '</div>' + rankingHtml + '<div class="pv-market-foot"><span class="pv-version-count"><strong>' + versoes + '</strong> currículo' + (versoes !== 1 ? 's' : '') + ' por vaga</span>' + versionAction + '</div></section>' +
+      '</div>' +
+      '<div class="pv-summary-grid">' +
+        '<section class="pv-panel pv-strength-panel"><div class="pv-panel-head"><div><h3>Forças que sua trajetória já comprova</h3><p>Competências recorrentes nas vagas analisadas.</p></div></div>' + pvForcasHtml(forcas) + '</section>' +
+        '<section class="pv-panel pv-market-panel"><div class="pv-panel-head"><div><h3>Prioridades para evoluir</h3><p>' + (gaps.length ? 'Os termos mais recorrentes que ainda estão ausentes.' : 'Compare sua base com as vagas que interessam.') + '</p></div>' + marketAction + '</div>' + rankingHtml + '<div class="pv-market-foot"><span class="pv-version-count"><strong>' + versoes + '</strong> currículo' + (versoes !== 1 ? 's' : '') + ' por vaga</span>' + versionAction + '</div></section>' +
       '</div>' +
     '</div>';
 }
@@ -4065,7 +4124,7 @@ function ferCard(icone, nome, estado, acao, selo) {
     '<span class="fer-txt">' +
       '<span class="fer-nome">' + escHtml(nome) + (selo ? '<span class="fer-selo">' + escHtml(selo) + '</span>' : '') + '</span>' +
       '<span class="fer-estado">' + escHtml(estado) + '</span>' +
-    '</span><span class="fer-arrow" aria-hidden="true">→</span></button>';
+    '</span></button>';
 }
 
 function buildFerramentas() {
