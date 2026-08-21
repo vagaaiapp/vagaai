@@ -15,6 +15,16 @@ test('Perfil de valor integra currículo e ferramentas sem alterar as outras se�
   assert.doesNotMatch(dashboard, /dashboard-curriculo-premium-5-preview/);
 });
 
+test('painel mantém a copy anterior sem alterar a estrutura editorial atual', () => {
+  assert.match(dashboard, /Comece por aqui/);
+  assert.match(dashboard, /Cubra mais ' \+ missing \+ ' requisito/);
+  assert.match(dashboard, /var tituloEditorial = 'Currículo principal'/);
+  assert.match(dashboard, />Forças em evidência</);
+  assert.match(dashboard, />O mercado está procurando</);
+  assert.doesNotMatch(dashboard, /Sua próxima melhor ação/);
+  assert.doesNotMatch(dashboard, /Prioridades para evoluir/);
+});
+
 test('Início usa módulos com respiro sem romper os contratos dinâmicos', () => {
   assert.match(dashboard, /class="product-workspace"[\s\S]*?id="matStrip"[\s\S]*?id="ferStrip"[\s\S]*?id="funilPipe"[\s\S]*?id="oppList"[\s\S]*?\/product-workspace/);
   assert.match(dashboard, /\.product-workspace \.profile-value-stage,[\s\S]*?border:1px solid var\(--border\);[\s\S]*?border-radius:18px/);

@@ -2942,11 +2942,11 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     </div>
     <div class="pba-card">
       <div class="pba-left">
-        <div class="pba-eyebrow"><span class="pba-eyebrow-dot"></span>Sua próxima melhor ação</div>
+        <div class="pba-eyebrow"><span class="pba-eyebrow-dot"></span>Comece por aqui</div>
         <h2 class="pba-title" id="pbaTitle">Carregando...</h2>
         <p class="pba-desc" id="pbaDesc"> </p>
         <div class="pba-btns">
-          <button class="pba-btn-primary" id="pbaBtnPrimary" onclick="switchDashTab('app')">Analisar uma vaga</button>
+          <button class="pba-btn-primary" id="pbaBtnPrimary" onclick="switchDashTab('app')">Analisar uma vaga →</button>
           <button class="pba-btn-ghost" id="pbaBtnSecondary" onclick="openCandidaturasFiltered('todas')">Ver candidaturas</button>
         </div>
       </div>
@@ -3839,7 +3839,7 @@ function buildPBACard(analyses, tracked) {
     var iDateFmt = hasDate ? formatInterviewAt(interviewJob.interview_at) : '';
     if (titleEl) titleEl.textContent = 'Prepare-se para a entrevista de ' + cargo;
     if (descEl) descEl.textContent = (hasDate ? 'Entrevista em ' + iDateFmt + ' — ' + cargo + (emp ? ' na ' + emp : '') : 'Em processo de entrevista para ' + cargo + (emp ? ' na ' + emp : '')) + '. Use o simulador para chegar mais preparado e aumentar suas chances.';
-    if (btnPri) { btnPri.textContent = 'Treinar entrevista'; (function(aid){ btnPri.onclick = function(){ switchDashTab('entrevista', '/entrevista' + (aid ? '?analysis_id=' + encodeURIComponent(aid) : '')); }; })(interviewJob.analysis_id); }
+    if (btnPri) { btnPri.textContent = 'Treinar entrevista →'; (function(aid){ btnPri.onclick = function(){ switchDashTab('entrevista', '/entrevista' + (aid ? '?analysis_id=' + encodeURIComponent(aid) : '')); }; })(interviewJob.analysis_id); }
     if (btnSec) { btnSec.textContent = 'Ver candidatura'; (function(tid, aid){ btnSec.onclick = function(){ openCandidaturasSmart({ trackerId: tid, analysisId: aid, openDetail: true, view: 'lista' }); }; })(interviewJob.id, interviewJob.analysis_id); }
     updatePBAPriority(interviewJob.score || (a ? a.score : 0), cargo, emp || '', hasDate ? 'Entrevista marcada' : 'Em entrevista');
     return { analysisId: interviewJob.analysis_id || null, trackerId: interviewJob.id || null };
@@ -3849,7 +3849,7 @@ function buildPBACard(analyses, tracked) {
     var emp = followUpJob.empresa || '';
     if (titleEl) titleEl.textContent = 'Faça follow-up com ' + (emp || cargo);
     if (descEl) descEl.textContent = 'Você se candidatou há ' + followUpJob._days + ' dias e ainda não registrou um retorno. Um follow-up aumenta muito suas chances de resposta.';
-    if (btnPri) { btnPri.textContent = 'Registrar follow-up'; (function(tid){ btnPri.onclick = function(){ openCandidaturaByTracker(tid, 'aplicada'); }; })(followUpJob.id); }
+    if (btnPri) { btnPri.textContent = 'Registrar follow-up →'; (function(tid){ btnPri.onclick = function(){ openCandidaturaByTracker(tid, 'aplicada'); }; })(followUpJob.id); }
     if (btnSec) { btnSec.textContent = 'Ver candidaturas'; btnSec.onclick = function(){ openCandidaturasFiltered('aplicada'); }; }
     updatePBAPriority(followUpJob.score || (a ? a.score : 0), cargo, emp || '', followUpJob._days + ' dias sem retorno');
     return { analysisId: followUpJob.analysis_id || null, trackerId: followUpJob.id || null };
@@ -3874,16 +3874,9 @@ function buildPBACard(analyses, tracked) {
     // justamente no clique de maior intenção.
     var temVersao = !!r.cv_otimizado;
     if (titleEl) {
-      /* Era "Faltam 10 coisas que esta vaga pede" — o maior texto do painel
-         abria com um déficit. O fato é o mesmo; a moldura passa a ser o que
-         dá para fazer com ele. */
-      if (missing > 0) {
-        titleEl.innerHTML = missing === 1
-          ? 'Cubra o <em>1 requisito</em> que ainda falta nesta vaga.'
-          : 'Cubra os <em>' + missing + ' requisitos</em> que ainda faltam nesta vaga.';
-      } else {
-        titleEl.textContent = 'Aumente seu score na vaga de ' + cargo;
-      }
+      titleEl.textContent = missing > 0
+        ? 'Cubra mais ' + missing + ' requisito' + (missing > 1 ? 's' : '') + ' desta vaga'
+        : 'Aumente seu score na vaga de ' + cargo;
     }
     if (descEl) {
       descEl.textContent = temVersao
@@ -3892,10 +3885,10 @@ function buildPBACard(analyses, tracked) {
     }
     if (btnPri) {
       if (temVersao) {
-        btnPri.textContent = 'Abrir o CV desta vaga';
+        btnPri.textContent = 'Abrir o CV desta vaga →';
         (function(aid){ btnPri.onclick = function(){ openSavedCv(aid); }; })(alvo.id);
       } else {
-        btnPri.textContent = 'Otimizar meu currículo';
+        btnPri.textContent = 'Otimizar meu currículo →';
         btnPri.onclick = function(){ switchDashTab('app'); };
       }
     }
@@ -3908,7 +3901,7 @@ function buildPBACard(analyses, tracked) {
   } else {
     if (titleEl) titleEl.textContent = 'Analise sua primeira vaga';
     if (descEl) descEl.textContent = 'Cole a descrição de uma vaga e seu currículo para receber diagnóstico completo de compatibilidade ATS.';
-    if (btnPri) { btnPri.textContent = 'Analisar uma vaga'; btnPri.onclick = function(){ switchDashTab('app'); }; }
+    if (btnPri) { btnPri.textContent = 'Analisar uma vaga →'; btnPri.onclick = function(){ switchDashTab('app'); }; }
     if (btnSec) btnSec.style.display = 'none';
     updatePBAPriority(0, '—', '—', 'Nenhuma análise ainda');
     return null;
@@ -4043,12 +4036,8 @@ function buildMaterialStrip() {
   var descricao = !cvData
     ? 'Crie sua base profissional para analisar oportunidades, receber vagas e preparar versões direcionadas.'
     : 'A base principal alimenta suas análises, cartas e entrevistas sem ser alterada pelas versões criadas para cada vaga.';
-  var tituloEditorial = !cvData
-    ? 'Crie uma base profissional para direcionar sua busca.'
-    : pct === 100
-      ? 'Uma base completa para direcionar a cada oportunidade.'
-      : 'Fortaleça a base que direciona sua busca.';
-  var acao = !cvData ? 'Criar meu currículo' : faltam.length ? 'Completar currículo' : 'Revisar currículo';
+  var tituloEditorial = 'Currículo principal';
+  var acao = !cvData ? 'Criar meu currículo →' : faltam.length ? 'Completar currículo →' : 'Revisar currículo →';
 
   var rankingHtml = '';
   if (!cvData) {
@@ -4081,12 +4070,12 @@ function buildMaterialStrip() {
         '<section class="pv-completion-block" role="img" aria-label="Completude do currículo: ' + pct + ' por cento">' +
           '<div class="pv-completion-row"><strong>' + pct + '%</strong><span>completude<br>do currículo</span></div>' +
           '<div class="pv-progress" style="--pv-progress:' + pct + '%"><i></i></div>' +
-          '<div class="pv-completion-foot"><span>' + (!cvData ? 'Currículo ainda não criado' : pct === 100 ? 'Todos os campos essenciais preenchidos' : faltam.length + ' campo' + (faltam.length !== 1 ? 's' : '') + ' pendente' + (faltam.length !== 1 ? 's' : '')) + '</span></div>' +
+          '<div class="pv-completion-foot"><span>' + (!cvData ? 'Currículo ainda não criado' : pct === 100 ? 'Base preenchida' : faltam.length + ' campo' + (faltam.length !== 1 ? 's' : '') + ' pendente' + (faltam.length !== 1 ? 's' : '')) + '</span></div>' +
         '</section>' +
       '</div>' +
       '<div class="pv-summary-grid">' +
-        '<section class="pv-panel pv-strength-panel"><div class="pv-panel-head"><div><h3>Forças que sua trajetória já comprova</h3><p>Competências recorrentes nas vagas analisadas.</p></div></div>' + pvForcasHtml(forcas) + '</section>' +
-        '<section class="pv-panel pv-market-panel"><div class="pv-panel-head"><div><h3>Prioridades para evoluir</h3><p>' + (gaps.length ? 'Os termos mais recorrentes que ainda estão ausentes.' : 'Compare sua base com as vagas que interessam.') + '</p></div>' + marketAction + '</div>' + rankingHtml + '<div class="pv-market-foot"><span class="pv-version-count"><strong>' + versoes + '</strong> currículo' + (versoes !== 1 ? 's' : '') + ' por vaga</span>' + versionAction + '</div></section>' +
+        '<section class="pv-panel pv-strength-panel"><div class="pv-panel-head"><div><h3>Forças em evidência</h3><p>Competências comprovadas na sua trajetória.</p></div></div>' + pvForcasHtml(forcas) + '</section>' +
+        '<section class="pv-panel pv-market-panel"><div class="pv-panel-head"><div><h3>O mercado está procurando</h3><p>' + (gaps.length ? 'Prioridade por recorrência nas vagas analisadas.' : 'Compare sua base com as vagas que interessam.') + '</p></div>' + marketAction + '</div>' + rankingHtml + '<div class="pv-market-foot"><span class="pv-version-count"><strong>' + versoes + '</strong> currículo' + (versoes !== 1 ? 's' : '') + ' por vaga</span>' + versionAction + '</div></section>' +
       '</div>' +
     '</div>';
 }
