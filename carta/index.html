@@ -223,6 +223,97 @@ textarea::placeholder,input::placeholder{color:var(--muted)}
 }
 </style>
 <script>(function(){var t=localStorage.getItem('vagaai_theme');document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light')})()</script>
+<style id="carta-editorial-journey">
+/* Carta de apresentação — fluxo editorial aprovado. Os seletores ficam
+   limitados à página para não alterar o shell ou outras ferramentas. */
+body[data-vagaai-ui="cover-letter"] .container{max-width:1280px;padding:46px 38px 72px}
+.carta-intro{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:42px;align-items:end;margin-bottom:30px}
+.carta-eyebrow{display:flex;align-items:center;gap:8px;color:var(--green);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.carta-eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:#36c982}
+.carta-intro h1{font:700 clamp(34px,4vw,52px)/1.08 Lora,serif;letter-spacing:-.035em;max-width:760px;margin:0 0 13px}
+.carta-intro-copy{color:var(--muted);font-size:16px;line-height:1.72;max-width:740px;margin:0}
+.carta-journey{border-top:1px solid var(--border);padding-top:13px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.carta-journey .step-item{display:block;padding:0;border:0;background:transparent!important;text-align:left;color:var(--muted);font-size:11.5px;line-height:1.35}
+.carta-journey .step-num{display:block;width:auto;height:auto;background:none!important;color:var(--border);font:700 20px Lora,serif;margin:0 0 4px;justify-content:flex-start}
+.carta-journey .step-item strong{display:block;color:var(--text);font-size:13px;margin-bottom:2px}
+.carta-journey .step-item.active .step-num,.carta-journey .step-item.active strong{color:var(--green)}
+.carta-journey .step-item.done .step-num,.carta-journey .step-item.done strong{color:var(--green)}
+.carta-workspace{background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:0 18px 45px rgba(17,52,32,.08);overflow:hidden}
+[data-theme="dark"] .carta-workspace{box-shadow:0 22px 52px rgba(0,0,0,.26)}
+.carta-workspace-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(350px,.75fr)}
+.carta-form-side{padding:34px 38px 38px;min-width:0}
+.carta-section-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px}
+.carta-section-heading h2{font:700 24px/1.25 Lora,serif;letter-spacing:-.02em;margin:0 0 4px}
+.carta-section-heading p{color:var(--muted);font-size:14px;margin:0}
+.carta-section-number{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);display:grid;place-items:center;color:var(--green);font:700 15px Lora,serif;flex:none}
+.carta-job-source{margin-bottom:30px}
+.carta-job-entry{border:1px solid var(--border);background:var(--surface2);border-radius:13px;padding:16px}
+.carta-job-source.has-job .carta-job-entry{display:none}
+.carta-job-entry .url-row{gap:9px}.carta-job-entry .url-input{min-height:46px;background:var(--surface);font-size:14px}
+.carta-job-entry .btn-fetch{min-height:46px;padding-inline:18px;background:var(--surface);color:var(--text)}
+.carta-job-entry .or-divider{font-size:12px;margin:12px 0}
+.carta-job-entry textarea{min-height:116px;background:var(--surface);font-size:14px}
+.job-preview{display:none;margin:0;border:1px solid var(--green-border);background:var(--green-dim);border-radius:14px;padding:18px}
+.job-preview.show{display:grid;grid-template-columns:1fr auto;gap:7px 20px;align-items:center}
+.job-preview-header{grid-column:1/-1;margin:0 0 3px}.job-preview-badge{font-size:11px;background:transparent;border:0;padding:0;letter-spacing:.03em}
+.job-preview-edit{font-size:12px;text-decoration:none;color:var(--green);font-weight:700}
+.job-preview-title{font-size:17px;margin:0}.job-preview-company{font-size:13px;margin:0}.job-preview-chips{grid-column:1/-1;margin:2px 0 0}.job-preview-excerpt{grid-column:1/-1;font-size:12.5px;line-height:1.55;margin-top:3px}
+.carta-job-actions{display:none;gap:18px;margin:12px 0 0 18px}.carta-job-source.has-job .carta-job-actions{display:flex}
+.carta-text-action{border:0;background:none;color:var(--green);font-size:12.5px;font-weight:700;padding:0}
+.carta-text-action.secondary{color:var(--muted)}
+.carta-cv-source{border-top:1px solid var(--border);padding-top:27px;margin-bottom:28px}
+.carta-cv-row{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:11px}
+.carta-cv-row h3{font-size:14px;margin:0 0 2px}.carta-cv-row p{font-size:12px;color:var(--muted);margin:0}
+.carta-cv-row .cv-saved-link{font-size:12px;white-space:nowrap;color:var(--green)}
+.carta-cv-source #cvInput{min-height:128px;background:var(--surface2);font-size:14px}
+.carta-cv-source .upload-row{margin:10px 0 0}.carta-cv-source .upload-btn{font-size:12px;padding:7px 11px}.carta-cv-source .upload-hint{font-size:12px}
+.carta-cv-source .cv-received{border-radius:11px;padding:11px 13px;margin:0 0 10px;background:var(--green-dim)}
+.carta-direction{border-top:1px solid var(--border);padding-top:29px}
+.carta-direction label{display:block;color:var(--text);font-size:14px;font-weight:800;letter-spacing:0;text-transform:none;margin-bottom:6px}
+.carta-direction .carta-porque-dica{font-size:12.5px;margin:0 0 11px;color:var(--muted)}
+.carta-direction #porqueInput{min-height:105px;background:var(--surface2);font-size:14.5px;line-height:1.65}
+.carta-settings{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+.carta-setting-label{display:block;font-size:13px;font-weight:800;margin-bottom:8px}
+.carta-settings .tom-row{display:flex;border:1px solid var(--border);border-radius:10px;padding:4px;background:var(--surface2);gap:0}
+.carta-settings .tom-btn{border:0;background:transparent;color:var(--muted);border-radius:7px;padding:9px 6px;font-size:12px;font-weight:800}
+.carta-settings .tom-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 5px rgba(9,35,20,.08)}
+.carta-cv-connected{border:1px solid var(--border);border-radius:10px;padding:9px 11px;display:flex;align-items:center;gap:9px;min-height:46px;font-size:12px;color:var(--muted)}
+.carta-cv-connected-icon{width:22px;height:22px;border-radius:50%;background:var(--green-dim);display:grid;place-items:center;color:var(--green);font-weight:900;flex:none}
+.carta-submit-row{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:25px}
+.carta-trust{display:flex;gap:7px;color:var(--muted);font-size:12px;max-width:270px}
+.carta-submit-row .btn-generate{width:auto;min-width:220px;margin:0;padding:14px 20px;min-height:50px;background:var(--green);color:#fff;border-radius:11px;box-shadow:0 9px 22px rgba(23,130,78,.2)}
+.carta-submit-row .btn-generate:hover{filter:brightness(.94)}
+.carta-context-side{background:linear-gradient(150deg,#071c12,#0d3b27);color:#fff;padding:34px;position:relative;overflow:hidden;min-width:0}
+.carta-context-side::after{content:"";position:absolute;width:300px;height:300px;border:1px solid rgba(83,224,151,.13);border-radius:50%;right:-150px;top:-170px;box-shadow:0 0 0 48px rgba(83,224,151,.035),0 0 0 96px rgba(83,224,151,.025)}
+.carta-context-side .rd-hero{padding:0 0 25px;border:0;position:relative;z-index:1}
+.carta-context-side .rd-eyebrow{font-size:11px;margin-bottom:9px;color:#50d894}
+body[data-vagaai-ui="cover-letter"] .carta-context-side .rd-title{font:700 28px/1.22 Lora,serif;letter-spacing:-.02em;color:#fff;max-width:390px;margin-bottom:10px}
+body[data-vagaai-ui="cover-letter"] .carta-context-side .rd-sub{color:rgba(225,242,232,.67);font-size:13.5px;line-height:1.65}
+.carta-context-side .rd-body{padding:0;position:relative;z-index:1;border-top:1px solid rgba(255,255,255,.12)}
+.carta-intel-row{padding:17px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+.carta-intel-row>span{display:block;color:rgba(219,239,227,.53);font-size:10.5px;font-weight:700;letter-spacing:.03em;margin-bottom:8px}
+.carta-intel-row strong{font-size:14px;color:#fff}
+.carta-signal-list{display:flex;flex-wrap:wrap;gap:7px}.carta-signal{border:1px solid rgba(91,218,153,.27);background:rgba(70,207,138,.1);color:#b9efd2;border-radius:99px;padding:5px 9px;font-size:11.5px;font-weight:700}.carta-signal.gap{border-color:rgba(255,197,93,.28);background:rgba(255,197,93,.1);color:#ffdc99}.carta-signal.empty{border-style:dashed;color:rgba(229,243,235,.52);background:transparent}
+.carta-confidence{display:flex;gap:10px;align-items:flex-start;margin-top:22px;padding:14px 15px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.09);border-radius:11px;color:rgba(229,243,235,.68);font-size:12px;line-height:1.55}.carta-confidence strong{color:#fff}
+.carta-loading-state{display:none;min-height:520px;align-items:center;justify-content:center;text-align:center;padding:50px;background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:0 18px 45px rgba(17,52,32,.08)}
+.carta-loading-state.show{display:flex}.carta-loading-inner{max-width:520px}.carta-loading-visual .spinner{--rocket-loader-w:120px;--rocket-loader-h:126px;margin:0 auto 16px!important}.carta-loading-state h2{font:700 29px/1.25 Lora,serif;margin:0 0 8px}.carta-loading-state p{color:var(--muted);font-size:14px;margin:0}.carta-loading-progress{height:4px;background:var(--border);border-radius:99px;overflow:hidden;margin:24px auto 0;max-width:420px}.carta-loading-progress::after{content:"";display:block;height:100%;width:45%;background:#36c982;border-radius:inherit;animation:cartaProgress 1.5s ease-in-out infinite}@keyframes cartaProgress{0%{transform:translateX(-110%)}100%{transform:translateX(260%)}}
+.carta-result-workspace{display:none;background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:0 18px 45px rgba(17,52,32,.08);overflow:hidden}.carta-result-workspace.show{display:block}
+.carta-result-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(330px,.65fr)}
+.carta-letter,.carta-result-insight{min-width:0}.carta-letter{padding:36px 40px 42px}.carta-result-header{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:24px}.carta-result-header h2{font:700 30px/1.2 Lora,serif;margin:0 0 5px}.carta-result-context{color:var(--muted);font-size:13px}.rd-carta-actions{display:flex;gap:8px}.rd-carta-actions button{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:9px;padding:10px 13px;font-size:12px;font-weight:800}.rd-carta-actions button:hover{border-color:var(--green);color:var(--green)}
+.carta-letter .fmt-tabs{display:flex;gap:22px;border:0;border-bottom:1px solid var(--border);border-radius:0;background:none;padding:0;margin:0 0 23px;max-width:100%;overflow-x:auto}.carta-letter .fmt-tab{flex:0 0 auto;border:0;background:none;color:var(--muted);padding:0 0 11px;font-size:13px;font-weight:800;border-bottom:2px solid transparent;border-radius:0;box-shadow:none}.carta-letter .fmt-tab.on{background:none;color:var(--green);border-color:var(--green);box-shadow:none}
+.carta-letter .rd-subject{margin:0 0 21px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;font-size:13px;color:var(--muted)}.carta-letter .rd-subject strong{color:var(--text)}
+.carta-letter .fmt-dica{font-size:12px;color:var(--muted);margin:-12px 0 15px}.carta-letter .rd-text{margin:0;background:none;border:0;border-radius:0;padding:0;min-height:220px;font-size:16px;line-height:1.86;color:var(--text);white-space:pre-line}.carta-letter .rd-word-count{border-top:1px solid var(--border);margin-top:26px;padding:13px 0 0;color:var(--muted);font-size:12px;text-align:left}
+.carta-result-insight{background:var(--surface2);border-left:1px solid var(--border);padding:35px 30px}.carta-result-insight h3{font:700 23px/1.25 Lora,serif;margin:0 0 8px}.carta-result-insight>p{color:var(--muted);font-size:13px;line-height:1.6;margin:0}.carta-result-insight .carta-eyebrow{margin-bottom:8px}
+.carta-result-insight .rd-prova{display:grid;gap:0;margin:25px 0 0}.carta-result-insight .rd-prova-item{display:block;border:0;border-top:1px solid var(--border);border-radius:0;background:none;color:var(--text);padding:14px 0;font-size:12.5px;line-height:1.5}.carta-result-insight .rd-prova-item::before{content:"✓";color:var(--green);font-weight:900;margin-right:8px}.carta-result-insight .rd-prova-item.lacuna{color:var(--text);background:none}
+.carta-result-insight .rd-highlights{padding:0;margin-top:12px}.carta-result-insight .rd-highlights-title{font-size:12px;color:var(--muted);letter-spacing:0;text-transform:none;margin-bottom:8px}.carta-result-insight .highlight-tag{display:block;border:0;background:none;color:var(--text);padding:7px 0;margin:0;font-size:12px}.carta-result-insight .highlight-tag::first-letter{color:var(--green)}
+.carta-new-letter{width:100%;margin-top:24px;border:1px solid var(--border);background:var(--surface);color:var(--green);border-radius:10px;padding:12px;font-weight:800}
+.hist-box{margin-top:34px;border:1px solid var(--border);border-radius:14px;padding:0;background:var(--surface);overflow:hidden}
+.hist-box::before{content:"Cartas anteriores";display:block;font:700 24px Lora,serif;padding:22px 22px 0}.hist-titulo{display:none}.hist-sub{font-size:13px;opacity:1;color:var(--muted);padding:2px 22px 15px;margin:0;border-bottom:1px solid var(--border)}.hist-lista{gap:0;max-height:none}.hist-item{border:0;border-bottom:1px solid var(--border);border-radius:0;padding:17px 22px}.hist-item:last-child{border-bottom:0}.hist-item:hover{background:var(--surface2);border-color:var(--border)}.hist-item-cargo{font-size:14px}.hist-item-meta{font-size:12px;color:var(--muted);opacity:1}.hist-item-abrir{font-size:12px;color:var(--green)}
+.error-box{font-size:13px;border-radius:9px;margin-top:16px}
+@media(max-width:1080px){.carta-intro{grid-template-columns:1fr}.carta-journey{max-width:520px}.carta-workspace-grid,.carta-result-grid{grid-template-columns:1fr}.carta-result-insight{border-left:0;border-top:1px solid var(--border)}.carta-context-side{min-height:auto}}
+@media(max-width:760px){body[data-vagaai-ui="cover-letter"] .container{padding:28px 16px 58px}.carta-intro{gap:24px}.carta-intro h1{font-size:36px}.carta-intro-copy{font-size:15px}.carta-journey{gap:6px}.carta-journey .step-item{font-size:10px}.carta-journey .step-item strong{font-size:11.5px}.carta-workspace,.carta-loading-state,.carta-result-workspace{border-radius:14px}.carta-form-side,.carta-context-side,.carta-letter,.carta-result-insight{padding:24px 20px}.carta-section-heading h2{font-size:22px}.job-preview.show{grid-template-columns:1fr}.job-preview-edit{justify-self:start}.carta-job-actions{margin-left:0;flex-wrap:wrap}.carta-settings{grid-template-columns:1fr}.carta-submit-row{align-items:stretch;flex-direction:column-reverse}.carta-submit-row .btn-generate{width:100%}.carta-trust{max-width:none}.carta-context-side{order:-1}.carta-result-header{flex-direction:column}.carta-result-header h2{font-size:27px}.rd-carta-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.rd-carta-actions button{min-width:0}.carta-letter .fmt-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;overflow:visible}.carta-letter .fmt-tab{white-space:normal;font-size:11.5px;line-height:1.3;min-height:49px;padding:7px 3px}.carta-letter .rd-text{font-size:15px}.hist-box::before{font-size:22px}.url-row{flex-direction:column}.carta-job-entry .btn-fetch{width:100%}}
+@media(prefers-reduced-motion:reduce){.carta-loading-progress::after{animation:none;width:100%}}
+</style>
 <link rel="stylesheet" href="/assets/product-ui.css?v=20260821-editorial1">
 </head>
 <body data-vagaai-ui="cover-letter">
@@ -234,7 +325,7 @@ textarea::placeholder,input::placeholder{color:var(--muted)}
   <div class="breadcrumb-nav">
     <a href="/dashboard?tab=carta">Carta para vaga</a>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    <span class="bc-active" id="stepLabel">Inserir dados</span>
+    <span class="bc-active" id="stepLabel">Preparar carta</span>
   </div>
   <div class="nav-right">
     <span class="nav-badge-pro" id="planBadge" style="display:none">Pro</span>
@@ -257,149 +348,87 @@ textarea::placeholder,input::placeholder{color:var(--muted)}
 
   <!-- MAIN -->
   <div id="mainSection" style="display:none">
-    <div class="steps-bar">
-      <div class="step-item active" id="stepItem1"><span class="step-num">1</span> Inserir dados</div>
-      <div class="step-item" id="stepItem2"><span class="step-num">2</span> Gerando carta</div>
-      <div class="step-item" id="stepItem3"><span class="step-num">3</span> Carta pronta</div>
-    </div>
-
-    <div class="two-col">
-      <!-- Inputs -->
+    <section class="carta-intro">
       <div>
-        <div class="card">
-          <div class="card-title">Dados</div>
-          <div class="field">
-            <label>Descrição da vaga</label>
-            <div class="url-row">
-              <input type="url" class="url-input" id="jobUrl" placeholder="Cole o link da vaga…" autocomplete="off">
-              <button class="btn-fetch" id="fetchBtn" onclick="fetchJobUrl()">Carregar</button>
-            </div>
-            <div class="fetch-status" id="fetchStatus"></div>
+        <div class="carta-eyebrow">Carta para vaga</div>
+        <h1>Uma carta com contexto — e com a sua voz.</h1>
+        <p class="carta-intro-copy">Partimos da análise da vaga e do seu currículo. Você acrescenta a motivação; a VagaAI organiza o argumento sem inventar experiências.</p>
+      </div>
+      <div class="carta-journey" aria-label="Etapas da carta">
+        <div class="step-item active" id="stepItem1"><span class="step-num">01</span><strong>Contexto</strong><span>Vaga e currículo</span></div>
+        <div class="step-item" id="stepItem2"><span class="step-num">02</span><strong>Direção</strong><span>Tom e motivação</span></div>
+        <div class="step-item" id="stepItem3"><span class="step-num">03</span><strong>Carta</strong><span>Revisar e usar</span></div>
+      </div>
+    </section>
+
+    <section class="carta-workspace" id="preparationWorkspace">
+      <div class="carta-workspace-grid">
+        <div class="carta-form-side">
+          <div class="carta-section-heading"><div><h2>Use uma análise como ponto de partida.</h2><p>Assim a carta nasce específica para a oportunidade.</p></div><span class="carta-section-number">1</span></div>
+          <div class="carta-job-source" id="jobSourceBlock">
             <div class="job-preview" id="jobPreview">
-              <div class="job-preview-header">
-                <span class="job-preview-badge">✓ Vaga carregada</span>
-                <button class="job-preview-edit" onclick="showJobTextArea()">editar texto →</button>
-              </div>
-              <div class="job-preview-title" id="jpTitle"></div>
-              <div class="job-preview-company" id="jpCompany"></div>
-              <div class="job-preview-chips" id="jpChips"></div>
-              <div class="job-preview-excerpt" id="jpExcerpt"></div>
+              <div class="job-preview-header"><span class="job-preview-badge">✓ Análise conectada</span><button class="job-preview-edit" type="button" onclick="showJobTextArea()">Editar vaga →</button></div>
+              <div><div class="job-preview-title" id="jpTitle"></div><div class="job-preview-company" id="jpCompany"></div></div>
+              <div class="job-preview-chips" id="jpChips"></div><div class="job-preview-excerpt" id="jpExcerpt"></div>
             </div>
-            <div id="jobTextWrap">
-              <div class="or-divider"><span>ou cole o texto abaixo</span></div>
-              <textarea id="jobInput" rows="3" placeholder="Cole o texto completo da vaga..."></textarea>
+            <div class="carta-job-entry">
+              <div class="url-row"><input type="url" class="url-input" id="jobUrl" placeholder="Cole o link da vaga…" autocomplete="off"><button class="btn-fetch" id="fetchBtn" type="button" onclick="fetchJobUrl()">Carregar vaga</button></div>
+              <div class="fetch-status" id="fetchStatus"></div>
+              <div id="jobTextWrap"><div class="or-divider"><span>ou cole o texto completo</span></div><textarea id="jobInput" rows="4" placeholder="Cargo, empresa, responsabilidades e requisitos da oportunidade..."></textarea></div>
             </div>
+            <div class="carta-job-actions"><button class="carta-text-action" type="button" onclick="showJobTextArea()">Usar link ou texto da vaga</button><button class="carta-text-action secondary" type="button" onclick="document.getElementById('jobUrl').focus()">Trocar oportunidade</button></div>
           </div>
-          <div class="field">
-            <div class="cv-label-row">
-              <label>Seu currículo</label>
-              <a href="#" class="cv-saved-link" id="cvSavedLink" style="display:none" onclick="loadSavedCv(event)">Usar currículo salvo</a>
-            </div>
-            <div class="upload-row">
-              <label class="upload-btn" for="cvFileInput">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Enviar arquivo
-              </label>
-              <input type="file" id="cvFileInput" accept=".txt,.pdf,.doc,.docx" style="display:none" onchange="handleCvFile(this)">
-              <span class="upload-hint">PDF, Word ou TXT</span>
-            </div>
-            <div class="upload-progress" id="uploadProgress"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
-            <span class="upload-status" id="uploadStatus"><span id="uploadStatusText"></span></span>
-            <div class="cv-received" id="cvReceived">
-              <div class="cv-received-info">
-                <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-                <div class="cv-received-name" id="cvReceivedName"></div>
-              </div>
-              <button class="cv-received-remove" title="Remover arquivo" onclick="removeCvFile()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-            </div>
-            <textarea id="cvInput" rows="7" placeholder="Cole o conteúdo do seu currículo..."></textarea>
+
+          <div class="carta-cv-source">
+            <div class="carta-cv-row"><div><h3>Fonte profissional</h3><p>O conteúdo usado para comprovar sua experiência.</p></div><a href="#" class="cv-saved-link" id="cvSavedLink" style="display:none" onclick="loadSavedCv(event)">Usar currículo principal</a></div>
+            <div class="cv-received" id="cvReceived"><div class="cv-received-info"><div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="cv-received-name" id="cvReceivedName"></div></div><button class="cv-received-remove" title="Remover currículo" type="button" onclick="removeCvFile()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+            <textarea id="cvInput" rows="6" placeholder="Cole o conteúdo do seu currículo..."></textarea>
+            <div class="upload-row"><label class="upload-btn" for="cvFileInput"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Enviar outro arquivo</label><input type="file" id="cvFileInput" accept=".txt,.pdf,.doc,.docx" style="display:none" onchange="handleCvFile(this)"><span class="upload-hint">PDF, Word ou TXT</span></div>
+            <div class="upload-progress" id="uploadProgress"><div class="upload-progress-bar" id="uploadProgressBar"></div></div><span class="upload-status" id="uploadStatus"><span id="uploadStatusText"></span></span>
           </div>
-          <div class="field">
-            <label>Tom da carta</label>
-            <div class="tom-row">
-              <button class="tom-btn active" id="tom-direto" onclick="setTom('direto')">Direto</button>
-              <button class="tom-btn" id="tom-formal" onclick="setTom('formal')">Formal</button>
-              <button class="tom-btn" id="tom-criativo" onclick="setTom('criativo')">Criativo</button>
+
+          <div class="carta-direction">
+            <div class="carta-section-heading"><div><h2>Dê a direção humana da carta.</h2><p>Uma frase sua já muda o resultado.</p></div><span class="carta-section-number">2</span></div>
+            <label for="porqueInput">Por que essa vaga faz sentido para você? <span style="font-weight:500;color:var(--muted)">Opcional</span></label>
+            <div class="carta-porque-dica">Pode escrever de forma simples. Nós organizamos sem mudar o que você quis dizer.</div>
+            <textarea id="porqueInput" rows="3" maxlength="400" placeholder="Ex.: Quero levar minha experiência em campanhas e dados para uma empresa em crescimento..."></textarea>
+            <div class="carta-settings">
+              <div><span class="carta-setting-label">Tom da carta</span><div class="tom-row"><button class="tom-btn active" id="tom-direto" type="button" onclick="setTom('direto')">Direto</button><button class="tom-btn" id="tom-formal" type="button" onclick="setTom('formal')">Formal</button><button class="tom-btn" id="tom-criativo" type="button" onclick="setTom('criativo')">Criativo</button></div></div>
+              <div><span class="carta-setting-label">Currículo conectado</span><div class="carta-cv-connected"><span class="carta-cv-connected-icon">✓</span><span><strong id="cvConnectionTitle">Currículo pronto para uso</strong><br><span id="cvConnectionStatus">Confira ou substitua acima</span></span></div></div>
             </div>
+            <div class="error-box" id="errorBox"></div>
+            <div class="carta-submit-row"><div class="carta-trust"><span>♢</span><span>Usamos somente informações do seu currículo e da vaga.</span></div><button class="btn-generate" id="btnGenerate" type="button" onclick="generate()">Criar minha carta <span>→</span></button></div>
           </div>
-          <div class="field carta-porque">
-            <label>Por que essa vaga te interessa? <span style="font-weight:400;color:var(--muted)">— opcional</span></label>
-            <textarea id="porqueInput" rows="2" maxlength="400" placeholder="Uma frase basta. Pode escrever mal, a gente ajeita."></textarea>
-            <!-- E a unica coisa que a IA nao tem como inventar. Recrutador
-                 identifica carta automatica pela ausencia de especificidade, nao
-                 pelo uso de IA — e opcional de proposito, para nao criar atrito
-                 num formulario que hoje tem dois campos. -->
-            <div class="carta-porque-dica">Sem isso a carta sai boa. Com isso, ela sai sua.</div>
-          </div>
-          <div class="error-box" id="errorBox"></div>
-          <button class="btn-generate" id="btnGenerate" onclick="generate()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            Gerar carta de apresentação
-          </button>
         </div>
 
-        <!-- Cartas ja escritas. Fica na coluna de entrada porque e alternativa
-             a gerar uma nova, nao complemento do resultado. -->
-        <div class="hist-box" id="histCartas" style="display:none"></div>
-      </div>
-
-      <!-- Result / info panel -->
-      <div>
-        <div class="right-dark">
-          <div class="rd-hero">
-            <div class="rd-eyebrow">IA generativa</div>
-            <div class="rd-title">Uma carta escrita para esta vaga, não para qualquer vaga.</div>
-            <div class="rd-sub">A IA lê a vaga, cruza com seu currículo e escreve uma carta que destaca exatamente o que o recrutador quer ver.</div>
-          </div>
-          <!-- Checklist (visível antes de gerar) -->
+        <aside class="carta-context-side">
+          <div class="rd-hero"><div class="rd-eyebrow">Base desta carta</div><div class="rd-title">O que a análise já sabe sobre esta candidatura.</div><div class="rd-sub">Você não precisa repetir dados que a VagaAI já encontrou. Revise apenas o que será usado para construir o argumento.</div></div>
           <div class="rd-body" id="rdChecklist">
-            <div class="rd-check">
-              <div class="rd-check-icon"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
-              <div><div class="rd-check-title">Personalizada para o cargo</div><div class="rd-check-desc">Menciona empresa, cargo e requisitos específicos da vaga</div></div>
-            </div>
-            <div class="rd-check">
-              <div class="rd-check-icon"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
-              <div><div class="rd-check-title">Baseada no seu perfil</div><div class="rd-check-desc">Usa suas experiências e competências reais do currículo</div></div>
-            </div>
-            <div class="rd-check">
-              <div class="rd-check-icon"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
-              <div><div class="rd-check-title">Pronta para enviar</div><div class="rd-check-desc">Copie ou baixe — sem ajustes manuais necessários</div></div>
-            </div>
-            <div class="rd-empty">
-              <div class="rd-empty-icon">✉️</div>
-              <div class="rd-empty-txt">Preencha os campos e clique em "Gerar"<br>para ver a carta aqui</div>
-            </div>
+            <div class="carta-intel-row"><span>VAGA ESCOLHIDA</span><strong id="cartaContextJob">Adicione uma oportunidade para começar</strong></div>
+            <div class="carta-intel-row"><span>FORÇAS COMPROVADAS NO CURRÍCULO</span><div class="carta-signal-list" id="cartaContextStrengths"><span class="carta-signal empty">Aparecem após conectar uma análise</span></div></div>
+            <div class="carta-intel-row"><span>PONTOS QUE EXIGEM HONESTIDADE</span><div class="carta-signal-list" id="cartaContextGaps"><span class="carta-signal empty">Aparecem após conectar uma análise</span></div></div>
+            <div class="carta-confidence"><span>✓</span><span><strong>Regra de confiança</strong><br>A carta nunca afirmará uma experiência que não aparece no seu currículo.</span></div>
           </div>
-          <!-- Carta gerada (visível após gerar) -->
-          <div class="rd-carta-wrap" id="rdCartaWrap">
-            <div class="rd-carta-header">
-              <div class="rd-carta-title" id="resultAssunto"></div>
-              <div class="rd-carta-actions">
-                <button onclick="copyCarta()">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                  Copiar
-                </button>
-                <button onclick="downloadCarta()">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  .txt
-                </button>
-              </div>
-            </div>
-            <div class="rd-subject" id="subjectBox"></div>
-            <div class="fmt-tabs" id="fmtTabs" style="display:none">
-              <button class="fmt-tab on" data-fmt="carta" onclick="setFormato('carta')">E-mail</button>
-              <button class="fmt-tab" data-fmt="curta" onclick="setFormato('curta')">Formulário</button>
-              <button class="fmt-tab" data-fmt="mensagem" onclick="setFormato('mensagem')">LinkedIn</button>
-            </div>
-            <div class="fmt-dica" id="fmtDica"></div>
-            <div class="rd-text" id="letterText"></div>
-            <div class="rd-prova" id="provaWrap"></div>
-            <div class="rd-word-count" id="wordCount"></div>
-            <div class="rd-highlights" id="highlightsWrap"></div>
-          </div>
-        </div>
+        </aside>
       </div>
-    </div>
+    </section>
+
+    <section class="carta-loading-state" id="generationState" aria-live="polite">
+      <div class="carta-loading-inner"><div class="carta-loading-visual"><div class="spinner" aria-hidden="true"></div></div><h2>Conectando sua experiência ao que a vaga pede.</h2><p>Estamos selecionando os argumentos mais fortes e preservando a sua motivação.</p><div class="carta-loading-progress"></div></div>
+    </section>
+
+    <section class="carta-result-workspace rd-carta-wrap" id="rdCartaWrap">
+      <div class="carta-result-grid">
+        <article class="carta-letter">
+          <div class="carta-result-header"><div><h2>Sua carta está pronta para revisão.</h2><div class="carta-result-context" id="resultAssunto"></div></div><div class="rd-carta-actions"><button type="button" onclick="copyCarta()">Copiar</button><button type="button" onclick="downloadCarta()">Baixar</button></div></div>
+          <div class="fmt-tabs" id="fmtTabs" style="display:none"><button class="fmt-tab on" data-fmt="carta" type="button" onclick="setFormato('carta')">Carta completa</button><button class="fmt-tab" data-fmt="curta" type="button" onclick="setFormato('curta')">Campo de formulário</button><button class="fmt-tab" data-fmt="mensagem" type="button" onclick="setFormato('mensagem')">Mensagem no LinkedIn</button></div>
+          <div class="rd-subject" id="subjectBox"></div><div class="fmt-dica" id="fmtDica"></div><div class="rd-text" id="letterText"></div><div class="rd-word-count" id="wordCount"></div>
+        </article>
+        <aside class="carta-result-insight"><div class="carta-eyebrow">Leitura da carta</div><h3>O que esta versão conseguiu fazer.</h3><p>Uma devolutiva objetiva para você revisar com confiança antes de enviar.</p><div class="rd-prova" id="provaWrap"></div><div class="rd-highlights" id="highlightsWrap"></div><button class="carta-new-letter" type="button" onclick="novaCarta()">Preparar outra carta</button></aside>
+      </div>
+    </section>
+
+    <div class="hist-box" id="histCartas" style="display:none"></div>
   </div>
 
 </div>
@@ -440,6 +469,7 @@ var _cartaEmpresa = '';
 var _cartaFormatos = {};
 var _formatoAtivo = 'carta';
 var _cartaAssunto = '';
+var _cartaPalavras = 0;
 var _autoGenerateFromAnalysis = false;
 
 // Retorna um access_token válido, renovando a sessão se expirou. _session é
@@ -490,6 +520,14 @@ async function getFreshToken() {
       _cvBase = await window.VagaAICv.carregarBase(sb, _session.user.id);
       if (_cvBase) { var link = document.getElementById('cvSavedLink'); if (link) link.style.display = ''; }
       await loadCartaContext();
+      // A fonte principal já pertence à conta. Se a análise não trouxe uma
+      // versão própria, conecta o currículo base em vez de obrigar novo upload.
+      if (_cvBase && document.getElementById('cvInput').value.trim().length < 50) {
+        var baseText = window.VagaAICv.cvParaTextoLegivel(_cvBase);
+        if (baseText) setCvText(baseText, _cvBase.nome ? 'Currículo - ' + _cvBase.nome : 'Currículo principal');
+      }
+      updateCvConnection();
+      updateCartaIntelligence();
     }
   } catch(e) {
     document.getElementById('gateSection').style.display = 'block';
@@ -580,6 +618,7 @@ function setCvText(text, source) {
   if (!text) return;
   document.getElementById('cvInput').value = text;
   showCvReceived(_inferCvLabel(text, source));
+  updateCvConnection();
 }
 
 async function loadCartaContext() {
@@ -615,8 +654,11 @@ async function loadCartaContext() {
           var preview = extractJobPreview(jobText, '');
           var r = analysis.result || {};
           var ji = r.job_info || {};
-          if (!preview.cargo && (ji.cargo || r.cargo)) preview.cargo = ji.cargo || r.cargo;
-          if (!preview.empresa && (ji.empresa || r.empresa)) preview.empresa = ji.empresa || r.empresa;
+          // A análise já possui cargo e empresa estruturados. Esses campos são
+          // mais confiáveis que inferir os rótulos do texto montado acima.
+          if (ji.cargo || r.cargo) preview.cargo = ji.cargo || r.cargo;
+          if (ji.empresa || r.empresa) preview.empresa = ji.empresa || r.empresa;
+          if (analysis.job_excerpt || r.job_excerpt) preview.excerpt = analysis.job_excerpt || r.job_excerpt;
           showJobPreview(preview);
         }
         if (jobText.length >= 50 && cvText.length >= 50) {
@@ -709,6 +751,8 @@ function _histQuando(iso) {
 function reabrirCarta(i) {
   var c = _historicoCartas[i];
   if (!c) return;
+  _cartaCargo = c.cargo || '';
+  _cartaEmpresa = c.empresa || '';
   // A tela espera o mesmo formato que a API devolve.
   mostrarCarta({
     carta: c.carta || '',
@@ -797,18 +841,61 @@ function showJobPreview(preview) {
   document.getElementById('jpChips').innerHTML = chips.map(function(c){ return '<span class="job-preview-chip">'+c+'</span>'; }).join('');
   document.getElementById('jpExcerpt').textContent = preview.excerpt || '';
   document.getElementById('jobPreview').classList.add('show');
+  document.getElementById('jobSourceBlock').classList.add('has-job');
   document.getElementById('jobTextWrap').style.display = 'none';
   document.getElementById('fetchStatus').textContent = '';
+  updateCartaIntelligence(preview);
 }
 
 function showJobTextArea() {
   document.getElementById('jobPreview').classList.remove('show');
+  document.getElementById('jobSourceBlock').classList.remove('has-job');
   document.getElementById('jobTextWrap').style.display = 'block';
   document.getElementById('jobInput').focus();
 }
 
+function _cartaSignalList(value) {
+  if (Array.isArray(value)) return value.map(_plainText).filter(Boolean).slice(0, 5);
+  var text = _plainText(value);
+  if (!text) return [];
+  return text.split(/[,;|]/).map(function(item){ return item.trim(); }).filter(Boolean).slice(0, 5);
+}
+
+function _renderCartaSignals(id, items, gap) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  if (!items.length) {
+    el.innerHTML = '<span class="carta-signal empty">Aparecem após conectar uma análise</span>';
+    return;
+  }
+  el.innerHTML = items.map(function(item){
+    return '<span class="carta-signal' + (gap ? ' gap' : '') + '">' + esc(item) + '</span>';
+  }).join('');
+}
+
+function updateCartaIntelligence(preview) {
+  var analysis = _cartaAnalise || {};
+  var title = (preview && preview.cargo) || _cartaCargo || '';
+  var company = (preview && preview.empresa) || _cartaEmpresa || '';
+  if (!title) {
+    var current = String((document.getElementById('jobInput') || {}).value || '').trim();
+    if (current.length >= 50) {
+      var inferred = extractJobPreview(current, String((document.getElementById('jobUrl') || {}).value || ''));
+      title = inferred.cargo || '';
+      company = company || inferred.empresa || '';
+    }
+  }
+  var job = document.getElementById('cartaContextJob');
+  if (job) job.textContent = [title, company].filter(Boolean).join(' · ') || 'Adicione uma oportunidade para começar';
+
+  var strengths = _cartaSignalList(analysis.keywords_encontradas || analysis.palavras_chave_encontradas || analysis.pontos_fortes);
+  var gaps = _cartaSignalList(analysis.keywords_faltando || analysis.palavras_chave_faltando || analysis.lacunas);
+  _renderCartaSignals('cartaContextStrengths', strengths, false);
+  _renderCartaSignals('cartaContextGaps', gaps, true);
+}
+
 function setStep(n) {
-  var labels = ['Inserir dados', 'Gerando carta', 'Carta pronta'];
+  var labels = ['Preparar carta', 'Construindo argumento', 'Carta pronta'];
   [1,2,3].forEach(function(i) {
     var el = document.getElementById('stepItem' + i);
     if (!el) return;
@@ -837,6 +924,7 @@ function showCvReceived(fileName) {
   document.getElementById('cvReceivedName').textContent = fileName;
   document.getElementById('cvInput').style.display = 'none';
   clearUploadError();
+  updateCvConnection();
 }
 function removeCvFile() {
   document.getElementById('cvReceived').classList.remove('show');
@@ -844,6 +932,17 @@ function removeCvFile() {
   document.getElementById('cvInput').value = '';
   document.getElementById('cvFileInput').value = '';
   setUploadProgress(0);
+  updateCvConnection();
+}
+
+function updateCvConnection() {
+  var cv = document.getElementById('cvInput');
+  var title = document.getElementById('cvConnectionTitle');
+  var status = document.getElementById('cvConnectionStatus');
+  if (!cv || !title || !status) return;
+  var ready = cv.value.trim().length >= 50;
+  title.textContent = ready ? 'Currículo conectado' : 'Currículo ainda não conectado';
+  status.textContent = ready ? 'Pronto para comprovar sua experiência' : 'Cole, envie ou use o currículo principal';
 }
 async function handleCvFile(input) {
   var file = input.files[0];
@@ -970,6 +1069,22 @@ async function fetchJobUrl() {
   btn.disabled = false; btn.textContent = 'Carregar';
 }
 
+function showCartaStage(stage) {
+  var preparation = document.getElementById('preparationWorkspace');
+  var loading = document.getElementById('generationState');
+  var result = document.getElementById('rdCartaWrap');
+  if (preparation) preparation.style.display = stage === 'prepare' ? '' : 'none';
+  if (loading) loading.classList.toggle('show', stage === 'loading');
+  if (result) result.classList.toggle('show', stage === 'result');
+}
+
+function novaCarta() {
+  showCartaStage('prepare');
+  setStep(1);
+  var heading = document.querySelector('.carta-intro');
+  if (heading) heading.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
 async function generate() {
   var job = document.getElementById('jobInput').value.trim();
   var cv = document.getElementById('cvInput').value.trim();
@@ -980,9 +1095,11 @@ async function generate() {
   if (!cv || cv.length < 50) { errEl.textContent = 'Cole o conteúdo do seu currículo.'; errEl.classList.add('show'); return; }
 
   setStep(2);
+  updateCartaIntelligence();
+  showCartaStage('loading');
   var btn = document.getElementById('btnGenerate');
   btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> Gerando carta…';
+  btn.textContent = 'Construindo sua carta…';
 
   try {
     var _t = await getFreshToken();
@@ -1034,9 +1151,10 @@ async function generate() {
     errEl.textContent = e.message || 'Erro inesperado. Tente novamente.';
     errEl.classList.add('show');
     setStep(1);
+    showCartaStage('prepare');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Gerar carta de apresentação';
+    btn.innerHTML = 'Criar minha carta <span>→</span>';
   }
 }
 
@@ -1046,8 +1164,11 @@ async function generate() {
 function mostrarCarta(data) {
     _cartaTexto = data.carta || '';
     _cartaAssunto = data.assunto || '';
+    _cartaPalavras = Number(data.palavras) || (data.carta || '').split(/\s+/).filter(Boolean).length;
 
-    document.getElementById('resultAssunto').textContent = 'Carta gerada — ' + esc(data.assunto || '');
+    var cargo = _cartaCargo || _vagaColadaCargo((document.getElementById('jobInput') || {}).value || '');
+    var empresa = _cartaEmpresa || _vagaColadaEmpresa((document.getElementById('jobInput') || {}).value || '');
+    document.getElementById('resultAssunto').textContent = [cargo, empresa].filter(Boolean).join(' · ') || 'Revise antes de enviar';
     document.getElementById('subjectBox').innerHTML = '<strong>Assunto sugerido:</strong> ' + esc(data.assunto || '');
     _cartaFormatos = {
       carta: data.carta || '',
@@ -1058,7 +1179,6 @@ function mostrarCarta(data) {
     var temFormatos = !!(_cartaFormatos.curta && _cartaFormatos.mensagem);
     document.getElementById('fmtTabs').style.display = temFormatos ? '' : 'none';
     setFormato('carta');
-    document.getElementById('wordCount').textContent = (data.palavras || 0) + ' palavras';
 
     /* Prova de que a carta usou a analise. E o que separa esta carta de uma
        gerada em qualquer lugar: ela cita requisitos que a plataforma ja
@@ -1079,13 +1199,13 @@ function mostrarCarta(data) {
     document.getElementById('provaWrap').innerHTML = prova.join('');
 
     var hw = document.getElementById('highlightsWrap');
+    hw.innerHTML = '';
     if (data.destaques && data.destaques.length) {
       hw.innerHTML = '<div class="rd-highlights-title">Destaques</div>'
         + data.destaques.map(function(d){ return '<span class="highlight-tag">✓ ' + esc(d) + '</span>'; }).join('');
     }
 
-    document.getElementById('rdChecklist').style.display = 'none';
-    document.getElementById('rdCartaWrap').classList.add('show');
+    showCartaStage('result');
     setStep(3);
 }
 
@@ -1103,12 +1223,13 @@ function setFormato(f) {
   var dica = document.getElementById('fmtDica');
   var temTabs = document.getElementById('fmtTabs').style.display !== 'none';
   dica.textContent = temTabs ? (FMT_DICA[f] || '') : '';
+  document.getElementById('subjectBox').style.display = f === 'carta' ? '' : 'none';
   document.querySelectorAll('#fmtTabs .fmt-tab').forEach(function(b) {
     b.classList.toggle('on', b.dataset.fmt === f);
   });
   // Contagem acompanha o formato aberto.
   var wc = document.getElementById('wordCount');
-  if (wc && f !== 'carta') wc.textContent = _cartaTexto.length + ' caracteres';
+  if (wc) wc.textContent = f === 'carta' ? (_cartaPalavras + ' palavras · versão completa') : (_cartaTexto.length + ' caracteres · pronto para copiar');
 }
 
 function copyCarta() {
@@ -1154,6 +1275,8 @@ function toggleTheme() {
   var b = document.getElementById('themeBtn'); if (b) b.innerHTML = l ? ICON_SUN : ICON_MOON;
 }
 (function(){ var b = document.getElementById('themeBtn'); if (b) b.innerHTML = document.documentElement.getAttribute('data-theme')==='light' ? ICON_MOON : ICON_SUN; })();
+document.getElementById('cvInput').addEventListener('input', updateCvConnection);
+document.getElementById('jobInput').addEventListener('change', function(){ updateCartaIntelligence(); });
 </script>
 <script src="/sidebar.js"></script>
 <script>
