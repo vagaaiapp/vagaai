@@ -2218,6 +2218,141 @@ body.cd-modal-open { overflow:hidden; }
   .cd-btn.cd-danger { flex:0 0 39px; width:39px; height:39px; }
 }
 
+/* ── Candidaturas: jornada editorial aprovada ─────────────────────────
+   Um único bloco dominante reúne prioridade e progresso. A lista abaixo
+   permanece comparável e acionável, sem a sequência de cartões métricos. */
+.cand-page { gap:24px; }
+.cand-header { align-items:flex-end; }
+.cand-header-left { gap:5px; }
+.cand-description { margin:0; color:var(--t2); font-size:14px; line-height:1.55; }
+.cand-header-right { margin-left:auto; }
+.cand-title { font-size:34px; letter-spacing:-.03em; }
+.cand-summary { display:grid; grid-template-columns:minmax(0,1.12fr) minmax(390px,.88fr); gap:0; overflow:hidden; border-radius:20px; background:#082718; box-shadow:0 18px 46px rgba(9,44,27,.09); }
+.cand-priority { min-height:328px; padding:33px 34px 31px; border:0; border-radius:0; box-shadow:none; background:linear-gradient(124deg,#062416 0%,#0a301e 100%); display:flex; flex-direction:column; align-items:flex-start; justify-content:center; }
+.cand-priority::after { width:360px; height:360px; right:-165px; top:-205px; border-color:rgba(78,206,145,.12); box-shadow:0 0 0 48px rgba(78,206,145,.035); }
+.cp-eyebrow { display:flex; align-items:center; gap:9px; margin-bottom:14px; color:#4ece91; font-size:11px; }
+.cp-eyebrow::before { content:""; width:7px; height:7px; border-radius:50%; background:#4ece91; box-shadow:0 0 0 5px rgba(78,206,145,.11); }
+.cp-title { max-width:650px; margin:0; color:#fff; font-family:Lora,Georgia,serif; font-size:clamp(26px,2.25vw,34px); line-height:1.18; letter-spacing:-.035em; }
+.cp-sub { max-width:650px; min-height:0; margin:11px 0 0; color:#b8cec0; font-size:14px; line-height:1.55; }
+.cp-focus { align-items:center; gap:12px; margin-top:22px; }
+.cp-score { width:54px; height:54px; border-radius:13px; display:grid; place-items:center; background:#fff0f1; color:#d64c52; font-size:16px; font-weight:800; flex:none; }
+.cp-focus strong { display:block; color:#fff; font-size:14px; }
+.cp-focus span { display:block; margin-top:3px; color:#8eac9a; font-size:11.5px; }
+.cp-actions { display:flex; align-items:center; gap:10px; margin-top:22px; }
+.cp-cta,.cp-secondary { min-height:42px; border-radius:10px; padding:10px 17px; font-family:inherit; font-size:12px; font-weight:800; cursor:pointer; }
+.cp-cta { border:0; background:#4ece91; color:#062316; }
+.cp-cta:hover { background:#6bddaa; }
+.cp-secondary { border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.05); color:#fff; }
+.cp-secondary:hover { background:rgba(255,255,255,.1); }
+.cand-journey { min-width:0; padding:31px 29px 27px; color:#fff; background:linear-gradient(145deg,#10442d,#176b44); border-left:1px solid rgba(255,255,255,.08); }
+.cj-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+.cj-head h3 { margin:0; font-family:Lora,Georgia,serif; font-size:21px; line-height:1.25; }
+.cj-head p { margin:4px 0 0; color:#a9c4b3; font-size:11px; line-height:1.45; }
+.cj-total { min-width:62px; text-align:right; }
+.cj-total strong { display:block; font-family:Lora,Georgia,serif; font-size:31px; line-height:1; }
+.cj-total span { display:block; margin-top:5px; color:#a9c4b3; font-size:10px; }
+.cj-flow { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); position:relative; margin-top:30px; }
+.cj-flow::before { content:""; position:absolute; left:8%; right:8%; top:17px; height:2px; background:rgba(255,255,255,.2); }
+.cj-stage { min-width:0; position:relative; text-align:center; }
+.cj-dot { width:35px; height:35px; margin:0 auto 10px; border-radius:50%; display:grid; place-items:center; position:relative; z-index:1; background:#174d34; border:1px solid rgba(255,255,255,.22); color:#fff; font-size:12px; font-weight:800; }
+.cj-stage.has-value .cj-dot { background:#4ece91; border-color:#4ece91; color:#082317; box-shadow:0 0 0 6px rgba(78,206,145,.11); }
+.cj-stage strong { display:block; color:#fff; font-size:10.5px; line-height:1.25; }
+.cj-stage small { display:block; margin-top:3px; color:#9cbaa8; font-size:9px; line-height:1.3; }
+.cj-note { display:flex; align-items:flex-start; gap:9px; margin-top:23px; padding-top:17px; border-top:1px solid rgba(255,255,255,.12); color:#c4d7ca; }
+.cj-note>span { color:#4ece91; font-size:18px; line-height:1; }
+.cj-note p { margin:0; font-size:11.5px; line-height:1.5; }
+.cand-workspace-head { display:flex; align-items:flex-end; justify-content:space-between; gap:18px; margin:8px 0 -13px; }
+.cand-workspace-head h2 { margin:0; font-family:Lora,Georgia,serif; font-size:26px; letter-spacing:-.025em; color:var(--t1); }
+.cand-workspace-head p { margin:3px 0 0; color:var(--t3); font-size:12.5px; }
+.cand-toolbar { padding:0 0 14px; border:0; border-bottom:1px solid var(--border); border-radius:0; background:transparent; box-shadow:none; justify-content:flex-end; }
+.cand-search-wrap { flex:0 1 310px; min-width:220px; }
+.cand-search { min-height:42px; padding-left:38px; background:var(--bg-card); font-size:13px; }
+.cand-adv-btn { min-height:42px; padding:9px 14px; font-size:12px; font-weight:700; }
+.cand-filter-count { display:inline-grid; place-items:center; min-width:18px; height:18px; margin-left:5px; padding:0 5px; border-radius:999px; background:var(--gb-emerald); color:#fff; font-size:9px; }
+.cand-new-btn { min-height:42px; padding:9px 16px; font-size:12px; }
+.cand-adv-panel { border-radius:13px; padding:17px 19px; box-shadow:var(--sh-card); }
+.cand-adv-panel.open { align-items:flex-start; }
+.caf-group-status { flex:1 1 100%; padding-bottom:14px; border-bottom:1px solid var(--border-soft); }
+.cand-chips { gap:7px; }
+.cc-chip { padding:7px 12px; }
+.cand-layout,#candListBody { min-width:0; }
+.cand-group { margin-top:2px; }
+.cand-group + .cand-group { margin-top:21px; }
+.cand-group-head { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:0 4px 12px; }
+.cand-group-title { display:flex; align-items:center; gap:9px; color:var(--t1); font-size:13px; font-weight:800; }
+.cand-group-count { min-width:24px; height:24px; padding:0 7px; display:grid; place-items:center; border-radius:999px; background:var(--bg-sub); color:var(--t2); font-size:10px; }
+.cand-group-help { color:var(--t3); font-size:11px; text-align:right; }
+.cand-list-card { border-radius:18px; box-shadow:0 10px 28px rgba(14,48,29,.045); }
+.cand-list-head { display:grid; grid-template-columns:minmax(280px,1.5fr) minmax(210px,1fr) minmax(150px,.62fr) minmax(235px,.95fr); gap:20px; align-items:center; padding:11px 19px; border-bottom:1px solid var(--border); background:var(--bg-card); }
+.clh-lbl { font-size:10px; }
+.cand-row { min-height:106px; grid-template-columns:minmax(280px,1.5fr) minmax(210px,1fr) minmax(150px,.62fr) minmax(235px,.95fr); gap:20px; padding:18px 19px; background:var(--bg-card); }
+.cand-row::after { display:none; }
+.cand-row:hover { background:color-mix(in srgb,var(--bg-sub) 48%,var(--bg-card)); }
+.cr-opportunity { display:flex; align-items:center; gap:13px; min-width:0; }
+.cr-score { width:55px; height:55px; border-radius:13px; font-size:14px; }
+.cr-cargo { font-size:14px; }
+.cr-empresa { font-size:11px; }
+.cr-update strong { display:block; color:var(--t1); font-size:11.5px; line-height:1.35; }
+.cr-update span { display:block; margin-top:4px; color:var(--t3); font-size:10.5px; line-height:1.35; }
+.cr-next { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-left:0; border-left:0; }
+.cr-next-copy { min-width:0; }
+.cr-next-kicker { font-size:9px; }
+.cr-next-txt { white-space:normal; font-size:11.5px; line-height:1.35; }
+.cr-next-when { font-size:10px; }
+.cr-action-btn { flex:none; min-height:36px; padding:7px 11px; border:1px solid var(--border); border-radius:9px; background:var(--bg-card); color:var(--t1); font-family:inherit; font-size:10.5px; font-weight:800; cursor:pointer; }
+.cr-action-btn.recommended { border-color:var(--gb-emerald); background:var(--gb-emerald); color:#fff; }
+.cr-action-btn:hover { border-color:var(--gb-emerald); color:var(--gb-emerald); }
+.cr-action-btn.recommended:hover { color:#fff; background:var(--gb-mid); }
+.cand-group-empty { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:19px 20px; border:1px dashed var(--border); border-radius:13px; color:var(--t2); font-size:12px; }
+.cand-group-empty strong { color:var(--t1); }
+.cand-group-empty button { border:0; background:transparent; color:var(--gb-emerald); font-family:inherit; font-size:11.5px; font-weight:800; cursor:pointer; white-space:nowrap; }
+@media(max-width:1180px) {
+  .cand-summary { grid-template-columns:1fr; }
+  .cand-priority { min-height:285px; }
+  .cand-journey { border-left:0; border-top:1px solid rgba(255,255,255,.1); }
+  .cand-list-head,.cand-row { grid-template-columns:minmax(250px,1.3fr) minmax(200px,1fr) minmax(220px,.9fr); }
+  .cand-list-head>*:nth-child(3),.cr-update { display:none; }
+}
+@media(max-width:768px) {
+  .cand-page { gap:18px; }
+  .cand-header { align-items:flex-start; }
+  .cand-title { font-size:29px; }
+  .cand-description { font-size:13.5px; }
+  .cand-header-right { width:100%; }
+  .cand-summary { border-radius:18px; }
+  .cand-priority { min-height:0; padding:27px 22px; }
+  .cp-title { font-size:26px; }
+  .cp-sub { font-size:13.5px; }
+  .cand-journey { padding:25px 20px 23px; }
+  .cand-workspace-head { margin-bottom:-9px; }
+  .cand-workspace-head h2 { font-size:24px; }
+  .cand-toolbar { align-items:stretch; }
+  .cand-search-wrap { flex:1 0 100%; min-width:0; }
+  .cand-adv-btn { order:2; width:auto; flex:1; }
+  .cand-new-btn { order:3; width:auto; flex:1; }
+  .cand-chips { order:initial; width:auto; flex-wrap:wrap; overflow:visible; padding:0; }
+  .cand-group-head { align-items:flex-start; }
+  .cand-group-help { display:none; }
+  .cand-list-head { display:none; }
+  .cand-row { display:grid; grid-template-columns:52px minmax(0,1fr); gap:12px 14px; min-height:0; padding:17px; }
+  .cr-opportunity { display:contents; }
+  .cr-score { grid-column:1; grid-row:1; width:50px; height:50px; }
+  .cr-job { grid-column:2; grid-row:1; padding-right:0; }
+  .cr-progress { grid-column:1 / -1; padding-top:13px; border-top:1px solid var(--border-soft); }
+  .cr-update { display:block; grid-column:1 / -1; padding-top:12px; border-top:1px solid var(--border-soft); }
+  .cr-next { grid-column:1 / -1; align-items:flex-end; padding:12px 0 0; border-top:1px solid var(--border-soft); }
+  .cand-group-empty { align-items:flex-start; flex-direction:column; }
+}
+@media(max-width:480px) {
+  .cp-actions { width:100%; align-items:stretch; flex-direction:column; }
+  .cp-cta,.cp-secondary { width:100%; }
+  .cj-head h3 { font-size:19px; }
+  .cj-flow { gap:2px; }
+  .cj-stage strong { font-size:9.5px; }
+  .cj-stage small { font-size:8px; }
+  .cand-adv-btn,.cand-new-btn { flex:1 1 100%; }
+}
+
 /* ── Alertas redesign ──────────────────────────────────────── */
 .al-page { display:flex; flex-direction:column; gap:20px; }
 .al-page-header { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; }
@@ -3241,8 +3376,8 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       <!-- Header -->
       <div class="cand-header">
         <div class="cand-header-left">
-          
           <h1 class="cand-title">Suas candidaturas</h1>
+          <p class="cand-description">Acompanhe cada oportunidade e saiba exatamente qual é o próximo passo.</p>
         </div>
         <div class="cand-header-right">
           <div class="cand-view-switcher">
@@ -3250,36 +3385,42 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
             <button class="cvs-btn" id="cvs-kanban" onclick="setCandView('kanban')">Kanban</button>
             <button class="cvs-btn" id="cvs-calendario" onclick="setCandView('calendario')">Calendário</button>
           </div>
-          <button class="cand-new-btn" onclick="openTrackerEdit({status:'quero_aplicar'})">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nova candidatura
-          </button>
         </div>
       </div>
 
-      <!-- Summary cards -->
-      <div class="cand-summary">
+      <!-- Próxima ação + jornada -->
+      <section class="cand-summary" aria-label="Próxima ação e resumo da jornada">
         <div class="cand-priority">
-          <div class="cp-eyebrow">Comece por aqui</div>
-          <div class="cp-title" id="cpTitle">Carregando…</div>
-          <div class="cp-sub" id="cpSub"></div>
-          <button class="cp-cta" id="cpCta">—</button>
+          <div class="cp-eyebrow">Próxima ação</div>
+          <h2 class="cp-title" id="cpTitle">Carregando…</h2>
+          <p class="cp-sub" id="cpSub"></p>
+          <div class="cp-focus" id="cpFocus" style="display:none">
+            <div class="cp-score" id="cpFocusScore">—</div>
+            <div><strong id="cpFocusCargo">Oportunidade</strong><span id="cpFocusMeta"></span></div>
+          </div>
+          <div class="cp-actions">
+            <button class="cp-cta" id="cpCta">—</button>
+            <button class="cp-secondary" id="cpSecondary" style="display:none">Ver detalhes</button>
+          </div>
         </div>
-        <div class="cand-metric">
-          <div class="cm-val" id="cmAtivas">—</div>
-          <div class="cm-lbl">Candidaturas ativas</div>
-          <div class="cm-sub" id="cmAtivasSub"></div>
+        <div class="cand-journey">
+          <div class="cj-head">
+            <div><h3>Sua jornada agora</h3><p id="cjCaption">Carregando suas oportunidades…</p></div>
+            <div class="cj-total"><strong id="cmTotal">—</strong><span id="cmTotalLabel">oportunidades</span></div>
+          </div>
+          <div class="cj-flow" aria-label="Etapas da jornada de candidatura">
+            <div class="cj-stage"><span class="cj-dot" id="cmAnalises">—</span><strong>Analisadas</strong><small>Ponto de partida</small></div>
+            <div class="cj-stage"><span class="cj-dot" id="cmAtivas">—</span><strong>Candidaturas</strong><small>Enviadas</small></div>
+            <div class="cj-stage"><span class="cj-dot" id="cmEntrevistas">—</span><strong>Entrevistas</strong><small>Próxima conquista</small></div>
+            <div class="cj-stage"><span class="cj-dot" id="cmOfertas">—</span><strong>Ofertas</strong><small>Objetivo final</small></div>
+          </div>
+          <div class="cj-note"><span aria-hidden="true">＋</span><p id="cjNote">Use o acompanhamento para não perder prazos, retornos e próximos passos.</p></div>
+          <span id="cmPendentes" hidden></span><span id="cmAtivasSub" hidden></span><span id="cmEntrevistasSub" hidden></span><span id="cmPendentesSub" hidden></span>
         </div>
-        <div class="cand-metric">
-          <div class="cm-val" id="cmEntrevistas">—</div>
-          <div class="cm-lbl">Em entrevista</div>
-          <div class="cm-sub" id="cmEntrevistasSub"></div>
-        </div>
-        <div class="cand-metric">
-          <div class="cm-val" id="cmPendentes">—</div>
-          <div class="cm-lbl">Ações pendentes</div>
-          <div class="cm-sub" id="cmPendentesSub"></div>
-        </div>
+      </section>
+
+      <div class="cand-workspace-head">
+        <div><h2>Oportunidades</h2><p id="candWorkspaceSub">Organize suas decisões e processos ativos.</p></div>
       </div>
 
       <!-- Toolbar -->
@@ -3289,10 +3430,17 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
             <svg class="cand-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input class="cand-search" type="text" id="candSearch" placeholder="Buscar por cargo, empresa…" oninput="candRender()">
           </div>
-          <div class="cand-chips" id="candChips"></div>
           <button class="cand-adv-btn" id="candAdvBtn" onclick="toggleCandAdvanced()">Filtros ▾</button>
+          <button class="cand-new-btn" onclick="openTrackerEdit({status:'quero_aplicar'})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nova candidatura
+          </button>
         </div>
         <div class="cand-adv-panel" id="candAdvPanel">
+          <div class="caf-group caf-group-status">
+            <div class="caf-label">Etapa</div>
+            <div class="cand-chips" id="candChips"></div>
+          </div>
           <div class="caf-group">
             <div class="caf-label">Score</div>
             <div class="caf-opts">
@@ -3322,18 +3470,8 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       <!-- List view -->
       <div id="candListView">
         <div class="cand-layout" id="candLayout">
-          <div class="cand-list-card">
-            <div class="cand-list-head">
-              <div class="clh-lbl">Score</div>
-              <div class="clh-lbl">Oportunidade</div>
-              <div class="clh-lbl">Status</div>
-              <div class="clh-lbl">Atualização</div>
-              <div class="clh-lbl">Próxima ação</div>
-              <div></div>
-            </div>
-            <div id="candListBody">
-              <div style="padding:32px;text-align:center;color:var(--t3);font-size:13px">Carregando…</div>
-            </div>
+          <div id="candListBody">
+            <div style="padding:32px;text-align:center;color:var(--t3);font-size:13px">Carregando…</div>
           </div>
         </div>
       </div>
@@ -4991,7 +5129,10 @@ function calcCandMetrics(items) {
   var active = ['aplicada','em_processo','entrevista','oferta','cv_pronto','quero_aplicar'];
   return {
     ativas:   items.filter(function(i){ return active.includes(i.status); }).length,
+    candidaturas: items.filter(function(i){ return ['aplicada','em_processo','entrevista','oferta'].includes(i.status); }).length,
     entrevistas: items.filter(function(i){ return i.status === 'entrevista'; }).length,
+    ofertas: items.filter(function(i){ return i.status === 'oferta'; }).length,
+    naoRastreadas: items.filter(function(i){ return !i.hasTracker; }).length,
     pendentes: items.filter(function(i){ return calcNextAction(i).urgency >= 3; }).length,
     total: items.length
   };
@@ -5231,19 +5372,79 @@ function candRender() {
 function renderCandMetrics(all) {
   var m = calcCandMetrics(all);
   var pa = calcPriorityAction(all);
+  var focus = pa.id ? all.find(function(i){ return String(i.id) === String(pa.id); }) : null;
+  if (!focus && m.naoRastreadas) focus = all.find(function(i){ return !i.hasTracker; });
+  if (!focus && all.length) focus = all[0];
   var titleEl = document.getElementById('cpTitle');
   var subEl = document.getElementById('cpSub');
   var ctaEl = document.getElementById('cpCta');
-  if (titleEl) titleEl.textContent = pa.title;
-  if (subEl) subEl.textContent = pa.sub;
+  var displayTitle = pa.title;
+  var displaySub = pa.sub;
+  if (pa.action === 'track' && m.naoRastreadas === 1) {
+    displayTitle = 'Transforme esta análise em uma candidatura acompanhada.';
+    displaySub = 'Você já conhece a aderência da vaga. Agora registre a oportunidade para acompanhar prazo, retorno e próximos passos.';
+  } else if (pa.action === 'analyze') {
+    displayTitle = 'Comece sua jornada por uma vaga que importa.';
+    displaySub = 'Analise uma oportunidade para comparar seu currículo e acompanhar cada avanço em um só lugar.';
+  } else if (pa.action === 'filter' && m.naoRastreadas > 1) {
+    displayTitle = 'Decida quais análises devem entrar na sua jornada.';
+    displaySub = 'Escolha as oportunidades que fazem sentido acompanhar e mantenha prazos e retornos organizados.';
+  }
+  if (titleEl) titleEl.textContent = displayTitle;
+  if (subEl) subEl.textContent = displaySub;
   if (ctaEl) { ctaEl.textContent = pa.cta; ctaEl.onclick = function(){ runPriorityAction(pa); }; }
+  var focusBox = document.getElementById('cpFocus');
+  if (focusBox) focusBox.style.display = focus ? 'flex' : 'none';
+  if (focus) {
+    var score = document.getElementById('cpFocusScore');
+    var cargo = document.getElementById('cpFocusCargo');
+    var meta = document.getElementById('cpFocusMeta');
+    var scoreNum = Number(focus.score || 0);
+    if (score) {
+      score.textContent = focus.analysisData ? scoreNum + '%' : '—';
+      score.style.background = !focus.analysisData ? 'rgba(255,255,255,.08)' : scoreNum >= 70 ? '#e6f7ed' : scoreNum >= 40 ? '#fff7e8' : '#fff0f1';
+      score.style.color = !focus.analysisData ? '#b8cec0' : scoreNum >= 70 ? '#197a4a' : scoreNum >= 40 ? '#bd7a12' : '#d64c52';
+    }
+    if (cargo) cargo.textContent = focus.cargo || 'Oportunidade';
+    if (meta) meta.textContent = (focus.empresa || 'Empresa') + (focus.daysSince != null ? ' · atualizada há ' + focus.daysSince + ' dia' + (focus.daysSince === 1 ? '' : 's') : '');
+  }
+  var secondary = document.getElementById('cpSecondary');
+  if (secondary) {
+    secondary.style.display = focus ? '' : 'none';
+    secondary.textContent = focus && focus.analysisData ? 'Ver análise completa' : 'Ver detalhes';
+    secondary.onclick = focus ? function() {
+      if (focus.analysisData) openSavedAnalysis(focus.analysisData.id);
+      else openCandDetail(focus.id);
+    } : null;
+  }
   var el = function(id, val) { var e = document.getElementById(id); if (e) e.textContent = val; };
-  el('cmAtivas', m.ativas);
+  el('cmTotal', m.total);
+  el('cmTotalLabel', m.total === 1 ? 'oportunidade' : 'oportunidades');
+  el('cmAnalises', m.total);
+  el('cmAtivas', m.candidaturas);
   el('cmEntrevistas', m.entrevistas);
+  el('cmOfertas', m.ofertas);
   el('cmPendentes', m.pendentes);
   el('cmAtivasSub', m.total + ' total analisadas');
   el('cmEntrevistasSub', m.entrevistas > 0 ? 'Ativo agora' : 'Nenhuma no momento');
   el('cmPendentesSub', m.pendentes > 0 ? 'Requerem atenção' : 'Tudo em dia');
+  document.querySelectorAll('.cj-stage').forEach(function(stage) {
+    var value = parseInt((stage.querySelector('.cj-dot') || {}).textContent || '0', 10) || 0;
+    stage.classList.toggle('has-value', value > 0);
+  });
+  var caption = document.getElementById('cjCaption');
+  if (caption) caption.textContent = m.naoRastreadas
+    ? m.naoRastreadas + ' oportunidade' + (m.naoRastreadas === 1 ? '' : 's') + ' aguardando sua decisão'
+    : m.total ? m.total + ' oportunidade' + (m.total === 1 ? '' : 's') + ' em diferentes etapas' : 'Sua jornada começa com a primeira análise';
+  var note = document.getElementById('cjNote');
+  if (note) note.textContent = m.naoRastreadas
+    ? 'Rastrear não significa que você já se candidatou. Significa apenas que deseja acompanhar esta oportunidade.'
+    : m.pendentes ? m.pendentes + ' ação' + (m.pendentes === 1 ? '' : 'ões') + ' merece' + (m.pendentes === 1 ? '' : 'm') + ' sua atenção agora.'
+      : 'Use o acompanhamento para não perder prazos, retornos e próximos passos.';
+  var workspaceSub = document.getElementById('candWorkspaceSub');
+  if (workspaceSub) workspaceSub.textContent = m.naoRastreadas
+    ? m.naoRastreadas + ' análise' + (m.naoRastreadas === 1 ? '' : 's') + ' aguardando sua decisão.'
+    : m.total ? m.total + ' oportunidade' + (m.total === 1 ? '' : 's') + ' organizada' + (m.total === 1 ? '' : 's') + ' por etapa.' : 'Nenhuma oportunidade adicionada ainda.';
 }
 
 function renderCandChips(all) {
@@ -5260,6 +5461,11 @@ function renderCandChips(all) {
     var cnt = counts[c[0]];
     return '<button class="cc-chip'+active+'" onclick="setCandFilter(\''+c[0]+'\')">'+c[1]+(cnt?'<span class="chip-count">'+cnt+'</span>':'')+' </button>';
   }).join('');
+  var filterBtn = document.getElementById('candAdvBtn');
+  if (filterBtn) {
+    var activeFilters = (_candChip !== 'todas' ? 1 : 0) + Object.keys(_candAdvFilters).length;
+    filterBtn.innerHTML = 'Filtros' + (activeFilters ? '<span class="cand-filter-count">'+activeFilters+'</span>' : '') + ' ▾';
+  }
 }
 
 function setCandFilter(id) { _candChip = id; _vagasFilter = id; candRender(); }
@@ -5297,10 +5503,14 @@ function renderCandList(filtered, all) {
     body.innerHTML = '<div class="cand-empty"><div class="cand-empty-ico">🔍</div><div class="cand-empty-title">Nenhuma candidatura encontrada</div><div class="cand-empty-sub">Ajuste os filtros ou analise uma nova vaga.</div></div>';
     return;
   }
-  body.innerHTML = filtered.map(function(item) {
+  var waiting = filtered.filter(function(item){ return !item.hasTracker; });
+  var active = filtered.filter(function(item){ return item.hasTracker; });
+  var showBothGroups = _candChip === 'todas' && !Object.keys(_candAdvFilters).length && !((document.getElementById('candSearch') || {}).value || '').trim();
+
+  function rows(items) { return items.map(function(item) {
     var s = item.score;
-    var sbg = s >= 70 ? 'var(--s-grn-bg)' : s >= 40 ? 'var(--s-amb-bg)' : 'var(--s-red-bg)';
-    var sclr = s >= 70 ? 'var(--s-grn)' : s >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
+    var sbg = !item.analysisData ? 'var(--bg-sub)' : s >= 70 ? 'var(--s-grn-bg)' : s >= 40 ? 'var(--s-amb-bg)' : 'var(--s-red-bg)';
+    var sclr = !item.analysisData ? 'var(--t3)' : s >= 70 ? 'var(--s-grn)' : s >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
     var scoreStr = item.analysisData ? s+'%' : '—';
     var stLbl = item.hasTracker ? (STATUS_LABELS[item.status] || item.status) : 'Só análise';
     var stClr = item.hasTracker ? (STATUS_COLORS[item.status] || 'var(--t3)') : 'var(--t3)';
@@ -5308,20 +5518,38 @@ function renderCandList(filtered, all) {
     var na = calcNextAction(item);
     var naClass = na.urgency >= 4 ? ' urgent' : na.urgency >= 3 ? ' warn' : '';
     var sel = _candSelectedId === item.id ? ' cr-selected' : '';
-    return '<div class="cand-row'+sel+'" onclick="openCandDetail(\''+escAttr(item.id)+'\')">'+
-      '<div class="cr-score" style="background:'+sbg+';color:'+sclr+'">'+escHtml(scoreStr)+'</div>'+
+    var updateTitle = item.hasTracker ? stLbl : 'Sem acompanhamento';
+    var updateDetail = item.hasTracker ? 'Atualizada ' + upd.toLowerCase() : 'Ainda não rastreada';
+    var actionLabel = item.hasTracker ? 'Abrir' : 'Rastrear';
+    var action = item.hasTracker
+      ? "event.stopPropagation();openCandDetail('"+escAttr(item.id)+"')"
+      : "event.stopPropagation();trackAnalysis('"+escAttr(item.id)+"')";
+    return '<div class="cand-row'+sel+'" role="button" tabindex="0" onclick="openCandDetail(\''+escAttr(item.id)+'\')" onkeydown="if(event.key===\'Enter\'){openCandDetail(\''+escAttr(item.id)+'\')}">'+
+      '<div class="cr-opportunity"><div class="cr-score" style="background:'+sbg+';color:'+sclr+'">'+escHtml(scoreStr)+'</div>'+
       '<div class="cr-job"><div class="cr-cargo">'+escHtml(item.cargo)+'</div><div class="cr-empresa">'+escHtml(item.empresa)+
         // A linha agrupa as analises da mesma vaga; sem dizer quantas foram, o
         // agrupamento esconderia que a pessoa reanalisou depois de mexer no CV.
         (item.vezesAnalisada > 1 ? '<span class="cr-reanalises" title="Esta vaga foi analisada '+item.vezesAnalisada+' vezes">'+item.vezesAnalisada+'× analisada</span>' : '')+
-      '</div></div>'+
+      '</div></div></div>'+
       '<div class="opp-item-progress cr-progress"><div class="opp-progress-top">'+
         '<span class="opp-status-text" style="color:'+stClr+'">'+escHtml(stLbl)+'</span><span class="cr-updated">'+upd+'</span></div>'+
         '<div class="opp-steps">'+applicationJourneySteps(item.status,item.hasTracker)+'</div></div>'+
-      '<div class="cr-next"><small class="cr-next-kicker">Próxima melhor ação</small><div class="cr-next-txt'+naClass+'">'+escHtml(na.text)+'</div><div class="cr-next-when">'+escHtml(na.when)+'</div></div>'+
-      '<div class="cr-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg></div>'+
+      '<div class="cr-update"><strong>'+escHtml(updateTitle)+'</strong><span>'+escHtml(updateDetail)+'</span></div>'+
+      '<div class="cr-next"><div class="cr-next-copy"><small class="cr-next-kicker">Próxima melhor ação</small><div class="cr-next-txt'+naClass+'">'+escHtml(na.text)+'</div><div class="cr-next-when">'+escHtml(na.when)+'</div></div><button class="cr-action-btn'+(!item.hasTracker?' recommended':'')+'" onclick="'+action+'">'+actionLabel+' →</button></div>'+
     '</div>';
-  }).join('');
+  }).join(''); }
+
+  function group(title, help, items, emptyCopy) {
+    if (!items.length && !showBothGroups) return '';
+    var content = items.length
+      ? '<div class="cand-list-card"><div class="cand-list-head"><div class="clh-lbl">Oportunidade</div><div class="clh-lbl">Etapa da jornada</div><div class="clh-lbl">Atualização</div><div class="clh-lbl">Próxima ação</div></div>'+rows(items)+'</div>'
+      : '<div class="cand-group-empty"><div><strong>'+emptyCopy.title+'</strong> '+emptyCopy.copy+'</div><button onclick="switchDashTab(\'app\')">Analisar uma vaga →</button></div>';
+    return '<section class="cand-group"><div class="cand-group-head"><div class="cand-group-title">'+title+' <span class="cand-group-count">'+items.length+'</span></div><div class="cand-group-help">'+help+'</div></div>'+content+'</section>';
+  }
+
+  body.innerHTML =
+    group('Aguardando sua decisão','Análises que ainda não entraram no acompanhamento',waiting,{ title:'Nenhuma análise aguardando.', copy:'Suas decisões já estão organizadas.' }) +
+    group('Em andamento','Candidaturas enviadas e processos ativos',active,{ title:'Nenhuma candidatura em andamento.', copy:'Ao rastrear uma análise, ela aparece aqui com prazos e próximas ações.' });
 }
 
 function openCandDetail(id) {
