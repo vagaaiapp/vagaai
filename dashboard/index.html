@@ -2546,130 +2546,172 @@ body.cd-modal-open { overflow:hidden; }
 @media (max-width:900px) { .al-hero-row { grid-template-columns:1fr 1fr; } .al-bottom-grid { grid-template-columns:1fr; } }
 @media (max-width:768px) { .al-hero-row { grid-template-columns:1fr; } .al-jobs-grid { grid-template-columns:1fr; } }
 
-/* ── Alertas clean: command center + content hierarchy ───────── */
-.al-clean-page { gap:18px; }
-.al-clean-page .al-page-header { margin-bottom:2px; }
-.al-clean-page .al-desc { max-width:660px; }
-.al-command-center {
-  position:relative; overflow:hidden;
-  display:grid; grid-template-columns:minmax(0,1.25fr) minmax(260px,.85fr) minmax(230px,.7fr);
-  align-items:center; gap:24px;
-  padding:22px 24px;
-  border-radius:18px;
-  color:#fff;
-  background:linear-gradient(120deg,#082f1e,#0e6540);
-  box-shadow:0 18px 42px rgba(8,49,31,.15);
+/* ── Alertas aprovados: radar de oportunidades ───────────────── */
+.al-clean-page { gap:0; }
+.al-clean-page .al-page-header { margin-bottom:18px; }
+.al-clean-page .al-title { font-size:36px; letter-spacing:-.04em; }
+.al-clean-page .al-desc { max-width:780px; font-size:15px; line-height:1.65; }
+.al-clean-page .al-header-right { align-self:center; }
+.al-clean-page .al-switch { margin-bottom:20px; }
+.al-clean-page .al-sw-chip,.al-clean-page .al-sw-add { min-height:38px; padding:8px 14px; font-size:12.5px; }
+
+.al-radar {
+  display:grid; grid-template-columns:minmax(0,1.08fr) minmax(390px,.92fr);
+  overflow:hidden; margin-bottom:0; border-radius:20px;
+  color:#fff; background:#071b11; box-shadow:0 18px 46px rgba(8,49,31,.14);
 }
-.al-command-center::after {
-  content:""; position:absolute; width:260px; height:260px; right:-105px; top:-165px;
-  border:55px solid rgba(78,206,145,.065); border-radius:50%; pointer-events:none;
+.al-radar-main {
+  position:relative; overflow:hidden; min-height:340px; padding:38px 40px;
+  display:flex; flex-direction:column; justify-content:center;
 }
-.al-command-center .al-next-card {
-  min-width:0; padding:0; border-radius:0; box-shadow:none; background:none;
-  display:block; position:relative; z-index:1;
+.al-radar-main::after {
+  content:""; position:absolute; right:-170px; top:-205px; width:390px; height:390px;
+  border:1px solid rgba(78,206,145,.12); border-radius:50%;
+  box-shadow:0 0 0 52px rgba(78,206,145,.035); pointer-events:none;
 }
-.al-command-center .al-next-label { color:#6de0aa; }
-.al-command-center .al-next-date { font-family:Lora,serif; font-size:19px; }
-.al-command-quality {
-  min-width:0; display:flex; align-items:center; gap:14px;
-  padding:0 24px; border-left:1px solid rgba(255,255,255,.13); border-right:1px solid rgba(255,255,255,.13);
-  position:relative; z-index:1;
-}
-.al-command-ring {
-  --al-quality:0%;
-  width:64px; height:64px; flex:0 0 64px; border-radius:50%;
-  display:grid; place-items:center; position:relative;
-  background:conic-gradient(#4bd895 0 var(--al-quality),rgba(255,255,255,.13) var(--al-quality) 100%);
-}
-.al-command-ring::after { content:""; position:absolute; inset:6px; border-radius:50%; background:#0b432b; }
-.al-command-ring strong { position:relative; z-index:1; color:#fff; font-size:14px; }
-.al-command-quality-title { color:#fff; font-size:12px; font-weight:800; margin-bottom:4px; }
-.al-command-quality-sub { color:#a8cab8; font-size:10.5px; line-height:1.45; }
-.al-command-actions { display:flex; justify-content:flex-end; gap:8px; position:relative; z-index:1; }
-.al-command-actions .al-next-btn { padding:10px 13px; }
-.al-smart-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
-.al-smart-stats .al-metric {
-  display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:13px; box-shadow:none;
-}
-.al-metric-icon {
-  width:35px; height:35px; flex:0 0 35px; display:grid; place-items:center;
-  border-radius:9px; background:var(--s-grn-bg); color:var(--gb-emerald); font-size:17px;
-}
-.al-smart-stats .al-metric-val { font-family:Lora,serif; font-size:20px; line-height:1; margin-bottom:3px; }
-.al-smart-stats .al-metric-lbl { color:var(--t2); font-weight:600; }
-.al-clean-grid {
-  display:grid; grid-template-columns:minmax(0,1.65fr) minmax(310px,.72fr);
-  gap:18px; align-items:start;
-}
-.al-clean-main,.al-clean-side { min-width:0; }
-.al-clean-side { display:grid; gap:16px; }
-.al-clean-jobs .al-jobs-head { padding:17px 19px 14px; }
-.al-clean-jobs .al-jobs-body { padding:0; }
-.al-clean-jobs .al-quick-filters { padding:13px 18px; margin:0; border-bottom:1px solid var(--border); }
-.al-clean-jobs #alJobsGrid > .al-empty { min-height:260px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-.al-clean-jobs .al-jobs-grid { grid-template-columns:1fr; gap:0; }
-.al-clean-jobs .al-job-card {
-  border:0; border-bottom:1px solid var(--border-soft); border-radius:0;
-  padding:16px 18px; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:14px;
-}
+.al-radar-eyebrow { position:relative; z-index:1; display:flex; align-items:center; gap:10px; margin-bottom:15px; color:#4ece91; font-size:12px; font-weight:800; letter-spacing:.065em; text-transform:uppercase; }
+.al-radar-eyebrow::before { content:""; width:8px; height:8px; border-radius:50%; background:#4ece91; box-shadow:0 0 0 5px rgba(78,206,145,.12); }
+.al-radar-eyebrow.attention { color:#efba53; }
+.al-radar-eyebrow.attention::before { background:#d89220; box-shadow:0 0 0 5px rgba(216,146,32,.14); }
+.al-radar-title { position:relative; z-index:1; max-width:680px; margin:0; font:700 clamp(29px,2.35vw,38px)/1.16 Lora,serif; letter-spacing:-.04em; }
+.al-radar-copy { position:relative; z-index:1; max-width:660px; margin:14px 0 0; color:#bfd0c5; font-size:15px; line-height:1.65; }
+.al-radar-status { position:relative; z-index:1; display:flex; align-items:center; flex-wrap:wrap; gap:9px; margin-top:22px; color:#aec6b7; font-size:13px; }
+.al-radar-status-dot { width:9px; height:9px; border-radius:50%; background:#d89220; box-shadow:0 0 0 5px rgba(216,146,32,.13); }
+.al-radar-status-dot.live { background:#4ece91; box-shadow:0 0 0 5px rgba(78,206,145,.13); }
+.al-radar-status-dot.error { background:#ee6b70; box-shadow:0 0 0 5px rgba(238,107,112,.13); }
+.al-radar-meta { color:#7fa18e; }
+.al-radar-meta:empty { display:none; }
+.al-command-actions { position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:10px; margin-top:25px; }
+.al-command-actions .al-next-btn { min-height:44px; padding:11px 17px; border-radius:10px; font-size:13px; }
+
+.al-radar-profile { min-width:0; padding:34px; background:linear-gradient(145deg,#10442d,#176b44); border-left:1px solid rgba(255,255,255,.08); }
+.al-radar-profile .al-empty { min-height:270px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; padding:24px; text-align:left; }
+.al-radar-profile .al-empty-title { color:#fff; font:700 24px Lora,serif; }
+.al-radar-profile .al-empty-sub { color:#b8cec0; font-size:13px; }
+.al-radar-profile-head { display:flex; justify-content:space-between; gap:18px; }
+.al-radar-profile-kicker { color:#a7c3b2; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
+.al-radar-profile-name { margin-top:6px; color:#fff; font:700 25px Lora,serif; }
+.al-radar-quality { color:#fff; font:700 34px/1 Lora,serif; text-align:right; }
+.al-radar-quality small { display:block; margin-top:6px; color:#b0c9b9; font:600 10px Manrope,sans-serif; }
+.al-radar-quality-track { height:7px; margin:22px 0 25px; overflow:hidden; border-radius:99px; background:rgba(255,255,255,.14); }
+.al-radar-quality-track i { display:block; width:0; height:100%; border-radius:99px; background:#4ece91; transition:width .35s ease; }
+.al-radar-profile-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px 24px; }
+.al-radar-profile-item span { display:block; color:#9ab8a5; font-size:10px; letter-spacing:.04em; text-transform:uppercase; }
+.al-radar-profile-item strong { display:block; margin-top:4px; color:#fff; font-size:13px; line-height:1.45; }
+.al-radar-gaps { margin-top:24px; padding-top:19px; border-top:1px solid rgba(255,255,255,.13); }
+.al-command-quality-sub { color:#c0d5c7; font-size:12px; line-height:1.55; }
+.al-radar-gap-list { display:flex; flex-wrap:wrap; gap:7px; margin-top:11px; }
+.al-radar-gap { padding:5px 9px; border:1px solid rgba(255,255,255,.17); border-radius:999px; color:#d8e8dd; font-size:10.5px; }
+.al-radar-profile details { margin-top:20px; border-top:1px solid rgba(255,255,255,.13); }
+.al-radar-profile summary { display:flex; justify-content:space-between; padding:15px 0 0; color:#d8e8dd; font-size:12px; font-weight:800; cursor:pointer; list-style:none; }
+.al-radar-profile summary::after { content:"＋"; }
+.al-radar-profile details[open] summary::after { content:"−"; }
+.al-radar-profile .al-clean-detail-body { padding-top:13px; }
+.al-radar-profile .al-check-row { font-size:11.5px; }
+.al-radar-profile .al-check-lbl { color:#c4d7cb; }
+.al-radar-profile .al-check-done { color:#76dba9; }
+.al-radar-profile .al-check-pending { color:#efba53; }
+.al-radar-profile .al-clean-danger { width:100%; margin-top:12px; background:transparent; border-color:rgba(255,255,255,.2); color:#ffd1d3; }
+
+.al-smart-stats { display:grid; grid-template-columns:repeat(3,1fr); margin:18px 0 38px; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.al-smart-stats .al-metric { display:block; min-width:0; padding:20px 22px; border:0; border-right:1px solid var(--border); border-radius:0; background:transparent; box-shadow:none; }
+.al-smart-stats .al-metric:last-child { border-right:0; }
+.al-smart-stats .al-metric-icon { display:none; }
+.al-smart-stats .al-metric-val { margin-bottom:4px; font:700 31px/1 Lora,serif; }
+.al-smart-stats .al-metric-lbl { color:var(--t2); font-size:13px; font-weight:600; }
+.al-smart-stats .al-metric-sub,.al-smart-stats .al-metric-na { margin-top:4px; color:var(--t3); font-size:11.5px; font-weight:500; }
+
+.al-opportunities-head { display:flex; align-items:flex-end; justify-content:space-between; gap:22px; margin-bottom:16px; }
+.al-opportunities-head h2 { margin:0; color:var(--t1); font:700 29px/1.2 Lora,serif; letter-spacing:-.025em; }
+.al-opportunities-head p { margin:5px 0 0; color:var(--t2); font-size:13.5px; }
+.al-opportunities-head .al-quick-filters { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; margin:0; }
+.al-opportunities-head .al-qf { min-height:36px; padding:7px 13px; font-size:11.5px; }
+.al-clean-jobs { overflow:hidden; border:1px solid var(--border); border-radius:18px; background:var(--bg-card); box-shadow:0 10px 30px rgba(14,48,29,.05); }
+.al-clean-jobs #alJobsGrid > .al-empty { min-height:280px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.al-clean-jobs .al-jobs-grid { display:block; }
+.al-job-columns,.al-clean-jobs .al-job-card { display:grid; grid-template-columns:minmax(260px,1.3fr) minmax(250px,1fr) minmax(180px,.75fr) auto; gap:22px; align-items:center; }
+.al-job-columns { padding:12px 20px; border-bottom:1px solid var(--border); color:var(--t3); font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
+.al-clean-jobs .al-job-card { min-height:126px; padding:21px 20px; border:0; border-bottom:1px solid var(--border-soft); border-radius:0; background:var(--bg-card); }
 .al-clean-jobs .al-job-card:last-child { border-bottom:0; }
-.al-clean-jobs .al-job-match { position:static; justify-self:end; grid-column:2; grid-row:1; }
-.al-clean-jobs .al-job-company,.al-clean-jobs .al-job-title,.al-clean-jobs .al-job-location,
-.al-clean-jobs .al-job-reason { grid-column:1; }
-.al-clean-jobs .al-job-title { padding-right:0; margin-top:3px; font-size:13px; }
-.al-clean-jobs .al-job-reason { min-height:0; margin-bottom:0; }
-.al-clean-jobs .al-job-actions { grid-column:2; align-self:end; min-width:190px; }
-.al-clean-profile .al-sum-head { padding:17px 18px 13px; }
-.al-clean-profile .al-sum-body { padding:15px 18px 17px; }
-.al-clean-profile .al-sum-name { font-family:Lora,serif; font-size:18px; }
-.al-clean-profile .al-sum-actions { margin:14px 0 0; }
-.al-clean-profile .al-quality-box { padding:14px 18px; }
-.al-clean-profile .al-filters-note { margin:0 18px 16px; }
-.al-clean-profile details { border-top:1px solid var(--border); }
-.al-clean-profile summary {
-  padding:12px 18px; color:var(--gb-emerald); font-size:11px; font-weight:800;
-  cursor:pointer; list-style:none; display:flex; justify-content:space-between;
-}
-.al-clean-profile summary::after { content:"＋"; }
-.al-clean-profile details[open] summary::after { content:"−"; }
-.al-clean-profile .al-clean-detail-body { padding:0 18px 15px; }
-.al-clean-profile .al-clean-danger { margin-top:10px; width:100%; }
-.al-delivery-card {
-  display:grid; grid-template-columns:minmax(0,.9fr) minmax(360px,1.1fr);
-  gap:26px; align-items:center; padding:22px 24px;
-  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--sh-card);
-}
-.al-delivery-copy { padding:8px 6px; }
-.al-delivery-title { font-family:Lora,serif; font-size:20px; font-weight:700; color:var(--t1); margin-bottom:8px; }
-.al-delivery-copy p { color:var(--t2); font-size:11.5px; line-height:1.6; margin-bottom:10px; max-width:520px; }
-.al-delivery-copy .al-history-sub { margin-bottom:14px; }
-.al-delivery-copy .al-new-btn { display:inline-flex; }
-.al-clean-preview { box-shadow:none; }
+.al-clean-jobs .al-job-card:hover { background:color-mix(in srgb,var(--bg-sub) 48%,var(--bg-card)); }
+.al-job-opportunity { display:flex; align-items:center; gap:14px; min-width:0; }
+.al-clean-jobs .al-job-match { position:static; width:58px; height:58px; flex:0 0 58px; display:grid; place-items:center; padding:0; border-radius:15px; background:var(--s-amb-bg); color:var(--s-amb); font-size:15px; }
+.al-clean-jobs .al-job-match.high { background:var(--s-grn-bg); color:var(--gb-emerald); }
+.al-clean-jobs .al-job-title { margin:0; padding:0; color:var(--t1); font-size:14px; line-height:1.4; }
+.al-clean-jobs .al-job-company { margin-top:4px; color:var(--t2); font-size:12px; font-weight:600; letter-spacing:0; text-transform:none; }
+.al-job-origin { display:block; margin-top:6px; color:var(--t3); font-size:10.5px; }
+.al-clean-jobs .al-job-reason { min-height:0; margin:0; padding:0; background:none; color:var(--t2); font-size:11.5px; line-height:1.5; }
+.al-clean-jobs .al-job-reason strong { display:block; margin-bottom:4px; color:var(--t1); font-size:12.5px; }
+.al-job-reason-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.al-job-reason-tag { padding:3px 7px; border-radius:999px; background:var(--bg-sub); color:var(--t2); font-size:9.5px; }
+.al-job-reason-tag.warn { background:var(--s-amb-bg); color:var(--s-amb); }
+.al-job-conditions strong { display:block; color:var(--t1); font-size:12px; line-height:1.45; }
+.al-job-conditions span { display:block; margin-top:5px; color:var(--t3); font-size:11px; }
+.al-clean-jobs .al-job-actions { display:flex; justify-content:flex-end; gap:8px; }
+.al-clean-jobs .al-jact-btn { min-height:38px; padding:8px 11px; border-radius:9px; font-size:11.5px; }
+.al-clean-jobs .al-jact-btn.analyze { background:var(--gb-emerald); border-color:var(--gb-emerald); color:#fff; }
+.al-clean-jobs .al-jact-icon { width:38px; padding:0; }
+
+.al-support-panel { margin-top:22px; overflow:hidden; border:1px solid var(--border); border-radius:14px; background:var(--bg-card); }
+.al-support-panel > summary { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 19px; color:var(--t1); font-size:13px; font-weight:800; cursor:pointer; list-style:none; }
+.al-support-panel > summary span { color:var(--gb-emerald); font-size:12px; }
+.al-support-panel > summary span::after { content:"＋"; margin-left:8px; }
+.al-support-panel[open] > summary span::after { content:"−"; }
+.al-support-body { display:grid; grid-template-columns:minmax(0,.8fr) minmax(360px,1.2fr); gap:22px; padding:0 19px 19px; border-top:1px solid var(--border); }
+.al-support-body .al-history-card,.al-support-body .al-preview-card { border:0; border-radius:0; box-shadow:none; }
+.al-delivery-copy { padding:19px 0 0; }
+.al-delivery-title { margin-bottom:8px; color:var(--t1); font:700 21px Lora,serif; }
+.al-delivery-copy p { max-width:520px; margin-bottom:10px; color:var(--t2); font-size:12.5px; line-height:1.65; }
 .al-clean-preview .al-preview-body { padding:12px; }
-[data-theme="dark"] .al-command-center { background:linear-gradient(120deg,#071b11,#0b4a2e); }
-[data-theme="dark"] .al-command-ring::after { background:#0a3522; }
-@media (max-width:1180px) {
-  .al-command-center { grid-template-columns:1fr 1fr; }
-  .al-command-actions { grid-column:1/-1; justify-content:flex-start; }
-  .al-command-quality { border-right:0; }
-  .al-clean-grid { grid-template-columns:minmax(0,1.3fr) minmax(290px,.7fr); }
+
+[data-theme="dark"] .al-radar { background:#06170e; }
+[data-theme="dark"] .al-radar-profile { background:linear-gradient(145deg,#0d3925,#125c3a); }
+@media (max-width:1300px) {
+  .al-opportunities-head { align-items:flex-start; flex-direction:column; }
+  .al-opportunities-head .al-quick-filters { justify-content:flex-start; }
 }
-@media (max-width:980px) {
-  .al-clean-grid { grid-template-columns:1fr; }
-  .al-clean-side { grid-template-columns:1fr 1fr; }
-  .al-delivery-card { grid-template-columns:1fr 1fr; }
+@media (max-width:1180px) {
+  .al-radar { grid-template-columns:1fr; }
+  .al-radar-profile { border-top:1px solid rgba(255,255,255,.1); border-left:0; }
+  .al-job-columns,.al-clean-jobs .al-job-card { grid-template-columns:minmax(250px,1.25fr) minmax(220px,1fr) auto; }
+  .al-job-columns > :nth-child(3),.al-job-conditions { display:none; }
+}
+@media (max-width:900px) {
+  .al-support-body { grid-template-columns:1fr; }
+  .al-job-columns,.al-clean-jobs .al-job-card { grid-template-columns:minmax(240px,1fr) minmax(220px,.9fr) auto; gap:16px; }
 }
 @media (max-width:768px) {
   .al-clean-page .al-page-header { align-items:flex-start; }
   .al-clean-page .al-header-right { width:100%; flex-wrap:wrap; }
-  .al-command-center { grid-template-columns:1fr; padding:20px; }
-  .al-command-quality { padding:17px 0 0; border:0; border-top:1px solid rgba(255,255,255,.13); }
-  .al-command-actions { grid-column:auto; justify-content:flex-start; flex-wrap:wrap; }
-  .al-smart-stats,.al-clean-side,.al-delivery-card { grid-template-columns:1fr; }
-  .al-clean-jobs .al-job-card { grid-template-columns:1fr; }
-  .al-clean-jobs .al-job-match,.al-clean-jobs .al-job-actions { grid-column:1; }
-  .al-clean-jobs .al-job-match { justify-self:start; }
-  .al-clean-jobs .al-job-actions { min-width:0; }
+  .al-clean-page .al-title { font-size:31px; }
+  .al-clean-page .al-desc { font-size:14px; }
+  .al-clean-page .al-switch { flex-wrap:nowrap; overflow-x:auto; padding-bottom:3px; }
+  .al-clean-page .al-sw-chip,.al-clean-page .al-sw-add { flex:none; }
+  .al-radar-main { min-height:0; padding:31px 24px; }
+  .al-radar-title { font-size:29px; }
+  .al-radar-copy { font-size:14px; }
+  .al-radar-profile { padding:28px 24px; }
+  .al-smart-stats { grid-template-columns:1fr; }
+  .al-smart-stats .al-metric { border-right:0; border-bottom:1px solid var(--border); }
+  .al-smart-stats .al-metric:last-child { border-bottom:0; }
+  .al-opportunities-head { align-items:flex-start; flex-direction:column; }
+  .al-opportunities-head h2 { font-size:26px; }
+  .al-opportunities-head .al-quick-filters { width:100%; flex-wrap:nowrap; justify-content:flex-start; overflow-x:auto; padding-bottom:4px; }
+  .al-opportunities-head .al-qf { flex:none; }
+  .al-job-columns { display:none; }
+  .al-clean-jobs .al-job-card { display:block; padding:20px; }
+  .al-clean-jobs .al-job-reason,.al-job-conditions,.al-clean-jobs .al-job-actions { display:flex; margin-top:17px; padding-top:16px; border-top:1px solid var(--border-soft); }
+  .al-clean-jobs .al-job-reason { display:block; }
+  .al-job-conditions { display:block; }
+  .al-clean-jobs .al-job-actions { justify-content:flex-start; }
+  .al-support-body { padding-inline:16px; }
+}
+@media (max-width:480px) {
+  .al-radar-profile-grid { grid-template-columns:1fr; }
+  .al-command-actions { align-items:stretch; flex-direction:column; }
+  .al-command-actions .al-next-btn { width:100%; }
+  .al-clean-jobs .al-job-actions .al-jact-btn:not(.al-jact-icon) { flex:1; }
+  .al-support-panel > summary { align-items:flex-start; flex-direction:column; }
 }
 
 /* ── Entrevistas — sala de preparo aprovada ─────────────────── */
@@ -3609,27 +3651,31 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
            continua sendo a visao daquele alerta. -->
       <div class="al-switch" id="alSwitch" style="display:none"></div>
 
-      <!-- Command center -->
-      <div class="al-command-center">
-        <div class="al-next-card" id="alNextCard">
-          <div>
-            <div class="al-next-label">Próximo envio</div>
-            <div class="al-next-date" id="alNextDate">Configure o alerta</div>
-            <div class="al-next-meta" id="alNextMeta">Nenhum alerta ativo</div>
+      <!-- O estado do radar, a próxima decisão e o perfil monitorado formam
+           uma única superfície. Os dados continuam sendo preenchidos pelas
+           mesmas funções e fontes que alimentavam os cards anteriores. -->
+      <section class="al-radar" aria-label="Estado do radar e perfil monitorado">
+        <div class="al-radar-main">
+          <div class="al-radar-eyebrow" id="alRadarEyebrow">Preparando seu radar</div>
+          <h2 class="al-radar-title" id="alRadarTitle">Carregando suas preferências de busca.</h2>
+          <p class="al-radar-copy" id="alRadarCopy">A VagaAI está reunindo o estado do seu alerta e as oportunidades já encontradas.</p>
+          <div class="al-radar-status">
+            <span class="al-radar-status-dot" id="alRadarStateDot" aria-hidden="true"></span>
+            <span id="alNextDate">Carregando…</span>
+            <span class="al-radar-meta" id="alNextMeta"></span>
+          </div>
+          <div class="al-command-actions">
+            <button class="al-next-btn primary" id="alTestBtn" onclick="requestJobsNow()" aria-label="Receber vagas agora">Receber vagas agora →</button>
+            <button class="al-next-btn secondary" onclick="openAlertEditModal()">Editar preferências</button>
           </div>
         </div>
-        <div class="al-command-quality" id="alCommandQuality">
-          <div class="al-command-ring"><strong id="alCommandQualityValue">—</strong></div>
-          <div>
-            <div class="al-command-quality-title">Quanto combina com você</div>
-            <div class="al-command-quality-sub">Quanto mais você contar sobre o que procura, melhores as vagas.</div>
+        <aside class="al-radar-profile" id="alSummaryCard" aria-label="Perfil monitorado">
+          <div class="al-empty">
+            <div class="al-empty-title">Carregando seu perfil monitorado</div>
+            <div class="al-empty-sub">Suas preferências aparecerão aqui.</div>
           </div>
-        </div>
-        <div class="al-command-actions">
-          <button class="al-next-btn primary" id="alTestBtn" onclick="requestJobsNow()" aria-label="Receber vagas agora">Receber vagas agora</button>
-          <button class="al-next-btn secondary" onclick="openAlertEditModal()">Editar preferências</button>
-        </div>
-      </div>
+        </aside>
+      </section>
 
       <!-- Smart metrics -->
       <div class="al-smart-stats">
@@ -3645,8 +3691,8 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
           <div class="al-metric-icon" aria-hidden="true">◎</div>
           <div>
           <div class="al-metric-val" id="alMetricEnvios">—</div>
-          <div class="al-metric-lbl">alertas enviados</div>
-          <div class="al-metric-sub" id="alMetricEnviosSub">nos últimos 30 dias</div>
+          <div class="al-metric-lbl">seleções enviadas</div>
+          <div class="al-metric-sub" id="alMetricEnviosSub">somente oportunidades priorizadas</div>
           </div>
         </div>
         <div class="al-metric">
@@ -3659,89 +3705,58 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         </div>
       </div>
 
-      <!-- "Seu currículo × o mercado" foi promovido para o bloco 01 da Visão
-           geral (#matStrip): é o insight que melhora sozinho a cada análise e
-           quase ninguém chegava até aqui para vê-lo. -->
-
-      <!-- Main grid -->
-      <div class="al-clean-grid">
-        <div class="al-clean-main">
-          <div class="al-jobs-card al-clean-jobs">
-            <div class="al-jobs-head">
-              <div>
-                <div class="al-jobs-title">Oportunidades recomendadas</div>
-                <div class="al-jobs-sub">Uma prévia do que a VagaAI encontrou com base no seu perfil.</div>
-              </div>
-            </div>
-            <div class="al-jobs-body">
-              <div class="al-quick-filters" id="alJobFilters" role="group" aria-label="Filtros de vagas">
-                <button class="al-qf on" onclick="setAlJobFilter('todas',this)">Mais compatíveis</button>
-                <button class="al-qf" onclick="setAlJobFilter('remoto',this)">Remotas</button>
-                <button class="al-qf" onclick="setAlJobFilter('salario',this)">Salário informado</button>
-                <button class="al-qf" onclick="setAlJobFilter('80',this)">80%+</button>
-              </div>
-              <div id="alJobsGrid">
-                <div class="al-empty" style="padding:28px">
-                  <div class="al-empty-ico" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="38" height="38"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
-                  </div>
-                  <div class="al-empty-title">As vagas aparecerão aqui</div>
-                  <div class="al-empty-sub">Configure e ative um alerta para ver as oportunidades encontradas para você.</div>
-                </div>
-              </div>
-            </div>
+      <section class="al-opportunities" aria-labelledby="alOpportunitiesTitle">
+        <div class="al-opportunities-head">
+          <div>
+            <h2 id="alOpportunitiesTitle">Oportunidades que merecem sua atenção</h2>
+            <p>Veja a aderência e o motivo da recomendação antes de abrir cada vaga.</p>
+          </div>
+          <div class="al-quick-filters" id="alJobFilters" role="group" aria-label="Filtros de vagas">
+            <button class="al-qf on" onclick="setAlJobFilter('todas',this)">Mais compatíveis</button>
+            <button class="al-qf" onclick="setAlJobFilter('remoto',this)">Remotas</button>
+            <button class="al-qf" onclick="setAlJobFilter('salario',this)">Salário informado</button>
+            <button class="al-qf" onclick="setAlJobFilter('80',this)">80%+</button>
           </div>
         </div>
-
-        <aside class="al-clean-side">
-          <div id="alSummaryCard">
-            <div class="al-empty">
+        <div class="al-clean-jobs">
+          <div class="al-job-columns" aria-hidden="true"><span>Oportunidade</span><span>Por que apareceu</span><span>Condições</span><span>Ações</span></div>
+          <div id="alJobsGrid">
+            <div class="al-empty" style="padding:28px">
               <div class="al-empty-ico" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="44" height="44"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="38" height="38"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
               </div>
-              <div class="al-empty-title">Nenhum alerta configurado</div>
-              <div class="al-empty-sub">Crie um alerta para receber vagas compatíveis com seu perfil toda semana.</div>
-              <button class="al-empty-cta" onclick="openAlertEditModal()">Criar primeiro alerta</button>
+              <div class="al-empty-title">As vagas aparecerão aqui</div>
+              <div class="al-empty-sub">Configure e ative um alerta para ver as oportunidades encontradas para você.</div>
             </div>
-          </div>
-
-          <div class="al-history-card">
-            <div class="al-history-head">
-              <div>
-                <div class="al-history-title">Atividade recente</div>
-                <div class="al-history-sub">O que aconteceu com seu alerta.</div>
-              </div>
-            </div>
-            <div id="alHistoryBody">
-              <div style="padding:24px 18px;text-align:center">
-                <div style="font-size:12px;color:var(--t3)">Nenhum envio ainda.</div>
-                <div style="font-size:11px;color:var(--t3);margin-top:5px">A atividade aparece após o primeiro envio automático ou teste.</div>
-              </div>
-            </div>
-          </div>
-        </aside>
-      </div>
-
-      <!-- Delivery preview -->
-      <div class="al-delivery-card">
-        <div class="al-delivery-copy">
-          <div class="al-eyebrow">Como você recebe</div>
-          <div class="al-delivery-title">Uma seleção curta, não uma lista infinita.</div>
-          <p>O e-mail destaca as vagas com maior aderência, informa salário e modalidade quando disponíveis e leva você direto para a análise completa.</p>
-          <div class="al-history-sub" id="alPreviewWhen">Aguardando configuração.</div>
-        </div>
-        <div class="al-preview-card al-clean-preview">
-          <div class="al-preview-head">
-            <div>
-              <div class="al-history-title">Prévia do e-mail</div>
-              <div class="al-history-sub">Veja como a seleção chega na sua caixa de entrada.</div>
-            </div>
-          </div>
-          <div class="al-preview-body" id="alEmailPreviewBody">
-            <div style="text-align:center;padding:20px;color:var(--t3);font-size:11px">Configure um alerta para ver a prévia do e-mail.</div>
           </div>
         </div>
-      </div>
+      </section>
+
+      <!-- Histórico e prévia continuam disponíveis, mas deixam de competir
+           com a decisão principal da página. -->
+      <details class="al-support-panel">
+        <summary>Como o radar encontra e entrega suas vagas <span>Ver detalhes</span></summary>
+        <div class="al-support-body">
+          <div>
+            <div class="al-delivery-copy">
+              <div class="al-eyebrow">Como você recebe</div>
+              <div class="al-delivery-title">Uma seleção curta, não uma lista infinita.</div>
+              <p>O e-mail destaca as vagas com maior aderência, informa salário e modalidade quando disponíveis e leva você direto para a análise completa.</p>
+              <div class="al-history-sub" id="alPreviewWhen">Aguardando configuração.</div>
+            </div>
+            <div class="al-history-card">
+              <div class="al-history-head"><div><div class="al-history-title">Atividade recente</div><div class="al-history-sub">O que aconteceu com seu alerta.</div></div></div>
+              <div id="alHistoryBody">
+                <div style="padding:24px 18px;text-align:center"><div style="font-size:12px;color:var(--t3)">Nenhum envio ainda.</div><div style="font-size:11px;color:var(--t3);margin-top:5px">A atividade aparece após o primeiro envio automático ou teste.</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="al-preview-card al-clean-preview">
+            <div class="al-preview-head"><div><div class="al-history-title">Prévia do e-mail</div><div class="al-history-sub">Veja como a seleção chega na sua caixa de entrada.</div></div></div>
+            <div class="al-preview-body" id="alEmailPreviewBody"><div style="text-align:center;padding:20px;color:var(--t3);font-size:11px">Configure um alerta para ver a prévia do e-mail.</div></div>
+          </div>
+        </div>
+      </details>
 
     </div>
 
@@ -6364,27 +6379,27 @@ function renderAlertPage() {
   renderAlertSwitch();
   renderAlertUsage();
   renderAlertStatus(p);
+  renderAlertSummary(p, ext);
   renderAlertNextSend(p, ext);
   renderAlertCommandQuality(p, ext);
   renderAlertMetrics(p);
-  renderAlertSummary(p, ext);
   renderAlertJobsGrid();
   renderAlertEmailPreview(p, ext);
 }
 
 function renderAlertCommandQuality(p, ext) {
   var valueEl = document.getElementById('alCommandQualityValue');
-  var ringEl = valueEl && valueEl.closest ? valueEl.closest('.al-command-ring') : null;
+  var fillEl = document.querySelector('.al-radar-quality-track i');
   var subEl = document.querySelector('.al-command-quality-sub');
   var q = calculateAlertQuality(p, ext || {});
   var score = p ? q.score : 0;
   if (valueEl) valueEl.textContent = p ? score + '%' : '—';
-  if (ringEl) ringEl.style.setProperty('--al-quality', score + '%');
+  if (fillEl) fillEl.style.width = score + '%';
   if (subEl) {
     if (!p) subEl.textContent = 'Crie seu primeiro alerta para começar o monitoramento.';
-    else if (score >= 90) subEl.textContent = 'Seu radar está completo e pronto para encontrar vagas precisas.';
-    else if (q.recommendations.length) subEl.textContent = 'Próximo ajuste: ' + q.recommendations.join(' e ') + '.';
-    else subEl.textContent = 'Quanto mais você contar sobre o que procura, melhores as vagas.';
+    else if (score >= 90) subEl.textContent = 'Seu radar está completo e pronto para encontrar oportunidades mais precisas.';
+    else if (q.recommendations.length) subEl.textContent = 'O que deixaria a busca mais precisa';
+    else subEl.textContent = 'Suas preferências essenciais já estão definidas.';
   }
 }
 
@@ -6488,29 +6503,74 @@ function renderAlertNextSend(p, ext) {
   var dateEl = document.getElementById('alNextDate');
   var metaEl = document.getElementById('alNextMeta');
   var testBtn = document.getElementById('alTestBtn');
+  var eyebrowEl = document.getElementById('alRadarEyebrow');
+  var titleEl = document.getElementById('alRadarTitle');
+  var copyEl = document.getElementById('alRadarCopy');
+  var dotEl = document.getElementById('alRadarStateDot');
   if (!dateEl) return;
+  if (dotEl) dotEl.className = 'al-radar-status-dot';
+  if (eyebrowEl) eyebrowEl.className = 'al-radar-eyebrow';
   if (!p) {
-    dateEl.textContent = 'Configure o alerta';
-    metaEl.textContent = 'Nenhum alerta ativo';
-    if (testBtn) testBtn.disabled = true;
+    if (eyebrowEl) eyebrowEl.textContent = 'Seu radar começa por aqui';
+    if (titleEl) titleEl.textContent = 'Conte o que procura para receber oportunidades com mais contexto.';
+    if (copyEl) copyEl.textContent = 'Defina cargo, localização e preferências uma vez. A VagaAI usa esse perfil para monitorar novas vagas para você.';
+    dateEl.textContent = 'Nenhum alerta configurado';
+    if (metaEl) metaEl.textContent = '';
+    if (testBtn) {
+      testBtn.disabled = false;
+      testBtn.textContent = 'Criar meu alerta →';
+      testBtn.setAttribute('aria-label', 'Criar meu alerta');
+      testBtn.onclick = function(){ openAlertEditModal(); };
+    }
     return;
   }
   if (!p.ativo) {
-    dateEl.textContent = 'Alerta pausado';
-    metaEl.textContent = 'Reative para retomar os envios';
-    if (testBtn) testBtn.disabled = true;
+    if (eyebrowEl) eyebrowEl.textContent = 'Seu radar está pausado';
+    if (titleEl) titleEl.textContent = 'Retome a busca quando quiser voltar a receber oportunidades.';
+    if (copyEl) copyEl.textContent = 'Suas preferências continuam salvas. Ao reativar, a VagaAI volta a procurar vagas e entrega apenas as que merecem sua atenção.';
+    dateEl.textContent = 'Envios interrompidos';
+    if (metaEl) metaEl.textContent = '· perfil preservado';
+    if (testBtn) {
+      testBtn.disabled = false;
+      testBtn.textContent = 'Reativar alerta →';
+      testBtn.setAttribute('aria-label', 'Reativar alerta');
+      testBtn.onclick = function(){ toggleAlertActive(); };
+    }
     return;
+  }
+  var falha = ultimaFalhaDeEnvio();
+  if (falha) {
+    if (eyebrowEl) { eyebrowEl.textContent = 'Seu radar precisa de atenção'; eyebrowEl.classList.add('attention'); }
+    if (titleEl) titleEl.textContent = 'As vagas foram encontradas, mas o último e-mail não chegou.';
+    if (copyEl) copyEl.textContent = 'Confira o endereço da sua conta ou faça uma nova busca para consultar as oportunidades diretamente no painel.';
+    if (dotEl) dotEl.classList.add('error');
+    dateEl.textContent = 'Último envio falhou';
+    if (metaEl) metaEl.textContent = '· ' + formatDateShort(falha.sent_at);
+  } else {
+    if (eyebrowEl) eyebrowEl.textContent = 'Seu radar está trabalhando';
+    if (titleEl) titleEl.textContent = 'Sua próxima seleção está sendo preparada com base no que importa para você.';
+    if (copyEl) copyEl.textContent = 'A VagaAI monitora novas oportunidades, compara com suas preferências e prioriza as que têm mais potencial para entrar na sua jornada.';
+    if (dotEl) dotEl.classList.add('live');
   }
   // Prefere o next_run_at autoritativo salvo no banco (o backend recalcula a cada envio);
   // só cai no cálculo local quando ainda não há valor persistido.
   var next = (p.next_run_at ? new Date(p.next_run_at) : null) || calculateNextAlertRun(p, ext);
-  if (!next || isNaN(next.getTime())) { dateEl.textContent = '—'; metaEl.textContent = ''; return; }
+  if ((!next || isNaN(next.getTime())) && !falha) {
+    dateEl.textContent = 'Alerta ativo';
+    if (metaEl) metaEl.textContent = '· próximo envio sendo calculado';
+  }
   var dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
   var meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-  dateEl.textContent = dias[next.getDay()] + ', ' + next.getDate() + ' de ' + meses[next.getMonth()] + ', pela manhã';
-  var q = calculateAlertQuality(p, ext);
-  metaEl.textContent = 'Qualidade do alerta: ' + q.score + '%';
-  if (testBtn) testBtn.disabled = false;
+  if (next && !isNaN(next.getTime()) && !falha) {
+    dateEl.textContent = 'Próximo envio: ' + dias[next.getDay()].toLowerCase() + ', ' + next.getDate() + ' de ' + meses[next.getMonth()] + ', pela manhã';
+    if (metaEl) metaEl.textContent = '';
+  }
+  if (testBtn) {
+    testBtn.disabled = false;
+    testBtn.textContent = 'Receber vagas agora →';
+    testBtn.setAttribute('aria-label', 'Receber vagas agora');
+    testBtn.onclick = function(){ requestJobsNow(); };
+  }
 }
 
 function renderAlertMetrics(p) {
@@ -6567,56 +6627,44 @@ function renderAlertSummary(p, ext) {
   if (!container) return;
   if (!p) {
     container.innerHTML = '<div class="al-empty">' +
-      '<div class="al-empty-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="44" height="44"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg></div>' +
-      '<div class="al-empty-title">Nenhum alerta configurado</div>' +
-      '<div class="al-empty-sub">Crie um alerta para receber vagas compatíveis com seu perfil toda semana.</div>' +
+      '<div class="al-radar-profile-kicker">Perfil monitorado</div>' +
+      '<div class="al-empty-title">Seu radar ainda não tem um perfil</div>' +
+      '<div class="al-empty-sub">Crie um alerta para definir cargo, localização e critérios importantes para sua busca.</div>' +
       '<button class="al-empty-cta" onclick="openAlertEditModal()">Criar primeiro alerta</button></div>';
     return;
   }
   var q = calculateAlertQuality(p, ext);
-  var qCls = q.score >= 70 ? '' : q.score >= 40 ? ' warn' : ' bad';
-  var freq = p.frequencia || 'semanal';
-  var next = calculateNextAlertRun(p, ext);
-  var dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-  var nextStr = next ? (dias[next.getDay()] + 's pela manhã') : '—';
-  var metaLines = [
-    (p.nivel && p.nivel !== 'qualquer' ? escHtml(p.nivel) : '') + (p.nivel && p.nivel !== 'qualquer' && p.cidade ? ' · ' : '') + (p.cidade ? escHtml(p.cidade) : ''),
-    (p.salario_min && parseInt(p.salario_min) > 0 ? 'R$ ' + parseInt(p.salario_min).toLocaleString('pt-BR') + '+' : '') + (p.salario_min && ext.contrato_tipos && ext.contrato_tipos.length ? ' · ' : '') + (ext.contrato_tipos && ext.contrato_tipos.length ? escHtml(ext.contrato_tipos.slice(0,2).join(' ou ')) : ''),
-    freq.charAt(0).toUpperCase() + freq.slice(1) + ' · ' + nextStr,
-  ].filter(Boolean).join('<br>');
-  var tags = (Array.isArray(p.keywords) ? p.keywords.slice(0,6) : []).map(function(k){ return '<span class="al-sum-tag">'+escHtml(k)+'</span>'; }).join('');
+  var formatos = Array.isArray(ext.formato) ? ext.formato : (ext.formato ? [ext.formato] : []);
+  var contratos = Array.isArray(ext.contrato_tipos) ? ext.contrato_tipos : [];
+  var salario = p.salario_min && parseInt(p.salario_min) > 0 ? 'A partir de R$ ' + parseInt(p.salario_min).toLocaleString('pt-BR') : 'Não definido';
+  var formato = formatos.length ? formatos.slice(0,2).join(' ou ') : 'Todos os formatos';
+  var contrato = contratos.length ? contratos.slice(0,2).join(' ou ') : 'Todos os contratos';
   var pauseLbl = p.ativo ? 'Pausar alerta' : 'Reativar alerta';
   var checksHtml = q.checks.map(function(c){
     return '<div class="al-check-row"><span class="al-check-lbl">'+escHtml(c.label)+'</span><span class="'+(c.done?'al-check-done':'al-check-pending')+'">'+(c.done?'Completo':'Pendente')+'</span></div>';
   }).join('');
-  var improveHtml = q.pending.length ? '<div class="al-improve-box"><strong>Faltam '+q.pending.length+' ajuste'+(q.pending.length>1?'s':'')+':</strong> adicione '+q.recommendations.join(' e ')+' para melhorar a precisão.</div>' : '';
+  var gapHtml = q.pending.slice(0,3).map(function(c){ return '<span class="al-radar-gap">'+escHtml(c.label.replace(' (≥2)',''))+'</span>'; }).join('');
+  if (!gapHtml) gapHtml = '<span class="al-radar-gap">Preferências essenciais definidas</span>';
   container.innerHTML =
-    '<div class="al-summary-card al-clean-profile">'+
-      '<div class="al-sum-head">'+
-        '<div><div class="al-sum-head-title">Perfil monitorado</div><div class="al-sum-head-sub">Preferências usadas para buscar oportunidades.</div></div>'+
-        '<span class="al-quality-badge'+qCls+'">'+q.score+'%</span>'+
-      '</div>'+
-      '<div class="al-sum-body">'+
-        '<div class="al-sum-name">'+escHtml(p.cargo_desejado || '(sem cargo definido)')+'</div>'+
-        '<div class="al-sum-meta">'+metaLines+'</div>'+
-        (tags ? '<div class="al-sum-tags">'+tags+'</div>' : '')+
-        '<div class="al-sum-actions">'+
-          '<button class="al-sum-btn edit" onclick="openAlertEditModal()">Editar preferências</button>'+
-          '<button class="al-sum-btn" onclick="toggleAlertActive()">'+escHtml(pauseLbl)+'</button>'+
-        '</div>'+
-      '</div>'+
-      '<div class="al-quality-box">'+
-        '<div class="al-quality-line"><span>Precisão do alerta</span><span class="al-quality-pct">'+q.score+'%</span></div>'+
-        '<div class="al-quality-track"><div class="al-quality-fill'+qCls+'" style="width:'+q.score+'%"></div></div>'+
-        improveHtml+
-      '</div>'+
+    '<div class="al-radar-profile-head">'+
+      '<div><div class="al-radar-profile-kicker">Perfil monitorado</div><div class="al-radar-profile-name">'+escHtml(p.cargo_desejado || 'Cargo não definido')+'</div></div>'+
+      '<div class="al-radar-quality"><span id="alCommandQualityValue">'+q.score+'%</span><small>precisão do radar</small></div>'+
+    '</div>'+
+    '<div class="al-radar-quality-track"><i style="width:'+q.score+'%"></i></div>'+
+    '<div class="al-radar-profile-grid">'+
+      '<div class="al-radar-profile-item"><span>Localização</span><strong>'+escHtml(p.cidade || 'Brasil')+'</strong></div>'+
+      '<div class="al-radar-profile-item"><span>Formato</span><strong>'+escHtml(formato)+'</strong></div>'+
+      '<div class="al-radar-profile-item"><span>Remuneração</span><strong>'+escHtml(salario)+'</strong></div>'+
+      '<div class="al-radar-profile-item"><span>Contrato</span><strong>'+escHtml(contrato)+'</strong></div>'+
+    '</div>'+
+    '<div class="al-radar-gaps"><div class="al-command-quality-sub">O que deixaria a busca mais precisa</div><div class="al-radar-gap-list">'+gapHtml+'</div></div>'+
       '<details>'+
         '<summary>Ver configuração completa</summary>'+
         '<div class="al-clean-detail-body">'+checksHtml+
+          '<button class="al-sum-btn al-clean-danger" onclick="toggleAlertActive()">'+escHtml(pauseLbl)+'</button>'+
           '<button class="al-sum-btn danger al-clean-danger" onclick="confirmDeleteAlert()">Excluir alerta</button>'+
         '</div>'+
-      '</details>'+
-    '</div>';
+      '</details>';
 }
 
 /* ── Email preview ─────────────────────────────────────────────── */
@@ -6899,22 +6947,37 @@ function renderAlertJobsGrid() {
   pageJobs.forEach(function(j) {
     var company = String(j.company || 'Empresa');
     var score = j._score || 0;
-    var scoreClass = score >= 80 ? '' : 'warn';
+    var scoreClass = score >= 70 ? ' high' : '';
     var analyzeUrl = buildAlertAnalyzeUrl(j, '');
+    var matchTitle = score >= 80 ? 'Alta compatibilidade' : score >= 60 ? 'Boa compatibilidade' : 'Compatibilidade parcial';
+    var matchCopy = score >= 80
+      ? 'Seus critérios principais têm forte alinhamento com esta oportunidade.'
+      : score >= 60
+        ? 'A oportunidade combina com uma parte importante do perfil monitorado.'
+        : 'O cargo está próximo do que você procura, mas ainda há critérios para conferir.';
+    var seenLabel = 'Encontrada nesta seleção';
+    if (j.first_seen_at) {
+      var seenDate = new Date(j.first_seen_at);
+      if (!isNaN(seenDate.getTime())) {
+        var seenDays = Math.max(0, Math.floor((Date.now() - seenDate.getTime()) / 86400000));
+        seenLabel = seenDays === 0 ? 'Encontrada hoje' : seenDays === 1 ? 'Encontrada ontem' : 'Encontrada há ' + seenDays + ' dias';
+      }
+    }
+    var originLabel = _alertProfile ? _alNomeDe(_alertProfile) : 'seu radar';
+    var reasonTags = '<span class="al-job-reason-tag">'+_esc(j.location || 'Brasil')+'</span>' +
+      (j.salary ? '<span class="al-job-reason-tag">Salário informado</span>' : '<span class="al-job-reason-tag warn">Salário não informado</span>');
     // j.link vem do feed externo de vagas (Adzuna, Jooble, JSearch, SerpAPI).
     // _esc escapa & < >, mas não impede href="javascript:..." — e este é o
     // dado menos confiável do painel, porque não passa por nenhum usuário.
     var linkSafe = safeExternalUrl(j.link);
     html += '<div class="al-job-card">' +
-      '<div class="al-job-match ' + scoreClass + '">' + score + '%</div>' +
-      '<div class="al-job-company">' + _esc(company) + '</div>' +
-      '<div class="al-job-title">' + _esc(j.title || '') + '</div>' +
-      '<div class="al-job-location">📍 ' + _esc(j.location || 'Brasil') +
-        (j.salary ? ' · 💰 ' + _esc(j.salary) : '') + '</div>' +
+      '<div class="al-job-opportunity"><div class="al-job-match' + scoreClass + '">' + score + '%</div><div><div class="al-job-title">' + _esc(j.title || '') + '</div><div class="al-job-company">' + _esc(company) + '</div><span class="al-job-origin">' + _esc(seenLabel) + ' · origem: ' + _esc(originLabel) + '</span></div></div>' +
+      '<div class="al-job-reason"><strong>' + matchTitle + '</strong><span>' + matchCopy + '</span><div class="al-job-reason-tags">' + reasonTags + '</div></div>' +
+      '<div class="al-job-conditions"><strong>' + _esc(j.location || 'Brasil') + '</strong><span>' + (j.salary ? _esc(j.salary) : 'Salário não informado') + '</span></div>' +
       '<div class="al-job-actions">' +
-        '<button class="al-jact-btn" onclick="openAnalyzerInDashboard(this.dataset.url)" data-url="' + _esc(analyzeUrl) + '">⚡ Analisar</button>' +
-        (linkSafe ? '<a class="al-jact-btn" href="' + _esc(linkSafe) + '" target="_blank" rel="noopener" style="text-decoration:none">🔗 Ver vaga</a>' : '') +
-        '<button class="al-jact-btn al-jact-icon" title="Excluir vaga" data-link="' + _esc(j.link || '') + '" onclick="_dismissJobFromCache(this.dataset.link)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>' +
+        '<button class="al-jact-btn analyze" onclick="openAnalyzerInDashboard(this.dataset.url)" data-url="' + _esc(analyzeUrl) + '">Analisar</button>' +
+        (linkSafe ? '<a class="al-jact-btn" href="' + _esc(linkSafe) + '" target="_blank" rel="noopener" style="text-decoration:none">Ver vaga</a>' : '') +
+        '<button class="al-jact-btn al-jact-icon" aria-label="Excluir recomendação" title="Excluir vaga" data-link="' + _esc(j.link || '') + '" onclick="_dismissJobFromCache(this.dataset.link)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>' +
       '</div>' +
     '</div>';
   });
