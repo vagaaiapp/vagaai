@@ -21,6 +21,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/onboarding/shared.js"></script>
 <script src="/js/sessao.js"></script>
+<script src="/js/profile-avatar.js"></script>
 <script src="/js/cv-completude.js"></script>
 <script src="/js/eventos.js"></script>
 <script src="/js/cv-lacunas.js"></script>
@@ -284,6 +285,7 @@ body.frame-fullscreen .sidebar { display: none !important; }
   display: flex; align-items: center; justify-content: center;
   font-size: 16px; font-weight: 700; color: #fff; flex-shrink: 0;
 }
+.profile-photo-control{display:flex;align-items:center;gap:13px;padding:12px 0 16px;border-bottom:1px solid var(--border);margin-bottom:16px}.profile-photo-preview{width:58px;height:58px;border-radius:18px;background:linear-gradient(135deg,var(--gb-emerald),var(--gb-mid));color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;flex-shrink:0;overflow:hidden}.profile-photo-copy{min-width:0;flex:1}.profile-photo-copy strong{display:block;font-size:13px;color:var(--t1);margin-bottom:2px}.profile-photo-copy span{display:block;font-size:11.5px;line-height:1.45;color:var(--t3)}.profile-photo-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.profile-photo-actions button{border:1px solid var(--border);background:var(--bg-sub);color:var(--t1);border-radius:8px;padding:7px 9px;font:700 11px Manrope,sans-serif;cursor:pointer}.profile-photo-actions button.primary{background:var(--gb-emerald);border-color:var(--gb-emerald);color:#fff}.profile-photo-actions button.remove{color:var(--s-red)}.profile-photo-status{font-size:11.5px;color:var(--t3);margin-top:7px;min-height:16px}.profile-photo-status.err{color:var(--s-red)}
 .ua-info { flex: 1; min-width: 0; }
 .ua-name { font-size: 14px; font-weight: 600; color: var(--t1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ua-email { font-size: 11.5px; color: var(--t3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2726,6 +2728,19 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     <button class="modal-close" onclick="closePerfil()">✕</button>
     <div class="modal-title">Meu Perfil</div>
     <div class="modal-sub">Informações da sua conta.</div>
+    <div class="profile-photo-control">
+      <div class="profile-photo-preview" id="perfilAvatarPreview" data-profile-avatar aria-label="Foto de perfil"></div>
+      <div class="profile-photo-copy">
+        <strong>Sua foto de perfil</strong>
+        <span>Opcional. Ela aparece igual no painel, nos menus e no celular.</span>
+        <div class="profile-photo-actions">
+          <button class="primary" type="button" id="btnPerfilAvatar" onclick="document.getElementById('perfilAvatarInput').click()">Escolher foto</button>
+          <button class="remove" type="button" id="btnRemoverAvatar" onclick="removeProfileAvatar()" style="display:none">Remover</button>
+        </div>
+        <input id="perfilAvatarInput" type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleProfileAvatarFile(this)">
+        <div class="profile-photo-status" id="perfilAvatarMsg" role="status" aria-live="polite"></div>
+      </div>
+    </div>
     <div class="modal-field">
       <label class="modal-label">Nome</label>
       <div style="display:flex;gap:6px">
@@ -2880,7 +2895,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       <strong>Precisa de ajuda?</strong>Veja dicas para melhorar suas candidaturas.
     </a>
     <div class="sb-profile-row" onclick="toggleDropdown()" role="button" aria-haspopup="true" aria-expanded="false" aria-label="Menu da conta">
-      <button class="sb-avatar" id="avatarBtn" style="border:none;pointer-events:none" tabindex="-1" aria-hidden="true">
+      <button class="sb-avatar" id="avatarBtn" data-profile-avatar style="border:none;pointer-events:none" tabindex="-1" aria-hidden="true">
         <span id="avatarInitials">?</span>
       </button>
       <div class="sb-profile-info">
@@ -2956,7 +2971,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
       </button>
     </nav>
     <button class="dm-drawer-foot" onclick="closeMobileDrawer();toggleDropdown()" aria-label="Abrir menu da conta">
-      <div class="sb-avatar"><span id="dmAvatarInitials">?</span></div>
+      <div class="sb-avatar" id="dmAvatar" data-profile-avatar><span id="dmAvatarInitials">?</span></div>
       <div class="dm-drawer-user">
         <strong id="dmDisplayName">—</strong>
         <span id="dmPlanLabel">VagaAI</span>
@@ -2992,7 +3007,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
 <div class="user-account-overlay" id="userDropdown" role="dialog" aria-modal="true" aria-label="Menu da conta" onclick="if(event.target===this)closeDropdown()">
   <div class="user-dropdown">
     <div class="ua-header">
-      <div class="ua-avatar" id="uaAvatarCircle">?</div>
+      <div class="ua-avatar" id="uaAvatarCircle" data-profile-avatar>?</div>
       <div class="ua-info">
         <div class="ua-name" id="dropName">—</div>
         <div class="ua-email" id="dropEmail">—</div>
@@ -3073,7 +3088,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
          As pilhas abaixo respondem "onde eu estou" antes de qualquer rolagem. -->
     <div class="pg-greeting">
       <div class="pg-ident">
-        <div class="pg-avatar" id="pgAvatar" aria-hidden="true"></div>
+        <div class="pg-avatar" id="pgAvatar" data-profile-avatar aria-hidden="true"></div>
         <div>
           <h1 class="pg-title" id="pgGreeting">Carregando...</h1>
           <div class="pg-pills" id="pgPills"></div>
@@ -3741,6 +3756,23 @@ var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 var currentSession = null, currentUserId = null;
 
+function applyProfileIdentity(profile) {
+  profile = Object.assign({}, window._perfilData || {}, profile || {});
+  var name = profile.displayName || profile.name || profile.email || '—';
+  var email = profile.email || '';
+  var initials = window.VagaAIProfile ? window.VagaAIProfile.initials(name, email) : name.slice(0, 2).toUpperCase();
+  window._perfilData = { email: email, displayName: name, avatarUrl: profile.avatarUrl || '' };
+  window._userName = name;
+  ['avatarInitials', 'dmAvatarInitials'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.textContent = initials;
+  });
+  ['dropName', 'sbDisplayName', 'dmDisplayName'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.textContent = name;
+  });
+  var emailEl = document.getElementById('dropEmail'); if (emailEl) emailEl.textContent = email;
+  if (window.VagaAIProfile) window.VagaAIProfile.renderAll(window._perfilData);
+}
+
 // Mantém currentSession sincronizado com o token renovado em background.
 // O client renova o access_token (~1h de validade) sozinho, mas as ~16 chamadas
 // diretas ao PostgREST usam currentSession.access_token — sem este listener,
@@ -3792,23 +3824,7 @@ async function init() {
     }
     var email = session.user.email || '';
     var displayName = (session.user.user_metadata && session.user.user_metadata.full_name) || email.split('@')[0];
-    var initials = displayName.slice(0,2).toUpperCase();
-
-    document.getElementById('avatarInitials').textContent = initials;
-    // Mesmas iniciais do avatar da barra lateral: uma fonte só, sem divergir.
-    var pgAv = document.getElementById('pgAvatar');
-    if (pgAv) pgAv.textContent = initials;
-    document.getElementById('dropName').textContent = displayName;
-    document.getElementById('dropEmail').textContent = email;
-    var sbDisp = document.getElementById('sbDisplayName');
-    if (sbDisp) sbDisp.textContent = displayName;
-    var dmInitials = document.getElementById('dmAvatarInitials');
-    if (dmInitials) dmInitials.textContent = initials;
-    var dmName = document.getElementById('dmDisplayName');
-    if (dmName) dmName.textContent = displayName;
-
-    window._perfilData = { email, displayName };
-    window._userName = displayName;
+    applyProfileIdentity({ email: email, displayName: displayName });
 
     await Promise.all([loadSubscriptionData(), loadAnalyses(), loadKanban(), loadAlerts(), loadCvBase()]);
   } catch(e) {
@@ -7830,6 +7846,8 @@ async function loadSubscriptionData() {
     }
     var sub = await res.json();
     window._subscriptionData = sub;
+    // A URL é assinada e temporária: nunca salvamos a foto no navegador.
+    applyProfileIdentity({ avatarUrl: sub.avatar_url || '' });
     marcarItensPagosNoMenu(sub);
     // A faixa de ferramentas mostra selo de plano nos cards de carta e treino,
     // e o painel costuma montar antes desta resposta chegar.
@@ -8081,12 +8099,12 @@ function toggleDropdown() {
   var d = window._perfilData || {};
   var name = d.displayName || d.email || '—';
   var email = d.email || '—';
-  var initials = name.split(' ').slice(0,2).map(function(p){return p[0]||'';}).join('').toUpperCase() || '?';
   var planLabelEl = document.getElementById('sbPlanLabel');
   var planLabel = planLabelEl ? planLabelEl.textContent : 'Grátis';
   var nameEl = document.getElementById('dropName'); if (nameEl) nameEl.textContent = name;
   var emailEl = document.getElementById('dropEmail'); if (emailEl) emailEl.textContent = email;
-  var av = document.getElementById('uaAvatarCircle'); if (av) av.textContent = initials;
+  var av = document.getElementById('uaAvatarCircle');
+  if (av && window.VagaAIProfile) window.VagaAIProfile.render(av, { name: name, email: email, avatarUrl: d.avatarUrl || '' });
   var badge = document.getElementById('uaPlanBadge'); if (badge) badge.textContent = planLabel;
   overlay.classList.add('active');
   var trigger = document.querySelector('.sb-profile-row');
@@ -8166,10 +8184,110 @@ function openPerfil() {
   document.getElementById('perfilNome').value = d.displayName || '';
   document.getElementById('nomeMsg').textContent = '';
   document.getElementById('perfilRows').innerHTML = '<div><strong>E-mail:</strong> ' + escHtml(d.email || '—') + '</div>';
+  renderProfileAvatarControls();
   document.getElementById('modalPerfil').classList.remove('hidden');
 }
 
 function closePerfil() { document.getElementById('modalPerfil').classList.add('hidden'); }
+
+function setProfileAvatarMessage(message, isError) {
+  var el = document.getElementById('perfilAvatarMsg');
+  if (!el) return;
+  el.textContent = message || '';
+  el.classList.toggle('err', !!isError);
+}
+
+function renderProfileAvatarControls() {
+  var d = window._perfilData || {};
+  var preview = document.getElementById('perfilAvatarPreview');
+  if (preview && window.VagaAIProfile) window.VagaAIProfile.render(preview, d);
+  var upload = document.getElementById('btnPerfilAvatar');
+  if (upload) upload.textContent = d.avatarUrl ? 'Trocar foto' : 'Escolher foto';
+  var remove = document.getElementById('btnRemoverAvatar');
+  if (remove) remove.style.display = d.avatarUrl ? '' : 'none';
+  setProfileAvatarMessage('');
+}
+
+function avatarFileToDataUrl(file) {
+  return new Promise(function(resolve, reject) {
+    if (!file || !/^image\/(jpeg|png|webp)$/.test(file.type || '')) return reject(new Error('Escolha uma imagem JPG, PNG ou WebP.'));
+    if (file.size > 5 * 1024 * 1024) return reject(new Error('Escolha uma imagem de até 5 MB.'));
+    var source = URL.createObjectURL(file);
+    var image = new Image();
+    image.onload = function() {
+      try {
+        var side = Math.min(image.naturalWidth || image.width, image.naturalHeight || image.height);
+        if (!side) throw new Error('Não foi possível ler esta imagem.');
+        var sx = ((image.naturalWidth || image.width) - side) / 2;
+        var sy = ((image.naturalHeight || image.height) - side) / 2;
+        var canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 512;
+        canvas.getContext('2d').drawImage(image, sx, sy, side, side, 0, 0, 512, 512);
+        canvas.toBlob(function(blob) {
+          URL.revokeObjectURL(source);
+          if (!blob) return reject(new Error('Não foi possível preparar esta imagem.'));
+          if (blob.size > 2 * 1024 * 1024) return reject(new Error('A imagem ficou grande demais. Escolha outra foto.'));
+          var reader = new FileReader();
+          reader.onload = function() { resolve(reader.result); };
+          reader.onerror = function() { reject(new Error('Não foi possível preparar esta imagem.')); };
+          reader.readAsDataURL(blob);
+        }, 'image/webp', .86);
+      } catch (e) {
+        URL.revokeObjectURL(source);
+        reject(e);
+      }
+    };
+    image.onerror = function() { URL.revokeObjectURL(source); reject(new Error('Não foi possível ler esta imagem.')); };
+    image.src = source;
+  });
+}
+
+async function handleProfileAvatarFile(input) {
+  var file = input && input.files && input.files[0];
+  if (input) input.value = '';
+  if (!file) return;
+  var button = document.getElementById('btnPerfilAvatar');
+  if (button) { button.disabled = true; button.textContent = 'Preparando…'; }
+  setProfileAvatarMessage('');
+  try {
+    var image = await avatarFileToDataUrl(file);
+    if (button) button.textContent = 'Enviando…';
+    var token = await getFreshToken();
+    var res = await fetch('/api/subscription?action=avatar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ image: image })
+    });
+    var data = await res.json();
+    if (!res.ok || !data.avatar_url) throw new Error(data.error || 'Não foi possível atualizar sua foto.');
+    applyProfileIdentity({ avatarUrl: data.avatar_url });
+    renderProfileAvatarControls();
+    setProfileAvatarMessage('Foto atualizada em todo o seu espaço.');
+  } catch (e) {
+    setProfileAvatarMessage(e.message || 'Não foi possível atualizar sua foto.', true);
+  } finally {
+    if (button) { button.disabled = false; button.textContent = (window._perfilData && window._perfilData.avatarUrl) ? 'Trocar foto' : 'Escolher foto'; }
+  }
+}
+
+async function removeProfileAvatar() {
+  if (!window.confirm('Remover sua foto de perfil? As iniciais voltarão a aparecer no app.')) return;
+  var button = document.getElementById('btnRemoverAvatar');
+  if (button) { button.disabled = true; button.textContent = 'Removendo…'; }
+  try {
+    var token = await getFreshToken();
+    var res = await fetch('/api/subscription?action=avatar', { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Não foi possível remover sua foto.');
+    applyProfileIdentity({ avatarUrl: '' });
+    renderProfileAvatarControls();
+    setProfileAvatarMessage('Foto removida. Agora usamos suas iniciais.');
+  } catch (e) {
+    setProfileAvatarMessage(e.message || 'Não foi possível remover sua foto.', true);
+  } finally {
+    if (button) { button.disabled = false; button.textContent = 'Remover'; }
+  }
+}
 
 async function doSalvarNome() {
   var nome = document.getElementById('perfilNome').value.trim();
@@ -8177,10 +8295,7 @@ async function doSalvarNome() {
   var { error } = await sb.auth.updateUser({ data: { full_name: nome } });
   if (!error) {
     document.getElementById('nomeMsg').textContent = '✓ Nome atualizado!';
-    document.getElementById('dropName').textContent = nome;
-    var sbDisp = document.getElementById('sbDisplayName');
-    if (sbDisp) sbDisp.textContent = nome;
-    window._userName = nome;
+    applyProfileIdentity({ displayName: nome });
     var pgG = document.getElementById('pgGreeting');
     if (pgG) pgG.textContent = getGreetingWord() + ', ' + nome;
   }

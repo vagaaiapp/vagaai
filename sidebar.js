@@ -84,14 +84,14 @@
               + '<button class="sb-dropdown-item" id="sbDropPerfil">' + ICONS.user + 'Meu Perfil</button>'
               + '<button class="sb-dropdown-item danger" id="sbDropLogout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sair</button>'
             + '</div>'
-            + '<button class="sb-avatar" id="avatarBtn" style="border:none;pointer-events:none" tabindex="-1" aria-hidden="true"><span id="avatarInitials">' + (opts.userInitials || '?') + '</span></button>'
+            + '<button class="sb-avatar" id="avatarBtn" data-profile-avatar style="border:none;pointer-events:none" tabindex="-1" aria-hidden="true"><span id="avatarInitials">' + (opts.userInitials || '?') + '</span></button>'
             + '<div class="sb-profile-info" id="sbProfileInfo"><strong id="sbDisplayName">' + (opts.userName || '-') + '</strong><span id="sbPlanLabel">' + (opts.planLabel || 'VagaAI') + '</span></div>'
           + '</div></div>'
       + '</aside>'
       + '<div class="vagaai-mobile-ui">'
         + '<div class="vm-top"><button class="vm-menu-btn" id="vmMenuBtn" aria-label="Abrir menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><a class="vm-brand" href="/dashboard" id="vmBrandLink"><img src="/logo-icon.svg" alt=""><img src="/logo-light.svg" alt="VagaAI" class="vm-wm-onlight"><img src="/logo.svg" alt="VagaAI" class="vm-wm-ondark"></a><span class="vm-top-spacer" aria-hidden="true"></span></div>'
         + '<div class="vm-overlay" id="vmOverlay"></div>'
-        + '<aside class="vm-drawer" id="vmDrawer" aria-label="Menu mobile"><div class="vm-drawer-head"><div class="vm-drawer-logo"><img src="/logo-icon.svg" alt=""><img src="/logo-light.svg" alt="VagaAI" class="vm-wm-onlight"><img src="/logo.svg" alt="VagaAI" class="vm-wm-ondark"></div><button class="vm-close" id="vmClose" aria-label="Fechar menu">x</button></div><div class="vm-drawer-label">Seu espa\u00e7o</div><nav class="vm-drawer-nav">' + drawerHtml + '</nav><div class="vm-drawer-foot"><div class="sb-avatar"><span id="vmAvatarInitials">' + (opts.userInitials || '?') + '</span></div><div class="vm-drawer-user"><strong id="vmDisplayName">' + (opts.userName || '-') + '</strong><span id="vmPlanLabel">' + (opts.planLabel || 'VagaAI') + '</span></div></div></aside>'
+        + '<aside class="vm-drawer" id="vmDrawer" aria-label="Menu mobile"><div class="vm-drawer-head"><div class="vm-drawer-logo"><img src="/logo-icon.svg" alt=""><img src="/logo-light.svg" alt="VagaAI" class="vm-wm-onlight"><img src="/logo.svg" alt="VagaAI" class="vm-wm-ondark"></div><button class="vm-close" id="vmClose" aria-label="Fechar menu">x</button></div><div class="vm-drawer-label">Seu espa\u00e7o</div><nav class="vm-drawer-nav">' + drawerHtml + '</nav><div class="vm-drawer-foot"><div class="sb-avatar" data-profile-avatar><span id="vmAvatarInitials">' + (opts.userInitials || '?') + '</span></div><div class="vm-drawer-user"><strong id="vmDisplayName">' + (opts.userName || '-') + '</strong><span id="vmPlanLabel">' + (opts.planLabel || 'VagaAI') + '</span></div></div></aside>'
         + '<nav class="vm-bottom" aria-label="Navega\u00e7\u00e3o principal mobile">' + bottomHtml + '</nav>'
       + '</div>'
     + '</div>';
@@ -190,12 +190,16 @@
         el.setAttribute('aria-current', active ? 'page' : 'false');
       });
     },
-    updateUser: function (name, initials, plan, email) {
+    updateUser: function (name, initials, plan, email, avatarUrl) {
+      var canonicalInitials = window.VagaAIProfile
+        ? window.VagaAIProfile.initials(name, email)
+        : (initials || '?');
       ['sbDisplayName','vmDisplayName'].forEach(function (id) { var n = document.getElementById(id); if (n) n.textContent = name || '-'; });
-      ['avatarInitials','vmAvatarInitials'].forEach(function (id) { var a = document.getElementById(id); if (a) a.textContent = initials || '?'; });
+      ['avatarInitials','vmAvatarInitials'].forEach(function (id) { var a = document.getElementById(id); if (a) a.textContent = canonicalInitials; });
       ['sbPlanLabel','vmPlanLabel'].forEach(function (id) { var p = document.getElementById(id); if (p) p.textContent = plan || 'VagaAI'; });
       var dn = document.getElementById('dropName'); if (dn) dn.textContent = name || '-';
       var de = document.getElementById('dropEmail'); if (de) de.textContent = email || '';
+      if (window.VagaAIProfile) window.VagaAIProfile.renderAll({ name: name, email: email, avatarUrl: avatarUrl });
     },
     closeDropdown: function () {
       var dd = document.getElementById('sbDropdown');

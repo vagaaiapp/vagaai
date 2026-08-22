@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/sessao.js"></script>
+<script src="/js/profile-avatar.js"></script>
 <script src="/js/cv-base.js"></script>
 <script src="/js/eventos.js"></script>
 <script defer src="/_vercel/insights/script.js"></script>
@@ -367,6 +368,7 @@ var _audioTimer = null;
 var _audioStartedAt = 0;
 var _audioMimeType = '';
 var _audioMode = '';
+var _interviewProfile = null;
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 (async function() {
@@ -382,6 +384,16 @@ var _audioMode = '';
   try {
     var res = await fetch('/api/subscription', { headers: { Authorization: 'Bearer ' + _session.access_token } });
     var sub = await res.json();
+    var _meta = _session.user.user_metadata || {};
+    var _name = _meta.full_name || _meta.name || _session.user.email.split('@')[0];
+    _interviewProfile = {
+      name: _name,
+      initials: window.VagaAIProfile ? window.VagaAIProfile.initials(_name, _session.user.email) : _name.slice(0, 2).toUpperCase(),
+      plan: sub.plan === 'pro' ? 'Pro' : sub.plan === 'starter' ? 'Starter' : 'Grátis',
+      email: _session.user.email,
+      avatarUrl: sub.avatar_url || ''
+    };
+    if (typeof VagaaiSidebar !== 'undefined') VagaaiSidebar.updateUser(_interviewProfile.name, _interviewProfile.initials, _interviewProfile.plan, _interviewProfile.email, _interviewProfile.avatarUrl);
     var canUse = sub.plan === 'pro' || (sub.entitlements && sub.entitlements.simulador_entrevista);
     if (!canUse) { showScreen('screenGate'); return; }
 
@@ -1042,6 +1054,7 @@ function toggleTheme() {
     document.body.classList.add('embedded');
   } else if (typeof VagaaiSidebar !== 'undefined') {
     VagaaiSidebar.init({ active: 'entrevistas' });
+    if (_interviewProfile) VagaaiSidebar.updateUser(_interviewProfile.name, _interviewProfile.initials, _interviewProfile.plan, _interviewProfile.email, _interviewProfile.avatarUrl);
   }
   window.logout = function() {
     if (window.VagaAISessao) VagaAISessao.limpar();

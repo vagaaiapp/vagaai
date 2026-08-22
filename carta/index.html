@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/sessao.js"></script>
+<script src="/js/profile-avatar.js"></script>
 <script src="/js/cv-base.js"></script>
 <script src="/js/eventos.js"></script>
 <script defer src="/_vercel/insights/script.js"></script>
@@ -500,7 +501,7 @@ async function getFreshToken() {
   try {
     var _meta = _session.user.user_metadata || {};
     var _uName = _meta.full_name || _meta.name || _session.user.email.split('@')[0];
-    var _uInit = _uName.slice(0,2).toUpperCase();
+    var _uInit = window.VagaAIProfile ? window.VagaAIProfile.initials(_uName, _session.user.email) : _uName.slice(0,2).toUpperCase();
     if (typeof VagaaiSidebar !== 'undefined') {
       VagaaiSidebar.updateUser(_uName, _uInit, 'VagaAI', _session.user.email);
     }
@@ -509,6 +510,7 @@ async function getFreshToken() {
   try {
     var res = await fetch('/api/subscription', { headers: { Authorization: 'Bearer ' + _session.access_token } });
     var sub = await res.json();
+    if (typeof VagaaiSidebar !== 'undefined') VagaaiSidebar.updateUser(_uName, _uInit, sub.plan === 'pro' ? 'Pro' : sub.plan === 'starter' ? 'Starter' : 'Grátis', _session.user.email, sub.avatar_url || '');
     if (sub.plan === 'free') {
       document.getElementById('gateSection').style.display = 'block';
     } else {

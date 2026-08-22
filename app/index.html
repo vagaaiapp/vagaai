@@ -40,6 +40,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/onboarding/shared.js"></script>
 <script src="/js/sessao.js"></script>
+<script src="/js/profile-avatar.js"></script>
 <script src="/js/cv-voice.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1117,11 +1118,11 @@ async function initAuth() {
       // Popula sidebar com dados reais do usuário
       var meta = session.user.user_metadata || {};
       var displayName = meta.full_name || meta.name || session.user.email.split('@')[0];
-      var initials = displayName.slice(0,2).toUpperCase();
+      var initials = window.VagaAIProfile ? window.VagaAIProfile.initials(displayName, session.user.email) : displayName.slice(0,2).toUpperCase();
       var planLabels = { pro: 'Plano Pro', starter: 'Plano Starter', free: 'Plano Grátis' };
       var planLabel = planLabels[userPlan] || 'VagaAI';
       if (typeof VagaaiSidebar !== 'undefined') {
-        VagaaiSidebar.updateUser(displayName, initials, planLabel, session.user.email);
+        VagaaiSidebar.updateUser(displayName, initials, planLabel, session.user.email, (userPlanSub && userPlanSub.avatar_url) || '');
       }
     }
   } catch(e) {}

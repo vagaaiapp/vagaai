@@ -16,6 +16,138 @@ const ALLOWED_ORIGINS = [
 ];
 
 const FREE_MONTHLY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+const AVATAR_BUCKET = 'profile-avatars';
+const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+
+async function getUserFromToken(token) {
+  if (!token) return null;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+function avatarPathIsSafe(path) {
+  return /^[0-9a-f-]+\/avatar\.(?:png|jpeg|webp)$/i.test(String(path || ''));
+}
+
+function avatarExtension(contentType) {
+  return contentType === 'image/png' ? 'png' : contentType === 'image/jpeg' ? 'jpeg' : 'webp';
+}
+
+async function ensureAvatarBucket() {
+  const headers = { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` };
+  const current = await fetch(`${SUPABASE_URL}/storage/v1/bucket/${AVATAR_BUCKET}`, { headers });
+  if (current.ok) return;
+  if (current.status !== 404) throw new Error('Não foi possível preparar o armazenamento da foto.');
+  const created = await fetch(`${SUPABASE_URL}/storage/v1/bucket`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id: AVATAR_BUCKET,
+      name: AVATAR_BUCKET,
+      public: false,
+      file_size_limit: AVATAR_MAX_BYTES,
+      allowed_mime_types: ['image/jpeg', 'image/png', 'image/webp'],
+    }),
+  });
+  // Outra requisição pode ter criado o bucket no mesmo instante.
+  if (!created.ok && created.status !== 409) throw new Error('Não foi possível criar o armazenamento da foto.');
+}
+
+async function signAvatarUrl(path) {
+  if (!avatarPathIsSafe(path) || !SUPABASE_SERVICE_KEY) return '';
+  try {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/sign/${AVATAR_BUCKET}/${path}`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ expiresIn: 60 * 60 * 24 * 7 }),
+    });
+    if (!res.ok) return '';
+    const data = await res.json();
+    const signed = data.signedURL || data.signedUrl || '';
+    return signed ? (signed.startsWith('http') ? signed : `${SUPABASE_URL}/storage/v1${signed}`) : '';
+  } catch {
+    return '';
+  }
+}
+
+async function updateAvatarMetadata(user, avatarPath) {
+  const metadata = { ...(user.user_metadata || {}), avatar_path: avatarPath || null };
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${encodeURIComponent(user.id)}`, {
+    method: 'PUT',
+    headers: {
+      apikey: SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ user_metadata: metadata }),
+  });
+  if (!res.ok) throw new Error('Não foi possível atualizar sua foto.');
+}
+
+function avatarAction(req) {
+  if (req.query && req.query.action) return req.query.action;
+  try { return new URL(req.url, 'https://vagaai.app.br').searchParams.get('action') || ''; } catch { return ''; }
+}
+
+async function handleAvatar(req, res) {
+  if (!SUPABASE_URL || !SUPABASE_KEY || !SUPABASE_SERVICE_KEY) {
+    return res.status(500).json({ error: 'O envio de foto não está configurado neste ambiente.' });
+  }
+  const token = (req.headers.authorization || '').replace('Bearer ', '');
+  const user = await getUserFromToken(token);
+  if (!user) return res.status(401).json({ error: 'Invalid token' });
+
+  try {
+    if (req.method === 'DELETE') {
+      const oldPath = user.user_metadata && user.user_metadata.avatar_path;
+      if (avatarPathIsSafe(oldPath)) {
+        await fetch(`${SUPABASE_URL}/storage/v1/object/${AVATAR_BUCKET}/${oldPath}`, {
+          method: 'DELETE',
+          headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
+        });
+      }
+      await updateAvatarMetadata(user, null);
+      return res.status(200).json({ ok: true, avatar_url: '' });
+    }
+
+    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+    const match = String(body.image || '').match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/]+={0,2})$/);
+    if (!match) return res.status(400).json({ error: 'Envie uma imagem JPG, PNG ou WebP válida.' });
+    const binary = Buffer.from(match[2], 'base64');
+    if (!binary.length || binary.length > AVATAR_MAX_BYTES) return res.status(413).json({ error: 'A foto deve ter no máximo 2 MB.' });
+
+    await ensureAvatarBucket();
+    const contentType = match[1];
+    const path = `${user.id}/avatar.${avatarExtension(contentType)}`;
+    const upload = await fetch(`${SUPABASE_URL}/storage/v1/object/${AVATAR_BUCKET}/${path}`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': contentType,
+        'x-upsert': 'true',
+      },
+      body: binary,
+    });
+    if (!upload.ok) throw new Error('Não foi possível enviar a foto.');
+    await updateAvatarMetadata(user, path);
+    return res.status(200).json({ ok: true, avatar_url: await signAvatarUrl(path) });
+  } catch (err) {
+    console.error('subscription avatar error:', err);
+    return res.status(500).json({ error: err.message || 'Não foi possível atualizar sua foto.' });
+  }
+}
 
 async function getFreeMonthlyAvailable(userId) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !userId) return false;
@@ -40,6 +172,9 @@ export default async function handler(req, res) {
     res.setHeader('Vary', 'Origin');
   }
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+
+  const action = avatarAction(req);
+  if (action === 'avatar' && (req.method === 'POST' || req.method === 'DELETE')) return handleAvatar(req, res);
 
   if (req.method === 'POST') {
     // Cria sessão no Stripe Customer Portal
@@ -150,6 +285,8 @@ export default async function handler(req, res) {
     // Preço — só para planos pagos ativos
     const precos = { starter: 'R$19,90/mês', pro: 'R$39,90/mês' };
 
+    const avatarPath = user.user_metadata && user.user_metadata.avatar_path;
+    const avatarUrl = await signAvatarUrl(avatarPath);
     return res.status(200).json({
       plan: effectivePlan,
       status: effectiveStatus,
@@ -164,6 +301,7 @@ export default async function handler(req, res) {
       free_monthly_available: freeMonthlyAvailable,
       preco: isActiveSub ? (precos[effectivePlan] || null) : null,
       entitlements,
+      avatar_url: avatarUrl,
     });
   } catch (err) {
     console.error('subscription.js error:', err);
