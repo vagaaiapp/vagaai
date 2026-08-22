@@ -2535,6 +2535,157 @@ body.cd-modal-open { overflow:hidden; }
   .al-clean-jobs .al-job-actions { min-width:0; }
 }
 
+/* ── Entrevistas — sala de preparo aprovada ─────────────────── */
+.interview-page { gap:0; }
+.interview-page-head {
+  display:flex; align-items:flex-end; justify-content:space-between; gap:36px;
+  margin:0 0 27px;
+}
+.interview-page-kicker,
+.interview-focus-kicker,
+.interview-journey-kicker {
+  color:var(--gb-emerald); font-size:11px; font-weight:800;
+  letter-spacing:.1em; text-transform:uppercase;
+}
+[data-theme="dark"] .interview-page-kicker,
+[data-theme="dark"] .interview-focus-kicker,
+[data-theme="dark"] .interview-journey-kicker { color:var(--gb-bright); }
+.interview-page-head h1 {
+  margin:7px 0 5px; color:var(--t1); font-family:Lora,Georgia,serif;
+  font-size:clamp(34px,4vw,45px); line-height:1.08; letter-spacing:-.035em;
+}
+.interview-page-head p { max-width:730px; color:var(--t2); font-size:16px; line-height:1.6; }
+.interview-privacy { display:flex; align-items:center; gap:8px; flex:0 0 auto; padding-bottom:4px; color:var(--t3); font-size:12px; }
+
+.interview-focus {
+  display:grid; grid-template-columns:minmax(0,1.42fr) minmax(320px,.72fr);
+  min-height:376px; overflow:hidden; border-radius:22px; background:#083522;
+  color:#fff; box-shadow:0 18px 44px rgba(7,36,22,.12);
+}
+.interview-focus-main {
+  position:relative; display:flex; flex-direction:column; justify-content:center;
+  min-width:0; padding:42px 45px; border-right:1px solid rgba(255,255,255,.12);
+}
+.interview-focus-main::after {
+  content:'08'; position:absolute; right:22px; bottom:-45px; pointer-events:none;
+  color:rgba(255,255,255,.035); font-family:Lora,Georgia,serif; font-size:176px; font-weight:700; line-height:1;
+}
+.interview-focus-kicker { display:flex; align-items:center; gap:8px; color:#4ece91; }
+.interview-focus-kicker::before { content:''; width:7px; height:7px; border-radius:50%; background:#4ece91; }
+.interview-focus-main h2 {
+  max-width:680px; margin:17px 0 11px; color:#fff; font-family:Lora,Georgia,serif;
+  font-size:clamp(29px,3vw,39px); line-height:1.15; letter-spacing:-.028em;
+}
+.interview-focus-main > p { max-width:680px; margin:0; color:#b8d0c2; font-size:15px; line-height:1.65; }
+.interview-focus-role {
+  position:relative; z-index:1; display:grid; grid-template-columns:50px minmax(0,1fr) auto;
+  align-items:center; gap:14px; margin-top:24px; padding-top:20px; border-top:1px solid rgba(255,255,255,.13);
+}
+.interview-focus-score {
+  width:48px; height:48px; display:grid; place-items:center; border-radius:12px;
+  background:#fff; color:#0a1a10; font-size:13px; font-weight:800;
+}
+.interview-focus-job { min-width:0; }
+.interview-focus-job strong { display:block; overflow:hidden; color:#fff; font-size:16px; text-overflow:ellipsis; white-space:nowrap; }
+.interview-focus-job span { display:block; margin-top:2px; color:#9fbbaa; font-size:12px; }
+.interview-focus-status { color:#c9ded1; text-align:right; }
+.interview-focus-status strong { display:block; color:#4ece91; font-size:12px; }
+.interview-focus-status span { display:block; margin-top:1px; font-size:11px; }
+.interview-focus-actions { position:relative; z-index:1; display:flex; align-items:center; gap:11px; margin-top:22px; }
+.interview-primary,.interview-secondary {
+  min-height:43px; padding:0 17px; border-radius:9px; font-family:inherit; font-size:13px; font-weight:800; cursor:pointer;
+}
+.interview-primary { border:0; background:#4ece91; color:#062619; }
+.interview-primary:hover { background:#69dca3; }
+.interview-secondary { border:1px solid rgba(255,255,255,.27); background:transparent; color:#fff; }
+.interview-secondary:hover { border-color:rgba(255,255,255,.55); }
+
+.interview-journey { padding:38px 34px; background:#0d4b31; }
+.interview-journey-kicker { color:#4ece91; }
+.interview-journey h3 { margin:7px 0 6px; color:#fff; font-family:Lora,Georgia,serif; font-size:23px; line-height:1.25; }
+.interview-journey > p { margin:0 0 22px; color:#a9c5b5; font-size:13px; line-height:1.55; }
+.interview-journey-list { display:flex; flex-direction:column; }
+.interview-journey-step { position:relative; display:grid; grid-template-columns:34px minmax(0,1fr); gap:12px; min-height:64px; }
+.interview-journey-step:not(:last-child)::after { content:''; position:absolute; top:34px; bottom:0; left:16px; width:1px; background:rgba(255,255,255,.2); }
+.interview-journey-step > span {
+  position:relative; z-index:1; width:34px; height:34px; display:grid; place-items:center;
+  border:1px solid rgba(255,255,255,.3); border-radius:50%; background:#0d4b31; color:#fff; font-size:11px; font-weight:800;
+}
+.interview-journey-step.active > span { border-color:#4ece91; background:#4ece91; color:#07311f; }
+.interview-journey-step strong { display:block; padding-top:2px; color:#fff; font-size:13px; }
+.interview-journey-step small { display:block; margin-top:2px; color:#92af9e; font-size:11px; }
+.interview-journey-foot { display:flex; justify-content:space-between; gap:16px; margin-top:3px; padding-top:17px; border-top:1px solid rgba(255,255,255,.13); color:#b5ccbe; font-size:12px; }
+.interview-journey-foot strong { color:#fff; font-size:14px; }
+
+.interview-gate { margin-top:18px; box-shadow:none; }
+.interview-practice-section { margin-top:40px; }
+.interview-list-head { align-items:flex-end; padding:0 0 15px; border:0; }
+.interview-list-head h2 { margin:0; color:var(--t1); font-family:Lora,Georgia,serif; font-size:28px; line-height:1.2; }
+.interview-list-head p { max-width:680px; margin-top:5px; color:var(--t3); font-size:13.5px; line-height:1.55; }
+.interview-filters { flex-wrap:nowrap; }
+.int-filter { min-height:36px; padding:0 12px; border-radius:8px; font-size:12px; }
+.int-filter.active { background:#0a1a10; border-color:#0a1a10; }
+[data-theme="dark"] .int-filter.active { background:var(--gb-bright); border-color:var(--gb-bright); color:#082318; }
+.interview-list-card { border-radius:16px; box-shadow:0 8px 26px rgba(8,35,22,.055); }
+[data-theme="dark"] .interview-list-card { box-shadow:none; }
+.int-row {
+  grid-template-columns:58px minmax(250px,1.15fr) minmax(185px,.62fr) auto;
+  gap:18px; padding:21px 24px; border-bottom:1px solid var(--border);
+}
+.int-score { width:52px; height:52px; border-radius:13px; font-size:13px; }
+.int-cargo { font-size:15px; }
+.int-empresa { margin-top:3px; font-size:12px; }
+.int-meta-line { margin-top:7px; color:var(--t3); font-size:11.5px; line-height:1.45; }
+.int-meta-line strong { color:var(--t2); font-weight:700; }
+.int-status { padding-left:18px; border-left:1px solid var(--border); font-size:12px; }
+.int-status strong { margin-bottom:3px; color:var(--t1); font-size:12px; }
+.int-status span { color:var(--t3); line-height:1.45; }
+.int-train-btn { min-height:40px; padding:0 15px; border-radius:9px; font-size:12px; }
+.int-empty { padding:38px 24px; }
+.int-empty strong { font-family:Lora,Georgia,serif; font-size:19px; }
+.int-empty span { margin-top:4px; color:var(--t3); font-size:13px; }
+
+.trh-box { margin-top:40px; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
+.trh-head { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:15px; }
+.trh-titulo { color:var(--t1); font-family:Lora,Georgia,serif; font-size:28px; line-height:1.2; }
+.trh-sub { margin:5px 0 0; color:var(--t3); font-size:13.5px; }
+.trh-lista { display:grid; grid-template-columns:1fr 1fr; gap:12px; border:0; border-radius:0; background:transparent; overflow:visible; }
+.trh-item { grid-template-columns:60px minmax(0,1fr) auto; gap:15px; min-height:84px; padding:17px 19px; border:1px solid var(--border); border-radius:14px; background:var(--bg-card); }
+.trh-nota { padding:6px 0; border-right:1px solid var(--border); border-radius:0!important; background:transparent!important; font-family:Lora,Georgia,serif; font-size:22px; }
+.trh-cargo { font-size:13px; font-weight:750; }
+.trh-meta,.trh-quando { font-size:11.5px; }
+
+@media (max-width:1120px) {
+  .interview-focus { grid-template-columns:1fr; }
+  .interview-focus-main { border-right:0; }
+  .interview-journey { display:none; }
+  .int-row { grid-template-columns:58px minmax(220px,1fr) minmax(170px,.65fr); }
+  .int-actions { grid-column:2/4; justify-content:flex-start; }
+}
+@media (max-width:768px) {
+  .interview-page-head { display:block; margin-bottom:22px; }
+  .interview-page-head h1 { font-size:35px; }
+  .interview-page-head p { font-size:15px; }
+  .interview-privacy { margin-top:12px; }
+  .interview-focus { border-radius:18px; }
+  .interview-focus-main { padding:30px 24px; }
+  .interview-focus-main h2 { font-size:29px; }
+  .interview-focus-role { grid-template-columns:48px minmax(0,1fr); }
+  .interview-focus-status { grid-column:2; text-align:left; }
+  .interview-focus-actions { align-items:stretch; flex-direction:column; }
+  .interview-primary,.interview-secondary { width:100%; }
+  .interview-list-head { align-items:flex-start; flex-direction:column; }
+  .interview-filters { width:100%; overflow-x:auto; padding-bottom:3px; scrollbar-width:none; }
+  .interview-filters::-webkit-scrollbar { display:none; }
+  .int-filter { flex:0 0 auto; }
+  .int-row { grid-template-columns:54px minmax(0,1fr); gap:13px; padding:18px; }
+  .int-status { grid-column:2; padding:10px 0 0; border-top:1px solid var(--border); border-left:0; }
+  .int-actions { grid-column:2; }
+  .int-train-btn { width:100%; min-height:44px; }
+  .trh-head { align-items:flex-start; flex-direction:column; }
+  .trh-lista { grid-template-columns:1fr; }
+}
+
 /* Seu Plano (hero) e cards de plano — sem cobertura mobile no restante do
    arquivo. Estilos inline (padding/flex) exigem !important para serem
    sobrescritos aqui. */
@@ -3188,25 +3339,52 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
   <!-- ══ ENTREVISTAS ══ -->
   <div id="tab-entrevistas" class="tab" style="display:none">
     <div class="interview-page">
-      <div class="interview-hero">
-        <div class="interview-hero-copy">
-          <div class="interview-eyebrow">Treino de entrevista</div>
-          <h1 class="interview-title">Treine antes da entrevista real.</h1>
-          <p class="interview-sub">Vagas marcadas como "Em entrevista" ou "Oferta" aparecem aqui para você treinar antes da conversa real. Perguntas personalizadas com base no cargo, empresa e pontos fracos da análise.</p>
-          <div class="interview-metrics">
-            <div><strong id="intReadyCount">—</strong><span>entrevistas marcadas</span></div>
-            <div><strong id="intPriorityCount">—</strong><span>ofertas recebidas</span></div>
-            <div><strong id="intCvCount">—</strong><span>com CV otimizado</span></div>
+      <header class="interview-page-head">
+        <div>
+          <div class="interview-page-kicker">Treino de entrevista</div>
+          <h1>Sua sala de preparo.</h1>
+          <p>Pratique as perguntas que realmente podem aparecer e transforme cada resposta em evidência do seu valor.</p>
+        </div>
+        <div class="interview-privacy" aria-label="Privacidade das respostas">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="m9 12 2 2 4-4"/></svg>
+          <span>Suas respostas ficam protegidas</span>
+        </div>
+      </header>
+
+      <section class="interview-focus" aria-labelledby="intFocusTitle">
+        <div class="interview-focus-main">
+          <div class="interview-focus-kicker" id="intFocusKicker">Preparando sua prioridade</div>
+          <h2 id="intFocusTitle">Carregando seu próximo treino…</h2>
+          <p id="intFocusCopy">Estamos reunindo as vagas analisadas e suas candidaturas para indicar o melhor ponto de partida.</p>
+          <div class="interview-focus-role" id="intFocusRole" style="display:none">
+            <div class="interview-focus-score" id="intFocusScore">—</div>
+            <div class="interview-focus-job">
+              <strong id="intFocusCargo">Vaga</strong>
+              <span id="intFocusEmpresa">Empresa</span>
+            </div>
+            <div class="interview-focus-status">
+              <strong id="intFocusStatus">Pronta para treino</strong>
+              <span id="intFocusMeta">8 perguntas personalizadas</span>
+            </div>
+          </div>
+          <div class="interview-focus-actions">
+            <button class="interview-primary" id="intFocusAction">Começar treino →</button>
+            <button class="interview-secondary" id="intFocusSecondary" style="display:none">Ver candidatura</button>
           </div>
         </div>
-        <div class="interview-preview">
-          <div class="int-browser-dots"><span></span><span></span><span></span><em>Treino VagaAI</em></div>
-          <div class="int-preview-question">“Conte sobre uma experiência diretamente ligada aos requisitos desta vaga.”</div>
-          <div class="int-preview-row"><span>Contexto da vaga</span><strong id="intPreviewJob">Carregando…</strong></div>
-          <div class="int-preview-row"><span>Feedback esperado</span><strong>Nota, melhoria e resposta modelo</strong></div>
-          <div class="int-preview-pill">Perguntas geradas com base no seu CV + análise</div>
-        </div>
-      </div>
+        <aside class="interview-journey" aria-label="Etapas do treino">
+          <div class="interview-journey-kicker">Seu preparo</div>
+          <h3>Uma jornada, não um teste.</h3>
+          <p>Você pode pausar, refazer e acompanhar sua evolução.</p>
+          <div class="interview-journey-list">
+            <div class="interview-journey-step active"><span>1</span><div><strong>Entenda o contexto</strong><small>Vaga e currículo conectados</small></div></div>
+            <div class="interview-journey-step"><span>2</span><div><strong>Construa suas respostas</strong><small>Texto ou áudio, no seu ritmo</small></div></div>
+            <div class="interview-journey-step"><span>3</span><div><strong>Receba orientação</strong><small>Forças, melhoria e resposta modelo</small></div></div>
+            <div class="interview-journey-step"><span>4</span><div><strong>Revise antes da conversa</strong><small>Histórico salvo para consultar</small></div></div>
+          </div>
+          <div class="interview-journey-foot"><span>Formato do treino</span><strong>8 perguntas</strong></div>
+        </aside>
+      </section>
 
       <div class="interview-gate" id="interviewUpsell" style="display:none">
         <div>
@@ -3220,22 +3398,24 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         </div>
       </div>
 
-      <div class="interview-list-card">
+      <section class="interview-practice-section" aria-labelledby="interviewPracticeTitle">
         <div class="interview-list-head">
           <div>
-            <h3>Suas entrevistas marcadas</h3>
-            <p>Vagas com status "Em entrevista" ou "Oferta". Use "Todas analisadas" para ver o histórico completo.</p>
+            <h2 id="interviewPracticeTitle">Escolha onde praticar</h2>
+            <p>Entrevistas e ofertas vêm primeiro. Vagas analisadas continuam disponíveis para treino antecipado.</p>
           </div>
           <div class="interview-filters">
-            <button class="int-filter active" data-filter="marcadas" onclick="setInterviewFilter('marcadas')">Em entrevista</button>
-            <button class="int-filter" data-filter="oferta" onclick="setInterviewFilter('oferta')">Oferta recebida</button>
+            <button class="int-filter active" data-filter="marcadas" onclick="setInterviewFilter('marcadas')">Prioridade</button>
+            <button class="int-filter" data-filter="oferta" onclick="setInterviewFilter('oferta')">Ofertas</button>
             <button class="int-filter" data-filter="todas" onclick="setInterviewFilter('todas')">Todas analisadas</button>
           </div>
         </div>
-        <div id="interviewListBody">
-          <div style="padding:36px;text-align:center;color:var(--t3);font-size:13px">Carregando…</div>
+        <div class="interview-list-card">
+          <div id="interviewListBody">
+            <div class="int-empty"><strong>Carregando oportunidades…</strong><span>Organizando os melhores pontos de partida para o seu treino.</span></div>
+          </div>
         </div>
-      </div>
+      </section>
 
       <!-- Treinos ja feitos. A lista acima e "onde treinar"; esta e "o que voce
            ja treinou" — sem ela, a pessoa nao ve a propria evolucao e o treino
@@ -4853,8 +5033,10 @@ function renderTreinoHistorico() {
 
   box.style.display = '';
   box.innerHTML =
-    '<div class="trh-titulo">Treinos que você já fez</div>' +
-    '<div class="trh-sub">Nota média de cada simulação, da mais recente para a mais antiga.</div>' +
+    '<div class="trh-head"><div>' +
+      '<div class="trh-titulo">Sua evolução</div>' +
+      '<div class="trh-sub">Retome seus treinos anteriores e acompanhe o que está ficando mais convincente.</div>' +
+    '</div></div>' +
     '<div class="trh-lista">' +
     _treinoHist.map(function(t) {
       var nota = t.nota_media == null ? null : Number(t.nota_media);
@@ -4882,30 +5064,78 @@ function renderInterviewHub() {
   if (!body) return;
   var all = getInterviewItems();
   var hasAccess = canUseInterviewSimulator();
-  var withCv = all.filter(function(i) { return i.result && i.result.cv_otimizado; });
-  var priorities = all.filter(function(i) { return i.status === 'entrevista'; });
 
   var marcadas = all.filter(function(i) { return i.status === 'entrevista'; });
   var ofertas  = all.filter(function(i) { return i.status === 'oferta'; });
 
-  var readyEl = document.getElementById('intReadyCount');
-  var prioEl  = document.getElementById('intPriorityCount');
-  var cvEl    = document.getElementById('intCvCount');
-  if (readyEl) readyEl.textContent = marcadas.length;
-  if (prioEl)  prioEl.textContent  = ofertas.length;
-  if (cvEl)    cvEl.textContent    = withCv.length;
+  /* O destaque usa a prioridade real da pessoa. O preview aprovado mostrava
+     uma entrevista fictícia "amanhã"; em produção não inventamos data nem
+     status que não existam no tracker. */
+  var first = marcadas[0] || ofertas[0] || all[0] || null;
+  var focusKicker = document.getElementById('intFocusKicker');
+  var focusTitle = document.getElementById('intFocusTitle');
+  var focusCopy = document.getElementById('intFocusCopy');
+  var focusRole = document.getElementById('intFocusRole');
+  var focusScore = document.getElementById('intFocusScore');
+  var focusCargo = document.getElementById('intFocusCargo');
+  var focusEmpresa = document.getElementById('intFocusEmpresa');
+  var focusStatus = document.getElementById('intFocusStatus');
+  var focusMeta = document.getElementById('intFocusMeta');
+  var focusAction = document.getElementById('intFocusAction');
+  var focusSecondary = document.getElementById('intFocusSecondary');
 
-  var preview = document.getElementById('intPreviewJob');
-  if (preview) {
-    var first = marcadas[0] || ofertas[0] || all[0];
-    preview.textContent = first ? first.cargo + (first.empresa ? ' · ' + first.empresa : '') : 'Marque uma vaga como entrevista para começar';
+  if (first) {
+    var firstScore = Number(first.score || 0);
+    var firstGaps = Array.isArray(first.result && first.result.keywords_faltando) ? first.result.keywords_faltando.length : 0;
+    var firstHasCv = !!(first.result && first.result.cv_otimizado);
+    var isInterview = first.status === 'entrevista';
+    var isOffer = first.status === 'oferta';
+    if (focusKicker) focusKicker.textContent = isInterview ? 'Próxima conversa' : isOffer ? 'Oferta recebida' : 'Pratique antes de ser chamado';
+    if (focusTitle) focusTitle.textContent = isInterview
+      ? 'Sua próxima entrevista merece um treino focado.'
+      : isOffer ? 'Prepare a conversa que vem depois da oferta.' : 'Você já pode treinar antes de ser chamado.';
+    if (focusCopy) focusCopy.textContent = 'A VagaAI prepara oito perguntas com base na vaga, no seu currículo e nos pontos que merecem mais clareza. Responda por texto ou áudio e receba orientação após cada resposta.';
+    if (focusRole) focusRole.style.display = 'grid';
+    if (focusScore) {
+      focusScore.textContent = firstScore + '%';
+      focusScore.style.background = firstScore >= 70 ? '#e8f6ee' : firstScore >= 40 ? '#fff4d9' : '#fcecec';
+      focusScore.style.color = firstScore >= 70 ? '#177a4a' : firstScore >= 40 ? '#95610a' : '#d64e4e';
+    }
+    if (focusCargo) focusCargo.textContent = first.cargo || 'Vaga analisada';
+    if (focusEmpresa) focusEmpresa.textContent = (first.empresa || 'Empresa') + ' · aderência de ' + firstScore + '%';
+    if (focusStatus) focusStatus.textContent = isInterview ? 'Em entrevista' : isOffer ? 'Oferta recebida' : 'Vaga analisada';
+    if (focusMeta) focusMeta.textContent = (firstHasCv ? 'CV otimizado' : 'Currículo principal') + (firstGaps ? ' · ' + firstGaps + ' pontos para defender' : ' · pronta para praticar');
+    if (focusAction) {
+      focusAction.textContent = hasAccess ? 'Começar treino →' : 'Desbloquear simulador';
+      focusAction.onclick = hasAccess
+        ? function() { window.location.href = '/entrevista?analysis_id=' + encodeURIComponent(first.analysisData.id); }
+        : function() { switchDashTab('plano'); };
+    }
+    if (focusSecondary) {
+      focusSecondary.style.display = '';
+      focusSecondary.textContent = 'Ver candidatura';
+      focusSecondary.onclick = function() { openCandidaturaByAnalysis(first.analysisData.id, 'todas'); };
+    }
+  } else {
+    if (focusKicker) focusKicker.textContent = 'Comece por aqui';
+    if (focusTitle) focusTitle.textContent = 'Analise uma vaga para liberar seu primeiro treino.';
+    if (focusCopy) focusCopy.textContent = 'Ao comparar a vaga com seu currículo, a VagaAI identifica o contexto necessário para criar perguntas personalizadas e orientar suas respostas.';
+    if (focusRole) focusRole.style.display = 'none';
+    if (focusAction) {
+      focusAction.textContent = 'Analisar uma vaga →';
+      focusAction.onclick = function() { switchDashTab('app'); };
+    }
+    if (focusSecondary) focusSecondary.style.display = 'none';
   }
 
   var upsell = document.getElementById('interviewUpsell');
   if (upsell) upsell.style.display = hasAccess ? 'none' : 'flex';
 
   var filtered = all.filter(function(item) {
-    if (_interviewFilter === 'marcadas') return item.status === 'entrevista' || item.status === 'oferta';
+    if (_interviewFilter === 'marcadas') {
+      var hasPriority = marcadas.length > 0 || ofertas.length > 0;
+      return hasPriority ? item.status === 'entrevista' || item.status === 'oferta' : true;
+    }
     if (_interviewFilter === 'oferta') return item.status === 'oferta';
     return true; // 'todas'
   });
@@ -4936,6 +5166,7 @@ function renderInterviewHub() {
     var statusLabel = STATUS_LABELS[item.status] || 'Analisada';
     var kwMissing = Array.isArray(item.result && item.result.keywords_faltando) ? item.result.keywords_faltando.length : 0;
     var hasCv = item.result && item.result.cv_otimizado;
+    var detail = [statusLabel, hasCv ? 'CV otimizado' : 'Currículo principal', kwMissing ? kwMissing + ' pontos para defender' : 'Boa aderência'];
     var url = '/entrevista?analysis_id=' + encodeURIComponent(item.analysisData.id);
     var action = hasAccess
       ? '<button class="int-train-btn" onclick="window.location.href=\'' + escAttr(url) + '\'">Treinar agora →</button>'
@@ -4945,13 +5176,9 @@ function renderInterviewHub() {
       '<div class="int-job">' +
         '<div class="int-cargo">' + escHtml(item.cargo) + '</div>' +
         '<div class="int-empresa">' + escHtml(item.empresa || 'Empresa') + '</div>' +
-        '<div class="int-meta-tags">' +
-          '<span class="int-tag ' + (item.status === 'entrevista' ? 'hot' : '') + '">' + escHtml(statusLabel) + '</span>' +
-          (hasCv ? '<span class="int-tag cv">CV otimizado</span>' : '<span class="int-tag">Sem CV otimizado</span>') +
-          (kwMissing ? '<span class="int-tag">' + kwMissing + ' gaps para defender</span>' : '<span class="int-tag cv">Boa aderência</span>') +
-        '</div>' +
+        '<div class="int-meta-line">' + detail.map(escHtml).join(' · ') + '</div>' +
       '</div>' +
-      '<div class="int-status"><strong>' + (item.status === 'entrevista' ? 'Alta prioridade' : 'Pronta para treino') + '</strong><span>' + (item.status === 'entrevista' ? 'Use antes da conversa real' : 'Perguntas baseadas na análise') + '</span></div>' +
+      '<div class="int-status"><strong>8 perguntas personalizadas</strong><span>Texto ou áudio, com orientação após cada resposta</span></div>' +
       '<div class="int-actions">' + action + '</div>' +
     '</div>';
   }).join('');
