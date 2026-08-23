@@ -6961,7 +6961,12 @@ function renderAlertJobsGrid() {
     var scoreClass = score >= 70 ? ' high' : '';
     var analyzeUrl = buildAlertAnalyzeUrl(j, '');
     var matchTitle = score >= 80 ? 'Alta compatibilidade' : score >= 60 ? 'Boa compatibilidade' : 'Compatibilidade parcial';
-    var matchCopy = score >= 80
+    /* Quando o re-ranking por IA rodou, ele diz o que casou nesta vaga com
+       este currículo. É a resposta concreta para "por que essa vaga apareceu
+       para mim" — a frase por faixa de score abaixo é o fallback genérico de
+       quando não há motivo. */
+    var matchCopy = j._motivo ? j._motivo
+      : score >= 80
       ? 'Seus critérios principais têm forte alinhamento com esta oportunidade.'
       : score >= 60
         ? 'A oportunidade combina com uma parte importante do perfil monitorado.'
@@ -6983,7 +6988,7 @@ function renderAlertJobsGrid() {
     var linkSafe = safeExternalUrl(j.link);
     html += '<div class="al-job-card">' +
       '<div class="al-job-opportunity"><div class="al-job-match' + scoreClass + '">' + score + '%</div><div><div class="al-job-title">' + _esc(j.title || '') + '</div><div class="al-job-company">' + _esc(company) + '</div><span class="al-job-origin">' + _esc(seenLabel) + ' · origem: ' + _esc(originLabel) + '</span></div></div>' +
-      '<div class="al-job-reason"><strong>' + matchTitle + '</strong><span>' + matchCopy + '</span><div class="al-job-reason-tags">' + reasonTags + '</div></div>' +
+      '<div class="al-job-reason"><strong>' + matchTitle + '</strong><span>' + _esc(matchCopy) + '</span><div class="al-job-reason-tags">' + reasonTags + '</div></div>' +
       '<div class="al-job-conditions"><strong>' + _esc(j.location || 'Brasil') + '</strong><span>' + (j.salary ? _esc(j.salary) : 'Salário não informado') + '</span></div>' +
       '<div class="al-job-actions">' +
         '<button class="al-jact-btn analyze" onclick="openAnalyzerInDashboard(this.dataset.url)" data-url="' + _esc(analyzeUrl) + '">Analisar</button>' +
