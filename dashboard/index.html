@@ -4434,8 +4434,8 @@ function buildMaterialStrip() {
       ? '<button class="pv-link" onclick="switchDashTab(\'curriculo\',\'/curriculo?foco=lacunas\')">Ver os ' + gaps.length + ' termos →</button>'
       : '<button class="pv-link" onclick="switchDashTab(\'app\')">Analisar outra vaga →</button>';
   var versionAction = versoes
-    ? '<button class="pv-link" onclick="switchDashTab(\'curriculo\')">Ver versões →</button>'
-    : '<button class="pv-link" onclick="switchDashTab(\'app\')">Criar versão →</button>';
+    ? '<button class="pv-link" onclick="switchDashTab(\'curriculo\',\'/curriculo?foco=versoes\')">Ver versões →</button>'
+    : '<button class="pv-link" onclick="switchDashTab(\'app\',\'/app?cv=base\')">Criar versão →</button>';
 
   strip.innerHTML =
     '<div class="pv-summary">' +
@@ -5435,7 +5435,7 @@ function renderInterviewHub() {
     var detail = [statusLabel, hasCv ? 'CV otimizado' : 'Currículo principal', kwMissing ? kwMissing + ' pontos para defender' : 'Boa aderência'];
     var url = '/entrevista?analysis_id=' + encodeURIComponent(item.analysisData.id);
     var action = hasAccess
-      ? '<button class="int-train-btn" onclick="window.location.href=\'' + escAttr(url) + '\'">Treinar agora →</button>'
+      ? '<button class="int-train-btn" data-url="' + escAttr(url) + '" onclick="switchDashTab(\'entrevista\', this.dataset.url)">Treinar agora →</button>'
       : '<button class="int-train-btn locked" onclick="switchDashTab(\'plano\')">Desbloquear</button>';
     return '<div class="int-row">' +
       '<div class="int-score" style="background:' + sbg + ';color:' + sclr + '">' + score + '%</div>' +

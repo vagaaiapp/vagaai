@@ -1336,11 +1336,19 @@ async function loadGapPanel() {
 
 /* Quem clica em "Ver lacunas →" no painel chega com ?foco=lacunas. Sem isso a
    pessoa caía no topo do hub e tinha que procurar o que acabou de pedir. */
+/* Deep link de foco. Nasceu so para as lacunas ("Ver os N termos" no painel);
+   as versoes tinham o mesmo problema e nenhum link: "Ver versoes" caia no topo
+   da pagina e a pessoa procurava sozinha a secao que acabou de pedir. */
+var ALVOS_DE_FOCO = { lacunas: 'gapPanel', versoes: 'versionsPanel' };
+
 function focarLacunasSePedido() {
+  var foco;
   try {
-    if (new URLSearchParams(location.search).get('foco') !== 'lacunas') return;
+    foco = new URLSearchParams(location.search).get('foco');
   } catch(e) { return; }
-  var panel = document.getElementById('gapPanel');
+  var id = ALVOS_DE_FOCO[foco];
+  if (!id) return;
+  var panel = document.getElementById(id);
   if (!panel) return;
   panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
   panel.style.transition = 'box-shadow .4s';

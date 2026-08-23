@@ -25,10 +25,11 @@ describe('o botão principal leva ao lugar que a copy manda', () => {
     );
   });
 
-  it('/curriculo sabe receber ?foco=lacunas', () => {
+  it('/curriculo sabe receber ?foco=lacunas e ?foco=versoes', () => {
     // Sem isso o link levaria ao topo da página e a pessoa procuraria sozinha
-    // o painel que ela acabou de pedir.
-    assert.match(curriculo, /get\('foco'\) !== 'lacunas'/);
+    // a seção que ela acabou de pedir. O mapa é a fonte: assertar a expressão
+    // exata prendia o teste à forma da função, não ao que ela faz.
+    assert.match(curriculo, /ALVOS_DE_FOCO = \{ lacunas: 'gapPanel', versoes: 'versionsPanel' \}/);
     assert.match(curriculo, /panel\.scrollIntoView/);
   });
 });
@@ -86,5 +87,27 @@ describe('empresa desconhecida não vira a palavra "Empresa"', () => {
       'anúncio sem empresa fazia o card escrever "na Empresa" como se fosse o nome'
     );
     assert.match(dash, /var emp = ji\.empresa \|\| '';/);
+  });
+});
+
+describe('as outras telas passam contexto como o Início passa', () => {
+  it('"Criar versão" pré-seleciona o currículo salvo', () => {
+    // Ia para o analisador em branco. /app?cv=base ja existia e e exatamente o
+    // que adaptarParaVaga() faz dentro de /curriculo.
+    assert.ok(
+      dash.includes("/app?cv=base"),
+      'o botão perdeu o parâmetro que pré-seleciona o currículo salvo'
+    );
+  });
+
+  it('"Ver versões" leva direto à seção de versões', () => {
+    assert.match(dash, /\/curriculo\?foco=versoes/);
+  });
+
+  it('"Treinar agora" não sai do painel', () => {
+    // Tres caminhos levam ao treino; dois usavam switchDashTab e este fazia
+    // navegacao de pagina inteira, perdendo o shell do painel.
+    assert.doesNotMatch(dash, /int-train-btn\" onclick=\'window\.location\.href/);
+    assert.match(dash, /int-train-btn\" data-url=/);
   });
 });
