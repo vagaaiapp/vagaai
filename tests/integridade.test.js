@@ -386,7 +386,12 @@ describe('Crons têm limite e ordem', () => {
 
 describe('Paginação de usuários do onboarding', () => {
   function carregar() {
-    const src = read('api/cron-onboarding.js');
+    /* Normaliza CRLF antes de fatiar. O corte abaixo procura a sequencia
+       quebra-de-linha + '}' + quebra-de-linha como fim da funcao; num clone
+       Windows o arquivo vem com CRLF, o indexOf devolve -1, e a funcao
+       extraida vira string vazia. O teste falhava por fim de linha, nao por
+       codigo — e so aparecia depois de um checkout, nunca durante a edicao. */
+    const src = read('api/cron-onboarding.js').replace(/\r\n/g, '\n');
     const partes = ['const MAX_PAGINAS', 'function direcaoDaPagina', 'async function getUsersCreatedAround']
       .map((assinatura) => {
         const i = src.indexOf(assinatura);
