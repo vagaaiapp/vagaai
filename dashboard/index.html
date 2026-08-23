@@ -4159,6 +4159,19 @@ function buildPBACard(analyses, tracked) {
     });
   }
 
+  /* Mesma regra da faixa de ferramentas logo abaixo (buildFerramentas): o
+     card oferecia "Treinar entrevista" sem olhar o plano enquanto a faixa, no
+     mesmo scroll, ja marcava a funcionalidade com selo Pro. Um Starter com
+     entrevista marcada lia "prepare-se", clicava e batia no paywall.
+
+     Assinatura ainda nao carregada conta como liberado, de proposito: piscar
+     um cadeado errado para quem paga e pior que mostra-lo meio segundo depois,
+     e loadSubscriptionData re-renderiza o painel quando responde. */
+  var _subPba = window._subscriptionData;
+  var _planoPba = _subPba && _subPba.plan;
+  var _entPba = (_subPba && _subPba.entitlements) || {};
+  var treinoLiberado = !_planoPba || _planoPba === 'pro' || !!_entPba.simulador_entrevista;
+
   if (interviewJob) {
     _pbaPrio = 'entrevista_marcada';
     var a = analyses.find(function(x){ return x.id === interviewJob.analysis_id; });
@@ -4167,7 +4180,8 @@ function buildPBACard(analyses, tracked) {
     var hasDate = !!(interviewJob.interview_at);
     var iDateFmt = hasDate ? formatInterviewAt(interviewJob.interview_at) : '';
     if (titleEl) titleEl.textContent = 'Prepare-se para a entrevista de ' + cargo;
-    if (descEl) descEl.textContent = (hasDate ? 'Entrevista em ' + iDateFmt + ' - ' + cargo + (emp ? ' na ' + emp : '') : 'Em processo de entrevista para ' + cargo + (emp ? ' na ' + emp : '')) + '. Use o simulador para chegar mais preparado e aumentar suas chances.';
+    if (descEl) descEl.textContent = (hasDate ? 'Entrevista em ' + iDateFmt + ' - ' + cargo + (emp ? ' na ' + emp : '') : 'Em processo de entrevista para ' + cargo + (emp ? ' na ' + emp : '')) + '. Use o simulador para chegar mais preparado e aumentar suas chances.'
+      + (treinoLiberado ? '' : ' O treino de entrevista é do plano Pro.');
     if (btnPri) { btnPri.textContent = 'Treinar entrevista →'; (function(aid){ btnPri.onclick = function(){ switchDashTab('entrevista', '/entrevista' + (aid ? '?analysis_id=' + encodeURIComponent(aid) : '')); }; })(interviewJob.analysis_id); }
     if (btnSec) { btnSec.textContent = 'Ver candidatura'; (function(tid, aid){ btnSec.onclick = function(){ openCandidaturasSmart({ trackerId: tid, analysisId: aid, openDetail: true, view: 'lista' }); }; })(interviewJob.id, interviewJob.analysis_id); }
     updatePBAPriority(interviewJob.score || (a ? a.score : 0), cargo, emp || '', hasDate ? 'Entrevista marcada' : 'Em entrevista');
@@ -4189,7 +4203,10 @@ function buildPBACard(analyses, tracked) {
     var r = alvo.result || {};
     var ji = r.job_info || {};
     var cargo = ji.cargo || (alvo.job_excerpt ? alvo.job_excerpt.slice(0,40) : 'essa vaga');
-    var emp = ji.empresa || (untrackedBest ? 'Empresa' : '');
+    // Sem nome identificado no anuncio, o card escrevia "na Empresa" e o
+    // painel lateral exibia a palavra "Empresa" como se fosse o nome. Vazio
+    // deixa o proprio elemento cair no placeholder.
+    var emp = ji.empresa || '';
     /* keywords_faltando vem crua da IA e nao sabe o que ja esta no curriculo.
        Numa conta real, 6 das 16 "faltantes" (Meta Ads, Google Ads, Conversao,
        Otimizacao, Analise de dados, PR) estavam no CV — o card dizia 16
@@ -4233,8 +4250,19 @@ function buildPBACard(analyses, tracked) {
         btnPri.textContent = 'Abrir o CV desta vaga →';
         (function(aid){ btnPri.onclick = function(){ openSavedCv(aid); }; })(alvo.id);
       } else {
-        btnPri.textContent = 'Otimizar meu currículo →';
-        btnPri.onclick = function(){ switchDashTab('app'); };
+        /* Ia para o formulario de analise EM BRANCO: no clique de maior
+           intencao da tela, a pessoa tinha que recolar a vaga que a plataforma
+           acabou de analisar. E o destino contradizia a copy logo acima
+           ("comece pelos que voce ja fez e nao escreveu"), que fala de editar o
+           curriculo, nao de analisar outra vaga.
+
+           /curriculo?foco=lacunas ja existia e ja era usado pelo botao "Ver os
+           N termos" do bloco Seu curriculo, trinta pixels abaixo: a pagina tem
+           codigo dedicado para receber esse link e destacar o painel de lacunas
+           (curriculo/index.html, focarLacunasSePedido). Eram dois botoes na
+           mesma tela, para a mesma intencao, com destinos diferentes. */
+        btnPri.textContent = 'Revisar meu currículo →';
+        btnPri.onclick = function(){ switchDashTab('curriculo', '/curriculo?foco=lacunas'); };
       }
     }
     if (btnSec) { btnSec.textContent = 'Ver análise completa'; (function(aid){ btnSec.onclick = function(){ openCandidaturaByAnalysis(aid, untrackedBest ? 'so_analise' : 'todas'); }; })(alvo.id); }
@@ -4495,11 +4523,21 @@ function buildFerramentas() {
     : entrevistas > 0 ? entrevistas + ' entrevista' + (entrevistas !== 1 ? 's' : '') + ' marcada' + (entrevistas !== 1 ? 's' : '') + ': treine antes'
     : 'Simule as perguntas que a vaga deve cobrar';
 
+  /* O painel ja sabe qual vaga esta em foco (_pbaChosen, definido por
+     buildPBACard logo antes desta funcao). Abrir a carta em branco obrigava a
+     pessoa a escolher a vaga de novo, do lado de um texto que diz "gere a
+     partir de qualquer vaga analisada". Mesmo defeito do botao principal do
+     card, em outro botao. */
+  var vagaEmFoco = _pbaChosen && _pbaChosen.analysisId;
+  var acaoCarta = vagaEmFoco
+    ? "switchDashTab('carta','/carta?analysis_id=" + encodeURIComponent(vagaEmFoco) + "')"
+    : "switchDashTab('carta')";
+
   strip.innerHTML =
     ferCard('analises', 'Analisar vaga',
       vagas ? vagas + ' vaga' + (vagas !== 1 ? 's' : '') + ' analisada' + (vagas !== 1 ? 's' : '') : 'Comece pela primeira vaga',
       "switchDashTab('app')") +
-    ferCard('carta', 'Carta de apresentação', estCarta, "switchDashTab('carta')", seloCarta) +
+    ferCard('carta', 'Carta de apresentação', estCarta, acaoCarta, seloCarta) +
     ferCard('entrevistas', 'Treino de entrevista', estTreino, "switchDashTab('entrevistas')", seloTreino) +
     ferCard('alertas', 'Vagas para você', alertaEstado().txt, "switchDashTab('alertas')");
 }
