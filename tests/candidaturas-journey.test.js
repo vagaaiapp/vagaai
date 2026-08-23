@@ -37,6 +37,23 @@ test('lista, Kanban, calendário, filtros, cadastro e detalhe permanecem funcion
   assert.match(dashboard, /openTrackerEdit\(\{status:'quero_aplicar'\}\)/);
 });
 
+test('detalhe da vaga conduz decisão sem perder ações e dados reais', () => {
+  assert.match(dashboard, /class="cd-decision"/);
+  assert.match(dashboard, /O que mais aumenta sua aderência/);
+  assert.match(dashboard, /Preparação da candidatura/);
+  assert.match(dashboard, /Jornada desta oportunidade/);
+  assert.match(dashboard, /Array\.isArray\(r\.prioridades\)/);
+  assert.match(dashboard, /Array\.isArray\(r\.keywords_faltando\)/);
+  assert.match(dashboard, /Vaga em site externo/);
+  assert.match(dashboard, /Esta candidatura acontece fora da VagaAI/);
+  assert.match(dashboard, /trackAnalysis\(/);
+  assert.match(dashboard, /openSavedAnalysis\(/);
+  assert.match(dashboard, /openSavedCv\(/);
+  assert.match(dashboard, /switchDashTab\(\\'entrevista\\'/);
+  assert.match(dashboard, /switchDashTab\(\\'carta\\'/);
+  assert.match(dashboard, /openTrackerEditById\(/);
+});
+
 test('layout aprovado cobre desktop, tablet, mobile e tema escuro', () => {
   assert.match(dashboard, /@media\(max-width:1180px\)/);
   assert.match(dashboard, /@media\(max-width:768px\)/);
