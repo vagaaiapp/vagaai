@@ -17,7 +17,10 @@ test('Perfil de valor integra currículo e ferramentas sem alterar as outras se�
 
 test('painel mantém a copy anterior sem alterar a estrutura editorial atual', () => {
   assert.match(dashboard, /Comece por aqui/);
-  assert.match(dashboard, /Cubra mais ' \+ missing \+ ' requisito/);
+  /* Este ratchet existe para uma mudanca de layout nao levar a copy junto por
+     acidente. A copy mudou de proposito: "Cubra mais N requisitos" convidava a
+     preencher o curriculo com o que a pessoa nao fez. Ver tests/copy-honesta.test.js. */
+  assert.match(dashboard, /Seu currículo não menciona ' \+ missing \+ ' requisito/);
   assert.match(dashboard, /var tituloEditorial = 'Currículo principal'/);
   assert.match(dashboard, />Forças em evidência</);
   assert.match(dashboard, />O mercado está procurando</);
