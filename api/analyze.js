@@ -107,7 +107,17 @@ async function getCachedResult(hash) {
   }
 }
 
-async function setCachedResult(hash, result) {
+/* O cache guarda o resultado completo da analise — score, requisitos,
+   briefing e, quando existe, o curriculo otimizado. E dado derivado de
+   curriculo, e ate a migracao 029 ficava sem dono e sem prazo: excluir a conta
+   nao o alcancava, porque nao havia como saber de quem era.
+
+   A chave de busca continua sendo o hash (e o que faz o cache acertar); o
+   user_id existe para o direito ao esquecimento (ON DELETE CASCADE) e para a
+   limpeza por idade. Colisao entre pessoas e inviavel: o hash e sha256 do
+   curriculo inteiro mais a vaga, truncado em 160 bits, entao acerto de cache
+   exige entrada identica byte a byte. */
+async function setCachedResult(hash, result, userId = null) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return;
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/analysis_cache`, {
@@ -118,11 +128,24 @@ async function setCachedResult(hash, result) {
         'Content-Type': 'application/json',
         Prefer: 'resolution=merge-duplicates',
       },
-      body: JSON.stringify({ hash, result, created_at: new Date().toISOString() }),
+      body: JSON.stringify({ hash, result, user_id: userId || null, created_at: new Date().toISOString() }),
     });
   } catch (err) {
     console.error('setCachedResult error:', err);
   }
+
+  /* Limpeza por idade, fire-and-forget, no mesmo padrao que ja limpa
+     ip_rate_limits acima — o projeto nao tem pg_cron. Sem isto, retencao
+     indefinida de dado derivado de curriculo. */
+  fetch(`${SUPABASE_URL}/rest/v1/rpc/limpar_analysis_cache`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ dias: 30 }),
+  }).catch(() => {});
 }
 
 // ─── Rate limit por IP (usuários anônimos) ────────────────────────────────────
@@ -1765,7 +1788,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
     result.score = breakdown.total;
 
     // Armazena no cache (fire-and-forget, não bloqueia resposta)
-    setCachedResult(hash, result);
+    setCachedResult(hash, result, authenticatedUserId);
 
     // O link pertence à oportunidade individual, não ao resultado reutilizável
     // do cache. Ele segue apenas para a resposta e o histórico desta análise.
