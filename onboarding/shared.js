@@ -448,7 +448,7 @@
       importSub: 'Se houver um arquivo antigo, importamos os dados; se não, você monta do zero com orientação.',
       importCta: 'Revisar meus dados →',
       formTitle: 'Conte sobre você para montarmos seu currículo',
-      formSub: 'Leva alguns minutos — escreva do seu jeito. A VagaAI organiza sua experiência e conecta o currículo ao objetivo.',
+      formSub: 'Leva alguns minutos. Escreva do seu jeito. A VagaAI organiza sua experiência e conecta o currículo ao objetivo.',
       formCta: 'Preparar meu radar de vagas →',
       alertTitle: 'Prepare seu radar de oportunidades',
       alertSub: 'Enquanto seu currículo é montado, deixe pronto o alerta de vagas do seu perfil. Ele só é ativado depois que você criar a conta.',

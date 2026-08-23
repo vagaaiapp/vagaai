@@ -1923,9 +1923,9 @@ async function upsertAlertCache(userId, alertId, jobs, { isDemand = false } = {}
 async function aiProSummary(topJobs, profile, cvHint = '') {
   if (!process.env.ANTHROPIC_API_KEY || !Array.isArray(topJobs) || !topJobs.length) return '';
   const lines = topJobs.map((j, i) =>
-    `${i + 1}. ${String(j.title || '').slice(0, 80)} — ${String(j.company || '').slice(0, 40)} (${String(j.location || '').slice(0, 30)})`
+    `${i + 1}. ${String(j.title || '').slice(0, 80)} | ${String(j.company || '').slice(0, 40)} (${String(j.location || '').slice(0, 30)})`
   ).join('\n');
-  const prompt = `Você é um conselheiro de carreira. Em NO MÁXIMO 2 frases curtas em português (sem markdown, sem emoji, sem saudação), diga ao candidato qual das vagas abaixo é a melhor aposta e por quê, considerando o perfil dele. Seja específico e direto.
+  const prompt = `Você é um conselheiro de carreira. Em NO MÁXIMO 2 frases curtas em português (sem markdown, sem emoji, sem saudação, sem travessão), diga ao candidato qual das vagas abaixo é a melhor aposta e por quê, considerando o perfil dele. Seja específico e direto.
 
 PERFIL: ${profile.cargo_desejado || ''} · ${profile.nivel || 'qualquer'} · ${profile.cidade || ''}${cvHint ? `\nCURRÍCULO: ${cvHint}` : ''}
 
@@ -1978,7 +1978,7 @@ ${cvHint ? `\nCURRÍCULO REAL DO CANDIDATO (use como sinal mais forte que o perf
 VAGAS (índice. título | empresa | local | salário | trecho da descrição):
 ${compact}
 
-Para cada vaga dê um score de 0 a 100 de compatibilidade, pesando aderência de cargo/experiência real, senioridade, modalidade e localização. Penalize fortemente (score < 25): estágio/aprendiz quando o perfil não é de estágio; anúncios de freela/bico/orçamento; vaga que declara modalidade incompatível com a preferida (ex.: presencial em outra cidade para quem quer remoto); vagas claramente de outro país sem opção Brasil. Para cada vaga escreva tambem "motivo": no maximo 8 palavras dizendo o que dessa vaga casa com este candidato especifico (competencia, cargo, senioridade ou modalidade). Nada generico como "boa oportunidade" ou "perfil compativel" — cite o que casou. Responda APENAS com um array JSON, sem nenhum texto extra, no formato:
+Para cada vaga dê um score de 0 a 100 de compatibilidade, pesando aderência de cargo/experiência real, senioridade, modalidade e localização. Penalize fortemente (score < 25): estágio/aprendiz quando o perfil não é de estágio; anúncios de freela/bico/orçamento; vaga que declara modalidade incompatível com a preferida (ex.: presencial em outra cidade para quem quer remoto); vagas claramente de outro país sem opção Brasil. Para cada vaga escreva tambem "motivo": no maximo 8 palavras dizendo o que dessa vaga casa com este candidato especifico (competencia, cargo, senioridade ou modalidade). Nada generico como "boa oportunidade" ou "perfil compativel": cite o que casou. Nunca use travessão (\u2014) no motivo: use vírgula ou duas palavras. Responda APENAS com um array JSON, sem nenhum texto extra, no formato:
 [{"i":0,"score":87,"motivo":"Power BI e senioridade pleno batem"},{"i":1,"score":42,"motivo":"Cargo proximo, mas presencial em outra cidade"}]`;
 
   try {

@@ -718,7 +718,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           from: 'VagaAI <noreply@vagaai.app.br>',
           to: [customerEmail],
-          subject: `✓ Compra confirmada — ${credLabel} VagaAI`,
+          subject: `✓ Compra confirmada: ${credLabel} VagaAI`,
           html: `<div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto;padding:2rem;background:#0a0f0d;color:#e8ede9;border-radius:12px">
   <h1 style="color:#3ecf8e;font-size:22px;margin-bottom:.5rem">Compra confirmada!</h1>
   <p style="color:#8a9e90;margin-bottom:1.5rem">Seus créditos já estão disponíveis na sua conta.</p>

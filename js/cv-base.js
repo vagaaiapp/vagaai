@@ -33,29 +33,29 @@
 
     var exps = [];
     (d.experiencias || []).forEach(function (e) {
-      exps.push([e.cargo, e.empresa].filter(Boolean).join(' — ') + (e.periodo ? ' (' + e.periodo + ')' : ''));
+      exps.push([e.cargo, e.empresa].filter(Boolean).join(' - ') + (e.periodo ? ' (' + e.periodo + ')' : ''));
       (e.bullets || []).forEach(function (b) { if (b) exps.push('- ' + b); });
     });
     secao('EXPERIÊNCIA PROFISSIONAL', exps);
 
     secao('FORMAÇÃO ACADÊMICA', (d.formacao || []).map(function (e) {
       var det = [e.periodo, e.situacao].filter(Boolean).join(' · ');
-      return [e.curso, e.instituicao].filter(Boolean).join(' — ') + (det ? ' (' + det + ')' : '');
+      return [e.curso, e.instituicao].filter(Boolean).join(' - ') + (det ? ' (' + det + ')' : '');
     }));
 
     secao('CURSOS E ESPECIALIZAÇÕES', (d.cursos || []).map(function (e) {
-      return [e.nome, e.instituicao].filter(Boolean).join(' — ') + (e.periodo ? ' (' + e.periodo + ')' : '');
+      return [e.nome, e.instituicao].filter(Boolean).join(' - ') + (e.periodo ? ' (' + e.periodo + ')' : '');
     }));
 
     secao('IDIOMAS', (d.idiomas || []).map(function (e) {
-      return [e.idioma, e.nivel].filter(Boolean).join(' — ');
+      return [e.idioma, e.nivel].filter(Boolean).join(' - ');
     }));
 
     if ((d.habilidades || []).length) secao('HABILIDADES', [d.habilidades.join(', ')]);
 
     var projs = [];
     (d.projetos || []).forEach(function (e) {
-      projs.push([e.nome, e.contexto].filter(Boolean).join(' — ') + (e.periodo ? ' (' + e.periodo + ')' : ''));
+      projs.push([e.nome, e.contexto].filter(Boolean).join(' - ') + (e.periodo ? ' (' + e.periodo + ')' : ''));
       if (e.link) projs.push(e.link);
       (e.bullets || []).forEach(function (b) { if (b) projs.push('- ' + b); });
     });

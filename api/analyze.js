@@ -992,7 +992,7 @@ export default async function handler(req, res) {
 
 ⚠️ REGRA ABSOLUTA: Use SOMENTE as informações fornecidas nos DADOS DO CANDIDATO. NUNCA invente experiências, anos de carreira, certificações, métricas, números, habilidades ou realizações que não estejam explicitamente nos dados. Se uma informação não foi fornecida, não a inclua.
 
-${jobCtx ? `VAGA ALVO — incorpore as keywords desta vaga APENAS onde se aplicam às experiências reais do candidato:\n${jobCtx.substring(0, 2000)}\n\n` : ''}DADOS DO CANDIDATO:
+${jobCtx ? `VAGA ALVO. Incorpore as keywords desta vaga APENAS onde se aplicam às experiências reais do candidato:\n${jobCtx.substring(0, 2000)}\n\n` : ''}DADOS DO CANDIDATO:
 Nome: ${nome}
 ${cargo_objetivo ? `Cargo / Objetivo: ${cargo_objetivo}` : ''}
 ${experiencias ? `Experiência profissional: ${experiencias}` : ''}
@@ -1003,10 +1003,12 @@ INSTRUÇÕES:
 - Gere o currículo em texto puro (sem markdown, sem asteriscos, sem caracteres especiais)
 - Use MAIÚSCULAS apenas para títulos de seção
 - Estrutura obrigatória: RESUMO PROFISSIONAL → EXPERIÊNCIA PROFISSIONAL → FORMAÇÃO ACADÊMICA → HABILIDADES
-- Resumo: 3-4 linhas com keywords da vaga incorporadas naturalmente — apenas onde verdadeiras
+- Resumo: 3-4 linhas com keywords da vaga incorporadas naturalmente, apenas onde verdadeiras
 - Experiência: bullets começando com verbo de ação no passado; só inclua métricas que estão nos dados fornecidos
-- Seja conciso e objetivo — máximo 1 página equivalente
+- Seja conciso e objetivo: máximo 1 página equivalente
 - No topo, coloque o nome em destaque seguido do cargo/objetivo
+
+ESTILO: nunca use travessao (\u2014) no texto. Ele quase nao aparece na escrita profissional brasileira e denuncia texto gerado por IA. Use virgula, dois-pontos, parenteses ou duas frases.
 
 Responda APENAS com o texto do currículo, sem explicações adicionais.`;
 
@@ -1111,7 +1113,7 @@ REGRAS:
 SOBRE "experiencias" E "formacao" (listas estruturadas):
 - Uma entrada por emprego/curso REAL encontrado no currículo. Ordene da mais recente para a mais antiga.
 - "bullets" reproduz as atividades já escritas no currículo. Não crie bullets, não crie números, não melhore redação aqui.
-- Se o currículo não deixa claro onde termina um emprego e começa outro, prefira DEVOLVER AS LISTAS VAZIAS a chutar empresa, cargo ou data. O texto corrido em "exp"/"form" já é o plano B — separar errado é pior do que não separar.
+- Se o currículo não deixa claro onde termina um emprego e começa outro, prefira DEVOLVER AS LISTAS VAZIAS a chutar empresa, cargo ou data. O texto corrido em "exp"/"form" já é o plano B: separar errado é pior do que não separar.
 - "situacao" só quando o currículo disser explicitamente: "Concluído", "Cursando" ou "Trancado". Nunca deduza pelo ano.
 - Campo sem informação no currículo = string vazia. Nunca preencha por semelhança ou probabilidade.
 
@@ -1282,11 +1284,13 @@ TAREFA:
 - Transforme o texto informal de experiência em bullets profissionais (verbo de ação no passado + o que fazia). Só inclua métricas que o candidato escreveu.
 - Um bullet por atividade real relatada. Não desdobre uma atividade em três para encher a seção, nem invente atividade típica do cargo que o candidato não citou.
 - Ordene experiências e formação da mais recente para a mais antiga.
-- Se o candidato não separou empresa/cargo/período claramente, faça a melhor interpretação do texto — mas não invente o que não dá para inferir; deixe o campo como string vazia.
+- Se o candidato não separou empresa/cargo/período claramente, faça a melhor interpretação do texto, mas não invente o que não dá para inferir; deixe o campo como string vazia.
 - Resumo profissional: 3-4 linhas conectando o perfil real ao cargo desejado, sem inventar senioridade ou anos de experiência.
 - Habilidades: liste as informadas; se o candidato não informou nenhuma, use array vazio.
-- Projetos: só preencha se o candidato citar projeto pessoal, voluntariado, freela, trabalho acadêmico ou iniciação científica. Nunca transforme emprego em projeto, nem projeto em emprego — a seção de projetos existe justamente para não inflar a experiência formal. Se não houver nenhum, use array vazio.
+- Projetos: só preencha se o candidato citar projeto pessoal, voluntariado, freela, trabalho acadêmico ou iniciação científica. Nunca transforme emprego em projeto, nem projeto em emprego. A seção de projetos existe justamente para não inflar a experiência formal. Se não houver nenhum, use array vazio.
 - Situação da formação: só preencha se o candidato disser se concluiu, está cursando ou trancou. Nunca deduza pelo ano.
+
+ESTILO: nunca use travessao (\u2014) no texto. Ele quase nao aparece na escrita profissional brasileira e denuncia texto gerado por IA. Use virgula, dois-pontos, parenteses ou duas frases.
 
 Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato exato:
 {
@@ -1297,7 +1301,7 @@ Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato
     { "cargo": "<cargo>", "empresa": "<empresa>", "periodo": "<período ou string vazia>", "bullets": ["<bullet 1>", "<bullet 2>"] }
   ],
   "formacao": [
-    { "curso": "<curso>", "instituicao": "<instituição>", "periodo": "<período ou string vazia>", "situacao": "<Concluído, Cursando ou Trancado — só se o candidato disser; senão string vazia>" }
+    { "curso": "<curso>", "instituicao": "<instituição>", "periodo": "<período ou string vazia>", "situacao": "<Concluído, Cursando ou Trancado, só se o candidato disser; senão string vazia>" }
   ],
   "habilidades": ["<skill 1>", "<skill 2>"],
   "projetos": [
@@ -1429,12 +1433,14 @@ Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato
       return res.status(503).json({ error: 'service_unavailable', message: 'Serviço temporariamente indisponível. Tente novamente em instantes.' });
     }
 
-    const profilePrompt = `Você é um especialista sênior em recrutamento e mercado de trabalho brasileiro. Analise o currículo abaixo e devolva um "Raio-X" completo do perfil profissional — SEM comparar com nenhuma vaga específica.
+    const profilePrompt = `Você é um especialista sênior em recrutamento e mercado de trabalho brasileiro. Analise o currículo abaixo e devolva um "Raio-X" completo do perfil profissional, SEM comparar com nenhuma vaga específica.
 
 ⚠️ REGRA ABSOLUTA: baseie-se SOMENTE no que está no currículo. Não invente experiências, competências ou números. Se algo não está claro, trate como lacuna.
 
 CURRÍCULO:
 ${pCv}
+
+ESTILO: nunca use travessao (\u2014) no texto. Ele quase nao aparece na escrita profissional brasileira e denuncia texto gerado por IA. Use virgula, dois-pontos, parenteses ou duas frases.
 
 Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste formato:
 {
@@ -1444,7 +1450,7 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
   "competencias_tecnicas": ["até 12 competências técnicas identificadas"],
   "competencias_comportamentais": ["até 6 competências comportamentais evidenciadas"],
   "pontos_fortes": ["3-5 pontos fortes concretos do currículo"],
-  "lacunas": ["3-5 lacunas ou pontos a desenvolver — no currículo ou no perfil"],
+  "lacunas": ["3-5 lacunas ou pontos a desenvolver, no currículo ou no perfil"],
   "mercado": {
     "posicionamento": "2-3 frases: como este perfil se posiciona no mercado de trabalho brasileiro hoje",
     "cargos_alvo": ["3-5 cargos que este perfil pode disputar de forma realista"],
@@ -1586,7 +1592,7 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
 
   const prompt = `Você é um especialista em recrutamento e sistemas ATS (Applicant Tracking System). Analise a compatibilidade entre o currículo e a vaga abaixo e gere uma versão otimizada do currículo.
 
-⚠️ REGRA ABSOLUTA ANTI-ALUCINAÇÃO: O cv_otimizado deve conter SOMENTE informações presentes no CURRÍCULO fornecido. NUNCA invente experiências, anos de carreira, certificações, números, métricas, habilidades ou realizações ausentes do CV original. Otimize a redação e as keywords — jamais os fatos.
+⚠️ REGRA ABSOLUTA ANTI-ALUCINAÇÃO: O cv_otimizado deve conter SOMENTE informações presentes no CURRÍCULO fornecido. NUNCA invente experiências, anos de carreira, certificações, números, métricas, habilidades ou realizações ausentes do CV original. Otimize a redação e as keywords, jamais os fatos.
 - Não crie bullets novos. Reescreva os que existem; se um cargo não tinha atividades descritas, devolva "bullets" vazio em vez de imaginar o que a pessoa fazia.
 - Não transforme requisito da vaga em experiência do candidato. Uma keyword da vaga só entra num bullet se o currículo já sustentar aquilo.
 - Não converta responsabilidade em resultado: "responsável por campanhas" não vira "aumentou o desempenho das campanhas".
@@ -1597,6 +1603,8 @@ ${job}
 
 CURRÍCULO:
 ${cv}
+
+ESTILO: nunca use travessao (\u2014) no texto. Ele quase nao aparece na escrita profissional brasileira e denuncia texto gerado por IA. Use virgula, dois-pontos, parenteses ou duas frases.
 
 Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
 {
@@ -1644,7 +1652,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
         "empresa": "<empresa>",
         "periodo": "<período ex: Jan 2020 – Dez 2022>",
         "bullets": [
-          "<bullet otimizado: verbo de ação + resultado ou contexto do CV original + keyword da vaga onde aplicável — NUNCA invente métricas>",
+          "<bullet otimizado: verbo de ação + resultado ou contexto do CV original + keyword da vaga onde aplicável, NUNCA invente métricas>",
           "<bullet 2>",
           "<bullet 3>"
         ]
@@ -1655,7 +1663,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
         "curso": "<nome do curso>",
         "instituicao": "<nome da instituição>",
         "periodo": "<ano de conclusão ou período>",
-        "situacao": "<Concluído, Cursando ou Trancado — SOMENTE se o currículo disser; senão string vazia>"
+        "situacao": "<Concluído, Cursando ou Trancado, SOMENTE se o currículo disser; senão string vazia>"
       }
     ],
     "habilidades": ["<skill técnica 1>", "<skill 2>", "<keyword da vaga incorporada naturalmente>"],
@@ -1665,7 +1673,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
         "contexto": "<tipo: Voluntariado, Freelance, Acadêmico, Projeto pessoal...>",
         "periodo": "<período ou string vazia>",
         "link": "<URL se o currículo trouxer, senão string vazia>",
-        "bullets": ["<o que foi feito e o que gerou — NUNCA invente resultado>"]
+        "bullets": ["<o que foi feito e o que gerou, NUNCA invente resultado>"]
       }
     ]
   },
@@ -1696,8 +1704,8 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
     {"titulo": "<segunda ação mais impactante>", "explicacao": "<justificativa objetiva>"},
     {"titulo": "<terceira ação mais impactante>", "explicacao": "<justificativa objetiva>"}
   ],
-  "keywords_parcialmente_encontradas": ["<keyword presente no currículo mas mencionada superficialmente ou sem evidência quantificável — DEVE ser mutuamente exclusiva com keywords_encontradas e keywords_faltando>"],
-  "score_estimado_apos_ajustes": <número inteiro de 0 a 100 estimando o score REALISTA se o candidato implementar as 3 prioridades acima — deve ser no máximo score_atual + 30 pontos e nunca ultrapassar 85; se o currículo for vazio ou inválido, retorne o mesmo valor do score>,
+  "keywords_parcialmente_encontradas": ["<keyword presente no currículo mas mencionada superficialmente ou sem evidência quantificável, DEVE ser mutuamente exclusiva com keywords_encontradas e keywords_faltando>"],
+  "score_estimado_apos_ajustes": <número inteiro de 0 a 100 estimando o score REALISTA se o candidato implementar as 3 prioridades acima, deve ser no máximo score_atual + 30 pontos e nunca ultrapassar 85; se o currículo for vazio ou inválido, retorne o mesmo valor do score>,
   "plano_melhoria": [
     {
       "id": "posicionamento",

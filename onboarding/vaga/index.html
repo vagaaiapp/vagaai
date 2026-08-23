@@ -12,7 +12,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <script src="/cookie-consent.js" defer></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VagaAI — Analisar minha vaga grátis</title>
+<title>VagaAI | Analisar minha vaga grátis</title>
 <meta name="description" content="Descubra em 2 minutos se seu currículo passa no ATS dessa vaga. Grátis, sem cadastro para ver o diagnóstico.">
 <!-- Etapas do funil não devem competir com /app nem gerar conteúdo duplicado -->
 <meta name="robots" content="noindex, follow">
@@ -429,7 +429,7 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
   <section class="ob-step" id="step3">
     <div class="ob-eyebrow">Etapa 3</div>
     <h1 id="cvStepTitle">Agora seu currículo base</h1>
-    <p class="ob-sub" id="cvStepSub">Envie o arquivo ou cole o texto. Ele vira seu currículo base — e é dele que saem as versões para cada vaga.</p>
+    <p class="ob-sub" id="cvStepSub">Envie o arquivo ou cole o texto. Ele vira seu currículo base, e é dele que saem as versões para cada vaga.</p>
     <div id="existingCvPanel">
     <div class="ob-methods">
       <button class="ob-method" id="mUpload" onclick="openCvUpload()">
@@ -450,7 +450,7 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
       <textarea id="cvInput" placeholder="Cole aqui o texto do seu currículo..." oninput="onCvInput()"></textarea>
       <div class="ob-count" id="cvCount">0 caracteres</div>
     </div>
-    <div class="ob-note"><span>🔒</span><span>Seus dados não treinam nenhuma IA — são usados só para gerar essa análise.</span></div>
+    <div class="ob-note"><span>🔒</span><span>Seus dados não treinam nenhuma IA. São usados só para gerar essa análise.</span></div>
     <button class="ob-btn" id="cvNext" onclick="startAnalysis()" disabled>Analisar minha compatibilidade →</button>
     </div>
     <div class="ob-quick" id="quickCvPanel" hidden>
@@ -463,16 +463,16 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
         <input type="text" id="qCargo" placeholder="Ex: Analista de Marketing" oninput="onQuickCvInput()">
       </div>
       <div class="ob-field">
-        <label for="qExp">Experiências principais <span class="ob-req">*</span> <small>— escreva do seu jeito</small></label>
+        <label for="qExp">Experiências principais <span class="ob-req">*</span> <small>(escreva do seu jeito)</small></label>
         <textarea id="qExp" placeholder="Ex: trabalhei com atendimento por 2 anos, organizei pedidos e ajudava a equipe a bater metas..." oninput="onQuickCvInput()"></textarea>
         <div id="cvvHostQExp"></div>
       </div>
       <div class="ob-field">
-        <label for="qForm">Formação <small>— opcional</small></label>
+        <label for="qForm">Formação <small>(opcional)</small></label>
         <input type="text" id="qForm" placeholder="Curso, instituição e ano" oninput="onQuickCvInput()">
       </div>
       <div class="ob-field">
-        <label for="qSkills">Competências <span class="ob-req">*</span> <small>— 3 a 5, separadas por vírgula</small></label>
+        <label for="qSkills">Competências <span class="ob-req">*</span> <small>(3 a 5, separadas por vírgula)</small></label>
         <input type="text" id="qSkills" placeholder="Excel, atendimento, organização" oninput="onQuickCvInput()">
       </div>
       <div class="ob-req-hint">* campos obrigatórios para gerar seu diagnóstico</div>
@@ -496,7 +496,7 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
       <h1 style="font-size:20px;margin-bottom:20px">Analisando sua compatibilidade...</h1>
       <div class="ob-tip" id="tipBox">Cerca de 75% dos currículos são filtrados por sistemas ATS antes de um recrutador ler.</div>
       <div id="slowNote" style="display:none;margin-top:16px;font-size:12.5px;color:var(--muted)">
-        Isso está demorando mais que o normal — pode deixar a página aberta, estamos terminando.
+        Isso está demorando mais que o normal. Pode deixar a página aberta, estamos terminando.
       </div>
     </div>
   </section>
@@ -511,19 +511,19 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
           <circle class="ob-score-ring-fill" id="scoreRingFill" cx="80" cy="80" r="70"/>
         </svg>
         <div class="ob-score-ring-inner">
-          <div class="ob-score" id="scoreVal">—<small>/100</small></div>
+          <div class="ob-score" id="scoreVal">-<small>/100</small></div>
         </div>
       </div>
-      <div class="ob-score-lbl" id="scoreLbl">—</div>
+      <div class="ob-score-lbl" id="scoreLbl">-</div>
       <div class="ob-score-sum" id="scoreSum"></div>
     </div>
 
     <div class="ob-projection" id="projectionBlock" style="display:none">
       <div class="ob-projection-label">Aderência projetada após otimização</div>
       <div class="ob-projection-values">
-        <span class="ob-projection-before" id="projectionBefore">—</span>
+        <span class="ob-projection-before" id="projectionBefore">-</span>
         <span class="ob-projection-arrow">→</span>
-        <span class="ob-projection-after" id="projectionAfter">—</span>
+        <span class="ob-projection-after" id="projectionAfter">-</span>
       </div>
       <div class="ob-projection-note">Estimativa realista após aplicar as prioridades indicadas, sem inventar experiências.</div>
     </div>
@@ -563,11 +563,11 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
         <div class="ob-field wide"><label for="radarCargo">Cargo ou área</label><input id="radarCargo" type="text" placeholder="Ex: Analista de Marketing" oninput="saveRadarDraft()"></div>
       </div>
       <details class="ob-radar-more">
-        <summary>Refinar local, formato e salário <small>— opcional</small></summary>
+        <summary>Refinar local, formato e salário <small>(opcional)</small></summary>
         <div class="ob-radar-grid">
           <div class="ob-field"><label for="radarLocal">Cidade ou região</label><input id="radarLocal" type="text" placeholder="Ex: São Paulo" oninput="saveRadarDraft()"></div>
           <div class="ob-field"><label for="radarModalidade">Formato</label><select id="radarModalidade" onchange="saveRadarDraft()"><option value="">Qualquer formato</option><option value="remoto">Remoto</option><option value="hibrido">Híbrido</option><option value="presencial">Presencial</option></select></div>
-          <div class="ob-field"><label for="radarSalario">Salário mínimo <small>— opcional</small></label><input id="radarSalario" type="text" placeholder="Ex: 5000" inputmode="numeric" oninput="saveRadarDraft()"></div>
+          <div class="ob-field"><label for="radarSalario">Salário mínimo <small>(opcional)</small></label><input id="radarSalario" type="text" placeholder="Ex: 5000" inputmode="numeric" oninput="saveRadarDraft()"></div>
         </div>
       </details>
       <label class="ob-radar-check"><input type="checkbox" id="radarActivate" checked onchange="saveRadarDraft()"><span>Ativar meu alerta semanal depois do cadastro. Você poderá revisar tudo antes do primeiro envio.</span></label>
@@ -575,7 +575,7 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
 
     <div class="ob-gate">
       <div class="ob-gate-t">Esse foi o resumo. Quer a análise completa?</div>
-      <div class="ob-gate-d">Criar conta é grátis e leva 20 segundos — seu diagnóstico fica salvo.</div>
+      <div class="ob-gate-d">Criar conta é grátis e leva 20 segundos. Seu diagnóstico fica salvo.</div>
       <div class="ob-locked">
         <div class="ob-locked-i"><span>📄</span><span>Currículo otimizado para essa vaga, pronto pra baixar</span></div>
         <div class="ob-locked-i"><span>🏢</span><span>Briefing da empresa: o que valorizam e o que buscam</span></div>
@@ -597,7 +597,7 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
   <div class="ob-modal-box">
     <div id="signupForm">
       <div class="ob-modal-t">Criar conta grátis</div>
-      <div class="ob-modal-d">Sua análise já está pronta — criando a conta você vê tudo e não perde nada do que preencheu.</div>
+      <div class="ob-modal-d">Sua análise já está pronta. Criando a conta você vê tudo e não perde nada do que preencheu.</div>
       <button class="ob-gbtn" onclick="signupGoogle()">
         <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.65l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84z"/><path fill="#EA4335" d="M12 4.75c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 1.46 14.97.5 12 .5A11 11 0 0 0 2.18 7.05l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
         Continuar com Google
@@ -612,7 +612,7 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
       <div class="ob-modal-t">Link enviado ✉️</div>
       <div class="ob-sent">
         Enviamos um link de acesso para <b id="sentTo"></b>.<br><br>
-        Abra o e-mail e clique no link — sua análise completa estará te esperando.
+        Abra o e-mail e clique no link. Sua análise completa estará te esperando.
       </div>
       <button class="ob-close" onclick="closeSignup()">Fechar</button>
     </div>
@@ -1371,7 +1371,7 @@ async function handleCvFile(input) {
     saveState();
     scheduleBaseCvStructure();
     updateJourneySummary();
-    okEl.textContent = '✓ ' + file.name + ' — ' + text.length + ' caracteres lidos';
+    okEl.textContent = '✓ ' + file.name + ' - ' + text.length + ' caracteres lidos';
     document.getElementById('mUpload').classList.add('on');
     document.getElementById('mPaste').classList.remove('on');
     document.getElementById('pasteWrap').style.display = 'none';
@@ -1675,7 +1675,7 @@ function showAnalysisInterrupted() {
   step4.innerHTML = '<div class="ob-loading">'
     + '<div class="ob-state-ic ob-state-ic--retry"></div>'
     + '<h1 style="font-size:21px;margin-bottom:10px">Sua análise foi interrompida</h1>'
-    + '<p class="ob-sub" style="margin-inline:auto">A página foi recarregada antes de terminarmos. Nada do que você preencheu se perdeu — é só retomar.</p>'
+    + '<p class="ob-sub" style="margin-inline:auto">A página foi recarregada antes de terminarmos. Nada do que você preencheu se perdeu. É só retomar.</p>'
     + '<button class="ob-btn" onclick="startAnalysis()">Retomar análise →</button>'
     + '<button class="ob-btn ghost" onclick="goStep(3)">Revisar meu currículo</button>'
     + '</div>';
@@ -1702,7 +1702,7 @@ function showLimitReached() {
   step4.innerHTML = '<div class="ob-loading">'
     + '<div class="ob-state-ic ob-state-ic--lock"></div>'
     + '<h1 style="font-size:21px;margin-bottom:10px">Você já usou sua análise gratuita</h1>'
-    + '<p class="ob-sub" style="margin-inline:auto">Crie sua conta grátis para continuar analisando vagas — no plano Grátis você tem 1 análise completa por mês.</p>'
+    + '<p class="ob-sub" style="margin-inline:auto">Crie sua conta grátis para continuar analisando vagas. No plano Grátis você tem 1 análise completa por mês.</p>'
     + '<button class="ob-btn" onclick="openSignup()">Criar conta grátis →</button>'
     + '</div>';
   track('onboarding_vaga_limit_reached');
@@ -1784,7 +1784,7 @@ function renderResult(d) {
       });
   }
   if (!strong.length && score >= 40) {
-    strong.push('Seu currículo tem base compatível com o que a vaga pede — dá pra melhorar com ajustes pontuais.');
+    strong.push('Seu currículo tem base compatível com o que a vaga pede. Dá pra melhorar com ajustes pontuais.');
   }
 
   var sb2 = document.getElementById('strongBlock');
@@ -1975,7 +1975,7 @@ function temProgressoInvestido() {
     if (state.cvName) {
       var ok = document.getElementById('cvOk');
       ok.style.display = 'block';
-      ok.textContent = '✓ ' + state.cvName + ' — ' + state.cv.length + ' caracteres lidos';
+      ok.textContent = '✓ ' + state.cvName + ' - ' + state.cv.length + ' caracteres lidos';
       document.getElementById('mUpload').classList.add('on');
     } else {
       document.getElementById('pasteWrap').style.display = 'block';
@@ -2019,7 +2019,7 @@ function temProgressoInvestido() {
     onFilled: function(){ if (typeof onQuickCvInput === 'function') onQuickCvInput(); }
   });
   host.innerHTML = CvVoice.block(KEY, 'experiencia', null,
-    'Prefere falar? Conte em voz alta o que você fez em cada emprego — a IA organiza o texto.');
+    'Prefere falar? Conte em voz alta o que você fez em cada emprego. A IA organiza o texto.');
 })();
 </script>
 </body>

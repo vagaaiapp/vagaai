@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VagaAI — Meu currículo</title>
+<title>VagaAI | Meu currículo</title>
 <meta name="description" content="Seu currículo, sempre atualizado. Preencha seus dados e veja o que o mercado espera de você.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -149,7 +149,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;fon
 </head>
 <body data-vagaai-ui="curriculum">
 <div class="standalone-nav" id="standaloneNav">
-  <a class="sn-brand" href="/" aria-label="VagaAI — página inicial">
+  <a class="sn-brand" href="/" aria-label="VagaAI, página inicial">
     <img src="/logo.svg" alt="VagaAI" class="logo-dark">
     <img src="/logo-light.svg" alt="VagaAI" class="logo-light">
   </a>
@@ -167,7 +167,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;fon
     </div>
   </div>
 
-  <div class="draft-banner" id="draftBanner">Você está editando sem estar logado — nada será perdido, mas <b>salve para não perder seu progresso</b> e poder usar esse currículo nas análises de vaga.</div>
+  <div class="draft-banner" id="draftBanner">Você está editando sem estar logado. Nada será perdido, mas <b>salve para não perder seu progresso</b> e poder usar esse currículo nas análises de vaga.</div>
 
   <div id="mainArea"><div class="loading"><span class="spinner"></span>Carregando...</div></div>
   <input type="file" id="uploadInput" accept=".txt,.pdf,.doc,.docx" style="display:none" onchange="handleUploadFile(this)">
@@ -461,7 +461,7 @@ function render() {
   // Perfil ainda vazio: oferece importar um currículo pronto em vez de
   // obrigar a digitar tudo — caminho rápido pra quem já tem o arquivo.
   if (!d.raw_text && completude(d) === 0) {
-    html += '<div class="import-card"><p><b>Já tem um currículo pronto?</b> Envie o arquivo e a gente aproveita o conteúdo — ou preencha as seções abaixo do zero.</p>' +
+    html += '<div class="import-card"><p><b>Já tem um currículo pronto?</b> Envie o arquivo e a gente aproveita o conteúdo, ou preencha as seções abaixo do zero.</p>' +
       '<button class="btn btn-ghost" onclick="document.getElementById(\'uploadInput\').click()">Enviar arquivo (PDF, Word ou TXT)</button></div>';
   }
 
@@ -504,7 +504,7 @@ function render() {
 // enviado sem perguntar — a pessoa clicava esperando ir para os campos e
 // perdia o conteúdo do próprio arquivo. Agora remover é uma ação explícita.
 function removeRawCv() {
-  var ok = window.confirm('Remover o conteúdo enviado?\n\nOs campos que você já preencheu continuam como estão. O texto original do arquivo será apagado — para recuperá-lo, você precisará enviar o arquivo de novo.');
+  var ok = window.confirm('Remover o conteúdo enviado?\n\nOs campos que você já preencheu continuam como estão. O texto original do arquivo será apagado. Para recuperá-lo, você precisará enviar o arquivo de novo.');
   if (!ok) return;
   delete _cvData.raw_text;
   markDirty();
@@ -575,7 +575,7 @@ async function handleUploadFile(input) {
   _cvData = normalize(estruturado || { raw_text: text.slice(0, 30000) });
   markDirty();
   render();
-  toast('✓ Currículo importado e organizado — revise antes de salvar');
+  toast('✓ Currículo importado e organizado. Revise antes de salvar');
 }
 
 function openAdvancedEditor() {
@@ -698,7 +698,7 @@ function versionCopyHtml(row, siblingCount) {
   var company = info.empresa || 'Empresa não informada';
   var date = new Date(result.cv_version_updated_at || row.created_at).toLocaleDateString('pt-BR');
   var scoreValue = row.score == null ? result.score : row.score;
-  var score = scoreValue == null ? '—' : Math.round(Number(scoreValue)) + '%';
+  var score = scoreValue == null ? '-' : Math.round(Number(scoreValue)) + '%';
   var analysisState = row.archived_at ? 'Análise arquivada' : versionStatusLabel(_versionStatusByAnalysis[row.id]);
   var countChip = siblingCount > 1 ? '<span class="version-chip">' + siblingCount + ' versões</span>' : '';
   return '<div class="version-row-copy"><b>' + esc(title) + '</b><span>' + esc(company) + ' · atualizada em ' + date + '</span>' +
@@ -753,7 +753,7 @@ function renderVersionsPanel() {
   var tabs = '<div class="version-tabs"><button class="version-tab ' + (_versionView === 'active' ? 'active' : '') + '" onclick="setVersionView(\'active\')">Ativas (' + active.length + ')</button><button class="version-tab ' + (_versionView === 'archived' ? 'active' : '') + '" onclick="setVersionView(\'archived\')">Arquivadas (' + archived.length + ')</button></div>';
   var head = '<div class="sec-head"><div class="sec-title">2 · Currículos feitos para vagas</div><span class="save-status">' + rows.length + ' no total</span></div>' + intro + tabs;
   if (!rows.length) {
-    panel.innerHTML = head + '<div class="sec-empty-cta"><p class="sec-empty">Quando você adaptar o currículo para uma vaga, a nova versão aparece aqui — sem substituir o currículo base.</p>' +
+    panel.innerHTML = head + '<div class="sec-empty-cta"><p class="sec-empty">Quando você adaptar o currículo para uma vaga, a nova versão aparece aqui, sem substituir o currículo base.</p>' +
       '<button class="btn btn-ghost" onclick="adaptarParaVaga()">Adaptar para uma vaga</button></div>';
     return;
   }
@@ -876,15 +876,15 @@ function metricaHint(bullets) {
   var faltando = (bullets || []).filter(function(b){ return b && bulletSemNumero(b); }).length;
   if (!faltando) return '';
   return faltando > 1
-    ? faltando + ' atividades sem número — quanto, quantos, em quanto tempo?'
-    : '1 atividade sem número — quanto, quantos, em quanto tempo?';
+    ? faltando + ' atividades sem número: quanto, quantos, em quanto tempo?'
+    : '1 atividade sem número: quanto, quantos, em quanto tempo?';
 }
 
 function secExperiencias(d) {
   var exps = d.experiencias || [];
   var body = exps.length ? exps.map(function(e){
     var hint = metricaHint(e.bullets);
-    return '<div class="sec-item"><div class="sec-item-title">' + esc(e.cargo||'') + (e.empresa?' — '+esc(e.empresa):'') + '</div>' +
+    return '<div class="sec-item"><div class="sec-item-title">' + esc(e.cargo||'') + (e.empresa?' - '+esc(e.empresa):'') + '</div>' +
       (e.periodo ? '<div class="sec-item-sub">' + esc(e.periodo) + '</div>' : '') +
       ((e.bullets||[]).filter(Boolean).length ? '<ul>' + e.bullets.filter(Boolean).map(function(b){return '<li>'+esc(b)+'</li>';}).join('') + '</ul>' : '') +
       (hint ? '<div class="metric-hint">' + esc(hint) + '</div>' : '') +
@@ -928,7 +928,7 @@ function secCursos(d) {
 function secIdiomas(d) {
   var arr = d.idiomas || [];
   return '<div class="sec-card">' + secHead('globe','Idiomas','editIdiomas()') +
-    (arr.length ? '<div class="tag-row">' + arr.map(function(e){return '<span class="tag">'+esc(e.idioma||'')+(e.nivel?' — '+esc(e.nivel):'')+'</span>';}).join('') + '</div>' : '<div class="sec-empty">Quais idiomas você fala?</div>') +
+    (arr.length ? '<div class="tag-row">' + arr.map(function(e){return '<span class="tag">'+esc(e.idioma||'')+(e.nivel?' - '+esc(e.nivel):'')+'</span>';}).join('') + '</div>' : '<div class="sec-empty">Quais idiomas você fala?</div>') +
     '</div>';
 }
 
@@ -974,7 +974,7 @@ function editDadosPessoais() {
     '<div class="f-grid2"><div class="f-row"><label>LinkedIn</label><input id="mLinkedin" value="' + esc(c.linkedin) + '"></div>' +
     '<div class="f-row"><label>Cidade</label><input id="mCidade" placeholder="Ex: São Paulo - SP" value="' + esc(c.cidade) + '"></div></div>' +
     '<div class="f-row"><label>Portfólio ou site (opcional)</label><input id="mPortfolio" placeholder="behance.net/seunome, github.com/seunome, seusite.com.br" value="' + esc(c.portfolio) + '"></div>' +
-    '<p class="f-note">Não inclua CPF, RG, endereço completo, data de nascimento ou estado civil — não são avaliados e expõem seus dados à toa.</p>' +
+    '<p class="f-note">Não inclua CPF, RG, endereço completo, data de nascimento ou estado civil. Não são avaliados e expõem seus dados à toa.</p>' +
     '<div class="modal-actions"><button class="btn btn-primary" onclick="saveDadosPessoais()">Salvar</button><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button></div>'
   );
 }
@@ -1025,10 +1025,10 @@ function expRowHtml(i, e) {
   return '<div class="list-row" data-i="' + i + '"><button class="list-row-remove" onclick="this.closest(\'.list-row\').remove()">✕ remover</button>' +
     '<div class="f-grid2"><div class="f-row"><label>Cargo</label><input class="e-cargo" value="' + esc(e.cargo) + '"></div>' +
     '<div class="f-row"><label>Empresa</label><input class="e-empresa" value="' + esc(e.empresa) + '"></div></div>' +
-    '<div class="f-row"><label>Período</label><input class="e-periodo" placeholder="Ex: 2021 — 2024" value="' + esc(e.periodo) + '"></div>' +
+    '<div class="f-row"><label>Período</label><input class="e-periodo" placeholder="Ex: 2021 a 2024" value="' + esc(e.periodo) + '"></div>' +
     '<div class="f-row"><label>Principais atividades e resultados (uma por linha)</label><textarea class="e-bullets" id="cvvb_' + i + '" rows="3" oninput="updateMetricHint(this)">' + esc((e.bullets||[]).join('\n')) + '</textarea>' +
     '<div class="metric-hint"' + (metricaHint(e.bullets) ? '' : ' style="display:none"') + '>' + esc(metricaHint(e.bullets)) + '</div>' +
-    cvVoiceBlock('cvvb_' + i, 'bullets', i, 'Conte o que você fazia nesse cargo e o que entregou — a IA transforma em linhas de currículo.') + '</div></div>';
+    cvVoiceBlock('cvvb_' + i, 'bullets', i, 'Conte o que você fazia nesse cargo e o que entregou. A IA transforma em linhas de currículo.') + '</div></div>';
 }
 
 function updateMetricHint(ta) {
@@ -1117,7 +1117,7 @@ function simpleRowHtml(ns, i, e, k1, l1, k2, l2, comSituacao) {
   return '<div class="list-row" data-i="' + i + '"><button class="list-row-remove" onclick="this.closest(\'.list-row\').remove()">✕ remover</button>' +
     '<div class="f-row"><label>' + l1 + '</label><input class="' + ns + '-k1" value="' + esc(e[k1]) + '"></div>' +
     '<div class="f-grid2"><div class="f-row"><label>' + l2 + '</label><input class="' + ns + '-k2" value="' + esc(e[k2]) + '"></div>' +
-    '<div class="f-row"><label>Período</label><input class="' + ns + '-periodo" placeholder="Ex: 2019 — 2023" value="' + esc(e.periodo) + '"></div></div>' +
+    '<div class="f-row"><label>Período</label><input class="' + ns + '-periodo" placeholder="Ex: 2019 a 2023" value="' + esc(e.periodo) + '"></div></div>' +
     situacao + '</div>';
 }
 function addSimpleRow(ns, k1, l1, k2, l2, comSituacao) { document.getElementById('listRows').insertAdjacentHTML('beforeend', simpleRowHtml(ns, Date.now(), {}, k1, l1, k2, l2, comSituacao)); }
@@ -1291,8 +1291,8 @@ async function loadGapPanel() {
       panel.innerHTML = gapHeroShell(
         'Primeira leitura',
         'Sua leitura começa na primeira vaga.',
-        'Analise pelo menos 1 vaga pra começarmos a te mostrar o que o mercado espera do seu perfil — esse painel se atualiza sozinho conforme você usa a plataforma.',
-        metric(0, 'vagas analisadas') + metric('—', 'competências em comum') + metric('—', 'termos para avaliar'), ''
+        'Analise pelo menos 1 vaga pra começarmos a te mostrar o que o mercado espera do seu perfil. Esse painel se atualiza sozinho conforme você usa a plataforma.',
+        metric(0, 'vagas analisadas') + metric('-', 'competências em comum') + metric('-', 'termos para avaliar'), ''
       );
       setProfileNext('Analise uma vaga para descobrir quais competências aparecem com mais frequência no seu mercado.', 'Analisar uma vaga', 'analysis');
       return;

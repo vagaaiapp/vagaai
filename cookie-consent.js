@@ -47,7 +47,7 @@
       '<div style="font-size:13px;line-height:1.55;color:#cdd8d1">' +
       'Usamos cookies para entender o uso do site, melhorar sua experiência e ' +
       'medir os resultados das nossas campanhas de publicidade. ' +
-      'Você pode aceitar ou recusar — recusar não limita nenhum recurso. ' +
+      'Você pode aceitar ou recusar. Recusar não limita nenhum recurso. ' +
       '<a href="/termos#privacidade" style="color:#3ecf8e;text-decoration:underline">Política de Privacidade</a>.' +
       '</div>' +
       '<div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">' +

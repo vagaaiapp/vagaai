@@ -25,11 +25,11 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 // falha aqui nunca derruba o envio principal para o inbox de suporte.
 function sendAutoReply(to, isCompanyLead) {
   const subject = isCompanyLead
-    ? 'Recebemos seu interesse — VagaAI Hire'
-    : 'Recebemos sua mensagem — Suporte VagaAI';
+    ? 'Recebemos seu interesse no VagaAI Hire'
+    : 'Recebemos sua mensagem | Suporte VagaAI';
   const intro = isCompanyLead
     ? 'Obrigado pelo interesse no VagaAI Hire! Recebemos os dados da sua empresa e vamos retornar em até <strong>1 dia útil</strong> com os próximos passos.'
-    : 'Sua mensagem chegou à nossa equipe de suporte. Respondemos em até <strong>1 dia útil</strong> — normalmente bem antes.';
+    : 'Sua mensagem chegou à nossa equipe de suporte. Respondemos em até <strong>1 dia útil</strong>, normalmente bem antes.';
   fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
@@ -94,7 +94,7 @@ async function handleCompanyLead(body, res) {
     <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto">
       <div style="background:#0a0f0d;padding:20px 28px;border-radius:12px 12px 0 0">
         <span style="font-family:Georgia,serif;font-style:italic;font-size:22px;font-weight:700;color:#3ecf8e">VagaAI</span>
-        <span style="font-size:12px;color:#8a9e90;margin-left:10px">Hire — Novo lead</span>
+        <span style="font-size:12px;color:#8a9e90;margin-left:10px">Hire | Novo lead</span>
       </div>
       <div style="background:#ffffff;padding:28px;border:1px solid #e5e5e5;border-top:none;border-radius:0 0 12px 12px">
         <h2 style="margin:0 0 20px;font-size:18px;color:#0a0f0d">Nova empresa interessada</h2>
@@ -123,7 +123,7 @@ async function handleCompanyLead(body, res) {
         from: 'VagaAI Hire <noreply@vagaai.app.br>',
         to: ['contato@vagaai.app.br'],
         reply_to: email,
-        subject: `[Hire] Novo lead — ${empresa}`,
+        subject: `[Hire] Novo lead: ${empresa}`,
         html,
       }),
     });
@@ -226,7 +226,7 @@ export default async function handler(req, res) {
         from: 'VagaAI Suporte <noreply@vagaai.app.br>',
         to: ['contato@vagaai.app.br'],
         reply_to: email,
-        subject: `[Suporte] ${motivoLabel} — ${email}`,
+        subject: `[Suporte] ${motivoLabel}: ${email}`,
         html,
       }),
     });

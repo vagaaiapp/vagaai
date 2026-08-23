@@ -89,7 +89,7 @@ const EMAILS = {
   }; },
 
   tracker_followup: (rawName, rawEmpresa, rawCargo) => { const name = esc(rawName), empresa = esc(rawEmpresa), cargo = esc(rawCargo); return {
-    subject: `Já faz 7 dias desde que você aplicou para ${String(rawEmpresa || 'a vaga')} — e agora?`,
+    subject: `Já faz 7 dias desde que você aplicou para ${String(rawEmpresa || 'a vaga')}. E agora?`,
     html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#0a0f0d;color:#e8ede9;border-radius:12px;overflow:hidden">
   <div style="background:#111814;padding:1.5rem 2rem;border-bottom:1px solid rgba(255,255,255,.07)">
     <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#3ecf8e">VagaAI</div>
@@ -119,7 +119,7 @@ const EMAILS = {
 
   // D7 — só para quem NÃO tem alerta ativo. Objetivo: ligar o motor de retenção.
   day7_alerts: (rawName) => { const name = esc(rawName); return {
-    subject: 'Ligue seu radar de vagas — leva 1 minuto 🔔',
+    subject: 'Ligue seu radar de vagas, leva 1 minuto 🔔',
     html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#0a0f0d;color:#e8ede9;border-radius:12px;overflow:hidden">
   <div style="background:#111814;padding:1.5rem 2rem;border-bottom:1px solid rgba(255,255,255,.07)">
     <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#3ecf8e">VagaAI</div>
@@ -128,7 +128,7 @@ const EMAILS = {
     <h1 style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">Olá, ${name}!</h1>
     <p style="color:#8a9e90;font-size:14px;line-height:1.7;margin-bottom:1.2rem">
       As melhores vagas fecham em dias. Em vez de procurar todo dia, deixe o radar procurar por você:
-      diga o cargo e a cidade, e você recebe por e-mail só as vagas compatíveis com seu perfil — com score estimado.
+      diga o cargo e a cidade, e você recebe por e-mail só as vagas compatíveis com seu perfil, com score estimado.
     </p>
     <div style="background:#161d19;border-radius:10px;padding:1.2rem;margin-bottom:1.5rem">
       <div style="font-size:13px;color:#8a9e90;line-height:1.6">🔔 Grátis, direto no seu e-mail, cancela quando quiser. Leva 1 minuto para configurar.</div>
@@ -145,9 +145,9 @@ const EMAILS = {
     subject: 'Posso te perguntar uma coisa?',
     html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;color:#222;line-height:1.7;font-size:14px;padding:1rem">
   <p>Olá, ${name}!</p>
-  <p>Vi que você criou sua conta no VagaAI há algumas semanas, mas acabou não voltando. Tudo bem — mas sua resposta me ajudaria muito a melhorar o produto:</p>
+  <p>Vi que você criou sua conta no VagaAI há algumas semanas, mas acabou não voltando. Tudo bem, mas sua resposta me ajudaria muito a melhorar o produto:</p>
   <p style="font-weight:700">O que te travou? Faltou alguma coisa, o resultado não ajudou, ou a busca de emprego mudou?</p>
-  <p>É só responder este e-mail — eu leio todas as respostas pessoalmente.</p>
+  <p>É só responder este e-mail. Eu leio todas as respostas pessoalmente.</p>
   <p>Abraço,<br>Equipe VagaAI · <a href="https://vagaai.app.br" style="color:#1a7a4a">vagaai.app.br</a></p>
 </div>`
   }; },
@@ -206,7 +206,7 @@ const EMAILS = {
 
   // Pagamento falhou — período de graça ativo; tom tranquilo, 1 CTA.
   payment_failed: (rawName) => { const name = esc(rawName); return {
-    subject: 'Não conseguimos renovar sua assinatura — seu acesso continua ativo',
+    subject: 'Não conseguimos renovar sua assinatura, mas seu acesso continua ativo',
     html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#0a0f0d;color:#e8ede9;border-radius:12px;overflow:hidden">
   <div style="background:#111814;padding:1.5rem 2rem;border-bottom:1px solid rgba(255,255,255,.07)">
     <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#3ecf8e">VagaAI</div>
@@ -214,7 +214,7 @@ const EMAILS = {
   <div style="padding:2rem">
     <h1 style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">Olá, ${name}!</h1>
     <p style="color:#8a9e90;font-size:14px;line-height:1.7;margin-bottom:1rem">
-      A renovação da sua assinatura não foi aprovada pelo banco — isso é comum (limite, cartão vencido ou bloqueio temporário).
+      A renovação da sua assinatura não foi aprovada pelo banco. Isso é comum (limite, cartão vencido ou bloqueio temporário).
     </p>
     <p style="color:#8a9e90;font-size:14px;line-height:1.7;margin-bottom:1.5rem">
       <strong style="color:#e8ede9">Seu acesso continua ativo</strong> enquanto tentamos novamente. Para não perder seus recursos, atualize a forma de pagamento:
@@ -227,7 +227,7 @@ const EMAILS = {
 
   // Cancelamento confirmado — sem culpa; lista o que permanece no grátis.
   sub_canceled: (rawName) => { const name = esc(rawName); return {
-    subject: 'Cancelamento confirmado — você continua com o plano gratuito',
+    subject: 'Cancelamento confirmado, você continua com o plano gratuito',
     html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#0a0f0d;color:#e8ede9;border-radius:12px;overflow:hidden">
   <div style="background:#111814;padding:1.5rem 2rem;border-bottom:1px solid rgba(255,255,255,.07)">
     <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#3ecf8e">VagaAI</div>
@@ -235,7 +235,7 @@ const EMAILS = {
   <div style="padding:2rem">
     <h1 style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">Olá, ${name}</h1>
     <p style="color:#8a9e90;font-size:14px;line-height:1.7;margin-bottom:1.2rem">
-      Sua assinatura foi cancelada e você não será mais cobrado. Obrigado por ter feito parte — e boa sorte na sua busca! 🍀
+      Sua assinatura foi cancelada e você não será mais cobrado. Obrigado por ter feito parte, e boa sorte na sua busca! 🍀
     </p>
     <div style="background:#161d19;border-radius:10px;padding:1.2rem;margin-bottom:1.5rem">
       <div style="font-size:13px;font-weight:700;color:#3ecf8e;margin-bottom:.5rem">Você continua com o plano gratuito:</div>
@@ -259,7 +259,7 @@ const EMAILS = {
   <div style="padding:2rem">
     <h1 style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">Olá, ${name}!</h1>
     <p style="color:#8a9e90;font-size:14px;line-height:1.7;margin-bottom:1.5rem">
-      Está em busca ativa? Seu plano gratuito inclui <strong style="color:#3ecf8e">1 análise completa por mês</strong> — e o plano Pro libera análises ilimitadas, currículo otimizado e simulador de entrevista.
+      Está em busca ativa? Seu plano gratuito inclui <strong style="color:#3ecf8e">1 análise completa por mês</strong>. E o plano Pro libera análises ilimitadas, currículo otimizado e simulador de entrevista.
     </p>
     <div style="background:#161d19;border-radius:10px;padding:1.2rem;margin-bottom:1.5rem">
       <div style="font-size:13px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">💡 Dica da semana</div>

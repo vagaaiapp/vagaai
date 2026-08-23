@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VagaAI — Admin</title>
+<title>VagaAI | Admin</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/loading-comet.css">
@@ -493,7 +493,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   <div id="panel-alerts" class="tab-panel" style="display:none">
 
     <div class="section-header">
-      <div class="section-title">Alertas <span class="section-count" id="alertsProfileCount">—</span></div>
+      <div class="section-title">Alertas <span class="section-count" id="alertsProfileCount">-</span></div>
       <button class="btn-nav ghost" onclick="loadAlertsData()" style="font-size:12px">↻ Atualizar</button>
     </div>
 
@@ -501,19 +501,19 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px" id="alertsMetrics">
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
         <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Perfis ativos</div>
-        <div style="font-size:24px;font-weight:700;color:var(--green)" id="amActive">—</div>
+        <div style="font-size:24px;font-weight:700;color:var(--green)" id="amActive">-</div>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
         <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Envios (últimos 30d)</div>
-        <div style="font-size:24px;font-weight:700;color:var(--text)" id="amSent">—</div>
+        <div style="font-size:24px;font-weight:700;color:var(--text)" id="amSent">-</div>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
         <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Vagas excluídas</div>
-        <div style="font-size:24px;font-weight:700;color:var(--yellow)" id="amDismissed">—</div>
+        <div style="font-size:24px;font-weight:700;color:var(--yellow)" id="amDismissed">-</div>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
         <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Taxa de exclusão</div>
-        <div style="font-size:24px;font-weight:700;color:var(--red)" id="amDismissRate">—</div>
+        <div style="font-size:24px;font-weight:700;color:var(--red)" id="amDismissRate">-</div>
       </div>
     </div>
 
@@ -638,7 +638,7 @@ var _usersFiltered = [];
 // ─── Formatters ───────────────────────────────────────────────────────────────
 
 function fmtBRL(cents) {
-  if (cents == null || isNaN(cents)) return '—';
+  if (cents == null || isNaN(cents)) return '-';
   var val = cents / 100;
   return 'R$ ' + val.toFixed(2)
     .replace('.', ',')
@@ -646,14 +646,14 @@ function fmtBRL(cents) {
 }
 
 function fmtDate(iso) {
-  if (!iso) return '—';
+  if (!iso) return '-';
   try {
     return new Date(iso).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
   } catch(e) { return iso; }
 }
 
 function fmtDateShort(iso) {
-  if (!iso) return '—';
+  if (!iso) return '-';
   try {
     return new Date(iso).toLocaleDateString('pt-BR', { day:'2-digit', month:'short' });
   } catch(e) { return iso; }
@@ -862,7 +862,7 @@ function renderGA4(d) {
       + '<div class="ga4-funnel-label">' + label + '</div>'
       + '<div class="ga4-funnel-bar-wrap"><div class="ga4-funnel-bar" style="width:' + barW + '%"></div></div>'
       + '<div class="ga4-funnel-count">' + val.toLocaleString('pt-BR') + '</div>'
-      + '<div class="ga4-funnel-pct">' + (base !== val ? pct + '%' : '—') + '</div>'
+      + '<div class="ga4-funnel-pct">' + (base !== val ? pct + '%' : '-') + '</div>'
       + '</div>';
   }
 
@@ -981,7 +981,7 @@ function renderAlertsTab(d) {
   var sent30  = history.filter(function(h){ return h.sent_at > since30 && h.status === 'sent'; }).length;
   var totalJobsSent = history.filter(function(h){ return h.status === 'sent'; })
     .reduce(function(s,h){ return s + (h.jobs_count||0); }, 0);
-  var dismissRate = totalJobsSent > 0 ? ((dismissed.length / totalJobsSent) * 100).toFixed(1) + '%' : '—';
+  var dismissRate = totalJobsSent > 0 ? ((dismissed.length / totalJobsSent) * 100).toFixed(1) + '%' : '-';
 
   document.getElementById('amActive').textContent      = active;
   document.getElementById('amSent').textContent        = sent30;
@@ -1017,10 +1017,10 @@ function renderAlertsTab(d) {
     profEl.innerHTML = profiles.map(function(p) {
       var status = p.ativo ? '<span style="color:var(--green);font-size:10px;font-weight:700">● ATIVO</span>'
                            : '<span style="color:var(--muted);font-size:10px;font-weight:700">● PAUSADO</span>';
-      var nextRun = p.next_run_at ? new Date(p.next_run_at).toLocaleDateString('pt-BR') : '—';
+      var nextRun = p.next_run_at ? new Date(p.next_run_at).toLocaleDateString('pt-BR') : '-';
       return '<div style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">' +
-          '<strong style="color:var(--text)">' + (p.cargo_desejado || '—') + '</strong>' + status +
+          '<strong style="color:var(--text)">' + (p.cargo_desejado || '-') + '</strong>' + status +
         '</div>' +
         '<div style="color:var(--muted)">' + (p.cidade || 'Qualquer local') + ' · ' + (p.frequencia || 'semanal') + ' · próx: ' + nextRun + '</div>' +
       '</div>';
@@ -1033,11 +1033,11 @@ function renderAlertsTab(d) {
     dismissEl.innerHTML = '<div style="color:var(--muted);font-size:13px">Nenhuma exclusão ainda.</div>';
   } else {
     var rows = dismissed.slice(0, 30).map(function(d) {
-      var at = d.dismissed_at ? new Date(d.dismissed_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+      var at = d.dismissed_at ? new Date(d.dismissed_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
       return '<tr>' +
-        '<td style="padding:7px 10px;color:var(--text);font-size:12px">' + (d.job_title||'—') + '</td>' +
-        '<td style="padding:7px 10px;color:var(--muted);font-size:12px">' + (d.job_company||'—') + '</td>' +
-        '<td style="padding:7px 10px;color:var(--yellow);font-size:12px">' + (d.dismissed_reason||'—') + '</td>' +
+        '<td style="padding:7px 10px;color:var(--text);font-size:12px">' + (d.job_title||'-') + '</td>' +
+        '<td style="padding:7px 10px;color:var(--muted);font-size:12px">' + (d.job_company||'-') + '</td>' +
+        '<td style="padding:7px 10px;color:var(--yellow);font-size:12px">' + (d.dismissed_reason||'-') + '</td>' +
         '<td style="padding:7px 10px;color:var(--muted);font-size:11px">' + at + '</td>' +
       '</tr>';
     }).join('');
@@ -1060,7 +1060,7 @@ function renderAlertsTab(d) {
       var statusColor = h.status === 'sent' ? 'var(--green)' : 'var(--red)';
       return '<tr style="border-bottom:1px solid var(--border)">' +
         '<td style="padding:7px 10px;color:var(--muted);font-size:11px">' + at + '</td>' +
-        '<td style="padding:7px 10px;font-size:12px;color:' + statusColor + ';font-weight:600">' + (h.status||'—') + '</td>' +
+        '<td style="padding:7px 10px;font-size:12px;color:' + statusColor + ';font-weight:600">' + (h.status||'-') + '</td>' +
         '<td style="padding:7px 10px;color:var(--text);font-size:12px">' + (h.jobs_count||0) + ' vagas</td>' +
         '<td style="padding:7px 10px;color:var(--muted);font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">' + (h.error||'') + '</td>' +
       '</tr>';
@@ -1303,7 +1303,7 @@ function renderMetrics(totalUsers, totalAnalyses, totalRevCents, totalCredits) {
     + '</div>'
     + '<div class="metric-card" id="leadsMetricCard">'
     + '<div class="metric-label">E-mails Capturados</div>'
-    + '<div class="metric-value" id="leadsMetricValue">—</div>'
+    + '<div class="metric-value" id="leadsMetricValue">-</div>'
     + '<div class="metric-sub">leads para nutrição</div>'
     + '</div>';
   document.getElementById('metricsGrid').innerHTML = html;
@@ -1478,8 +1478,8 @@ function renderAnalyses(analyses, users) {
     var colorClass = score >= 75 ? 'green' : score >= 50 ? 'yellow' : 'red';
     var jobInfo = a.result && a.result.job_info ? a.result.job_info : null;
     var empresa = jobInfo ? (jobInfo.empresa || 'Empresa anônima') : 'Empresa anônima';
-    var cargo = jobInfo ? (jobInfo.cargo || '—') : (a.job_excerpt ? a.job_excerpt.substring(0,40) : '—');
-    var nivel = a.nivel || '—';
+    var cargo = jobInfo ? (jobInfo.cargo || '-') : (a.job_excerpt ? a.job_excerpt.substring(0,40) : '-');
+    var nivel = a.nivel || '-';
     var nivelBadge = nivelBadgeHtml(nivel);
     return '<tr>'
       + '<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(emailMap[a.user_id] || a.user_id) + '</td>'
@@ -1493,7 +1493,7 @@ function renderAnalyses(analyses, users) {
 }
 
 function nivelBadgeHtml(nivel) {
-  if (!nivel) return '<span class="badge muted">—</span>';
+  if (!nivel) return '<span class="badge muted">-</span>';
   var n = nivel.toLowerCase();
   var cls = n === 'excelente' ? 'green' : n === 'bom' ? 'blue' : n === 'regular' ? 'yellow' : 'red';
   return '<span class="badge ' + cls + '">' + escHtml(nivel) + '</span>';
@@ -1522,7 +1522,7 @@ function renderPayments(charges, stripe_) {
   var recent = charges.slice(0, 20);
   body.innerHTML = recent.map(function(c) {
     var statusCls = c.status === 'succeeded' ? 'green' : c.status === 'pending' ? 'yellow' : 'red';
-    var statusLabel = c.status === 'succeeded' ? 'Aprovado' : c.status === 'pending' ? 'Pendente' : c.status || '—';
+    var statusLabel = c.status === 'succeeded' ? 'Aprovado' : c.status === 'pending' ? 'Pendente' : c.status || '-';
     var amount = c.amount_captured || c.amount || 0;
     return '<tr>'
       + '<td>' + fmtDate(new Date(c.created * 1000).toISOString()) + '</td>'
@@ -1565,22 +1565,22 @@ var JOB_SOURCES = [
   { n:1,  name:'JSearch (RapidAPI)',  url:'https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch', coverage:'Global · LinkedIn · Indeed · Glassdoor', type:'API REST',  key:'JSEARCH_API_KEY',           status:'ok',      note:'200 req/mês grátis' },
   { n:2,  name:'Jooble',              url:'https://jooble.org/api/about',  coverage:'Brasil · Global',            type:'API REST',  key:'JOOBLE_API_KEY',             status:'demo',    note:'Modo demo sem chave' },
   { n:3,  name:'Adzuna BR',           url:'https://developer.adzuna.com',  coverage:'Brasil',                     type:'API REST',  key:'ADZUNA_APP_ID + APP_KEY',    status:'ok',      note:'Configurado' },
-  { n:4,  name:'Indeed Brasil',       url:'https://br.indeed.com',         coverage:'Brasil',                     type:'RSS',       key:'—',                          status:'free',    note:'Sem chave' },
-  { n:5,  name:'Vagas.com',           url:'https://vagas.com.br',          coverage:'Brasil',                     type:'RSS',       key:'—',                          status:'free',    note:'Sem chave' },
-  { n:6,  name:'InfoJobs',            url:'https://infojobs.com.br',       coverage:'Brasil',                     type:'RSS',       key:'—',                          status:'free',    note:'Sem chave' },
-  { n:7,  name:'Catho',               url:'https://catho.com.br',          coverage:'Brasil',                     type:'API/RSS/HTML',key:'—',                        status:'free',    note:'3 tentativas de endpoint' },
-  { n:8,  name:'Empregos.com.br',     url:'https://empregos.com.br',       coverage:'Brasil',                     type:'RSS',       key:'—',                          status:'free',    note:'Sem chave' },
-  { n:9,  name:'Trampos.co',          url:'https://trampos.co',            coverage:'Brasil · Startups/Digital',  type:'RSS',       key:'—',                          status:'free',    note:'Sem chave' },
-  { n:10, name:'Monster Brasil',      url:'https://monster.com.br',        coverage:'Brasil',                     type:'RSS',       key:'—',                          status:'free',    note:'Sem chave' },
-  { n:11, name:'BNE',                 url:'https://bne.com.br',            coverage:'Brasil',                     type:'RSS',       key:'—',                          status:'free',    note:'Sem chave' },
-  { n:12, name:'Jora Brasil',         url:'https://br.jora.com',           coverage:'Brasil',                     type:'RSS',       key:'—',                          status:'free',    note:'Sem chave' },
-  { n:13, name:'Talent.com BR',       url:'https://br.talent.com',         coverage:'Brasil · Global',            type:'RSS',       key:'—',                          status:'free',    note:'Sem chave' },
-  { n:14, name:'Glassdoor BR',        url:'https://glassdoor.com.br',      coverage:'Brasil',                     type:'RSS',       key:'—',                          status:'free',    note:'Sem chave' },
-  { n:15, name:'SINE / Emprega Brasil',url:'https://empregabrasil.mte.gov.br', coverage:'Brasil · Gov',          type:'API Gov',   key:'—',                          status:'free',    note:'API pública do MTE' },
-  { n:16, name:'Remotive',            url:'https://remotive.com',          coverage:'Global · Remoto',            type:'API REST',  key:'—',                          status:'free',    note:'Só vagas remotas' },
-  { n:17, name:'Remote OK',           url:'https://remoteok.com',          coverage:'Global · Remoto',            type:'API REST',  key:'—',                          status:'free',    note:'Só vagas remotas' },
-  { n:18, name:'Arbeitnow',           url:'https://arbeitnow.com',         coverage:'Global · Remoto',            type:'API REST',  key:'—',                          status:'free',    note:'Só vagas remotas' },
-  { n:19, name:'The Muse',            url:'https://themuse.com',           coverage:'Global · Remoto',            type:'API REST',  key:'—',                          status:'free',    note:'Mapeamento por categoria' },
+  { n:4,  name:'Indeed Brasil',       url:'https://br.indeed.com',         coverage:'Brasil',                     type:'RSS',       key:'-',                          status:'free',    note:'Sem chave' },
+  { n:5,  name:'Vagas.com',           url:'https://vagas.com.br',          coverage:'Brasil',                     type:'RSS',       key:'-',                          status:'free',    note:'Sem chave' },
+  { n:6,  name:'InfoJobs',            url:'https://infojobs.com.br',       coverage:'Brasil',                     type:'RSS',       key:'-',                          status:'free',    note:'Sem chave' },
+  { n:7,  name:'Catho',               url:'https://catho.com.br',          coverage:'Brasil',                     type:'API/RSS/HTML',key:'-',                        status:'free',    note:'3 tentativas de endpoint' },
+  { n:8,  name:'Empregos.com.br',     url:'https://empregos.com.br',       coverage:'Brasil',                     type:'RSS',       key:'-',                          status:'free',    note:'Sem chave' },
+  { n:9,  name:'Trampos.co',          url:'https://trampos.co',            coverage:'Brasil · Startups/Digital',  type:'RSS',       key:'-',                          status:'free',    note:'Sem chave' },
+  { n:10, name:'Monster Brasil',      url:'https://monster.com.br',        coverage:'Brasil',                     type:'RSS',       key:'-',                          status:'free',    note:'Sem chave' },
+  { n:11, name:'BNE',                 url:'https://bne.com.br',            coverage:'Brasil',                     type:'RSS',       key:'-',                          status:'free',    note:'Sem chave' },
+  { n:12, name:'Jora Brasil',         url:'https://br.jora.com',           coverage:'Brasil',                     type:'RSS',       key:'-',                          status:'free',    note:'Sem chave' },
+  { n:13, name:'Talent.com BR',       url:'https://br.talent.com',         coverage:'Brasil · Global',            type:'RSS',       key:'-',                          status:'free',    note:'Sem chave' },
+  { n:14, name:'Glassdoor BR',        url:'https://glassdoor.com.br',      coverage:'Brasil',                     type:'RSS',       key:'-',                          status:'free',    note:'Sem chave' },
+  { n:15, name:'SINE / Emprega Brasil',url:'https://empregabrasil.mte.gov.br', coverage:'Brasil · Gov',          type:'API Gov',   key:'-',                          status:'free',    note:'API pública do MTE' },
+  { n:16, name:'Remotive',            url:'https://remotive.com',          coverage:'Global · Remoto',            type:'API REST',  key:'-',                          status:'free',    note:'Só vagas remotas' },
+  { n:17, name:'Remote OK',           url:'https://remoteok.com',          coverage:'Global · Remoto',            type:'API REST',  key:'-',                          status:'free',    note:'Só vagas remotas' },
+  { n:18, name:'Arbeitnow',           url:'https://arbeitnow.com',         coverage:'Global · Remoto',            type:'API REST',  key:'-',                          status:'free',    note:'Só vagas remotas' },
+  { n:19, name:'The Muse',            url:'https://themuse.com',           coverage:'Global · Remoto',            type:'API REST',  key:'-',                          status:'free',    note:'Mapeamento por categoria' },
   { n:20, name:'SerpAPI (Google Jobs)',url:'https://serpapi.com',          coverage:'Global · LinkedIn · Google', type:'API REST',  key:'SERPAPI_KEY',                status:'none',    note:'$50/mês — não configurado' },
 ];
 
@@ -1608,7 +1608,7 @@ function renderSources() {
     else if (s.type === 'API Gov') typeBadge = '<span class="badge blue">Gov API</span>';
     else typeBadge = '<span class="badge muted">' + escHtml(s.type) + '</span>';
 
-    var keyHtml = s.key === '—'
+    var keyHtml = s.key === '-'
       ? '<span style="color:var(--muted);font-size:12px">Não precisa</span>'
       : '<code style="font-size:11px;background:var(--surface2);padding:1px 6px;border-radius:4px;color:var(--blue)">' + escHtml(s.key) + '</code>';
 

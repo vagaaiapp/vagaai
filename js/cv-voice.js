@@ -222,7 +222,7 @@
       target.focus();
 
       setBtn(key, '', 'Gravar de novo');
-      status(key, 'Pronto! Revise e ajuste o texto — ele foi escrito a partir do que você falou. ', 'ok');
+      status(key, 'Pronto! Revise e ajuste o texto: ele foi escrito a partir do que você falou. ', 'ok');
       var undo = document.createElement('button');
       undo.type = 'button';
       undo.className = 'cvmic-undo';

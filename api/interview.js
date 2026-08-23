@@ -115,13 +115,13 @@ function blocoDaAnalise(analise) {
   if (!temScore)         foco = 'Cubra encaixes e lacunas em proporcao equilibrada.';
   else if (score >= 75)  foco = `Aderencia alta (${Math.round(score)}%). O risco aqui nao e a lacuna, e a profundidade: cobre evidencia concreta dos encaixes fortes.`;
   else if (score >= 50)  foco = `Aderencia intermediaria (${Math.round(score)}%). Metade das perguntas deve testar como a experiencia adjacente cobre o que falta.`;
-  else                   foco = `Aderencia baixa (${Math.round(score)}%). O entrevistador vai focar no que falta — o treino tambem deve.`;
+  else                   foco = `Aderencia baixa (${Math.round(score)}%). O entrevistador vai focar no que falta, o treino tambem deve.`;
 
   return [
     '',
     'ANALISE JA FEITA DESTA VAGA CONTRA ESTE CURRICULO (use para escolher as perguntas):',
     comprova.length ? 'REQUISITOS QUE O CURRICULO COMPROVA: ' + comprova.join(', ') : '',
-    faltam.length   ? 'REQUISITOS AUSENTES — PELO MENOS 2 DAS 8 PERGUNTAS DEVEM COBRAR ESTES PONTOS, sem acusar: pergunte como a pessoa supriria ou o que ja fez de mais proximo: ' + faltam.join(', ') : '',
+    faltam.length   ? 'REQUISITOS AUSENTES. PELO MENOS 2 DAS 8 PERGUNTAS DEVEM COBRAR ESTES PONTOS, sem acusar: pergunte como a pessoa supriria ou o que ja fez de mais proximo: ' + faltam.join(', ') : '',
     falhas.length   ? 'FRAGILIDADES APONTADAS PELA ANALISE: ' + falhas.join(' | ') : '',
     'FOCO DO TREINO: ' + foco
   ].filter(Boolean).join('\n');
@@ -158,6 +158,8 @@ Misture os tipos:
 - 1-2 situacionais com cenarios hipoteticos da vaga
 - 1 motivacional sobre a empresa ou vaga
 
+ESTILO: nunca use travessao (\u2014) no texto. Ele quase nao aparece na escrita profissional brasileira e denuncia texto gerado por IA. Use virgula, dois-pontos, parenteses ou duas frases.
+
 Responda APENAS com o JSON, sem markdown.`;
 
   const text = await callClaude(prompt, 2000);
@@ -185,7 +187,9 @@ Avalie e retorne APENAS este JSON, sem markdown:
   "dica_final": "<1 dica pratica e especifica para melhorar essa resposta>"
 }
 
-Seja direto e honesto. Nota 5 = resposta excelente, 3 = aceitavel mas pode melhorar, 1 = resposta fraca.`;
+Seja direto e honesto. Nota 5 = resposta excelente, 3 = aceitavel mas pode melhorar, 1 = resposta fraca.
+
+ESTILO: nunca use travessao (\u2014) no texto. Ele quase nao aparece na escrita profissional brasileira e denuncia texto gerado por IA. Use virgula, dois-pontos, parenteses ou duas frases.`;
 
   const text = await callClaude(prompt, 1500);
   return JSON.parse(cleanJsonText(text));
@@ -227,6 +231,7 @@ const CVV_REGRAS = `REGRAS OBRIGATORIAS:
 - Se a pessoa deu um numero ou percentual, mantenha o numero.
 - Se ela falou de forma vaga, escreva de forma vaga porem profissional. Nao preencha lacuna com suposicao.
 - Portugues do Brasil, tom profissional e direto, sem marcas de fala ("tipo", "ne", "ai eu").
+- Nunca use travessao (\u2014). Ele quase nao aparece na escrita profissional brasileira e denuncia texto gerado por IA. Use virgula, dois-pontos, parenteses ou duas frases.
 - Nao use emoji, nao use markdown, nao comente nada. Responda apenas com o texto final.`;
 
 function cvvPromptResumo(transcript, ctx) {
@@ -271,7 +276,7 @@ FALA TRANSCRITA:
 ${transcript.slice(0, 5000)}
 """
 
-FORMATO: um paragrafo curto por emprego citado, na ordem em que a pessoa falou. Em cada um, deixe claro empresa, cargo, periodo e o que ela fazia, quando ela tiver dito isso. Texto corrido e simples, sem topicos e sem titulos. Preserve TODO detalhe util que ela deu (numeros, ferramentas, tamanho de equipe, metas) — este texto ainda sera transformado em curriculo depois, entao perder detalhe aqui e perder para sempre.
+FORMATO: um paragrafo curto por emprego citado, na ordem em que a pessoa falou. Em cada um, deixe claro empresa, cargo, periodo e o que ela fazia, quando ela tiver dito isso. Texto corrido e simples, sem topicos e sem titulos. Preserve TODO detalhe util que ela deu (numeros, ferramentas, tamanho de equipe, metas). Este texto ainda sera transformado em curriculo depois, entao perder detalhe aqui e perder para sempre.
 
 ${CVV_REGRAS}`;
 }

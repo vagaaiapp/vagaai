@@ -8,7 +8,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const page = fs.readFileSync(path.join(root, 'carta/index.html'), 'utf8');
 
 test('carta usa a jornada editorial aprovada sem falso carregamento inicial', () => {
-  assert.match(page, /Uma carta com contexto — e com a sua voz\./);
+  assert.match(page, /Uma carta com contexto e com a sua voz\./);
   assert.match(page, /id="stepItem1"[\s\S]*?<strong>Contexto<\/strong>/);
   assert.match(page, /id="stepItem2"[\s\S]*?<strong>Direção<\/strong>/);
   assert.match(page, /id="stepItem3"[\s\S]*?<strong>Carta<\/strong>/);

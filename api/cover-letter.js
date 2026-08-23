@@ -93,7 +93,7 @@ export default async function handler(req, res) {
      E onde a carta mais muda o resultado. */
   let estrategia;
   if (!temScore)      estrategia = 'Conecte o que o currículo comprova aos requisitos da vaga.';
-  else if (score >= 75) estrategia = 'A aderência já e alta (' + Math.round(score) + '%). Seja curto e direto: reforce os dois encaixes mais fortes e não tente convencer de nada — o currículo já convence.';
+  else if (score >= 75) estrategia = 'A aderência já e alta (' + Math.round(score) + '%). Seja curto e direto: reforce os dois encaixes mais fortes e não tente convencer de nada, o currículo já convence.';
   else if (score >= 50) estrategia = 'Aderência intermediária (' + Math.round(score) + '%). Lidere pelos requisitos comprovados e mostre como a experiência adjacente cobre o resto.';
   else                  estrategia = 'Aderência baixa (' + Math.round(score) + '%). Não esconda a lacuna: reconheça-a em uma frase, sem se desculpar, e use o resto da carta para mostrar por que a pessoa ainda entrega o resultado que a vaga precisa.';
 
@@ -126,6 +126,9 @@ Escreva uma carta de apresentação que:
 7. Evita as expressões que denunciam texto automático: "venho por meio desta",
    "proven track record", "apaixonado por", "profissional proativo", "trabalho
    bem em equipe". Prefira frase curta e fato concreto.
+8. NUNCA usa travessão (\u2014). Ele quase não aparece na escrita profissional
+   brasileira e é uma das marcas mais reconhecíveis de texto gerado por IA.
+   Use vírgula, dois-pontos, parênteses ou duas frases.
 
 Além da carta completa, produza duas reduções do MESMO argumento (não um texto novo):
 - "curta": até 1200 caracteres, para colar em campo de formulário (Gupy, Vagas.com)

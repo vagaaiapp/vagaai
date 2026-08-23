@@ -125,7 +125,7 @@ describe('as defesas que já existiam continuam de pé', () => {
       `esperava pelo menos 4 regras "NUNCA invente" em analyze.js, achei ${regras.length}`
     );
     assert.match(analyze, /melhor um currículo curto e verdadeiro do que um completo e inventado/);
-    assert.match(analyze, /Otimize a redação e as keywords — jamais os fatos/);
+    assert.match(analyze, /Otimize a redação e as keywords, jamais os fatos/);
   });
 
   it('o princípio está escrito onde o conceito de lacuna nasce', () => {

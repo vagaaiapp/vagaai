@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VagaAI — Gerenciar Blog</title>
+<title>VagaAI | Gerenciar Blog</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/loading-comet.css">
@@ -281,7 +281,7 @@ nav{position:sticky;top:0;z-index:200;background:var(--surface);border-bottom:1p
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               </button>
               <input type="file" id="bodyFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" onchange="handleBodyFileSelect(this.files[0]);this.value=''">
-              <button class="tb-btn" onclick="insertHR()" title="Linha divisória">—</button>
+              <button class="tb-btn" onclick="insertHR()" title="Linha divisória">-</button>
               <div class="tb-sep"></div>
               <button class="tb-btn" onclick="fmt('undo')" title="Desfazer">↩</button>
               <button class="tb-btn" onclick="fmt('redo')" title="Refazer">↪</button>
@@ -482,7 +482,7 @@ function renderPostsGrid() {
     return '<div class="post-card">'
       + '<div class="post-card-info" onclick="editPost(\'' + p.id + '\')">'
       + '<div class="post-card-title">' + esc(p.title || '(sem título)') + '</div>'
-      + '<div class="post-card-meta">' + esc(p.slug || '—') + ' · Atualizado ' + date + '</div>'
+      + '<div class="post-card-meta">' + esc(p.slug || '-') + ' · Atualizado ' + date + '</div>'
       + '</div>'
       + viewsBadgeHtml(p)
       + '<span class="badge ' + (p.published ? 'green' : 'yellow') + '">' + (p.published ? 'Publicado' : 'Rascunho') + '</span>'
@@ -495,9 +495,9 @@ function renderPostsGrid() {
 // atrasar a exibição dos posts (a lista aparece na hora, o número de views
 // preenche assim que a chamada ao GA4 volta, alguns segundos depois).
 function viewsBadgeHtml(p) {
-  if (!p.published) return '<span class="views-badge" title="Rascunhos não têm tráfego">—</span>';
+  if (!p.published) return '<span class="views-badge" title="Rascunhos não têm tráfego">-</span>';
   if (_viewsLoading) return '<span class="views-badge">…</span>';
-  if (_viewsData == null) return '<span class="views-badge">—</span>';
+  if (_viewsData == null) return '<span class="views-badge">-</span>';
   var v = _viewsData[p.slug];
   var eyeIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>';
   if (!v || !v.views) return '<span class="views-badge" title="Sem visualizações no período">' + eyeIcon + '0</span>';

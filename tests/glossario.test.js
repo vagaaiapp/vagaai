@@ -95,6 +95,6 @@ describe('glossário canônico', () => {
     // busca orgânica, não navegação, e não segue o glossário de propósito.
     const src = ler('app/index.html');
     assert.match(src, /name="robots" content="index, follow"/);
-    assert.match(src, /<title>VagaAI — Analisar minha vaga grátis<\/title>/);
+    assert.match(src, /<title>VagaAI \| Analisar minha vaga grátis<\/title>/);
   });
 });

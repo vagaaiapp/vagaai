@@ -113,7 +113,7 @@ function escAttr(s) {
 function confirmPage(uid, tok) {
   return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Cancelar alertas — VagaAI</title>
+<title>Cancelar alertas | VagaAI</title>
 <style>body{margin:0;font-family:Arial,sans-serif;background:#f2f6f3;display:flex;align-items:center;justify-content:center;min-height:100vh}
 .box{background:#fff;border-radius:12px;padding:40px 32px;max-width:420px;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,.08)}
 .ico{font-size:40px;margin-bottom:16px}.h{font-size:20px;font-weight:700;color:#0a0f0d;margin-bottom:12px}
@@ -136,7 +136,7 @@ function confirmPage(uid, tok) {
 function page(title, msg, success) {
   const color = success ? '#1a7a4a' : '#c0392b';
   return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${title} — VagaAI</title>
+<title>${title} | VagaAI</title>
 <style>body{margin:0;font-family:Arial,sans-serif;background:#f2f6f3;display:flex;align-items:center;justify-content:center;min-height:100vh}
 .box{background:#fff;border-radius:12px;padding:40px 32px;max-width:420px;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,.08)}
 .ico{font-size:40px;margin-bottom:16px}.h{font-size:20px;font-weight:700;color:${color};margin-bottom:12px}
