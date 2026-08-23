@@ -83,7 +83,9 @@ describe('as migrações da varredura estão versionadas', () => {
     '028_cv_saves_history.sql',
     '029_retencao_e_cascata.sql',
     '030_grants_lockdown.sql',
-    '031_admins_e_auditoria.sql'
+    '031_admins_e_auditoria.sql',
+    '032_anon_sem_escrita.sql',
+    '033_funcoes_nao_expostas.sql'
   ];
   const existentes = fs.readdirSync(new URL('../migrations/', import.meta.url));
 
