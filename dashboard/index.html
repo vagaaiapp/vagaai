@@ -13,7 +13,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <script defer src="/_vercel/insights/script.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VagaAI — Painel</title>
+<title>VagaAI — Início</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/loading-comet.css">
@@ -3275,7 +3275,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     </svg>
 
     <div class="breadcrumb">
-      <strong id="bc-sec">Visão geral</strong>
+      <strong id="bc-sec">Início</strong>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       <span id="bc-sub">Sua busca de emprego</span>
     </div>
@@ -5690,7 +5690,7 @@ function renderCandDetail(item) {
   if (item.analysisData) {
     // Quando em entrevista, "Treinar" é o primário; "Ver análise" vira secundário
     acts += '<button class="cd-btn ' + (item.status === 'entrevista' ? '' : 'cd-cta') + '" onclick="openSavedAnalysis(\''+escAttr(item.analysisData.id)+'\')">Ver análise</button>';
-    acts += '<button class="cd-btn" data-url="/carta?analysis_id='+encodeURIComponent(item.analysisData.id)+'" onclick="switchDashTab(\'carta\',this.dataset.url)">Carta para vaga</button>';
+    acts += '<button class="cd-btn" data-url="/carta?analysis_id='+encodeURIComponent(item.analysisData.id)+'" onclick="switchDashTab(\'carta\',this.dataset.url)">Carta de apresentação</button>';
     if (r.cv_otimizado) acts += '<button class="cd-btn" onclick="openSavedCv(\''+escAttr(item.analysisData.id)+'\')">Abrir currículo</button>';
   }
   if (!item.analysisData) {
@@ -7979,7 +7979,7 @@ function switchDashTab(tab, href) {
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
   setDashboardNavActive(tab);
-  var labels = { painel:'Visão geral', vagas:'Candidaturas', entrevistas:'Entrevistas', alertas:'Alertas', plano:'Conta e Plano' };
+  var labels = { painel:'Início', vagas:'Candidaturas', entrevistas:'Treino de entrevista', alertas:'Vagas para você', plano:'Conta e plano' };
   var subs   = { painel:'Sua busca de emprego', vagas:'Rastreamento de candidaturas', entrevistas:'Simulação e preparo', alertas:'Configurações de alertas', plano:'Assinatura e conta' };
   var bcSec = document.getElementById('bc-sec');
   var bcSub = document.getElementById('bc-sub');

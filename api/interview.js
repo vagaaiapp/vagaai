@@ -366,7 +366,11 @@ export default async function handler(req, res) {
   if (plan !== 'pro') {
     return res.status(403).json({
       error: 'plano_insuficiente',
-      message: 'O Simulador de Entrevista e exclusivo do plano Pro.',
+      /* Antes: "O Simulador de Entrevista e exclusivo do plano Pro." — informava
+         a regra e nao dizia o ganho, no ponto de maior intencao da jornada
+         inteira (a pessoa ja colou a vaga e o curriculo). Agora diz o que ela
+         leva. E usa o nome canonico do recurso, com acento. */
+      message: 'O Treino de entrevista é do plano Pro: 8 perguntas geradas para esta vaga e para o seu currículo, com avaliação da sua resposta em cada uma.',
       plan
     });
   }
