@@ -22,6 +22,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <script src="/js/loading-comet.js" defer></script>
 <script defer src="/_vercel/insights/script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/sessao.js"></script>
 <script src="/onboarding/shared.js"></script>
 <script src="/js/cv-voice.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1915,6 +1916,13 @@ function temProgressoInvestido() {
       return;
     }
   } catch(e) {}
+
+  /* Daqui pra baixo não há sessão — o bloco acima redireciona quem está logado.
+     Este funil grava currículo e vaga em localStorage antes do cadastro, e sem
+     carimbar o dono esse conteúdo ficava atribuído à última conta que usou o
+     aparelho: num computador compartilhado, quem voltasse pra própria conta
+     abria o editor com o currículo do visitante. Ver /js/sessao.js. */
+  try { if (window.VagaAISessao) VagaAISessao.adotarAnonimo(); } catch(e) {}
 
   // new=1 vem de todos os CTAs da landing page. Antes ele apagava o progresso
   // sempre: quem entrava no funil, voltava pra home (o logo daqui aponta pra /)

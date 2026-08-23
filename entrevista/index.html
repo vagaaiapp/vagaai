@@ -379,7 +379,7 @@ var _interviewProfile = null;
   // Cache do navegador pertence a uma conta só: se a anterior era de outra
   // pessoa (computador compartilhado), apaga antes que a tela leia o
   // currículo ou a vaga de quem usou o aparelho antes.
-  if (window.VagaAISessao) VagaAISessao.adotar(_session.user.id);
+  if (window.VagaAISessao) VagaAISessao.adotar(_session.user);
 
   try {
     var res = await fetch('/api/subscription', { headers: { Authorization: 'Bearer ' + _session.access_token } });

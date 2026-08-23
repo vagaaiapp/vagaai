@@ -3918,7 +3918,7 @@ async function init() {
       // Cache do navegador pertence a uma conta só. Se a anterior era de
       // outra pessoa (computador compartilhado), apaga antes que qualquer
       // tela leia currículo, vaga ou foto de quem usou o aparelho antes.
-    if (window.VagaAISessao) VagaAISessao.adotar(currentUserId);
+    if (window.VagaAISessao) VagaAISessao.adotar(userData.user || session.user);
     if (window.VagaAIOnboarding) {
       // O retorno era descartado. Se claimAnalysis falhasse, a pessoa terminava
       // o funil, criava a conta e caía num painel vazio, sem explicação — como
