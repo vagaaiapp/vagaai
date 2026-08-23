@@ -354,6 +354,10 @@ var _questions = [];
    vivia so em memoria e fechar a aba apagava tudo. */
 var _sessionId = '';
 var _entrevAnalysisId = '';
+/* Resultado bruto da analise que originou este treino. Alimenta o prompt com
+   os requisitos ausentes rotulados, em vez de deixa-los diluidos no texto da
+   vaga — onde caiam fora do corte de 3000 caracteres. Ver api/interview.js. */
+var _entrevAnalise = null;
 var _entrevCargo = '';
 var _entrevEmpresa = '';
 var _currentQ = 0;
@@ -416,6 +420,7 @@ var _interviewProfile = null;
         } else {
           var analysis = rows[0];
           _entrevAnalysisId = analysis.id || '';
+          _entrevAnalise = analysis.result || null;
           var jiCtx = (analysis.result && analysis.result.job_info) || {};
           _entrevCargo = jiCtx.cargo || '';
           _entrevEmpresa = jiCtx.empresa || '';
@@ -632,6 +637,15 @@ async function generateInterview(options) {
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _t },
       body: JSON.stringify({
         action: 'generate', job, cv,
+        /* So o que o prompt usa. Mandar result inteiro levaria junto o
+           curriculo otimizado e o briefing da empresa — payload grande e
+           dado que o servidor nao precisa para escolher perguntas. */
+        analise: _entrevAnalise ? {
+          score: _entrevAnalise.score,
+          keywords_encontradas: _entrevAnalise.keywords_encontradas || _entrevAnalise.palavras_chave_encontradas,
+          keywords_faltando: _entrevAnalise.keywords_faltando || _entrevAnalise.palavras_chave_faltando,
+          falhas: _entrevAnalise.falhas
+        } : null,
         // Sem isso o treino salvo vira uma sessao solta, sem dizer de qual vaga.
         analysis_id: _entrevAnalysisId || null,
         cargo: _entrevCargo || null,
