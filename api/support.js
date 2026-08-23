@@ -1,3 +1,5 @@
+import { checkAndCountLimit } from '../lib/ratelimit.js';
+
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
@@ -51,17 +53,17 @@ function sendAutoReply(to, isCompanyLead) {
   }).catch((e) => console.error('support auto-reply failed:', e.message));
 }
 
-// Rate limit por IP em memória — anti email-bombing do inbox de suporte.
-const _ipHits = new Map();
-const SUPPORT_LIMIT = 5;            // máx 5 mensagens
+// ── Rate limit por IP ─────────────────────────────────────────────────────────
+// Persistente (lib/ratelimit.js, tabela ip_rate_limits). O Map em memória
+// anterior valia por instância serverless: com N instâncias quentes o limite
+// real era N vezes o configurado, e zerava a cada cold start. cover-letter.js e
+// interview.js já tinham migrado; estes ficaram para trás.
+// Anti email-bombing do inbox de suporte: um Map por instância significava que
+// o teto de 5/hora era, na prática, 5 por instância quente.
+const SUPPORT_LIMIT = 5;                  // máx 5 mensagens
 const SUPPORT_WINDOW_MS = 60 * 60 * 1000; // por hora
-function checkRateLimit(ip) {
-  const now = Date.now();
-  const entry = _ipHits.get(ip) || { count: 0, resetAt: now + SUPPORT_WINDOW_MS };
-  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + SUPPORT_WINDOW_MS; }
-  entry.count++;
-  _ipHits.set(ip, entry);
-  return entry.count <= SUPPORT_LIMIT;
+async function checkRateLimit(ip) {
+  return checkAndCountLimit({ key: `ip:${ip}:suporte`, limit: SUPPORT_LIMIT, windowMs: SUPPORT_WINDOW_MS });
 }
 
 // ── Lead B2B (/paraempresas) ─────────────────────────────────────────────────
@@ -148,7 +150,7 @@ export default async function handler(req, res) {
   const clientIp = (req.headers['x-real-ip'] || '').trim()
     || (req.headers['x-forwarded-for'] || '').split(',').map(s => s.trim()).filter(Boolean).pop()
     || 'unknown';
-  if (!checkRateLimit(clientIp)) {
+  if (!(await checkRateLimit(clientIp))) {
     return res.status(429).json({ error: 'Muitas mensagens. Tente novamente mais tarde.' });
   }
 

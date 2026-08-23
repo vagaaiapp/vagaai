@@ -126,9 +126,56 @@
     };
   }
 
+  /* O currículo direcionado a uma vaga nunca ensinava nada ao currículo mestre.
+     Dez análises produziam dez versões otimizadas, e o principal — o que
+     alimenta o re-ranking dos alertas e todas as telas — continuava igual ao do
+     primeiro dia. Toda a inteligência gerada ficava presa dentro do `result` da
+     análise que a produziu.
+
+     Sobrescrever o mestre com uma versão direcionada seria errado, e o código
+     dos alertas já explica por quê: a versão pertence à vaga que a originou e
+     enviesaria recomendações futuras. Mas uma competência que a IA já articulou
+     em várias versões diferentes não é viés — é uma melhoria do perfil que
+     ninguém levou de volta.
+
+     Devolve as habilidades presentes nas versões por vaga e ausentes do
+     currículo principal, ordenadas por em quantas vagas apareceram. Quem decide
+     o que entra é a pessoa: isto é sugestão, nunca escrita automática. */
+  function habilidadesDasVersoes(cvData, analises) {
+    var vagas = analisesDistintasPorVaga(Array.isArray(analises) ? analises : []);
+    var freq = {};
+    var nomes = {};
+
+    vagas.forEach(function (row) {
+      var otimizado = (row && row.result && row.result.cv_otimizado) || null;
+      var habilidades = (otimizado && otimizado.habilidades) || [];
+      if (!Array.isArray(habilidades)) return;
+      var vistasNestaVaga = {};
+      habilidades.forEach(function (h) {
+        var nome = String(h == null ? '' : h).trim();
+        if (!nome) return;
+        var normalizada = nome.toLocaleLowerCase('pt-BR');
+        if (vistasNestaVaga[normalizada]) return;
+        vistasNestaVaga[normalizada] = true;
+        if (!nomes[normalizada]) nomes[normalizada] = nome;
+        freq[nomes[normalizada]] = (freq[nomes[normalizada]] || 0) + 1;
+      });
+    });
+
+    // Mesmo critério de "já está no currículo" que calcularLacunas usa, para as
+    // duas leituras não discordarem sobre o mesmo currículo.
+    var texto = cvParaTexto(cvData).toLowerCase();
+    var novas = Object.keys(freq)
+      .filter(function (k) { return texto.indexOf(k.toLowerCase()) === -1; })
+      .sort(function (a, b) { return freq[b] - freq[a]; });
+
+    return { novas: novas, freq: freq, totalVagas: vagas.length };
+  }
+
   global.VagaAICv = global.VagaAICv || {};
   global.VagaAICv.cvParaTexto = cvParaTexto;
   global.VagaAICv.calcularLacunas = calcularLacunas;
+  global.VagaAICv.habilidadesDasVersoes = habilidadesDasVersoes;
   global.VagaAICv.chaveDaVaga = chaveDaVaga;
   global.VagaAICv.contarVagasDistintas = contarVagasDistintas;
   global.VagaAICv.analisesDistintasPorVaga = analisesDistintasPorVaga;

@@ -8,6 +8,7 @@
 
 import { lookup as dnsLookup } from 'dns';
 import { promisify } from 'util';
+import { checkAndCountLimit } from '../lib/ratelimit.js';
 
 const lookupAll = promisify((hostname, opts, cb) => dnsLookup(hostname, opts, cb));
 
@@ -173,18 +174,16 @@ async function safeFetch(url, headers, timeoutMs = FETCH_TIMEOUT_MS) {
   throw new Error('Redirecionamentos excessivos');
 }
 
-// ── Rate limit por IP (em memória) ────────────────────────────────────────────
-const _ipHits = new Map();
+// ── Rate limit por IP ─────────────────────────────────────────────────────────
+// Persistente (lib/ratelimit.js, tabela ip_rate_limits). O Map em memória
+// anterior valia por instância serverless: com N instâncias quentes o limite
+// real era N vezes o configurado, e zerava a cada cold start. cover-letter.js e
+// interview.js já tinham migrado; estes ficaram para trás.
 const RATE_LIMIT = 20;
 const RATE_WINDOW_MS = 60000;
 
-function checkRateLimit(ip) {
-  const now = Date.now();
-  const entry = _ipHits.get(ip) || { count: 0, resetAt: now + RATE_WINDOW_MS };
-  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + RATE_WINDOW_MS; }
-  entry.count++;
-  _ipHits.set(ip, entry);
-  return entry.count <= RATE_LIMIT;
+async function checkRateLimit(ip) {
+  return checkAndCountLimit({ key: `ip:${ip}:fetchjob`, limit: RATE_LIMIT, windowMs: RATE_WINDOW_MS });
 }
 
 // ── Handler ────────────────────────────────────────────────────────────────────
@@ -200,7 +199,7 @@ export default async function handler(req, res) {
   const clientIp = (req.headers['x-real-ip'] || '').trim()
     || (req.headers['x-forwarded-for'] || '').split(',').map(s => s.trim()).filter(Boolean).pop()
     || 'unknown';
-  if (!checkRateLimit(clientIp)) {
+  if (!(await checkRateLimit(clientIp))) {
     return res.status(429).json({ error: 'Muitas requisições. Tente novamente em um minuto.' });
   }
 
