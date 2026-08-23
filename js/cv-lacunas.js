@@ -11,6 +11,24 @@
 
    Quem chama é responsável por passar as análises já filtradas — veja
    ANALISES_QUERY abaixo para o recorte canônico. */
+/* ── Princípio que rege toda copy derivada deste cálculo ─────────────────
+   Uma lacuna é um FATO sobre o currículo, não uma tarefa de preenchimento.
+   Nenhuma tela pode sugerir que incluir o termo é o objetivo: o objetivo é a
+   pessoa ficar mais forte no mercado, e o score é só o termômetro disso.
+
+   Na prática, a maior parte desta lista não é "coisa que você não tem" — é
+   "coisa que você fez e não escreveu". Numa conta real, 6 de 16 requisitos
+   apontados como faltantes já estavam no currículo, só não estavam evidentes.
+   É por aí que a copy deve conduzir.
+
+   Para o que a pessoa genuinamente não tem, o produto tem lugar próprio: a
+   carta de apresentação, que trata a lacuna sem afirmar posse
+   (api/cover-letter.js: "REQUISITOS AUSENTES — NUNCA afirme possuí-los").
+   O currículo, nunca. Toda a camada de IA já opera assim
+   (api/analyze.js: "É melhor um currículo curto e verdadeiro do que um
+   completo e inventado") — a interface tem que dizer a mesma coisa.
+
+   Guardado por tests/copy-honesta.test.js. */
 (function (global) {
   'use strict';
 

@@ -4204,15 +4204,29 @@ function buildPBACard(analyses, tracked) {
     // usuário para o formulário em branco custava a ele recolar a vaga inteira
     // justamente no clique de maior intenção.
     var temVersao = !!r.cv_otimizado;
+    /* Antes: "Cubra mais N requisitos" + "Incluí-los é o caminho mais direto
+       para subir sua aderência". Este era o unico lugar do produto que
+       convidava a preencher o que nao existe — e logo o mais visivel, o card
+       que define a norma para quem acabou de entrar. O resto da plataforma ja
+       era rigoroso: /curriculo diz "somente quando representarem algo que voce
+       realmente realizou", cover-letter.js diz "NUNCA afirme possui-los",
+       analyze.js repete a regra anti-alucinacao em quatro prompts.
+
+       Havia tambem um erro de fato: a descricao dependia so de `temVersao`,
+       entao com ZERO requisitos faltando ela continuava afirmando que a vaga
+       pedia coisas que o curriculo nao menciona. O card mentia sobre a propria
+       analise. Agora os dois textos leem o mesmo `missing`. */
     if (titleEl) {
       titleEl.textContent = missing > 0
-        ? 'Cubra mais ' + missing + ' requisito' + (missing > 1 ? 's' : '') + ' desta vaga'
-        : 'Aumente seu score na vaga de ' + cargo;
+        ? 'Seu currículo não menciona ' + missing + ' requisito' + (missing > 1 ? 's' : '') + ' desta vaga'
+        : 'Você já cobre os requisitos da vaga de ' + cargo;
     }
     if (descEl) {
       descEl.textContent = temVersao
         ? 'A versão direcionada para ' + cargo + (emp ? ' na ' + emp : '') + ' já está pronta na sua conta. Ajuste os pontos marcados e envie a candidatura.'
-        : 'São os requisitos que ' + (emp ? emp + ' ' : 'a vaga ') + 'pede e o seu currículo ainda não menciona. Incluí-los é o caminho mais direto para subir sua aderência.';
+        : missing > 0
+          ? 'Comece pelos que você já fez e não escreveu — costuma ser a maior parte deles. O que você não tem, não invente: a carta é o lugar de tratar a lacuna.'
+          : 'O que pesa daqui pra frente é a evidência: número, resultado e contexto no lugar de adjetivo.';
     }
     if (btnPri) {
       if (temVersao) {
@@ -4835,7 +4849,7 @@ function buildFunilCard(analyses, tracked) {
       } else if (entrevistas > 0 && candidaturas > 0) {
         txt = convRate + '% das candidaturas avançaram para entrevista (' + entrevistas + ' de ' + candidaturas + '). Use o simulador para se preparar.';
       } else {
-        txt = 'Priorize vagas com score acima de 70% para maximizar suas chances de retorno.';
+        txt = 'Como regra geral, candidaturas de aderência alta respondem mais. Com mais candidaturas registradas, isto vira um número seu.';
       }
       /* Calculado sobre TODO o histórico, não sobre a janela: taxa de retorno
          precisa de amostra, e recortar em 30 dias joga fora justamente o que
