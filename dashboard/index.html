@@ -4110,6 +4110,17 @@ function updatePBAPriority(score, cargo, empresa, subText) {
   if (empEl) empEl.textContent = empresa || '—';
 }
 
+/* Qual das quatro prioridades o card esta mostrando agora. Vive fora da funcao
+   porque o listener de clique e anexado uma vez e le o valor do render atual. */
+var _pbaPrio = '';
+
+/* Clique numa vaga do radar. So a faixa de score vai junto — nunca o titulo,
+   a empresa ou o link, que sao dados da busca de emprego de uma pessoa. E o
+   unico sinal que diz se o ranqueamento das vagas esta acertando. */
+function _trackVagaAlerta(faixa) {
+  if (window.vagaaiTrack) vagaaiTrack('alerta_vaga_clicada', { faixa_score: faixa || 'desconhecida' });
+}
+
 /* Devolve { analysisId, trackerId } da vaga escolhida — usado para impedir que
    qualquer outro bloco do painel fale da mesma oportunidade de novo. */
 function buildPBACard(analyses, tracked) {
@@ -4137,7 +4148,19 @@ function buildPBACard(analyses, tracked) {
   // Priority 4: any analysis
   var anyBest = analyses.filter(function(a){ return a.score > 0; }).sort(function(a,b){ return b.score - a.score; })[0] || null;
 
+  /* Qual das quatro prioridades a pessoa realmente aciona. O "Faca agora" e a
+     unica tela que decide o proximo passo por ela — se a fila esta na ordem
+     certa, e este evento que diz. Anexa uma vez so; o botao sobrevive aos
+     re-renders. */
+  if (btnPri && !btnPri._trkFacaAgora) {
+    btnPri._trkFacaAgora = true;
+    btnPri.addEventListener('click', function() {
+      if (window.vagaaiTrack) vagaaiTrack('faca_agora_clicado', { prioridade: _pbaPrio });
+    });
+  }
+
   if (interviewJob) {
+    _pbaPrio = 'entrevista_marcada';
     var a = analyses.find(function(x){ return x.id === interviewJob.analysis_id; });
     var cargo = interviewJob.cargo || (a && (a.result||{}).job_info ? a.result.job_info.cargo : '') || 'essa vaga';
     var emp = interviewJob.empresa || (a && (a.result||{}).job_info ? a.result.job_info.empresa : '') || '';
@@ -4150,6 +4173,7 @@ function buildPBACard(analyses, tracked) {
     updatePBAPriority(interviewJob.score || (a ? a.score : 0), cargo, emp || '', hasDate ? 'Entrevista marcada' : 'Em entrevista');
     return { analysisId: interviewJob.analysis_id || null, trackerId: interviewJob.id || null };
   } else if (followUpJob) {
+    _pbaPrio = 'followup_atrasado';
     var a = analyses.find(function(x){ return x.id === followUpJob.analysis_id; });
     var cargo = followUpJob.cargo || 'essa vaga';
     var emp = followUpJob.empresa || '';
@@ -4160,6 +4184,7 @@ function buildPBACard(analyses, tracked) {
     updatePBAPriority(followUpJob.score || (a ? a.score : 0), cargo, emp || '', followUpJob._days + ' dias sem retorno');
     return { analysisId: followUpJob.analysis_id || null, trackerId: followUpJob.id || null };
   } else if (untrackedBest || anyBest) {
+    _pbaPrio = untrackedBest ? 'analise_sem_candidatura' : 'melhor_analise';
     var alvo = untrackedBest || anyBest;
     var r = alvo.result || {};
     var ji = r.job_info || {};
@@ -4205,6 +4230,7 @@ function buildPBACard(analyses, tracked) {
     var tj = tracked.find(function(t){ return t.analysis_id === alvo.id; });
     return { analysisId: alvo.id, trackerId: tj ? tj.id : null };
   } else {
+    _pbaPrio = 'primeira_analise';
     if (titleEl) titleEl.textContent = 'Analise sua primeira vaga';
     if (descEl) descEl.textContent = 'Cole a descrição de uma vaga e seu currículo para receber diagnóstico completo de compatibilidade ATS.';
     if (btnPri) { btnPri.textContent = 'Analisar uma vaga →'; btnPri.onclick = function(){ switchDashTab('app'); }; }
@@ -5931,7 +5957,11 @@ async function handleStatusChange(analysisId, empresa, cargo, score, newStatus) 
         headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=representation' },
         body: JSON.stringify(body)
       });
-      if (res.ok) { await loadKanban(); showToast('Candidatura adicionada!'); }
+      if (res.ok) {
+        await loadKanban();
+        showToast('Candidatura adicionada!');
+        trackCandidatura('candidatura_registrada', { origem: 'analise', status: normalizeStatus(newStatus), score: score });
+      }
       else showToast('Erro ao salvar', 'error');
     } catch(e) { showToast('Erro ao salvar', 'error'); }
   }
@@ -5963,9 +5993,29 @@ async function handleStatusUpdate(jobId, newStatus) {
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json' },
       body: JSON.stringify(patch)
     });
-    if (res.ok) { await loadKanban(); showToast('Status atualizado!'); }
+    if (res.ok) {
+      await loadKanban();
+      showToast('Status atualizado!');
+      /* Ponto unico por onde passa toda mudanca de estagio. E o funil real da
+         candidatura — sem ele nao da pra dizer onde as pessoas param. */
+      trackCandidatura('candidatura_movida', { estagio: canonical });
+    }
     else showToast('Erro ao atualizar status', 'error');
   } catch(e) { showToast('Erro ao atualizar status', 'error'); }
+}
+
+/* Um so lugar para os eventos de candidatura: os cinco pontos de escrita em
+   job_tracker (analise, alerta, formulario manual, edicao) chamam daqui, entao
+   um evento novo nao depende de lembrar de cinco call sites. Nada de conteudo
+   vai junto — vagaaiTrack ja filtra, e aqui so entram categoria e faixa. */
+function trackCandidatura(nome, props) {
+  if (!window.vagaaiTrack) return;
+  var dados = props || {};
+  if (typeof dados.score === 'number') {
+    dados.faixa_score = dados.score >= 75 ? 'alta' : dados.score >= 50 ? 'media' : 'baixa';
+    delete dados.score;
+  }
+  vagaaiTrack(nome, dados);
 }
 
 function renderTrackedJobs() {
@@ -6782,6 +6832,7 @@ async function saveRecommendedJob(job, hash) {
       showToast('Vaga salva em Candidaturas!');
       _alLive('Vaga salva em Candidaturas com status Quero aplicar.');
       await loadKanban();
+      trackCandidatura('candidatura_registrada', { origem: 'alerta', status: 'quero_aplicar', score: job.score || 0 });
     } else {
       showToast('Erro ao salvar vaga.', 'error');
     }
@@ -6936,7 +6987,7 @@ function renderAlertJobsGrid() {
       '<div class="al-job-conditions"><strong>' + _esc(j.location || 'Brasil') + '</strong><span>' + (j.salary ? _esc(j.salary) : 'Salário não informado') + '</span></div>' +
       '<div class="al-job-actions">' +
         '<button class="al-jact-btn analyze" onclick="openAnalyzerInDashboard(this.dataset.url)" data-url="' + _esc(analyzeUrl) + '">Analisar</button>' +
-        (linkSafe ? '<a class="al-jact-btn" href="' + _esc(linkSafe) + '" target="_blank" rel="noopener" style="text-decoration:none">Ver vaga</a>' : '') +
+        (linkSafe ? '<a class="al-jact-btn" href="' + _esc(linkSafe) + '" target="_blank" rel="noopener" style="text-decoration:none" data-faixa="' + (score >= 75 ? 'alta' : score >= 50 ? 'media' : 'baixa') + '" onclick="_trackVagaAlerta(this.dataset.faixa)">Ver vaga</a>' : '') +
         '<button class="al-jact-btn al-jact-icon" aria-label="Excluir recomendação" title="Excluir vaga" data-link="' + _esc(j.link || '') + '" onclick="_dismissJobFromCache(this.dataset.link)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>' +
       '</div>' +
     '</div>';
@@ -7118,7 +7169,10 @@ async function _saveJobFromCache(job) {
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
       body: JSON.stringify(body)
     });
-    if (res.ok || res.status === 201 || res.status === 204) showToast('Vaga salva em Candidaturas!');
+    if (res.ok || res.status === 201 || res.status === 204) {
+      showToast('Vaga salva em Candidaturas!');
+      trackCandidatura('candidatura_registrada', { origem: 'alerta', status: 'quero_aplicar', score: job._score || job.score || 0 });
+    }
     else showToast('Erro ao salvar vaga.', 'error');
   } catch(e) { showToast('Erro ao salvar vaga.', 'error'); }
 }
@@ -7735,6 +7789,7 @@ async function saveTracker(btn) {
       btn.parentElement.parentElement.remove();
       showToast('Candidatura rastreada!');
       if (typeof loadKanban === 'function') await loadKanban();
+      trackCandidatura('candidatura_registrada', { origem: 'manual', status: body.status, score: body.score });
     } else {
       showToast('Erro ao salvar a candidatura.', 'error');
       btn.disabled = false;

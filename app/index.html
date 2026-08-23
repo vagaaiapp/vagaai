@@ -40,6 +40,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/onboarding/shared.js"></script>
 <script src="/js/sessao.js"></script>
+<script src="/js/eventos.js"></script>
 <script src="/js/profile-avatar.js"></script>
 <script src="/js/cv-voice.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1034,7 +1035,12 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
 </main>
 
 <script>
+/* Um so caminho de telemetria no produto inteiro: /js/eventos.js. Ele resolve
+   o gtag do proprio frame ou do pai (esta pagina roda dentro do dashboard),
+   e filtra chave de dado pessoal antes de enviar — coisa que este track()
+   local nao fazia. Os call sites continuam chamando track(). */
 function track(name,props){
+  if (window.vagaaiTrack) return window.vagaaiTrack(name, props);
   try{window.va&&window.va('event',Object.assign({name:name},props||{}))}catch(e){}
   try{if(typeof gtag==='function'){gtag('event',name,props||{})}}catch(e){}
 }

@@ -654,6 +654,16 @@ async function generateInterview(options) {
 
     showScreen('screenInterview');
     renderQuestion();
+    /* usou_analise e o mesmo par que a carta ja mede: separa o treino que
+       nasceu de uma analise do que foi montado com texto colado na mao. Sem
+       isso nao da pra dizer se ligar o treino a analise mudou alguma coisa. */
+    if (window.vagaaiTrack) {
+      vagaaiTrack('treino_iniciado', {
+        perguntas: _questions.length,
+        usou_analise: !!_entrevAnalysisId,
+        origem: options.source || 'manual'
+      });
+    }
   } catch(e) {
     showScreen('screenSetup');
     showError('setupError', e.message || 'Erro inesperado. Tente novamente.');
@@ -977,6 +987,14 @@ function showResult() {
   showScreen('screenResult');
   window.scrollTo({ top: 0, behavior: 'smooth' });
   salvarSessaoTreino(answered.length, avgScore);
+  if (window.vagaaiTrack) {
+    vagaaiTrack('treino_concluido', {
+      respondidas: answered.length,
+      total: _questions.length,
+      media: avgScore,
+      usou_analise: !!_entrevAnalysisId
+    });
+  }
 }
 
 /* Fecha a sessao no banco. Roda depois de pintar a tela, nunca antes: o
@@ -1017,6 +1035,13 @@ function restartInterview() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
   document.getElementById(id).classList.add('active');
+  /* O gate do Pro tem quatro call sites (checagem de plano na entrada e 403 em
+     generate/evaluate/transcribe). Marcar aqui cobre todos e mede o que
+     importa: quantas pessoas chegam a ver o bloqueio, que e o denominador de
+     qualquer conversao dele. */
+  if (id === 'screenGate' && window.vagaaiTrack) {
+    vagaaiTrack('bloqueio_plano_exibido', { recurso: 'treino_entrevista' });
+  }
 }
 function showError(id, msg) {
   var el = document.getElementById(id);

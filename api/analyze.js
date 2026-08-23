@@ -1029,7 +1029,13 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
             via: cvDeduct.via,
             created_at: new Date().toISOString(),
           }),
-        }).catch(e => console.error('cv_generations insert error:', e.message));
+        })
+          // .catch() sozinho só pega falha de rede. A tabela não existia e o
+          // PostgREST respondia 404: resposta HTTP válida, promessa resolvida,
+          // nenhum erro em lugar nenhum — a métrica sumiu por dois meses sem
+          // um único log. Telemetria muda tem que gritar.
+          .then(r => { if (!r.ok) return r.text().then(t => console.error('cv_generations insert HTTP', r.status, t.slice(0, 200))); })
+          .catch(e => console.error('cv_generations insert error:', e.message));
       }
       return res.status(200).json({ cv_text: cvText.trim() });
     } catch (err) {
@@ -1307,7 +1313,17 @@ Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato
         try { obCv = m ? JSON.parse(m[0]) : null; } catch { obCv = null; }
       }
       if (!obCv || typeof obCv !== 'object') {
-        console.error('onboarding_cv: JSON inválido |', obText.slice(0, 300));
+        /* obText é o currículo que a IA acabou de montar a partir do que a
+           pessoa escreveu. Despejá-lo no log da Vercel põe dado pessoal fora
+           do banco, fora da RLS e fora da exclusão de conta — e um JSON
+           malformado se diagnostica pela forma, não pelo conteúdo. */
+        console.error(
+          'onboarding_cv: JSON inválido | chars=%d abre_chave=%s fecha_chave=%s cerca_md=%s',
+          obText.length,
+          obText.indexOf('{'),
+          obText.lastIndexOf('}'),
+          obText.includes('```')
+        );
         return res.status(502).json({ error: 'Não conseguimos montar o currículo. Tente novamente.' });
       }
 
