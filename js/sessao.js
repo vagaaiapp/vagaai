@@ -32,6 +32,8 @@
     'vagaai_cv',
     'vagaai_cv_base',
     'vagaai_cv_photo',
+    'vagaai_cv_color',
+    'vagaai_cv_include_photo',
     'vagaai_cv_context',
     'vagaai_cv_version',
     'vagaai_cv_step',

@@ -1059,6 +1059,7 @@ html.no-photo .mod-header{display:block}
 }
 </style>
 <link rel="stylesheet" href="/assets/product-ui.css?v=20260821-editorial1">
+<link rel="stylesheet" href="/assets/cv-export-studio.css?v=20260823-studio1">
 </head>
 <body data-vagaai-ui="cv-editor">
 
@@ -1471,6 +1472,104 @@ html.no-photo .mod-header{display:block}
 
 </main><!-- /cv-main -->
 
+<!-- Currículo principal: caminho curto para escolher a apresentação e baixar.
+     A prévia real abaixo é movida para #basePreviewMount durante a inicialização. -->
+<main class="base-studio-content" id="baseExportStudio" aria-label="Estúdio de exportação do currículo principal">
+  <header class="base-studio-topbar">
+    <a class="base-mobile-brand" href="/curriculo" onclick="return goBackToCurriculos(event)" aria-label="Voltar para Meu currículo">
+      <img src="/logo-icon.svg" alt="">
+      <img src="/logo-light.svg" alt="VagaAI" class="base-logo-light">
+      <img src="/logo.svg" alt="VagaAI" class="base-logo-dark">
+    </a>
+    <div class="base-studio-crumb">Meu currículo <span>› Visualizar e baixar</span></div>
+    <div class="base-studio-top-actions">
+      <span class="base-pro-pill" id="basePlanPill" style="visibility:hidden">● CONTA</span>
+      <button class="base-theme-btn" type="button" onclick="toggleAppTheme()" aria-label="Alternar tema" title="Alternar tema">
+        <svg viewBox="0 0 24 24"><path d="M20 15.5A8 8 0 0 1 8.5 4 8 8 0 1 0 20 15.5Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="base-studio-page">
+    <header class="base-studio-heading">
+      <div>
+        <h1>Prepare seu currículo para enviar</h1>
+        <p>Escolha a apresentação ideal e baixe uma cópia. Seu conteúdo principal permanece exatamente como está.</p>
+      </div>
+      <div class="base-source-pill"><i></i>Currículo principal · Geral</div>
+    </header>
+
+    <section class="base-studio">
+      <div class="base-studio-workspace">
+        <aside class="base-studio-controls" aria-label="Modelos e ajustes do currículo">
+          <div class="base-section-label">Apresentação</div>
+          <h2>Escolha um modelo</h2>
+          <p class="base-controls-intro">A aparência muda; suas informações continuam vinculadas ao documento mestre.</p>
+
+          <div class="base-template-groups">
+            <div>
+              <div class="base-group-title">Para candidaturas online <span>Compatíveis com ATS</span></div>
+              <div class="base-template-grid">
+                <button class="base-template" id="baseTplModern" data-template="modern" onclick="setTemplate('modern')"><span class="base-template-thumb"></span><span><strong>Moderno</strong><small>Equilíbrio e leitura</small></span></button>
+                <button class="base-template" id="baseTplFocus" data-template="focus" onclick="setTemplate('focus')"><span class="base-template-thumb"></span><span><strong>Focado</strong><small>Conteúdo em destaque</small></span></button>
+                <button class="base-template" id="baseTplMinimal" data-template="minimal" onclick="setTemplate('minimal')"><span class="base-template-thumb"></span><span><strong>Minimalista</strong><small>Direto e universal</small></span></button>
+              </div>
+            </div>
+            <div>
+              <div class="base-group-title">Para envio direto <span>Mais personalidade visual</span></div>
+              <div class="base-template-grid">
+                <button class="base-template" id="baseTplClassic" data-template="classic" onclick="setTemplate('classic')"><span class="base-template-thumb"></span><span><strong>Profissional</strong><small>Barra lateral</small></span></button>
+                <button class="base-template" id="baseTplExec" data-template="exec" onclick="setTemplate('exec')"><span class="base-template-thumb"></span><span><strong>Executivo</strong><small>Presença editorial</small></span></button>
+                <button class="base-template" id="baseTplCompact" data-template="compact" onclick="setTemplate('compact')"><span class="base-template-thumb"></span><span><strong>Compacto</strong><small>Mais conteúdo por página</small></span></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="base-personalize">
+            <div class="base-section-label">Ajustes do modelo</div>
+            <div class="base-personalize-row">
+              <div><strong>Cor de destaque</strong><small>Usada somente no arquivo</small></div>
+              <div class="base-swatches" aria-label="Cores do currículo">
+                <button class="base-swatch" data-cv-color="green" style="--swatch:#1a7a4a" onclick="setBaseCvColor('green')" aria-label="Verde"></button>
+                <button class="base-swatch" data-cv-color="blue" style="--swatch:#213a65" onclick="setBaseCvColor('blue')" aria-label="Azul"></button>
+                <button class="base-swatch" data-cv-color="terracotta" style="--swatch:#6b3f35" onclick="setBaseCvColor('terracotta')" aria-label="Terracota"></button>
+                <button class="base-swatch" data-cv-color="graphite" style="--swatch:#2d3748" onclick="setBaseCvColor('graphite')" aria-label="Grafite"></button>
+              </div>
+            </div>
+            <div class="base-personalize-row">
+              <div><strong>Foto profissional</strong><small>Inclua somente quando fizer sentido</small></div>
+              <button class="base-photo-toggle" id="basePhotoToggle" type="button" onclick="baseTogglePhoto()" aria-pressed="false" aria-label="Incluir foto"><i></i></button>
+            </div>
+          </div>
+
+          <div class="base-protection">
+            <svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.2 8 8 9 4.8-1 8-4 8-9V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>
+            <div><strong>Seu documento mestre está protegido</strong>Modelos e downloads não alteram o conteúdo usado nas análises e alertas.</div>
+          </div>
+        </aside>
+
+        <div class="base-preview-mount" id="basePreviewMount"></div>
+      </div>
+
+      <footer class="base-studio-actions">
+        <button class="base-edit-link" type="button" onclick="return goEditBaseCurriculum(event)">
+          <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+          Editar conteúdo do currículo
+        </button>
+        <div class="base-save-note">O modelo selecionado fica salvo para a próxima visita</div>
+        <div class="base-download-actions">
+          <button class="base-download-btn" type="button" onclick="downloadWordDoc()">
+            <svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5"/></svg>Baixar Word
+          </button>
+          <button class="base-download-btn primary" type="button" onclick="mobPrint()">
+            <svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Baixar PDF
+          </button>
+        </div>
+      </footer>
+    </section>
+  </div>
+</main>
+
 <!-- RIGHT: PREVIEW -->
 <div class="cv-preview">
   <div class="cvp-header">
@@ -1731,6 +1830,10 @@ html.no-photo .mod-header{display:block}
 <!-- No data fallback -->
 </div><!-- /page-wrap -->
 </div><!-- /cvp-scale-outer -->
+<div class="base-preview-caption" id="basePreviewCaption" style="display:none">
+  <svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.2 8 8 9 4.8-1 8-4 8-9V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>
+  Prévia do currículo principal, sem adaptações de uma vaga específica.
+</div>
 </div><!-- /cv-preview -->
 </div><!-- /cv-shell -->
 <div class="no-data-page" id="noDataPage" style="display:none">
@@ -2038,6 +2141,191 @@ function goBackToCurriculos(event) {
   } catch(e) {}
   window.location.href = '/curriculo';
   return false;
+}
+
+function goEditBaseCurriculum(event) {
+  if (event) event.preventDefault();
+  var href = '/curriculo?foco=dados';
+  try {
+    var embedded = window.__VAGAAI_EMBEDDED__ || window.self !== window.top || new URLSearchParams(location.search).get('embedded') === '1';
+    if (embedded && window.parent) {
+      window.parent.postMessage({ type:'vagaai-nav', frame:true, id:'curriculo', href:href }, window.location.origin);
+      return false;
+    }
+  } catch(e) {}
+  window.location.href = href;
+  return false;
+}
+
+function baseStudioNavigate(event, id, href, frame, tab) {
+  if (event) event.preventDefault();
+  try {
+    var embedded = window.__VAGAAI_EMBEDDED__ || window.self !== window.top || new URLSearchParams(location.search).get('embedded') === '1';
+    if (embedded && window.parent) {
+      window.parent.postMessage({ type:'vagaai-nav', frame:frame === true, id:id, href:href, tab:tab || null }, window.location.origin);
+      return false;
+    }
+  } catch(e) {}
+  window.location.href = frame ? href : (tab ? '/dashboard#' + tab : href);
+  return false;
+}
+
+var BASE_TEMPLATE_NAMES = { modern:'Moderno', focus:'Focado', minimal:'Minimalista', classic:'Profissional', exec:'Executivo', compact:'Compacto' };
+var _baseStudioReady = false;
+
+function baseStudioInitials(name, email) {
+  var clean = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (clean.length > 1) return (clean[0][0] + clean[clean.length - 1][0]).toUpperCase();
+  if (clean.length === 1 && clean[0].length > 1) return clean[0].slice(0, 2).toUpperCase();
+  return String(email || '?').slice(0, 2).toUpperCase();
+}
+
+function baseStudioNavHtml() {
+  var items = [
+    ['painel','Início','/dashboard',false,'painel','<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'],
+    ['app','Analisar vaga','/app',true,'','<path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5M9 12h6M9 16h5"/>'],
+    ['curriculo','Meu currículo','/curriculo',true,'','<circle cx="12" cy="8" r="3.5"/><path d="M5 21c.7-4.2 3-6.3 7-6.3s6.3 2.1 7 6.3"/>'],
+    ['vagas','Candidaturas','/dashboard',false,'vagas','<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5h8v2"/>'],
+    ['entrevistas','Treino de entrevista','/dashboard',false,'entrevistas','<path d="M9 18V5a3 3 0 0 1 6 0v13a3 3 0 0 1-6 0Z"/><path d="M5 11v6a7 7 0 0 0 14 0v-6M12 24v-3"/>'],
+    ['carta','Carta de apresentação','/carta',true,'','<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/>'],
+    ['alertas','Vagas para você','/dashboard',false,'alertas','<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>'],
+    ['plano','Conta e plano','/dashboard',false,'plano','<circle cx="12" cy="8" r="3"/><path d="M6 21v-2a6 6 0 0 1 12 0v2"/>']
+  ];
+  var links = items.map(function(item) {
+    var internalHref = location.origin + item[2];
+    return '<a class="base-app-link' + (item[0] === 'curriculo' ? ' active' : '') + '" href="' + internalHref + '" onclick="return baseStudioNavigate(event,\'' + item[0] + '\',\'' + item[2] + '\',' + item[3] + ',\'' + item[4] + '\')"><svg viewBox="0 0 24 24">' + item[5] + '</svg><span>' + item[1] + '</span></a>';
+  }).join('');
+  return '<a class="base-app-brand" href="/dashboard" onclick="return baseStudioNavigate(event,\'painel\',\'/dashboard\',false,\'painel\')"><img src="/logo-icon.svg" alt=""><img src="/logo.svg" alt="VagaAI"></a>'
+    + '<div class="base-nav-label">Seu espaço</div><nav class="base-app-links" aria-label="Navegação principal">' + links + '</nav>'
+    + '<div class="base-nav-foot"><a class="base-nav-help" href="/blog" target="_blank" rel="noopener"><strong>Precisa de ajuda?</strong>Veja dicas para melhorar suas candidaturas.</a>'
+    + '<div class="base-nav-person"><div class="base-nav-avatar" id="baseNavAvatar"><span id="baseNavInitials">' + baseStudioInitials(_cvData && _cvData.nome, _cvData && _cvData.contato && _cvData.contato.email) + '</span></div><div><strong id="baseNavName">' + _esc((_cvData && _cvData.nome) || 'Seu perfil') + '</strong><small id="baseNavPlan">Conta</small></div></div></div>';
+}
+
+async function updateBaseStudioPlan(session) {
+  var pill = document.getElementById('basePlanPill');
+  var navPlan = document.getElementById('baseNavPlan');
+  if (!session || !session.access_token) {
+    if (pill) pill.style.visibility = 'hidden';
+    if (navPlan) navPlan.textContent = 'Conta';
+    return;
+  }
+  var label = 'Grátis';
+  try {
+    var response = await fetch('/api/subscription', { headers:{ Authorization:'Bearer ' + session.access_token } });
+    if (response.ok) {
+      var subscription = await response.json();
+      label = ({ pro:'Pro', starter:'Starter', free:'Grátis' })[subscription && subscription.plan] || 'Grátis';
+    }
+  } catch(e) {}
+  if (pill) {
+    pill.textContent = '● ' + label.toUpperCase();
+    pill.style.visibility = 'visible';
+  }
+  if (navPlan) navPlan.textContent = label;
+}
+
+function updateBaseStudioIdentity(session) {
+  var meta = session && session.user && session.user.user_metadata || {};
+  var cvContact = _cvData && _cvData.contato || {};
+  var name = meta.full_name || meta.name || (_cvData && _cvData.nome) || 'Seu perfil';
+  var email = session && session.user && session.user.email || cvContact.email || '';
+  var initials = window.VagaAIProfile ? window.VagaAIProfile.initials(name, email) : baseStudioInitials(name, email);
+  var nameEl = document.getElementById('baseNavName');
+  var initialsEl = document.getElementById('baseNavInitials');
+  if (nameEl) nameEl.textContent = name;
+  if (initialsEl) initialsEl.textContent = initials;
+  var avatar = meta.avatar_url || meta.picture || '';
+  var avatarEl = document.getElementById('baseNavAvatar');
+  if (avatarEl && avatar) avatarEl.innerHTML = '<img src="' + _esc(avatar) + '" alt="Foto de perfil">';
+}
+
+function syncBaseTemplateUi(template) {
+  if (!_baseStudioReady) return;
+  document.querySelectorAll('.base-template').forEach(function(button) {
+    button.classList.toggle('active', button.getAttribute('data-template') === template);
+  });
+  var label = document.querySelector('.base-export-mode .cvp-label');
+  if (label) label.textContent = 'Prévia · Modelo ' + (BASE_TEMPLATE_NAMES[template] || 'selecionado').toLowerCase();
+}
+
+function setBaseCvColor(key, persist) {
+  var colors = {
+    green:{ ac:'#1a7a4a', ac2:'#376c4e', ac3:'#6e9480', sidebar:'#f0f7f3' },
+    blue:{ ac:'#213a65', ac2:'#49617f', ac3:'#768ba4', sidebar:'#f1f4f8' },
+    terracotta:{ ac:'#6b3f35', ac2:'#8a635b', ac3:'#ad8d86', sidebar:'#f8f3f1' },
+    graphite:{ ac:'#2d3748', ac2:'#4a5568', ac3:'#718096', sidebar:'#f7f8fa' }
+  };
+  var selected = colors[key] || colors.graphite;
+  var root = document.documentElement;
+  root.style.setProperty('--ac', selected.ac);
+  root.style.setProperty('--ac2', selected.ac2);
+  root.style.setProperty('--ac3', selected.ac3);
+  root.style.setProperty('--sb-bg', selected.sidebar);
+  document.querySelectorAll('.base-swatch').forEach(function(button) { button.classList.toggle('active', button.getAttribute('data-cv-color') === key); });
+  if (persist !== false) try { localStorage.setItem('vagaai_cv_color', key); } catch(e) {}
+}
+
+function syncBasePhotoToggle() {
+  var photo = null, include = true;
+  try {
+    photo = localStorage.getItem('vagaai_cv_photo');
+    include = localStorage.getItem('vagaai_cv_include_photo') !== 'false';
+  } catch(e) {}
+  var active = !!(photo && photo !== 'none' && include);
+  document.documentElement.classList.toggle('no-photo', !active);
+  var toggle = document.getElementById('basePhotoToggle');
+  if (toggle) {
+    toggle.classList.toggle('on', active);
+    toggle.setAttribute('aria-pressed', active ? 'true' : 'false');
+    toggle.setAttribute('aria-label', active ? 'Remover foto desta exportação' : 'Incluir foto nesta exportação');
+  }
+}
+
+function baseTogglePhoto() {
+  var photo = null;
+  try { photo = localStorage.getItem('vagaai_cv_photo'); } catch(e) {}
+  var toggle = document.getElementById('basePhotoToggle');
+  var active = toggle && toggle.classList.contains('on');
+  if (active) {
+    try { localStorage.setItem('vagaai_cv_include_photo', 'false'); } catch(e) {}
+    syncBasePhotoToggle();
+    return;
+  }
+  try { localStorage.setItem('vagaai_cv_include_photo', 'true'); } catch(e) {}
+  if (!photo || photo === 'none') {
+    var input = document.getElementById('photoFileInput');
+    if (input) input.click();
+    return;
+  }
+  renderPhoto(photo);
+  syncBasePhotoToggle();
+}
+
+function setupBaseExportStudio() {
+  if (_cvEditorSource !== 'base' || _baseStudioReady) return;
+  _baseStudioReady = true;
+  document.body.classList.add('base-export-mode');
+  var nav = document.querySelector('.cv-nav');
+  if (nav) nav.innerHTML = baseStudioNavHtml();
+  var preview = document.querySelector('.cv-shell > .cv-preview');
+  var mount = document.getElementById('basePreviewMount');
+  if (preview && mount) mount.appendChild(preview);
+  var caption = document.getElementById('basePreviewCaption');
+  if (caption) caption.style.display = 'flex';
+  var template = (_cvData && _cvData.template) || 'modern';
+  try { template = localStorage.getItem('vagaai_cv_tpl') || template; } catch(e) {}
+  var color = 'green';
+  try { color = localStorage.getItem('vagaai_cv_color') || 'green'; } catch(e) {}
+  setBaseCvColor(color, false);
+  syncBasePhotoToggle();
+  syncBaseTemplateUi(template);
+  updateBaseStudioIdentity(_sbSession);
+  _initSbSession().then(function(session) {
+    updateBaseStudioIdentity(session);
+    updateBaseStudioPlan(session);
+  });
+  setTimeout(scaleCvPages, 0);
+  setTimeout(scaleCvPages, 180);
 }
 
 function _esc(s) {
@@ -2957,6 +3245,9 @@ function applySmartFix(type) {
   } else if (savedPhoto) {
     renderPhoto(savedPhoto);
     updatePhotoUI(true);
+  } else if (_cvEditorSource === 'base') {
+    document.documentElement.classList.add('no-photo');
+    updatePhotoUI(false);
   } else {
     document.getElementById('photoModal').classList.remove('hidden');
     document.getElementById('modalBtnYes').onclick = function() {
@@ -2987,9 +3278,11 @@ function applySmartFix(type) {
       updatePhotoUI(true);
       try {
         localStorage.setItem('vagaai_cv_photo', ev.target.result);
+        localStorage.setItem('vagaai_cv_include_photo', 'true');
       } catch(ex) {
         showToast('Não foi possível salvar a foto no navegador. Ela pode sumir ao recarregar.', 'error');
       }
+      syncBasePhotoToggle();
     };
     reader.readAsDataURL(file);
     this.value = '';
@@ -3091,6 +3384,7 @@ function applyTemplate(tpl, save) {
     else { page.classList.remove('active'); if(btn) btn.classList.remove('active'); }
   });
   if (save !== false) try { localStorage.setItem('vagaai_cv_tpl', tpl); } catch(e) {}
+  syncBaseTemplateUi(tpl);
   // Re-scale after switching template (mobile)
   setTimeout(scaleCvPages, 50);
   // Close mobile panel after selecting template
@@ -3371,6 +3665,7 @@ var _sfDebTimer = null;
 function _restoreCvStep(hadOptFlag) {
   try {
     if (hadOptFlag) return;
+    if (_cvEditorSource === 'base') return;
     if (!_cvData) return;
     var savedStep = parseInt(sessionStorage.getItem('vagaai_cv_step') || localStorage.getItem('vagaai_cv_step'), 10);
     if (savedStep >= 2 && savedStep <= 4) goToStep(savedStep);
@@ -3894,6 +4189,8 @@ function applyCvSourceUi() {
   if (!isVersion && sendCard) { sendCard.style.display = 'none'; sendCard.innerHTML = ''; }
   if (!isVersion && trackerCard) trackerCard.style.display = 'none';
   if (adaptLink) adaptLink.textContent = isVersion ? 'Adaptar para outra vaga →' : 'Criar versão para uma vaga →';
+  document.body.classList.toggle('base-export-mode', !isVersion);
+  if (!isVersion) setupBaseExportStudio();
   document.title = (_cvData && _cvData.nome ? _cvData.nome + ' - ' : '') + (isVersion ? 'Currículo para vaga' : 'Currículo base');
 }
 
@@ -4625,7 +4922,7 @@ function _enterReviewMode(ctx) {
     '</div>',
     '<div class="s4rb-actions">',
     '  <button class="csv-dl-btn primary" onclick="s4StartPdfDownload()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Baixar PDF</button>',
-    '  <button class="s4rb-review-btn" onclick="goToStep(2)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Revisar alterações</button>',
+    '  <button class="s4rb-review-btn" onclick="goToStep(2)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Revisar alterações</button>',
     '</div>'
   ].join('');
 

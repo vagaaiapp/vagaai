@@ -29,7 +29,7 @@ describe('o botão principal leva ao lugar que a copy manda', () => {
     // Sem isso o link levaria ao topo da página e a pessoa procuraria sozinha
     // a seção que ela acabou de pedir. O mapa é a fonte: assertar a expressão
     // exata prendia o teste à forma da função, não ao que ela faz.
-    assert.match(curriculo, /ALVOS_DE_FOCO = \{ lacunas: 'gapPanel', versoes: 'versionsPanel' \}/);
+    assert.match(curriculo, /ALVOS_DE_FOCO = \{ lacunas: 'gapPanel', versoes: 'versionsPanel', dados: 'cvDetailsStart' \}/);
     assert.match(curriculo, /panel\.scrollIntoView/);
   });
 });

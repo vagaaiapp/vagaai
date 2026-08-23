@@ -108,6 +108,24 @@ describe('Fluxo canônico de currículo', () => {
     assert.match(cv, /if \(_cvEditorSource === 'base'\)[\s\S]*?card\.style\.display = 'none'/);
   });
 
+  it('oferece um estúdio integrado e direto para baixar o currículo principal', () => {
+    assert.match(curriculo, /Visualizar e baixar/);
+    assert.match(cv, /id="baseExportStudio"/);
+    assert.match(cv, /id="basePreviewMount"/);
+    assert.match(cv, /function setupBaseExportStudio\(\)[\s\S]*?_cvEditorSource !== 'base'[\s\S]*?appendChild\(preview\)/);
+    assert.match(cv, /Prepare seu currículo para enviar/);
+    assert.match(cv, /Editar conteúdo do currículo/);
+    assert.match(cv, /Baixar Word/);
+    assert.match(cv, /Baixar PDF/);
+  });
+
+  it('mantém o editor guiado para versões por vaga e não restaura suas etapas no currículo base', () => {
+    assert.match(cv, /document\.body\.classList\.toggle\('base-export-mode', !isVersion\)/);
+    assert.match(cv, /if \(!isVersion\) setupBaseExportStudio\(\)/);
+    assert.match(cv, /function _restoreCvStep\(hadOptFlag\)[\s\S]*?if \(_cvEditorSource === 'base'\) return/);
+    assert.match(cv, /id="csStep4"/);
+  });
+
   it('faz as ações do currículo base ocuparem toda a largura do cartão', () => {
     assert.match(curriculo, /\.profile-actions\{[^}]*flex:1 0 100%[^}]*width:100%/);
     assert.match(curriculo, /\.save-status:empty\{display:none\}/);

@@ -12,7 +12,7 @@ const dashboard = fs.readFileSync(path.join(root, 'dashboard', 'index.html'), 'u
 test('currículo principal é o ativo dominante e usa a fotografia aprovada', () => {
   assert.match(html, /class="profile-head curriculum-master"/);
   assert.match(html, /Abrir e editar currículo/);
-  assert.match(html, /Escolher modelo e baixar/);
+  assert.match(html, /Visualizar e baixar/);
   assert.match(css, /curriculum-master-workspace\.webp/);
   assert.ok(fs.existsSync(path.join(root, 'assets', 'curriculum-master-workspace.webp')));
 });
