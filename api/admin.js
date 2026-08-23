@@ -4,7 +4,54 @@ const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const GA4_PROPERTY_ID  = process.env.GA4_PROPERTY_ID;
 const GA4_SA_JSON      = process.env.GA4_SA_JSON; // Service Account JSON (nunca expira)
 
-const ADMIN_EMAILS = ['contato@vagaai.app.br', 'jvhr96@gmail.com'];
+/* Quem e admin mora em public.admins (migracao 031), nao aqui. A lista
+   estava duplicada entre este arquivo e a politica blog_admin_all do banco:
+   tirar alguem do time exigia lembrar dos dois, e um esquecimento deixava
+   acesso ativo.
+
+   Falha fechado de proposito. Se a consulta nao responder, ninguem entra —
+   controle de acesso que abre quando a infraestrutura tosse nao e controle de
+   acesso. Isso significa que a migracao 031 precisa estar aplicada ANTES do
+   deploy deste arquivo. */
+async function isAdmin(email) {
+  if (!email) return false;
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/admins?email=eq.${encodeURIComponent(email)}&select=email&limit=1`,
+      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+    );
+    if (!res.ok) {
+      console.error('isAdmin: PostgREST', res.status);
+      return false;
+    }
+    const rows = await res.json();
+    return Array.isArray(rows) && rows.length === 1;
+  } catch (err) {
+    console.error('isAdmin: exception', err.message);
+    return false;
+  }
+}
+
+/* Trilha do que foi olhado e alterado. Nunca grava conteudo — so a acao, o
+   alvo e a contagem. Fire-and-forget: registrar nao pode derrubar a operacao,
+   mas a falha aparece no log em vez de sumir. */
+async function auditar(adminEmail, acao, alvo = null, detalhe = null) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/admin_audit`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({ admin_email: adminEmail, acao, alvo, detalhe }),
+    });
+    if (!res.ok) console.error('admin_audit HTTP', res.status, (await res.text()).slice(0, 200));
+  } catch (err) {
+    console.error('admin_audit erro:', err.message);
+  }
+}
 
 // ─── Auth helpers ─────────────────────────────────────────────────────────────
 
@@ -367,7 +414,7 @@ export default async function handler(req, res) {
   }
 
   const user = await getUserFromToken(token);
-  if (!user || !ADMIN_EMAILS.includes(user.email)) {
+  if (!user || !(await isAdmin(user.email))) {
     return res.status(403).json({ error: 'Acesso negado. Apenas administradores.' });
   }
 
@@ -399,6 +446,7 @@ export default async function handler(req, res) {
         }
       );
       if (!upRes.ok) return res.status(500).json({ error: 'Erro ao atualizar créditos: ' + await upRes.text() });
+      await auditar(user.email, 'ajustar_creditos', userId, { delta: qty, saldo: newVal });
       return res.status(200).json({ ok: true, credits: newVal });
     }
 
@@ -410,6 +458,9 @@ export default async function handler(req, res) {
         { method: 'DELETE', headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
       );
       if (!delRes.ok && delRes.status !== 404) return res.status(500).json({ error: 'Erro ao remover usuário: ' + await delRes.text() });
+      // Irreversivel e em cascata por 12 tabelas: se alguma vez alguem
+      // perguntar quando a conta sumiu, a resposta precisa existir.
+      await auditar(user.email, 'remover_usuario', userId, { status: delRes.status });
       return res.status(200).json({ ok: true });
     }
 
@@ -484,6 +535,14 @@ export default async function handler(req, res) {
         return null;
       }),
     ]);
+
+    /* Este caminho devolve ate 500 analises com o result completo — conteudo
+       de curriculo de clientes reais. E a leitura mais sensivel do produto e
+       ate agora nao deixava rastro nenhum. */
+    await auditar(user.email, 'ler_painel', null, {
+      analises: Array.isArray(supabaseData?.analyses) ? supabaseData.analyses.length : null,
+      usuarios: supabaseData?.totalUsers ?? null
+    });
 
     return res.status(200).json({
       supabase: supabaseData,

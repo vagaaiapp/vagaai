@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VagaAI — Meu Currículo</title>
+<title>VagaAI — Meu currículo</title>
 <meta name="description" content="Seu currículo, sempre atualizado. Preencha seus dados e veja o que o mercado espera de você.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -244,7 +244,7 @@ var SITUACOES_FORMACAO = ['', 'Concluído', 'Cursando', 'Trancado'];
   // Cache do navegador pertence a uma conta só — ver /js/sessao.js. Roda antes
   // de qualquer leitura de rascunho para não abrir o editor com o currículo de
   // quem usou o computador antes.
-  if (_session && window.VagaAISessao) VagaAISessao.adotar(_session.user.id);
+  if (_session && window.VagaAISessao) VagaAISessao.adotar(_session.user);
   // Fora do painel (funil público /criar-curriculo, link direto), mostra uma
   // nav mínima — sem ela o visitante ficava numa página sem logo nem saída.
   if (!_isEmbedded) {
@@ -1207,6 +1207,23 @@ function marketRowsHtml(gaps, freq, totalVagas) {
   }).join('') + '</div>';
 }
 
+/* O que as versoes por vaga ja escreveram e o curriculo principal ainda nao
+   tem. Dez analises produziam dez curriculos direcionados e o principal
+   continuava igual ao do primeiro dia — a inteligencia gerada ficava presa
+   dentro da analise que a produziu. Aqui ela volta como sugestao: quem decide
+   o que entra e a pessoa, nunca a escrita automatica. */
+function versoesRowsHtml(novas, freq, totalVagas) {
+  if (!novas || !novas.length) return '';
+  var itens = novas.slice(0, 4).map(function(hab){
+    var count = Number(freq[hab] || 1);
+    var origem = count === 1 ? 'em 1 versão sua' : 'em ' + count + ' versões suas';
+    return '<div class="market-row"><b>+</b><strong>' + esc(hab) + '</strong><span>' + esc(origem) + '</span></div>';
+  }).join('');
+  return '<div class="market-scope" style="margin-top:18px"><div><strong>Do seu próprio material</strong>' +
+    '<span>Competências que apareceram nos currículos que você gerou por vaga e ainda não estão no principal.</span></div></div>' +
+    '<div class="market-list">' + itens + '</div>';
+}
+
 function gapHeroShell(kicker, title, sub, metricsHtml, rowsHtml) {
   return '<div class="profile-kicker">' + esc(kicker) + '</div><h3>' + esc(title) + '</h3><p>' + esc(sub) + '</p>' +
     (metricsHtml ? '<div class="market-scope">' + metricsHtml + '</div>' : '') + (rowsHtml || '');
@@ -1287,12 +1304,15 @@ async function loadGapPanel() {
     if (usage) usage.textContent = lac.totalVagas + ' ' + (lac.totalVagas === 1 ? 'vaga analisada' : 'vagas analisadas');
     var metricsHtml = metric(lac.totalVagas, lac.totalVagas === 1 ? 'vaga analisada' : 'vagas analisadas') + metric(lac.cobertas, 'competências em comum') + metric(gaps.length, context.termLabel);
 
+    var versoes = window.VagaAICv.habilidadesDasVersoes(_cvData, rows);
+    var versoesHtml = versoesRowsHtml(versoes.novas, versoes.freq, versoes.totalVagas);
+
     if (!gaps.length) {
       panel.innerHTML = gapHeroShell(
         context.kicker,
         context.coveredTitle,
         context.sub,
-        metricsHtml, ''
+        metricsHtml, versoesHtml
       );
       setProfileNext('Mantenha suas experiências atualizadas e continue analisando vagas para refinar esta leitura.', 'Revisar currículo');
       return;
@@ -1303,7 +1323,7 @@ async function loadGapPanel() {
       context.title,
       context.sub,
       metricsHtml,
-      marketRowsHtml(top, freq, lac.totalVagas)
+      marketRowsHtml(top, freq, lac.totalVagas) + versoesHtml
     );
     setProfileNext('Revise se sua experiência comprova ' + top.slice(0, 2).join(' e ') + '. Inclua esses termos somente quando representarem algo que você realmente realizou.', 'Revisar currículo');
   } catch(e) {

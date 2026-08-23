@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VagaAI — Simulador de Entrevista</title>
+<title>VagaAI — Treino de entrevista</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/loading-comet.css">
@@ -224,7 +224,7 @@ body:not(.embedded) .entrev-shell{margin-left:230px}
   <div class="screen" id="screenGate">
     <div class="pro-gate">
       <div class="pro-gate-icon">🎯</div>
-      <div class="pro-gate-title">Simulador de Entrevista com IA</div>
+      <div class="pro-gate-title">Treino de entrevista com IA</div>
       <p class="pro-gate-sub">Treine com perguntas personalizadas para cada vaga e receba feedback detalhado da IA antes da entrevista real.</p>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.2rem;font-size:12px;color:var(--muted)">
         <span>✓ 8 perguntas por vaga</span>
@@ -242,7 +242,7 @@ body:not(.embedded) .entrev-shell{margin-left:230px}
 
   <!-- SCREEN 1: SETUP -->
   <div class="screen" id="screenSetup">
-    <h1 class="page-title">Simulador de Entrevista</h1>
+    <h1 class="page-title">Treino de entrevista</h1>
     <p class="page-sub">Cole a vaga e seu currículo. A IA vai gerar 8 perguntas personalizadas para você treinar.</p>
 
     <div class="field">
@@ -354,6 +354,10 @@ var _questions = [];
    vivia so em memoria e fechar a aba apagava tudo. */
 var _sessionId = '';
 var _entrevAnalysisId = '';
+/* Resultado bruto da analise que originou este treino. Alimenta o prompt com
+   os requisitos ausentes rotulados, em vez de deixa-los diluidos no texto da
+   vaga — onde caiam fora do corte de 3000 caracteres. Ver api/interview.js. */
+var _entrevAnalise = null;
 var _entrevCargo = '';
 var _entrevEmpresa = '';
 var _currentQ = 0;
@@ -379,7 +383,7 @@ var _interviewProfile = null;
   // Cache do navegador pertence a uma conta só: se a anterior era de outra
   // pessoa (computador compartilhado), apaga antes que a tela leia o
   // currículo ou a vaga de quem usou o aparelho antes.
-  if (window.VagaAISessao) VagaAISessao.adotar(_session.user.id);
+  if (window.VagaAISessao) VagaAISessao.adotar(_session.user);
 
   try {
     var res = await fetch('/api/subscription', { headers: { Authorization: 'Bearer ' + _session.access_token } });
@@ -416,6 +420,7 @@ var _interviewProfile = null;
         } else {
           var analysis = rows[0];
           _entrevAnalysisId = analysis.id || '';
+          _entrevAnalise = analysis.result || null;
           var jiCtx = (analysis.result && analysis.result.job_info) || {};
           _entrevCargo = jiCtx.cargo || '';
           _entrevEmpresa = jiCtx.empresa || '';
@@ -632,6 +637,15 @@ async function generateInterview(options) {
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _t },
       body: JSON.stringify({
         action: 'generate', job, cv,
+        /* So o que o prompt usa. Mandar result inteiro levaria junto o
+           curriculo otimizado e o briefing da empresa — payload grande e
+           dado que o servidor nao precisa para escolher perguntas. */
+        analise: _entrevAnalise ? {
+          score: _entrevAnalise.score,
+          keywords_encontradas: _entrevAnalise.keywords_encontradas || _entrevAnalise.palavras_chave_encontradas,
+          keywords_faltando: _entrevAnalise.keywords_faltando || _entrevAnalise.palavras_chave_faltando,
+          falhas: _entrevAnalise.falhas
+        } : null,
         // Sem isso o treino salvo vira uma sessao solta, sem dizer de qual vaga.
         analysis_id: _entrevAnalysisId || null,
         cargo: _entrevCargo || null,
@@ -654,6 +668,16 @@ async function generateInterview(options) {
 
     showScreen('screenInterview');
     renderQuestion();
+    /* usou_analise e o mesmo par que a carta ja mede: separa o treino que
+       nasceu de uma analise do que foi montado com texto colado na mao. Sem
+       isso nao da pra dizer se ligar o treino a analise mudou alguma coisa. */
+    if (window.vagaaiTrack) {
+      vagaaiTrack('treino_iniciado', {
+        perguntas: _questions.length,
+        usou_analise: !!_entrevAnalysisId,
+        origem: options.source || 'manual'
+      });
+    }
   } catch(e) {
     showScreen('screenSetup');
     showError('setupError', e.message || 'Erro inesperado. Tente novamente.');
@@ -977,6 +1001,14 @@ function showResult() {
   showScreen('screenResult');
   window.scrollTo({ top: 0, behavior: 'smooth' });
   salvarSessaoTreino(answered.length, avgScore);
+  if (window.vagaaiTrack) {
+    vagaaiTrack('treino_concluido', {
+      respondidas: answered.length,
+      total: _questions.length,
+      media: avgScore,
+      usou_analise: !!_entrevAnalysisId
+    });
+  }
 }
 
 /* Fecha a sessao no banco. Roda depois de pintar a tela, nunca antes: o
@@ -1017,6 +1049,13 @@ function restartInterview() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
   document.getElementById(id).classList.add('active');
+  /* O gate do Pro tem quatro call sites (checagem de plano na entrada e 403 em
+     generate/evaluate/transcribe). Marcar aqui cobre todos e mede o que
+     importa: quantas pessoas chegam a ver o bloqueio, que e o denominador de
+     qualquer conversao dele. */
+  if (id === 'screenGate' && window.vagaaiTrack) {
+    vagaaiTrack('bloqueio_plano_exibido', { recurso: 'treino_entrevista' });
+  }
 }
 function showError(id, msg) {
   var el = document.getElementById(id);

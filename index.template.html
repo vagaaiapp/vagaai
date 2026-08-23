@@ -10,6 +10,7 @@
   gtag('js',new Date());gtag('config','G-XCT8K58VWF');
   </script>
   <script src="/cookie-consent.js" defer></script>
+  <script src="/js/eventos.js" defer></script>
   <script defer src="/_vercel/insights/script.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1225,7 +1226,10 @@
        dois caminhos converte nem onde o lead desiste. Respeita o Consent Mode:
        gtag() já existe (definido no <head>) e o GA descarta os eventos sozinho
        enquanto analytics_storage estiver 'denied'. */
+    /* Mesmo caminho de telemetria do produto (/js/eventos.js): filtra chave
+       de dado pessoal antes de enviar e cobre gtag e Vercel Analytics. */
     function track(evento, dados) {
+      if (window.vagaaiTrack) return window.vagaaiTrack(evento, dados);
       try { if (typeof gtag === 'function') gtag('event', evento, dados || {}); } catch (e) {}
     }
 

@@ -2,14 +2,14 @@
   'use strict';
 
   var NAV = [
-    { id: 'painel',      label: 'Vis\u00e3o geral',     icon: 'grid',  href: '/dashboard', tab: 'painel',      frame: false, bottom: true  },
+    { id: 'painel',      label: 'In\u00edcio',           icon: 'grid',  href: '/dashboard', tab: 'painel',      frame: false, bottom: true  },
     { id: 'app',         label: 'Analisar vaga',       icon: 'doc',   href: '/app',                           frame: true,  bottom: true  },
-    { id: 'curriculo',   label: 'Meu Curr\u00edculo',  icon: 'user',  href: '/curriculo',                    frame: true,  bottom: false },
+    { id: 'curriculo',   label: 'Meu curr\u00edculo',  icon: 'user',  href: '/curriculo',                    frame: true,  bottom: false },
     { id: 'vagas',       label: 'Candidaturas',        icon: 'brief', href: '/dashboard', tab: 'vagas',       frame: false, bottom: true  },
-    { id: 'entrevistas', label: 'Entrevistas',         icon: 'mic',   href: '/dashboard', tab: 'entrevistas', frame: false, bottom: false },
-    { id: 'carta',       label: 'Carta para vaga',     icon: 'mail',  href: '/carta',                         frame: true,  bottom: false },
-    { id: 'alertas',     label: 'Alertas',             icon: 'bell',  href: '/dashboard', tab: 'alertas',     frame: false, bottom: true  },
-    { id: 'plano',       label: 'Conta',               icon: 'user',  href: '/dashboard', tab: 'plano',       frame: false, bottom: true  },
+    { id: 'entrevistas', label: 'Treino de entrevista', icon: 'mic',   href: '/dashboard', tab: 'entrevistas', frame: false, bottom: false },
+    { id: 'carta',       label: 'Carta de apresenta\u00e7\u00e3o', icon: 'mail',  href: '/carta',                         frame: true,  bottom: false },
+    { id: 'alertas',     label: 'Vagas para voc\u00ea',  icon: 'bell',  href: '/dashboard', tab: 'alertas',     frame: false, bottom: true  },
+    { id: 'plano',       label: 'Conta e plano',       icon: 'user',  href: '/dashboard', tab: 'plano',       frame: false, bottom: true  },
   ];
 
   var ICONS = {

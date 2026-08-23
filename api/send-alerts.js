@@ -247,7 +247,13 @@ function parseAiScores(text) {
     if (!Array.isArray(arr)) return null;
     const out = arr
       .filter(o => o && typeof o.i === 'number' && typeof o.score === 'number')
-      .map(o => ({ i: o.i, score: Math.max(0, Math.min(100, Math.round(o.score))) }));
+      .map(o => ({
+        i: o.i,
+        score: Math.max(0, Math.min(100, Math.round(o.score))),
+        // Uma frase curta dizendo o que casou. E o que responde "por que essa
+        // vaga apareceu para mim" — a pergunta que o radar nunca respondeu.
+        motivo: typeof o.motivo === 'string' ? o.motivo.replace(/\s+/g, ' ').trim().slice(0, 90) : ''
+      }));
     return out.length ? out : null;
   } catch { return null; }
 }
@@ -1771,7 +1777,8 @@ function buildEmailHTML(profile, jobs, userName, userId, plan = 'free', ent = nu
           <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:2px">${escEmail(company)}</div>
           <div style="font-size:14px;font-weight:700;color:#1a8f5c;margin-bottom:4px">${escEmail(j.title)}</div>
           <div style="font-size:11px;color:#888;margin-bottom:6px">📍 ${escEmail(j.location || 'Brasil')} · 💰 ${j.salary ? escEmail(j.salary) : 'Salário não informado'}</div>
-          <div style="font-size:11px;color:#f0a500;margin-bottom:6px">${starsFromScore(j._score)} <span style="color:#888">${compatLabel(j._score)} (estimado)</span></div>
+          <div style="font-size:11px;color:#f0a500;margin-bottom:6px">${starsFromScore(j._score)} <span style="color:#888">${compatLabel(j._score)}${j._ai_scored ? '' : ' (estimado)'}</span></div>
+          ${j._motivo ? `<div style="font-size:11px;color:#1a8f5c;background:#f4f9f6;border-left:3px solid #1a8f5c;padding:6px 9px;border-radius:0 6px 6px 0;margin-bottom:8px">Por que para voce: ${escEmail(j._motivo)}</div>` : ''}
           <a href="${analyzeUrl}" style="display:inline-block;background:#1a8f5c;color:#fff;font-size:12px;font-weight:700;padding:6px 14px;border-radius:6px;text-decoration:none">${ctaLabel}</a>${j.link ? ` <a href="${escEmail(j.link)}" target="_blank" style="display:inline-block;background:#f4f9f6;color:#1a8f5c;font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;text-decoration:none;border:1.5px solid #1a8f5c;margin-left:6px">🔗 Ver vaga</a>` : ''}
         </div>
       </div>
@@ -1835,6 +1842,9 @@ async function upsertAlertCache(userId, alertId, jobs, { isDemand = false } = {}
     title: j.title, company: j.company || j.employer || j.companyName || '',
     location: j.location || '', salary: j.salary || '', link: j.link || '',
     _score: j._score || 0, source: j.source || '',
+    // Sem isto o "por que essa vaga" morria no e-mail e a aba do painel
+    // voltava a mostrar a frase generica por faixa de score.
+    _motivo: j._motivo || '',
     first_seen_at: j.first_seen_at || nowIso,
     last_seen_at: nowIso,
   });
@@ -1946,9 +1956,9 @@ ${lines}`;
   } catch { return ''; }
 }
 
-async function aiRescoreJobs(jobs, profile, cvHint = '') {
+async function aiRescoreJobs(jobs, profile, cvHint = '', limite = 20) {
   if (!process.env.ANTHROPIC_API_KEY || !Array.isArray(jobs) || jobs.length < 2) return jobs;
-  const top = jobs.slice(0, 20);
+  const top = jobs.slice(0, Math.max(2, limite));
   // Inclui salário e um trecho da descrição — só título|empresa|local fazia a IA
   // dar score parecido para match forte e vaga genérica de mesmo nome.
   const compact = top.map((j, i) =>
@@ -1968,8 +1978,8 @@ ${cvHint ? `\nCURRÍCULO REAL DO CANDIDATO (use como sinal mais forte que o perf
 VAGAS (índice. título | empresa | local | salário | trecho da descrição):
 ${compact}
 
-Para cada vaga dê um score de 0 a 100 de compatibilidade, pesando aderência de cargo/experiência real, senioridade, modalidade e localização. Penalize fortemente (score < 25): estágio/aprendiz quando o perfil não é de estágio; anúncios de freela/bico/orçamento; vaga que declara modalidade incompatível com a preferida (ex.: presencial em outra cidade para quem quer remoto); vagas claramente de outro país sem opção Brasil. Responda APENAS com um array JSON, sem nenhum texto extra, no formato:
-[{"i":0,"score":87},{"i":1,"score":42}]`;
+Para cada vaga dê um score de 0 a 100 de compatibilidade, pesando aderência de cargo/experiência real, senioridade, modalidade e localização. Penalize fortemente (score < 25): estágio/aprendiz quando o perfil não é de estágio; anúncios de freela/bico/orçamento; vaga que declara modalidade incompatível com a preferida (ex.: presencial em outra cidade para quem quer remoto); vagas claramente de outro país sem opção Brasil. Para cada vaga escreva tambem "motivo": no maximo 8 palavras dizendo o que dessa vaga casa com este candidato especifico (competencia, cargo, senioridade ou modalidade). Nada generico como "boa oportunidade" ou "perfil compativel" — cite o que casou. Responda APENAS com um array JSON, sem nenhum texto extra, no formato:
+[{"i":0,"score":87,"motivo":"Power BI e senioridade pleno batem"},{"i":1,"score":42,"motivo":"Cargo proximo, mas presencial em outra cidade"}]`;
 
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1981,7 +1991,7 @@ Para cada vaga dê um score de 0 a 100 de compatibilidade, pesando aderência de
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
+        max_tokens: 2000,
         temperature: 0,
         messages: [{ role: 'user', content: prompt }],
       }),
@@ -1991,11 +2001,15 @@ Para cada vaga dê um score de 0 a 100 de compatibilidade, pesando aderência de
     const data = await resp.json();
     const scores = parseAiScores(data.content?.[0]?.text || '');
     if (!scores) return jobs;
-    const map = new Map(scores.map(s => [s.i, s.score]));
+    const map = new Map(scores.map(s => [s.i, s]));
     const rescoredTop = top.map((j, idx) =>
-      map.has(idx) ? { ...j, _score: map.get(idx), _ai_scored: true } : j
+      map.has(idx)
+        ? { ...j, _score: map.get(idx).score, _motivo: map.get(idx).motivo || '', _ai_scored: true }
+        : j
     );
-    return [...rescoredTop, ...jobs.slice(20)].sort((a, b) => (b._score || 0) - (a._score || 0));
+    // slice(top.length), nao slice(20): com pool menor (free) o 20 fixo
+    // duplicava as vagas entre a posicao do pool e a 20.
+    return [...rescoredTop, ...jobs.slice(top.length)].sort((a, b) => (b._score || 0) - (a._score || 0));
   } catch (e) {
     console.warn('aiRescoreJobs failed, heurística mantida:', e.message);
     return jobs;
@@ -2208,12 +2222,23 @@ async function processUserAlert(profile, options = {}) {
     };
   }
 
-  // Re-ranking por IA (planos pagos): compatibilidade real via Claude Haiku.
+  // Re-ranking por IA: compatibilidade real via Claude Haiku, em todos os planos.
   // Guarda de deadline reserva tempo do maxDuration p/ não derrubar o lote inteiro
   // conforme a base cresce. Em modo teste legado não roda (sem efeitos colaterais).
   const deadline = options.deadline || (Date.now() + 50000);
+
+  /* O free tambem passa pelo re-ranking. Antes nao passava: o primeiro contato
+     de toda pessoa com o radar era a versao que nao olha o curriculo, e as
+     vagas saiam na ordem em que as fontes devolveram. E a pior primeira
+     impressao possivel de uma funcionalidade cujo argumento inteiro e "isto e
+     para voce".
+
+     O custo fica contido pelo tamanho do lote, nao pelo plano: o free entrega
+     5 vagas (max_jobs_per_delivery), entao 8 candidatos bastam para escolher
+     bem e sao 60% menos texto que os 20 dos planos pagos. */
+  const poolIA = plan === 'free' ? 8 : 20;
   let cvHint = '';
-  if (!isTest && plan !== 'free' && jobs.length > 1 && Date.now() < deadline - 12000) {
+  if (!isTest && jobs.length > 1 && Date.now() < deadline - 12000) {
     // O currículo principal é a fonte estável para novas oportunidades.
     // Uma versão direcionada pertence à vaga que a originou e não deve
     // enviesar recomendações futuras para outras empresas.
@@ -2236,7 +2261,7 @@ async function processUserAlert(profile, options = {}) {
         ].filter(Boolean).join(' | ').slice(0, 400);
       }
     } catch (e) { /* sem CV → re-rank segue só com o perfil */ }
-    jobs = await aiRescoreJobs(jobs, profile, cvHint);
+    jobs = await aiRescoreJobs(jobs, profile, cvHint, poolIA);
   }
 
   // Volume por plano: free=5, starter=15, pro=sem limite

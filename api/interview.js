@@ -83,7 +83,51 @@ function cleanJsonText(text) {
   return String(text || '').replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 }
 
-async function generateQuestions(job, cv) {
+/* A analise da vaga ja sabe quais requisitos o curriculo comprova e quais
+   faltam. A pagina montava esse contexto e o empurrava para dentro do campo
+   `job`, no fim de um bloco rotulado "VAGA" — e duas coisas o anulavam: os
+   campos de lacuna eram os ultimos da montagem e caiam fora do `slice(0, 3000)`
+   numa vaga de descricao longa (o caso comum), e mesmo sobrevivendo chegavam
+   sem rotulo nenhum, como mais uma linha de descricao.
+
+   O resultado era um simulador que nao perguntava justamente sobre o que a
+   pessoa nao tem — que e o que o recrutador vai perguntar. api/cover-letter.js
+   ja fazia certo: rotula os requisitos ausentes em caixa alta e deriva uma
+   estrategia da faixa de score. Aqui e o mesmo padrao. */
+function blocoDaAnalise(analise) {
+  const an = analise && typeof analise === 'object' ? analise : {};
+  const lista = (v, max) => (Array.isArray(v) ? v : [])
+    .map(x => String(x == null ? '' : x).trim())
+    .filter(Boolean)
+    .slice(0, max);
+
+  const comprova = lista(an.keywords_encontradas, 10);
+  const faltam   = lista(an.keywords_faltando, 8);
+  const falhas   = lista(an.falhas, 4);
+  const score    = Number(an.score);
+  const temScore = Number.isFinite(score) && score >= 0 && score <= 100;
+
+  if (!comprova.length && !faltam.length && !falhas.length && !temScore) return '';
+
+  // Aderencia baixa muda o que o treino precisa ensaiar: nao adianta praticar
+  // os encaixes fortes quando o entrevistador vai cobrar o que falta.
+  let foco;
+  if (!temScore)         foco = 'Cubra encaixes e lacunas em proporcao equilibrada.';
+  else if (score >= 75)  foco = `Aderencia alta (${Math.round(score)}%). O risco aqui nao e a lacuna, e a profundidade: cobre evidencia concreta dos encaixes fortes.`;
+  else if (score >= 50)  foco = `Aderencia intermediaria (${Math.round(score)}%). Metade das perguntas deve testar como a experiencia adjacente cobre o que falta.`;
+  else                   foco = `Aderencia baixa (${Math.round(score)}%). O entrevistador vai focar no que falta — o treino tambem deve.`;
+
+  return [
+    '',
+    'ANALISE JA FEITA DESTA VAGA CONTRA ESTE CURRICULO (use para escolher as perguntas):',
+    comprova.length ? 'REQUISITOS QUE O CURRICULO COMPROVA: ' + comprova.join(', ') : '',
+    faltam.length   ? 'REQUISITOS AUSENTES — PELO MENOS 2 DAS 8 PERGUNTAS DEVEM COBRAR ESTES PONTOS, sem acusar: pergunte como a pessoa supriria ou o que ja fez de mais proximo: ' + faltam.join(', ') : '',
+    falhas.length   ? 'FRAGILIDADES APONTADAS PELA ANALISE: ' + falhas.join(' | ') : '',
+    'FOCO DO TREINO: ' + foco
+  ].filter(Boolean).join('\n');
+}
+
+async function generateQuestions(job, cv, analise) {
   const prompt = `Voce e um especialista em processos seletivos no Brasil. Analise a vaga e o curriculo abaixo e gere 8 perguntas de entrevista personalizadas.
 
 VAGA:
@@ -91,6 +135,7 @@ ${job.slice(0, 3000)}
 
 CURRICULO:
 ${cv.slice(0, 3000)}
+${blocoDaAnalise(analise)}
 
 Gere exatamente 8 perguntas no seguinte formato JSON:
 {
@@ -321,7 +366,11 @@ export default async function handler(req, res) {
   if (plan !== 'pro') {
     return res.status(403).json({
       error: 'plano_insuficiente',
-      message: 'O Simulador de Entrevista e exclusivo do plano Pro.',
+      /* Antes: "O Simulador de Entrevista e exclusivo do plano Pro." — informava
+         a regra e nao dizia o ganho, no ponto de maior intencao da jornada
+         inteira (a pessoa ja colou a vaga e o curriculo). Agora diz o que ela
+         leva. E usa o nome canonico do recurso, com acento. */
+      message: 'O Treino de entrevista é do plano Pro: 8 perguntas geradas para esta vaga e para o seu currículo, com avaliação da sua resposta em cada uma.',
       plan
     });
   }
@@ -330,14 +379,14 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Limite de uso atingido. Tente novamente mais tarde.' });
   }
 
-  const { job, cv, question, answer, audioBase64, analysis_id, cargo, empresa } = req.body || {};
+  const { job, cv, question, answer, audioBase64, analysis_id, cargo, empresa, analise } = req.body || {};
 
   try {
     if (action === 'generate') {
       if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
       if (!job || job.length < 50) return res.status(400).json({ error: 'Vaga muito curta' });
       if (!cv || cv.length < 50) return res.status(400).json({ error: 'CV muito curto' });
-      const result = await generateQuestions(job, cv);
+      const result = await generateQuestions(job, cv, analise);
 
       /* A sessao nasce aqui e e fechada pelo navegador quando a pessoa responde
          a ultima pergunta. Antes o treino inteiro vivia so em memoria: fechar a

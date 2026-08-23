@@ -78,14 +78,61 @@
     } catch (e) {}
   }
 
+  /* Carimbo dos funis que rodam ANTES do cadastro (/onboarding/vaga e
+     /onboarding/curriculo). Eles gravam currículo e última vaga de alguém que
+     ainda não tem conta, e sem este carimbo o cache ficava com o dono da conta
+     anterior — ou sem dono nenhum depois de um logout, que adotar() lia como
+     "mesmo dono". Nos dois casos quem voltasse à própria conta abria o editor e
+     encontrava o currículo do visitante. */
+  var ANON = 'anon';
+
+  /* Janela em que uma conta recém-criada pode herdar o cache anônimo: é o
+     tempo entre terminar o funil e concluir o cadastro. Conta mais velha que
+     isso é alguém voltando — e aí o cache anônimo é de outra pessoa. */
+  var HERANCA_MS = 10 * 60 * 1000;
+
+  function contaRecemCriada(criadaEm) {
+    if (!criadaEm) return false;
+    var t = new Date(criadaEm).getTime();
+    if (!t || isNaN(t)) return false;
+    return (Date.now() - t) < HERANCA_MS;
+  }
+
+  /* Chamado pelo funil anônimo antes da primeira escrita de dado pessoal.
+     Se o cache era de uma conta, apaga — o visitante também não deve ver o
+     currículo de quem usou a máquina antes. */
+  function adotarAnonimo() {
+    var trocou = false;
+    try {
+      var dono = localStorage.getItem(DONO);
+      if (dono && dono !== ANON) { limpar(); trocou = true; }
+      localStorage.setItem(DONO, ANON);
+    } catch (e) {}
+    return trocou;
+  }
+
   /* Devolve true quando detectou troca de conta e limpou — a página pode usar
-     isso para recarregar do banco em vez de confiar no que tinha em memória. */
-  function adotar(userId) {
+     isso para recarregar do banco em vez de confiar no que tinha em memória.
+
+     Aceita o objeto `user` da sessão (preferido) ou só o id. Com o objeto dá
+     para ler `created_at`, que é o que separa os dois donos possíveis de um
+     cache anônimo: a pessoa que acabou de sair do funil e se cadastrar (herda
+     o próprio trabalho) e a pessoa que já tinha conta e voltou (não herda
+     nada). Passar só o id continua funcionando — nesse caso o cache anônimo é
+     sempre tratado como de terceiro, que é o lado seguro do erro. */
+  function adotar(user) {
+    var userId = (user && typeof user === 'object') ? user.id : user;
+    var criadaEm = (user && typeof user === 'object') ? user.created_at : null;
     if (!userId) return false;
     var trocou = false;
     try {
       var dono = localStorage.getItem(DONO);
-      if (dono && dono !== userId) { limpar(); trocou = true; }
+      if (dono === ANON) {
+        // Só herda quem acabou de criar a conta neste mesmo fluxo.
+        if (!contaRecemCriada(criadaEm)) { limpar(); trocou = true; }
+      } else if (dono && dono !== userId) {
+        limpar(); trocou = true;
+      }
       localStorage.setItem(DONO, userId);
     } catch (e) {}
     return trocou;
@@ -93,6 +140,7 @@
 
   global.VagaAISessao = {
     adotar: adotar,
+    adotarAnonimo: adotarAnonimo,
     limpar: limpar,
     chavesPessoais: chavesPessoais
   };

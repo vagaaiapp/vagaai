@@ -187,18 +187,25 @@ async function getTrackerFollowupCards() {
   const minMs = now - 8 * 24 * 60 * 60 * 1000; // 8 dias atrás
   const maxMs = now - 6 * 24 * 60 * 60 * 1000; // 6 dias atrás
 
+  /* O recorte de 6 a 8 dias vai na query, nao em JavaScript. Antes a busca
+     trazia TODAS as candidaturas com status aplicada, sem limite e sem filtro
+     de data, e filtrava depois: o PostgREST corta a resposta no max-rows do
+     projeto (1000 por padrao), entao a partir desse volume os cards alem do
+     corte parariam de gerar follow-up — em silencio, sem erro nenhum. A pessoa
+     so notaria que a VagaAI parou de lembrar dela. */
+  const desde = new Date(minMs).toISOString();
+  const ate = new Date(maxMs).toISOString();
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/job_tracker?status=in.(aplicada,aplicado)&select=id,user_id,empresa,cargo,stage_moved_at`,
+    `${SUPABASE_URL}/rest/v1/job_tracker?status=in.(aplicada,aplicado)` +
+      `&stage_moved_at=gte.${encodeURIComponent(desde)}&stage_moved_at=lte.${encodeURIComponent(ate)}` +
+      `&select=id,user_id,empresa,cargo,stage_moved_at&order=stage_moved_at.asc&limit=500`,
     { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
   );
   if (!res.ok) throw new Error(`getTrackerFollowupCards: PostgREST ${res.status} — ${await res.text()}`);
   const cards = await res.json();
 
-  return cards.filter(card => {
-    if (!card.stage_moved_at) return false;
-    const t = new Date(card.stage_moved_at).getTime();
-    return t >= minMs && t <= maxMs;
-  });
+  // A janela ja veio do banco; sobra descartar linha sem carimbo de estagio.
+  return cards.filter(card => !!card.stage_moved_at);
 }
 
 async function getUserEmail(userId) {

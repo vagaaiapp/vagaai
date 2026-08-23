@@ -13,7 +13,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <script defer src="/_vercel/insights/script.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VagaAI — Painel</title>
+<title>VagaAI — Início</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/loading-comet.css">
@@ -3275,7 +3275,7 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
     </svg>
 
     <div class="breadcrumb">
-      <strong id="bc-sec">Visão geral</strong>
+      <strong id="bc-sec">Início</strong>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       <span id="bc-sub">Sua busca de emprego</span>
     </div>
@@ -3918,7 +3918,7 @@ async function init() {
       // Cache do navegador pertence a uma conta só. Se a anterior era de
       // outra pessoa (computador compartilhado), apaga antes que qualquer
       // tela leia currículo, vaga ou foto de quem usou o aparelho antes.
-    if (window.VagaAISessao) VagaAISessao.adotar(currentUserId);
+    if (window.VagaAISessao) VagaAISessao.adotar(userData.user || session.user);
     if (window.VagaAIOnboarding) {
       // O retorno era descartado. Se claimAnalysis falhasse, a pessoa terminava
       // o funil, criava a conta e caía num painel vazio, sem explicação — como
@@ -4110,6 +4110,17 @@ function updatePBAPriority(score, cargo, empresa, subText) {
   if (empEl) empEl.textContent = empresa || '—';
 }
 
+/* Qual das quatro prioridades o card esta mostrando agora. Vive fora da funcao
+   porque o listener de clique e anexado uma vez e le o valor do render atual. */
+var _pbaPrio = '';
+
+/* Clique numa vaga do radar. So a faixa de score vai junto — nunca o titulo,
+   a empresa ou o link, que sao dados da busca de emprego de uma pessoa. E o
+   unico sinal que diz se o ranqueamento das vagas esta acertando. */
+function _trackVagaAlerta(faixa) {
+  if (window.vagaaiTrack) vagaaiTrack('alerta_vaga_clicada', { faixa_score: faixa || 'desconhecida' });
+}
+
 /* Devolve { analysisId, trackerId } da vaga escolhida — usado para impedir que
    qualquer outro bloco do painel fale da mesma oportunidade de novo. */
 function buildPBACard(analyses, tracked) {
@@ -4137,7 +4148,19 @@ function buildPBACard(analyses, tracked) {
   // Priority 4: any analysis
   var anyBest = analyses.filter(function(a){ return a.score > 0; }).sort(function(a,b){ return b.score - a.score; })[0] || null;
 
+  /* Qual das quatro prioridades a pessoa realmente aciona. O "Faca agora" e a
+     unica tela que decide o proximo passo por ela — se a fila esta na ordem
+     certa, e este evento que diz. Anexa uma vez so; o botao sobrevive aos
+     re-renders. */
+  if (btnPri && !btnPri._trkFacaAgora) {
+    btnPri._trkFacaAgora = true;
+    btnPri.addEventListener('click', function() {
+      if (window.vagaaiTrack) vagaaiTrack('faca_agora_clicado', { prioridade: _pbaPrio });
+    });
+  }
+
   if (interviewJob) {
+    _pbaPrio = 'entrevista_marcada';
     var a = analyses.find(function(x){ return x.id === interviewJob.analysis_id; });
     var cargo = interviewJob.cargo || (a && (a.result||{}).job_info ? a.result.job_info.cargo : '') || 'essa vaga';
     var emp = interviewJob.empresa || (a && (a.result||{}).job_info ? a.result.job_info.empresa : '') || '';
@@ -4150,6 +4173,7 @@ function buildPBACard(analyses, tracked) {
     updatePBAPriority(interviewJob.score || (a ? a.score : 0), cargo, emp || '', hasDate ? 'Entrevista marcada' : 'Em entrevista');
     return { analysisId: interviewJob.analysis_id || null, trackerId: interviewJob.id || null };
   } else if (followUpJob) {
+    _pbaPrio = 'followup_atrasado';
     var a = analyses.find(function(x){ return x.id === followUpJob.analysis_id; });
     var cargo = followUpJob.cargo || 'essa vaga';
     var emp = followUpJob.empresa || '';
@@ -4160,6 +4184,7 @@ function buildPBACard(analyses, tracked) {
     updatePBAPriority(followUpJob.score || (a ? a.score : 0), cargo, emp || '', followUpJob._days + ' dias sem retorno');
     return { analysisId: followUpJob.analysis_id || null, trackerId: followUpJob.id || null };
   } else if (untrackedBest || anyBest) {
+    _pbaPrio = untrackedBest ? 'analise_sem_candidatura' : 'melhor_analise';
     var alvo = untrackedBest || anyBest;
     var r = alvo.result || {};
     var ji = r.job_info || {};
@@ -4205,6 +4230,7 @@ function buildPBACard(analyses, tracked) {
     var tj = tracked.find(function(t){ return t.analysis_id === alvo.id; });
     return { analysisId: alvo.id, trackerId: tj ? tj.id : null };
   } else {
+    _pbaPrio = 'primeira_analise';
     if (titleEl) titleEl.textContent = 'Analise sua primeira vaga';
     if (descEl) descEl.textContent = 'Cole a descrição de uma vaga e seu currículo para receber diagnóstico completo de compatibilidade ATS.';
     if (btnPri) { btnPri.textContent = 'Analisar uma vaga →'; btnPri.onclick = function(){ switchDashTab('app'); }; }
@@ -4630,6 +4656,56 @@ function setFunilPeriod(dias) {
   buildFunilCard(window._lastAnalysesData || [], _kTracked || []);
 }
 
+/* Cruza o desfecho de cada candidatura com o score da análise que a originou.
+   O painel tinha os dois dados lado a lado desde sempre e nunca os ligou: o
+   conselho que aparecia no lugar disto era "priorize vagas com score acima de
+   70%" — uma regra de bolso igual para todo mundo, não um fato sobre esta
+   pessoa. Com histórico suficiente, o fato é melhor que a regra.
+
+   MIN_POR_FAIXA existe porque a comparação só significa alguma coisa com
+   amostra: com uma candidatura de cada lado, "100% contra 0%" é ruído
+   apresentado como descoberta. Abaixo do mínimo devolve null e o texto antigo
+   continua valendo. */
+var MIN_POR_FAIXA = 3;
+
+function insightDeAderencia(analyses, tracked) {
+  if (!Array.isArray(analyses) || !Array.isArray(tracked)) return null;
+  var porId = {};
+  analyses.forEach(function(a) { porId[a.id] = a; });
+
+  var alta = { enviadas: 0, avancaram: 0 };
+  var baixa = { enviadas: 0, avancaram: 0 };
+
+  tracked.forEach(function(t) {
+    var ns = normalizeStatus(t.status);
+    // Só conta o que a pessoa de fato enviou: 'quero_aplicar' e 'cv_pronto'
+    // ainda não foram a lugar nenhum e não têm desfecho para medir.
+    if (!ns || ns === 'quero_aplicar' || ns === 'cv_pronto' || ns === 'analisada') return;
+    var a = porId[t.analysis_id];
+    var score = (a && a.score) || t.score || 0;
+    if (!score) return;
+    var faixa = score >= 70 ? alta : baixa;
+    faixa.enviadas++;
+    if (ns === 'entrevista' || ns === 'oferta') faixa.avancaram++;
+  });
+
+  if (alta.enviadas < MIN_POR_FAIXA || baixa.enviadas < MIN_POR_FAIXA) return null;
+
+  var pctAlta = Math.round((alta.avancaram / alta.enviadas) * 100);
+  var pctBaixa = Math.round((baixa.avancaram / baixa.enviadas) * 100);
+
+  if (pctAlta > pctBaixa) {
+    return 'Nas suas candidaturas, ' + pctAlta + '% das vagas com aderência acima de 70% avançaram para entrevista, contra ' +
+      pctBaixa + '% das abaixo. Priorizar aderência alta tem funcionado para você.';
+  }
+  if (pctBaixa > pctAlta) {
+    return 'Curioso: ' + pctBaixa + '% das suas candidaturas com aderência abaixo de 70% avançaram, contra ' +
+      pctAlta + '% das de aderência alta. O score não está prevendo seu retorno — vale olhar o que essas vagas têm em comum.';
+  }
+  return 'Aderência alta e baixa avançaram na mesma proporção (' + pctAlta + '%) nas suas candidaturas. ' +
+    'O que decide o retorno, no seu caso, está fora do score.';
+}
+
 function buildFunilCard(analyses, tracked) {
   var pipe = document.getElementById('funilPipe');
   var insightEl = document.getElementById('funilInsight');
@@ -4761,6 +4837,12 @@ function buildFunilCard(analyses, tracked) {
       } else {
         txt = 'Priorize vagas com score acima de 70% para maximizar suas chances de retorno.';
       }
+      /* Calculado sobre TODO o histórico, não sobre a janela: taxa de retorno
+         precisa de amostra, e recortar em 30 dias joga fora justamente o que
+         dá significado ao número. Quando existe, ganha do texto acima — um
+         fato sobre esta pessoa vale mais que uma regra de bolso. */
+      var pessoal = insightDeAderencia(analyses, tracked);
+      if (pessoal) txt = pessoal;
     } else if (analyses.length >= 2 && total === 0 && _funilDias > 0) {
       txt = 'Suas análises são mais antigas que essa janela. Troque para “Tudo” ou analise novas vagas.';
     }
@@ -5608,7 +5690,7 @@ function renderCandDetail(item) {
   if (item.analysisData) {
     // Quando em entrevista, "Treinar" é o primário; "Ver análise" vira secundário
     acts += '<button class="cd-btn ' + (item.status === 'entrevista' ? '' : 'cd-cta') + '" onclick="openSavedAnalysis(\''+escAttr(item.analysisData.id)+'\')">Ver análise</button>';
-    acts += '<button class="cd-btn" data-url="/carta?analysis_id='+encodeURIComponent(item.analysisData.id)+'" onclick="switchDashTab(\'carta\',this.dataset.url)">Carta para vaga</button>';
+    acts += '<button class="cd-btn" data-url="/carta?analysis_id='+encodeURIComponent(item.analysisData.id)+'" onclick="switchDashTab(\'carta\',this.dataset.url)">Carta de apresentação</button>';
     if (r.cv_otimizado) acts += '<button class="cd-btn" onclick="openSavedCv(\''+escAttr(item.analysisData.id)+'\')">Abrir currículo</button>';
   }
   if (!item.analysisData) {
@@ -5931,7 +6013,11 @@ async function handleStatusChange(analysisId, empresa, cargo, score, newStatus) 
         headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=representation' },
         body: JSON.stringify(body)
       });
-      if (res.ok) { await loadKanban(); showToast('Candidatura adicionada!'); }
+      if (res.ok) {
+        await loadKanban();
+        showToast('Candidatura adicionada!');
+        trackCandidatura('candidatura_registrada', { origem: 'analise', status: normalizeStatus(newStatus), score: score });
+      }
       else showToast('Erro ao salvar', 'error');
     } catch(e) { showToast('Erro ao salvar', 'error'); }
   }
@@ -5963,9 +6049,29 @@ async function handleStatusUpdate(jobId, newStatus) {
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json' },
       body: JSON.stringify(patch)
     });
-    if (res.ok) { await loadKanban(); showToast('Status atualizado!'); }
+    if (res.ok) {
+      await loadKanban();
+      showToast('Status atualizado!');
+      /* Ponto unico por onde passa toda mudanca de estagio. E o funil real da
+         candidatura — sem ele nao da pra dizer onde as pessoas param. */
+      trackCandidatura('candidatura_movida', { estagio: canonical });
+    }
     else showToast('Erro ao atualizar status', 'error');
   } catch(e) { showToast('Erro ao atualizar status', 'error'); }
+}
+
+/* Um so lugar para os eventos de candidatura: os cinco pontos de escrita em
+   job_tracker (analise, alerta, formulario manual, edicao) chamam daqui, entao
+   um evento novo nao depende de lembrar de cinco call sites. Nada de conteudo
+   vai junto — vagaaiTrack ja filtra, e aqui so entram categoria e faixa. */
+function trackCandidatura(nome, props) {
+  if (!window.vagaaiTrack) return;
+  var dados = props || {};
+  if (typeof dados.score === 'number') {
+    dados.faixa_score = dados.score >= 75 ? 'alta' : dados.score >= 50 ? 'media' : 'baixa';
+    delete dados.score;
+  }
+  vagaaiTrack(nome, dados);
 }
 
 function renderTrackedJobs() {
@@ -6782,6 +6888,7 @@ async function saveRecommendedJob(job, hash) {
       showToast('Vaga salva em Candidaturas!');
       _alLive('Vaga salva em Candidaturas com status Quero aplicar.');
       await loadKanban();
+      trackCandidatura('candidatura_registrada', { origem: 'alerta', status: 'quero_aplicar', score: job.score || 0 });
     } else {
       showToast('Erro ao salvar vaga.', 'error');
     }
@@ -6910,7 +7017,12 @@ function renderAlertJobsGrid() {
     var scoreClass = score >= 70 ? ' high' : '';
     var analyzeUrl = buildAlertAnalyzeUrl(j, '');
     var matchTitle = score >= 80 ? 'Alta compatibilidade' : score >= 60 ? 'Boa compatibilidade' : 'Compatibilidade parcial';
-    var matchCopy = score >= 80
+    /* Quando o re-ranking por IA rodou, ele diz o que casou nesta vaga com
+       este currículo. É a resposta concreta para "por que essa vaga apareceu
+       para mim" — a frase por faixa de score abaixo é o fallback genérico de
+       quando não há motivo. */
+    var matchCopy = j._motivo ? j._motivo
+      : score >= 80
       ? 'Seus critérios principais têm forte alinhamento com esta oportunidade.'
       : score >= 60
         ? 'A oportunidade combina com uma parte importante do perfil monitorado.'
@@ -6932,11 +7044,11 @@ function renderAlertJobsGrid() {
     var linkSafe = safeExternalUrl(j.link);
     html += '<div class="al-job-card">' +
       '<div class="al-job-opportunity"><div class="al-job-match' + scoreClass + '">' + score + '%</div><div><div class="al-job-title">' + _esc(j.title || '') + '</div><div class="al-job-company">' + _esc(company) + '</div><span class="al-job-origin">' + _esc(seenLabel) + ' · origem: ' + _esc(originLabel) + '</span></div></div>' +
-      '<div class="al-job-reason"><strong>' + matchTitle + '</strong><span>' + matchCopy + '</span><div class="al-job-reason-tags">' + reasonTags + '</div></div>' +
+      '<div class="al-job-reason"><strong>' + matchTitle + '</strong><span>' + _esc(matchCopy) + '</span><div class="al-job-reason-tags">' + reasonTags + '</div></div>' +
       '<div class="al-job-conditions"><strong>' + _esc(j.location || 'Brasil') + '</strong><span>' + (j.salary ? _esc(j.salary) : 'Salário não informado') + '</span></div>' +
       '<div class="al-job-actions">' +
         '<button class="al-jact-btn analyze" onclick="openAnalyzerInDashboard(this.dataset.url)" data-url="' + _esc(analyzeUrl) + '">Analisar</button>' +
-        (linkSafe ? '<a class="al-jact-btn" href="' + _esc(linkSafe) + '" target="_blank" rel="noopener" style="text-decoration:none">Ver vaga</a>' : '') +
+        (linkSafe ? '<a class="al-jact-btn" href="' + _esc(linkSafe) + '" target="_blank" rel="noopener" style="text-decoration:none" data-faixa="' + (score >= 75 ? 'alta' : score >= 50 ? 'media' : 'baixa') + '" onclick="_trackVagaAlerta(this.dataset.faixa)">Ver vaga</a>' : '') +
         '<button class="al-jact-btn al-jact-icon" aria-label="Excluir recomendação" title="Excluir vaga" data-link="' + _esc(j.link || '') + '" onclick="_dismissJobFromCache(this.dataset.link)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>' +
       '</div>' +
     '</div>';
@@ -7118,7 +7230,10 @@ async function _saveJobFromCache(job) {
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
       body: JSON.stringify(body)
     });
-    if (res.ok || res.status === 201 || res.status === 204) showToast('Vaga salva em Candidaturas!');
+    if (res.ok || res.status === 201 || res.status === 204) {
+      showToast('Vaga salva em Candidaturas!');
+      trackCandidatura('candidatura_registrada', { origem: 'alerta', status: 'quero_aplicar', score: job._score || job.score || 0 });
+    }
     else showToast('Erro ao salvar vaga.', 'error');
   } catch(e) { showToast('Erro ao salvar vaga.', 'error'); }
 }
@@ -7735,6 +7850,7 @@ async function saveTracker(btn) {
       btn.parentElement.parentElement.remove();
       showToast('Candidatura rastreada!');
       if (typeof loadKanban === 'function') await loadKanban();
+      trackCandidatura('candidatura_registrada', { origem: 'manual', status: body.status, score: body.score });
     } else {
       showToast('Erro ao salvar a candidatura.', 'error');
       btn.disabled = false;
@@ -7863,7 +7979,7 @@ function switchDashTab(tab, href) {
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
   setDashboardNavActive(tab);
-  var labels = { painel:'Visão geral', vagas:'Candidaturas', entrevistas:'Entrevistas', alertas:'Alertas', plano:'Conta e Plano' };
+  var labels = { painel:'Início', vagas:'Candidaturas', entrevistas:'Treino de entrevista', alertas:'Vagas para você', plano:'Conta e plano' };
   var subs   = { painel:'Sua busca de emprego', vagas:'Rastreamento de candidaturas', entrevistas:'Simulação e preparo', alertas:'Configurações de alertas', plano:'Assinatura e conta' };
   var bcSec = document.getElementById('bc-sec');
   var bcSub = document.getElementById('bc-sub');

@@ -4,6 +4,7 @@
 
 import chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer-core';
+import { checkAndCountLimit } from '../lib/ratelimit.js';
 
 export const config = { maxDuration: 30 };
 
@@ -21,18 +22,14 @@ async function getUserFromToken(token) {
   } catch { return null; }
 }
 
-// Rate limit por usuário (em memória) — evita abuso do Chromium headless,
-// que é caro em compute. Combina com a autenticação obrigatória abaixo.
-const _userHits = new Map();
+// Rate limit por usuário — evita abuso do Chromium headless, que é o mais caro
+// em compute de todo o projeto. Persistente (lib/ratelimit.js): o Map em
+// memória valia por instância serverless, então o teto real era o configurado
+// vezes o número de instâncias quentes, e zerava a cada cold start.
 const PDF_USER_LIMIT = 15;                 // máx 15 PDFs/hora por usuário
 const PDF_USER_WINDOW_MS = 60 * 60 * 1000;
-function checkUserRateLimit(userId) {
-  const now = Date.now();
-  const entry = _userHits.get(userId) || { count: 0, resetAt: now + PDF_USER_WINDOW_MS };
-  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + PDF_USER_WINDOW_MS; }
-  entry.count++;
-  _userHits.set(userId, entry);
-  return entry.count <= PDF_USER_LIMIT;
+async function checkUserRateLimit(userId) {
+  return checkAndCountLimit({ key: `u:${userId}:pdf`, limit: PDF_USER_LIMIT, windowMs: PDF_USER_WINDOW_MS });
 }
 
 export default async function handler(req, res) {
@@ -47,7 +44,7 @@ export default async function handler(req, res) {
   if (!token) return res.status(401).json({ error: 'Autenticação necessária.' });
   const user = await getUserFromToken(token);
   if (!user?.id) return res.status(401).json({ error: 'Token inválido. Faça login novamente.' });
-  if (!checkUserRateLimit(user.id)) {
+  if (!(await checkUserRateLimit(user.id))) {
     return res.status(429).json({ error: 'Limite de geração de PDF atingido. Aguarde antes de tentar novamente.' });
   }
 
