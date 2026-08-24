@@ -50,8 +50,19 @@ function visivel(fonte) {
 }
 
 /* Palavra em português: tem acento ou é palavra funcional comum. É o que
-   separa prosa de seletor CSS, caminho e nome de propriedade. */
+   separa prosa de seletor CSS, caminho e nome de propriedade.
+
+   Só isso ainda deixava passar rótulo curto sem acento e sem palavra
+   funcional: "jornada completa" sobreviveu a duas varreduras por causa disso.
+   Por isso `pareceFrase` aceita também duas ou mais palavras comuns seguidas,
+   desde que não pareçam código. */
 const PT = /[áàâãéêíóôõúüçÁÀÂÃÉÊÍÓÔÕÚÜÇ]|\b(?:de|da|do|para|com|seu|sua|que|uma|não|você|em|na|no)\b/i;
+
+function pareceFrase(t) {
+  if (PT.test(t)) return true;
+  const palavras = t.split(/\s+/).filter((p) => /^[a-zà-ú]{3,}$/i.test(p));
+  return palavras.length >= 2;
+}
 
 /* Só texto que a pessoa lê. A primeira versão deste extrator olhava apenas
    texto entre tags e `textContent = 'literal'`, e por isso deixou passar os
@@ -68,12 +79,12 @@ function frases(fonte) {
 
   for (const m of src.matchAll(/>([^<>{}]{4,240})</g)) {
     const t = m[1].replace(/\s+/g, ' ').trim();
-    if (t && PT.test(t) && !/[{};=]|function|var /.test(t)) out.push(t);
+    if (t && pareceFrase(t) && !/[{};=]|function|var /.test(t)) out.push(t);
   }
 
   for (const m of src.matchAll(/'([^'\\\n]{4,240})'|"([^"\\\n]{4,240})"/g)) {
     const t = (m[1] || m[2] || '').trim();
-    if (!t || !PT.test(t)) continue;
+    if (!t || !pareceFrase(t)) continue;
     if (/^[\w.#/:@-]+$/.test(t)) continue;      // seletor, caminho, classe
     if (/^(?:https?:|\/|\.)/.test(t)) continue;
     out.push(t);

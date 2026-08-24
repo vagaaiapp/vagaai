@@ -4724,7 +4724,7 @@ function renderOppList() {
     var r = a.result || {};
     var ji = r.job_info || {};
     var cargo = ji.cargo || (a.job_excerpt ? a.job_excerpt.slice(0,32) : 'Análise');
-    var empresa = ji.empresa || 'Empresa';
+    var empresa = ji.empresa || 'Empresa não informada';
     var s = a.score || 0;
     var sbg = s >= 70 ? 'var(--s-grn-bg)' : s >= 40 ? 'var(--s-amb-bg)' : 'var(--s-red-bg)';
     var sclr = s >= 70 ? 'var(--s-grn)' : s >= 40 ? 'var(--s-amb)' : 'var(--s-red)';
@@ -5123,7 +5123,7 @@ function mergeApplications() {
     items.push({
       id: principal.id, trackerId: tj ? tj.id : null,
       cargo: ji.cargo || (principal.job_excerpt ? principal.job_excerpt.slice(0,50) : 'Análise'),
-      empresa: ji.empresa || 'Empresa',
+      empresa: ji.empresa || 'Empresa não informada',
       // Score da analise mais recente: e o que vale depois de mexer no curriculo.
       score: analises[0].score || 0, status: status,
       daysSince: Math.max(0, daysSince), updatedAt: updatedAt, createdAt: principal.created_at,
@@ -5497,7 +5497,7 @@ function renderInterviewHub() {
       '<div class="int-score" style="background:' + sbg + ';color:' + sclr + '">' + score + '%</div>' +
       '<div class="int-job">' +
         '<div class="int-cargo">' + escHtml(item.cargo) + '</div>' +
-        '<div class="int-empresa">' + escHtml(item.empresa || 'Empresa') + '</div>' +
+        '<div class="int-empresa">' + escHtml(item.empresa || 'Empresa não informada') + '</div>' +
         '<div class="int-meta-line">' + detail.map(escHtml).join(' · ') + '</div>' +
       '</div>' +
       '<div class="int-status"><strong>8 perguntas personalizadas</strong><span>Texto ou áudio, com orientação após cada resposta</span></div>' +
@@ -5571,7 +5571,7 @@ function renderCandMetrics(all) {
       score.style.color = !focus.analysisData ? '#b8cec0' : scoreNum >= 70 ? '#197a4a' : scoreNum >= 40 ? '#bd7a12' : '#d64c52';
     }
     if (cargo) cargo.textContent = focus.cargo || 'Oportunidade';
-    if (meta) meta.textContent = (focus.empresa || 'Empresa') + (focus.daysSince != null ? ' · atualizada há ' + focus.daysSince + ' dia' + (focus.daysSince === 1 ? '' : 's') : '');
+    if (meta) meta.textContent = (focus.empresa || 'Empresa não informada') + (focus.daysSince != null ? ' · atualizada há ' + focus.daysSince + ' dia' + (focus.daysSince === 1 ? '' : 's') : '');
   }
   var secondary = document.getElementById('cpSecondary');
   if (secondary) {
@@ -7178,7 +7178,7 @@ function renderAlertJobsGrid() {
 
   var html = '<div class="al-jobs-grid">';
   pageJobs.forEach(function(j) {
-    var company = String(j.company || 'Empresa');
+    var company = String(j.company || 'Empresa não informada');
     var score = j._score || 0;
     var scoreClass = score >= 70 ? ' high' : '';
     var analyzeUrl = buildAlertAnalyzeUrl(j, '');
@@ -8567,7 +8567,7 @@ function renderPlanTiles(sub) {
   }
   _planxSet('planxNextTitle', nextTitle); _planxSet('planxNextCopy', nextCopy); _planxSet('planxProofA', proofA); _planxSet('planxProofB', proofB);
   _planxSet('planxProofALabel', plan === 'starter' ? 'análises usadas' : 'análises feitas');
-  _planxSet('planxProofBLabel', plan === 'starter' ? 'análises restantes' : plan === 'free' ? 'jornada completa' : 'vagas acompanhadas');
+  _planxSet('planxProofBLabel', plan === 'starter' ? 'análises restantes' : plan === 'free' ? 'caminho completo' : 'vagas acompanhadas');
   var nextBtn = document.getElementById('planxNextBtn'); if (nextBtn) { nextBtn.textContent = nextBtnText; nextBtn.disabled = false; nextBtn.onclick = nextAction; }
 
   var resources = [
