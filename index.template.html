@@ -1016,12 +1016,12 @@
     <section class="detail"><div class="wrap detail-row">
       <div class="detail-text reveal">
         <span class="detail-tag">Antes de se candidatar</span>
-        <h2>Entenda a oportunidade antes de enviar seu currículo.</h2>
-        <p>Cole a vaga e o currículo. Em segundos, você recebe:</p>
+        <h2>Descubra o que a vaga pede e o que você já tem.</h2>
+        <p>Cole a vaga e o seu currículo. Em segundos você recebe:</p>
         <div class="capability-list">
-          <span>Nota e termos que faltam para os filtros automáticos</span>
-          <span>Currículo direcionado, pronto para revisar</span>
-          <span>Editor por seções: importe PDF ou Word, ou crie do zero</span>
+          <span>A nota de compatibilidade, explicada critério por critério</span>
+          <span>Os termos que a vaga pede e não aparecem no seu currículo</span>
+          <span>Um currículo direcionado para essa vaga, pronto para revisar</span>
         </div>
         <div class="detail-callout">Sem inventar experiências: a VagaAI fortalece o que já existe. Você revisa tudo antes de usar.</div>
         <a class="btn primary journey-trigger" href="/onboarding/vaga/1?entry=cv">Analisar minha vaga grátis</a>
@@ -1055,13 +1055,19 @@
     <section class="detail"><div class="wrap detail-row">
       <div class="detail-text reveal">
         <span class="detail-tag">Oportunidades para o seu perfil</span>
-        <h2>Pare de procurar em todos os lugares.</h2>
-        <p>Configure seus critérios uma vez. A VagaAI seleciona as oportunidades e mostra quais merecem atenção primeiro.</p>
+        <h2>As vagas chegam até você.</h2>
+        <p>Você diz o cargo, a cidade e o formato que procura. A VagaAI busca nos portais e mostra primeiro as que mais combinam com o seu perfil.</p>
         <div class="capability-list">
-          <span>Vagas de Gupy, LinkedIn, Indeed e outros portais, reunidas num só lugar</span>
-          <span>Cargo, localização e formato de trabalho</span>
-          <span>Vagas por e-mail e no painel</span>
+          <span>Vagas de Gupy, LinkedIn, Indeed e outros portais num só lugar</span>
+          <span>Filtros de cargo, cidade e formato de trabalho</span>
+          <span>Uma nota de compatibilidade em cada vaga, antes de você abrir</span>
         </div>
+        <!-- Sem `journey-trigger` de proposito: essa classe faz preventDefault e
+           abre o modal de jornada, ignorando o href. Os outros CTAs podem viver
+           com isso porque o modal expressa o destino deles. Este nao: alertas so
+           nascem no funil de curriculo com `goal=alerts`, que o modal nao oferece.
+           Como link direto ele ainda e rastreado pelo handler de a[href^="/onboarding/"]. -->
+        <a class="btn primary" href="/onboarding/curriculo/1?mode=cv_no_job&amp;goal=alerts">Receber vagas do meu perfil</a>
       </div>
       <div class="dmock reveal">
         <div class="dmock-window">
@@ -1078,13 +1084,13 @@
               <div class="dmock-banner"><span><i></i>3 oportunidades compatíveis</span><em>Hoje, 08:17</em></div>
               <div class="dmock-job"><b class="a">71</b><div><b>SEO Manager</b><span>São Paulo · Remoto · CLT</span></div><em>Analisar</em></div>
               <div class="dmock-job"><b class="g">82</b><div><b>Head de Marketing</b><span>Remoto · Salário informado</span></div><em>Ver vaga</em></div>
-              <div class="dmock-job best"><b class="g">90</b><div><b>Product Marketing Manager</b><span>Brasil · Remoto · CLT</span></div><em>★ Melhor match</em></div>
-              <div class="dmock-stats"><div><b>165</b><span>oportunidades</span></div><div><b>14</b><span>alertas enviados</span></div><div><b>70%</b><span>precisão</span></div></div>
+              <div class="dmock-job best"><b class="g">90</b><div><b>Product Marketing Manager</b><span>Brasil · Remoto · CLT</span></div><em>★ Melhor opção</em></div>
+              <div class="dmock-stats"><div><b>165</b><span>oportunidades</span></div><div><b>14</b><span>alertas enviados</span></div><div><b>19</b><span>fontes</span></div></div>
             </div>
           </div>
         </div>
         <div class="dmock-float tr"><i>✉</i><div><b>Alertas semanais</b><span>Hoje, 08:17</span></div></div>
-        <div class="dmock-float bl"><i>★</i><div><b>90 de match</b><span>melhor vaga da semana</span></div></div>
+        <div class="dmock-float bl"><i>★</i><div><b>90 de compatibilidade</b><span>melhor vaga da semana</span></div></div>
       </div>
     </div></section>
 
@@ -1093,13 +1099,13 @@
       <div class="detail-text reveal">
         <span class="detail-tag">Depois de aplicar</span>
         <h2>Nenhuma candidatura perdida no caminho.</h2>
-        <p>Da intenção à oferta: cada candidatura com status, datas e próximo passo em um painel único, com o contexto da vaga usado para preparar as próximas etapas.</p>
+        <p>Cada vaga que você enviou fica com status, data e próximo passo no mesmo painel. A VagaAI usa o que já sabe da vaga para preparar as etapas seguintes.</p>
         <div class="capability-list">
-          <span>Status de quero aplicar até oferta</span>
-          <span>Carta de apresentação conectada aos requisitos da vaga</span>
-          <span>Simulador de entrevista com perguntas por cargo e empresa</span>
+          <span>Do "quero aplicar" até a oferta, tudo em um lugar</span>
+          <span>Carta de apresentação ligada aos requisitos daquela vaga</span>
+          <span>Treino de entrevista com perguntas do cargo e da empresa</span>
         </div>
-        <a class="btn primary journey-trigger" href="/onboarding/vaga/1?entry=cv">Organizar minhas candidaturas</a>
+        <a class="btn primary journey-trigger" href="/onboarding/vaga/1?entry=cv">Analisar a primeira vaga</a>
       </div>
       <div class="dmock reveal">
         <div class="dmock-window">
@@ -1113,9 +1119,9 @@
             </div>
             <div class="dmock-main">
               <div class="dmock-crumb">Painel <b>› Candidaturas</b></div>
-              <div class="dmock-track"><div><b>Analista de Marketing</b><span>Empresa X · aplicada há 5 dias</span></div><i class="s1">Enviada</i></div>
+              <div class="dmock-track"><div><b>Analista de Marketing</b><span>Empresa X · salva ontem</span></div><i class="s1">Quero aplicar</i></div>
               <div class="dmock-track"><div><b>Coordenador de Growth</b><span>Empresa Y · quinta, 10h</span></div><i class="s2">Entrevista</i></div>
-              <div class="dmock-track"><div><b>Analista de CRM</b><span>Empresa Z · aguardando resposta</span></div><i class="s3">Oferta</i></div>
+              <div class="dmock-track"><div><b>Analista de CRM</b><span>Empresa Z · proposta recebida</span></div><i class="s3">Oferta</i></div>
               <div class="dmock-note">✓ Próximo passo: preparar a entrevista de quinta</div>
             </div>
           </div>
