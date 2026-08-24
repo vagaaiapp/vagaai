@@ -77,11 +77,21 @@ describe('blocos de recurso da LP', () => {
     const bloco = lp.match(/Depois de aplicar[\s\S]*?<\/div>\s*<a class="btn/);
     assert.ok(bloco, 'bloco de candidaturas sumiu');
     assert.match(bloco[0], /Treino de entrevista/);
-    assert.doesNotMatch(
-      bloco[0], /Simulador de entrevista/,
-      'o produto chama de "Treino de entrevista" no painel, no /app e no /entrevista'
-    );
   });
+
+  /* O nome tem que bater em toda superfície que a pessoa lê antes de chegar
+     ao produto, senão ela clica esperando simulador e encontra treino. A
+     tabela de planos e o e-mail de onboarding ficaram para trás quando o
+     resto foi renomeado. */
+  for (const arquivo of ['index.template.html', 'api/onboarding-emails.js']) {
+    it(`${arquivo} não fala em "simulador"`, () => {
+      const achou = visivel(ler(arquivo)).match(/[Ss]imulador de [Ee]ntrevista/);
+      assert.equal(
+        achou, null,
+        `o produto se chama "Treino de entrevista" (42 ocorrências no painel, /app e /entrevista)`
+      );
+    });
+  }
 
   it('cada bloco de recurso termina com uma saída', () => {
     // O de alertas ficou sem CTA por muito tempo, sendo o produto recorrente.
