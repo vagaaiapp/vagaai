@@ -342,7 +342,7 @@ function profileStoryTitle(d) {
 function profileStoryText(d) {
   var summary = (d.resumo_profissional || '').trim();
   if (summary) return summary;
-  return 'Organize objetivo, trajetória e competências para que o mercado entenda rapidamente o valor do seu perfil.';
+  return 'Organize objetivo, experiência e competências para que o mercado entenda rapidamente o valor do seu perfil.';
 }
 
 function profileSkillsHtml(d) {
@@ -451,7 +451,7 @@ function render() {
         '<details class="master-more"><summary>Mais opções ···</summary><div class="master-more-menu"><button onclick="document.getElementById(\'uploadInput\').click()">Substituir arquivo</button><button class="profile-danger" onclick="deleteBaseCv()">Excluir meu currículo</button></div></details></div>' +
       '<div class="master-save-state" id="masterSaveState"><div class="save-status" id="saveStatus"></div><button class="save-btn" id="saveBtn" onclick="saveProfile()">Salvar meu currículo</button></div>' +
     '</div>' +
-    '<div class="master-photo" role="img" aria-label="Ambiente profissional com um currículo impresso sobre uma mesa de trabalho"><div class="master-photo-copy"><span>Seu ativo profissional</span><strong>Um documento mestre para cada próxima oportunidade.</strong><small>A base permanece neutra; as adaptações vivem em versões separadas.</small></div></div>' +
+    '<div class="master-photo" role="img" aria-label="Ambiente profissional com um currículo impresso sobre uma mesa de trabalho"><div class="master-photo-copy"><span>O que você já tem</span><strong>Um documento mestre para cada próxima oportunidade.</strong><small>A base permanece neutra; as adaptações vivem em versões separadas.</small></div></div>' +
     '<div class="master-usage"><div class="master-usage-item">' + ICON.doc + '<div><strong>Fonte única do seu perfil</strong><span>As versões por vaga nunca substituem este documento.</span></div></div>' +
       '<div class="master-usage-item">' + ICON.target + '<div><strong id="analysisUsageMetric">Carregando análises</strong><span>Leitura usada para comparar seu perfil.</span></div></div>' +
       '<div class="master-usage-item">' + ICON.briefcase + '<div><strong id="versionUsageMetric">Carregando versões</strong><span>Cópias direcionadas e independentes.</span></div></div></div>' +
@@ -941,7 +941,7 @@ function secHabilidades(d) {
 
 function secResumo(d) {
   return '<div class="sec-card">' + secHead('doc','Resumo das qualificações','editResumo()') +
-    (d.resumo_profissional ? '<p style="font-size:13.5px">' + esc(d.resumo_profissional) + '</p>' : '<div class="sec-empty">Um resumo de 3-4 linhas sobre sua trajetória.</div>') +
+    (d.resumo_profissional ? '<p style="font-size:13.5px">' + esc(d.resumo_profissional) + '</p>' : '<div class="sec-empty">Um resumo de 3 a 4 linhas sobre sua experiência.</div>') +
     '</div>';
 }
 
@@ -997,7 +997,7 @@ function saveObjetivo() { saveAndClose(function(){ _cvData.titulo_profissional =
 function editResumo() {
   openModal(
     '<h3>Resumo das qualificações</h3>' +
-    '<div class="f-row"><label>3-4 linhas sobre sua trajetória</label><textarea id="mResumo" rows="5">' + esc(_cvData.resumo_profissional) + '</textarea>' +
+    '<div class="f-row"><label>3 a 4 linhas sobre sua experiência</label><textarea id="mResumo" rows="5">' + esc(_cvData.resumo_profissional) + '</textarea>' +
     cvVoiceBlock('mResumo', 'resumo', null, 'Sem ideia do que escrever? Fale por 30s sobre sua carreira e a IA monta o resumo.') + '</div>' +
     '<div class="modal-actions"><button class="btn btn-primary" onclick="saveResumo()">Salvar</button><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button></div>'
   );
@@ -1274,7 +1274,7 @@ async function loadGapPanel() {
       'Salve seu currículo (crie uma conta grátis) e, conforme você for analisando vagas, esse painel vai mostrando o que o mercado pede e seu currículo ainda não tem.',
       '', ''
     );
-    setProfileNext('Salve o currículo para começar a acompanhar a aderência do seu perfil às vagas.', 'Salvar currículo', 'save');
+    setProfileNext('Salve o currículo para começar a acompanhar a compatibilidade do seu perfil com as vagas.', 'Salvar currículo', 'save');
     return;
   }
   try {

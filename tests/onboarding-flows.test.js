@@ -588,7 +588,7 @@ describe('Onboarding adaptativo', () => {
   it('oferece um diagnóstico completo sem escolhas sobrepostas', () => {
     // O checklist de valor continua existindo, mas como contexto da etapa 2 —
     // não mais atrás de um clique de confirmação na etapa 1.
-    assert.match(vagaHtml, /O diagnóstico inclui:/);
+    assert.match(vagaHtml, /A análise inclui:/);
     assert.match(vagaHtml, /state\.intent = 'complete'/);
     // Proteção original: não voltar a ter perguntas de intenção sobrepostas.
     assert.doesNotMatch(vagaHtml, /Qual seu maior receio com essa vaga/);

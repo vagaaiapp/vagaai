@@ -777,7 +777,7 @@ describe('Carta de apresentação usa a análise', () => {
     // depender disso.
     const f = front();
     assert.match(f, /lac\.length <= 60/, 'sem guarda de tamanho no chip');
-    assert.match(f, /Enderecou a principal lacuna/, 'sem fallback para texto longo');
+    assert.match(f, /Cobriu o principal ponto que faltava/, 'sem fallback para texto longo');
     assert.match(api(), /no maximo 4 palavras/, 'prompt nao restringe o campo');
   });
 

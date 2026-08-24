@@ -35,9 +35,9 @@ test('currículo principal vira caminho padrão e mantém alternativas acessíve
 });
 
 test('apoio lateral não apresenta score fictício antes da análise', () => {
-  assert.match(app, /O número de aderência só aparece depois da análise/);
+  assert.match(app, /O número de compatibilidade só aparece depois da análise/);
   assert.doesNotMatch(app, /analysis-ring-label">74/);
-  assert.match(app, /Aderência à vaga/);
+  assert.match(app, /Compatibilidade com a vaga/);
   assert.match(app, /Currículo direcionado/);
 });
 

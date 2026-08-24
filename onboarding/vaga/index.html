@@ -13,7 +13,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VagaAI | Analisar minha vaga grátis</title>
-<meta name="description" content="Descubra em 2 minutos se seu currículo passa no ATS dessa vaga. Grátis, sem cadastro para ver o diagnóstico.">
+<meta name="description" content="Descubra em 2 minutos se seu currículo passa pelos filtros dessa vaga. Grátis, sem cadastro para ver a análise.">
 <!-- Etapas do funil não devem competir com /app nem gerar conteúdo duplicado -->
 <meta name="robots" content="noindex, follow">
 <link rel="canonical" href="https://www.vagaai.app.br/app">
@@ -385,13 +385,13 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
          de confirmação ("Começar diagnóstico gratuito"). Virou contexto aqui
          para que responder a pergunta da etapa 1 já leve direto ao trabalho. -->
     <div class="ob-diagnostic">
-      <div class="ob-diagnostic-title">O diagnóstico inclui:</div>
+      <div class="ob-diagnostic-title">A análise inclui:</div>
       <ul class="ob-diagnostic-list">
-        <li><span class="ob-diagnostic-check">✓</span><span>Sua aderência à oportunidade e se vale a pena avançar</span></li>
-        <li><span class="ob-diagnostic-check">✓</span><span>Compatibilidade com ATS e palavras-chave ausentes</span></li>
-        <li><span class="ob-diagnostic-check">✓</span><span>Requisitos atendidos, lacunas e pontos fortes do seu perfil</span></li>
+        <li><span class="ob-diagnostic-check">✓</span><span>Sua compatibilidade com a vaga e se vale a pena avançar</span></li>
+        <li><span class="ob-diagnostic-check">✓</span><span>Compatibilidade com os filtros e termos que faltam</span></li>
+        <li><span class="ob-diagnostic-check">✓</span><span>Requisitos atendidos, o que falta e pontos fortes do seu perfil</span></li>
         <li><span class="ob-diagnostic-check">✓</span><span>O que destacar e quais ajustes priorizar no currículo</span></li>
-        <li><span class="ob-diagnostic-check">✓</span><span>Projeção de aderência após as melhorias recomendadas</span></li>
+        <li><span class="ob-diagnostic-check">✓</span><span>Compatibilidade estimada depois das melhorias recomendadas</span></li>
       </ul>
     </div>
 
@@ -475,7 +475,7 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
         <label for="qSkills">Competências <span class="ob-req">*</span> <small>(3 a 5, separadas por vírgula)</small></label>
         <input type="text" id="qSkills" placeholder="Excel, atendimento, organização" oninput="onQuickCvInput()">
       </div>
-      <div class="ob-req-hint">* campos obrigatórios para gerar seu diagnóstico</div>
+      <div class="ob-req-hint">* campos obrigatórios para gerar sua análise</div>
       <div class="ob-note"><span>✨</span><span>Escreva de forma simples. A IA organiza o conteúdo e direciona o currículo para a vaga.</span></div>
       <div class="ob-err" id="quickCvErr" style="display:none"></div>
       <button class="ob-btn" id="quickCvNext" onclick="generateDirectedCv()" disabled>Montar currículo e analisar →</button>
@@ -504,7 +504,7 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
   <!-- ETAPA 5 — Resultado -->
   <section class="ob-step" id="step5">
     <div class="ob-result-hero">
-      <div class="ob-eyebrow">Seu diagnóstico</div>
+      <div class="ob-eyebrow">Sua análise</div>
       <div class="ob-score-ring-wrap">
         <svg class="ob-score-ring" viewBox="0 0 160 160" aria-hidden="true">
           <circle class="ob-score-ring-bg" cx="80" cy="80" r="70"/>
@@ -519,7 +519,7 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
     </div>
 
     <div class="ob-projection" id="projectionBlock" style="display:none">
-      <div class="ob-projection-label">Aderência projetada após otimização</div>
+      <div class="ob-projection-label">Compatibilidade estimada depois dos ajustes</div>
       <div class="ob-projection-values">
         <span class="ob-projection-before" id="projectionBefore">-</span>
         <span class="ob-projection-arrow">→</span>
@@ -575,10 +575,10 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
 
     <div class="ob-gate">
       <div class="ob-gate-t">Esse foi o resumo. Quer a análise completa?</div>
-      <div class="ob-gate-d">Criar conta é grátis e leva 20 segundos. Seu diagnóstico fica salvo.</div>
+      <div class="ob-gate-d">Criar conta é grátis e leva 20 segundos. Sua análise fica salva.</div>
       <div class="ob-locked">
         <div class="ob-locked-i"><span>📄</span><span>Currículo otimizado para essa vaga, pronto pra baixar</span></div>
-        <div class="ob-locked-i"><span>🏢</span><span>Briefing da empresa: o que valorizam e o que buscam</span></div>
+        <div class="ob-locked-i"><span>🏢</span><span>Resumo da empresa: o que valorizam e o que buscam</span></div>
         <div class="ob-locked-i"><span>🔑</span><span>Todas as palavras-chave que faltam no seu currículo</span></div>
         <div class="ob-locked-i"><span>🔔</span><span>Alertas de vagas parecidas com essa, toda semana</span></div>
       </div>
@@ -816,17 +816,17 @@ function applyJourneyCopy() {
 function vagaNextValue(step) {
   if (step === 1) return 'Depois disso, você adicionará a vaga que quer avaliar.';
   if (step === 2) return 'Depois disso, você adicionará o currículo que deseja usar.';
-  if (step === 3) return 'Depois disso, você verá a prévia do diagnóstico.';
-  if (step === 4) return 'Seu diagnóstico completo será exibido em instantes.';
-  return 'Crie sua conta para salvar o diagnóstico e continuar a candidatura.';
+  if (step === 3) return 'Depois disso, você verá a prévia da análise.';
+  if (step === 4) return 'Sua análise completa será exibida em instantes.';
+  return 'Crie sua conta para salvar a análise e continuar a candidatura.';
 }
 
 function vagaProgressValue(step) {
   if (step === 1) return 'depois disso você adicionará a vaga.';
   if (step === 2) return 'depois disso você adicionará o currículo.';
-  if (step === 3) return 'depois disso você verá o diagnóstico.';
-  if (step === 4) return 'agora estamos preparando seu diagnóstico.';
-  return 'diagnóstico concluído.';
+  if (step === 3) return 'depois disso você verá a análise.';
+  if (step === 4) return 'agora estamos preparando sua análise.';
+  return 'análise concluída.';
 }
 
 function vagaJobLabel() {
@@ -853,10 +853,10 @@ function updateJourneySummary() {
   window.VagaAIOnboarding.renderJourneySummary({
     currentStep: state.step,
     totalSteps: TOTAL_STEPS,
-    steps: ['Objetivo', 'Vaga', 'Currículo', 'Diagnóstico', 'Resultado'],
+    steps: ['Objetivo', 'Vaga', 'Currículo', 'Análise', 'Resultado'],
     goal: state.hasCv === false
       ? 'Criar currículo e analisar a vaga'
-      : 'Analisar a vaga com diagnóstico completo',
+      : 'Analisar a vaga por completo',
     job: vagaJobLabel(),
     cv: cvLabel,
     progress: 'Etapa ' + state.step + ' de ' + TOTAL_STEPS + ' · ' + vagaProgressValue(state.step),
@@ -1774,7 +1774,7 @@ function renderResult(d) {
     strong.push('A competência <b>' + esc(keyword) + '</b> já aparece no seu currículo e também é valorizada pela vaga.');
   });
   if (d.fatores && !Array.isArray(d.fatores) && strong.length < 3) {
-    var FL = { compatibilidade:'compatibilidade geral com a vaga', keywords_ats:'uso de palavras-chave para ATS', legibilidade:'legibilidade do currículo', forca_bullets:'força das descrições de experiência' };
+    var FL = { compatibilidade:'compatibilidade geral com a vaga', keywords_ats:'uso dos termos que a vaga pede', legibilidade:'legibilidade do currículo', forca_bullets:'força das descrições de experiência' };
     Object.keys(d.fatores)
       .filter(function(k) { return FL[k] && Number(d.fatores[k]) >= 60; })
       .sort(function(a, b) { return Number(d.fatores[b]) - Number(d.fatores[a]); })

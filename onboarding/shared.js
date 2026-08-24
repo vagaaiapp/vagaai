@@ -245,7 +245,7 @@
       summary = document.createElement('section');
       summary.id = 'obJourneySummary';
       summary.className = 'ob-journey-summary';
-      summary.setAttribute('aria-label', 'Resumo da jornada');
+      summary.setAttribute('aria-label', 'Resumo do que você já fez');
       target.insertBefore(summary, target.firstChild);
     }
 
@@ -275,7 +275,7 @@
     summary.innerHTML = '';
     var stepper = document.createElement('div');
     stepper.className = 'ob-journey-stepper';
-    stepper.setAttribute('aria-label', 'Progresso da jornada');
+    stepper.setAttribute('aria-label', 'Progresso');
     var track = document.createElement('div');
     track.className = 'ob-journey-track';
     var labelsRow = document.createElement('div');
@@ -314,7 +314,7 @@
     toggle.type = 'button';
     toggle.className = 'ob-journey-toggle';
     toggle.setAttribute('aria-expanded', wasExpanded ? 'true' : 'false');
-    toggle.textContent = wasExpanded ? 'Ocultar resumo' : 'Ver resumo da jornada';
+    toggle.textContent = wasExpanded ? 'Ocultar resumo' : 'Ver resumo';
     meta.appendChild(progress);
     meta.appendChild(toggle);
     summary.appendChild(meta);
@@ -363,7 +363,7 @@
       details.hidden = !expanded;
       summary.setAttribute('data-expanded', expanded ? 'true' : 'false');
       toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-      toggle.textContent = expanded ? 'Ocultar resumo' : 'Ver resumo da jornada';
+      toggle.textContent = expanded ? 'Ocultar resumo' : 'Ver resumo';
     });
     summary.setAttribute('data-expanded', wasExpanded ? 'true' : 'false');
     return summary;
@@ -375,18 +375,18 @@
       overviewTitle: 'Seu currículo encontra uma vaga específica.',
       overviewSub: 'Vamos comparar os dois, mostrar onde você já é forte e o que precisa ajustar antes de aplicar.',
       situation: 'Você já tem currículo e uma oportunidade em vista.',
-      problem: 'Um currículo bom ainda pode perder aderência quando não destaca o que esta vaga prioriza.',
+      problem: 'Um currículo bom ainda pode perder compatibilidade quando não destaca o que esta vaga prioriza.',
       implication: 'Sem essa comparação, você pode enviar uma candidatura genérica e descobrir tarde demais o que faltou.',
-      payoff: 'Você recebe diagnóstico completo, score, lacunas e prioridades para uma versão direcionada.',
+      payoff: 'Você recebe a análise completa, a nota, o que falta e as prioridades para uma versão direcionada.',
       jobTitle: 'Mostre qual vaga você quer avaliar',
       jobSub: 'Cole o link ou a descrição. A VagaAI organiza os requisitos e prepara a comparação.',
-      jobCta: 'Usar esta vaga no diagnóstico →',
+      jobCta: 'Usar esta vaga na análise →',
       cvTitle: 'Envie o currículo que será sua base',
       cvSub: 'Ele vira seu currículo base na VagaAI. Comparamos sua experiência real com os requisitos desta vaga e criamos uma versão direcionada, sem alterar a base.',
-      cvCta: 'Gerar meu diagnóstico completo →',
+      cvCta: 'Gerar minha análise completa →',
       quickTitle: 'Conte sua experiência para esta vaga',
       quickSub: 'Escreva do seu jeito. A VagaAI organiza o conteúdo sem inventar experiências.',
-      quickCta: 'Montar currículo e gerar diagnóstico →'
+      quickCta: 'Montar currículo e gerar análise →'
     },
     cv_no_job: {
       label: 'Currículo + radar de vagas',
@@ -414,9 +414,9 @@
       overviewTitle: 'Transforme sua experiência em um currículo para esta oportunidade.',
       overviewSub: 'A vaga define as prioridades; você conta sua experiência e a VagaAI estrutura o currículo.',
       situation: 'Você já encontrou a oportunidade, mas ainda precisa de um currículo pronto.',
-      problem: 'Sem um currículo estruturado, competências relevantes podem ficar invisíveis para o ATS e recrutador.',
+      problem: 'Sem um currículo estruturado, competências relevantes podem ficar invisíveis para os filtros e para o recrutador.',
       implication: 'Você pode perder uma vaga compatível por não conseguir apresentar sua experiência com clareza.',
-      payoff: 'Você recebe currículo profissional direcionado e o diagnóstico de aderência à mesma vaga.',
+      payoff: 'Você recebe currículo profissional direcionado e a análise de compatibilidade com a mesma vaga.',
       jobTitle: 'Mostre a vaga que vai orientar seu currículo',
       jobSub: 'Cole o link ou a descrição para identificarmos cargo, requisitos e prioridades.',
       jobCta: 'Usar esta vaga como direção →',

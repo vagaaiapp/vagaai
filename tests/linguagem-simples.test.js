@@ -14,10 +14,7 @@ import fs from 'node:fs';
 
    Unificar resolveu os dois problemas de uma vez.
 
-   LIMPOS ATÉ AQUI são as superfícies abaixo. Faltam app, curriculo, carta,
-   entrevista e os dois funis de onboarding: estavam com alteração não
-   commitada de outra sessão quando isto foi escrito, e entram assim que ela
-   fechar. Ao incluí-las, é só movê-las para LIMPOS. */
+   LIMPOS cobre agora todas as superfícies de texto do produto. */
 
 const ler = (p) => fs.readFileSync(new URL('../' + p, import.meta.url), 'utf8');
 
@@ -26,7 +23,14 @@ const LIMPOS = [
   'dashboard/index.html',
   'cv/index.html',
   'criar-curriculo/index.html',
-  'paraempresas/index.html'
+  'paraempresas/index.html',
+  'app/index.html',
+  'curriculo/index.html',
+  'carta/index.html',
+  'entrevista/index.html',
+  'onboarding/vaga/index.html',
+  'onboarding/curriculo/index.html',
+  'onboarding/shared.js'
 ];
 
 /* Páginas com robots="index, follow". Nelas "ATS" fica: é termo de busca real
@@ -35,7 +39,8 @@ const LIMPOS = [
 const INDEXADAS = [
   'index.template.html',
   'criar-curriculo/index.html',
-  'paraempresas/index.html'
+  'paraempresas/index.html',
+  'app/index.html'
 ];
 
 function visivel(fonte) {
@@ -120,14 +125,28 @@ describe('vocabulário simples nas superfícies já limpas', () => {
 });
 
 describe('ATS: sai de dentro do produto, fica onde tem busca', () => {
-  it('o painel e o /cv não usam a sigla', () => {
-    for (const arquivo of ['dashboard/index.html', 'cv/index.html']) {
-      const achou = frases(ler(arquivo)).find((t) => /\bATS\b/.test(t));
+  /* A única frase com a sigla que sobrevive numa página noindex é a que
+     ENSINA o que ela é. Está no topo do funil de vaga, antes de qualquer
+     resultado: é ali que a pessoa aprende o termo. Sem ela, as páginas
+     indexadas citariam uma sigla que o produto nunca explicou. */
+  const ENSINA_A_SIGLA = /Cerca de 75% dos currículos são filtrados por sistemas ATS/;
+
+  const NOINDEX = LIMPOS.filter((a) => !INDEXADAS.includes(a));
+
+  for (const arquivo of NOINDEX) {
+    it(`${arquivo} não usa a sigla solta`, () => {
+      const achou = frases(ler(arquivo))
+        .filter((t) => /\bATS\b/.test(t))
+        .find((t) => !ENSINA_A_SIGLA.test(t));
       assert.equal(
         achou, undefined,
-        `${arquivo} é noindex: a sigla deve virar "os sistemas que filtram currículos".\n  ${(achou || '').slice(0, 130)}`
+        `${arquivo} é noindex: a sigla deve virar "os filtros" ou "os sistemas que filtram currículos".\n  ${(achou || '').slice(0, 130)}`
       );
-    }
+    });
+  }
+
+  it('o funil de vaga continua explicando a sigla', () => {
+    assert.match(ler('onboarding/vaga/index.html'), ENSINA_A_SIGLA);
   });
 
   for (const arquivo of INDEXADAS) {
@@ -155,5 +174,16 @@ describe('o que a simplificação não pode ter levado junto', () => {
   it('o painel continua dizendo para não inventar', () => {
     // A simplificação mexeu na mesma copy do padrão anti-indução.
     assert.match(ler('dashboard/index.html'), /O que você não tem, não invente/);
+  });
+
+  it('a projeção continua avisando que não é para inventar', () => {
+    // "Aderência projetada" virou "Compatibilidade estimada"; a ressalva ao
+    // lado é o que impede o número de virar promessa.
+    assert.match(ler('app/index.html'), /Nunca pressupõe incluir o que você não tem/);
+  });
+
+  it('a carta continua dizendo a que ponto ela responde', () => {
+    // É o único elo entre a carta e a análise que a originou.
+    assert.match(ler('carta/index.html'), /Responde ao que faltava:/);
   });
 });
