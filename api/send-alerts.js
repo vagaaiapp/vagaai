@@ -1797,12 +1797,12 @@ function buildEmailHTML(profile, jobs, userName, userId, plan = 'free', ent = nu
     <div style="font-size:16px;font-weight:700;color:#111;margin-bottom:6px">Olá, ${escEmail(name)}! 👋</div>
     <div style="font-size:13px;color:#555;line-height:1.6;margin-bottom:20px">
       ${plan === 'pro'
-        ? `Suas <strong>${jobs.length} melhores oportunidades</strong> foram priorizadas por aderência ao seu perfil. Veja por que cada vaga combina com você.`
+        ? `Suas <strong>${jobs.length} melhores oportunidades</strong> foram priorizadas pela compatibilidade com o seu perfil. Veja por que cada vaga combina com você.`
         : plan === 'starter'
         ? `Selecionamos <strong>${jobs.length} oportunidade${jobs.length > 1 ? 's' : ''}</strong> com base no seu perfil, senioridade, localização e preferências.`
         : `Encontramos <strong>${jobs.length} oportunidade${jobs.length > 1 ? 's' : ''}</strong> para você. Veja as vagas gratuitamente e analise a que mais combina com seu perfil.`}
       <br>Perfil: <strong>${escEmail(profile.cargo_desejado)}</strong>${profile.cidade ? ' · <strong>' + escEmail(profile.cidade) + '</strong>' : ''}.
-      Clique em "Analisar" para ver o score ATS real do seu currículo antes de se candidatar.
+      Clique em "Analisar" para ver o quanto seu currículo combina com a vaga antes de se candidatar.
       ${profile._proSummary
         ? `<div style="margin-top:12px;background:#f0faf4;border:1px solid #bfe8d2;border-left:3px solid #1a8f5c;border-radius:8px;padding:10px 13px;color:#14532d;font-size:13px;line-height:1.6"><strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#1a8f5c;margin-bottom:3px">Análise do dia · Pro</strong>${escEmail(profile._proSummary)}</div>`
         : ''}

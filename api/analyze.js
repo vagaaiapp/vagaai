@@ -910,12 +910,12 @@ export default async function handler(req, res) {
 
     const { result, cv, job } = req.body || {};
     if (!result || typeof result !== 'object' || Array.isArray(result)) {
-      return res.status(400).json({ error: 'Diagnostico do onboarding invalido.' });
+      return res.status(400).json({ error: 'Analise do onboarding invalida.' });
     }
 
     const serialized = JSON.stringify(result);
     if (serialized.length > 250000) {
-      return res.status(413).json({ error: 'Diagnostico muito grande para ser salvo.' });
+      return res.status(413).json({ error: 'Analise muito grande para ser salva.' });
     }
 
     const score = Math.max(0, Math.min(100, Number(result.score) || 0));
@@ -927,7 +927,7 @@ export default async function handler(req, res) {
     const analysisId = await saveAnalysis(user.id, score, nivel, jobText, savedResult, hash, 0);
 
     if (!analysisId) {
-      return res.status(503).json({ error: 'Nao foi possivel salvar o diagnostico agora.' });
+      return res.status(503).json({ error: 'Nao foi possivel salvar a analise agora.' });
     }
 
     return res.status(200).json({
