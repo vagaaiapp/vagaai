@@ -30,6 +30,94 @@ body[data-vagaai-ui] :is(input, textarea, select) {
   font-size: 16px;
 }
 
+/* ── Shared theme control ─────────────────────────────────────────────
+ * One interaction grammar for the authenticated product. The icon and
+ * label describe the destination theme, so the control is understandable
+ * without relying on an isolated moon glyph or a tooltip.
+ */
+body[data-vagaai-ui] .vui-theme-control {
+  width: auto;
+  min-width: 92px;
+  height: 40px;
+  padding: 0 12px 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: none;
+  border: 1px solid var(--border, var(--app-border, rgba(10, 26, 16, .12)));
+  border-radius: var(--vui-control-radius);
+  background: var(--surface, var(--app-card, #fff));
+  color: var(--text, var(--app-t1, #0a1a10));
+  box-shadow: 0 1px 2px rgba(7, 18, 9, .035);
+  cursor: pointer;
+  transition: color .18s ease, border-color .18s ease, background .18s ease, transform .18s ease;
+}
+
+body[data-vagaai-ui] .vui-theme-control:hover {
+  color: var(--green, var(--app-green, #1a7a4a));
+  border-color: color-mix(in srgb, var(--green, var(--app-green, #1a7a4a)) 38%, transparent);
+  background: color-mix(in srgb, var(--green, var(--app-green, #1a7a4a)) 7%, var(--surface, var(--app-card, #fff)));
+  transform: translateY(-1px);
+}
+
+body[data-vagaai-ui] .vui-theme-control-icon {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--green, var(--app-green, #1a7a4a)) 11%, transparent);
+  color: var(--green, var(--app-green, #1a7a4a));
+}
+
+body[data-vagaai-ui] .vui-theme-control svg {
+  width: 15px;
+  height: 15px;
+  grid-area: 1 / 1;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body[data-vagaai-ui] .vui-theme-label {
+  font-size: 12.5px;
+  line-height: 1;
+  font-weight: 750;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+}
+
+body[data-vagaai-ui] :is(.vui-theme-sun, .vui-theme-to-light) { display: none; }
+html[data-theme="dark"] body[data-vagaai-ui] :is(.vui-theme-moon, .vui-theme-to-dark) { display: none; }
+html[data-theme="dark"] body[data-vagaai-ui] :is(.vui-theme-sun, .vui-theme-to-light) { display: inline-flex; }
+
+body[data-vagaai-ui] .vui-theme-control--compact {
+  width: 40px;
+  min-width: 40px;
+  padding: 0;
+}
+
+body[data-vagaai-ui] .vui-theme-control--compact .vui-theme-label { display: none !important; }
+
+body[data-vagaai-ui="cv-editor"] .cn-theme-btn.vui-theme-control {
+  width: 100%;
+  min-width: 0;
+  color: rgba(255, 255, 255, .78);
+  border-color: rgba(255, 255, 255, .1);
+  background: rgba(255, 255, 255, .055);
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="cv-editor"] .cn-theme-btn.vui-theme-control:hover {
+  color: #fff;
+  border-color: rgba(78, 206, 145, .3);
+  background: rgba(78, 206, 145, .11);
+}
+
 body[data-vagaai-ui] .app-nav-item { font-size: 14px; min-height: 42px; }
 body[data-vagaai-ui] .app-nav-label { font-size: 10.5px; }
 body[data-vagaai-ui] .app-support { font-size: 12px; }
@@ -251,6 +339,12 @@ body[data-vagaai-ui="auth"] :is(.btn, .btn-google, .btn-outline) { min-height: 4
 
 @media (max-width: 760px) {
   body[data-vagaai-ui] { font-size: 15px; }
+  body[data-vagaai-ui] .vui-theme-control {
+    width: 40px;
+    min-width: 40px;
+    padding: 0;
+  }
+  body[data-vagaai-ui] .vui-theme-control .vui-theme-label { display: none !important; }
   body[data-vagaai-ui="dashboard"] .pg-title { font-size: 30px; }
   body[data-vagaai-ui="dashboard"] .pba-title { font-size: 28px; }
   body[data-vagaai-ui="dashboard"] .pv-title { font-size: 27px; }

@@ -9,6 +9,7 @@ const sidebar = read('sidebar.js');
 const app = read('app/index.html');
 const curriculo = read('curriculo/index.html');
 const cv = read('cv/index.html');
+const cvExportStudio = read('assets/cv-export-studio.css');
 const alerts = read('api/send-alerts.js');
 const migration = read('migrations/024_cv_saves_user_unique.sql');
 const onboardingShared = read('onboarding/shared.js');
@@ -113,10 +114,44 @@ describe('Fluxo canônico de currículo', () => {
     assert.match(cv, /id="baseExportStudio"/);
     assert.match(cv, /id="basePreviewMount"/);
     assert.match(cv, /function setupBaseExportStudio\(\)[\s\S]*?_cvEditorSource !== 'base'[\s\S]*?appendChild\(preview\)/);
-    assert.match(cv, /Prepare seu currículo para enviar/);
+    assert.match(cv, /Escolha como apresentar seu currículo/);
     assert.match(cv, /Editar conteúdo do currículo/);
     assert.match(cv, /Baixar Word/);
     assert.match(cv, /Baixar PDF/);
+  });
+
+  it('explica os modelos sem jargão e recomenda o uso de cada grupo', () => {
+    assert.match(cv, /Sites de vagas/);
+    assert.match(cv, /LinkedIn, Gupy e outros portais/);
+    assert.match(cv, /PDF para enviar/);
+    assert.match(cv, /E-mail, WhatsApp ou contato direto/);
+    assert.match(cv, /BASE_TEMPLATE_INFO = \{[\s\S]*modern:\{[\s\S]*focus:\{[\s\S]*minimal:\{[\s\S]*classic:\{[\s\S]*exec:\{[\s\S]*compact:\{/);
+  });
+
+  it('deixa explícito como adicionar, trocar, remover e usar a foto', () => {
+    assert.match(cv, /id="basePhotoButton"[\s\S]*Adicionar foto/);
+    assert.match(cv, /id="basePhotoRemove"[\s\S]*Remover/);
+    assert.match(cv, /function baseChoosePhoto\(\)[\s\S]*photoFileInput/);
+    assert.match(cv, /function baseRemovePhoto\(\)[\s\S]*removePhoto\(\)/);
+    assert.match(cv, /Foto salva, mas este modelo não usa foto/);
+  });
+
+  it('oferece oito cores seguras para o currículo e preserva impressão A4', () => {
+    const swatches = cv.match(/data-cv-color="[^"]+"/g) || [];
+    assert.equal(new Set(swatches).size, 8);
+    assert.match(cv, /@page\{size:210mm 297mm;margin:0\}/);
+    assert.match(cv, /print-color-adjust:exact!important/);
+    assert.match(cv, /getPrintStylesForIframe\(\)[\s\S]*?getComputedStyle\(document\.documentElement\)[\s\S]*?'--ac','--ac2','--ac3','--sb-bg'/);
+    assert.match(cv, /\.focus-sec-h/);
+    assert.match(cvExportStudio, /\.base-swatches\{display:grid;grid-template-columns:repeat\(8,26px\)/);
+  });
+
+  it('mantém a orientação de download compreensível para quem não conhece termos técnicos', () => {
+    assert.match(cv, /O que foi verificado/);
+    assert.match(cv, /Termos-chave/);
+    assert.match(cv, /Este modelo usa <b>duas colunas<\/b>/);
+    assert.doesNotMatch(cv, /Modelo com <b>sidebar<\/b>/);
+    assert.doesNotMatch(cv, /parsers ATS/);
   });
 
   it('mantém o editor guiado para versões por vaga e não restaura suas etapas no currículo base', () => {

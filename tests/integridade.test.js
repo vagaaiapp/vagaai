@@ -81,6 +81,29 @@ describe('Integridade entre páginas', () => {
     }
   });
 
+  it('as áreas autenticadas usam o mesmo controle visual de tema', () => {
+    const paginas = [
+      'dashboard/index.html',
+      'app/index.html',
+      'curriculo/index.html',
+      'cv/index.html',
+      'carta/index.html',
+      'entrevista/index.html'
+    ];
+
+    for (const pagina of paginas) {
+      const src = read(pagina);
+      assert.match(src, /class="[^"]*vui-theme-control/, `${pagina} não usa o controle compartilhado`);
+      assert.match(src, /aria-label="Alternar tema claro ou escuro"/, `${pagina} não descreve a ação do controle`);
+      assert.match(src, /product-ui\.css\?v=20260823-theme1/, `${pagina} não carrega a versão atual do componente`);
+    }
+
+    const css = read('assets/product-ui.css');
+    assert.match(css, /\.vui-theme-control\s*\{/);
+    assert.match(css, /\.vui-theme-to-dark/);
+    assert.match(css, /html\[data-theme="dark"\][\s\S]*\.vui-theme-to-light/);
+  });
+
   it('nenhum href é montado só com escape de HTML', () => {
     // escHtml escapa & < >, mas deixa passar href="javascript:...". O link da
     // vaga vem do feed externo de vagas, não só do próprio usuário.

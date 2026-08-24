@@ -630,7 +630,7 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
   document.documentElement.setAttribute('data-theme',saved==='dark'?'dark':'light');
 })();
 </script>
-<link rel="stylesheet" href="/assets/product-ui.css?v=20260821-editorial1">
+<link rel="stylesheet" href="/assets/product-ui.css?v=20260823-theme1">
 <link rel="stylesheet" href="/assets/analysis-guided.css?v=20260821-guided1">
 </head>
 <body data-vagaai-ui="analysis">
@@ -646,7 +646,7 @@ body{display:flex;background:var(--bg);color:var(--text);font-size:14px}
     </div>
     <div class="app-header-actions">
       <span class="nav-credits" id="navCredits"><span id="navCreditsNum">0</span> análises disponíveis</span>
-      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+      <button class="theme-btn vui-theme-control" id="themeBtn" onclick="toggleTheme()" aria-label="Alternar tema claro ou escuro" title="Alternar tema"><span class="vui-theme-control-icon" aria-hidden="true"><svg class="vui-theme-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><svg class="vui-theme-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span><span class="vui-theme-label vui-theme-to-dark">Escuro</span><span class="vui-theme-label vui-theme-to-light">Claro</span></button>
       <a href="/" id="navBackBtn" style="display:none">Início</a>
     </div>
   </header>
@@ -3118,10 +3118,7 @@ initAuth().then(async function() {
     } catch(e) {}
   }
 });
-var ICON_SUN_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
-var ICON_MOON_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
-function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')==='light';var next=l?'dark':'light';document.documentElement.setAttribute('data-theme',next);localStorage.setItem('vagaai_theme',next);var b=document.getElementById('themeBtn');if(b)b.innerHTML=next==='light'?ICON_MOON_SVG:ICON_SUN_SVG}
-;(function(){var b=document.getElementById('themeBtn');if(b)b.innerHTML=document.documentElement.getAttribute('data-theme')==='light'?ICON_MOON_SVG:ICON_SUN_SVG})();
+function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')==='light';var next=l?'dark':'light';document.documentElement.setAttribute('data-theme',next);localStorage.setItem('vagaai_theme',next)}
 
 // ── MODAL: Signup (cadastro para ver resultado completo) ──────────────────────
 var _pendingResultData = null;

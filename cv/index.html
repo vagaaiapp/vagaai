@@ -991,7 +991,7 @@ html.no-photo .mod-header{display:block}
 @media print{
   @page{size:210mm 297mm;margin:0}
 
-  *{box-sizing:border-box!important}
+  *{box-sizing:border-box!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
   html,body{width:210mm!important;min-width:210mm!important;background:#fff!important;padding:0!important;margin:0!important;overflow:visible!important}
   .cv-nav,.cv-main,.cv-preview,.modal-overlay,.mob-bar,.panel-overlay,.edit-modal,.mob-print-toast,.preflight-overlay,.app-header,.side-panel{display:none!important}
   .page-wrap{
@@ -1027,15 +1027,16 @@ html.no-photo .mod-header{display:block}
   /* Experiências: nunca quebrar no meio de um item */
   .exp-item,.minimal-exp-item{break-inside:avoid;page-break-inside:avoid}
   /* Títulos de seção: nunca orphanizar */
-  .cv-sec-h,.mod-sec-h,.exec-sec-h,.compact-cv-sec-h,.minimal-sec-h,
+  .cv-sec-h,.mod-sec-h,.exec-sec-h,.compact-cv-sec-h,.minimal-sec-h,.focus-sec-h,
   .sb-sec-h,.compact-sec-h{
     break-after:avoid;page-break-after:avoid;
     break-inside:avoid;page-break-inside:avoid;
   }
   /* Educação */
-  .mod-edu-item,.exec-edu-item,.minimal-edu-item{break-inside:avoid;page-break-inside:avoid}
+  .mod-edu-item,.exec-edu-item,.minimal-edu-item,.focus-edu-item,
+  .compact-sidebar>div{break-inside:avoid;page-break-inside:avoid}
   /* Bottom grid: pode quebrar entre educação e habilidades se necessário */
-  .mod-bottom-row,.exec-bottom,.minimal-bottom{break-inside:auto;page-break-inside:auto}
+  .mod-bottom-row,.exec-bottom,.minimal-bottom,.focus-bottom{break-inside:auto;page-break-inside:auto}
 
   /* Sidebars (Profissional / Compacto):
      Mantem a folha A4 sem esconder conteudo. O preflight avisa quando
@@ -1058,8 +1059,8 @@ html.no-photo .mod-header{display:block}
   .editable::after,.editable-block::after{display:none!important}
 }
 </style>
-<link rel="stylesheet" href="/assets/product-ui.css?v=20260821-editorial1">
-<link rel="stylesheet" href="/assets/cv-export-studio.css?v=20260823-studio1">
+<link rel="stylesheet" href="/assets/product-ui.css?v=20260823-theme1">
+<link rel="stylesheet" href="/assets/cv-export-studio.css?v=20260823-studio3">
 </head>
 <body data-vagaai-ui="cv-editor">
 
@@ -1067,7 +1068,7 @@ html.no-photo .mod-header{display:block}
   <div class="app-crumb"><strong id="appCvType">Currículo</strong><span>›</span><span id="appCvMode">Editor e exportação</span></div>
   <div class="app-header-actions">
     <span class="app-saved"><i></i> Alterações salvas</span>
-    <button class="app-icon-btn" type="button" onclick="toggleAppTheme()" aria-label="Alternar tema" title="Alternar tema"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg></button>
+    <button class="app-icon-btn vui-theme-control" type="button" onclick="toggleAppTheme()" aria-label="Alternar tema claro ou escuro" title="Alternar tema"><span class="vui-theme-control-icon" aria-hidden="true"><svg class="vui-theme-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg><svg class="vui-theme-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span><span class="vui-theme-label vui-theme-to-dark">Escuro</span><span class="vui-theme-label vui-theme-to-light">Claro</span></button>
     <a class="app-outline-btn" id="appCvBack" href="/curriculo" onclick="return goBackToCurriculos(event)" style="text-decoration:none">Voltar aos currículos</a>
     <button class="app-primary-btn" type="button" onclick="mobPrint()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>Baixar PDF</button>
   </div>
@@ -1173,9 +1174,9 @@ html.no-photo .mod-header{display:block}
       <a class="cn-job-link" id="cnJobLink" target="_blank" rel="noopener" hidden>Ver a vaga →</a>
     </div>
     <div class="cn-saved-indicator" id="cnSavedIndicator" style="display:none"><i></i> Alterações salvas</div>
-    <button class="cn-theme-btn" onclick="typeof toggleAppTheme==='function'?toggleAppTheme():toggleTheme()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
-      Alternar tema
+    <button class="cn-theme-btn vui-theme-control" onclick="typeof toggleAppTheme==='function'?toggleAppTheme():toggleTheme()" aria-label="Alternar tema claro ou escuro" title="Alternar tema">
+      <span class="vui-theme-control-icon" aria-hidden="true"><svg class="vui-theme-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg><svg class="vui-theme-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span>
+      <span class="vui-theme-label vui-theme-to-dark">Usar tema escuro</span><span class="vui-theme-label vui-theme-to-light">Usar tema claro</span>
     </button>
   </div>
 </nav>
@@ -1298,7 +1299,7 @@ html.no-photo .mod-header{display:block}
           </div>
         </div>
       </div>
-      <input type="file" id="photoFileInput" accept="image/*" style="display:none">
+      <input type="file" id="photoFileInput" accept="image/jpeg,image/png" style="display:none">
     </div>
     <div class="csv-footer">
       <button class="csv-btn-next" onclick="goToStepValidated(3)">Próximo: Experiência →</button>
@@ -1409,7 +1410,7 @@ html.no-photo .mod-header{display:block}
       <!-- Bloco 1: Carta de apresentação -->
       <div class="csv-materials-card" id="s4CartaCard">
         <div class="csv-send-step"><span class="csv-send-num">1</span> Carta de apresentação <span class="csv-material-opt" style="margin-left:.4rem">opcional</span></div>
-        <div class="csv-send-sub" style="margin-bottom:.8rem">A carta já vem escrita para esta vaga — lê seu currículo, identifica os pontos certos e adapta o tom ao que o recrutador quer ver.</div>
+        <div class="csv-send-sub" style="margin-bottom:.8rem">A carta já vem escrita para esta vaga. Ela lê seu currículo, identifica os pontos certos e adapta o tom ao que o recrutador quer ver.</div>
         <button class="csv-material-carta" id="s4CartaBtn" onclick="s4OpenCarta()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
           Gerar carta de apresentação
@@ -1484,8 +1485,9 @@ html.no-photo .mod-header{display:block}
     <div class="base-studio-crumb">Meu currículo <span>› Visualizar e baixar</span></div>
     <div class="base-studio-top-actions">
       <span class="base-pro-pill" id="basePlanPill" style="visibility:hidden">● CONTA</span>
-      <button class="base-theme-btn" type="button" onclick="toggleAppTheme()" aria-label="Alternar tema" title="Alternar tema">
-        <svg viewBox="0 0 24 24"><path d="M20 15.5A8 8 0 0 1 8.5 4 8 8 0 1 0 20 15.5Z"/></svg>
+      <button class="base-theme-btn vui-theme-control" type="button" onclick="toggleAppTheme()" aria-label="Alternar tema claro ou escuro" title="Alternar tema">
+        <span class="vui-theme-control-icon" aria-hidden="true"><svg class="vui-theme-moon" viewBox="0 0 24 24"><path d="M20 15.5A8 8 0 0 1 8.5 4 8 8 0 1 0 20 15.5Z"/></svg><svg class="vui-theme-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span>
+        <span class="vui-theme-label vui-theme-to-dark">Escuro</span><span class="vui-theme-label vui-theme-to-light">Claro</span>
       </button>
     </div>
   </header>
@@ -1493,8 +1495,8 @@ html.no-photo .mod-header{display:block}
   <div class="base-studio-page">
     <header class="base-studio-heading">
       <div>
-        <h1>Prepare seu currículo para enviar</h1>
-        <p>Escolha a apresentação ideal e baixe uma cópia. Seu conteúdo principal permanece exatamente como está.</p>
+        <h1>Escolha como apresentar seu currículo</h1>
+        <p>Troque o modelo, a cor ou a foto e veja o resultado antes de baixar. Suas informações salvas não mudam.</p>
       </div>
       <div class="base-source-pill"><i></i>Currículo principal · Geral</div>
     </header>
@@ -1502,49 +1504,74 @@ html.no-photo .mod-header{display:block}
     <section class="base-studio">
       <div class="base-studio-workspace">
         <aside class="base-studio-controls" aria-label="Modelos e ajustes do currículo">
-          <div class="base-section-label">Apresentação</div>
+          <div class="base-section-label">Visual do arquivo</div>
           <h2>Escolha um modelo</h2>
-          <p class="base-controls-intro">A aparência muda; suas informações continuam vinculadas ao documento mestre.</p>
+          <p class="base-controls-intro">O conteúdo continua o mesmo. Você muda apenas a aparência do arquivo.</p>
 
           <div class="base-template-groups">
             <div>
-              <div class="base-group-title">Para candidaturas online <span>Compatíveis com ATS</span></div>
+              <div class="base-group-title"><strong>Sites de vagas</strong><span>LinkedIn, Gupy e outros portais</span></div>
               <div class="base-template-grid">
-                <button class="base-template" id="baseTplModern" data-template="modern" onclick="setTemplate('modern')"><span class="base-template-thumb"></span><span><strong>Moderno</strong><small>Equilíbrio e leitura</small></span></button>
-                <button class="base-template" id="baseTplFocus" data-template="focus" onclick="setTemplate('focus')"><span class="base-template-thumb"></span><span><strong>Focado</strong><small>Conteúdo em destaque</small></span></button>
-                <button class="base-template" id="baseTplMinimal" data-template="minimal" onclick="setTemplate('minimal')"><span class="base-template-thumb"></span><span><strong>Minimalista</strong><small>Direto e universal</small></span></button>
+                <button class="base-template" id="baseTplModern" data-template="modern" onclick="setTemplate('modern')"><span class="base-template-thumb"></span><span><strong>Moderno <em>Recomendado</em></strong><small>Equilibrado e fácil de ler</small></span></button>
+                <button class="base-template" id="baseTplFocus" data-template="focus" onclick="setTemplate('focus')"><span class="base-template-thumb"></span><span><strong>Focado</strong><small>Destaca o conteúdo principal</small></span></button>
+                <button class="base-template" id="baseTplMinimal" data-template="minimal" onclick="setTemplate('minimal')"><span class="base-template-thumb"></span><span><strong>Minimalista</strong><small>Simples e direto</small></span></button>
               </div>
             </div>
             <div>
-              <div class="base-group-title">Para envio direto <span>Mais personalidade visual</span></div>
+              <div class="base-group-title"><strong>PDF para enviar</strong><span>E-mail, WhatsApp ou contato direto</span></div>
               <div class="base-template-grid">
-                <button class="base-template" id="baseTplClassic" data-template="classic" onclick="setTemplate('classic')"><span class="base-template-thumb"></span><span><strong>Profissional</strong><small>Barra lateral</small></span></button>
-                <button class="base-template" id="baseTplExec" data-template="exec" onclick="setTemplate('exec')"><span class="base-template-thumb"></span><span><strong>Executivo</strong><small>Presença editorial</small></span></button>
-                <button class="base-template" id="baseTplCompact" data-template="compact" onclick="setTemplate('compact')"><span class="base-template-thumb"></span><span><strong>Compacto</strong><small>Mais conteúdo por página</small></span></button>
+                <button class="base-template" id="baseTplClassic" data-template="classic" onclick="setTemplate('classic')"><span class="base-template-thumb"></span><span><strong>Profissional</strong><small>Informações em duas colunas</small></span></button>
+                <button class="base-template" id="baseTplExec" data-template="exec" onclick="setTemplate('exec')"><span class="base-template-thumb"></span><span><strong>Executivo</strong><small>Visual forte e elegante</small></span></button>
+                <button class="base-template" id="baseTplCompact" data-template="compact" onclick="setTemplate('compact')"><span class="base-template-thumb"></span><span><strong>Compacto</strong><small>Aproveita melhor o espaço</small></span></button>
               </div>
             </div>
           </div>
 
+          <div class="base-template-advice" id="baseTemplateAdvice" aria-live="polite">
+            <svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.2 8 8 9 4.8-1 8-4 8-9V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>
+            <div><strong id="baseTemplateAdviceTitle">Boa escolha para a maioria das candidaturas</strong><span id="baseTemplateAdviceText">Estrutura simples, boa leitura na tela e no PDF.</span></div>
+          </div>
+
           <div class="base-personalize">
-            <div class="base-section-label">Ajustes do modelo</div>
-            <div class="base-personalize-row">
-              <div><strong>Cor de destaque</strong><small>Usada somente no arquivo</small></div>
+            <div class="base-section-label">Deixe do seu jeito</div>
+            <div class="base-personalize-block">
+              <div class="base-personalize-copy"><strong>Cor do currículo</strong><small><span id="baseColorName">Verde VagaAI</span> · usada em títulos e detalhes</small></div>
               <div class="base-swatches" aria-label="Cores do currículo">
-                <button class="base-swatch" data-cv-color="green" style="--swatch:#1a7a4a" onclick="setBaseCvColor('green')" aria-label="Verde"></button>
-                <button class="base-swatch" data-cv-color="blue" style="--swatch:#213a65" onclick="setBaseCvColor('blue')" aria-label="Azul"></button>
-                <button class="base-swatch" data-cv-color="terracotta" style="--swatch:#6b3f35" onclick="setBaseCvColor('terracotta')" aria-label="Terracota"></button>
-                <button class="base-swatch" data-cv-color="graphite" style="--swatch:#2d3748" onclick="setBaseCvColor('graphite')" aria-label="Grafite"></button>
+                <button class="base-swatch" data-cv-color="green" style="--swatch:#1a7a4a" onclick="setBaseCvColor('green')" aria-label="Verde VagaAI" title="Verde VagaAI"></button>
+                <button class="base-swatch" data-cv-color="teal" style="--swatch:#176b66" onclick="setBaseCvColor('teal')" aria-label="Verde petróleo" title="Verde petróleo"></button>
+                <button class="base-swatch" data-cv-color="navy" style="--swatch:#213a65" onclick="setBaseCvColor('navy')" aria-label="Azul marinho" title="Azul marinho"></button>
+                <button class="base-swatch" data-cv-color="ocean" style="--swatch:#355c7d" onclick="setBaseCvColor('ocean')" aria-label="Azul profundo" title="Azul profundo"></button>
+                <button class="base-swatch" data-cv-color="burgundy" style="--swatch:#744052" onclick="setBaseCvColor('burgundy')" aria-label="Vinho" title="Vinho"></button>
+                <button class="base-swatch" data-cv-color="terracotta" style="--swatch:#6b3f35" onclick="setBaseCvColor('terracotta')" aria-label="Terracota" title="Terracota"></button>
+                <button class="base-swatch" data-cv-color="bronze" style="--swatch:#665039" onclick="setBaseCvColor('bronze')" aria-label="Bronze" title="Bronze"></button>
+                <button class="base-swatch" data-cv-color="graphite" style="--swatch:#2d3748" onclick="setBaseCvColor('graphite')" aria-label="Grafite" title="Grafite"></button>
               </div>
             </div>
-            <div class="base-personalize-row">
-              <div><strong>Foto profissional</strong><small>Inclua somente quando fizer sentido</small></div>
-              <button class="base-photo-toggle" id="basePhotoToggle" type="button" onclick="baseTogglePhoto()" aria-pressed="false" aria-label="Incluir foto"><i></i></button>
+
+            <div class="base-photo-control" id="basePhotoControl">
+              <div class="base-photo-preview" id="basePhotoPreview" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 21c.7-4.2 3-6.3 7-6.3s6.3 2.1 7 6.3"/></svg>
+                <img id="basePhotoPreviewImg" alt="">
+              </div>
+              <div class="base-photo-copy">
+                <strong>Foto no currículo</strong>
+                <small id="basePhotoStatus">Nenhuma foto adicionada</small>
+                <span id="basePhotoHint">Opcional · JPG ou PNG de até 2 MB</span>
+              </div>
+              <div class="base-photo-actions">
+                <button class="base-photo-button" id="basePhotoButton" type="button" onclick="baseChoosePhoto()">Adicionar foto</button>
+                <button class="base-photo-remove" id="basePhotoRemove" type="button" onclick="baseRemovePhoto()" hidden>Remover</button>
+              </div>
+              <label class="base-photo-use" id="basePhotoUse" hidden>
+                <span>Usar a foto neste modelo</span>
+                <button class="base-photo-toggle" id="basePhotoToggle" type="button" onclick="baseTogglePhoto()" aria-pressed="false" aria-label="Usar foto neste modelo"><i></i></button>
+              </label>
             </div>
           </div>
 
           <div class="base-protection">
             <svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.2 8 8 9 4.8-1 8-4 8-9V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>
-            <div><strong>Seu documento mestre está protegido</strong>Modelos e downloads não alteram o conteúdo usado nas análises e alertas.</div>
+            <div><strong>Seu currículo principal está protegido</strong>Trocar modelo, cor ou foto não altera as informações salvas.</div>
           </div>
         </aside>
 
@@ -1872,7 +1899,7 @@ html.no-photo .mod-header{display:block}
       <div>
         <div class="preflight-kicker">Exportar currículo</div>
         <div class="preflight-title">Pronto para baixar em PDF</div>
-        <div class="preflight-sub">Revisamos páginas, margens e leitura por ATS. Confira a prévia e baixe o arquivo final.</div>
+        <div class="preflight-sub">Confira o tamanho, as margens e a prévia antes de baixar.</div>
       </div>
       <button class="preflight-x" type="button" onclick="closePdfPreflight()" aria-label="Fechar">×</button>
     </div>
@@ -1889,11 +1916,11 @@ html.no-photo .mod-header{display:block}
           <div class="pf-stat"><b id="pfPages">-</b><span>páginas</span></div>
           <div class="pf-stat"><b id="pfFormat">A4</b><span>formato</span></div>
           <div class="pf-stat"><b id="pfScore">-</b><span id="pfScoreLabel">aderência</span></div>
-          <div class="pf-stat"><b id="pfKeywords">-</b><span>keywords</span></div>
+          <div class="pf-stat"><b id="pfKeywords">-</b><span>termos</span></div>
         </div>
         <div class="pf-list" id="pfList"></div>
         <div class="pf-ats-breakdown" id="pfAtsBreakdown">
-          <div class="pf-ats-title">Análise ATS por categoria</div>
+          <div class="pf-ats-title">O que foi verificado</div>
         </div>
         <div class="pf-tip">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
@@ -2170,7 +2197,25 @@ function baseStudioNavigate(event, id, href, frame, tab) {
   return false;
 }
 
-var BASE_TEMPLATE_NAMES = { modern:'Moderno', focus:'Focado', minimal:'Minimalista', classic:'Profissional', exec:'Executivo', compact:'Compacto' };
+var BASE_TEMPLATE_INFO = {
+  modern:{ name:'Moderno', photo:true, title:'Boa escolha para a maioria das candidaturas', text:'Estrutura simples, boa leitura na tela e no PDF.' },
+  focus:{ name:'Focado', photo:false, title:'Feito para destacar sua experiência', text:'Sem foto e com atenção maior ao conteúdo principal.' },
+  minimal:{ name:'Minimalista', photo:false, title:'A opção mais simples e direta', text:'Sem foto, poucos elementos visuais e leitura rápida.' },
+  classic:{ name:'Profissional', photo:true, title:'Organiza o perfil em duas colunas', text:'Boa opção para enviar diretamente a uma pessoa.' },
+  exec:{ name:'Executivo', photo:true, title:'Mais presença para perfis seniores', text:'Visual elegante para uma apresentação direta e cuidadosa.' },
+  compact:{ name:'Compacto', photo:true, title:'Melhor para currículos com mais conteúdo', text:'Aproveita o espaço sem reduzir demais o tamanho do texto.' }
+};
+var BASE_TEMPLATE_NAMES = Object.keys(BASE_TEMPLATE_INFO).reduce(function(names, key) { names[key] = BASE_TEMPLATE_INFO[key].name; return names; }, {});
+var BASE_CV_COLORS = {
+  green:{ name:'Verde VagaAI', ac:'#1a7a4a', ac2:'#376c4e', ac3:'#6e9480', sidebar:'#f0f7f3' },
+  teal:{ name:'Verde petróleo', ac:'#176b66', ac2:'#3b7773', ac3:'#759895', sidebar:'#f0f7f6' },
+  navy:{ name:'Azul marinho', ac:'#213a65', ac2:'#49617f', ac3:'#768ba4', sidebar:'#f1f4f8' },
+  ocean:{ name:'Azul profundo', ac:'#355c7d', ac2:'#57778f', ac3:'#8299aa', sidebar:'#f2f6f8' },
+  burgundy:{ name:'Vinho', ac:'#744052', ac2:'#8c6170', ac3:'#ae8996', sidebar:'#f8f2f4' },
+  terracotta:{ name:'Terracota', ac:'#6b3f35', ac2:'#8a635b', ac3:'#ad8d86', sidebar:'#f8f3f1' },
+  bronze:{ name:'Bronze', ac:'#665039', ac2:'#826d55', ac3:'#a5927d', sidebar:'#f8f5f1' },
+  graphite:{ name:'Grafite', ac:'#2d3748', ac2:'#4a5568', ac3:'#718096', sidebar:'#f7f8fa' }
+};
 var _baseStudioReady = false;
 
 function baseStudioInitials(name, email) {
@@ -2246,39 +2291,78 @@ function syncBaseTemplateUi(template) {
   });
   var label = document.querySelector('.base-export-mode .cvp-label');
   if (label) label.textContent = 'Prévia · Modelo ' + (BASE_TEMPLATE_NAMES[template] || 'selecionado').toLowerCase();
+  var info = BASE_TEMPLATE_INFO[template] || BASE_TEMPLATE_INFO.modern;
+  var adviceTitle = document.getElementById('baseTemplateAdviceTitle');
+  var adviceText = document.getElementById('baseTemplateAdviceText');
+  if (adviceTitle) adviceTitle.textContent = info.title;
+  if (adviceText) adviceText.textContent = info.text;
+  syncBasePhotoToggle(template);
 }
 
 function setBaseCvColor(key, persist) {
-  var colors = {
-    green:{ ac:'#1a7a4a', ac2:'#376c4e', ac3:'#6e9480', sidebar:'#f0f7f3' },
-    blue:{ ac:'#213a65', ac2:'#49617f', ac3:'#768ba4', sidebar:'#f1f4f8' },
-    terracotta:{ ac:'#6b3f35', ac2:'#8a635b', ac3:'#ad8d86', sidebar:'#f8f3f1' },
-    graphite:{ ac:'#2d3748', ac2:'#4a5568', ac3:'#718096', sidebar:'#f7f8fa' }
-  };
-  var selected = colors[key] || colors.graphite;
+  if (key === 'blue') key = 'navy';
+  var selected = BASE_CV_COLORS[key] || BASE_CV_COLORS.green;
   var root = document.documentElement;
   root.style.setProperty('--ac', selected.ac);
   root.style.setProperty('--ac2', selected.ac2);
   root.style.setProperty('--ac3', selected.ac3);
   root.style.setProperty('--sb-bg', selected.sidebar);
   document.querySelectorAll('.base-swatch').forEach(function(button) { button.classList.toggle('active', button.getAttribute('data-cv-color') === key); });
+  var name = document.getElementById('baseColorName');
+  if (name) name.textContent = selected.name;
   if (persist !== false) try { localStorage.setItem('vagaai_cv_color', key); } catch(e) {}
 }
 
-function syncBasePhotoToggle() {
+function getBaseStudioTemplate() {
+  var active = document.querySelector('.base-template.active');
+  return active ? active.getAttribute('data-template') : ((_cvData && _cvData.template) || 'modern');
+}
+
+function syncBasePhotoToggle(template) {
   var photo = null, include = true;
   try {
     photo = localStorage.getItem('vagaai_cv_photo');
     include = localStorage.getItem('vagaai_cv_include_photo') !== 'false';
   } catch(e) {}
-  var active = !!(photo && photo !== 'none' && include);
+  var hasPhoto = !!(photo && photo !== 'none');
+  var info = BASE_TEMPLATE_INFO[template || getBaseStudioTemplate()] || BASE_TEMPLATE_INFO.modern;
+  var active = !!(hasPhoto && include && info.photo);
   document.documentElement.classList.toggle('no-photo', !active);
   var toggle = document.getElementById('basePhotoToggle');
   if (toggle) {
     toggle.classList.toggle('on', active);
     toggle.setAttribute('aria-pressed', active ? 'true' : 'false');
-    toggle.setAttribute('aria-label', active ? 'Remover foto desta exportação' : 'Incluir foto nesta exportação');
+    toggle.disabled = !hasPhoto || !info.photo;
+    toggle.setAttribute('aria-label', active ? 'Não usar foto neste modelo' : 'Usar foto neste modelo');
   }
+  var control = document.getElementById('basePhotoControl');
+  if (control) control.classList.toggle('photo-not-supported', !info.photo);
+  var previewImg = document.getElementById('basePhotoPreviewImg');
+  if (previewImg) {
+    previewImg.src = hasPhoto ? photo : '';
+    previewImg.style.display = hasPhoto ? 'block' : 'none';
+  }
+  var status = document.getElementById('basePhotoStatus');
+  if (status) status.textContent = hasPhoto ? (info.photo ? 'Foto adicionada' : 'Foto salva, mas este modelo não usa foto') : (info.photo ? 'Nenhuma foto adicionada' : 'Este modelo foi criado sem foto');
+  var hint = document.getElementById('basePhotoHint');
+  if (hint) hint.textContent = info.photo ? 'Opcional · JPG ou PNG de até 2 MB' : 'Escolha outro modelo para mostrar sua foto';
+  var button = document.getElementById('basePhotoButton');
+  if (button) button.textContent = hasPhoto ? 'Trocar foto' : 'Adicionar foto';
+  var remove = document.getElementById('basePhotoRemove');
+  if (remove) remove.hidden = !hasPhoto;
+  var use = document.getElementById('basePhotoUse');
+  if (use) use.hidden = !hasPhoto || !info.photo;
+}
+
+function baseChoosePhoto() {
+  var input = document.getElementById('photoFileInput');
+  if (input) input.click();
+}
+
+function baseRemovePhoto() {
+  removePhoto();
+  try { localStorage.setItem('vagaai_cv_include_photo', 'false'); } catch(e) {}
+  syncBasePhotoToggle();
 }
 
 function baseTogglePhoto() {
@@ -2293,8 +2377,7 @@ function baseTogglePhoto() {
   }
   try { localStorage.setItem('vagaai_cv_include_photo', 'true'); } catch(e) {}
   if (!photo || photo === 'none') {
-    var input = document.getElementById('photoFileInput');
-    if (input) input.click();
+    baseChoosePhoto();
     return;
   }
   renderPhoto(photo);
@@ -2655,7 +2738,7 @@ function getPreflightRows() {
       { ok: !diag.sidebarRisk, text: diag.sidebarRisk ? 'A sidebar do modelo ' + diag.templateLabel + ' está muito cheia e pode ficar próxima da margem inferior.' : 'A margem interna do modelo atual está dentro da área segura.' },
       { ok: !diag.longTextRisk, text: diag.longTextRisk ? 'Para CV longo, modelos de coluna única costumam exportar melhor que modelos com sidebar.' : 'O modelo atual está adequado para o volume de conteúdo.' },
       { ok: hasMetricText(), text: hasMetricText() ? 'Há métricas nas experiências.' : 'Ainda faltam métricas/resultados nos bullets principais.' },
-      { ok: kws.missing.length === 0, text: kws.missing.length === 0 ? 'Sem keywords críticas pendentes.' : 'Keywords ausentes: ' + kws.missing.slice(0, 4).join(', ') + '.' },
+      { ok: kws.missing.length === 0, text: kws.missing.length === 0 ? 'Os termos importantes estão presentes.' : 'Termos que ainda podem ser incluídos: ' + kws.missing.slice(0, 4).join(', ') + '.' },
       { ok: true, text: 'Use "Salvar como PDF" no destino de impressão para preservar o layout.' }
     ])
   };
@@ -2669,9 +2752,9 @@ function renderAtsBreakdown() {
     { label: 'Contato',    score: ats.pillars.contato },
     { label: 'Resumo',     score: ats.pillars.resumo },
     { label: 'Métricas',   score: ats.pillars.metricas },
-    { label: 'Keywords',   score: ats.pillars.keywords }
+    { label: 'Termos-chave', score: ats.pillars.keywords }
   ];
-  el.innerHTML = '<div class="pf-ats-title">Análise ATS por categoria</div>' + pillars.map(function(p) {
+  el.innerHTML = '<div class="pf-ats-title">O que foi verificado</div>' + pillars.map(function(p) {
     return '<div class="pf-ats-row">' +
       '<span class="pf-ats-label">' + p.label + '</span>' +
       '<div class="pf-ats-bar"><span style="width:' + p.score + '%" class="' + (p.score >= 60 ? '' : 'warn') + '"></span></div>' +
@@ -2805,9 +2888,9 @@ function openPdfPreflight() {
   var tipEl = document.getElementById('pfTipText');
   if (tipEl) {
     if (isSidebar) {
-      tipEl.innerHTML = 'Modelo com <b>sidebar</b>: ótimo visualmente, mas alguns parsers ATS leem colunas fora de ordem. Para candidaturas via plataforma, prefira <b>Moderno</b> ou <b>Minimalista</b>. Na impressão, escolha <b>Salvar como PDF</b> e desmarque <b>Cabeçalhos e rodapés</b>.';
+      tipEl.innerHTML = 'Este modelo usa <b>duas colunas</b>. Para enviar em sites de vagas, os modelos <b>Moderno</b> e <b>Minimalista</b> costumam ter leitura mais simples. Na impressão, escolha <b>Salvar como PDF</b> e desmarque <b>Cabeçalhos e rodapés</b>.';
     } else {
-      tipEl.innerHTML = 'Modelo de <b>coluna única</b>: leitura por ATS na ordem correta. Na janela de impressão, escolha <b>Salvar como PDF</b> e desmarque <b>Cabeçalhos e rodapés</b> para um arquivo limpo.';
+      tipEl.innerHTML = 'Este modelo usa <b>uma coluna</b> e funciona bem em sites de vagas. Na janela de impressão, escolha <b>Salvar como PDF</b> e desmarque <b>Cabeçalhos e rodapés</b> para um arquivo limpo.';
     }
   }
 
@@ -2829,10 +2912,14 @@ function getPrintStylesForIframe() {
   document.querySelectorAll('style').forEach(function(style) {
     styles.push(style.textContent || '');
   });
+  var sourceRoot = getComputedStyle(document.documentElement);
+  styles.push(':root{' + ['--ac','--ac2','--ac3','--sb-bg'].map(function(name) {
+    return name + ':' + sourceRoot.getPropertyValue(name).trim();
+  }).join(';') + '}');
   styles.push([
     '@page{size:210mm 297mm;margin:0}',
     'html,body{width:210mm!important;min-width:210mm!important;margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important}',
-    '*{box-sizing:border-box!important}',
+    '*{box-sizing:border-box!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}',
     '.page-wrap{display:block!important;width:210mm!important;min-width:210mm!important;margin:0!important;padding:0!important;overflow:visible!important}',
     '.page{display:none!important}',
     '.page.active{display:flex!important;width:210mm!important;min-width:210mm!important;max-width:210mm!important;min-height:297mm!important;height:auto!important;margin:0!important;padding:0!important;box-shadow:none!important;overflow:visible!important;zoom:1!important;transform:none!important;transform-origin:top left!important;background:#fff!important}',
@@ -3262,8 +3349,8 @@ function applySmartFix(type) {
     if (!file) return;
     // Valida tipo e tamanho ANTES de ler: base64 grande estoura a quota do
     // localStorage silenciosamente e a foto some ao recarregar, sem aviso.
-    if (!/^image\//.test(file.type)) {
-      showToast('Arquivo inválido. Envie uma imagem (JPG ou PNG).', 'error');
+    if (!/image\/(jpeg|png)/.test(file.type)) {
+      showToast('Arquivo inválido. Envie uma foto em JPG ou PNG.', 'error');
       this.value = '';
       return;
     }
@@ -3364,6 +3451,7 @@ function removePhoto() {
   });
   updatePhotoUI(false);
   try { localStorage.setItem('vagaai_cv_photo', 'none'); } catch(e) {}
+  syncBasePhotoToggle();
 }
 
 /* ── Global: template ───────────────────────────────────── */
