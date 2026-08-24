@@ -88,20 +88,23 @@ describe('Integridade entre páginas', () => {
       'curriculo/index.html',
       'cv/index.html',
       'carta/index.html',
-      'entrevista/index.html'
+      'entrevista/index.html',
+      'login/index.html',
+      'onboarding/vaga/index.html',
+      'onboarding/curriculo/index.html'
     ];
 
     for (const pagina of paginas) {
       const src = read(pagina);
       assert.match(src, /class="[^"]*vui-theme-control/, `${pagina} não usa o controle compartilhado`);
       assert.match(src, /aria-label="Alternar tema claro ou escuro"/, `${pagina} não descreve a ação do controle`);
-      assert.match(src, /product-ui\.css\?v=20260823-theme1/, `${pagina} não carrega a versão atual do componente`);
+      assert.match(src, /product-ui\.css\?v=20260824-theme2/, `${pagina} não carrega a versão atual do componente`);
+      assert.doesNotMatch(src, /vui-theme-label/, `${pagina} ainda exibe texto no controle de tema`);
     }
 
     const css = read('assets/product-ui.css');
-    assert.match(css, /\.vui-theme-control\s*\{/);
-    assert.match(css, /\.vui-theme-to-dark/);
-    assert.match(css, /html\[data-theme="dark"\][\s\S]*\.vui-theme-to-light/);
+    assert.match(css, /\.vui-theme-control\s*\{[\s\S]*?width:\s*40px;[\s\S]*?min-width:\s*40px;/);
+    assert.match(css, /html\[data-theme="dark"\][\s\S]*\.vui-theme-sun/);
   });
 
   it('nenhum href é montado só com escape de HTML', () => {

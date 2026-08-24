@@ -22,7 +22,7 @@ const productPages = new Map([
 test('rotas ativas carregam a fundação visual depois dos estilos locais', () => {
   for (const [file, page] of productPages) {
     const html = read(file);
-    const href = '<link rel="stylesheet" href="/assets/product-ui.css?v=20260823-theme1">';
+    const href = '<link rel="stylesheet" href="/assets/product-ui.css?v=20260824-theme2">';
     const head = html.slice(0, html.indexOf('</head>'));
     assert.equal(html.split(href).length - 1, 1, `${file} deve carregar a fundação uma vez`);
     assert.match(html, new RegExp(`<body data-vagaai-ui="${page}">`));

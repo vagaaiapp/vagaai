@@ -8,7 +8,9 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dashboard = fs.readFileSync(path.join(root, 'dashboard', 'index.html'), 'utf8');
 
 test('candidaturas usa a jornada aprovada com uma única prioridade dominante', () => {
-  assert.match(dashboard, /aria-label="Próxima ação e resumo da jornada"/);
+  /* "jornada" saiu da copy do produto: palavra abstrata, trocada por "busca"
+     no mapeamento de linguagem. O ratchet segue travando o mesmo elemento. */
+  assert.match(dashboard, /aria-label="Próxima ação e resumo da busca"/);
   assert.match(dashboard, /class="cand-journey"/);
   assert.match(dashboard, /id="cjCaption"/);
   assert.match(dashboard, /id="cjNote"/);
@@ -39,9 +41,9 @@ test('lista, Kanban, calendário, filtros, cadastro e detalhe permanecem funcion
 
 test('detalhe da vaga conduz decisão sem perder ações e dados reais', () => {
   assert.match(dashboard, /class="cd-decision"/);
-  assert.match(dashboard, /O que mais aumenta sua aderência/);
+  assert.match(dashboard, /O que mais aumenta sua compatibilidade/);
   assert.match(dashboard, /Preparação da candidatura/);
-  assert.match(dashboard, /Jornada desta oportunidade/);
+  assert.match(dashboard, /Etapas desta vaga/);
   assert.match(dashboard, /Array\.isArray\(r\.prioridades\)/);
   assert.match(dashboard, /Array\.isArray\(r\.keywords_faltando\)/);
   assert.match(dashboard, /Vaga em site externo/);

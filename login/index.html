@@ -102,7 +102,7 @@ input:focus{outline:none;border-color:var(--green-border)}
 [data-theme="light"] .logo-light{display:block!important}
 </style>
 <script>if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.removeAttribute('data-theme')</script>
-<link rel="stylesheet" href="/assets/product-ui.css?v=20260823-theme1">
+<link rel="stylesheet" href="/assets/product-ui.css?v=20260824-theme2">
 </head>
 <body data-vagaai-ui="auth">
 <nav>
@@ -110,7 +110,7 @@ input:focus{outline:none;border-color:var(--green-border)}
     <img src="/logo.svg" alt="VagaAI" height="38" class="logo-dark" style="display:block;">
     <img src="/logo-icon.svg" alt="VagaAI" height="38" class="logo-light" style="display:none;">
   </a>
-  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema"></button>
+  <button class="theme-btn vui-theme-control vui-theme-control--compact" id="themeBtn" onclick="toggleTheme()" title="Alternar tema" aria-label="Alternar tema claro ou escuro"></button>
 </nav>
 
 <div class="card">
@@ -459,8 +459,8 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ── Tema ─────────────────────────────────────────────────────────────────────
-var _SVG_SUN='<svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/></svg>';
-var _SVG_MOON='<svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>';
+var _SVG_SUN='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
+var _SVG_MOON='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
 function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')==='light';if(l){document.documentElement.removeAttribute('data-theme');localStorage.setItem('vagaai_theme','dark')}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('vagaai_theme','light')}var b=document.getElementById('themeBtn');if(b)b.innerHTML=l?_SVG_SUN:_SVG_MOON}
 ;(function(){var b=document.getElementById('themeBtn');if(b)b.innerHTML=document.documentElement.getAttribute('data-theme')==='light'?_SVG_MOON:_SVG_SUN})();
 </script>
