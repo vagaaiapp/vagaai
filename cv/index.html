@@ -2695,7 +2695,7 @@ function updateCvQualityDashboard() {
       ['Resumo alinhado à vaga', summaryOk],
       ['Experiências com métricas', metricsOk],
       ['Keywords principais', keywordsOk],
-      ['Formatação ATS', atsOk],
+      ['Formatação para os filtros', atsOk],
       ['A4 com margem segura', true],
       ['PDF sem corte visível', !(diag.sidebarRisk || diag.longTextRisk)]
     ];
@@ -3819,7 +3819,7 @@ function s3RenderSmartWarns() {
   var noPeriod = exps.filter(function(e) { return !e.periodo && !e.dataInicio; });
   if (noPeriod.length > 0) warns.push('⚠ ' + noPeriod.length + ' experiência' + (noPeriod.length > 1 ? 's' : '') + ' sem período definido');
   var skills = _cvData.habilidades || [];
-  if (skills.length === 0) warns.push('⚠ Nenhuma habilidade adicionada: impacta o score de keywords');
+  if (skills.length === 0) warns.push('⚠ Nenhuma habilidade adicionada: impacta os termos que a vaga procura');
   container.innerHTML = warns.map(function(w) {
     return '<div class="csv-smart-warn">' + w + '</div>';
   }).join('');

@@ -4156,7 +4156,7 @@ function updatePBAPriority(score, cargo, empresa, subText) {
   var numEl = document.getElementById('pbaScoreNum');
   if (numEl) numEl.textContent = s + '%';
   var labelEl = document.getElementById('pbaScoreLabel');
-  if (labelEl) labelEl.textContent = s === 0 ? '-' : s >= 70 ? 'Boa aderência' : s >= 40 ? 'Aderência moderada' : 'Baixa aderência';
+  if (labelEl) labelEl.textContent = s === 0 ? '-' : s >= 70 ? 'Boa compatibilidade' : s >= 40 ? 'Compatibilidade média' : 'Baixa compatibilidade';
   var subEl = document.getElementById('pbaScoreSub');
   if (subEl) subEl.textContent = subText || '';
   var cargoEl = document.getElementById('pbaCargo');
@@ -4297,7 +4297,7 @@ function buildPBACard(analyses, tracked) {
       descEl.textContent = temVersao
         ? 'A versão direcionada para ' + cargo + (emp ? ' na ' + emp : '') + ' já está pronta na sua conta. Ajuste os pontos marcados e envie a candidatura.'
         : missing > 0
-          ? 'Comece pelos que você já fez e não escreveu: costuma ser a maior parte deles. O que você não tem, não invente: a carta é o lugar de tratar a lacuna.'
+          ? 'Comece pelos que você já fez e não escreveu: costuma ser a maior parte deles. O que você não tem, não invente: a carta é o lugar de tratar o que falta.'
           : 'O que pesa daqui pra frente é a evidência: número, resultado e contexto no lugar de adjetivo.';
     }
     if (btnPri) {
@@ -4802,15 +4802,15 @@ function insightDeAderencia(analyses, tracked) {
   var pctBaixa = Math.round((baixa.avancaram / baixa.enviadas) * 100);
 
   if (pctAlta > pctBaixa) {
-    return 'Nas suas candidaturas, ' + pctAlta + '% das vagas com aderência acima de 70% avançaram para entrevista, contra ' +
-      pctBaixa + '% das abaixo. Priorizar aderência alta tem funcionado para você.';
+    return 'Nas suas candidaturas, ' + pctAlta + '% das vagas com compatibilidade acima de 70% avançaram para entrevista, contra ' +
+      pctBaixa + '% das abaixo. Priorizar compatibilidade alta tem funcionado para você.';
   }
   if (pctBaixa > pctAlta) {
-    return 'Curioso: ' + pctBaixa + '% das suas candidaturas com aderência abaixo de 70% avançaram, contra ' +
-      pctAlta + '% das de aderência alta. O score não está prevendo seu retorno. Vale olhar o que essas vagas têm em comum.';
+    return 'Curioso: ' + pctBaixa + '% das suas candidaturas com compatibilidade abaixo de 70% avançaram, contra ' +
+      pctAlta + '% das de compatibilidade alta. A nota não está prevendo seu retorno. Vale olhar o que essas vagas têm em comum.';
   }
-  return 'Aderência alta e baixa avançaram na mesma proporção (' + pctAlta + '%) nas suas candidaturas. ' +
-    'O que decide o retorno, no seu caso, está fora do score.';
+  return 'Compatibilidade alta e baixa avançaram na mesma proporção (' + pctAlta + '%) nas suas candidaturas. ' +
+    'O que decide o retorno, no seu caso, está fora da nota.';
 }
 
 function buildFunilCard(analyses, tracked) {
@@ -4942,7 +4942,7 @@ function buildFunilCard(analyses, tracked) {
       } else if (entrevistas > 0 && candidaturas > 0) {
         txt = convRate + '% das candidaturas avançaram para entrevista (' + entrevistas + ' de ' + candidaturas + '). Use o simulador para se preparar.';
       } else {
-        txt = 'Como regra geral, candidaturas de aderência alta respondem mais. Com mais candidaturas registradas, isto vira um número seu.';
+        txt = 'Como regra geral, candidaturas de compatibilidade alta respondem mais. Com mais candidaturas registradas, isto vira um número seu.';
       }
       /* Calculado sobre TODO o histórico, não sobre a janela: taxa de retorno
          precisa de amostra, e recortar em 30 dias joga fora justamente o que
@@ -5424,7 +5424,7 @@ function renderInterviewHub() {
       focusScore.style.color = firstScore >= 70 ? '#177a4a' : firstScore >= 40 ? '#95610a' : '#d64e4e';
     }
     if (focusCargo) focusCargo.textContent = first.cargo || 'Vaga analisada';
-    if (focusEmpresa) focusEmpresa.textContent = (first.empresa || 'Empresa') + ' · aderência de ' + firstScore + '%';
+    if (focusEmpresa) focusEmpresa.textContent = (first.empresa ? first.empresa + ' · ' : '') + 'compatibilidade de ' + firstScore + '%';
     if (focusStatus) focusStatus.textContent = isInterview ? 'Em entrevista' : isOffer ? 'Oferta recebida' : 'Vaga analisada';
     if (focusMeta) focusMeta.textContent = (firstHasCv ? 'CV otimizado' : 'Currículo principal') + (firstGaps ? ' · ' + firstGaps + ' pontos para defender' : ' · pronta para praticar');
     if (focusAction) {
@@ -5488,7 +5488,7 @@ function renderInterviewHub() {
     var statusLabel = STATUS_LABELS[item.status] || 'Analisada';
     var kwMissing = Array.isArray(item.result && item.result.keywords_faltando) ? item.result.keywords_faltando.length : 0;
     var hasCv = item.result && item.result.cv_otimizado;
-    var detail = [statusLabel, hasCv ? 'CV otimizado' : 'Currículo principal', kwMissing ? kwMissing + ' pontos para defender' : 'Boa aderência'];
+    var detail = [statusLabel, hasCv ? 'CV otimizado' : 'Currículo principal', kwMissing ? kwMissing + ' pontos para defender' : 'Boa compatibilidade'];
     var url = '/entrevista?analysis_id=' + encodeURIComponent(item.analysisData.id);
     var action = hasAccess
       ? '<button class="int-train-btn" data-url="' + escAttr(url) + '" onclick="switchDashTab(\'entrevista\', this.dataset.url)">Treinar agora →</button>'
@@ -5547,12 +5547,12 @@ function renderCandMetrics(all) {
   var displaySub = pa.sub;
   if (pa.action === 'track' && m.naoRastreadas === 1) {
     displayTitle = 'Transforme esta análise em uma candidatura acompanhada.';
-    displaySub = 'Você já conhece a aderência da vaga. Agora registre a oportunidade para acompanhar prazo, retorno e próximos passos.';
+    displaySub = 'Você já conhece a compatibilidade da vaga. Agora registre a oportunidade para acompanhar prazo, retorno e próximos passos.';
   } else if (pa.action === 'analyze') {
-    displayTitle = 'Comece sua jornada por uma vaga que importa.';
+    displayTitle = 'Comece sua busca por uma vaga que importa.';
     displaySub = 'Analise uma oportunidade para comparar seu currículo e acompanhar cada avanço em um só lugar.';
   } else if (pa.action === 'filter' && m.naoRastreadas > 1) {
-    displayTitle = 'Decida quais análises devem entrar na sua jornada.';
+    displayTitle = 'Decida quais análises devem entrar na sua busca.';
     displaySub = 'Escolha as oportunidades que fazem sentido acompanhar e mantenha prazos e retornos organizados.';
   }
   if (titleEl) titleEl.textContent = displayTitle;
@@ -5600,7 +5600,7 @@ function renderCandMetrics(all) {
   var caption = document.getElementById('cjCaption');
   if (caption) caption.textContent = m.naoRastreadas
     ? m.naoRastreadas + ' oportunidade' + (m.naoRastreadas === 1 ? '' : 's') + ' aguardando sua decisão'
-    : m.total ? m.total + ' oportunidade' + (m.total === 1 ? '' : 's') + ' em diferentes etapas' : 'Sua jornada começa com a primeira análise';
+    : m.total ? m.total + ' oportunidade' + (m.total === 1 ? '' : 's') + ' em diferentes etapas' : 'Sua busca começa com a primeira análise';
   var note = document.getElementById('cjNote');
   if (note) note.textContent = m.naoRastreadas
     ? 'Rastrear não significa que você já se candidatou. Significa apenas que deseja acompanhar esta oportunidade.'
@@ -5769,17 +5769,17 @@ function renderCandDetail(item) {
     : (host ? host.split('.')[0].replace(/^./, function(c){ return c.toUpperCase(); }) : '');
   var originText = isInternal ? 'Vaga na VagaAI' : 'Vaga em site externo' + (sourceName ? ' · ' + sourceName : '');
   var updatedText = item.daysSince === 0 ? 'Análise atualizada hoje' : 'Atualizada há ' + item.daysSince + ' dia' + (item.daysSince === 1 ? '' : 's');
-  var scoreLabel = !item.analysisData ? 'Ainda não analisada' : s >= 70 ? 'Alta aderência' : s >= 40 ? 'Aderência moderada' : 'Baixa aderência';
+  var scoreLabel = !item.analysisData ? 'Ainda não analisada' : s >= 70 ? 'Alta compatibilidade' : s >= 40 ? 'Compatibilidade média' : 'Baixa compatibilidade';
 
   var decisionTitle = 'Analise esta vaga antes de decidir seu próximo passo.';
-  var decisionCopy = 'Compare a oportunidade com seu currículo para identificar pontos fortes, lacunas e a melhor forma de avançar.';
+  var decisionCopy = 'Compare a oportunidade com seu currículo para identificar pontos fortes, o que falta e a melhor forma de avançar.';
   if (item.analysisData) {
     if (item.status === 'entrevista') {
       decisionTitle = 'A oportunidade avançou. Agora o preparo muda de foco.';
-      decisionCopy = 'Use a vaga e sua trajetória para treinar respostas específicas antes da entrevista real.';
+      decisionCopy = 'Use a vaga e sua experiência para treinar respostas específicas antes da entrevista real.';
     } else if (item.status === 'oferta') {
       decisionTitle = 'Você chegou à etapa de decisão desta oportunidade.';
-      decisionCopy = 'Revise as condições, registre suas observações e mantenha a jornada atualizada antes de responder.';
+      decisionCopy = 'Revise as condições, registre suas observações e mantenha a candidatura atualizada antes de responder.';
     } else if (item.status === 'aplicada' || item.status === 'em_processo') {
       decisionTitle = 'Sua candidatura está em movimento.';
       decisionCopy = 'Acompanhe o retorno da empresa e mantenha o status atualizado para não perder o próximo passo.';
@@ -5805,7 +5805,7 @@ function renderCandDetail(item) {
   var kwOk = Array.isArray(r.keywords_encontradas) ? r.keywords_encontradas.slice(0,6) : [];
   if (!priorities.length) {
     priorities = kwFalt.slice(0,3).map(function(k) {
-      return { title:k, copy:'Se sua trajetória sustentar este requisito, deixe claro onde você o aplicou e qual foi o contexto.' };
+      return { title:k, copy:'Se sua experiência sustentar este requisito, deixe claro onde você o aplicou e qual foi o contexto.' };
     });
   }
   var priorityHtml = priorities.length ? priorities.map(function(p, i) {
@@ -6923,7 +6923,7 @@ function renderAlertEmailPreview(p, ext) {
       '<div class="al-email-content">'+
         '<div class="al-email-subject">Assunto: '+escHtml(subject)+'</div>'+
         '<div class="al-email-title">Vagas selecionadas para você</div>'+
-        '<div class="al-email-body-txt">Encontramos oportunidades com boa aderência ao seu perfil'+(p.cidade?' em '+escHtml(p.cidade):'')+'.</div>'+
+        '<div class="al-email-body-txt">Encontramos oportunidades bem compatíveis com seu perfil'+(p.cidade?' em '+escHtml(p.cidade):'')+'.</div>'+
         '<div class="al-email-item"><span>'+escHtml(p.cargo_desejado||'Cargo')+'</span><span style="font-size:11px;color:var(--t3)">compatível</span></div>'+
         '<div class="al-email-cta">Ver oportunidades</div>'+
         '<div class="al-email-secondary" onclick="openAlertEditModal()">Editar preferências</div>'+
@@ -8475,13 +8475,13 @@ function renderPlanTiles(sub) {
   }
 
   var title = 'Comece a organizar sua busca e avance quando precisar de mais profundidade.';
-  var copy = 'O plano Grátis mantém seu rastreador e seus alertas disponíveis. Quando surgir uma vaga prioritária, o Pro libera a jornada completa de análise e preparo.';
+  var copy = 'O plano Grátis mantém seu rastreador e seus alertas disponíveis. Quando surgir uma vaga prioritária, o Pro libera o caminho completo de análise e preparo.';
   if (plan === 'starter') {
     title = 'Seu plano mantém o essencial da busca em movimento.';
     copy = 'O Starter reúne análises, currículo direcionado e carta de apresentação. O Pro amplia o ritmo e acrescenta o treino de entrevista.';
   } else if (plan === 'pro') {
     title = 'Seu plano acompanha o ritmo da sua busca.';
-    copy = 'O Pro mantém todas as ferramentas da sua jornada disponíveis, sem interromper suas análises quando surgir uma nova oportunidade.';
+    copy = 'O Pro mantém todas as ferramentas da sua busca disponíveis, sem interromper suas análises quando surgir uma nova oportunidade.';
   }
   if (unavailable) {
     title = 'Não foi possível confirmar os dados da sua assinatura.';
@@ -8553,17 +8553,17 @@ function renderPlanTiles(sub) {
     nextCopy = sub.cancel_at_period_end ? 'Seu acesso continua ativo até o fim do período atual. No portal, você pode revisar essa decisão.' : 'O Stripe precisa de uma ação para manter todos os recursos ativos.';
     nextBtnText = 'Abrir assinatura →'; nextAction = function(){ openStripePortal(document.getElementById('planxNextBtn')); };
   } else if (plan === 'free') {
-    nextTitle = 'Desbloqueie a jornada completa para cada vaga.'; nextCopy = 'O Pro reúne análises ilimitadas, currículo direcionado, carta e treino de entrevista em um único fluxo.'; nextBtnText = 'Conhecer o Pro →'; nextAction = function(){ openAuthCheckout('https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408'); }; proofB = 'Pro';
+    nextTitle = 'Desbloqueie o caminho completo para cada vaga.'; nextCopy = 'O Pro reúne análises ilimitadas, currículo direcionado, carta e treino de entrevista em um único fluxo.'; nextBtnText = 'Conhecer o Pro →'; nextAction = function(){ openAuthCheckout('https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408'); }; proofB = 'Pro';
   } else if (plan === 'starter') {
     nextTitle = 'Leve o preparo até a entrevista.'; nextCopy = 'No Pro, o limite mensal deixa de interromper a análise e o simulador prepara respostas para cada oportunidade.'; nextBtnText = 'Fazer upgrade →'; nextAction = function(){ openStripePortal(document.getElementById('planxNextBtn')); }; proofB = Math.max(0,limit-used);
   } else if (counts.tracked === 0) {
-    nextTitle = 'Leve uma análise para a jornada completa.'; nextCopy = 'Ao adicionar uma oportunidade ao rastreador, a plataforma passa a organizar prazos, próximos passos e preparo para entrevista.'; nextBtnText = 'Abrir candidaturas →'; nextAction = function(){ switchDashTab('vagas'); };
+    nextTitle = 'Leve uma análise para o caminho completo.'; nextCopy = 'Ao adicionar uma oportunidade ao rastreador, a plataforma passa a organizar prazos, próximos passos e preparo para entrevista.'; nextBtnText = 'Abrir candidaturas →'; nextAction = function(){ switchDashTab('vagas'); };
   } else if (counts.cv === 0) {
     nextTitle = 'Direcione seu currículo para uma oportunidade.'; nextCopy = 'Use uma análise já realizada para criar uma versão mais alinhada sem alterar seu documento principal.'; nextBtnText = 'Abrir currículo →'; nextAction = function(){ switchDashTab('curriculo'); };
   } else if (counts.interviews === 0) {
     nextTitle = 'Prepare a conversa antes da entrevista real.'; nextCopy = 'O treino usa a vaga e seu currículo para gerar perguntas, áudio e feedback específicos.'; nextBtnText = 'Treinar entrevista →'; nextAction = function(){ switchDashTab('entrevista'); };
   } else {
-    nextTitle = 'Seu plano já está integrado à sua jornada.'; nextCopy = 'Continue usando os recursos conforme cada oportunidade avança da análise até a entrevista.'; nextBtnText = 'Ver candidaturas →'; nextAction = function(){ switchDashTab('vagas'); };
+    nextTitle = 'Seu plano já está integrado à sua busca.'; nextCopy = 'Continue usando os recursos conforme cada oportunidade avança da análise até a entrevista.'; nextBtnText = 'Ver candidaturas →'; nextAction = function(){ switchDashTab('vagas'); };
   }
   _planxSet('planxNextTitle', nextTitle); _planxSet('planxNextCopy', nextCopy); _planxSet('planxProofA', proofA); _planxSet('planxProofB', proofB);
   _planxSet('planxProofALabel', plan === 'starter' ? 'análises usadas' : 'análises feitas');
@@ -8571,7 +8571,7 @@ function renderPlanTiles(sub) {
   var nextBtn = document.getElementById('planxNextBtn'); if (nextBtn) { nextBtn.textContent = nextBtnText; nextBtn.disabled = false; nextBtn.onclick = nextAction; }
 
   var resources = [
-    { title:'Análise de vaga', desc:'Aderência, requisitos, lacunas e briefing da empresa.', on:!!ent.can_analyze || plan !== 'free', state:plan === 'pro' ? 'Ilimitado' : (!!ent.can_analyze || plan !== 'free' ? 'Ativo' : 'Pro') },
+    { title:'Análise de vaga', desc:'Compatibilidade, requisitos, o que falta e resumo da empresa.', on:!!ent.can_analyze || plan !== 'free', state:plan === 'pro' ? 'Ilimitado' : (!!ent.can_analyze || plan !== 'free' ? 'Ativo' : 'Pro') },
     { title:'Currículo otimizado', desc:'Versões direcionadas sem alterar seu documento principal.', on:!!ent.cv_otimizado, state:ent.cv_otimizado ? 'Ativo' : 'Starter' },
     { title:'Carta de apresentação', desc:'Texto personalizado com base na vaga e no seu perfil.', on:plan !== 'free', state:plan !== 'free' ? 'Ativo' : 'Starter' },
     { title:'Treino de entrevista', desc:'Perguntas, áudio e feedback ligados à oportunidade.', on:!!ent.simulador_entrevista, state:ent.simulador_entrevista ? 'Ativo' : 'Pro' },
@@ -8967,7 +8967,7 @@ window.addEventListener('load', function() {
 var TOUR_KEY = 'vagaai_tour_done';
 var TOUR_STEPS = [
   { tab: 'painel',  title: 'Sua visão geral',            text: 'Aqui você acompanha suas análises, seu progresso e as próximas ações da sua busca, tudo em um só lugar.' },
-  { tab: 'alertas', title: 'Ligue seu radar de vagas 🔔', text: 'Configure cargo e cidade uma vez e receba vagas compatíveis direto no seu e-mail, com score estimado. É o jeito mais fácil de não perder oportunidade.' },
+  { tab: 'alertas', title: 'Ligue seu radar de vagas 🔔', text: 'Configure cargo e cidade uma vez e receba vagas compatíveis direto no seu e-mail, com a compatibilidade estimada. É o jeito mais fácil de não perder oportunidade.' },
   { tab: 'vagas',   title: 'Rastreie suas candidaturas',  text: 'Organize tudo em um quadro: Quero aplicar → Apliquei → Entrevista. Nenhuma candidatura se perde no caminho.' },
   { tab: 'plano',   title: 'Seu plano e limites',         text: 'Veja o que seu plano inclui, acompanhe seus limites do mês e gerencie sua assinatura quando quiser.' }
 ];

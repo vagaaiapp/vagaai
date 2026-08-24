@@ -80,7 +80,7 @@ describe('o card "Faça agora" conduz pelo fato', () => {
 
   it('diz explicitamente para não inventar, e para onde levar a lacuna real', () => {
     assert.match(dash, /O que você não tem, não invente/);
-    assert.match(dash, /a carta é o lugar de tratar a lacuna/);
+    assert.match(dash, /a carta é o lugar de tratar o que falta/);
   });
 
   it('a descrição depende de `missing`, não só de `temVersao`', () => {

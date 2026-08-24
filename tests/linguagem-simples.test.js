@@ -49,18 +49,36 @@ function visivel(fonte) {
     .join('\n');
 }
 
-/* Só texto que a pessoa lê: entre tags e em strings de UI. Sem isso o teste
-   reprovaria nome de variável e classe CSS, que podem manter o termo antigo. */
+/* Palavra em português: tem acento ou é palavra funcional comum. É o que
+   separa prosa de seletor CSS, caminho e nome de propriedade. */
+const PT = /[áàâãéêíóôõúüçÁÀÂÃÉÊÍÓÔÕÚÜÇ]|\b(?:de|da|do|para|com|seu|sua|que|uma|não|você|em|na|no)\b/i;
+
+/* Só texto que a pessoa lê. A primeira versão deste extrator olhava apenas
+   texto entre tags e `textContent = 'literal'`, e por isso deixou passar os
+   rótulos do anel de score ("Boa aderência", "Aderência moderada"), que são
+   montados em ternário: `s >= 70 ? 'Boa aderência' : ...`. Era o texto mais
+   visível do painel inteiro, logo abaixo do número.
+
+   Agora varre QUALQUER literal com cara de frase em português, venha de onde
+   vier. Nome de variável e classe CSS continuam de fora porque não passam no
+   teste de prosa. */
 function frases(fonte) {
   const src = visivel(fonte);
   const out = [];
-  for (const m of src.matchAll(/>([^<>{}]{8,240})</g)) {
+
+  for (const m of src.matchAll(/>([^<>{}]{4,240})</g)) {
     const t = m[1].replace(/\s+/g, ' ').trim();
-    if (t && !/[{}();=]|function|var /.test(t)) out.push(t);
+    if (t && PT.test(t) && !/[{};=]|function|var /.test(t)) out.push(t);
   }
-  for (const m of src.matchAll(/(?:textContent|innerHTML|placeholder|title|aria-label|content)\s*[:=]\s*['"]([^'"]{8,240})['"]/g)) {
-    out.push(m[1].replace(/\s+/g, ' ').trim());
+
+  for (const m of src.matchAll(/'([^'\\\n]{4,240})'|"([^"\\\n]{4,240})"/g)) {
+    const t = (m[1] || m[2] || '').trim();
+    if (!t || !PT.test(t)) continue;
+    if (/^[\w.#/:@-]+$/.test(t)) continue;      // seletor, caminho, classe
+    if (/^(?:https?:|\/|\.)/.test(t)) continue;
+    out.push(t);
   }
+
   return out;
 }
 
