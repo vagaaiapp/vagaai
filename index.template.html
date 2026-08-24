@@ -747,6 +747,83 @@
     [data-theme="light"] .path .btn.primary{
       box-shadow:0 13px 34px rgba(15,111,75,.24),inset 0 1px 0 rgba(255,255,255,.18);
     }
+    .path{
+      position:relative;
+      isolation:isolate;
+      overflow:hidden;
+      background:#082016;
+    }
+    .path:not(.primary-path){
+      background:#082016;
+    }
+    .path::before{
+      content:"";
+      display:block;
+      position:absolute;
+      z-index:0;
+      inset:0;
+      pointer-events:none;
+      opacity:1;
+      transition:none;
+      background-position:var(--path-image-position,center);
+      background-size:cover;
+      filter:saturate(.72) contrast(1.03);
+      transform:scale(1.015);
+    }
+    .path::after{
+      content:"";
+      position:absolute;
+      z-index:1;
+      inset:0;
+      pointer-events:none;
+      background:
+        linear-gradient(90deg,rgba(5,22,14,.99) 0%,rgba(5,22,14,.93) 47%,rgba(5,22,14,.64) 72%,rgba(5,22,14,.43) 100%),
+        linear-gradient(0deg,rgba(4,18,11,.92) 0%,transparent 48%);
+    }
+    .path:first-child{
+      --path-image-position:67% center;
+    }
+    .path:first-child::before{
+      background-image:url('/assets/dashboard-faca-agora-editorial.webp');
+    }
+    .path:nth-child(2){
+      --path-image-position:52% 58%;
+    }
+    .path:nth-child(2)::before{
+      background-image:url('/assets/curriculum-master-workspace.webp');
+    }
+    .path :is(.path-icon,h3,p,.btn){
+      position:relative;
+      z-index:2;
+    }
+    .path-num{
+      z-index:2;
+    }
+    [data-theme="light"] .path,
+    [data-theme="light"] .path:not(.primary-path){
+      background:#082016;
+      border-color:rgba(22,136,92,.36);
+      box-shadow:0 22px 64px rgba(33,56,45,.16),inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    [data-theme="light"] .path.primary-path{
+      border-color:rgba(22,136,92,.78);
+      box-shadow:0 24px 76px rgba(33,56,45,.20),0 0 0 1px rgba(22,136,92,.12),inset 0 1px 0 rgba(255,255,255,.07);
+    }
+    [data-theme="light"] .path-num{
+      color:rgba(179,234,205,.20);
+    }
+    [data-theme="light"] .path h3{
+      color:#f5faf6;
+    }
+    [data-theme="light"] .path p{
+      color:rgba(237,244,238,.76);
+    }
+    [data-theme="light"] .path .btn:not(.primary){
+      background:rgba(237,244,238,.07);
+      color:#f5faf6;
+      border-color:rgba(180,226,202,.25);
+      backdrop-filter:blur(10px);
+    }
     @media(max-width:860px){
       .hero{
         min-height:auto;
