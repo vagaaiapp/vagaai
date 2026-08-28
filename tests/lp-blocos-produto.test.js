@@ -2,8 +2,8 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-/* Os três blocos de recurso da LP (analisar vaga, alertas, candidaturas) e os
-   mockups ao lado deles.
+/* Os três passos editoriais da LP (analisar vaga, alertas, candidaturas) e os
+   visuais ao lado deles.
 
    O mockup é a única parte da LP que ninguém revisa junto com a copy, porque
    parece decoração. Não é: ele é a promessa desenhada. Estava afirmando "70%
@@ -25,7 +25,7 @@ describe('blocos de recurso da LP', () => {
        currículo com `goal=alerts`, opção que o modal não oferece. Com a
        classe, o botão prometeria vagas e entregaria a pergunta "você já tem
        currículo?". */
-    const btn = lp.match(/<a class="btn[^"]*"[^>]*href="\/onboarding\/curriculo\/1\?mode=cv_no_job[^"]*"[^>]*>/);
+    const btn = lp.match(/<a class="text-link"[^>]*href="\/onboarding\/curriculo\/1\?mode=cv_no_job[^\"]*"[^>]*>/);
     assert.ok(btn, 'CTA de alertas sumiu ou mudou de destino');
     assert.doesNotMatch(
       btn[0], /journey-trigger/,
@@ -41,20 +41,10 @@ describe('blocos de recurso da LP', () => {
     assert.match(funil, /state\.goal = goal === 'alerts' \? 'alerts' : ''/);
   });
 
-  it('o mockup de candidaturas usa status que existem no produto', () => {
-    const bloco = visivel(lp).match(/Painel <b>› Candidaturas<\/b>[\s\S]*?dmock-note/);
-    assert.ok(bloco, 'mockup de candidaturas sumiu');
-
-    const labels = ler('dashboard/index.html').match(/var STATUS_LABELS = \{[\s\S]*?\};/);
-    assert.ok(labels, 'STATUS_LABELS sumiu do painel');
-    const reais = [...labels[0].matchAll(/:\s*'([^']+)'/g)].map((m) => m[1]);
-
-    for (const m of bloco[0].matchAll(/<i class="s\d">([^<]+)<\/i>/g)) {
-      assert.ok(
-        reais.includes(m[1]),
-        `"${m[1]}" não é status do rastreador. Reais: ${reais.join(', ')}`
-      );
-    }
+  it('os três passos têm um visual correspondente e controles com o mesmo índice', () => {
+    assert.equal((lp.match(/class="story-step/g) || []).length, 3, 'esperava três passos editoriais');
+    assert.equal((lp.match(/data-visual="[012]"/g) || []).length, 3, 'cada passo precisa de um visual');
+    assert.equal((lp.match(/data-tab="[012]"/g) || []).length, 3, 'cada visual precisa de uma aba');
   });
 
   it('o mockup de alertas não afirma precisão', () => {
@@ -74,7 +64,7 @@ describe('blocos de recurso da LP', () => {
   });
 
   it('a LP chama o treino de entrevista pelo nome do produto', () => {
-    const bloco = lp.match(/Depois de aplicar[\s\S]*?<\/div>\s*<a class="btn/);
+    const bloco = lp.match(/<article class="story-step" data-step="2">[\s\S]*?<\/article>/);
     assert.ok(bloco, 'bloco de candidaturas sumiu');
     assert.match(bloco[0], /Treino de entrevista/);
   });
@@ -95,11 +85,11 @@ describe('blocos de recurso da LP', () => {
 
   it('cada bloco de recurso termina com uma saída', () => {
     // O de alertas ficou sem CTA por muito tempo, sendo o produto recorrente.
-    const blocos = [...lp.matchAll(/<div class="detail-text reveal">[\s\S]*?<\/div>\s*<div class="dmock/g)];
+    const blocos = [...lp.matchAll(/<article class="story-step[^>]*>[\s\S]*?<\/article>/g)];
     assert.equal(blocos.length, 3, 'esperava três blocos de recurso');
     for (const b of blocos) {
-      const tag = (b[0].match(/detail-tag">([^<]+)/) || [])[1] || '?';
-      assert.match(b[0], /<a class="btn/, `o bloco "${tag}" ficou sem CTA`);
+      const tag = (b[0].match(/step-label">([^<]+)/) || [])[1] || '?';
+      assert.match(b[0], /<a class="text-link"/, `o bloco "${tag}" ficou sem CTA`);
     }
   });
 });

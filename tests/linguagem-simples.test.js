@@ -109,11 +109,19 @@ const APOSENTADOS = [
   ['lacuna', /\blacunas?\b/i, 'ficou "o que falta"']
 ];
 
+/* A LP editorial aprovada usa "jornada" como nome do trilho visual que une os
+   dois pontos de entrada. Não é sinônimo de uma função do produto nem compete
+   com "busca" dentro das telas, então a exceção fica restrita à home. */
+const EXCECOES_POR_ARQUIVO = {
+  'index.template.html': new Set(['jornada'])
+};
+
 describe('vocabulário simples nas superfícies já limpas', () => {
   for (const arquivo of LIMPOS) {
     it(arquivo, () => {
       const texto = frases(ler(arquivo));
       for (const [termo, re, porque] of APOSENTADOS) {
+        if (EXCECOES_POR_ARQUIVO[arquivo]?.has(termo)) continue;
         const achou = texto.find((t) => re.test(t));
         assert.equal(
           achou, undefined,

@@ -9,10 +9,9 @@
 // mexer em nenhuma função existente.
 //
 // O que resolve:
-// 1) "/" — a seção "Do blog" da home antes era montada só no client (fetch no
-//    Supabase depois do carregamento, injetado com innerHTML). Isso deixava
-//    os links pros posts invisíveis pra qualquer crawler que não execute JS.
-//    Agora os <a href> reais já vêm prontos no primeiro HTML entregue.
+// 1) "/" — os cards editoriais do blog têm fallback estático no template e,
+//    quando o Supabase responde, são substituídos por links reais dos últimos
+//    posts já no primeiro HTML entregue aos visitantes e crawlers.
 // 2) "/sitemap.xml" — antes era um arquivo estático com 5 URLs fixas, sem os
 //    posts do blog. Agora é gerado com os posts publicados + lastmod real.
 // 3) "/blog/post" — a causa raiz de NENHUM post estar indexado: a página era
@@ -76,27 +75,24 @@ async function supabaseFetch(path, timeoutMs = FETCH_TIMEOUT_MS) {
   }
 }
 
-function renderBlogSection(posts) {
+function renderBlogCards(posts) {
   if (!posts || !posts.length) return '';
-  const cards = posts.map(p => {
+  return posts.map((p, index) => {
     const date = new Date(p.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
     const cats = parseCats(p.categories);
-    const cover = p.cover_url
-      ? `<img class="blog-card-cover" src="${escHtml(p.cover_url)}" alt="${escHtml(p.title)}" loading="lazy">`
-      : '';
-    return `<a class="blog-card glow" href="/blog/post?s=${encodeURIComponent(p.slug)}">${cover}<div class="blog-card-body">${
-      cats.length ? `<div class="blog-card-cat">${escHtml(cats[0])}</div>` : ''
-    }<div class="blog-card-title">${escHtml(p.title)}</div>${
-      p.excerpt ? `<div class="blog-card-excerpt">${escHtml(p.excerpt)}</div>` : ''
-    }<div class="blog-card-date">${date}</div></div></a>`;
+    const fallbackVisuals = ['visual-cv', 'visual-interview', 'visual-search'];
+    const visual = p.cover_url
+      ? `<span class="blog-card-visual blog-card-photo"><img src="${escHtml(p.cover_url)}" alt="" loading="lazy"></span>`
+      : `<span class="blog-card-visual ${fallbackVisuals[index % fallbackVisuals.length]}" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M12 7h17l7 7v27H12zM29 7v8h7M18 23h12M18 29h12M18 35h8"/></svg></span>`;
+    return `<a class="blog-card" href="/blog/post?s=${encodeURIComponent(p.slug)}">${visual}<span class="blog-card-body"><small>${
+      cats.length ? escHtml(cats[0]) : 'Conteúdo VagaAI'
+    }</small><b>${escHtml(p.title)}</b><em>${date}</em></span></a>`;
   }).join('');
+}
 
-  return `<!-- BLOG (renderizado na borda, ver middleware.js) -->
-    <section class="section" id="blog"><div class="wrap">
-      <div class="center reveal"><span class="eyebrow">Do blog</span><h2>Dicas para vencer o ATS <span class="green">e chegar à entrevista.</span></h2><p class="lead">Currículo, entrevista e estratégia de candidatura, direto do nosso blog.</p></div>
-      <div class="blog-grid">${cards}</div>
-      <div class="center" style="margin-top:32px"><a class="btn" href="/blog">Ver todos os posts →</a></div>
-    </div></section>`;
+function replaceBlogCards(html, cards) {
+  if (!cards) return html;
+  return html.replace(/<!--BLOG_CARDS_START-->[\s\S]*?<!--BLOG_CARDS_END-->/, cards);
 }
 
 async function handleHome(request) {
@@ -106,10 +102,8 @@ async function handleHome(request) {
 
   try {
     const posts = await supabaseFetch('/rest/v1/blog_posts?published=eq.true&select=title,slug,excerpt,cover_url,categories,created_at&order=created_at.desc&limit=3');
-    html = html.replace('<!--BLOG_SECTION-->', renderBlogSection(posts));
-  } catch (e) {
-    html = html.replace('<!--BLOG_SECTION-->', '');
-  }
+    html = replaceBlogCards(html, renderBlogCards(posts));
+  } catch (e) { /* falha aberta: o template mantém os três cards editoriais */ }
 
   return new Response(html, {
     headers: {
@@ -278,7 +272,7 @@ export default async function middleware(request) {
     }
     try {
       const fallback = await fetch(new URL('/index.template.html', request.url));
-      const text = (await fallback.text()).replace('<!--BLOG_SECTION-->', '');
+      const text = await fallback.text();
       return new Response(text, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
     } catch (_) {
       return new Response('Erro temporário ao carregar a página. Tente novamente em instantes.', { status: 500 });

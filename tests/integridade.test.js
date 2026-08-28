@@ -855,7 +855,7 @@ describe('Eventos de produto', () => {
       'curriculo_salvo': ['curriculo/index.html', 'app/index.html'],
       'carta_gerada': ['carta/index.html'],
       'alerta_configurado': ['dashboard/index.html'],
-      'checkout_iniciado': ['dashboard/index.html', 'index.template.html'],
+      'checkout_iniciado': ['dashboard/index.html', 'js/lp-editorial.js'],
     };
     for (const [evento, arquivos] of Object.entries(esperado)) {
       for (const arq of arquivos) {
