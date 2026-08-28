@@ -117,8 +117,9 @@ body[data-vagaai-ui="onboarding"] .ob-top-inner {
   width: min(1200px, 100%);
   min-height: 64px;
   margin-inline: auto;
-  padding: 7px 10px 7px 20px;
-  display: flex !important;
+  padding: 7px 10px;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 12px;
   border: 2px solid var(--ob-ink);
@@ -128,11 +129,25 @@ body[data-vagaai-ui="onboarding"] .ob-top-inner {
 }
 
 body[data-vagaai-ui="onboarding"] .ob-brand-cluster {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
   min-width: 0;
   gap: 12px;
 }
 
-body[data-vagaai-ui="onboarding"] .ob-top-balance { margin-left: auto; }
+body[data-vagaai-ui="onboarding"] .ob-back {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-top-balance {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  margin-left: 0;
+}
 
 body[data-vagaai-ui="onboarding"] .ob-brand {
   min-height: 44px;
@@ -175,8 +190,8 @@ body[data-vagaai-ui="onboarding"] :is(.ob-main, .ob-main.wide) {
 }
 
 body[data-vagaai-ui="onboarding"] .ob-journey-summary {
-  position: sticky;
-  top: var(--ob-journey-sticky-top, 96px);
+  position: relative !important;
+  top: auto !important;
   width: min(1040px, 100%);
   margin: 0 auto 24px !important;
   padding: 18px 22px !important;
@@ -720,7 +735,7 @@ body[data-vagaai-ui="onboarding"] .ob-gbtn {
 
   body[data-vagaai-ui="onboarding"] .ob-top-inner {
     min-height: 58px;
-    padding: 5px 7px 5px 13px;
+    padding: 5px 7px;
     border-radius: 16px;
   }
 
@@ -746,7 +761,7 @@ body[data-vagaai-ui="onboarding"] .ob-gbtn {
   }
 
   body[data-vagaai-ui="onboarding"] .ob-journey-summary {
-    top: var(--ob-journey-sticky-top, 74px);
+    top: auto !important;
     margin-bottom: 12px !important;
     padding: 13px 14px !important;
     border-radius: 18px !important;

@@ -12,9 +12,15 @@ test('os dois funis usam a mesma camada da nova identidade editorial', () => {
   for (const html of [vaga, curriculo]) {
     assert.match(html, /EB\+Garamond/);
     assert.match(html, /Figtree/);
-    assert.match(html, /\/onboarding\/editorial-id\.css\?v=20260828-id1/);
+    assert.match(html, /\/onboarding\/editorial-id\.css\?v=20260828-id2/);
     assert.ok(html.indexOf('/onboarding/editorial-id.css') > html.indexOf('/assets/product-ui.css'));
   }
+});
+
+test('a marca permanece centralizada e o resumo da jornada não acompanha o scroll', () => {
+  assert.match(css, /\.ob-top-inner\s*\{[^}]*display:\s*grid\s*!important;[^}]*grid-template-columns:\s*minmax\(0, 1fr\) auto minmax\(0, 1fr\)/s);
+  assert.match(css, /\.ob-brand-cluster\s*\{[^}]*grid-column:\s*2;[^}]*justify-self:\s*center/s);
+  assert.match(css, /\.ob-journey-summary\s*\{[^}]*position:\s*relative\s*!important;[^}]*top:\s*auto\s*!important/s);
 });
 
 test('a identidade mantém a paleta, tipografia e geometria aprovadas da LP', () => {
