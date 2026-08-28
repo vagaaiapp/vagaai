@@ -1,0 +1,830 @@
+/*
+ * VagaAI onboarding — editorial identity shared by both acquisition funnels.
+ * Visual-only layer. Copy, DOM ids, analytics hooks and behavior stay untouched.
+ */
+
+:root {
+  --bg: #ffffeb;
+  --surface: #fffef4;
+  --surface2: #f5f5df;
+  --border: #1a1a1a;
+  --text: #1a1a1a;
+  --muted: #65675e;
+  --green: #034f46;
+  --green-bright: #0b6a5e;
+  --green-dim: #dff5e9;
+  --green-border: #034f46;
+  --shadow: none;
+
+  --ob-page: #ffffeb;
+  --ob-paper: #fffef4;
+  --ob-paper-soft: #f5f5df;
+  --ob-ink: #1a1a1a;
+  --ob-copy: #65675e;
+  --ob-line: rgba(26, 26, 26, .24);
+  --ob-line-strong: #1a1a1a;
+  --ob-action: #034f46;
+  --ob-action-hover: #0b6a5e;
+  --ob-action-soft: #dff5e9;
+  --ob-mint: #77edb9;
+  --ob-cream: #ffffeb;
+  --ob-forest: #034f46;
+  --ob-dark: #1a1a1a;
+  --ob-warm: #ffa946;
+  --ob-shadow-sm: none;
+  --ob-shadow-md: none;
+  --ob-radius-sm: 12px;
+  --ob-radius: 24px;
+  --ob-radius-lg: 40px;
+  --ob-serif: 'EB Garamond', Georgia, serif;
+  --ob-sans: 'Figtree', Arial, sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg: #111613;
+  --surface: #1a1a1a;
+  --surface2: #202720;
+  --border: rgba(255, 255, 235, .62);
+  --text: #ffffeb;
+  --muted: #c7c8b8;
+  --green: #77edb9;
+  --green-bright: #91f4c8;
+  --green-dim: rgba(119, 237, 185, .13);
+  --green-border: #77edb9;
+  --shadow: none;
+
+  --ob-page: #111613;
+  --ob-paper: #1a1a1a;
+  --ob-paper-soft: #202720;
+  --ob-ink: #ffffeb;
+  --ob-copy: #c7c8b8;
+  --ob-line: rgba(255, 255, 235, .22);
+  --ob-line-strong: rgba(255, 255, 235, .7);
+  --ob-action: #77edb9;
+  --ob-action-hover: #91f4c8;
+  --ob-action-soft: rgba(119, 237, 185, .13);
+  --ob-mint: #77edb9;
+  --ob-cream: #ffffeb;
+  --ob-forest: #034f46;
+  --ob-dark: #1a1a1a;
+}
+
+html {
+  background: var(--ob-page);
+  color-scheme: light;
+  scroll-padding-top: 180px;
+}
+
+html[data-theme="dark"] { color-scheme: dark; }
+
+body[data-vagaai-ui="onboarding"] {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  background: var(--ob-page) !important;
+  color: var(--ob-ink);
+  font-family: var(--ob-sans) !important;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+body[data-vagaai-ui="onboarding"]::before { display: none !important; }
+
+body[data-vagaai-ui="onboarding"] :is(button, input, textarea, select) {
+  font-family: var(--ob-sans) !important;
+}
+
+body[data-vagaai-ui="onboarding"] :is(button, a, input, textarea, select, summary):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ob-mint) 72%, transparent) !important;
+  outline-offset: 3px !important;
+}
+
+/* Floating product header */
+body[data-vagaai-ui="onboarding"] .ob-top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  min-height: auto;
+  padding: 18px 24px 8px !important;
+  border: 0 !important;
+  background: color-mix(in srgb, var(--ob-page) 92%, transparent) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+body[data-vagaai-ui="onboarding"] .ob-top-inner {
+  width: min(1200px, 100%);
+  min-height: 64px;
+  margin-inline: auto;
+  padding: 7px 10px 7px 20px;
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  border: 2px solid var(--ob-ink);
+  border-radius: 18px;
+  background: var(--ob-paper);
+  box-shadow: none !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-brand-cluster {
+  min-width: 0;
+  gap: 12px;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-top-balance { margin-left: auto; }
+
+body[data-vagaai-ui="onboarding"] .ob-brand {
+  min-height: 44px;
+  color: var(--ob-ink) !important;
+  font-family: var(--ob-serif) !important;
+  font-size: 25px !important;
+  font-weight: 600 !important;
+  letter-spacing: -.04em !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-brand span { color: var(--ob-action) !important; }
+
+body[data-vagaai-ui="onboarding"] .ob-brand-divider {
+  height: 28px;
+  background: var(--ob-line) !important;
+}
+
+body[data-vagaai-ui="onboarding"] :is(.ob-back, .theme-btn.vui-theme-control) {
+  min-height: 44px;
+  border: 1.5px solid var(--ob-line-strong) !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+  color: var(--ob-ink) !important;
+  box-shadow: none !important;
+}
+
+body[data-vagaai-ui="onboarding"] :is(.ob-back, .theme-btn.vui-theme-control):hover {
+  border-color: var(--ob-action) !important;
+  color: var(--ob-action) !important;
+  background: var(--ob-action-soft) !important;
+  transform: none !important;
+}
+
+/* Page frame and journey map */
+body[data-vagaai-ui="onboarding"] :is(.ob-main, .ob-main.wide) {
+  width: min(1200px, calc(100% - 48px)) !important;
+  max-width: 1200px !important;
+  margin-inline: auto !important;
+  padding: 16px 0 80px !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-journey-summary {
+  position: sticky;
+  top: var(--ob-journey-sticky-top, 96px);
+  width: min(1040px, 100%);
+  margin: 0 auto 24px !important;
+  padding: 18px 22px !important;
+  overflow: hidden;
+  border: 2px solid var(--ob-dark) !important;
+  border-radius: 28px !important;
+  background: var(--ob-forest) !important;
+  color: var(--ob-cream) !important;
+  box-shadow: none !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-journey-summary::before { display: none !important; }
+
+body[data-vagaai-ui="onboarding"] .ob-journey-track { gap: 8px !important; }
+
+body[data-vagaai-ui="onboarding"] .ob-journey-seg {
+  height: 5px !important;
+  background: rgba(255, 255, 235, .2) !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-journey-seg.is-current { background: rgba(119, 237, 185, .58) !important; }
+body[data-vagaai-ui="onboarding"] .ob-journey-seg.is-done { background: var(--ob-mint) !important; }
+
+body[data-vagaai-ui="onboarding"] :is(
+  .ob-journey-label-item,
+  .ob-journey-progress,
+  .ob-journey-mobile-head,
+  .ob-journey-label,
+  .ob-journey-value,
+  .ob-journey-trust
+) { color: rgba(255, 255, 235, .7) !important; }
+
+body[data-vagaai-ui="onboarding"] :is(
+  .ob-journey-label-item.is-current,
+  .ob-journey-label-item.is-done,
+  .ob-journey-progress,
+  .ob-journey-mobile-head,
+  .ob-journey-value
+) { color: var(--ob-cream) !important; }
+
+body[data-vagaai-ui="onboarding"] .ob-journey-meta {
+  border-top: 1px solid rgba(255, 255, 235, .2) !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-journey-toggle {
+  min-height: 36px;
+  padding: 0 12px !important;
+  border: 1px solid rgba(255, 255, 235, .38) !important;
+  border-radius: 999px !important;
+  color: var(--ob-mint) !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-journey-toggle:hover {
+  background: rgba(119, 237, 185, .12) !important;
+  text-decoration: none !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-journey-details {
+  border: 1px solid rgba(255, 255, 235, .24) !important;
+  border-radius: 18px !important;
+  background: #06443c !important;
+  box-shadow: none !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-journey-trust {
+  border-top-color: rgba(255, 255, 235, .18) !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-journey-trust-mark {
+  background: var(--ob-mint) !important;
+  color: var(--ob-forest) !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-journey-mobile-track { background: rgba(255, 255, 235, .2) !important; }
+body[data-vagaai-ui="onboarding"] .ob-journey-mobile-fill { background: var(--ob-mint) !important; }
+
+/* Editorial chamber for every interactive step */
+body[data-vagaai-ui="onboarding"] .ob-step { width: min(960px, 100%); }
+
+body[data-vagaai-ui="onboarding"] .ob-step.active:not(#step5):not(#stepGen) {
+  width: min(960px, 100%);
+  padding: clamp(38px, 5vw, 64px) !important;
+  border: 2px solid var(--ob-ink) !important;
+  border-radius: 40px !important;
+  background: var(--ob-paper) !important;
+  box-shadow: none !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-step.active:not(#step5):not(#stepGen) > :is(.ob-eyebrow, h1, .ob-sub),
+body[data-vagaai-ui="onboarding"] #step1 :is(
+  #hasJobQuestion .ob-context-title,
+  #hasJobQuestion .ob-context-sub,
+  #cvHasJobQuestion > h1,
+  #cvHasJobQuestion > .ob-sub
+) {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  text-align: left !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-step > .ob-eyebrow,
+body[data-vagaai-ui="onboarding"] .ob-step > h1,
+body[data-vagaai-ui="onboarding"] .ob-step > .ob-sub {
+  width: min(100%, 760px);
+}
+
+body[data-vagaai-ui="onboarding"] .ob-eyebrow,
+body[data-vagaai-ui="onboarding"] .ob-step.active:not(#step5):not(#stepGen) > .ob-eyebrow {
+  display: inline-flex;
+  width: auto;
+  margin-bottom: 18px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--ob-action) !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+  letter-spacing: .14em !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-eyebrow::before {
+  width: 8px;
+  height: 8px;
+  background: var(--ob-mint) !important;
+  border: 1px solid var(--ob-action);
+}
+
+body[data-vagaai-ui="onboarding"] :is(
+  .ob-step > h1,
+  .ob-result-hero > h1,
+  #step1 #hasJobQuestion .ob-context-title,
+  #step1 #cvHasJobQuestion > h1,
+  .ob-modal-t,
+  .ob-gate-t,
+  .ob-radar-t,
+  .ob-context-title,
+  .ob-context-t,
+  .jp-title
+) {
+  color: var(--ob-ink);
+  font-family: var(--ob-serif) !important;
+  font-weight: 500 !important;
+  letter-spacing: -.045em !important;
+}
+
+body[data-vagaai-ui="onboarding"] :is(
+  .ob-step > h1,
+  .ob-result-hero > h1,
+  #step1 #hasJobQuestion .ob-context-title,
+  #step1 #cvHasJobQuestion > h1
+) {
+  max-width: 760px !important;
+  margin-bottom: 14px !important;
+  font-size: clamp(44px, 5vw, 66px) !important;
+  line-height: .94 !important;
+  text-wrap: balance;
+}
+
+body[data-vagaai-ui="onboarding"] :is(
+  .ob-sub,
+  .ob-context-sub,
+  .ob-context-d,
+  #step1 #hasJobQuestion .ob-context-sub,
+  #step1 #cvHasJobQuestion > .ob-sub
+) {
+  max-width: 650px !important;
+  color: var(--ob-copy) !important;
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+}
+
+body[data-vagaai-ui="onboarding"] #step1 #hasJobQuestion.ob-context {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Choice grammar */
+body[data-vagaai-ui="onboarding"] :is(.ob-choices, #cvHasJobQuestion .ob-choices, .ob-inline-choices) {
+  gap: 16px !important;
+}
+
+body[data-vagaai-ui="onboarding"] :is(#cvHasJobQuestion .ob-choices, .ob-inline-choices) {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+body[data-vagaai-ui="onboarding"] :is(.ob-choice, .ob-inline-choice, .ob-method) {
+  min-width: 0;
+  min-height: 112px;
+  padding: 22px 24px !important;
+  border: 2px solid var(--ob-ink) !important;
+  border-radius: 24px !important;
+  background: var(--ob-paper-soft) !important;
+  color: var(--ob-ink) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: background .18s ease, color .18s ease, border-color .18s ease, translate .18s ease !important;
+}
+
+body[data-vagaai-ui="onboarding"] :is(.ob-choice, .ob-inline-choice, .ob-method):hover {
+  border-color: var(--ob-action) !important;
+  background: var(--ob-action-soft) !important;
+  box-shadow: none !important;
+  translate: 0 -2px;
+}
+
+body[data-vagaai-ui="onboarding"] #step1 :is(
+  .ob-inline-choices > .ob-inline-choice:first-child,
+  #cvHasJobQuestion .ob-choice:first-child
+) {
+  border-color: var(--ob-dark) !important;
+  background: var(--ob-forest) !important;
+  color: var(--ob-cream) !important;
+}
+
+body[data-vagaai-ui="onboarding"] #step1 #cvHasJobQuestion .ob-choice:first-child :is(.ob-choice-t, .ob-choice-d, .ob-choice-arrow) {
+  color: var(--ob-cream) !important;
+}
+
+body[data-vagaai-ui="onboarding"] #step1 #cvHasJobQuestion .ob-choice:first-child .ob-choice-d {
+  color: rgba(255, 255, 235, .74) !important;
+}
+
+body[data-vagaai-ui="onboarding"] #step1 #cvHasJobQuestion .ob-choice:first-child .ob-choice-ic {
+  border-color: rgba(255, 255, 235, .42) !important;
+  background: var(--ob-mint) !important;
+}
+
+body[data-vagaai-ui="onboarding"] #step1 #cvHasJobQuestion .ob-choice:first-child .ob-choice-ic::before {
+  background: var(--ob-forest) !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-choice-t {
+  color: var(--ob-ink);
+  font-size: 16px !important;
+  line-height: 1.35 !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-choice-d {
+  margin-top: 6px !important;
+  color: var(--ob-copy) !important;
+  font-size: 13.5px !important;
+  line-height: 1.5 !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-choice-arrow { color: var(--ob-action) !important; }
+
+body[data-vagaai-ui="onboarding"] :is(.ob-choice-ic, .ob-method-ic, .ob-pipe-node, .ob-radar-ic, .ob-alert-done-ic, .ob-state-ic) {
+  border: 1.5px solid var(--ob-action) !important;
+  border-radius: 14px !important;
+  background: var(--ob-action-soft) !important;
+  color: var(--ob-action) !important;
+  box-shadow: none !important;
+}
+
+body[data-vagaai-ui="onboarding"] :is(.ob-radar-ic, .ob-alert-done-ic) {
+  font-size: 0 !important;
+  color: transparent !important;
+}
+
+body[data-vagaai-ui="onboarding"] :is(.ob-radar-ic, .ob-alert-done-ic)::before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  display: block;
+  background: var(--ob-action);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9'/%3E%3Cpath d='M10 21h4'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9'/%3E%3Cpath d='M10 21h4'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+body[data-vagaai-ui="onboarding"] :is(.ob-choice-ic, .ob-method-ic, .ob-pipe-node, .ob-state-ic)::before {
+  background: var(--ob-action) !important;
+}
+
+/* Forms and grouped content */
+body[data-vagaai-ui="onboarding"] :is(
+  .ob-context,
+  .ob-diagnostic,
+  .jp-card,
+  .ob-score-card,
+  .ob-radar,
+  .ob-gate,
+  .ob-profile-card,
+  .ob-alert-done,
+  .ob-tpl-switch,
+  .ob-modal-box
+) {
+  border: 2px solid var(--ob-ink) !important;
+  border-radius: 24px !important;
+  background: var(--ob-paper-soft) !important;
+  box-shadow: none !important;
+}
+
+body[data-vagaai-ui="onboarding"] :is(.ob-context, .ob-diagnostic, .ob-radar, .ob-gate, .ob-tpl-switch) {
+  padding: 24px !important;
+}
+
+body[data-vagaai-ui="onboarding"] :is(textarea, input[type="text"], input[type="email"], input[type="tel"], select) {
+  min-height: 54px !important;
+  border: 2px solid var(--ob-ink) !important;
+  border-radius: 12px !important;
+  background: var(--ob-paper) !important;
+  color: var(--ob-ink) !important;
+  box-shadow: none !important;
+}
+
+body[data-vagaai-ui="onboarding"] :is(textarea, input[type="text"], input[type="email"], input[type="tel"], select):focus {
+  border-color: var(--ob-action) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ob-mint) 35%, transparent) !important;
+}
+
+body[data-vagaai-ui="onboarding"] :is(textarea, input, select)::placeholder {
+  color: var(--ob-copy) !important;
+  opacity: .76;
+}
+
+body[data-vagaai-ui="onboarding"] :is(.ob-field label, .ob-label) {
+  color: var(--ob-ink) !important;
+  font-size: 14px !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-url-btn {
+  min-height: 54px;
+  border: 2px solid var(--ob-ink) !important;
+  border-radius: 12px !important;
+  background: var(--ob-paper-soft) !important;
+  color: var(--ob-ink) !important;
+  box-shadow: none !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-url-btn:hover:not(:disabled) {
+  border-color: var(--ob-action) !important;
+  background: var(--ob-action-soft) !important;
+}
+
+body[data-vagaai-ui="onboarding"] :is(.ob-file-ok, .ob-ok) {
+  border: 1.5px solid var(--ob-action) !important;
+  border-radius: 12px !important;
+  background: var(--ob-action-soft) !important;
+  color: var(--ob-action) !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-err {
+  border-width: 1.5px !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+body[data-vagaai-ui="onboarding"] :is(.ob-note, .ob-count, .ob-micro, .ob-hint, .ob-req-hint) {
+  color: var(--ob-copy) !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-micro {
+  justify-content: flex-start !important;
+  margin-top: 24px !important;
+  font-size: 12px !important;
+}
+
+/* Actions */
+body[data-vagaai-ui="onboarding"] .ob-btn {
+  min-height: 54px;
+  padding: 14px 22px !important;
+  border: 2px solid var(--ob-dark) !important;
+  border-radius: 12px !important;
+  background: var(--ob-mint) !important;
+  color: #022c27 !important;
+  box-shadow: none !important;
+  font-size: 15px !important;
+  font-weight: 750 !important;
+  transform: none !important;
+  transition: background .18s ease, translate .18s ease !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-btn:hover:not(:disabled) {
+  background: #91f4c8 !important;
+  box-shadow: none !important;
+  translate: 0 -2px;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-btn:disabled {
+  background: var(--ob-line) !important;
+  color: var(--ob-copy) !important;
+  border-color: var(--ob-line-strong) !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-btn.ghost {
+  border-color: var(--ob-ink) !important;
+  background: transparent !important;
+  color: var(--ob-ink) !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-btn.ghost:hover:not(:disabled) {
+  background: var(--ob-action-soft) !important;
+}
+
+body[data-vagaai-ui="onboarding"] :is(.ob-link, .jp-edit, .ob-close, .ob-alert-done-edit, .ob-cross) {
+  color: var(--ob-action) !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-cross {
+  border: 2px solid var(--ob-ink) !important;
+  border-radius: 16px !important;
+  background: var(--ob-paper) !important;
+  box-shadow: none !important;
+}
+
+/* Loading, analysis and result states */
+body[data-vagaai-ui="onboarding"] .ob-loading {
+  width: min(760px, 100%);
+  margin-inline: auto;
+  padding: 54px clamp(24px, 5vw, 56px) !important;
+  border: 2px solid var(--ob-ink);
+  border-radius: 40px;
+  background: var(--ob-paper);
+  box-shadow: none !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-loading h1 {
+  font-family: var(--ob-serif) !important;
+  font-size: clamp(40px, 5vw, 58px) !important;
+  font-weight: 500 !important;
+  line-height: .95 !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-pipe { gap: 8px; }
+body[data-vagaai-ui="onboarding"] .ob-pipe-line { background: var(--ob-line) !important; }
+body[data-vagaai-ui="onboarding"] .ob-pipe-line.on { background: var(--ob-mint) !important; }
+
+body[data-vagaai-ui="onboarding"] .ob-result-hero {
+  padding: clamp(38px, 6vw, 64px) !important;
+  border: 2px solid var(--ob-dark) !important;
+  border-radius: 40px !important;
+  background: var(--ob-forest) !important;
+  color: var(--ob-cream) !important;
+  box-shadow: none !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-result-hero::before { display: none !important; }
+
+body[data-vagaai-ui="onboarding"] .ob-result-hero :is(h1, .ob-context-t, .ob-score, .ob-score small) {
+  color: var(--ob-cream) !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-result-hero :is(.ob-sub, .ob-score-sum) {
+  color: rgba(255, 255, 235, .74) !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-result-hero .ob-eyebrow {
+  color: var(--ob-mint) !important;
+  background: transparent !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-score-ring-bg { stroke: rgba(255, 255, 235, .18) !important; }
+body[data-vagaai-ui="onboarding"] .ob-score-ring-fill { stroke: var(--ob-mint) !important; }
+
+body[data-vagaai-ui="onboarding"] .ob-score {
+  font-family: var(--ob-serif) !important;
+  font-weight: 500 !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-tpl-opt {
+  min-height: 44px;
+  border: 1.5px solid var(--ob-ink) !important;
+  border-radius: 999px !important;
+  background: var(--ob-paper) !important;
+  color: var(--ob-ink) !important;
+  box-shadow: none !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-tpl-opt.on {
+  background: var(--ob-forest) !important;
+  color: var(--ob-cream) !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-tpl-opt.on .ob-tpl-ats {
+  background: var(--ob-mint) !important;
+  color: var(--ob-forest) !important;
+}
+
+body[data-vagaai-ui="onboarding"] .cv-paper {
+  border: 2px solid #1a1a1a !important;
+  border-radius: 24px !important;
+  background: #fff !important;
+  color: #1a1a1a !important;
+  box-shadow: none !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-radar-check {
+  border: 1px solid var(--ob-line) !important;
+  border-radius: 12px !important;
+  background: var(--ob-paper) !important;
+  color: var(--ob-ink) !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-modal {
+  background: rgba(26, 26, 26, .72) !important;
+  backdrop-filter: blur(6px);
+}
+
+body[data-vagaai-ui="onboarding"] .ob-modal-box {
+  max-width: 440px !important;
+  padding: 32px !important;
+  border-radius: 32px !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-modal-t {
+  font-size: 34px !important;
+  line-height: 1 !important;
+}
+
+body[data-vagaai-ui="onboarding"] .ob-gbtn {
+  min-height: 52px;
+  border: 2px solid var(--ob-ink) !important;
+  border-radius: 12px !important;
+  background: var(--ob-paper) !important;
+  color: var(--ob-ink) !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 900px) {
+  body[data-vagaai-ui="onboarding"] .ob-step.active:not(#step5):not(#stepGen) {
+    padding: 42px 36px !important;
+    border-radius: 32px !important;
+  }
+
+  body[data-vagaai-ui="onboarding"] :is(
+    .ob-step > h1,
+    .ob-result-hero > h1,
+    #step1 #hasJobQuestion .ob-context-title,
+    #step1 #cvHasJobQuestion > h1
+  ) { font-size: clamp(42px, 7vw, 58px) !important; }
+}
+
+@media (max-width: 760px) {
+  html { scroll-padding-top: 128px; }
+
+  body[data-vagaai-ui="onboarding"] .ob-top { padding: 8px 12px 6px !important; }
+
+  body[data-vagaai-ui="onboarding"] .ob-top-inner {
+    min-height: 58px;
+    padding: 5px 7px 5px 13px;
+    border-radius: 16px;
+  }
+
+  body[data-vagaai-ui="onboarding"] .ob-brand { font-size: 22px !important; }
+
+  body[data-vagaai-ui="onboarding"] .ob-back {
+    width: auto;
+    min-width: 72px;
+    padding: 0 11px !important;
+    overflow: visible;
+    color: var(--ob-ink) !important;
+    font-size: 12px !important;
+    white-space: nowrap;
+  }
+
+  body[data-vagaai-ui="onboarding"] .ob-back::before {
+    content: none !important;
+  }
+
+  body[data-vagaai-ui="onboarding"] :is(.ob-main, .ob-main.wide) {
+    width: min(100% - 24px, 1200px) !important;
+    padding: 8px 0 48px !important;
+  }
+
+  body[data-vagaai-ui="onboarding"] .ob-journey-summary {
+    top: var(--ob-journey-sticky-top, 74px);
+    margin-bottom: 12px !important;
+    padding: 13px 14px !important;
+    border-radius: 18px !important;
+  }
+
+  body[data-vagaai-ui="onboarding"] .ob-step.active:not(#step5):not(#stepGen) {
+    padding: 32px 22px !important;
+    border-radius: 26px !important;
+  }
+
+  body[data-vagaai-ui="onboarding"] :is(
+    .ob-step > h1,
+    .ob-result-hero > h1,
+    #step1 #hasJobQuestion .ob-context-title,
+    #step1 #cvHasJobQuestion > h1
+  ) {
+    font-size: clamp(38px, 11.5vw, 50px) !important;
+    line-height: .96 !important;
+  }
+
+  body[data-vagaai-ui="onboarding"] :is(
+    .ob-sub,
+    .ob-context-sub,
+    #step1 #hasJobQuestion .ob-context-sub,
+    #step1 #cvHasJobQuestion > .ob-sub
+  ) { font-size: 15px !important; }
+
+  body[data-vagaai-ui="onboarding"] :is(#cvHasJobQuestion .ob-choices, .ob-inline-choices, .ob-methods) {
+    grid-template-columns: 1fr !important;
+  }
+
+  body[data-vagaai-ui="onboarding"] :is(.ob-choice, .ob-inline-choice, .ob-method) {
+    min-height: 96px;
+    padding: 18px !important;
+    border-radius: 20px !important;
+  }
+
+  body[data-vagaai-ui="onboarding"] .ob-micro {
+    gap: 8px 14px !important;
+    margin-top: 20px !important;
+  }
+
+  body[data-vagaai-ui="onboarding"] .ob-result-hero {
+    padding: 36px 22px !important;
+    border-radius: 28px !important;
+  }
+
+  body[data-vagaai-ui="onboarding"] :is(.ob-context, .ob-diagnostic, .ob-radar, .ob-gate, .ob-tpl-switch) {
+    padding: 20px !important;
+    border-radius: 20px !important;
+  }
+
+  body[data-vagaai-ui="onboarding"] .ob-modal-box {
+    padding: 26px 20px !important;
+    border-radius: 24px !important;
+  }
+}
+
+@media (max-width: 440px) {
+  body[data-vagaai-ui="onboarding"] .ob-brand-divider { display: none; }
+
+  body[data-vagaai-ui="onboarding"] .ob-step.active:not(#step5):not(#stepGen) {
+    padding-inline: 18px !important;
+  }
+
+  body[data-vagaai-ui="onboarding"] .ob-url-row { flex-direction: column; }
+  body[data-vagaai-ui="onboarding"] .ob-url-btn { width: 100%; }
+  body[data-vagaai-ui="onboarding"] .ob-radar-grid { grid-template-columns: 1fr !important; }
+  body[data-vagaai-ui="onboarding"] .ob-radar-grid .wide { grid-column: auto !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-vagaai-ui="onboarding"] *,
+  body[data-vagaai-ui="onboarding"] *::before,
+  body[data-vagaai-ui="onboarding"] *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
