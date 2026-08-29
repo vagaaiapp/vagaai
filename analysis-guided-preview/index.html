@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VagaAI — Prévia da análise guiada</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --forest:#071a10;--forest-2:#0d3a22;--green:#1a7a4a;--green-2:#2cba74;--bright:#4ece91;
+      --canvas:#f3f6f3;--surface:#fff;--surface-2:#f7f9f7;--line:#dfe7e1;
+      --text:#0b1710;--muted:#587061;--soft:#789184;--warning:#b8750b;
+      --sidebar:230px;--r:18px;--r-small:11px;
+    }
+    [data-theme="dark"]{
+      --canvas:#071009;--surface:#0d1710;--surface-2:#111f15;--line:#203125;
+      --text:#e7f0e9;--muted:#9bb0a1;--soft:#718778;
+    }
+    html,body{max-width:100%;overflow-x:hidden}
+    body{min-height:100vh;background:var(--canvas);color:var(--text);font:14px/1.5 Manrope,system-ui,sans-serif}
+    button,input,textarea{font:inherit}
+    button{cursor:pointer}
+
+    .sidebar{position:fixed;inset:0 auto 0 0;width:var(--sidebar);z-index:20;display:flex;flex-direction:column;padding:25px 16px 20px;background:linear-gradient(180deg,#061a0f,#081e12);color:#fff}
+    .brand{display:flex;align-items:center;gap:12px;padding:4px 10px 29px;font:700 16px Lora,serif;letter-spacing:.01em}
+    .brand-mark{width:28px;height:28px;display:grid;place-items:center;border-radius:50%;background:#10271a;color:var(--bright);font:800 10px Manrope,sans-serif}
+    .nav-label{padding:0 10px 9px;color:#597463;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+    .nav{display:grid;gap:4px}
+    .nav a{height:42px;display:flex;align-items:center;gap:12px;padding:0 11px;border-radius:10px;color:#7f9989;text-decoration:none;font-weight:600}
+    .nav a.active{background:#10452c;color:#fff;box-shadow:inset 3px 0 var(--bright)}
+    .nav svg{width:17px;height:17px;flex:none}
+    .sidebar-bottom{margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)}
+    .help{margin-bottom:14px;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(255,255,255,.035)}
+    .help strong{display:block;margin-bottom:3px;font-size:11px}.help span{display:block;color:#718d7a;font-size:10.5px;line-height:1.45}
+    .user{display:flex;align-items:center;gap:10px;padding:0 6px}.avatar{width:34px;height:34px;display:grid;place-items:center;border-radius:9px;background:linear-gradient(135deg,#13814d,#2cba74);font-size:11px;font-weight:800}
+    .user strong{display:block;font-size:11px}.user span{display:block;color:#789180;font-size:10px}
+
+    .main{min-height:100vh;margin-left:var(--sidebar)}
+    .topbar{position:sticky;top:0;z-index:10;height:64px;display:flex;align-items:center;padding:0 34px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(14px)}
+    .crumb{display:flex;align-items:center;gap:10px;font-size:12.5px}.crumb strong{font-weight:800}.crumb span{color:var(--soft)}
+    .top-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
+    .concept{padding:7px 11px;border:1px solid #bfe2ce;border-radius:999px;background:#eff8f3;color:var(--green);font-size:11px;font-weight:700}
+    [data-theme="dark"] .concept{border-color:#294735;background:#12271a;color:var(--bright)}
+    .theme{width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--muted)}
+    .theme svg{width:16px}
+
+    .page{width:min(1140px,calc(100% - 64px));margin:0 auto;padding:44px 0 64px}
+    .intro{display:grid;grid-template-columns:minmax(0,720px) auto;align-items:end;justify-content:space-between;gap:32px;margin-bottom:29px}
+    .intro h1{font:700 clamp(34px,3.6vw,44px)/1.07 Lora,serif;letter-spacing:-.038em}
+    .intro p{max-width:690px;margin-top:10px;color:var(--muted);font-size:15.5px;line-height:1.65}
+    .safe{display:flex;align-items:center;gap:8px;padding-bottom:5px;color:var(--muted);font-size:12px;white-space:nowrap}.safe svg{width:16px;color:var(--green)}
+
+    .journey{position:relative;display:grid;grid-template-columns:repeat(3,1fr);margin-bottom:27px;padding:0 5px}
+    .journey:before{content:"";position:absolute;top:15px;left:11%;right:11%;height:1px;background:var(--line)}
+    .journey-step{position:relative;display:flex;align-items:center;justify-content:center;gap:9px;color:var(--soft);font-size:12.5px;font-weight:650}
+    .journey-step b{width:31px;height:31px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--surface);font-size:11px}
+    .journey-step.active{color:var(--text)}.journey-step.active b{border-color:var(--green);background:var(--green);color:#fff;box-shadow:0 0 0 5px color-mix(in srgb,var(--green) 10%,transparent)}
+
+    .workspace{display:grid;grid-template-columns:minmax(0,1fr) 335px;gap:28px;align-items:start}
+    .form-shell{overflow:hidden;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+    .form-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:23px 27px;border-bottom:1px solid var(--line)}
+    .form-head h2{font-size:18px;letter-spacing:-.02em}.form-head p{margin-top:4px;color:var(--muted);font-size:13px}
+    .form-state{display:flex;align-items:center;gap:7px;padding-top:3px;color:var(--muted);font-size:11.5px}.form-state i{width:7px;height:7px;border-radius:50%;background:#d6a248}
+    .task{display:grid;grid-template-columns:56px minmax(0,1fr);gap:0;padding:27px}
+    .task+.task{border-top:1px solid var(--line)}
+    .task-number{padding-top:1px;color:var(--green);font:700 16px Lora,serif}
+    .task-copy h3{font-size:15px;letter-spacing:-.01em}.task-copy>p{margin-top:3px;color:var(--muted);font-size:12.5px}
+    .segmented{display:inline-flex;margin-top:17px;padding:4px;border-radius:10px;background:var(--surface-2)}
+    .segmented button{min-height:36px;padding:0 14px;border:0;border-radius:7px;background:transparent;color:var(--muted);font-size:12.5px;font-weight:700}
+    .segmented button.active{background:var(--surface);color:var(--text);box-shadow:0 1px 5px rgba(7,24,13,.09)}
+    .mode-panel{margin-top:12px}.mode-panel[hidden]{display:none}
+    .url-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px}
+    input,textarea{width:100%;border:1px solid var(--line);outline:none;border-radius:var(--r-small);background:var(--surface-2);color:var(--text);transition:border-color .2s,box-shadow .2s}
+    input{height:48px;padding:0 14px;font-size:14px}textarea{min-height:128px;padding:13px 14px;resize:vertical;line-height:1.55}
+    input:focus,textarea:focus{border-color:#60ad81;box-shadow:0 0 0 3px rgba(44,186,116,.11)}
+    .load{height:48px;padding:0 17px;border:1px solid var(--line);border-radius:var(--r-small);background:var(--surface);color:var(--text);font-size:12.5px;font-weight:800}
+    .loaded-job{display:none;align-items:center;gap:12px;margin-top:11px;padding:13px 14px;border:1px solid #bfe0cb;border-radius:var(--r-small);background:#f2faf5}
+    [data-theme="dark"] .loaded-job{border-color:#285137;background:#102619}
+    .loaded-job.show{display:flex}.job-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:9px;background:#daf2e4;color:var(--green)}
+    [data-theme="dark"] .job-icon{background:#183b27;color:var(--bright)}
+    .loaded-job strong{display:block;font-size:13px}.loaded-job span{display:block;margin-top:2px;color:var(--muted);font-size:11.5px}.loaded-job button{margin-left:auto;border:0;background:transparent;color:var(--green);font-size:11.5px;font-weight:800}
+    .document{display:flex;align-items:center;gap:14px;margin-top:17px;padding:15px;border:1px solid #9fceb3;border-radius:13px;background:color-mix(in srgb,var(--green) 5%,var(--surface))}
+    .doc-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:10px;background:#e5f5eb;color:var(--green)}
+    [data-theme="dark"] .doc-icon{background:#173824;color:var(--bright)}
+    .doc-icon svg{width:20px}.doc-copy{min-width:0}.doc-copy strong{display:block;font-size:13.5px}.doc-copy span{display:block;margin-top:2px;color:var(--muted);font-size:11.5px}
+    .selected{margin-left:auto;width:25px;height:25px;display:grid;place-items:center;border-radius:50%;background:var(--green);color:#fff;font-size:12px}
+    .change{margin-top:10px;border:0;background:transparent;color:var(--green);font-size:12px;font-weight:800}
+    .cv-options{display:none;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.cv-options.show{display:grid}
+    .cv-option{min-height:70px;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-align:left;color:var(--text)}
+    .cv-option strong{display:block;font-size:11.5px}.cv-option span{display:block;margin-top:3px;color:var(--muted);font-size:10.5px;line-height:1.35}
+    .form-foot{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:19px 27px;border-top:1px solid var(--line);background:var(--surface-2)}
+    .privacy{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:11.5px}.privacy svg{width:16px;color:var(--green)}
+    .primary{height:50px;padding:0 22px;border:0;border-radius:11px;background:var(--green);color:#fff;font-size:13.5px;font-weight:800;box-shadow:0 8px 20px rgba(26,122,74,.19)}
+    .primary:hover{background:#176d43;transform:translateY(-1px)}
+
+    .aside{position:sticky;top:88px;overflow:hidden;border-radius:var(--r);background:linear-gradient(148deg,#0c3922,#071b10 74%);color:#fff}
+    .aside:before,.aside:after{content:"";position:absolute;border:1px solid rgba(78,206,145,.12);border-radius:50%;pointer-events:none}.aside:before{width:220px;height:220px;right:-118px;top:-105px}.aside:after{width:160px;height:160px;right:-90px;top:-75px}
+    .aside-top{position:relative;padding:26px 25px 23px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .kicker{color:var(--bright);font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
+    .aside h2{max-width:260px;margin-top:10px;font:700 23px/1.23 Lora,serif;letter-spacing:-.025em}.aside-top p{margin-top:10px;color:rgba(255,255,255,.57);font-size:12.5px;line-height:1.6}
+    .signals{padding:8px 25px 11px}
+    .signal{display:grid;grid-template-columns:28px minmax(0,1fr);gap:9px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.07)}.signal:last-child{border-bottom:0}
+    .signal b{color:var(--bright);font:600 14px Lora,serif}.signal strong{display:block;font-size:12.5px}.signal span{display:block;margin-top:3px;color:rgba(255,255,255,.45);font-size:11px;line-height:1.4}
+    .aside-foot{display:flex;gap:8px;padding:17px 25px 20px;color:rgba(255,255,255,.52);font-size:10.8px;line-height:1.45}.aside-foot svg{width:15px;flex:none;color:var(--bright)}
+
+    @media(max-width:1100px){
+      :root{--sidebar:78px}.sidebar{padding-inline:10px}.brand{justify-content:center;padding-inline:0}.brand span,.nav-label,.nav a span,.help,.user>div{display:none}.nav a{justify-content:center}.sidebar-bottom{display:flex;justify-content:center}.user{padding:0}.page{width:min(960px,calc(100% - 42px))}.workspace{grid-template-columns:minmax(0,1fr) 300px;gap:20px}
+    }
+    @media(max-width:860px){
+      .sidebar{display:none}.main{margin-left:0}.topbar{height:58px;padding:0 20px}.page{width:min(720px,calc(100% - 36px));padding-top:32px}.intro{display:block}.safe{margin-top:13px}.workspace{grid-template-columns:1fr}.aside{position:relative}.aside-top{padding-bottom:20px}.signals{display:grid;grid-template-columns:repeat(2,1fr);column-gap:20px}.signal:nth-last-child(-n+2){border-bottom:0}
+    }
+    @media(max-width:560px){
+      .topbar{padding:0 14px}.concept{display:none}.crumb span{display:none}.page{width:calc(100% - 28px);padding:24px 0 40px}.intro{margin-bottom:23px}.intro h1{font-size:31px}.intro p{font-size:14px}.safe{font-size:11.5px}.journey{margin-bottom:20px}.journey-step{gap:0}.journey-step span{display:none}.journey-step b{width:29px;height:29px}.form-head{padding:19px}.form-state{display:none}.task{grid-template-columns:1fr;padding:21px 18px}.task-number{margin-bottom:8px;font-size:14px}.url-row{grid-template-columns:1fr}.load{width:100%}.document{align-items:flex-start}.selected{flex:none}.cv-options{grid-template-columns:1fr}.form-foot{position:sticky;bottom:0;z-index:2;display:block;padding:14px 18px}.privacy{margin-bottom:10px}.primary{width:100%}.signals{grid-template-columns:1fr}.signal:nth-last-child(2){border-bottom:1px solid rgba(255,255,255,.07)}
+    }
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <aside class="sidebar" aria-label="Navegação principal">
+    <div class="brand"><div class="brand-mark">V.</div><span>Vagaai.</span></div>
+    <div class="nav-label">Seu espaço</div>
+    <nav class="nav">
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg><span>Início</span></a>
+      <a class="active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg><span>Analisar vaga</span></a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Meu currículo</span></a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg><span>Candidaturas</span></a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M8 5a4 4 0 0 1 8 0v5a4 4 0 0 1-8 0zM5 10a7 7 0 0 0 14 0"/></svg><span>Treino de entrevista</span></a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4zM4 6l8 6 8-6"/></svg><span>Carta de apresentação</span></a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span>Vagas para você</span></a>
+    </nav>
+    <div class="sidebar-bottom"><div class="help"><strong>Precisa de ajuda?</strong><span>Veja dicas para melhorar suas candidaturas.</span></div><div class="user"><div class="avatar">JO</div><div><strong>João Victor Heringer</strong><span>Pro</span></div></div></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="crumb"><strong>Nova análise</strong><span>›</span><span>Inserir dados</span></div>
+      <div class="top-actions"><span class="concept">Prévia local · análise guiada</span><button class="theme" type="button" id="themeBtn" aria-label="Alternar tema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3 6.7 6.7 0 0 0 21 12.8Z"/></svg></button></div>
+    </header>
+
+    <div class="page">
+      <section class="intro">
+        <div><h1>Prepare seu currículo para esta vaga.</h1><p>Adicione a oportunidade e seu currículo. A VagaAI compara os dois, identifica lacunas e mostra o que priorizar antes de se candidatar.</p></div>
+        <div class="safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>Seus dados permanecem protegidos</div>
+      </section>
+
+      <div class="journey" aria-label="Etapas da análise">
+        <div class="journey-step active"><b>1</b><span>Inserir dados</span></div>
+        <div class="journey-step"><b>2</b><span>Analisando</span></div>
+        <div class="journey-step"><b>3</b><span>Resultado</span></div>
+      </div>
+
+      <div class="workspace">
+        <section class="form-shell">
+          <header class="form-head"><div><h2>Prepare sua análise</h2><p>Dois dados são suficientes para começar.</p></div><div class="form-state"><i></i>Falta carregar a vaga</div></header>
+
+          <section class="task">
+            <div class="task-number">01</div>
+            <div class="task-copy">
+              <h3>Adicione a oportunidade</h3>
+              <p>Use o link da vaga ou cole a descrição completa.</p>
+              <div class="segmented" aria-label="Formato da vaga">
+                <button type="button" class="active" data-mode="link">Link da vaga</button>
+                <button type="button" data-mode="texto">Colar descrição</button>
+              </div>
+              <div class="mode-panel" id="panelLink">
+                <div class="url-row"><input id="jobUrl" value="linkedin.com/jobs/gerente-marketing" aria-label="Link da vaga"><button class="load" type="button" id="loadJob">Carregar vaga</button></div>
+                <div class="loaded-job" id="loadedJob"><div class="job-icon"><svg width="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16v13H4zM8 7V5h8v2M4 12h16"/></svg></div><div><strong>Gerente de Marketing</strong><span>PRIMIZIE · LinkedIn</span></div><button type="button" id="editJob">Editar</button></div>
+              </div>
+              <div class="mode-panel" id="panelTexto" hidden><textarea aria-label="Descrição completa da vaga" placeholder="Cole aqui o título, responsabilidades e requisitos da oportunidade."></textarea></div>
+            </div>
+          </section>
+
+          <section class="task">
+            <div class="task-number">02</div>
+            <div class="task-copy">
+              <h3>Escolha o currículo</h3>
+              <p>Seu documento principal está pronto para ser comparado.</p>
+              <div class="document"><div class="doc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16h12V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg></div><div class="doc-copy"><strong>Currículo principal</strong><span>Atualizado há 32 dias · 100% preenchido</span></div><div class="selected">✓</div></div>
+              <button class="change" type="button" id="changeCv">Trocar currículo ↓</button>
+              <div class="cv-options" id="cvOptions"><button class="cv-option" type="button"><strong>Enviar arquivo</strong><span>PDF, Word ou TXT</span></button><button class="cv-option" type="button"><strong>Colar currículo</strong><span>Use o conteúdo em texto</span></button><button class="cv-option" type="button"><strong>Criar do zero</strong><span>Abra o editor completo</span></button></div>
+            </div>
+          </section>
+
+          <footer class="form-foot"><div class="privacy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 11V7a5 5 0 0 1 10 0v4M5 11h14v10H5z"/></svg>Nada é alterado sem sua confirmação.</div><button class="primary" type="button">Analisar agora — grátis</button></footer>
+        </section>
+
+        <aside class="aside">
+          <div class="aside-top"><div class="kicker">O que você recebe</div><h2>Um diagnóstico para decidir antes de enviar.</h2><p>A análise transforma a descrição da vaga em prioridades claras para sua candidatura.</p></div>
+          <div class="signals">
+            <div class="signal"><b>01</b><div><strong>Aderência à vaga</strong><span>Compatibilidade explicada por critérios.</span></div></div>
+            <div class="signal"><b>02</b><div><strong>Requisitos prioritários</strong><span>O que já aparece e o que ainda falta.</span></div></div>
+            <div class="signal"><b>03</b><div><strong>Palavras-chave</strong><span>Termos que os sistemas de RH procuram.</span></div></div>
+            <div class="signal"><b>04</b><div><strong>Currículo direcionado</strong><span>Uma versão preparada para a oportunidade.</span></div></div>
+          </div>
+          <div class="aside-foot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg><span>O número de aderência só aparece depois da análise. Nenhum resultado de exemplo é apresentado como dado real.</span></div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const root=document.documentElement;
+    document.getElementById('themeBtn').addEventListener('click',()=>root.dataset.theme=root.dataset.theme==='dark'?'light':'dark');
+    const modeButtons=[...document.querySelectorAll('[data-mode]')];
+    modeButtons.forEach(button=>button.addEventListener('click',()=>{
+      modeButtons.forEach(item=>item.classList.toggle('active',item===button));
+      document.getElementById('panelLink').hidden=button.dataset.mode!=='link';
+      document.getElementById('panelTexto').hidden=button.dataset.mode!=='texto';
+    }));
+    const loaded=document.getElementById('loadedJob');
+    document.getElementById('loadJob').addEventListener('click',()=>{
+      loaded.classList.add('show');
+      document.querySelector('.form-state').innerHTML='<i style="background:#2cba74"></i>Dados prontos para analisar';
+    });
+    document.getElementById('editJob').addEventListener('click',()=>loaded.classList.remove('show'));
+    document.getElementById('changeCv').addEventListener('click',()=>{
+      const options=document.getElementById('cvOptions');
+      options.classList.toggle('show');
+      document.getElementById('changeCv').textContent=options.classList.contains('show')?'Fechar opções ↑':'Trocar currículo ↓';
+    });
+  </script>
+</body>
+</html>

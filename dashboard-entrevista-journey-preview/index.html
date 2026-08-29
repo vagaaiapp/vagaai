@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>VagaAI — Preview do treino de entrevista</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#0a1a10;--forest:#082e1e;--forest-2:#0d4930;--green:#177a4a;--mid:#2cba74;--bright:#4ece91;
+      --paper:#f3f6f3;--card:#fff;--soft:#edf3ef;--line:#d7e1da;--muted:#607066;--amber:#b66d05;
+      --shadow:0 16px 42px rgba(9,38,24,.08);--sidebar:230px;--top:64px;--radius:18px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:Manrope,Arial,sans-serif;font-size:16px;line-height:1.55}
+    button,textarea{font:inherit}
+    button{cursor:pointer}
+    svg{display:block}
+    .icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .sidebar{position:fixed;inset:0 auto 0 0;width:var(--sidebar);background:#061f15;color:#d8e5dd;padding:28px 16px 22px;z-index:20;display:flex;flex-direction:column}
+    .brand{display:flex;align-items:center;gap:11px;padding:0 10px 28px;color:#fff;font:700 17px Lora,serif;letter-spacing:.2px}
+    .brand-mark{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#0d1712;border:1px solid rgba(255,255,255,.08);font:800 13px Manrope}
+    .brand-mark span{color:var(--bright)}
+    .nav-label{padding:0 10px 8px;color:#6d8e7c;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+    .nav{display:grid;gap:4px}
+    .nav a{color:#91a99b;text-decoration:none;display:flex;align-items:center;gap:12px;padding:10px 11px;border-radius:11px;font-weight:600;font-size:14px}
+    .nav a.active{color:white;background:#104831;box-shadow:inset 3px 0 var(--bright)}
+    .nav a:hover{color:white;background:rgba(255,255,255,.05)}
+    .side-bottom{margin-top:auto;border-top:1px solid rgba(255,255,255,.09);padding-top:16px}
+    .help{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:12px;margin-bottom:14px;font-size:12px;color:#86a391}
+    .help strong{display:block;color:#dce9e1;font-size:12px;margin-bottom:2px}
+    .person{display:flex;gap:10px;align-items:center;padding:0 6px}.avatar{width:34px;height:34px;border-radius:10px;background:#19ad67;color:white;display:grid;place-items:center;font-size:12px;font-weight:800}.person strong{font-size:12px;color:#fff;display:block}.person span{font-size:11px;color:#75a289}
+    .topbar{position:fixed;left:var(--sidebar);right:0;top:0;height:var(--top);z-index:15;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 36px}
+    .crumb{font-size:13px;font-weight:700}.crumb span{color:#8a9a90;font-weight:500;margin-left:10px}.crumb span:before{content:'›';margin-right:10px;color:#aeb9b2}
+    .top-actions{display:flex;align-items:center;gap:10px}.pro{font-size:12px;font-weight:700;color:var(--green);border:1px solid #b8ddca;background:#eff9f3;padding:6px 13px;border-radius:999px}.theme{width:36px;height:36px;border:1px solid var(--line);background:#fff;border-radius:11px;display:grid;place-items:center;color:var(--forest)}
+    .primary,.secondary,.text-btn{border-radius:10px;padding:11px 17px;font-weight:800;font-size:13px;border:1px solid transparent;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+    .primary{background:var(--green);color:white}.primary:hover{background:#10643c}.primary.bright{background:var(--bright);color:#052718}.secondary{background:transparent;color:inherit;border-color:rgba(255,255,255,.27)}.text-btn{background:transparent;color:var(--green);padding-left:0;padding-right:0}
+    .app{margin-left:var(--sidebar);padding-top:var(--top);min-height:100vh}.main{width:min(1240px,calc(100% - 56px));margin:0 auto;padding:44px 0 72px}
+    .preview-note{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:11px 14px;margin-bottom:30px;background:#fff;border:1px solid var(--line);border-radius:12px;font-size:12px;color:var(--muted)}
+    .preview-note strong{color:var(--ink)}.state-toggle{display:flex;gap:4px;background:var(--soft);border-radius:9px;padding:3px}.state-toggle button{border:0;background:transparent;padding:7px 11px;border-radius:7px;color:var(--muted);font-size:11px;font-weight:800}.state-toggle button.active{background:#fff;color:var(--green);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+    .page-head{display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:28px}.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.13em;font-weight:800;color:var(--green);margin-bottom:7px}.page-head h1{font:700 clamp(34px,4vw,48px)/1.1 Lora,serif;margin:0;letter-spacing:-.035em}.page-head p{font-size:16px;color:var(--muted);margin:8px 0 0;max-width:700px}.trust{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;white-space:nowrap}
+    .focus{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,.75fr);background:var(--forest);color:#fff;border-radius:24px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:46px;min-height:378px}
+    .focus-main{padding:42px 46px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid rgba(255,255,255,.12);position:relative}.focus-main:after{content:'08';position:absolute;right:26px;bottom:-42px;font:700 180px/1 Lora,serif;color:rgba(255,255,255,.025);pointer-events:none}.focus-kicker{display:flex;align-items:center;gap:9px;color:var(--bright);font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:800}.focus-kicker i{width:7px;height:7px;background:var(--bright);border-radius:50%}.focus h2{font:700 clamp(29px,3vw,42px)/1.13 Lora,serif;letter-spacing:-.025em;max-width:650px;margin:20px 0 13px}.focus h2 em{color:var(--bright);font-style:normal}.focus-copy{color:#bad0c3;max-width:650px;font-size:15px;margin:0 0 26px}.role{display:flex;align-items:center;gap:14px;border-top:1px solid rgba(255,255,255,.12);padding-top:20px;margin-top:2px}.company-logo{width:46px;height:46px;border-radius:12px;background:#fff;color:var(--forest);display:grid;place-items:center;font-weight:800}.role strong{display:block;font-size:16px}.role span{display:block;color:#9fbcab;font-size:12px;margin-top:2px}.role-status{margin-left:auto;color:#d9eadf;font-size:12px;text-align:right}.role-status b{color:var(--bright);display:block}
+    .focus-actions{display:flex;align-items:center;gap:14px;margin-top:23px}.focus-side{padding:38px 34px;background:#0c3b28}.focus-side h3{font:700 23px Lora,serif;margin:0 0 7px}.focus-side>p{font-size:13px;color:#a9c4b4;margin:0 0 28px}.journey{display:grid;gap:0}.journey-step{display:grid;grid-template-columns:34px 1fr;gap:13px;min-height:68px;position:relative}.journey-step:not(:last-child):before{content:'';position:absolute;width:1px;background:rgba(255,255,255,.2);left:16px;top:34px;bottom:0}.step-n{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.28);display:grid;place-items:center;font:800 11px Manrope;color:#d4e7dc;background:#0c3b28;z-index:1}.journey-step.active .step-n{background:var(--bright);color:#07311f;border-color:var(--bright)}.journey-step strong{display:block;font-size:13px;margin:2px 0}.journey-step span{font-size:11px;color:#91af9e}.prepared{margin-top:8px;padding-top:18px;border-top:1px solid rgba(255,255,255,.12);display:flex;justify-content:space-between;font-size:12px;color:#b6ccbf}.prepared b{color:#fff;font-size:14px}
+    .section{margin-top:42px;scroll-margin-top:84px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:17px}.section-head h2{font:700 28px Lora,serif;margin:0}.section-head p{font-size:14px;color:var(--muted);margin:4px 0 0}.filterbar{display:flex;gap:7px}.filterbar button{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:9px;padding:8px 11px;font-size:11px;font-weight:800}.filterbar button.active{background:var(--forest);border-color:var(--forest);color:#fff}
+    .opportunities{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(9,38,24,.04)}
+    .op-row{display:grid;grid-template-columns:minmax(260px,1.05fr) 1fr 180px;align-items:center;gap:26px;padding:22px 25px;border-bottom:1px solid var(--line)}.op-row:last-child{border-bottom:0}.op-title{display:flex;align-items:center;gap:14px}.score{width:52px;height:52px;border-radius:14px;background:#fcecec;color:#d64e4e;display:grid;place-items:center;font:800 14px Manrope}.op-title strong{font-size:15px;display:block}.op-title span,.op-meta span{font-size:12px;color:var(--muted)}.op-meta{display:grid;grid-template-columns:1fr 1fr;gap:18px}.op-meta strong{font-size:12px;display:block;margin-bottom:3px}.op-action{text-align:right}.op-action button{border:0;background:none;color:var(--green);font-weight:800;font-size:12px}.tag{color:var(--green)!important;font-weight:700}
+    .studio{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(310px,.65fr);border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#fff;box-shadow:var(--shadow)}.studio-main{padding:34px 38px}.studio-top{display:flex;justify-content:space-between;align-items:center;gap:20px;padding-bottom:23px;border-bottom:1px solid var(--line)}.studio-top strong{font-size:14px}.studio-top span{font-size:12px;color:var(--muted)}.progress{display:flex;align-items:center;gap:10px;min-width:210px}.progress-track{height:5px;background:var(--soft);flex:1;border-radius:5px;overflow:hidden}.progress-fill{width:12.5%;height:100%;background:var(--mid)}.question-label{font-size:11px;color:var(--green);font-weight:800;text-transform:uppercase;letter-spacing:.1em;margin-top:29px}.question{font:700 26px/1.3 Lora,serif;margin:8px 0 20px;max-width:760px}.answer-tabs{display:flex;gap:8px;margin-bottom:10px}.answer-tabs button{border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:800;padding:8px 0;margin-right:15px;border-bottom:2px solid transparent}.answer-tabs button.active{color:var(--green);border-color:var(--green)}textarea{width:100%;min-height:138px;border:1px solid var(--line);border-radius:14px;background:#f9fbf9;padding:16px;color:var(--ink);resize:vertical;outline:none;font-size:14px;line-height:1.6}textarea:focus{border-color:var(--mid);box-shadow:0 0 0 3px rgba(44,186,116,.1)}.studio-actions{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:14px}.helper{font-size:11px;color:var(--muted)}
+    .feedback{background:var(--forest);color:white;padding:34px 30px;display:flex;flex-direction:column}.feedback .eyebrow{color:var(--bright)}.feedback h3{font:700 24px/1.2 Lora,serif;margin:2px 0 8px}.feedback>p{color:#a9c2b3;font-size:12px;margin:0 0 26px}.feedback-score{display:flex;align-items:end;gap:7px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.13)}.feedback-score strong{font:700 48px/1 Lora,serif}.feedback-score span{font-size:12px;color:#9fbaaa;margin-bottom:5px}.feedback-item{padding:18px 0;border-bottom:1px solid rgba(255,255,255,.11)}.feedback-item:last-child{border-bottom:0}.feedback-item strong{font-size:12px;display:block;margin-bottom:4px}.feedback-item p{font-size:12px;color:#aac2b4;margin:0}.feedback-empty{margin:auto 0;text-align:center;color:#a7c1b2}.feedback-empty .seal{width:60px;height:60px;border:1px solid rgba(255,255,255,.2);border-radius:50%;display:grid;place-items:center;margin:0 auto 18px;color:var(--bright)}.feedback-empty strong{display:block;color:#fff;font:700 20px Lora,serif;margin-bottom:8px}.feedback-empty p{font-size:12px;line-height:1.6}
+    .history{display:grid;grid-template-columns:1fr 1fr;gap:14px}.history-row{background:#fff;border:1px solid var(--line);border-radius:15px;padding:20px 22px;display:grid;grid-template-columns:58px 1fr auto;align-items:center;gap:16px}.history-score{font:700 23px Lora,serif;color:var(--green);border-right:1px solid var(--line)}.history-row strong{font-size:13px;display:block}.history-row span{font-size:11px;color:var(--muted)}.history-row button{border:0;background:none;color:var(--green);font-size:12px;font-weight:800}
+    .empty-only{display:none}.empty .marked-only{display:none!important}.empty .empty-only{display:block}.empty .focus{grid-template-columns:1fr}.empty .focus-main{border-right:0}.empty .focus-side{display:none}.empty .focus h2{max-width:760px}.empty .op-row:first-child{display:none}.empty .history{display:none}
+    body.dark{--paper:#08110c;--card:#0f1913;--soft:#16231b;--line:#27362c;--muted:#9aaba1;--ink:#eff8f2;--shadow:0 18px 48px rgba(0,0,0,.25)}body.dark .topbar{background:rgba(8,17,12,.94)}body.dark .theme,body.dark .preview-note{background:#0f1913}body.dark textarea{background:#0c1510;color:#eff8f2}body.dark .filterbar button.active{background:var(--bright);color:#062619;border-color:var(--bright)}body.dark .score{background:#351f21}
+    @media(max-width:1050px){:root{--sidebar:78px}.brand{padding-left:8px}.brand>span,.nav-label,.nav a span,.help,.person>div{display:none}.nav a{justify-content:center;padding:12px}.person{justify-content:center}.focus{grid-template-columns:1fr}.focus-main{border-right:0}.focus-side{display:none}.op-row{grid-template-columns:1fr 1fr}.op-action{grid-column:2;text-align:left}.studio{grid-template-columns:1fr}.feedback{min-height:330px}.history{grid-template-columns:1fr}}
+    @media(max-width:760px){:root{--top:58px}.sidebar{position:fixed;top:auto;right:0;width:auto;height:66px;flex-direction:row;padding:7px 10px;align-items:center;border-top:1px solid rgba(255,255,255,.1)}.brand,.nav-label,.side-bottom{display:none}.nav{display:flex;width:100%;justify-content:space-around}.nav a{padding:9px}.nav a:nth-child(2),.nav a:nth-child(3),.nav a:nth-child(6),.nav a:nth-child(7),.nav a:nth-child(8){display:none}.topbar{left:0;padding:0 17px}.crumb span,.top-actions .pro{display:none}.app{margin-left:0;padding-bottom:66px}.main{width:min(100% - 28px,700px);padding-top:24px}.preview-note{align-items:flex-start;flex-direction:column}.page-head{display:block}.trust{margin-top:13px}.focus-main{padding:30px 25px}.role{align-items:flex-start;flex-wrap:wrap}.role-status{margin-left:60px;text-align:left}.focus-actions{flex-direction:column;align-items:stretch}.section{margin-top:34px}.section-head{align-items:flex-start;flex-direction:column}.filterbar{width:100%;overflow:auto;padding-bottom:3px}.filterbar button{white-space:nowrap}.op-row{grid-template-columns:1fr;padding:20px}.op-meta,.op-action{grid-column:1}.studio-main{padding:26px 22px}.studio-top{align-items:flex-start;flex-direction:column}.progress{width:100%}.question{font-size:22px}.studio-actions{align-items:stretch;flex-direction:column}.studio-actions .primary{width:100%}.feedback{padding:28px 23px}.history-row{grid-template-columns:52px 1fr}.history-row button{grid-column:2;text-align:left;padding:0}.page-head h1{font-size:36px}.focus h2{font-size:30px}}
+  </style>
+</head>
+<body>
+  <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5M9 13h6M9 17h5"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 21c.6-4 3-6 7-6s6.4 2 7 6"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15.5A8 8 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5z"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3c.5 5 4 8.5 9 9-5 .5-8.5 4-9 9-.5-5-4-8.5-9-9 5-.5 8.5-4 9-9z"/></symbol>
+  </svg>
+
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">V<span>·</span></div><span>VagaAI.</span></div>
+    <div class="nav-label">Seu espaço</div>
+    <nav class="nav" aria-label="Navegação principal">
+      <a href="#"><svg class="icon"><use href="#i-grid"/></svg><span>Início</span></a>
+      <a href="#"><svg class="icon"><use href="#i-file"/></svg><span>Analisar vaga</span></a>
+      <a href="#"><svg class="icon"><use href="#i-user"/></svg><span>Meu currículo</span></a>
+      <a href="#"><svg class="icon"><use href="#i-bag"/></svg><span>Candidaturas</span></a>
+      <a class="active" href="#"><svg class="icon"><use href="#i-mic"/></svg><span>Treino de entrevista</span></a>
+      <a href="#"><svg class="icon"><use href="#i-mail"/></svg><span>Carta de apresentação</span></a>
+      <a href="#"><svg class="icon"><use href="#i-bell"/></svg><span>Vagas para você</span></a>
+      <a href="#"><svg class="icon"><use href="#i-user"/></svg><span>Conta e plano</span></a>
+    </nav>
+    <div class="side-bottom"><div class="help"><strong>Precisa de ajuda?</strong>Veja dicas para melhorar suas candidaturas.</div><div class="person"><div class="avatar">JO</div><div><strong>João Victor Heringer</strong><span>Pro</span></div></div></div>
+  </aside>
+
+  <header class="topbar">
+    <div class="crumb">Entrevistas <span>Sala de preparo</span></div>
+    <div class="top-actions"><span class="pro">● Pro</span><button class="theme" id="themeBtn" aria-label="Alternar tema"><svg class="icon"><use href="#i-moon"/></svg></button><button class="primary">＋ Analisar vaga</button></div>
+  </header>
+
+  <div class="app"><main class="main" id="main">
+    <div class="preview-note"><div><strong>Preview navegável.</strong> Alterne o cenário para avaliar os estados da experiência.</div><div class="state-toggle" role="group" aria-label="Estado da demonstração"><button data-state="empty">Sem entrevista</button><button class="active" data-state="marked">Entrevista marcada</button></div></div>
+
+    <div class="page-head"><div><div class="eyebrow">Treino de entrevista</div><h1>Sua sala de preparo.</h1><p>Pratique as perguntas que realmente podem aparecer e transforme cada resposta em evidência do seu valor.</p></div><div class="trust"><svg class="icon"><use href="#i-shield"/></svg> Suas respostas ficam protegidas</div></div>
+
+    <section class="focus" aria-labelledby="focusTitle">
+      <div class="focus-main">
+        <div class="focus-kicker marked-only"><i></i> Próxima conversa</div>
+        <div class="focus-kicker empty-only"><i></i> Pratique antes de ser chamado</div>
+        <h2 id="focusTitle" class="marked-only">Sua entrevista é amanhã. Chegue com as <em>histórias certas</em>.</h2>
+        <h2 class="empty-only">Você já pode treinar com uma vaga analisada — <em>sem esperar a entrevista</em>.</h2>
+        <p class="focus-copy marked-only">Preparamos oito perguntas com base na vaga, no seu currículo e nos pontos que merecem mais clareza. Um treino completo leva cerca de 18 minutos.</p>
+        <p class="focus-copy empty-only">A análise de Gerente de Marketing já contém contexto suficiente para criar um treino personalizado e revelar onde sua narrativa pode ganhar força.</p>
+        <div class="role"><div class="company-logo">PR</div><div><strong>Gerente de Marketing</strong><span>PRIMIZIE · aderência de 33%</span></div><div class="role-status marked-only"><b>Amanhã, 10h</b>Entrevista marcada</div><div class="role-status empty-only"><b>Vaga analisada</b>Pronta para praticar</div></div>
+        <div class="focus-actions"><button class="primary bright" data-start>Começar treino <span>→</span></button><button class="secondary marked-only">Ver plano de preparo</button><button class="secondary empty-only">Ver análise da vaga</button></div>
+      </div>
+      <div class="focus-side marked-only"><div class="eyebrow">Seu preparo</div><h3>Uma jornada, não um teste.</h3><p>Você pode pausar, refazer e acompanhar sua evolução.</p><div class="journey"><div class="journey-step active"><div class="step-n">1</div><div><strong>Entenda o contexto</strong><span>Vaga e currículo conectados</span></div></div><div class="journey-step"><div class="step-n">2</div><div><strong>Construa suas respostas</strong><span>Texto ou áudio, no seu ritmo</span></div></div><div class="journey-step"><div class="step-n">3</div><div><strong>Receba orientação</strong><span>Forças, melhoria e resposta-modelo</span></div></div><div class="journey-step"><div class="step-n">4</div><div><strong>Revise antes da conversa</strong><span>Histórico salvo para consultar</span></div></div></div><div class="prepared"><span>Tempo sugerido</span><b>18 min</b></div></div>
+    </section>
+
+    <section class="section" aria-labelledby="opTitle"><div class="section-head"><div><h2 id="opTitle">Escolha onde praticar</h2><p>Entrevistas próximas vêm primeiro. Vagas analisadas continuam disponíveis para treino antecipado.</p></div><div class="filterbar" data-filters><button class="active" data-filter="priority">Prioridade</button><button data-filter="trained">Já treinadas</button><button data-filter="all">Todas analisadas</button></div></div><div class="opportunities">
+      <div class="op-row marked-only" data-kind="priority"><div class="op-title"><div class="score">33%</div><div><strong>Gerente de Marketing</strong><span>PRIMIZIE · amanhã, 10h</span></div></div><div class="op-meta"><div><strong>Último treino</strong><span>Ainda não iniciado</span></div><div><strong>Preparação</strong><span class="tag">8 perguntas prontas</span></div></div><div class="op-action"><button data-start>Treinar agora →</button></div></div>
+      <div class="op-row" data-kind="trained"><div class="op-title"><div class="score" style="background:#e8f6ee;color:#177a4a">74%</div><div><strong>Analista de Growth</strong><span>Órbita · analisada há 6 dias</span></div></div><div class="op-meta"><div><strong>Último treino</strong><span>Nota 4,1 de 5</span></div><div><strong>Próximo foco</strong><span>Resultados mensuráveis</span></div></div><div class="op-action"><button data-start>Treinar novamente →</button></div></div>
+      <div class="op-row" data-kind="all"><div class="op-title"><div class="score" style="background:#f4f0e7;color:#95610a">61%</div><div><strong>Coordenador de Conteúdo</strong><span>Casa Norte · analisada há 12 dias</span></div></div><div class="op-meta"><div><strong>Treino</strong><span>Ainda não iniciado</span></div><div><strong>Preparação</strong><span>8 perguntas disponíveis</span></div></div><div class="op-action"><button data-start>Praticar →</button></div></div>
+    </div></section>
+
+    <section class="section" id="studio" aria-labelledby="studioTitle"><div class="section-head"><div><h2 id="studioTitle">Experiência de treino</h2><p>Uma pergunta por vez, com espaço para pensar — e orientação útil logo depois.</p></div><button class="text-btn" id="resetBtn">Recomeçar treino</button></div><div class="studio">
+      <div class="studio-main"><div class="studio-top"><div><strong>Gerente de Marketing · PRIMIZIE</strong><br><span>Competência em foco: tomada de decisão</span></div><div class="progress"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><span id="progressText">1 de 8</span></div></div><div class="question-label" id="questionLabel">Pergunta 1 · Experiência</div><div class="question" id="questionText">Conte sobre uma decisão de marketing que você tomou com dados incompletos. Como avaliou o risco?</div><div class="answer-tabs"><button class="active" data-mode="text">Responder por texto</button><button data-mode="audio">Responder por áudio</button></div><textarea id="answer" placeholder="Estruture sua resposta com contexto, ação e resultado..."></textarea><div class="studio-actions"><span class="helper" id="answerHelper">Sua resposta é salva somente quando você pedir a avaliação.</span><button class="primary" id="evaluateBtn">Avaliar minha resposta →</button></div></div>
+      <aside class="feedback" id="feedbackPanel"><div class="feedback-empty" id="feedbackEmpty"><div class="seal"><svg class="icon" style="width:26px;height:26px"><use href="#i-spark"/></svg></div><strong>Orientação depois da resposta</strong><p>Você receberá uma nota, os pontos fortes, a principal melhoria e um exemplo de resposta mais convincente.</p></div><div id="feedbackContent" hidden><div class="eyebrow">Leitura da sua resposta</div><h3>Boa estrutura. Falta provar o impacto.</h3><p>A avaliação considera clareza, relevância para a vaga e força das evidências.</p><div class="feedback-score"><strong>4,1</strong><span>de 5</span></div><div class="feedback-item"><strong>O que funcionou</strong><p>Você explicou o contexto e deixou clara a decisão tomada.</p></div><div class="feedback-item"><strong>Onde ganhar força</strong><p>Inclua o resultado em números e conecte a escolha ao objetivo do negócio.</p></div><div class="feedback-item"><strong>Próxima pergunta</strong><p>Pratique agora uma situação de influência sem autoridade formal.</p></div></div></aside>
+    </div></section>
+
+    <section class="section marked-only" aria-labelledby="historyTitle"><div class="section-head"><div><h2 id="historyTitle">Sua evolução</h2><p>Retome treinos anteriores e acompanhe o que está ficando mais convincente.</p></div><button class="text-btn">Ver histórico completo →</button></div><div class="history"><div class="history-row"><div class="history-score">4,1</div><div><strong>Analista de Growth · Órbita</strong><span>8 de 8 respostas · concluído há 4 dias</span></div><button>Revisar →</button></div><div class="history-row"><div class="history-score">3,7</div><div><strong>Especialista de Performance · Vértice</strong><span>8 de 8 respostas · concluído há 11 dias</span></div><button>Revisar →</button></div></div></section>
+  </main></div>
+
+  <script>
+    const body=document.body;
+    document.querySelectorAll('[data-state]').forEach(btn=>btn.addEventListener('click',()=>{
+      document.querySelectorAll('[data-state]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');body.classList.toggle('empty',btn.dataset.state==='empty');
+    }));
+    document.getElementById('themeBtn').addEventListener('click',()=>body.classList.toggle('dark'));
+    document.querySelectorAll('[data-start]').forEach(btn=>btn.addEventListener('click',()=>document.getElementById('studio').scrollIntoView({behavior:'smooth',block:'start'})));
+    document.querySelectorAll('[data-filters] button').forEach(btn=>btn.addEventListener('click',()=>{
+      document.querySelectorAll('[data-filters] button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+      const type=btn.dataset.filter;document.querySelectorAll('.op-row').forEach((row,i)=>row.style.display=(type==='priority'?(i===0?'grid':'none'):type==='trained'?(row.dataset.kind==='trained'?'grid':'none'):'grid'));
+    }));
+    document.querySelectorAll('[data-mode]').forEach(btn=>btn.addEventListener('click',()=>{
+      document.querySelectorAll('[data-mode]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+      const audio=btn.dataset.mode==='audio',answer=document.getElementById('answer');answer.placeholder=audio?'Clique aqui e comece a falar. A transcrição aparecerá neste espaço...':'Estruture sua resposta com contexto, ação e resultado...';
+      document.getElementById('answerHelper').textContent=audio?'Microfone pronto para uma simulação por voz.':'Sua resposta é salva somente quando você pedir a avaliação.';
+    }));
+    const questions=[
+      ['Pergunta 1 · Experiência','Conte sobre uma decisão de marketing que você tomou com dados incompletos. Como avaliou o risco?'],
+      ['Pergunta 2 · Influência','Fale sobre uma situação em que você precisou influenciar uma decisão sem ter autoridade formal.'],
+      ['Pergunta 3 · Resultados','Qual campanha melhor demonstra sua capacidade de transformar estratégia em resultado mensurável?']
+    ];
+    let current=0;
+    const evaluate=document.getElementById('evaluateBtn');
+    evaluate.addEventListener('click',()=>{
+      if(evaluate.dataset.next==='1'){
+        current=(current+1)%questions.length;document.getElementById('questionLabel').textContent=questions[current][0];document.getElementById('questionText').textContent=questions[current][1];document.getElementById('answer').value='';document.getElementById('progressText').textContent=(current+1)+' de 8';document.getElementById('progressFill').style.width=((current+1)/8*100)+'%';document.getElementById('feedbackEmpty').hidden=false;document.getElementById('feedbackContent').hidden=true;evaluate.textContent='Avaliar minha resposta →';delete evaluate.dataset.next;return;
+      }
+      document.getElementById('feedbackEmpty').hidden=true;document.getElementById('feedbackContent').hidden=false;evaluate.textContent='Próxima pergunta →';evaluate.dataset.next='1';
+    });
+    document.getElementById('resetBtn').addEventListener('click',()=>{current=0;document.getElementById('questionLabel').textContent=questions[0][0];document.getElementById('questionText').textContent=questions[0][1];document.getElementById('progressText').textContent='1 de 8';document.getElementById('progressFill').style.width='12.5%';document.getElementById('answer').value='';document.getElementById('feedbackEmpty').hidden=false;document.getElementById('feedbackContent').hidden=true;evaluate.textContent='Avaliar minha resposta →';delete evaluate.dataset.next});
+  </script>
+</body>
+</html>

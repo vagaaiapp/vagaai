@@ -1156,3 +1156,49 @@ describe('Leitura de cargo e empresa da vaga colada', () => {
     assert.equal(r.empresa, '');
   });
 });
+
+/* Custo de IA por assinante. Medido em 2026-08-29: análise US$ 0,0199 e alerta
+   US$ 0,0059 por envio, contra receita líquida de ~US$ 6,83 no Pro. O cenário
+   pesado (150 análises, 10 alertas diários) consumia 73% da receita, e 26% dela
+   era gasto passivo — 10 e-mails por dia que a pessoa pode nunca abrir. */
+describe('Tetos de custo de IA', () => {
+  const analyze = read('api/analyze.js');
+  const alerts = read('api/send-alerts.js');
+
+  it('a análise tem limite de taxa, como toda outra chamada de IA', () => {
+    /* Era a única sem: carta 20/h, treino 40/h, voz 20/h, PDF 15/h, CV 5/h.
+       E é a mais cara do produto. */
+    assert.match(analyze, /ANALISE_USER_LIMIT\s*=\s*\d+/, 'sem constante de limite');
+    assert.match(analyze, /u:\$\{userId\}:analise/, 'sem chave de rate limit por usuário');
+    assert.match(analyze, /checkAnaliseRateLimit\(authenticatedUserId\)/, 'limite declarado mas não aplicado');
+  });
+
+  it('o limite roda antes do cache, não depois', () => {
+    /* Cache hit também debita crédito e grava histórico: um laço sobre a mesma
+       vaga não pode passar só porque o resultado veio do cache. */
+    const iLimite = analyze.indexOf('checkAnaliseRateLimit(authenticatedUserId)');
+    const iCache = analyze.indexOf('const cached = await getCachedResult(hash)');
+    assert.ok(iLimite > 0 && iCache > 0, 'não achei os dois pontos');
+    assert.ok(iLimite < iCache, 'o rate limit precisa vir antes da checagem de cache');
+  });
+
+  it('a entrada do currículo tem teto de 15k caracteres', () => {
+    // Currículo real tem 3 a 6 mil. 30k só pagava entrada por texto inexistente.
+    assert.match(analyze, /cv \|\| result\.cv_text \|\| ''\)\.slice\(0, 15000\)/,
+      'o slice do CV voltou a passar de 15k');
+  });
+
+  it('o cron limita entregas de alerta por usuário em cada rodada', () => {
+    assert.match(alerts, /TETO_ALERTAS_POR_USUARIO\s*=\s*\d+/, 'sem teto por usuário');
+    assert.match(alerts, /vistosPorUsuario/, 'teto declarado mas não aplicado na fila');
+  });
+
+  it('os campos caros do JSON declaram limite de tamanho', () => {
+    /* briefing_empresa, plano_melhoria e prioridades somam 56% da saída, e a
+       saída é 80% do custo da análise. Sem limite no placeholder, o modelo
+       enche à vontade. */
+    for (const marca of ['máx. 10 palavras', 'máx. 18 palavras', 'máx. 22 palavras']) {
+      assert.ok(analyze.includes(marca), `o schema perdeu o limite "${marca}"`);
+    }
+  });
+});

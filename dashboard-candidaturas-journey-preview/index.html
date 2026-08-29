@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VagaAI — Preview da jornada de candidaturas</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --forest:#071b11;--forest-2:#0d3321;--emerald:#197a4a;--mid:#2cba74;--bright:#4ece91;
+      --canvas:#f2f6f3;--surface:#fff;--sub:#edf2ee;--ink:#07140c;--body:#365345;--muted:#6d8276;
+      --line:#d9e3dc;--soft:#e8eee9;--amber:#bd7a12;--amber-bg:#fff7e8;--coral:#d64c52;--coral-bg:#fff0f1;
+      --shadow:0 16px 40px rgba(14,48,29,.07);--radius:18px;--compact:11px;
+    }
+    [data-theme="dark"]{
+      --canvas:#07100b;--surface:#101914;--sub:#16221b;--ink:#eff7f1;--body:#b7c8bc;--muted:#8fa497;
+      --line:#26382d;--soft:#1d2d23;--amber-bg:#2a2010;--coral-bg:#2a1719;--shadow:0 18px 46px rgba(0,0,0,.2)
+    }
+    html{background:var(--canvas);color:var(--ink);font-family:Manrope,Arial,sans-serif}
+    body{min-height:100vh;background:var(--canvas);font-size:15px;line-height:1.55}
+    button,input{font:inherit}button{color:inherit}
+    .app{min-height:100vh;display:grid;grid-template-columns:230px minmax(0,1fr);grid-template-rows:64px minmax(0,1fr)}
+    .sidebar{grid-row:1/3;background:linear-gradient(180deg,#061a10,#082318);color:#dbe9df;padding:25px 16px 20px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+    .brand{display:flex;align-items:center;gap:12px;padding:0 10px 28px;color:#fff;font-family:Lora,serif;font-weight:700;font-size:18px}
+    .brand-mark{width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:#0b1510;border:1px solid rgba(255,255,255,.12);font:800 12px Manrope;color:var(--bright)}
+    .nav-label{padding:0 10px 8px;color:#668272;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+    .nav{display:grid;gap:4px}.nav-item{display:flex;align-items:center;gap:12px;min-height:42px;padding:0 11px;border-radius:10px;color:#8fa79a;text-decoration:none;font-size:13.5px;font-weight:600}
+    .nav-item svg{width:17px;height:17px;flex:none}.nav-item.active{background:#10462f;color:#fff;box-shadow:inset 3px 0 0 var(--bright)}
+    .sidebar-foot{margin-top:auto;border-top:1px solid rgba(255,255,255,.08);padding-top:14px}
+    .help{border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:12px;color:#9fb3a6;font-size:11px;line-height:1.5}.help strong{display:block;color:#e5eee8;font-size:12px;margin-bottom:3px}
+    .user{display:flex;align-items:center;gap:10px;padding:14px 6px 0}.avatar{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#1b8d58,#2fd183);display:grid;place-items:center;color:#fff;font-weight:800;font-size:11px}.user strong{display:block;font-size:12px;color:#fff}.user span{font-size:11px;color:#7f9a89}
+    .topbar{grid-column:2;display:flex;align-items:center;justify-content:space-between;padding:0 30px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--surface) 92%,transparent);position:sticky;top:0;z-index:20;backdrop-filter:blur(12px)}
+    .crumb{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700}.crumb span{color:var(--muted);font-weight:500}.top-actions{display:flex;align-items:center;gap:10px}
+    .preview-state{display:flex;align-items:center;gap:3px;padding:3px;border:1px solid var(--line);background:var(--sub);border-radius:10px}.preview-state b{font-size:10px;color:var(--muted);padding:0 8px}.state-btn{border:0;background:transparent;padding:7px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer}.state-btn.active{background:var(--surface);color:var(--emerald);box-shadow:0 2px 8px rgba(14,48,29,.08)}
+    .icon-btn{width:38px;height:38px;border:1px solid var(--line);border-radius:10px;background:var(--surface);display:grid;place-items:center;cursor:pointer}.icon-btn svg{width:17px;height:17px}
+    .primary{border:0;border-radius:10px;background:var(--emerald);color:#fff;padding:10px 16px;font-size:12.5px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px}.primary:hover{background:#12683e}
+    .content{grid-column:2;padding:32px clamp(24px,3vw,44px) 54px;max-width:1500px;width:100%;margin:0 auto}
+    .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:22px;margin-bottom:24px}.page-title{font-family:Lora,Georgia,serif;font-size:34px;line-height:1.12;letter-spacing:-.5px}.page-sub{color:var(--body);font-size:15px;margin-top:7px}.view-switch{display:flex;gap:2px;padding:3px;border:1px solid var(--line);background:var(--sub);border-radius:10px}.view-btn{border:0;background:transparent;border-radius:7px;padding:8px 12px;color:var(--body);font-size:12px;font-weight:700;cursor:pointer}.view-btn.active{background:var(--surface);color:var(--ink);box-shadow:0 2px 8px rgba(14,48,29,.08)}
+    .priority{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(390px,.88fr);border-radius:var(--radius);overflow:hidden;background:var(--forest);color:#fff;box-shadow:var(--shadow);margin-bottom:32px}
+    .priority-copy{padding:32px 34px 31px;position:relative;overflow:hidden}.priority-copy:after{content:"";position:absolute;right:-140px;top:-160px;width:350px;height:350px;border:1px solid rgba(78,206,145,.12);border-radius:50%;box-shadow:0 0 0 46px rgba(78,206,145,.035)}
+    .eyebrow{display:flex;align-items:center;gap:8px;color:var(--bright);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px}.eyebrow:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--bright);box-shadow:0 0 0 5px rgba(78,206,145,.1)}
+    .priority h2{font-family:Lora,Georgia,serif;font-size:clamp(26px,2.25vw,34px);line-height:1.18;letter-spacing:-.4px;max-width:700px;position:relative;z-index:1}.priority-copy>p{color:#b8cec0;font-size:14.5px;max-width:650px;margin-top:11px;position:relative;z-index:1}
+    .focus-job{display:flex;align-items:center;gap:12px;margin-top:22px;position:relative;z-index:1}.score{width:54px;height:54px;border-radius:13px;background:var(--coral-bg);color:var(--coral);display:grid;place-items:center;font-weight:800;font-size:17px;flex:none}.focus-job strong{display:block;font-size:15px}.focus-job span{display:block;color:#8eac9a;font-size:12px;margin-top:2px}
+    .priority-actions{display:flex;align-items:center;gap:10px;margin-top:23px;position:relative;z-index:1}.priority-actions .primary{background:var(--bright);color:#062316;padding:11px 18px}.text-btn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#fff;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:700;cursor:pointer}
+    .journey{padding:28px 29px;background:linear-gradient(145deg,#10442d,#176b44);border-left:1px solid rgba(255,255,255,.08)}.journey-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px}.journey-head strong{display:block;font-family:Lora,serif;font-size:20px}.journey-head span{display:block;color:#a9c4b3;font-size:11px;margin-top:3px}.journey-total{font-family:Lora,serif;font-size:30px;line-height:1}.journey-total small{display:block;font:600 10.5px Manrope;color:#a9c4b3;margin-top:5px}
+    .journey-flow{margin-top:28px;display:grid;grid-template-columns:repeat(4,1fr);position:relative}.journey-flow:before{content:"";position:absolute;left:7%;right:7%;top:16px;height:2px;background:rgba(255,255,255,.18)}.stage{position:relative;text-align:center}.stage-dot{width:34px;height:34px;margin:0 auto 10px;border-radius:50%;display:grid;place-items:center;background:#174d34;border:1px solid rgba(255,255,255,.2);font-size:12px;font-weight:800;position:relative;z-index:1}.stage.active .stage-dot{background:var(--bright);color:#082317;border-color:var(--bright);box-shadow:0 0 0 6px rgba(78,206,145,.11)}.stage b{display:block;color:#fff;font-size:11.5px}.stage span{display:block;color:#9cbaa8;font-size:10.5px;margin-top:2px}.journey-note{margin-top:22px;padding-top:16px;border-top:1px solid rgba(255,255,255,.12);color:#c4d7ca;font-size:12px;display:flex;align-items:flex-start;gap:9px}.journey-note svg{width:16px;flex:none;color:var(--bright);margin-top:1px}
+    .workspace-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:14px}.section-title{font-family:Lora,serif;font-size:24px}.section-sub{color:var(--muted);font-size:13px;margin-top:3px}.workspace-actions{display:flex;align-items:center;gap:8px}.search{position:relative}.search svg{position:absolute;width:16px;left:12px;top:11px;color:var(--muted)}.search input{width:280px;height:40px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:0 12px 0 37px;color:var(--ink);outline:none}.search input:focus{border-color:var(--emerald);box-shadow:0 0 0 3px rgba(25,122,74,.09)}
+    .filter-btn{height:40px;padding:0 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px}.filter-btn svg{width:15px}.filter-count{width:18px;height:18px;border-radius:50%;background:var(--emerald);color:#fff;display:grid;place-items:center;font-size:9px}
+    .filters{display:none;align-items:center;gap:8px;padding:12px 14px;margin-bottom:12px;border:1px solid var(--line);background:var(--surface);border-radius:12px}.filters.open{display:flex}.filter-chip{border:1px solid var(--line);background:var(--sub);border-radius:999px;padding:7px 11px;font-size:11px;color:var(--body);cursor:pointer}.filter-chip.active{background:#e5f4eb;border-color:#acd6bc;color:#12683e;font-weight:700}[data-theme="dark"] .filter-chip.active{background:#163c29}
+    .group{border-top:1px solid var(--line)}.group-head{display:flex;align-items:center;justify-content:space-between;padding:19px 4px 13px}.group-title{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:800}.group-count{min-width:25px;height:25px;padding:0 8px;border-radius:999px;background:var(--sub);display:grid;place-items:center;color:var(--body);font-size:11px}.group-help{font-size:12px;color:var(--muted)}
+    .case-list{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:0 10px 28px rgba(14,48,29,.04)}.case-head,.case-row{display:grid;grid-template-columns:minmax(280px,1.55fr) minmax(220px,1fr) 130px minmax(180px,.75fr);align-items:center;gap:20px}.case-head{padding:11px 19px;border-bottom:1px solid var(--line);color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.case-row{min-height:104px;padding:19px;border-bottom:1px solid var(--soft)}.case-row:last-child{border-bottom:0}.case-row:hover{background:color-mix(in srgb,var(--sub) 48%,var(--surface))}.job-cell{display:flex;align-items:center;gap:13px;min-width:0}.job-score{width:54px;height:54px;border-radius:13px;display:grid;place-items:center;flex:none;font-size:16px;font-weight:800}.score-low{background:var(--coral-bg);color:var(--coral)}.score-mid{background:var(--amber-bg);color:var(--amber)}.score-high{background:#e6f7ed;color:#197a4a}[data-theme="dark"] .score-high{background:#173b28}.job-copy{min-width:0}.job-copy strong{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.job-copy span{display:block;color:var(--body);font-size:12.5px;margin-top:3px}.job-copy small{display:inline-block;margin-top:6px;color:var(--muted);font-size:11px}
+    .status-top{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:700}.status-top span:last-child{font-weight:500;color:var(--muted);font-size:10.5px}.progress{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:10px}.progress i{height:5px;border-radius:99px;background:var(--soft)}.progress i.done{background:var(--emerald)}.progress i.current{background:var(--mid)}.update strong{display:block;font-size:12.5px}.update span{display:block;color:var(--muted);font-size:11px;margin-top:4px}.next{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0}.next-copy{min-width:0}.next-copy small{display:block;color:var(--muted);font-size:10.5px;margin-bottom:3px}.next-copy strong{display:block;font-size:12.5px;line-height:1.35}.row-btn{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 11px;font-size:11.5px;font-weight:800;cursor:pointer;white-space:nowrap}.row-btn.recommended{background:var(--emerald);border-color:var(--emerald);color:#fff}
+    .empty-line{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:19px 20px;border:1px dashed #c8d7cd;border-radius:13px;color:var(--body);font-size:13px}.empty-line strong{color:var(--ink)}.empty-line button{border:0;background:transparent;color:var(--emerald);font-size:12px;font-weight:800;cursor:pointer}
+    .kanban,.calendar{display:none}.kanban.active,.calendar.active,.list-view.active{display:block}.list-view{display:none}.kanban-grid{display:grid;grid-template-columns:repeat(4,minmax(220px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px}.kan-col{min-height:280px;background:var(--sub);border:1px solid var(--line);border-radius:14px;padding:13px}.kan-head{display:flex;justify-content:space-between;font-size:12px;font-weight:800;margin-bottom:12px}.kan-head span{color:var(--muted)}.kan-card{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:14px;margin-bottom:9px}.kan-card strong{font-size:13px}.kan-card p{color:var(--body);font-size:11.5px;margin-top:2px}.kan-card footer{display:flex;justify-content:space-between;color:var(--muted);font-size:10px;margin-top:12px}.kan-empty{padding:28px 8px;color:var(--muted);font-size:11px;text-align:center}
+    .cal-card{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:22px}.cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.cal-head strong{font-family:Lora,serif;font-size:19px}.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}.cal-day{min-height:94px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px;color:var(--muted);font-size:11px}.cal-event{display:block;margin-top:8px;border-left:3px solid var(--mid);background:#e7f6ed;color:#155f3c;border-radius:5px;padding:5px;font-size:9px;font-weight:700}[data-theme="dark"] .cal-event{background:#173b28;color:#9ce1bd}
+    .toast{position:fixed;right:24px;bottom:24px;background:var(--forest);color:#fff;padding:12px 16px;border-radius:10px;font-size:12px;box-shadow:0 14px 36px rgba(0,0,0,.22);transform:translateY(20px);opacity:0;pointer-events:none;transition:.2s;z-index:80}.toast.show{transform:none;opacity:1}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,12,7,.58);display:none;align-items:center;justify-content:center;padding:20px;z-index:70}.modal-backdrop.open{display:flex}.modal{width:min(470px,100%);background:var(--surface);border-radius:18px;padding:25px;box-shadow:0 30px 90px rgba(0,0,0,.3)}.modal h3{font-family:Lora,serif;font-size:23px}.modal p{color:var(--body);font-size:13px;margin:6px 0 18px}.field{display:grid;gap:6px;margin:12px 0}.field label{font-size:11px;font-weight:800}.field input{height:43px;border:1px solid var(--line);border-radius:9px;background:var(--canvas);color:var(--ink);padding:0 12px;outline:none}.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}.secondary{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 13px;font-size:12px;font-weight:700;cursor:pointer}
+    @media(max-width:1150px){.app{grid-template-columns:84px minmax(0,1fr)}.brand span,.nav-item span,.nav-label,.help,.user>div{display:none}.brand{justify-content:center;padding-inline:0}.nav-item{justify-content:center}.sidebar{padding-inline:12px}.topbar,.content{grid-column:2}.priority{grid-template-columns:1fr}.journey{border-left:0;border-top:1px solid rgba(255,255,255,.1)}.case-head,.case-row{grid-template-columns:minmax(240px,1.35fr) minmax(200px,1fr) minmax(180px,.8fr)}.case-head div:nth-child(3),.case-row>.update{display:none}}
+    @media(max-width:800px){.app{display:block}.sidebar{display:none}.topbar{height:auto;min-height:62px;padding:10px 16px}.crumb{display:none}.preview-state b{display:none}.top-actions>.primary{display:none}.content{padding:24px 16px 44px}.page-head{align-items:flex-start;flex-direction:column}.page-title{font-size:29px}.view-switch{width:100%}.view-btn{flex:1}.priority-copy{padding:27px 22px}.journey{padding:24px 20px}.workspace-head{align-items:flex-start;flex-direction:column}.workspace-actions{width:100%}.search{flex:1}.search input{width:100%}.case-head{display:none}.case-row{display:block;padding:18px}.job-copy strong{white-space:normal;overflow:visible;text-overflow:clip}.case-row>.status,.case-row>.update,.case-row>.next{margin-top:17px;padding-top:15px;border-top:1px solid var(--soft)}.case-row>.update{display:block}.next{align-items:flex-end}.kanban-grid{grid-template-columns:repeat(4,250px)}.filters.open{overflow-x:auto}.cal-day{min-height:74px;padding:6px}.group-help{display:none}}
+    @media(max-width:480px){.topbar{gap:8px}.preview-state{flex:1}.state-btn{flex:1;padding-inline:5px}.icon-btn{width:36px}.content{padding-top:20px}.page-sub{font-size:14px}.priority h2{font-size:26px}.priority-actions{align-items:stretch;flex-direction:column}.text-btn{width:100%}.journey-flow{gap:2px}.stage b{font-size:10.5px}.stage span{font-size:9.5px}.workspace-actions{align-items:stretch;flex-direction:column}.filter-btn{justify-content:center}.empty-line{align-items:flex-start;flex-direction:column}.cal-event{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.toast{left:16px;right:16px;bottom:16px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Menu principal">
+      <div class="brand"><div class="brand-mark">V·</div><span>Vagaai.</span></div>
+      <div class="nav-label">Seu espaço</div>
+      <nav class="nav">
+        <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg><span>Início</span></a>
+        <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v4h4M9 12h6M9 16h5"/></svg><span>Analisar vaga</span></a>
+        <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3"/><path d="M5 21c.5-5 3-7 7-7s6.5 2 7 7"/></svg><span>Meu currículo</span></a>
+        <a class="nav-item active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M9 6V4h6v2M3 11h18"/></svg><span>Candidaturas</span></a>
+        <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg><span>Treino de entrevista</span></a>
+        <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 7l8 6 8-6"/></svg><span>Carta de apresentação</span></a>
+        <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span>Vagas para você</span></a>
+        <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3"/><path d="M5 21c.5-5 3-7 7-7s6.5 2 7 7"/></svg><span>Conta e plano</span></a>
+      </nav>
+      <div class="sidebar-foot"><div class="help"><strong>Precisa de ajuda?</strong>Veja dicas para melhorar suas candidaturas.</div><div class="user"><div class="avatar">JV</div><div><strong>João Victor Heringer</strong><span>Pro</span></div></div></div>
+    </aside>
+
+    <header class="topbar">
+      <div class="crumb">Candidaturas <span>›</span> <span>Jornada de candidatura</span></div>
+      <div class="top-actions">
+        <div class="preview-state" aria-label="Escolher dados demonstrativos"><b>PREVIEW</b><button class="state-btn active" data-state="current">Estado atual</button><button class="state-btn" data-state="active">Jornada ativa</button></div>
+        <button class="icon-btn" id="themeBtn" aria-label="Alternar tema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg></button>
+        <button class="primary" data-demo>＋ Analisar vaga</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="page-head">
+        <div><h1 class="page-title">Suas candidaturas</h1><p class="page-sub">Acompanhe cada oportunidade e saiba exatamente qual é o próximo passo.</p></div>
+        <div class="view-switch" aria-label="Modo de visualização"><button class="view-btn active" data-view="list">Lista</button><button class="view-btn" data-view="kanban">Kanban</button><button class="view-btn" data-view="calendar">Calendário</button></div>
+      </div>
+
+      <section class="priority" aria-label="Próxima ação e resumo da jornada">
+        <div class="priority-copy">
+          <div class="eyebrow">Próxima ação</div>
+          <h2 id="heroTitle">Transforme esta análise em uma candidatura acompanhada.</h2>
+          <p id="heroText">Você já conhece a aderência da vaga. Agora registre a oportunidade para acompanhar prazo, retorno e próximos passos.</p>
+          <div class="focus-job"><div class="score" id="heroScore">33%</div><div><strong id="heroJob">Gerente de Marketing</strong><span id="heroCompany">PRIMIZIE · analisada há 54 dias</span></div></div>
+          <div class="priority-actions"><button class="primary" id="heroCta">Rastrear candidatura →</button><button class="text-btn" data-demo>Ver análise completa</button></div>
+        </div>
+        <div class="journey">
+          <div class="journey-head"><div><strong>Sua jornada agora</strong><span id="journeyCaption">1 oportunidade aguardando sua decisão</span></div><div class="journey-total" id="journeyTotal">1<small>oportunidade</small></div></div>
+          <div class="journey-flow" id="journeyFlow"></div>
+          <div class="journey-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18"/></svg><span id="journeyNote">Rastrear não significa que você já se candidatou. Significa apenas que deseja acompanhar esta oportunidade.</span></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="workspace-head"><div><h2 class="section-title">Oportunidades</h2><p class="section-sub" id="workspaceSub">Uma análise aguardando sua decisão.</p></div><div class="workspace-actions"><label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="searchInput" type="search" placeholder="Buscar cargo ou empresa"></label><button class="filter-btn" id="filterBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Filtros <span class="filter-count">1</span></button><button class="primary" id="newBtn">＋ Nova candidatura</button></div></div>
+        <div class="filters" id="filters"><button class="filter-chip active">Todas</button><button class="filter-chip">Aguardando decisão</button><button class="filter-chip">Em andamento</button><button class="filter-chip">Entrevistas</button><button class="filter-chip">Com pendência</button></div>
+
+        <div class="list-view active" id="listView"><div id="groups"></div></div>
+        <div class="kanban" id="kanbanView"><div class="kanban-grid" id="kanbanGrid"></div></div>
+        <div class="calendar" id="calendarView"><div class="cal-card"><div class="cal-head"><strong>Agosto de 2026</strong><span>Compromissos e follow-ups</span></div><div class="cal-grid" id="calendarGrid"></div></div></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="modal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><h3 id="modalTitle">Nova candidatura</h3><p>Registre uma oportunidade manualmente. Este formulário é apenas demonstrativo no preview.</p><div class="field"><label for="roleInput">Cargo</label><input id="roleInput" placeholder="Ex.: Gerente de Marketing"></div><div class="field"><label for="companyInput">Empresa</label><input id="companyInput" placeholder="Ex.: PRIMIZIE"></div><div class="modal-actions"><button class="secondary" id="cancelModal">Cancelar</button><button class="primary" id="saveModal">Adicionar ao preview</button></div></div></div>
+  <div class="toast" id="toast">Interação demonstrativa</div>
+
+  <script>
+    const data = {
+      current: {
+        hero:{title:'Transforme esta análise em uma candidatura acompanhada.',text:'Você já conhece a aderência da vaga. Agora registre a oportunidade para acompanhar prazo, retorno e próximos passos.',score:'33%',job:'Gerente de Marketing',company:'PRIMIZIE · analisada há 54 dias',cta:'Rastrear candidatura →'},
+        caption:'1 oportunidade aguardando sua decisão',total:'1',note:'Rastrear não significa que você já se candidatou. Significa apenas que deseja acompanhar esta oportunidade.',counts:[1,0,0,0],sub:'Uma análise aguardando sua decisão.',
+        waiting:[{score:33,job:'Gerente de Marketing',company:'PRIMIZIE',meta:'Analisada 2×',status:'Analisada',age:'Há 54 dias',update:'Sem acompanhamento',detail:'Ainda não rastreada',next:'Adicionar ao acompanhamento',action:'Rastrear',step:1}],active:[]
+      },
+      active: {
+        hero:{title:'Faça o follow-up da candidatura mais antiga.',text:'Uma oportunidade está sem retorno há nove dias. Um contato breve agora ajuda você a manter visibilidade sem pressionar o recrutador.',score:'72%',job:'Product Marketing Manager',company:'Nuvem Labs · candidatura enviada há 9 dias',cta:'Preparar follow-up →'},
+        caption:'4 oportunidades em diferentes etapas',total:'4',note:'Você tem uma entrevista amanhã e um follow-up recomendado hoje.',counts:[4,3,1,0],sub:'Quatro oportunidades organizadas por decisão e estágio.',
+        waiting:[{score:33,job:'Gerente de Marketing',company:'PRIMIZIE',meta:'Analisada 2×',status:'Analisada',age:'Há 54 dias',update:'Sem acompanhamento',detail:'Ainda não rastreada',next:'Adicionar ao acompanhamento',action:'Rastrear',step:1}],
+        active:[{score:72,job:'Product Marketing Manager',company:'Nuvem Labs',meta:'Candidatura ativa',status:'Aplicada',age:'Há 9 dias',update:'Follow-up recomendado',detail:'Hoje',next:'Enviar follow-up',action:'Preparar',step:2},{score:81,job:'Especialista em Growth',company:'VerdePay',meta:'Processo em andamento',status:'Em processo',age:'Há 4 dias',update:'Aguardar retorno',detail:'Revisar em 3 dias',next:'Revisar candidatura',action:'Ver detalhes',step:3},{score:68,job:'Coordenação de Marketing',company:'Mobi Educação',meta:'Entrevista marcada',status:'Entrevista',age:'Amanhã, 10h',update:'Preparar entrevista',detail:'Prioritário',next:'Treinar para entrevista',action:'Treinar',step:4}]
+      }
+    };
+    let state='current';
+    const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+    const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function scoreClass(score){return score>=70?'score-high':score>=40?'score-mid':'score-low'}
+    function progress(step){return [1,2,3,4].map(n=>'<i class="'+(n<step?'done':n===step?'current':'')+'"></i>').join('')}
+    function row(item){return '<div class="case-row" data-search="'+esc((item.job+' '+item.company).toLowerCase())+'"><div class="job-cell"><div class="job-score '+scoreClass(item.score)+'">'+item.score+'%</div><div class="job-copy"><strong>'+esc(item.job)+'</strong><span>'+esc(item.company)+'</span><small>'+esc(item.meta)+'</small></div></div><div class="status"><div class="status-top"><span>'+esc(item.status)+'</span><span>'+esc(item.age)+'</span></div><div class="progress">'+progress(item.step)+'</div></div><div class="update"><strong>'+esc(item.update)+'</strong><span>'+esc(item.detail)+'</span></div><div class="next"><div class="next-copy"><small>Próxima melhor ação</small><strong>'+esc(item.next||item.update)+'</strong></div><button class="row-btn '+(item.action==='Rastrear'||item.action==='Treinar'?'recommended':'')+'" data-demo>'+esc(item.action)+' →</button></div></div>'}
+    function list(items){return '<div class="case-list"><div class="case-head"><div>Oportunidade</div><div>Etapa da jornada</div><div>Atualização</div><div>Próxima ação</div></div>'+items.map(row).join('')+'</div>'}
+    function renderGroups(d){
+      let html='<div class="group"><div class="group-head"><div class="group-title">Aguardando sua decisão <span class="group-count">'+d.waiting.length+'</span></div><div class="group-help">Análises que ainda não entraram no acompanhamento</div></div>'+list(d.waiting)+'</div>';
+      html+='<div class="group"><div class="group-head"><div class="group-title">Em andamento <span class="group-count">'+d.active.length+'</span></div><div class="group-help">Candidaturas enviadas e processos ativos</div></div>';
+      html+=d.active.length?list(d.active):'<div class="empty-line"><div><strong>Nenhuma candidatura em andamento.</strong> Ao rastrear uma análise, ela passa a aparecer aqui com prazos e próximas ações.</div><button data-demo>Entender o acompanhamento →</button></div>';
+      html+='</div>'; $('#groups').innerHTML=html; bindDemo();
+    }
+    function renderJourney(d){const labels=[['Analisadas','Ponto de partida'],['Candidaturas','Enviadas'],['Entrevistas','Próxima conquista'],['Ofertas','Objetivo final']];$('#journeyFlow').innerHTML=labels.map((l,i)=>'<div class="stage '+(d.counts[i]?'active':'')+'"><div class="stage-dot">'+d.counts[i]+'</div><b>'+l[0]+'</b><span>'+l[1]+'</span></div>').join('')}
+    function renderKanban(d){const cols=[['Por decidir',d.waiting],['Candidaturas',d.active.filter(x=>x.step===2)],['Em processo',d.active.filter(x=>x.step===3)],['Entrevistas',d.active.filter(x=>x.step===4)]];$('#kanbanGrid').innerHTML=cols.map(c=>'<div class="kan-col"><div class="kan-head">'+c[0]+' <span>'+c[1].length+'</span></div>'+(c[1].length?c[1].map(x=>'<div class="kan-card"><strong>'+esc(x.job)+'</strong><p>'+esc(x.company)+'</p><footer><span>'+x.score+'%</span><span>'+esc(x.age)+'</span></footer></div>').join(''):'<div class="kan-empty">Nenhuma oportunidade nesta etapa.</div>')+'</div>').join('')}
+    function renderCalendar(d){const events=state==='active'?{5:'Follow-up · Nuvem Labs',6:'Entrevista · Mobi'}:{};$('#calendarGrid').innerHTML=['S','T','Q','Q','S','S','D'].map(x=>'<div class="cal-day" style="min-height:35px;font-weight:800">'+x+'</div>').join('')+Array.from({length:35},(_,i)=>{const day=i-1;return '<div class="cal-day">'+(day>0&&day<=31?day:'')+(events[day]?'<span class="cal-event">'+events[day]+'</span>':'')+'</div>'}).join('')}
+    function render(){const d=data[state],h=d.hero;$('#heroTitle').textContent=h.title;$('#heroText').textContent=h.text;$('#heroScore').textContent=h.score;$('#heroScore').className='score '+scoreClass(parseInt(h.score));$('#heroJob').textContent=h.job;$('#heroCompany').textContent=h.company;$('#heroCta').textContent=h.cta;$('#journeyCaption').textContent=d.caption;$('#journeyTotal').innerHTML=d.total+'<small>oportunidade'+(d.total==='1'?'':'s')+'</small>';$('#journeyNote').textContent=d.note;$('#workspaceSub').textContent=d.sub;renderJourney(d);renderGroups(d);renderKanban(d);renderCalendar(d);filterRows();}
+    function bindDemo(){$$('[data-demo]').forEach(b=>b.onclick=()=>showToast(b.textContent.trim()+' — interação demonstrativa'))}
+    function showToast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2200)}
+    function filterRows(){const q=$('#searchInput').value.trim().toLowerCase();$$('.case-row').forEach(r=>r.style.display=!q||r.dataset.search.includes(q)?'grid':'none')}
+    $$('.state-btn').forEach(b=>b.onclick=()=>{state=b.dataset.state;$$('.state-btn').forEach(x=>x.classList.toggle('active',x===b));render()});
+    $$('.view-btn').forEach(b=>b.onclick=()=>{$$('.view-btn').forEach(x=>x.classList.toggle('active',x===b));['list','kanban','calendar'].forEach(v=>$('#'+v+'View').classList.toggle('active',v===b.dataset.view))});
+    $('#themeBtn').onclick=()=>{const root=document.documentElement;root.dataset.theme=root.dataset.theme==='dark'?'light':'dark'};
+    $('#filterBtn').onclick=()=>$('#filters').classList.toggle('open');
+    $$('.filter-chip').forEach(b=>b.onclick=()=>{$$('.filter-chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');showToast('Filtro “'+b.textContent+'” selecionado')});
+    $('#searchInput').oninput=filterRows;
+    $('#newBtn').onclick=()=>$('#modal').classList.add('open');$('#cancelModal').onclick=()=>$('#modal').classList.remove('open');
+    $('#saveModal').onclick=()=>{$('#modal').classList.remove('open');showToast('Candidatura adicionada ao preview')};$('#modal').onclick=e=>{if(e.target.id==='modal')$('#modal').classList.remove('open')};
+    $('#heroCta').onclick=()=>showToast(state==='current'?'A oportunidade seria adicionada ao acompanhamento':'O follow-up seria preparado');
+    render();bindDemo();
+  </script>
+</body>
+</html>

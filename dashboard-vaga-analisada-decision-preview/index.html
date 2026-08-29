@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>VagaAI — Painel inteligente da vaga</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='16' fill='%23071b11'/><text x='16' y='21' text-anchor='middle' font-family='Arial' font-size='15' font-weight='700' fill='%234ece91'>V</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --forest:#071b11;--forest-2:#0b2b1b;--emerald:#1a7a4a;--mid:#2cba74;--bright:#4ece91;
+      --canvas:#f2f6f3;--card:#fff;--sub:#f3f7f4;--line:#dce7e0;--soft:#eaf0ec;
+      --ink:#07140d;--body:#3f5a49;--muted:#74877b;--red:#d94f4f;--red-bg:#fff0f0;
+      --amber:#a66b09;--amber-bg:#fff7e8;--blue:#2469a6;--blue-bg:#edf5fb;
+      --shadow:0 22px 70px rgba(4,28,16,.18);--radius:16px;--small:10px;
+    }
+    [data-theme="dark"]{
+      --canvas:#06120b;--card:#0b1b11;--sub:#102319;--line:#20382a;--soft:#14291d;
+      --ink:#edf8f1;--body:#abc3b3;--muted:#779183;--red-bg:#2c1517;--amber-bg:#2b2314;--blue-bg:#132536;
+      --shadow:0 26px 80px rgba(0,0,0,.42)
+    }
+    html,body{min-height:100%;background:var(--canvas);color:var(--ink);font-family:Manrope,Arial,sans-serif}
+    body{overflow:hidden}
+    button,a,select{font:inherit}
+    button{cursor:pointer}
+    .icon{width:19px;height:19px;display:block;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+    .sidebar{position:fixed;inset:0 auto 0 0;width:230px;background:linear-gradient(180deg,#061e12,#06170e);color:#afc6b7;padding:28px 16px 18px;z-index:4;display:flex;flex-direction:column}
+    .brand{display:flex;align-items:center;gap:10px;color:white;margin:2px 10px 34px;font:700 20px Lora,serif}.brand-mark{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#0a1310;color:var(--bright);font:800 13px Manrope}
+    .nav-label{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#587665;font-weight:800;margin:0 10px 10px}
+    .nav{display:flex;flex-direction:column;gap:4px}.nav button{border:0;background:transparent;color:#8ca596;min-height:43px;border-radius:9px;padding:0 12px;display:flex;align-items:center;gap:12px;text-align:left;font-size:13.5px}.nav button.on{background:#10452d;color:white;border-left:3px solid var(--bright);padding-left:9px}.nav button:hover{color:white}.nav .icon{width:17px;height:17px}
+    .account{margin-top:auto;border-top:1px solid rgba(255,255,255,.09);padding:18px 6px 0;display:flex;gap:10px;align-items:center}.avatar{width:35px;height:35px;border-radius:9px;background:linear-gradient(145deg,#188c55,#35cb81);color:white;display:grid;place-items:center;font-size:11px;font-weight:800}.account strong{display:block;color:white;font-size:12px}.account span{display:block;font-size:11px;margin-top:2px;color:#6f907c}
+
+    .app{margin-left:230px;min-height:100vh}.topbar{height:64px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 34px}.crumb{font-size:13px;color:var(--muted)}.crumb strong{color:var(--ink)}.top-actions{display:flex;align-items:center;gap:10px}.theme,.top-cta{height:38px;border-radius:10px}.theme{width:40px;display:grid;place-items:center;border:1px solid var(--line);background:var(--card);color:var(--body)}.top-cta{border:0;background:var(--emerald);color:white;padding:0 20px;font-weight:800;font-size:12px}
+    .workspace{padding:34px;max-width:1500px;margin:auto}.page-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px}.page-head h1{font:700 31px Lora,serif}.page-head p{color:var(--body);font-size:13px;margin-top:6px}.views{display:flex;padding:4px;border:1px solid var(--line);background:var(--sub);border-radius:10px}.views span{font-size:11px;padding:7px 14px;border-radius:7px}.views span:first-child{background:var(--card);box-shadow:0 2px 7px rgba(0,0,0,.06)}
+    .metrics{display:grid;grid-template-columns:1.25fr repeat(3,1fr);gap:12px;margin-bottom:18px}.metric{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;min-height:108px}.metric.lead{background:linear-gradient(135deg,#0b3c26,#17683f);color:white}.metric small{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:800}.metric.lead small{color:#65dca2}.metric strong{display:block;font:700 26px Lora,serif;margin:10px 0 2px}.metric span{font-size:11px;color:var(--muted)}.metric.lead span{color:#a9d3ba}
+    .filters{height:60px;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:18px}.search{height:38px;border:1px solid var(--line);background:var(--sub);border-radius:9px;flex:1;padding:0 14px;color:var(--muted);font-size:13px}.chip{border:1px solid var(--line);background:var(--card);color:var(--body);border-radius:20px;padding:7px 12px;font-size:11px}.chip.on{background:var(--emerald);color:white;border-color:var(--emerald)}
+    .table{border:1px solid var(--line);border-radius:15px;background:var(--card);overflow:hidden}.table-head,.job-row{display:grid;grid-template-columns:1.25fr .9fr .65fr .8fr;gap:18px;align-items:center}.table-head{height:45px;padding:0 20px;background:var(--sub);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:800}.job-row{padding:18px 20px;border-top:1px solid var(--line)}.job-id{display:flex;gap:12px;align-items:center}.score-box{width:52px;height:52px;border-radius:13px;background:var(--red-bg);color:var(--red);display:grid;place-items:center;font-weight:800;font-size:13px}.job-id strong{font-size:13px}.job-id span,.progress small,.next small{display:block;font-size:10.5px;color:var(--muted);margin-top:4px}.steps{display:flex;gap:5px;margin-top:9px}.steps i{height:4px;flex:1;border-radius:4px;background:var(--line)}.steps i.done{background:var(--emerald)}.steps i.next{background:var(--bright)}.status{font-size:12px;font-weight:700;color:var(--body)}.next strong{font-size:12px}.open-row{border:0;background:var(--emerald);color:white;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:800;margin-top:8px}
+
+    .veil{position:fixed;inset:64px 0 0 230px;background:rgba(2,12,7,.46);backdrop-filter:blur(3px);z-index:10;transition:opacity .2s}.veil.closed{opacity:0;pointer-events:none}
+    .panel{position:fixed;z-index:11;right:0;top:0;bottom:0;width:min(720px,calc(100vw - 230px));background:var(--card);box-shadow:var(--shadow);display:flex;flex-direction:column;transform:translateX(0);transition:transform .28s cubic-bezier(.22,1,.36,1)}.panel.closed{transform:translateX(102%)}
+    .preview-switch{height:48px;flex:0 0 48px;border-bottom:1px solid var(--line);background:var(--sub);display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 54px 6px 16px}.preview-switch span{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-right:6px}.preview-switch button{border:1px solid transparent;background:transparent;color:var(--body);border-radius:8px;padding:7px 10px;font-size:10.5px;font-weight:700}.preview-switch button.on{background:var(--card);border-color:var(--line);color:var(--emerald);box-shadow:0 2px 7px rgba(0,0,0,.04)}
+    .panel-close{position:absolute;right:12px;top:8px;width:34px;height:34px;border:0;background:transparent;color:var(--muted);border-radius:8px;z-index:2;font-size:18px}.panel-close:hover{background:var(--soft);color:var(--ink)}
+    .panel-scroll{overflow:auto;min-height:0;flex:1;scrollbar-color:var(--line) transparent}
+    .identity{padding:25px 30px 23px;border-bottom:1px solid var(--line)}.origin-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}.origin-badge{display:inline-flex;align-items:center;gap:6px;border:1px solid #cddbd2;background:var(--sub);border-radius:18px;padding:6px 9px;color:var(--body);font-size:10.5px;font-weight:800}.origin-badge i{width:6px;height:6px;background:var(--muted);border-radius:50%}.origin-row a{color:var(--emerald);font-size:11px;font-weight:700;text-decoration:none}.company{color:var(--emerald);font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;margin-bottom:7px}.identity h1{font:700 30px/1.17 Lora,serif;letter-spacing:-.03em}.identity-meta{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:11.5px;margin-top:9px;flex-wrap:wrap}.identity-meta b{color:var(--body)}
+    .decision{display:grid;grid-template-columns:150px 1fr;background:var(--forest);color:white}.score-hero{padding:25px 24px;border-right:1px solid rgba(255,255,255,.11)}.score-hero strong{display:block;font:700 48px/.9 Lora,serif;color:var(--bright);letter-spacing:-.04em}.score-hero span{display:block;font-size:11px;color:#a7c7b4;margin-top:10px}.score-track{height:5px;background:rgba(255,255,255,.13);border-radius:5px;margin-top:15px;overflow:hidden}.score-track i{display:block;height:100%;width:33%;background:var(--bright);border-radius:inherit;transition:width .35s ease}
+    .decision-copy{padding:23px 27px}.decision-kicker{font-size:10px;color:var(--bright);text-transform:uppercase;letter-spacing:.08em;font-weight:800}.decision-copy h2{font:700 21px/1.3 Lora,serif;margin:7px 0 7px}.decision-copy p{color:#b8d0c1;font-size:12.5px;line-height:1.6;max-width:440px}
+    .content{padding:25px 30px 34px}.section{padding:0 0 25px;margin-bottom:25px;border-bottom:1px solid var(--line)}.section:last-child{margin-bottom:0}.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:15px}.section-head h3{font:700 19px Lora,serif}.section-head p{font-size:11.5px;color:var(--muted);margin-top:4px}.section-head a{font-size:11px;color:var(--emerald);font-weight:800;text-decoration:none;white-space:nowrap}
+    .priorities{display:flex;flex-direction:column}.priority{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:center;padding:13px 0;border-top:1px solid var(--soft)}.priority:first-child{border-top:0;padding-top:0}.number{width:32px;height:32px;border-radius:9px;background:var(--amber-bg);color:var(--amber);display:grid;place-items:center;font:700 14px Lora}.priority strong{font-size:13px}.priority p{font-size:11.5px;color:var(--body);margin-top:3px;line-height:1.45}.impact{font-size:10px;font-weight:800;color:var(--amber);text-transform:uppercase;letter-spacing:.04em}
+    .evidence{display:grid;grid-template-columns:1fr 1fr;gap:20px}.evidence-col h4{font-size:12px;margin-bottom:10px}.tags{display:flex;flex-wrap:wrap;gap:7px}.tag{border-radius:7px;padding:7px 9px;font-size:10.5px;font-weight:700}.tag.ok{background:#e9f7ef;color:#176a43}.tag.gap{background:var(--red-bg);color:var(--red)}[data-theme="dark"] .tag.ok{background:#123724;color:#78dba8}
+    .prep{display:flex;flex-direction:column;border-top:1px solid var(--line)}.prep-row{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}.prep-icon{width:34px;height:34px;border-radius:9px;background:var(--sub);color:var(--emerald);display:grid;place-items:center}.prep-icon .icon{width:16px;height:16px}.prep-row strong{font-size:12.5px}.prep-row p{font-size:10.5px;color:var(--muted);margin-top:3px}.prep-state{font-size:10.5px;font-weight:800;color:var(--emerald)}.prep-state.pending{color:var(--amber)}
+    .journey{display:flex;flex-direction:column}.event{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:10px;min-height:54px}.event-rail{display:flex;flex-direction:column;align-items:center}.event-dot{width:9px;height:9px;border-radius:50%;background:var(--emerald);margin-top:4px}.event-line{width:1px;flex:1;background:var(--line);margin:4px 0}.event:last-child .event-line{display:none}.event strong{font-size:12px}.event p{font-size:10.5px;color:var(--muted);margin-top:3px}.event time{font-size:10px;color:var(--muted)}
+    .external-note{display:flex;gap:12px;background:var(--blue-bg);color:var(--body);border-radius:11px;padding:14px;margin-top:14px}.external-note .icon{color:var(--blue);flex:0 0 auto}.external-note strong{font-size:11.5px;color:var(--ink)}.external-note p{font-size:11px;line-height:1.5;margin-top:3px}
+    details{border-top:1px solid var(--line);padding-top:16px}summary{cursor:pointer;font-weight:800;font-size:12px;list-style:none;display:flex;justify-content:space-between}summary:after{content:'+';color:var(--emerald);font-size:18px}details[open] summary:after{content:'−'}.details-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:14px;border-top:1px solid var(--line)}.detail{padding:13px 0;border-bottom:1px solid var(--line)}.detail:nth-child(odd){padding-right:18px}.detail:nth-child(even){border-left:1px solid var(--line);padding-left:18px}.detail small{display:block;color:var(--muted);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;font-weight:800}.detail strong{display:block;font-size:12px;margin-top:4px}
+    .panel-actions{flex:0 0 auto;border-top:1px solid var(--line);background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(12px);padding:14px 24px;display:flex;align-items:center;gap:9px}.action-primary,.action-secondary,.more{min-height:42px;border-radius:9px;font-weight:800;font-size:12px}.action-primary{border:0;background:var(--emerald);color:white;padding:0 19px;margin-left:auto}.action-primary:hover{background:#12683f}.action-secondary{border:1px solid var(--line);background:var(--card);color:var(--body);padding:0 15px}.more{width:42px;border:1px solid var(--line);background:var(--card);color:var(--body)}
+    .reopen{position:fixed;right:25px;bottom:25px;z-index:12;border:0;background:var(--emerald);color:white;border-radius:11px;padding:12px 17px;font-weight:800;box-shadow:var(--shadow);display:none}.reopen.show{display:block}
+    .toast{position:fixed;left:50%;bottom:24px;z-index:30;transform:translate(-50%,20px);background:var(--forest);color:white;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 16px;font-size:11.5px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+
+    @media(max-width:900px){
+      body{overflow:auto}.sidebar{display:none}.app{margin-left:0}.topbar{padding:0 18px}.workspace{padding:24px 18px}.metrics{grid-template-columns:1fr 1fr}.veil{inset:64px 0 0 0}.panel{width:100%;top:64px}.preview-switch{justify-content:flex-start;overflow:auto}.panel-actions{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+    }
+    @media(max-width:560px){
+      .topbar{height:56px}.crumb span,.top-cta{display:none}.workspace{padding:20px 14px}.page-head{align-items:flex-start}.views{display:none}.page-head h1{font-size:27px}.metrics{grid-template-columns:1fr}.metric:not(.lead){display:none}.filters{display:none}.table-head{display:none}.job-row{grid-template-columns:1fr}.job-row>*:not(.job-id){display:none}.veil{display:none}.panel{top:0;bottom:0}.preview-switch{height:52px;flex-basis:52px;padding-right:50px}.preview-switch span{display:none}.preview-switch button{white-space:nowrap;padding:7px 9px}.identity{padding:23px 21px 20px}.identity h1{font-size:27px}.decision{grid-template-columns:105px 1fr}.score-hero{padding:22px 17px}.score-hero strong{font-size:40px}.decision-copy{padding:20px 18px}.decision-copy h2{font-size:18px}.content{padding:22px 21px 120px}.section-head{align-items:flex-start;flex-direction:column;gap:5px}.evidence{grid-template-columns:1fr}.priority{grid-template-columns:34px minmax(0,1fr)}.impact{grid-column:2}.details-grid{grid-template-columns:1fr}.detail:nth-child(odd),.detail:nth-child(even){padding:12px 0;border-left:0}.panel-actions{position:fixed;left:0;right:0;bottom:0;padding:12px 14px calc(12px + env(safe-area-inset-bottom));flex-wrap:wrap}.action-secondary{flex:1}.action-primary{order:-1;flex:1 0 100%;margin:0}.more{flex:0 0 42px}
+    }
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <aside class="sidebar" aria-label="Menu principal">
+    <div class="brand"><div class="brand-mark">V.</div>Vagaai.</div>
+    <div class="nav-label">Seu espaço</div>
+    <nav class="nav">
+      <button><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Início</button>
+      <button><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>Analisar vaga</button>
+      <button><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Meu currículo</button>
+      <button class="on"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5h8v2"/></svg>Candidaturas</button>
+      <button><svg class="icon" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>Treino de entrevista</button>
+      <button><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Carta de apresentação</button>
+      <button><svg class="icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M10 20h4"/></svg>Vagas para você</button>
+    </nav>
+    <div class="account"><div class="avatar">JV</div><div><strong>João Victor Heringer</strong><span>Pro</span></div></div>
+  </aside>
+
+  <main class="app">
+    <header class="topbar"><div class="crumb"><strong>Candidaturas</strong> <span>› Rastreamento de candidaturas</span></div><div class="top-actions"><button class="theme" aria-label="Alternar tema" onclick="toggleTheme()"><svg class="icon" viewBox="0 0 24 24"><path d="M20.5 14.2A8 8 0 0 1 9.8 3.5 9 9 0 1 0 20.5 14.2Z"/></svg></button><button class="top-cta">＋ Analisar vaga</button></div></header>
+    <div class="workspace">
+      <div class="page-head"><div><h1>Suas candidaturas</h1><p>Organize oportunidades e avance com clareza em cada etapa.</p></div><div class="views"><span>Lista</span><span>Kanban</span><span>Calendário</span></div></div>
+      <section class="metrics"><div class="metric lead"><small>Próxima melhor ação</small><strong>1 análise aguardando</strong><span>Decida se essa oportunidade deve entrar no seu acompanhamento.</span></div><div class="metric"><small>Candidaturas ativas</small><strong>0</strong><span>1 total analisada</span></div><div class="metric"><small>Em entrevista</small><strong>0</strong><span>Nenhuma no momento</span></div><div class="metric"><small>Ações pendentes</small><strong>1</strong><span>Requer sua atenção</span></div></section>
+      <div class="filters"><div class="search">⌕&nbsp;&nbsp;Buscar por cargo, empresa...</div><button class="chip on">Todas 1</button><button class="chip">Aplicada</button><button class="chip">Em processo</button><button class="chip">Entrevista</button></div>
+      <section class="table"><div class="table-head"><span>Oportunidade</span><span>Etapa da jornada</span><span>Atualização</span><span>Próxima ação</span></div><div class="job-row"><div class="job-id"><div class="score-box">33%</div><div><strong>Gerente de Marketing</strong><span>PRIMIZIE · Vaga em site externo</span></div></div><div class="progress"><strong class="status">Só análise</strong><div class="steps"><i class="done"></i><i class="next"></i><i></i><i></i><i></i></div><small>Ainda não rastreada</small></div><div class="status">Analisada<small>Hoje</small></div><div class="next"><strong>Decidir se vale avançar</strong><small>A candidatura ainda não foi iniciada</small><button class="open-row" onclick="openPanel()">Abrir painel →</button></div></div></section>
+    </div>
+  </main>
+
+  <div class="veil" id="veil" onclick="closePanel()"></div>
+  <aside class="panel" id="panel" role="dialog" aria-modal="true" aria-hidden="false" aria-labelledby="jobTitle">
+    <button class="panel-close" id="closePanel" aria-label="Fechar painel" onclick="closePanel()">×</button>
+    <div class="preview-switch"><span>Estado da prévia</span><button class="on" data-state="analysed" onclick="setState('analysed',this)">Só analisada</button><button data-state="prepared" onclick="setState('prepared',this)">Preparada</button><button data-state="interview" onclick="setState('interview',this)">Entrevista</button></div>
+    <div class="panel-scroll">
+      <section class="identity">
+        <div class="origin-row"><span class="origin-badge"><i></i>Vaga em site externo · Gupy</span><a href="#" onclick="notify('No produto real, abriria o anúncio original.');return false">Abrir anúncio original ↗</a></div>
+        <div class="company">PRIMIZIE</div><h1 id="jobTitle">Gerente de Marketing</h1>
+        <div class="identity-meta"><b id="statusText">Analisada</b><span>•</span><span>Análise atualizada hoje</span><span>•</span><span>A partir de R$ 10.000</span></div>
+      </section>
+      <section class="decision">
+        <div class="score-hero"><strong id="scoreValue">33%</strong><span id="scoreLabel">Baixa aderência</span><div class="score-track"><i id="scoreBar"></i></div></div>
+        <div class="decision-copy"><div class="decision-kicker">Sua decisão agora</div><h2 id="decisionTitle">A vaga merece ajustes antes da candidatura.</h2><p id="decisionCopy">Seu perfil cobre parte da base de Marketing, mas ainda não evidencia três requisitos que pesam diretamente nesta oportunidade.</p></div>
+      </section>
+      <div class="content">
+        <section class="section" id="prioritySection">
+          <div class="section-head"><div><h3>O que mais aumenta sua aderência</h3><p>Prioridades ordenadas pelo impacto nesta vaga.</p></div><a href="#" onclick="notify('Abriria o diagnóstico completo.');return false">Ver diagnóstico completo →</a></div>
+          <div class="priorities" id="priorities"></div>
+        </section>
+        <section class="section">
+          <div class="section-head"><div><h3>O que seu currículo comunica</h3><p>Evidências presentes e lacunas encontradas na análise.</p></div></div>
+          <div class="evidence"><div class="evidence-col"><h4>Já demonstrado</h4><div class="tags"><span class="tag ok">Marketing</span><span class="tag ok">SEO</span><span class="tag ok">Copywriting</span><span class="tag ok">Marketing de conteúdo</span></div></div><div class="evidence-col"><h4>Precisa aparecer melhor</h4><div class="tags"><span class="tag gap">Growth Marketing</span><span class="tag gap">Google Ads</span><span class="tag gap">Aquisição</span><span class="tag gap">Conversão</span></div></div></div>
+        </section>
+        <section class="section">
+          <div class="section-head"><div><h3>Preparação da candidatura</h3><p>Um caminho único, sem alterar seu currículo principal.</p></div></div>
+          <div class="prep" id="prep"></div>
+        </section>
+        <section class="section">
+          <div class="section-head"><div><h3>Jornada desta oportunidade</h3><p id="journeySub">Rastrear não significa que você já se candidatou.</p></div></div>
+          <div class="journey" id="journey"></div>
+          <div class="external-note"><svg class="icon" viewBox="0 0 24 24"><path d="M14 3h7v7M10 14 21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg><div><strong>Esta candidatura acontece fora da VagaAI.</strong><p>Nós ajudamos a analisar, preparar e acompanhar a oportunidade. O envio final deve ser feito no site original.</p></div></div>
+        </section>
+        <details><summary>Informações e notas da oportunidade</summary><div class="details-grid"><div class="detail"><small>Origem</small><strong>Site externo · Gupy</strong></div><div class="detail"><small>Salário</small><strong>A partir de R$ 10.000</strong></div><div class="detail"><small>Localização</small><strong>São Paulo · Híbrido</strong></div><div class="detail"><small>Contrato</small><strong>CLT</strong></div><div class="detail"><small>Link original</small><strong style="color:var(--emerald)">Abrir anúncio ↗</strong></div><div class="detail"><small>Notas</small><strong>Nenhuma nota adicionada</strong></div></div></details>
+      </div>
+    </div>
+    <footer class="panel-actions"><button class="action-secondary" id="secondaryAction" onclick="notify(this.textContent)">Ver análise completa</button><button class="more" aria-label="Mais opções" onclick="notify('Editar, arquivar ou excluir')">•••</button><button class="action-primary" id="primaryAction" onclick="notify(this.textContent)">Quero avançar com esta vaga →</button></footer>
+  </aside>
+  <button class="reopen" id="reopen" onclick="openPanel()">Abrir painel da vaga</button>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const icon = {
+      file:'<svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>',
+      mail:'<svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+      mic:'<svg class="icon" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>'
+    };
+    const states = {
+      analysed:{
+        score:33,label:'Baixa aderência',status:'Analisada',title:'A vaga merece ajustes antes da candidatura.',copy:'Seu perfil cobre parte da base de Marketing, mas ainda não evidencia três requisitos que pesam diretamente nesta oportunidade.',
+        primary:'Quero avançar com esta vaga →',secondary:'Ver análise completa',journeySub:'Rastrear não significa que você já se candidatou.',
+        priorities:[['Growth Marketing','Inclua um resultado real ligado a crescimento, aquisição ou retenção.','Alta'],['Google Ads','Demonstre orçamento gerenciado, objetivo da campanha e resultado mensurável.','Alta'],['Aquisição e conversão','Conecte sua experiência a metas de geração de demanda e conversão.','Média']],
+        prep:[['file','Currículo direcionado','Ainda não criado','Criar agora','pending'],['mail','Carta de apresentação','Disponível após escolher avançar','Aguardando','pending'],['mic','Treino de entrevista','Será liberado na etapa de entrevista','Etapa futura','pending']],
+        events:[['Análise criada','Hoje, 14:30'],['Decisão aguardando','Escolha se deseja acompanhar esta vaga']]
+      },
+      prepared:{
+        score:61,label:'Boa base para avançar',status:'CV pronto',title:'Sua candidatura está preparada para sair do papel.',copy:'O currículo direcionado evidencia os requisitos prioritários. Agora falta revisar a carta e enviar a candidatura no anúncio original.',
+        primary:'Abrir vaga e candidatar-se ↗',secondary:'Revisar documentos',journeySub:'Depois de enviar, marque a candidatura como aplicada.',
+        priorities:[['Revisar resultados','Confirme se os números e exemplos do currículo estão corretos.','Revisão'],['Personalizar a abertura','Use a carta para conectar sua experiência ao desafio da empresa.','Média'],['Enviar no site original','A VagaAI acompanhará os próximos passos após o envio.','Próxima']],
+        prep:[['file','Currículo direcionado','Versão criada para esta oportunidade','Pronto',''],['mail','Carta de apresentação','Texto criado com base na vaga','Revisar','pending'],['mic','Treino de entrevista','Será liberado na etapa de entrevista','Etapa futura','pending']],
+        events:[['Análise criada','Hoje, 14:30'],['Vaga adicionada ao rastreador','Hoje, 14:36'],['Currículo direcionado criado','Hoje, 14:41'],['Envio da candidatura','Próxima ação']]
+      },
+      interview:{
+        score:61,label:'Boa base para a entrevista',status:'Entrevista',title:'A oportunidade avançou. Agora o preparo muda de foco.',copy:'Seu currículo abriu a conversa. Use a vaga e sua trajetória para treinar respostas específicas antes da entrevista real.',
+        primary:'Treinar entrevista →',secondary:'Ver detalhes da candidatura',journeySub:'Entrevista marcada para 29 de agosto, às 10h.',
+        priorities:[['Apresentação profissional','Prepare uma resposta objetiva para “fale sobre você”.','Alta'],['Caso de crescimento','Separe um exemplo com contexto, ação e resultado mensurável.','Alta'],['Perguntas para a empresa','Leve perguntas sobre metas, equipe e desafios dos primeiros 90 dias.','Média']],
+        prep:[['file','Currículo direcionado','Versão usada nesta candidatura','Pronto',''],['mail','Carta de apresentação','Enviada com a candidatura','Pronto',''],['mic','Treino de entrevista','Perguntas personalizadas disponíveis','Começar','pending']],
+        events:[['Análise criada','27 de agosto'],['Candidatura enviada','27 de agosto'],['Entrevista marcada','29 de agosto · 10h'],['Treino personalizado','Próxima ação']]
+      }
+    };
+    function setState(name,button){
+      const s=states[name];
+      document.querySelectorAll('.preview-switch button').forEach(b=>b.classList.toggle('on',b.dataset.state===name));
+      document.getElementById('scoreValue').textContent=s.score+'%';
+      document.getElementById('scoreLabel').textContent=s.label;
+      document.getElementById('scoreBar').style.width=s.score+'%';
+      document.getElementById('statusText').textContent=s.status;
+      document.getElementById('decisionTitle').textContent=s.title;
+      document.getElementById('decisionCopy').textContent=s.copy;
+      document.getElementById('primaryAction').textContent=s.primary;
+      document.getElementById('secondaryAction').textContent=s.secondary;
+      document.getElementById('journeySub').textContent=s.journeySub;
+      document.getElementById('priorities').innerHTML=s.priorities.map((p,i)=>'<div class="priority"><div class="number">0'+(i+1)+'</div><div><strong>'+p[0]+'</strong><p>'+p[1]+'</p></div><div class="impact">'+p[2]+'</div></div>').join('');
+      document.getElementById('prep').innerHTML=s.prep.map(p=>'<div class="prep-row"><div class="prep-icon">'+icon[p[0]]+'</div><div><strong>'+p[1]+'</strong><p>'+p[2]+'</p></div><div class="prep-state '+p[4]+'">'+p[3]+'</div></div>').join('');
+      document.getElementById('journey').innerHTML=s.events.map((e,i)=>'<div class="event"><div class="event-rail"><div class="event-dot"></div><div class="event-line"></div></div><div><strong>'+e[0]+'</strong><p>'+(i===s.events.length-1?'Próximo passo recomendado':'Etapa registrada na jornada')+'</p></div><time>'+e[1]+'</time></div>').join('');
+      document.querySelector('.panel-scroll').scrollTop=0;
+    }
+    function toggleTheme(){const root=document.documentElement;root.dataset.theme=root.dataset.theme==='dark'?'light':'dark'}
+    function closePanel(){const panel=document.getElementById('panel');panel.classList.add('closed');panel.setAttribute('aria-hidden','true');document.getElementById('veil').classList.add('closed');document.getElementById('reopen').classList.add('show')}
+    function openPanel(){const panel=document.getElementById('panel');panel.classList.remove('closed');panel.setAttribute('aria-hidden','false');document.getElementById('veil').classList.remove('closed');document.getElementById('reopen').classList.remove('show');document.getElementById('closePanel').focus()}
+    let toastTimer;function notify(message){const t=document.getElementById('toast');t.textContent='Prévia: '+message;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800)}
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanel()});
+    setState('analysed');
+  </script>
+</body>
+</html>

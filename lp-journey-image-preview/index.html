@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prévia local | Jornadas com imagem de fundo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --forest: #07170f;
+      --forest-2: #0a2015;
+      --emerald: #4ece91;
+      --emerald-strong: #35cb86;
+      --ink: #f5faf6;
+      --copy: rgba(237, 244, 238, .74);
+      --muted: rgba(210, 226, 216, .52);
+      --line: rgba(91, 227, 164, .23);
+      --line-strong: rgba(91, 227, 164, .78);
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; background: #06150e; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 50% 12%, rgba(45, 171, 111, .15), transparent 32%),
+        linear-gradient(180deg, #06160f 0%, #07140e 100%);
+      font-family: Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, a { font: inherit; }
+    a { color: inherit; }
+    .preview-note {
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 18px;
+      color: rgba(230, 241, 233, .72);
+      background: #0a2116;
+      border-bottom: 1px solid rgba(91, 227, 164, .10);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+    .preview-note i {
+      width: 6px;
+      height: 6px;
+      margin-right: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 12px rgba(78, 206, 145, .58);
+    }
+
+    .nav-shell {
+      position: relative;
+      z-index: 5;
+      border-bottom: 1px solid rgba(255, 255, 255, .06);
+      background: rgba(6, 21, 14, .84);
+      backdrop-filter: blur(16px);
+    }
+    .nav {
+      width: min(1180px, calc(100% - 44px));
+      min-height: 72px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .brand img { display: block; width: auto; height: 40px; }
+    .nav-links { display: flex; align-items: center; gap: 28px; color: rgba(231, 240, 234, .64); font-size: 13px; }
+    .nav-links a { text-decoration: none; }
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .theme-icon {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, .10);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .025);
+      color: var(--emerald);
+    }
+    .theme-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+    .nav-login, .nav-start {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 17px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .nav-login { border: 1px solid rgba(255, 255, 255, .11); }
+    .nav-start { color: #06150e; background: var(--emerald); }
+
+    .hero {
+      position: relative;
+      min-height: calc(100vh - 106px);
+      padding: 64px 0 54px;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      width: 720px;
+      height: 720px;
+      left: 50%;
+      top: -430px;
+      transform: translateX(-50%);
+      border: 1px solid rgba(91, 227, 164, .07);
+      border-radius: 50%;
+      box-shadow: 0 0 0 90px rgba(91, 227, 164, .018), 0 0 0 190px rgba(91, 227, 164, .012);
+    }
+    .wrap { width: min(1180px, calc(100% - 44px)); margin: 0 auto; }
+    .hero-intro { text-align: center; }
+    .social-proof {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 34px;
+      padding: 0 13px;
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 999px;
+      color: rgba(235, 243, 237, .76);
+      background: rgba(6, 22, 14, .70);
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+    .stars { color: #f1c66a; letter-spacing: 1px; }
+    .eyebrow {
+      display: block;
+      margin-top: 24px;
+      color: var(--emerald);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 900px;
+      margin: 15px auto 0;
+      font: 700 clamp(42px, 5.6vw, 67px)/1.04 Lora, Georgia, serif;
+      letter-spacing: -.035em;
+      text-wrap: balance;
+    }
+    .green { color: var(--emerald); }
+    .hero-copy { max-width: 660px; margin: 19px auto 0; color: var(--copy); font-size: 16px; line-height: 1.65; }
+
+    .paths {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 42px;
+      text-align: left;
+    }
+    .path {
+      --card-image: none;
+      --card-position: center;
+      position: relative;
+      min-height: 266px;
+      padding: 28px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #0a2116;
+      box-shadow: 0 24px 72px rgba(0, 0, 0, .28), inset 0 1px 0 rgba(255, 255, 255, .04);
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+      isolation: isolate;
+    }
+    .path::before {
+      content: "";
+      position: absolute;
+      z-index: -2;
+      inset: 0;
+      background-image: var(--card-image);
+      background-position: var(--card-position);
+      background-size: cover;
+      filter: saturate(.72) contrast(1.03);
+      transform: scale(1.015);
+    }
+    .path::after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(5, 22, 14, .99) 0%, rgba(5, 22, 14, .93) 47%, rgba(5, 22, 14, .64) 72%, rgba(5, 22, 14, .43) 100%),
+        linear-gradient(0deg, rgba(4, 18, 11, .92) 0%, transparent 48%);
+    }
+    .path-one {
+      --card-image: url('/assets/dashboard-faca-agora-editorial.webp');
+      --card-position: 67% center;
+      border-color: var(--line-strong);
+    }
+    .path-two {
+      --card-image: url('/assets/curriculum-master-workspace.webp');
+      --card-position: 52% 58%;
+    }
+    .path:hover {
+      transform: translateY(-4px);
+      border-color: rgba(91, 227, 164, .72);
+      box-shadow: 0 30px 86px rgba(0, 0, 0, .36), 0 0 50px rgba(91, 227, 164, .09);
+    }
+    .path-content {
+      position: relative;
+      z-index: 2;
+      min-height: 208px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .path-num {
+      position: absolute;
+      z-index: 1;
+      right: 22px;
+      top: 12px;
+      color: rgba(179, 234, 205, .19);
+      font: 700 51px/1 Lora, Georgia, serif;
+      text-shadow: 0 0 34px rgba(91, 227, 164, .13);
+    }
+    .path-icon {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(91, 227, 164, .10);
+      border-radius: 13px;
+      color: #5be3a4;
+      background: rgba(91, 227, 164, .13);
+      box-shadow: 0 9px 24px rgba(0, 0, 0, .18);
+    }
+    .path-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; }
+    .path h2 {
+      max-width: 410px;
+      margin: 20px 0 0;
+      color: #f7fbf8;
+      font: 700 22px/1.2 Lora, Georgia, serif;
+      letter-spacing: -.02em;
+    }
+    .path p {
+      max-width: 390px;
+      margin: 8px 0 20px;
+      color: rgba(237, 244, 238, .76);
+      font-size: 13.5px;
+      line-height: 1.58;
+    }
+    .path-action {
+      width: 100%;
+      min-height: 52px;
+      margin-top: auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 18px;
+      border: 1px solid rgba(207, 233, 217, .21);
+      border-radius: 10px;
+      color: rgba(248, 252, 249, .94);
+      background: rgba(238, 246, 241, .065);
+      backdrop-filter: blur(10px);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .path-action.primary {
+      color: #06150e;
+      border-color: var(--emerald);
+      background: linear-gradient(135deg, #5bdda3 0%, #4ece91 100%);
+      box-shadow: 0 13px 32px rgba(76, 205, 146, .25), inset 0 1px 0 rgba(255, 255, 255, .22);
+    }
+    .micro {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 11.5px;
+      font-weight: 650;
+    }
+    .micro span::before { content: "✓"; margin-right: 7px; color: var(--emerald); font-weight: 900; }
+
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+      .paths { grid-template-columns: 1fr; width: min(100%, 650px); margin-inline: auto; }
+      .hero { padding-top: 50px; }
+    }
+    @media (max-width: 600px) {
+      .preview-note { font-size: 10px; }
+      .nav { width: min(100% - 28px, 1180px); min-height: 64px; }
+      .brand img { height: 34px; }
+      .nav-login { display: none; }
+      .nav-start { padding-inline: 13px; }
+      .wrap { width: min(100% - 28px, 1180px); }
+      .hero { min-height: auto; padding: 38px 0 42px; }
+      .social-proof { max-width: 100%; font-size: 10.5px; }
+      .eyebrow { margin-top: 20px; }
+      h1 { margin-top: 12px; font-size: clamp(31px, 9.5vw, 42px); }
+      .hero-copy { margin-top: 14px; font-size: 14.5px; }
+      .paths { gap: 12px; margin-top: 28px; }
+      .path { min-height: 258px; padding: 21px 19px; }
+      .path::after {
+        background:
+          linear-gradient(90deg, rgba(5, 22, 14, .98) 0%, rgba(5, 22, 14, .89) 64%, rgba(5, 22, 14, .58) 100%),
+          linear-gradient(0deg, rgba(4, 18, 11, .94) 0%, transparent 54%);
+      }
+      .path-content { min-height: 216px; }
+      .path-num { top: 12px; right: 17px; font-size: 43px; }
+      .path-icon { width: 41px; height: 41px; }
+      .path h2 { margin-top: 16px; font-size: 20px; }
+      .path p { margin-bottom: 15px; font-size: 13px; }
+      .path-action { min-height: 48px; }
+      .micro { display: grid; grid-template-columns: 1fr; justify-items: center; gap: 8px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .path { transition: none; } }
+  </style>
+</head>
+<body>
+  <div class="preview-note"><i aria-hidden="true"></i>Prévia local, sem alterações na página publicada</div>
+
+  <div class="nav-shell">
+    <nav class="nav" aria-label="Navegação principal">
+      <a class="brand" href="#" aria-label="VagaAI"><img src="/logo-light.svg" alt="VagaAI"></a>
+      <div class="nav-links"><a href="#">Como funciona</a><a href="#">Recursos</a><a href="#">Planos</a><a href="#">Conteúdos</a><a href="#" style="color:var(--emerald);font-weight:800">Para empresas</a></div>
+      <div class="nav-actions">
+        <button class="theme-icon" type="button" aria-label="Alternar tema"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></button>
+        <a class="nav-login" href="#">Entrar</a>
+        <a class="nav-start" href="#jornadas">Começar grátis</a>
+      </div>
+    </nav>
+  </div>
+
+  <main class="hero">
+    <div class="wrap">
+      <header class="hero-intro">
+        <div class="social-proof"><span class="stars">★★★★★</span><span><strong>4,8</strong> · mais de 1.200 profissionais já usam a VagaAI</span></div>
+        <span class="eyebrow">Seu currículo no centro da busca</span>
+        <h1>Currículo certo. <span class="green">Vaga certa.</span> Sem adivinhação.</h1>
+        <p class="hero-copy">Vagas, currículo, análise, candidaturas e entrevista num lugar só.</p>
+      </header>
+
+      <section class="paths" id="jornadas" aria-label="Escolha como começar">
+        <article class="path path-one">
+          <span class="path-num" aria-hidden="true">01</span>
+          <div class="path-content">
+            <div class="path-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></svg></div>
+            <h2>Já tenho currículo</h2>
+            <p>Quero analisar uma vaga ou encontrar oportunidades compatíveis.</p>
+            <a class="path-action primary" href="/onboarding/vaga/1?entry=cv&amp;new=1">Continuar com meu currículo</a>
+          </div>
+        </article>
+
+        <article class="path path-two">
+          <span class="path-num" aria-hidden="true">02</span>
+          <div class="path-content">
+            <div class="path-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            <h2>Ainda não tenho currículo pronto</h2>
+            <p>Quero criar um currículo profissional e começar minha busca.</p>
+            <a class="path-action" href="/onboarding/curriculo/1?entry=no-cv&amp;new=1">Criar meu currículo</a>
+          </div>
+        </article>
+      </section>
+
+      <div class="micro" aria-label="Benefícios para começar"><span>Grátis para começar</span><span>Sem cartão de crédito</span><span>Você revisa tudo antes de usar</span><span>Sem inventar experiências</span></div>
+    </div>
+  </main>
+</body>
+</html>

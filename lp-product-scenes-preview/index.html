@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Preview local — cenas de produto VagaAI</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='10' fill='%2307170f'/%3E%3Ctext x='8' y='22' font-size='16' fill='%234ece91'%3EV.%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --forest:#07170f;
+      --forest-2:#0a2116;
+      --forest-3:#103122;
+      --emerald:#1a7a4a;
+      --mid:#2cba74;
+      --bright:#4ece91;
+      --amber:#e6b44a;
+      --coral:#f17b70;
+      --canvas:#edf3ee;
+      --surface:#f9fbf8;
+      --ink:#10231b;
+      --copy:#52675d;
+      --line:#d7e1da;
+      --media-line:rgba(126,207,166,.18);
+      --media-copy:rgba(238,248,241,.72);
+      --radius:30px;
+      --radius-sm:14px;
+      --shadow:0 30px 90px rgba(22,48,36,.13);
+    }
+    [data-theme="dark"]{
+      --canvas:#06110b;
+      --surface:#0b1811;
+      --ink:#f2f7f3;
+      --copy:#a8b8ae;
+      --line:#20362a;
+      --shadow:0 34px 100px rgba(0,0,0,.36);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at 14% 3%,rgba(78,206,145,.08),transparent 26%),
+        var(--canvas);
+      font-family:Manrope,system-ui,sans-serif;
+      transition:background .25s,color .25s;
+    }
+    button,a{font:inherit}
+    .topbar{
+      position:sticky;
+      z-index:20;
+      top:0;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      height:70px;
+      padding:0 max(22px,calc((100vw - 1220px)/2));
+      border-bottom:1px solid var(--line);
+      background:color-mix(in srgb,var(--canvas) 88%,transparent);
+      backdrop-filter:blur(18px);
+    }
+    .brand{display:flex;align-items:center;gap:11px;font:700 21px Lora,serif;color:var(--ink)}
+    .brand-mark{display:grid;width:34px;height:34px;place-items:center;border-radius:12px;background:var(--forest);color:var(--bright);box-shadow:inset 0 0 0 1px rgba(78,206,145,.16)}
+    .preview-pill{margin-left:9px;padding:5px 9px;border:1px solid var(--line);border-radius:99px;color:var(--copy);font:700 10px Manrope;text-transform:uppercase;letter-spacing:.08em}
+    .theme-toggle{display:grid;width:42px;height:42px;place-items:center;border:1px solid var(--line);border-radius:13px;background:var(--surface);color:var(--ink);cursor:pointer;transition:transform .2s,border-color .2s}
+    .theme-toggle:hover{transform:translateY(-2px);border-color:var(--mid)}
+    .theme-toggle svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .wrap{width:min(1220px,calc(100% - 44px));margin:0 auto}
+    .intro{padding:82px 0 46px;text-align:center}
+    .intro .kicker{display:inline-flex;align-items:center;gap:8px;color:var(--mid);font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+    .intro .kicker::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--bright);box-shadow:0 0 0 6px rgba(78,206,145,.1)}
+    .intro h1{max-width:880px;margin:19px auto 0;font:700 clamp(34px,5vw,58px)/1.07 Lora,serif;letter-spacing:-.035em;text-wrap:balance}
+    .intro p{max-width:690px;margin:19px auto 0;color:var(--copy);font-size:17px;line-height:1.7}
+    .stories{display:grid;gap:34px;padding:0 0 92px}
+    .story{
+      display:grid;
+      grid-template-columns:minmax(0,.8fr) minmax(560px,1.2fr);
+      min-height:540px;
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background:var(--surface);
+      box-shadow:var(--shadow);
+    }
+    .story.reverse{grid-template-columns:minmax(560px,1.2fr) minmax(0,.8fr)}
+    .story.reverse .story-copy{order:2}
+    .story-copy{display:flex;flex-direction:column;justify-content:center;padding:54px 48px}
+    .story-tag{display:inline-flex;width:max-content;align-items:center;gap:7px;color:var(--emerald);font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
+    [data-theme="dark"] .story-tag{color:var(--bright)}
+    .story-tag::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+    .story h2{max-width:510px;margin:18px 0 0;font:700 clamp(29px,3.2vw,43px)/1.08 Lora,serif;letter-spacing:-.035em;text-wrap:balance}
+    .story-copy>p{max-width:510px;margin:18px 0 0;color:var(--copy);font-size:15.5px;line-height:1.67}
+    .benefits{display:grid;gap:12px;margin-top:24px;padding-top:23px;border-top:1px solid var(--line)}
+    .benefit{display:flex;gap:10px;color:var(--copy);font-size:13px;line-height:1.5}
+    .benefit::before{content:"✓";flex:0 0 auto;color:var(--mid);font-weight:900}
+    .cta{display:inline-flex;width:max-content;align-items:center;justify-content:center;min-height:48px;margin-top:28px;padding:0 22px;border-radius:13px;background:var(--emerald);color:#fff;text-decoration:none;font-size:13px;font-weight:800;box-shadow:0 12px 28px rgba(26,122,74,.22);transition:transform .2s,background .2s}
+    .cta:hover{transform:translateY(-2px);background:#20945d}
+    .media-stage{
+      position:relative;
+      isolation:isolate;
+      min-height:540px;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 78% 22%,rgba(78,206,145,.13),transparent 23%),
+        radial-gradient(circle at 20% 96%,rgba(26,122,74,.22),transparent 36%),
+        linear-gradient(145deg,#0b1110 0%,#0c1712 48%,#0e271c 100%);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.025);
+    }
+    .media-stage::before{
+      content:"";
+      position:absolute;
+      z-index:-1;
+      inset:0;
+      opacity:.18;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+      background-size:36px 36px;
+      mask-image:linear-gradient(145deg,transparent 12%,#000 58%,transparent 100%);
+    }
+    .media-stage::after{content:"";position:absolute;inset:auto -100px -160px auto;width:410px;height:410px;border:1px solid rgba(78,206,145,.12);border-radius:50%;box-shadow:0 0 0 64px rgba(78,206,145,.025),0 0 0 128px rgba(78,206,145,.018)}
+    .product-window{
+      position:absolute;
+      z-index:2;
+      overflow:hidden;
+      border:1px solid var(--media-line);
+      border-radius:20px;
+      background:rgba(7,23,15,.92);
+      box-shadow:0 30px 74px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.04);
+      opacity:0;
+      transform:translateY(24px) scale(.985);
+    }
+    .scene.is-visible .product-window{animation:window-in .72s cubic-bezier(.2,.8,.2,1) forwards}
+    .window-bar{height:42px;display:flex;align-items:center;justify-content:space-between;padding:0 17px;border-bottom:1px solid rgba(126,207,166,.1);background:rgba(10,32,21,.94);color:rgba(231,245,237,.76);font-size:10px;font-weight:700}
+    .dots{display:flex;gap:6px}.dots i{display:block;width:7px;height:7px;border-radius:50%}.dots i:nth-child(1){background:#f56b60}.dots i:nth-child(2){background:#efb63f}.dots i:nth-child(3){background:#39c573}
+    .window-brand{display:flex;align-items:center;gap:7px}.window-brand i{display:grid;width:20px;height:20px;place-items:center;border-radius:7px;background:rgba(78,206,145,.12);color:var(--bright);font:800 10px Lora}
+    .window-body{padding:18px}
+    .crumb{color:rgba(226,241,232,.47);font-size:9px}.crumb b{color:rgba(226,241,232,.8)}
+    .float-card{position:absolute;z-index:4;border:1px solid rgba(126,207,166,.2);border-radius:15px;background:rgba(12,34,23,.96);box-shadow:0 22px 50px rgba(0,0,0,.33);opacity:0;transform:translateY(16px)}
+    .scene.is-visible .float-card{animation:float-in .56s .58s cubic-bezier(.2,.8,.2,1) forwards}
+    .mini-icon{display:grid;width:34px;height:34px;place-items:center;border-radius:11px;background:var(--bright);color:#062015;font-size:15px;font-weight:900}
+    .float-card b{display:block;color:#eff8f2;font-size:11px}.float-card span{display:block;margin-top:2px;color:rgba(230,243,235,.55);font-size:8px}
+
+    /* Cena 1 — análise */
+    .scene-analysis .product-window{inset:72px 38px 58px 50px}
+    .analysis-head{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:16px;margin-top:17px}
+    .score-ring{--score:0;display:grid;width:82px;height:82px;place-items:center;border-radius:50%;background:conic-gradient(var(--bright) calc(var(--score)*1%),rgba(78,206,145,.1) 0);box-shadow:0 0 0 7px rgba(78,206,145,.05)}
+    .score-ring::before{content:"";grid-area:1/1;width:62px;height:62px;border-radius:50%;background:#0a2015;border:1px solid rgba(126,207,166,.14)}
+    .score-ring span{z-index:1;grid-area:1/1;color:#f5fbf7;font:700 24px Lora}
+    .scene.is-visible .score-ring{animation:score-up 1.15s .48s cubic-bezier(.2,.8,.2,1) forwards}
+    .analysis-title b{display:block;color:#f1f8f3;font-size:14px}.analysis-title span{display:block;margin-top:6px;color:var(--media-copy);font-size:9px}
+    .terms{display:flex;flex-wrap:wrap;gap:7px;margin-top:20px}
+    .term{padding:7px 9px;border:1px solid rgba(78,206,145,.18);border-radius:8px;background:rgba(78,206,145,.07);color:#6de1aa;font-size:9px;font-weight:800;opacity:0;transform:translateY(9px)}
+    .term.missing{border-color:rgba(230,180,74,.25);background:rgba(230,180,74,.08);color:#efc75f}
+    .scene.is-visible .term{animation:term-in .38s ease forwards}.scene.is-visible .term:nth-child(1){animation-delay:.72s}.scene.is-visible .term:nth-child(2){animation-delay:.82s}.scene.is-visible .term:nth-child(3){animation-delay:.92s}.scene.is-visible .term:nth-child(4){animation-delay:1.02s}.scene.is-visible .term:nth-child(5){animation-delay:1.12s}
+    .result-banner{margin-top:19px;padding:11px 13px;border:1px solid rgba(78,206,145,.18);border-radius:10px;background:rgba(78,206,145,.1);color:var(--bright);font-size:10px;font-weight:800;opacity:0;transform:scaleX(.92);transform-origin:left}
+    .scene.is-visible .result-banner{animation:banner-in .45s 1.3s ease forwards}
+    .analysis-float{top:36px;right:18px;display:flex;align-items:center;gap:10px;padding:11px 13px}
+    .document-float{left:22px;bottom:24px;width:164px;padding:14px}
+    .document-line{height:5px;margin-top:6px;border-radius:99px;background:rgba(231,245,236,.13)}.document-line:nth-child(2){width:72%}.document-line:nth-child(3){width:90%}.document-line:nth-child(4){width:58%}
+
+    /* Cena 2 — alertas */
+    .scene-alerts .product-window{inset:64px 44px 50px 38px}
+    .alert-summary{display:flex;align-items:center;justify-content:space-between;margin-top:15px;padding:10px 12px;border:1px solid rgba(78,206,145,.17);border-radius:11px;background:rgba(78,206,145,.07);color:#eaf6ee;font-size:10px;font-weight:800}
+    .alert-summary span::before{content:"";display:inline-block;width:6px;height:6px;margin-right:7px;border-radius:50%;background:var(--bright);box-shadow:0 0 0 4px rgba(78,206,145,.08)}
+    .alert-summary time{color:rgba(231,245,236,.45);font-size:8px;font-weight:600}
+    .job-list{display:grid;gap:9px;margin-top:11px}
+    .job-row{display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:10px;padding:10px;border:1px solid rgba(126,207,166,.12);border-radius:11px;background:rgba(255,255,255,.018);opacity:0;transform:translateX(16px)}
+    .scene.is-visible .job-row{animation:job-in .45s ease forwards}.scene.is-visible .job-row:nth-child(1){animation-delay:.62s}.scene.is-visible .job-row:nth-child(2){animation-delay:.78s}.scene.is-visible .job-row:nth-child(3){animation-delay:.94s}
+    .job-score{display:grid;width:34px;height:34px;place-items:center;border-radius:10px;background:rgba(78,206,145,.1);color:var(--bright);font-size:11px;font-weight:800}.job-score.warn{color:var(--amber);background:rgba(230,180,74,.1)}
+    .job-info b{display:block;color:#f0f8f3;font-size:10px}.job-info span{display:block;margin-top:3px;color:rgba(230,243,235,.5);font-size:8px}
+    .job-action{padding:6px 8px;border:1px solid rgba(78,206,145,.2);border-radius:8px;color:var(--bright);font-size:8px;font-weight:800}
+    .job-row.best{border-color:var(--bright);box-shadow:inset 0 0 0 1px rgba(78,206,145,.08)}
+    .alert-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:11px}.alert-stats div{padding:10px 7px;border:1px solid rgba(126,207,166,.11);border-radius:10px;text-align:center}.alert-stats b{display:block;color:#f2faf5;font:700 16px Lora}.alert-stats span{display:block;margin-top:2px;color:rgba(230,243,235,.42);font-size:7px}
+    .mail-float{top:30px;right:20px;display:flex;align-items:center;gap:10px;padding:11px 13px}
+    .match-float{left:18px;bottom:22px;display:flex;align-items:center;gap:10px;padding:11px 13px}.match-float .mini-icon{background:#f1c766;color:#392b08}
+    .portal-orbs{position:absolute;z-index:1;top:38px;left:18px;display:flex;gap:9px}.portal-orb{display:grid;width:48px;height:48px;place-items:center;border:1px solid rgba(126,207,166,.16);border-radius:50%;background:#f5faf6;color:var(--forest);font-size:16px;font-weight:900;box-shadow:0 13px 30px rgba(0,0,0,.22);opacity:0;transform:translateY(-12px)}
+    .scene.is-visible .portal-orb{animation:orb-in .42s ease forwards}.scene.is-visible .portal-orb:nth-child(1){animation-delay:.16s}.scene.is-visible .portal-orb:nth-child(2){animation-delay:.26s}.scene.is-visible .portal-orb:nth-child(3){animation-delay:.36s}
+
+    /* Cena 3 — candidatura */
+    .scene-tracker .product-window{inset:74px 42px 44px 48px}
+    .tracker-title{display:flex;align-items:center;justify-content:space-between;margin-top:16px}.tracker-title b{color:#f0f8f3;font-size:12px}.tracker-title span{color:rgba(230,243,235,.46);font-size:8px}
+    .progress{position:relative;display:grid;grid-template-columns:repeat(4,1fr);margin-top:25px}
+    .progress::before{content:"";position:absolute;top:15px;right:9%;left:9%;height:2px;background:rgba(126,207,166,.13)}
+    .progress-fill{position:absolute;top:15px;left:9%;width:0;height:2px;background:var(--bright)}
+    .scene.is-visible .progress-fill{animation:progress-in 1.15s .45s ease forwards}
+    .step{position:relative;z-index:1;text-align:center}.step i{display:grid;width:31px;height:31px;margin:0 auto;place-items:center;border:1px solid rgba(126,207,166,.16);border-radius:50%;background:#0a2015;color:rgba(230,243,235,.45);font-size:9px;font-style:normal;font-weight:800}.step b{display:block;margin-top:8px;color:rgba(230,243,235,.52);font-size:7px}.step.done i,.step.active i{border-color:var(--bright);color:#062015;background:var(--bright)}.step.active i{box-shadow:0 0 0 7px rgba(78,206,145,.08)}.step.active b{color:#e9f6ee}
+    .application-card{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:11px;margin-top:26px;padding:13px;border:1px solid rgba(126,207,166,.13);border-radius:13px;background:rgba(255,255,255,.02);opacity:0;transform:translateY(14px)}
+    .scene.is-visible .application-card{animation:float-in .48s 1s ease forwards}
+    .company-mark{display:grid;width:42px;height:42px;place-items:center;border-radius:12px;background:rgba(78,206,145,.12);color:var(--bright);font:700 16px Lora}
+    .application-info b{display:block;color:#f2f8f4;font-size:10px}.application-info span{display:block;margin-top:4px;color:rgba(230,243,235,.48);font-size:8px}.interview-status{padding:7px 9px;border-radius:8px;background:rgba(78,206,145,.12);color:var(--bright);font-size:8px;font-weight:800}
+    .next-action{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding:11px 12px;border-radius:10px;background:rgba(78,206,145,.09);color:rgba(233,247,238,.68);font-size:8px}.next-action b{color:var(--bright);font-size:9px}
+    .calendar-float{top:28px;right:18px;display:flex;align-items:center;gap:10px;padding:11px 13px}
+    .letter-float{left:18px;bottom:20px;width:170px;padding:14px}.letter-float strong{display:block;color:#f0f8f3;font-size:10px}.letter-float p{margin:7px 0 0;color:rgba(230,243,235,.5);font-size:8px;line-height:1.5}
+
+    @property --score{syntax:'<number>';inherits:false;initial-value:0}
+    @keyframes window-in{to{opacity:1;transform:none}}
+    @keyframes float-in{to{opacity:1;transform:none}}
+    @keyframes score-up{to{--score:87}}
+    @keyframes term-in{to{opacity:1;transform:none}}
+    @keyframes banner-in{to{opacity:1;transform:none}}
+    @keyframes job-in{to{opacity:1;transform:none}}
+    @keyframes orb-in{to{opacity:1;transform:none}}
+    @keyframes progress-in{to{width:54%}}
+
+    .preview-note{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 0 80px;padding:20px 22px;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--copy);font-size:12px}.preview-note b{color:var(--ink)}
+
+    @media(max-width:1040px){
+      .story,.story.reverse{grid-template-columns:1fr;min-height:0}
+      .story.reverse .story-copy{order:0}
+      .story-copy{padding:46px 42px}
+      .media-stage{min-height:510px}
+    }
+    @media(max-width:640px){
+      .topbar{height:62px;padding:0 18px}.brand{font-size:18px}.preview-pill{display:none}
+      .wrap{width:min(100% - 28px,1220px)}
+      .intro{padding:60px 0 32px}.intro h1{font-size:34px}.intro p{font-size:15px}
+      .stories{gap:22px;padding-bottom:62px}
+      .story{border-radius:23px}
+      .story-copy{padding:32px 24px 34px}.story h2{font-size:29px}.story-copy>p{font-size:14px}.benefit{font-size:12px}
+      .media-stage{min-height:440px}
+      .scene-analysis .product-window,.scene-alerts .product-window,.scene-tracker .product-window{inset:72px 14px 54px}
+      .window-body{padding:14px}.score-ring{width:68px;height:68px}.score-ring::before{width:52px;height:52px}.score-ring span{font-size:20px}
+      .analysis-float,.mail-float,.calendar-float{right:8px}
+      .document-float,.match-float,.letter-float{left:8px}
+      .alert-stats{display:none}.portal-orbs{left:9px}.portal-orb{width:41px;height:41px;font-size:13px}
+      .job-row{grid-template-columns:34px 1fr}.job-action{display:none}
+      .progress{margin-top:20px}.step b{font-size:6px}
+      .application-card{grid-template-columns:38px 1fr}.interview-status{grid-column:2;width:max-content}
+      .preview-note{align-items:flex-start;flex-direction:column;margin-bottom:52px}
+    }
+    @media(prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      *,*::before,*::after{animation:none!important;transition:none!important}
+      .product-window,.float-card,.term,.result-banner,.job-row,.portal-orb,.application-card{opacity:1;transform:none}
+      .score-ring{--score:87}
+      .progress-fill{width:54%}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">V.</span> VagaAI <span class="preview-pill">Preview local</span></div>
+    <button class="theme-toggle" type="button" aria-label="Alternar tema" title="Alternar tema">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 15.2A8.5 8.5 0 1 1 8.8 3.2a7 7 0 0 0 12 12Z"/></svg>
+    </button>
+  </header>
+
+  <main class="wrap">
+    <section class="intro">
+      <span class="kicker">Nova direção visual</span>
+      <h1>O produto explica o benefício dentro da própria imagem.</h1>
+      <p>Três cenas limpas, construídas com a linguagem real do VagaAI. Cada uma mostra um momento da jornada sem depender de fotografias genéricas ou mockups decorativos.</p>
+    </section>
+
+    <section class="stories" aria-label="Proposta para os três blocos da landing page">
+      <article class="story">
+        <div class="story-copy">
+          <span class="story-tag">Antes de se candidatar</span>
+          <h2>Descubra o que a vaga pede e o que você já tem.</h2>
+          <p>Cole a vaga e o seu currículo. Em segundos você recebe:</p>
+          <div class="benefits">
+            <span class="benefit">A nota de compatibilidade, explicada critério por critério</span>
+            <span class="benefit">Os termos que a vaga pede e não aparecem no seu currículo</span>
+            <span class="benefit">Um currículo direcionado para essa vaga, pronto para revisar</span>
+          </div>
+          <a class="cta" href="#" onclick="return false">Analisar minha vaga grátis</a>
+        </div>
+        <div class="media-stage scene scene-analysis" aria-label="Demonstração da análise de compatibilidade">
+          <div class="product-window">
+            <div class="window-bar"><span class="dots"><i></i><i></i><i></i></span><span class="window-brand"><i>V.</i> VagaAI · Análise</span><span>Resultado</span></div>
+            <div class="window-body">
+              <div class="crumb">Painel <b>› Analisar vaga</b></div>
+              <div class="analysis-head">
+                <div class="score-ring"><span>87</span></div>
+                <div class="analysis-title"><b>Analista de Marketing Pleno</b><span>Compatibilidade com a vaga · Empresa X</span></div>
+              </div>
+              <div class="terms"><span class="term">SEO ✓</span><span class="term">CRM ✓</span><span class="term">Inbound ✓</span><span class="term missing">Growth · ausente</span><span class="term missing">Power BI · ausente</span></div>
+              <div class="result-banner">✓ Currículo direcionado pronto para revisar</div>
+            </div>
+          </div>
+          <div class="float-card analysis-float"><span class="mini-icon">✓</span><div><b>Análise pronta</b><span>em 28 segundos</span></div></div>
+          <div class="float-card document-float"><b>Descrição da vaga</b><div class="document-line"></div><div class="document-line"></div><div class="document-line"></div></div>
+        </div>
+      </article>
+
+      <article class="story reverse">
+        <div class="story-copy">
+          <span class="story-tag">Oportunidades para o seu perfil</span>
+          <h2>As vagas chegam até você.</h2>
+          <p>Você diz o cargo, a cidade e o formato que procura. A VagaAI busca nos portais e mostra primeiro as que mais combinam com o seu perfil.</p>
+          <div class="benefits">
+            <span class="benefit">Vagas de Gupy, LinkedIn, Indeed e outros portais num só lugar</span>
+            <span class="benefit">Filtros de cargo, cidade e formato de trabalho</span>
+            <span class="benefit">Uma nota de compatibilidade em cada vaga, antes de você abrir</span>
+          </div>
+          <a class="cta" href="#" onclick="return false">Receber vagas do meu perfil</a>
+        </div>
+        <div class="media-stage scene scene-alerts" aria-label="Demonstração dos alertas de vagas">
+          <div class="portal-orbs" aria-hidden="true"><span class="portal-orb">⌕</span><span class="portal-orb">✉</span><span class="portal-orb">↗</span></div>
+          <div class="product-window">
+            <div class="window-bar"><span class="dots"><i></i><i></i><i></i></span><span class="window-brand"><i>V.</i> VagaAI · Alertas</span><span>Hoje</span></div>
+            <div class="window-body">
+              <div class="crumb">Painel <b>› Vagas para você</b></div>
+              <div class="alert-summary"><span>3 oportunidades compatíveis</span><time>08:17</time></div>
+              <div class="job-list">
+                <div class="job-row"><span class="job-score warn">71</span><div class="job-info"><b>SEO Manager</b><span>São Paulo · Remoto · CLT</span></div><span class="job-action">Analisar</span></div>
+                <div class="job-row"><span class="job-score">82</span><div class="job-info"><b>Head de Marketing</b><span>Remoto · Salário informado</span></div><span class="job-action">Ver vaga</span></div>
+                <div class="job-row best"><span class="job-score">90</span><div class="job-info"><b>Product Marketing Manager</b><span>Brasil · Remoto · CLT</span></div><span class="job-action">★ Melhor opção</span></div>
+              </div>
+              <div class="alert-stats"><div><b>165</b><span>oportunidades</span></div><div><b>14</b><span>alertas enviados</span></div><div><b>19</b><span>fontes</span></div></div>
+            </div>
+          </div>
+          <div class="float-card mail-float"><span class="mini-icon">✉</span><div><b>Alerta recebido</b><span>3 vagas novas</span></div></div>
+          <div class="float-card match-float"><span class="mini-icon">★</span><div><b>90 de compatibilidade</b><span>melhor vaga da semana</span></div></div>
+        </div>
+      </article>
+
+      <article class="story">
+        <div class="story-copy">
+          <span class="story-tag">Depois de aplicar</span>
+          <h2>Nenhuma candidatura perdida no caminho.</h2>
+          <p>Cada vaga que você enviou fica com status, data e próximo passo no mesmo painel. A VagaAI usa o que já sabe da vaga para preparar as etapas seguintes.</p>
+          <div class="benefits">
+            <span class="benefit">Do “quero aplicar” até a oferta, tudo em um lugar</span>
+            <span class="benefit">Carta de apresentação ligada aos requisitos daquela vaga</span>
+            <span class="benefit">Treino de entrevista com perguntas do cargo e da empresa</span>
+          </div>
+          <a class="cta" href="#" onclick="return false">Analisar a primeira vaga</a>
+        </div>
+        <div class="media-stage scene scene-tracker" aria-label="Demonstração do acompanhamento da candidatura">
+          <div class="product-window">
+            <div class="window-bar"><span class="dots"><i></i><i></i><i></i></span><span class="window-brand"><i>V.</i> VagaAI · Candidaturas</span><span>Jornada</span></div>
+            <div class="window-body">
+              <div class="crumb">Painel <b>› Candidaturas</b></div>
+              <div class="tracker-title"><b>Gerente de Marketing</b><span>PRIMIZIE · há 5 dias</span></div>
+              <div class="progress"><span class="progress-fill"></span><div class="step done"><i>✓</i><b>Analisada</b></div><div class="step done"><i>✓</i><b>Aplicada</b></div><div class="step active"><i>3</i><b>Entrevista</b></div><div class="step"><i>4</i><b>Oferta</b></div></div>
+              <div class="application-card"><span class="company-mark">P</span><div class="application-info"><b>Entrevista com a liderança</b><span>Quinta-feira, 10h · Videoconferência</span></div><span class="interview-status">Preparar entrevista</span></div>
+              <div class="next-action"><span>Próximo passo recomendado</span><b>Treinar respostas →</b></div>
+            </div>
+          </div>
+          <div class="float-card calendar-float"><span class="mini-icon">◷</span><div><b>Entrevista marcada</b><span>quinta-feira, 10h</span></div></div>
+          <div class="float-card letter-float"><strong>✓ Carta preparada</strong><p>Baseada na vaga e nas experiências reais do currículo.</p></div>
+        </div>
+      </article>
+    </section>
+
+    <aside class="preview-note"><span><b>Preview separado.</b> Nenhum arquivo da landing page publicada foi alterado.</span><span>Use o botão no topo para comparar os dois temas.</span></aside>
+  </main>
+
+  <script>
+    (function(){
+      var root=document.documentElement;
+      var toggle=document.querySelector('.theme-toggle');
+      var stored=localStorage.getItem('vagaai_lp_scenes_theme');
+      var preferred=window.matchMedia&&window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark';
+      root.dataset.theme=stored||preferred;
+      function updateLabel(){
+        var next=root.dataset.theme==='dark'?'claro':'escuro';
+        toggle.setAttribute('aria-label','Mudar para tema '+next);
+        toggle.setAttribute('title','Mudar para tema '+next);
+      }
+      updateLabel();
+      toggle.addEventListener('click',function(){
+        root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';
+        localStorage.setItem('vagaai_lp_scenes_theme',root.dataset.theme);
+        updateLabel();
+      });
+      var scenes=document.querySelectorAll('.scene');
+      if(!('IntersectionObserver' in window)){
+        scenes.forEach(function(scene){scene.classList.add('is-visible')});
+        return;
+      }
+      var observer=new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting){
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },{threshold:.28});
+      scenes.forEach(function(scene){observer.observe(scene)});
+    })();
+  </script>
+</body>
+</html>

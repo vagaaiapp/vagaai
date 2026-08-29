@@ -668,6 +668,16 @@ async function checkAndAwardMilestones(userId) {
 // ─── Rate limit por usuário autenticado (create_cv) ──────────────────────────
 // Persistente (lib/ratelimit.js) — o Map em memória anterior zerava a cada cold
 // start do serverless. Defesa secundária; o portão real é a cota do plano.
+/* A analise era a unica chamada de IA do produto sem limite de taxa: carta
+   20/h, treino 40/h, voz 20/h, PDF 15/h, geracao de CV 5/h — analise, nenhum.
+   E e a mais cara de todas (~US$ 0,02). 15/h nao encosta em candidato real
+   (um humano nao analisa 15 vagas numa hora) e mata script em laco. */
+const ANALISE_USER_LIMIT = 15;
+const ANALISE_USER_WINDOW_MS = 60 * 60 * 1000;
+function checkAnaliseRateLimit(userId) {
+  return checkAndCountLimit({ key: `u:${userId}:analise`, limit: ANALISE_USER_LIMIT, windowMs: ANALISE_USER_WINDOW_MS });
+}
+
 const CV_USER_LIMIT = 5;       // max CVs gerados por janela
 const CV_USER_WINDOW_MS = 60 * 60 * 1000; // 1 hora
 
@@ -921,7 +931,10 @@ export default async function handler(req, res) {
     const score = Math.max(0, Math.min(100, Number(result.score) || 0));
     const nivel = String(result.nivel || '');
     const jobText = String(job || result.job_text || result.job_excerpt || '').slice(0, 20000);
-    const cvText = String(cv || result.cv_text || '').slice(0, 30000);
+    /* 15k, nao 30k. Curriculo real tem 3 a 6 mil caracteres; o teto antigo
+       so servia para nao truncar caso extremo e pagava entrada por texto que
+       quase ninguem tem. Corta a cauda de custo sem afetar CV de verdade. */
+    const cvText = String(cv || result.cv_text || '').slice(0, 15000);
     const hash = contentHash(cvText || serialized, jobText || serialized);
     const savedResult = attachJobMetadata({ ...result, score, nivel }, result?.job_info?.job_url || '');
     const analysisId = await saveAnalysis(user.id, score, nivel, jobText, savedResult, hash, 0);
@@ -1521,6 +1534,16 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
     if (user && user.id) authenticatedUserId = user.id;
   }
 
+  /* Teto de taxa antes de qualquer trabalho. Vem depois da autenticacao porque
+     a chave e por usuario, e antes do cache porque cache hit tambem custa
+     credito e escrita — script em laco sobre a mesma vaga nao deve passar. */
+  if (authenticatedUserId && !(await checkAnaliseRateLimit(authenticatedUserId))) {
+    return res.status(429).json({
+      error: 'rate_limit',
+      message: 'Muitas análises seguidas. Aguarde alguns minutos e tente de novo.',
+    });
+  }
+
   // ─── Verifica cache ANTES de debitar créditos ─────────────────────────────
   const hash = contentHash(cv, job);
   const cached = await getCachedResult(hash);
@@ -1679,15 +1702,15 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
   },
   "briefing_empresa": {
     "o_que_valorizam": [
-      "<valor ou característica cultural inferida da vaga>",
-      "<outro valor percebido>"
+      "<valor ou característica cultural inferida da vaga, máx. 10 palavras>",
+      "<outro valor percebido, máx. 10 palavras>"
     ],
     "buscam_em_candidatos": [
-      "<qualidade implícita que a empresa busca, além dos requisitos técnicos>",
-      "<outra qualidade percebida>"
+      "<qualidade implícita que a empresa busca, máx. 10 palavras>",
+      "<outra qualidade percebida, máx. 10 palavras>"
     ],
     "pontos_para_entrevista": [
-      "<ponto concreto para mencionar na entrevista alinhado com a vaga>",
+      "<ponto concreto para mencionar na entrevista, máx. 14 palavras>",
       "<outro ponto de destaque>",
       "<terceiro ponto>"
     ],
@@ -1700,9 +1723,9 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
     ]
   },
   "prioridades": [
-    {"titulo": "<ação concreta e mais impactante para aumentar a compatibilidade>", "explicacao": "<por que essa ação tem o maior impacto para essa vaga específica>"},
-    {"titulo": "<segunda ação mais impactante>", "explicacao": "<justificativa objetiva>"},
-    {"titulo": "<terceira ação mais impactante>", "explicacao": "<justificativa objetiva>"}
+    {"titulo": "<ação mais impactante, máx. 9 palavras>", "explicacao": "<por que tem o maior impacto nesta vaga, máx. 18 palavras>"},
+    {"titulo": "<segunda ação, máx. 9 palavras>", "explicacao": "<justificativa objetiva, máx. 18 palavras>"},
+    {"titulo": "<terceira ação, máx. 9 palavras>", "explicacao": "<justificativa objetiva, máx. 18 palavras>"}
   ],
   "keywords_parcialmente_encontradas": ["<keyword presente no currículo mas mencionada superficialmente ou sem evidência quantificável, DEVE ser mutuamente exclusiva com keywords_encontradas e keywords_faltando>"],
   "score_estimado_apos_ajustes": <número inteiro de 0 a 100 estimando o score REALISTA se o candidato implementar as 3 prioridades acima, deve ser no máximo score_atual + 30 pontos e nunca ultrapassar 85; se o currículo for vazio ou inválido, retorne o mesmo valor do score>,
@@ -1710,23 +1733,23 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
     {
       "id": "posicionamento",
       "titulo": "Ajustar posicionamento",
-      "descricao": "<ajuste específico de posicionamento profissional para esta vaga>",
+      "descricao": "<ajuste de posicionamento para esta vaga, máx. 22 palavras>",
       "status": "pendente",
-      "detalhes": ["<ação concreta 1>", "<ação concreta 2>"]
+      "detalhes": ["<ação concreta, máx. 12 palavras>", "<ação concreta, máx. 12 palavras>"]
     },
     {
       "id": "experiencias",
       "titulo": "Fortalecer experiências",
-      "descricao": "<como reescrever as experiências para esta vaga>",
+      "descricao": "<como reescrever as experiências para esta vaga, máx. 22 palavras>",
       "status": "pendente",
-      "detalhes": ["<ação concreta 1>", "<ação concreta 2>"]
+      "detalhes": ["<ação concreta, máx. 12 palavras>", "<ação concreta, máx. 12 palavras>"]
     },
     {
       "id": "ats",
       "titulo": "Otimizar para ATS",
-      "descricao": "<o que mudar na estrutura e keywords para passar pelo filtro>",
+      "descricao": "<o que mudar na estrutura e nos termos para passar pelo filtro, máx. 22 palavras>",
       "status": "pendente",
-      "detalhes": ["<ação concreta 1>", "<ação concreta 2>"]
+      "detalhes": ["<ação concreta, máx. 12 palavras>", "<ação concreta, máx. 12 palavras>"]
     }
   ]
 }`;

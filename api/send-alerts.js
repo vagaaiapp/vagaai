@@ -2516,6 +2516,34 @@ export default async function handler(req, res) {
         { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
       );
       profiles = await r.json();
+
+      /* Teto de entregas por usuario por rodada.
+
+         Um Pro pode ter 10 alertas ativos, e ate aqui os 10 disparavam todo dia:
+         10 re-rankings de IA e 10 e-mails para a mesma pessoa. Custava US$ 1,76
+         por assinante/mes (26% da receita liquida), gasto mesmo que ninguem
+         abrisse nenhum e-mail. E os 10 ocupavam 10 vagas da fila do cron,
+         empurrando outros usuarios para o dia seguinte.
+
+         O plano original era consolidar tudo num e-mail so. Nao da: cada perfil
+         consulta ~20 fontes de vaga, e unir 10 perfis do mesmo usuario seriam
+         ~200 chamadas HTTP dentro do maxDuration de 60s. O teto por rodada
+         entrega a maior parte da economia sem esse risco.
+
+         Nao e perda, e rodizio: quem nao entra hoje mantem o next_run_at
+         vencido, e a ordenacao next_run_at.asc.nullsfirst poe esses perfis na
+         frente na proxima execucao. */
+      const TETO_ALERTAS_POR_USUARIO = 3;
+      const vistosPorUsuario = new Map();
+      const antesDoTeto = Array.isArray(profiles) ? profiles.length : 0;
+      profiles = (profiles || []).filter(p => {
+        const n = (vistosPorUsuario.get(p.user_id) || 0) + 1;
+        vistosPorUsuario.set(p.user_id, n);
+        return n <= TETO_ALERTAS_POR_USUARIO;
+      });
+      if (antesDoTeto !== profiles.length) {
+        console.log(`send-alerts: teto por usuario adiou ${antesDoTeto - profiles.length} perfil(is) para a proxima execucao`);
+      }
     }
 
     // Processa em lotes paralelos para caber no maxDuration do cron.
