@@ -1025,7 +1025,13 @@ describe('Rastreamento de conversão', () => {
    divergirem, a tela promete um numero e o banco recusa outro. */
 describe('Teto de alertas: interface e banco contam a mesma coisa', () => {
   const ents = read('lib/entitlements.js');
-  const sql = read('migrations/025_multi_alerta.sql');
+  /* A funcao ja foi redefinida uma vez (025 criou com 10 no Pro, 034 baixou
+     para 5) e vai ser de novo. Fixar o teste numa migracao especifica faz ele
+     comparar o codigo de hoje com um numero aposentado — foi exatamente o que
+     aconteceu quando 034 entrou. Vale a ultima definicao, que e a que o banco
+     tem de fato. */
+  const sql = ultimaDefinicaoDe('max_alertas_do_plano');
+  const trigger = read('migrations/025_multi_alerta.sql');
 
   const doJs = (plano) => {
     const bloco = ents.match(new RegExp(`\\b${plano}:\\s*\\{[\\s\\S]*?\\n  \\}`));
@@ -1055,7 +1061,7 @@ describe('Teto de alertas: interface e banco contam a mesma coisa', () => {
   });
 
   it('o limite é aplicado por trigger, não apenas pelo cliente', () => {
-    assert.match(sql, /CREATE TRIGGER trg_max_active_alerts/, 'trigger de limite ausente');
+    assert.match(trigger, /CREATE TRIGGER trg_max_active_alerts/, 'trigger de limite ausente');
     assert.match(sql, /REVOKE EXECUTE ON FUNCTION public\.max_alertas_do_plano/,
       'SECURITY DEFINER em public sem REVOKE fica executavel por qualquer usuario via /rpc');
   });
@@ -1224,5 +1230,171 @@ describe('A análise recusa entrada curta antes de gastar IA', () => {
     const iAuth = analyze.indexOf("const authHeader = req.headers['authorization']", iRota);
     assert.ok(iRota > 0 && iValida > 0 && iAuth > 0, 'não achei os pontos do caminho principal');
     assert.ok(iValida < iAuth, 'entrada curta deve ser recusada antes de qualquer trabalho');
+  });
+});
+
+
+/* ─── Tetos do plano Pro ────────────────────────────────────────────────────
+
+   O Pro era vendido como ilimitado em analises, cartas e treinos. Num produto
+   de IA isso e custo variavel a preco fixo: ~486 analises num mes zeravam a
+   propria mensalidade de um assinante, e nada impedia. Migracao 034 fechou.
+
+   O risco que estes testes cobrem nao e o teto sumir por acidente — e ele
+   existir no backend e nao na tela, ou existir num lugar do backend e nao no
+   outro. Numero que so mora num dos lados vira ou promessa falsa ou bloqueio
+   inexplicado. */
+
+// Ultima migracao (por ordem de nome) que redefine uma funcao SQL.
+function ultimaDefinicaoDe(nomeDaFuncao) {
+  const dir = path.join(ROOT, 'migrations');
+  const alvo = new RegExp(`CREATE OR REPLACE FUNCTION (public\\.)?${nomeDaFuncao}\\s*\\(`);
+  const achadas = fs.readdirSync(dir)
+    .filter(f => f.endsWith('.sql'))
+    .sort()
+    .map(f => ({ nome: f, corpo: fs.readFileSync(path.join(dir, f), 'utf8') }))
+    .filter(m => alvo.test(m.corpo));
+  assert.ok(achadas.length, `nenhuma migracao define ${nomeDaFuncao}`);
+  return achadas[achadas.length - 1].corpo;
+}
+
+describe('Teto mensal do Pro vale nos tres lados', () => {
+  const ents = read('lib/entitlements.js');
+  const analyze = read('api/analyze.js');
+
+  const doPlano = (plano, campo) => {
+    const bloco = ents.match(new RegExp(`\\b${plano}:\\s*\\{[\\s\\S]*?\\n  \\}`));
+    assert.ok(bloco, `plano ${plano} nao encontrado em entitlements`);
+    const m = bloco[0].match(new RegExp(`${campo}:\\s*(\\d+|null)`));
+    assert.ok(m, `${campo} ausente no plano ${plano}`);
+    return m[1];
+  };
+
+  it('analises: entitlements, api/analyze.js e a RPC dizem o mesmo numero', () => {
+    const noJs = analyze.match(/const PRO_ANALYSES_CAP = (\d+);/);
+    assert.ok(noJs, 'PRO_ANALYSES_CAP ausente em api/analyze.js');
+
+    const sql = ultimaDefinicaoDe('check_and_increment_analyses');
+    const noBanco = sql.match(/v_pro_cap\s+CONSTANT INTEGER := (\d+);/);
+    assert.ok(noBanco, 'v_pro_cap ausente na RPC');
+
+    assert.equal(doPlano('pro', 'analyses_limit'), noJs[1],
+      `entitlements diz ${doPlano('pro', 'analyses_limit')} e api/analyze.js diz ${noJs[1]}`);
+    assert.equal(noJs[1], noBanco[1],
+      `api/analyze.js diz ${noJs[1]} e a RPC aplica ${noBanco[1]}`);
+  });
+
+  it('nenhum plano volta a prometer uso sem teto', () => {
+    // null em qualquer um destes campos e "ilimitado" de volta, agora por
+    // omissao em vez de por decisao.
+    for (const campo of ['analyses_limit', 'letters_limit', 'interviews_limit']) {
+      for (const plano of ['free', 'starter', 'pro']) {
+        assert.notEqual(doPlano(plano, campo), 'null',
+          `${plano}.${campo} voltou a ser ilimitado`);
+      }
+    }
+    assert.doesNotMatch(ents, /can_analyze_unlimited:\s*true/,
+      'can_analyze_unlimited: true contradiz o teto de analises');
+  });
+
+  it('o Starter nao permite mais cartas que o Pro', () => {
+    // Inversao possivel: o teto do Pro entrou primeiro. Uma tabela de precos com
+    // "Pro: 50 cartas / Starter: sem limite" nao se defende.
+    assert.ok(Number(doPlano('starter', 'letters_limit')) <= Number(doPlano('pro', 'letters_limit')),
+      'Starter permite mais cartas que o Pro');
+  });
+
+  it('o Pro conta analise em vez de passar direto', () => {
+    assert.doesNotMatch(analyze, /return \{ ok: true, via: 'pro_direct', plan: 'pro' \};/,
+      'checkSubscriptionDirect voltou a liberar o Pro sem contar');
+    // A recusa do Pro tem de sair no precheck. Se so o `ok` sair, a recusa cai
+    // na RPC e nos creditos avulsos logo abaixo — um caminho para furar o teto.
+    assert.match(analyze, /if \(proPrecheck && proPrecheck\.plan === 'pro'\) return proPrecheck;/,
+      'precheck do Pro voltou a filtrar por .ok, deixando a recusa vazar');
+  });
+
+  it('teto atingido nao se disfarca de falta de credito', () => {
+    // sem_creditos manda para uma tela de compra. O Pro nao tem o que comprar
+    // ali: o teto dele se resolve esperando o ciclo virar.
+    assert.match(analyze, /error: 'cota_mensal'/, 'resposta de teto mensal ausente');
+    assert.match(read('app/index.html'), /data\.error === 'cota_mensal'/,
+      '/app nao trata cota_mensal e cai no ramo de falha de infraestrutura');
+  });
+});
+
+describe('Carta e treino tambem tem teto mensal', () => {
+  const carta = read('api/cover-letter.js');
+  const entrevista = read('api/interview.js');
+  const cotas = read('lib/cotas.js');
+
+  it('as duas APIs checam a cota antes de chamar a IA', () => {
+    for (const [nome, src] of [['cover-letter', carta], ['interview', entrevista]]) {
+      assert.match(src, /import \{ checarCotaMensal.*\} from '\.\.\/lib\/cotas\.js'/,
+        `${nome} nao importa a cota mensal`);
+      assert.match(src, /checarCotaMensal\(\{/, `${nome} nao chama checarCotaMensal`);
+      assert.match(src, /error: 'cota_mensal'/, `${nome} nao responde cota_mensal`);
+    }
+  });
+
+  it('o treino so e barrado ao comecar, nunca no meio', () => {
+    // Bloquear em evaluate deixaria a pessoa com 8 perguntas na tela e nenhuma
+    // avaliacao — pior que nao ter comecado.
+    // Ancora na CHAMADA, nao na primeira ocorrencia do nome: a primeira e a
+    // linha de import, 300 linhas acima do que este teste quer olhar.
+    const i = entrevista.indexOf('checarCotaMensal({');
+    assert.ok(i > 0, 'chamada de checarCotaMensal nao encontrada');
+    const trecho = entrevista.slice(Math.max(0, i - 400), i + 200);
+    assert.match(trecho, /action === 'generate'/,
+      'a cota de treino nao esta restrita ao action=generate');
+  });
+
+  it('a contagem e por linha real, nao por contador', () => {
+    // Contador dessincroniza quando a geracao falha; linha nao existe se nao
+    // foi gravada, entao o estorno e automatico.
+    assert.match(cotas, /cover_letters/, 'cotas.js nao conta cartas');
+    assert.match(cotas, /interview_sessions/, 'cotas.js nao conta treinos');
+    assert.match(cotas, /count=exact/, 'contagem sem count=exact traria as linhas inteiras');
+  });
+
+  it('falha de infraestrutura libera em vez de bloquear', () => {
+    // Este teto protege margem, nao seguranca. Banco fora do ar nao pode impedir
+    // um assinante de escrever a carta que ele ja pagou.
+    assert.match(cotas, /return \{ ok: true, usado: 0, limite, desde, infra: true \};/,
+      'cotas.js deixou de ser fail-open em erro de infraestrutura');
+  });
+});
+
+describe('Alertas do Pro: o numero prometido e o numero entregue', () => {
+  const ents = read('lib/entitlements.js');
+  const cron = read('api/send-alerts.js');
+
+  it('o teto por rodada nao e menor que o maximo de alertas do Pro', () => {
+    /* Este e o bug que o teto de 3 criou: com 10 alertas ativos e 3 entregas por
+       rodada, cada alerta so voltava a cada ~3,3 dias, enquanto a pagina dizia
+       "10 alertas diarios". Enquanto o teto por rodada for >= o maximo de
+       alertas, nenhum perfil e adiado no uso normal e "diario" e verdade. */
+    const maxPro = ents.match(/\bpro:\s*\{[\s\S]*?max_active_alerts:\s*(\d+)/);
+    assert.ok(maxPro, 'max_active_alerts do Pro nao encontrado');
+    const teto = cron.match(/const TETO_ALERTAS_POR_USUARIO = (\d+);/);
+    assert.ok(teto, 'TETO_ALERTAS_POR_USUARIO ausente em send-alerts.js');
+    assert.ok(Number(teto[1]) >= Number(maxPro[1]),
+      `Pro permite ${maxPro[1]} alertas mas o cron entrega ${teto[1]} por rodada: ` +
+      'os excedentes viram rodizio silencioso e "diario" deixa de ser verdade');
+  });
+
+  it('a landing nao promete mais alertas do que o plano permite', () => {
+    const lp = read('index.template.html');
+    const maxPro = Number(ents.match(/\bpro:\s*\{[\s\S]*?max_active_alerts:\s*(\d+)/)[1]);
+    const prometido = lp.match(/Até (\d+) alertas diários/);
+    assert.ok(prometido, 'a landing nao declara mais o numero de alertas');
+    assert.equal(Number(prometido[1]), maxPro,
+      `a landing promete ${prometido[1]} alertas e o plano permite ${maxPro}`);
+  });
+
+  it('a landing nao promete uso sem limite', () => {
+    const lp = read('index.template.html');
+    const planos = lp.slice(lp.indexOf('class="plans"'), lp.indexOf('class="faq'));
+    assert.doesNotMatch(planos, /sem limite de análises|Análises sem limite|análises ilimitadas/i,
+      'o bloco de planos voltou a prometer analise sem limite');
   });
 });

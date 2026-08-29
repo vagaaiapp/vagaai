@@ -8449,7 +8449,14 @@ function renderPlanTiles(sub) {
   var labels = { pro:'Pro', starter:'Starter', free:'Grátis' };
   var planLabel = labels[plan];
   var used = parseInt(sub.analyses_used_this_month, 10) || 0;
-  var limit = parseInt(ent.analyses_limit, 10) || (plan === 'starter' ? 10 : 0);
+  var limit = parseInt(ent.analyses_limit, 10) || (plan === 'starter' ? 10 : plan === 'pro' ? 100 : 0);
+  /* Uso do ciclo vindo do servidor. Cartas e treinos sao contagem de linha real
+     (cover_letters / interview_sessions), nao contador — se a geracao falhou, a
+     linha nao existe e nao conta. */
+  var uso = sub.uso || null;
+  var usoCartas  = uso && uso.cartas  ? uso.cartas  : null;
+  var usoTreinos = uso && uso.treinos ? uso.treinos : null;
+  var reiniciaEm = uso && uso.ciclo_reinicia ? _planxDate(uso.ciclo_reinicia) : _planxDate(sub.current_period_end);
   var counts = _planxCounts();
   var tracked = counts.tracked == null ? '-' : counts.tracked;
   var cvCount = counts.cv == null ? '-' : counts.cv;
@@ -8481,7 +8488,7 @@ function renderPlanTiles(sub) {
     copy = 'O Starter reúne análises, currículo direcionado e carta de apresentação. O Pro amplia o ritmo e acrescenta o treino de entrevista.';
   } else if (plan === 'pro') {
     title = 'Seu plano acompanha o ritmo da sua busca.';
-    copy = 'O Pro mantém todas as ferramentas da sua busca disponíveis, sem interromper suas análises quando surgir uma nova oportunidade.';
+    copy = 'O Pro reúne 100 análises, 50 cartas e 15 treinos por ciclo, com 5 alertas diários. É folga suficiente para uma busca ativa sem precisar racionar.';
   }
   if (unavailable) {
     title = 'Não foi possível confirmar os dados da sua assinatura.';
@@ -8493,9 +8500,14 @@ function renderPlanTiles(sub) {
   var price = plan === 'pro' ? 'R$39,90/mês' : plan === 'starter' ? 'R$19,90/mês' : 'R$0';
   _planxSet('planoCardPreco', unavailable ? '-' : price);
   _planxSet('planxPriceLabel', unavailable ? 'Status indisponível' : isPaid ? (sub.cancel_at_period_end ? 'Sem nova cobrança' : 'Renovação automática') : 'Sem cobrança');
-  var available = plan === 'pro' ? '∞' : plan === 'starter' ? Math.max(0, limit - used) : (ent.can_analyze ? Math.max(1, parseInt(sub.credits_legacy,10) || 0) : 0);
+  /* Era '∞' para o Pro. O Pro passou a ter teto de 100/mes, e mostrar infinito
+     ao lado de um limite real e a mesma promessa falsa que "alertas ilimitados"
+     era — so que dentro do painel de quem ja pagou. */
+  var available = (plan === 'pro' || plan === 'starter')
+    ? Math.max(0, limit - used)
+    : (ent.can_analyze ? Math.max(1, parseInt(sub.credits_legacy,10) || 0) : 0);
   _planxSet('planoAnalises', unavailable ? '-' : available);
-  _planxSet('planxAnalysesLabel', plan === 'pro' ? 'Análises disponíveis' : 'Análises restantes');
+  _planxSet('planxAnalysesLabel', 'Análises restantes');
 
   var primary = document.getElementById('planxPrimaryBtn');
   var secondary = document.getElementById('planxSecondaryBtn');
@@ -8515,7 +8527,7 @@ function renderPlanTiles(sub) {
   }
 
   var featureRows = [
-    { icon:'analysis', title:plan === 'pro' ? 'Análises sem limite' : plan === 'starter' ? '10 análises por mês' : 'Análise inicial', desc:'Compare currículo e vaga quando precisar', on:!!ent.can_analyze || plan !== 'free', state:plan === 'pro' ? 'Ilimitado' : (!!ent.can_analyze || plan !== 'free' ? 'Disponível' : 'Pro') },
+    { icon:'analysis', title:plan === 'pro' ? '100 análises por mês' : plan === 'starter' ? '10 análises por mês' : 'Análise inicial', desc:'Compare currículo e vaga quando precisar', on:!!ent.can_analyze || plan !== 'free', state:(plan === 'pro' || plan === 'starter') ? (used + '/' + limit) : (!!ent.can_analyze ? 'Disponível' : 'Pro') },
     { icon:'cv', title:'Currículo direcionado', desc:'Versões para cada oportunidade', on:!!ent.cv_otimizado, state:ent.cv_otimizado ? 'Incluído' : 'Starter' },
     { icon:'interview', title:'Treino de entrevista', desc:'Perguntas e feedback personalizados', on:!!ent.simulador_entrevista, state:ent.simulador_entrevista ? 'Incluído' : 'Pro' },
     { icon:'tracker', title:'Alertas e rastreador', desc:'Descoberta e acompanhamento de vagas', on:!!ent.rastreador || plan === 'free', state:'Incluído' }
@@ -8531,17 +8543,29 @@ function renderPlanTiles(sub) {
   _planxSet('usageStat1', unavailable ? '-' : used);
   _planxSet('planxUsageLabel', used === 1 ? 'análise realizada' : 'análises realizadas');
   _planxSet('planxUsagePeriod', isPaid ? 'neste ciclo da assinatura' : 'registradas neste mês');
-  if (plan === 'pro') { _planxSet('planxUsageNoteTitle','Uso sem limite'); _planxSet('planxUsageNoteSub','Nenhuma cobrança adicional por análise'); }
-  else if (plan === 'starter') { _planxSet('planxUsageNoteTitle',used + ' de ' + limit + ' usadas'); _planxSet('planxUsageNoteSub',Math.max(0,limit-used) + ' análises ainda disponíveis'); }
-  else { _planxSet('planxUsageNoteTitle',ent.can_analyze ? 'Análise disponível' : 'Limite utilizado'); _planxSet('planxUsageNoteSub','O Pro remove o limite de análises'); }
+  if (plan === 'pro' || plan === 'starter') {
+    _planxSet('planxUsageNoteTitle', used + ' de ' + limit + ' usadas');
+    _planxSet('planxUsageNoteSub', Math.max(0,limit-used) + ' análises ainda disponíveis' + (reiniciaEm ? ' · zera em ' + reiniciaEm : ''));
+  }
+  else { _planxSet('planxUsageNoteTitle',ent.can_analyze ? 'Análise disponível' : 'Limite utilizado'); _planxSet('planxUsageNoteSub','O Pro amplia para 100 análises por mês'); }
   if (unavailable) { _planxSet('planxUsageNoteTitle','Plano indisponível'); _planxSet('planxUsageNoteSub','Recarregue para consultar seus limites'); }
   _planxSet('usageStat2', tracked); _planxSet('usageStat3', cvCount); _planxSet('usageStat4', interviewCount);
   _planxSet('planxUsageState2', counts.tracked == null ? 'Carregando' : counts.tracked ? 'Em uso' : 'Ainda não usado');
   _planxSet('planxUsageState3', counts.cv == null ? 'Sem leitura' : counts.cv ? 'Em uso' : (ent.cv_otimizado ? 'Ainda não usado' : 'Não incluído'));
   _planxSet('planxUsageState4', counts.interviews == null ? 'Sem leitura' : counts.interviews ? 'Em uso' : (ent.simulador_entrevista ? 'Ainda não usado' : 'Não incluído'));
   var insight = '<strong>Leitura:</strong> reunindo o uso das ferramentas.';
-  if (!unavailable && plan === 'pro') insight = '<strong>Leitura:</strong> você já aproveita o núcleo de análise do Pro; os próximos ganhos estão em acompanhar e preparar as oportunidades escolhidas.';
-  else if (!unavailable && plan === 'starter') insight = '<strong>Leitura:</strong> o Starter cobre a seleção e a candidatura; o Pro acrescenta ritmo ilimitado e treino de entrevista.';
+  /* Para quem tem teto, esta linha vira extrato: os tres numeros do ciclo e a
+     data em que zeram. E o unico lugar do painel onde os limites de carta e
+     treino aparecem juntos — sem isso a pessoa so descobriria o teto ao bater
+     nele. */
+  if (!unavailable && (plan === 'pro' || plan === 'starter') && uso) {
+    var partes = ['<strong>Neste ciclo:</strong> ' + used + ' de ' + limit + ' análises'];
+    if (usoCartas && usoCartas.limite)  partes.push(usoCartas.usado + ' de ' + usoCartas.limite + ' cartas');
+    if (usoTreinos && usoTreinos.limite) partes.push(usoTreinos.usado + ' de ' + usoTreinos.limite + ' treinos');
+    insight = partes.join(' · ') + (reiniciaEm ? '. Tudo zera em ' + reiniciaEm + '.' : '.');
+  }
+  else if (!unavailable && plan === 'pro') insight = '<strong>Leitura:</strong> você já aproveita o núcleo de análise do Pro; os próximos ganhos estão em acompanhar e preparar as oportunidades escolhidas.';
+  else if (!unavailable && plan === 'starter') insight = '<strong>Leitura:</strong> o Starter cobre a seleção e a candidatura; o Pro amplia o ritmo e acrescenta o treino de entrevista.';
   else if (!unavailable) insight = '<strong>Leitura:</strong> o plano Grátis organiza o começo da busca; recursos direcionados aparecem quando você avança de plano.';
   var insightEl = document.getElementById('planxUsageInsight'); if (insightEl) insightEl.innerHTML = insight;
 
@@ -8553,9 +8577,9 @@ function renderPlanTiles(sub) {
     nextCopy = sub.cancel_at_period_end ? 'Seu acesso continua ativo até o fim do período atual. No portal, você pode revisar essa decisão.' : 'O Stripe precisa de uma ação para manter todos os recursos ativos.';
     nextBtnText = 'Abrir assinatura →'; nextAction = function(){ openStripePortal(document.getElementById('planxNextBtn')); };
   } else if (plan === 'free') {
-    nextTitle = 'Desbloqueie o caminho completo para cada vaga.'; nextCopy = 'O Pro reúne análises ilimitadas, currículo direcionado, carta e treino de entrevista em um único fluxo.'; nextBtnText = 'Conhecer o Pro →'; nextAction = function(){ openAuthCheckout('https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408'); }; proofB = 'Pro';
+    nextTitle = 'Desbloqueie o caminho completo para cada vaga.'; nextCopy = 'O Pro reúne 100 análises por mês, currículo direcionado, carta e treino de entrevista em um único fluxo.'; nextBtnText = 'Conhecer o Pro →'; nextAction = function(){ openAuthCheckout('https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408'); }; proofB = 'Pro';
   } else if (plan === 'starter') {
-    nextTitle = 'Leve o preparo até a entrevista.'; nextCopy = 'No Pro, o limite mensal deixa de interromper a análise e o simulador prepara respostas para cada oportunidade.'; nextBtnText = 'Fazer upgrade →'; nextAction = function(){ openStripePortal(document.getElementById('planxNextBtn')); }; proofB = Math.max(0,limit-used);
+    nextTitle = 'Leve o preparo até a entrevista.'; nextCopy = 'O Pro leva de 10 para 100 análises por mês e acrescenta o treino de entrevista para cada oportunidade.'; nextBtnText = 'Fazer upgrade →'; nextAction = function(){ openStripePortal(document.getElementById('planxNextBtn')); }; proofB = Math.max(0,limit-used);
   } else if (counts.tracked === 0) {
     nextTitle = 'Leve uma análise para o caminho completo.'; nextCopy = 'Ao adicionar uma oportunidade ao rastreador, a plataforma passa a organizar prazos, próximos passos e preparo para entrevista.'; nextBtnText = 'Abrir candidaturas →'; nextAction = function(){ switchDashTab('vagas'); };
   } else if (counts.cv === 0) {
@@ -8566,15 +8590,15 @@ function renderPlanTiles(sub) {
     nextTitle = 'Seu plano já está integrado à sua busca.'; nextCopy = 'Continue usando os recursos conforme cada oportunidade avança da análise até a entrevista.'; nextBtnText = 'Ver candidaturas →'; nextAction = function(){ switchDashTab('vagas'); };
   }
   _planxSet('planxNextTitle', nextTitle); _planxSet('planxNextCopy', nextCopy); _planxSet('planxProofA', proofA); _planxSet('planxProofB', proofB);
-  _planxSet('planxProofALabel', plan === 'starter' ? 'análises usadas' : 'análises feitas');
+  _planxSet('planxProofALabel', (plan === 'starter' || plan === 'pro') ? 'análises usadas' : 'análises feitas');
   _planxSet('planxProofBLabel', plan === 'starter' ? 'análises restantes' : plan === 'free' ? 'caminho completo' : 'vagas acompanhadas');
   var nextBtn = document.getElementById('planxNextBtn'); if (nextBtn) { nextBtn.textContent = nextBtnText; nextBtn.disabled = false; nextBtn.onclick = nextAction; }
 
   var resources = [
-    { title:'Análise de vaga', desc:'Compatibilidade, requisitos, o que falta e resumo da empresa.', on:!!ent.can_analyze || plan !== 'free', state:plan === 'pro' ? 'Ilimitado' : (!!ent.can_analyze || plan !== 'free' ? 'Ativo' : 'Pro') },
+    { title:'Análise de vaga', desc:'Compatibilidade, requisitos, o que falta e resumo da empresa.', on:!!ent.can_analyze || plan !== 'free', state:(plan === 'pro' || plan === 'starter') ? (used + ' de ' + limit) : (!!ent.can_analyze ? 'Ativo' : 'Pro') },
     { title:'Currículo otimizado', desc:'Versões direcionadas sem alterar seu documento principal.', on:!!ent.cv_otimizado, state:ent.cv_otimizado ? 'Ativo' : 'Starter' },
-    { title:'Carta de apresentação', desc:'Texto personalizado com base na vaga e no seu perfil.', on:plan !== 'free', state:plan !== 'free' ? 'Ativo' : 'Starter' },
-    { title:'Treino de entrevista', desc:'Perguntas, áudio e feedback ligados à oportunidade.', on:!!ent.simulador_entrevista, state:ent.simulador_entrevista ? 'Ativo' : 'Pro' },
+    { title:'Carta de apresentação', desc:'Texto personalizado com base na vaga e no seu perfil.', on:plan !== 'free', state:usoCartas && usoCartas.limite ? (usoCartas.usado + ' de ' + usoCartas.limite) : (plan !== 'free' ? 'Ativo' : 'Starter') },
+    { title:'Treino de entrevista', desc:'Perguntas, áudio e feedback ligados à oportunidade.', on:!!ent.simulador_entrevista, state:usoTreinos && usoTreinos.limite ? (usoTreinos.usado + ' de ' + usoTreinos.limite) : (ent.simulador_entrevista ? 'Ativo' : 'Pro') },
     { title:'Alertas de vagas', desc:'Seleções periódicas guiadas pelas suas preferências.', on:!!ent.alertas || plan === 'free', state:'Ativo' },
     { title:'Rastreador', desc:'Histórico, status e próximos passos das candidaturas.', on:!!ent.rastreador || plan === 'free', state:'Ativo' }
   ];

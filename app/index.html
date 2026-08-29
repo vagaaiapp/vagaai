@@ -1249,7 +1249,7 @@ var PLANS = [
     price: 'R$39',
     cents: ',90/mês',
     brl: 39.90,
-    desc: 'Análises ilimitadas, currículo e carta para cada vaga, resumo completo da empresa e treino de entrevista.',
+    desc: '100 análises por mês, currículo e carta para cada vaga, resumo completo da empresa e treino de entrevista.',
     url: 'https://buy.stripe.com/8x27sL6h8gidgdN4mb9k408',
     quarterlyUrl: 'https://buy.stripe.com/5kQaEX0WOd616Dd7yn9k40a',
     featured: true
@@ -2243,10 +2243,19 @@ async function doAnalyze(job, cv) {
       showLimitReached();
       return;
     }
+    /* Teto mensal do plano — separado de 'sem_creditos' logo abaixo. Sem este
+       ramo, um Pro que chegou nas 100 analises do ciclo cairia no tratamento de
+       falha de infra e leria "nao conseguimos validar a autorizacao", que
+       descreve um bug nosso e nao o que aconteceu. */
+    if (data.error === 'cota_mensal') {
+      document.getElementById('loadingSection').classList.remove('show');
+      restoreForm(data.message || 'Você usou todas as análises do seu plano neste ciclo. A contagem zera na renovação da assinatura.');
+      return;
+    }
     if (res.status === 402 || data.error === 'sem_creditos') {
       document.getElementById('loadingSection').classList.remove('show');
       if (userPlan === 'pro') {
-        restoreForm('Seu plano Pro aparece como ilimitado, mas não conseguimos validar a autorização da análise agora. Atualize a página e tente novamente. Se persistir, fale com o suporte.');
+        restoreForm('Não conseguimos validar a autorização da análise agora. Atualize a página e tente novamente. Se persistir, fale com o suporte.');
         return;
       }
       userCredits = 0;

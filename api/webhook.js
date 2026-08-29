@@ -415,7 +415,7 @@ export default async function handler(req, res) {
       throw new Error(`upsertSubscription: Supabase ${r.status} — ${await r.text()}`);
     }
 
-    /* Quem cancela o Pro pode ter 10 alertas ativos e passar a ter direito a 1.
+    /* Quem cancela o Pro pode ter 5 alertas ativos e passar a ter direito a 1.
        A função desativa o excedente mantendo os dados: apagar destruiria a
        configuração que a pessoa montou, e ela volta esperando encontrar tudo.
        Preserva os usados mais recentemente. Falha aqui não pode derrubar o

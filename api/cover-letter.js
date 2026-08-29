@@ -3,6 +3,7 @@
 
 import { resolvePlan } from '../lib/entitlements.js';
 import { checkAndCountLimit } from '../lib/ratelimit.js';
+import { checarCotaMensal, mensagemDeCota } from '../lib/cotas.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
@@ -27,15 +28,19 @@ function checkUserRateLimit(userId) {
   return checkAndCountLimit({ key: `u:${userId}:carta`, limit: USER_LIMIT, windowMs: USER_WINDOW_MS });
 }
 
+// Devolve { plan, sub }. O `sub` vem junto porque a cota mensal de cartas
+// (lib/cotas.js) precisa de current_period_start para saber onde o ciclo comeca
+// — buscar de novo seria uma segunda ida ao banco pela mesma linha.
 async function getUserPlan(userId) {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${userId}&order=created_at.desc&limit=1&select=plan,status`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${userId}&order=created_at.desc&limit=1&select=plan,status,current_period_start`, {
       headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
     });
     const rows = await res.json();
+    const sub = rows?.[0] || null;
     // Fonte única de verdade de plano/status (lib/entitlements.js)
-    return resolvePlan(rows?.[0]);
-  } catch { return 'free'; }
+    return { plan: resolvePlan(sub), sub };
+  } catch { return { plan: 'free', sub: null }; }
 }
 
 export default async function handler(req, res) {
@@ -47,7 +52,7 @@ export default async function handler(req, res) {
   const user = await getUserFromToken(token);
   if (!user) return res.status(401).json({ error: 'Invalid token' });
 
-  const plan = await getUserPlan(user.id);
+  const { plan, sub } = await getUserPlan(user.id);
   if (plan === 'free') {
     return res.status(403).json({
       error: 'plano_insuficiente',
@@ -58,6 +63,20 @@ export default async function handler(req, res) {
 
   if (!(await checkUserRateLimit(user.id))) {
     return res.status(429).json({ error: 'Limite de uso atingido. Tente novamente mais tarde.' });
+  }
+
+  // Cota mensal do plano. O rate limit acima segura pico (20/hora); este segura
+  // volume, que e onde o custo mora. Checado ANTES da chamada de IA — cobrar o
+  // token e so depois recusar seria pagar pelo bloqueio.
+  const cota = await checarCotaMensal({ userId: user.id, plan, recurso: 'carta', sub });
+  if (!cota.ok) {
+    return res.status(429).json({
+      error: 'cota_mensal',
+      message: mensagemDeCota('carta', cota.limite, cota.desde),
+      plan,
+      usado: cota.usado,
+      limite: cota.limite,
+    });
   }
 
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });

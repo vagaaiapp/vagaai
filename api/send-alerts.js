@@ -2519,21 +2519,35 @@ export default async function handler(req, res) {
 
       /* Teto de entregas por usuario por rodada.
 
-         Um Pro pode ter 10 alertas ativos, e ate aqui os 10 disparavam todo dia:
-         10 re-rankings de IA e 10 e-mails para a mesma pessoa. Custava US$ 1,76
-         por assinante/mes (26% da receita liquida), gasto mesmo que ninguem
-         abrisse nenhum e-mail. E os 10 ocupavam 10 vagas da fila do cron,
-         empurrando outros usuarios para o dia seguinte.
+         Um Pro podia ter 10 alertas ativos, e ate pouco tempo atras os 10
+         disparavam todo dia: 10 re-rankings de IA e 10 e-mails para a mesma
+         pessoa. Custava US$ 1,76 por assinante/mes (26% da receita liquida),
+         gasto mesmo que ninguem abrisse nenhum e-mail. E os 10 ocupavam 10
+         vagas da fila do cron, empurrando outros usuarios para o dia seguinte.
 
          O plano original era consolidar tudo num e-mail so. Nao da: cada perfil
          consulta ~20 fontes de vaga, e unir 10 perfis do mesmo usuario seriam
          ~200 chamadas HTTP dentro do maxDuration de 60s. O teto por rodada
          entrega a maior parte da economia sem esse risco.
 
-         Nao e perda, e rodizio: quem nao entra hoje mantem o next_run_at
-         vencido, e a ordenacao next_run_at.asc.nullsfirst poe esses perfis na
-         frente na proxima execucao. */
-      const TETO_ALERTAS_POR_USUARIO = 3;
+         POR QUE 5, E NAO 3
+         O teto nasceu em 3, e 3 quebrava a promessa: com 10 alertas ativos e
+         3 entregas por rodada, cada alerta so voltava a cada ~3,3 dias enquanto
+         a pagina dizia "10 alertas diarios". Rodizio silencioso e a mesma
+         classe de defeito que "alertas ilimitados" era.
+
+         A correcao foi casar os dois numeros: max_active_alerts do Pro caiu
+         para 5 (lib/entitlements.js + max_alertas_do_plano na migracao 034) e
+         o teto por rodada subiu para 5. Com teto igual ao maximo de alertas,
+         nenhum perfil e adiado no uso normal e "diario" volta a ser verdade.
+
+         O filtro fica de pe mesmo assim: e a rede que segura o caso anormal —
+         alerta que ficou ativo antes de um downgrade, backlog acumulado depois
+         de um cron que falhou. Nesses casos nao e perda, e rodizio: quem nao
+         entra hoje mantem o next_run_at vencido, e a ordenacao
+         next_run_at.asc.nullsfirst poe esses perfis na frente na proxima
+         execucao. */
+      const TETO_ALERTAS_POR_USUARIO = 5;
       const vistosPorUsuario = new Map();
       const antesDoTeto = Array.isArray(profiles) ? profiles.length : 0;
       profiles = (profiles || []).filter(p => {

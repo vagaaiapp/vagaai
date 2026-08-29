@@ -53,6 +53,32 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const STARTER_ANALYSES_CAP = 10;
+/* Teto mensal de analises do Pro. Espelha v_pro_cap na RPC
+   check_and_increment_analyses (migracao 034) — a RPC e a trava de verdade
+   (FOR UPDATE), este numero so age quando ela esta fora do ar. Os dois sao
+   comparados por teste. */
+const PRO_ANALYSES_CAP = 100;
+const CAP_DO_PLANO = { starter: STARTER_ANALYSES_CAP, pro: PRO_ANALYSES_CAP };
+
+/* Resposta de teto mensal atingido. Sai separada de 'sem_creditos' porque as
+   duas situacoes pedem acoes diferentes: sem credito se resolve comprando,
+   teto atingido se resolve esperando o ciclo virar (ou subindo de plano, no
+   caso do Starter). Chamar as duas de "sem creditos" mandava o Pro para uma
+   tela de compra que nao tinha nada para vender a ele. */
+function respostaDeTeto(res, deduct) {
+  const plano = deduct && deduct.plan === 'pro' ? 'Pro' : 'Starter';
+  const limite = (deduct && deduct.limit) || CAP_DO_PLANO[deduct && deduct.plan] || 0;
+  const extra = deduct && deduct.plan === 'starter'
+    ? ' O Pro amplia para 100 por mês.'
+    : '';
+  return res.status(402).json({
+    error: 'cota_mensal',
+    message: `Você usou as ${limite} análises do seu plano ${plano} neste ciclo. A contagem zera na renovação da assinatura.${extra}`,
+    plan: deduct && deduct.plan,
+    usado: deduct && deduct.used,
+    limite,
+  });
+}
 
 // ─── Hash de conteúdo (cv + job) ─────────────────────────────────────────────
 
@@ -280,8 +306,12 @@ async function refundAnalysisCredit(userId, deductResult) {
     return;
   }
 
-  // Estorno de cota mensal Starter — decrementa subscriptions.analyses_used_this_month
-  if (deductResult.plan === 'starter' || deductResult.via === 'starter') {
+  /* Estorno da cota mensal — decrementa subscriptions.analyses_used_this_month.
+     Passou a valer para o Pro junto com o teto de 100/mes: enquanto Pro era
+     ilimitado nao havia cota a estornar, agora ha. Analise que falhou nao pode
+     consumir cota. */
+  if (deductResult.plan === 'starter' || deductResult.plan === 'pro' ||
+      deductResult.via === 'starter' || deductResult.via === 'pro') {
     try {
       const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/decrement_analyses_used`, {
         method: 'POST',
@@ -290,7 +320,7 @@ async function refundAnalysisCredit(userId, deductResult) {
       });
       const rpcData = rpcRes.ok ? await rpcRes.json().catch(() => null) : null;
       if (rpcData?.ok) {
-        console.log('refundAnalysisCredit: starter quota refunded for user', userId);
+        console.log('refundAnalysisCredit: cota mensal estornada para', userId, deductResult.plan || deductResult.via);
       } else {
         console.warn('refundAnalysisCredit: decrement_analyses_used returned', rpcData, '(may have no eligible subscription)');
       }
@@ -298,7 +328,6 @@ async function refundAnalysisCredit(userId, deductResult) {
       console.error('refundAnalysisCredit starter error:', err.message);
     }
   }
-  // Pro: ilimitado, não há cota a estornar
   // fail-open: nenhuma dedução real, nada a estornar
 }
 
@@ -369,12 +398,17 @@ async function checkAndDeductCredit(userId) {
   }
 
   // 1. Verifica plano via RPC atômica (check + increment em uma transação)
-  // Pro é ilimitado e não deve depender do contador/RPC legado. Em produção,
-  // usuários Pro podem ter RPC defasada ou créditos avulsos zerados; validar o
-  // plano direto antes evita mostrar "Seus créditos acabaram" para quem paga.
+  /* O Pro nao passa pelo caminho de creditos avulsos: validar o plano direto
+     antes evita mostrar "Seus creditos acabaram" para quem paga quando a RPC
+     esta defasada.
+
+     Devolve o resultado do Pro mesmo quando ele NAO autoriza. Antes so o `ok`
+     saia por aqui, e a recusa caia para a RPC e para os creditos avulsos logo
+     abaixo — o que, agora que o Pro tem teto de 100/mes, seria um caminho para
+     furar o proprio teto. */
   try {
     const proPrecheck = await checkSubscriptionDirect(userId, 'analysis');
-    if (proPrecheck && proPrecheck.ok && proPrecheck.plan === 'pro') return proPrecheck;
+    if (proPrecheck && proPrecheck.plan === 'pro') return proPrecheck;
   } catch (err) {
     console.error('checkAndDeductCredit pro precheck exception:', err.message);
   }
@@ -412,8 +446,10 @@ async function checkAndDeductCredit(userId) {
   // 'no_subscription' → cai no sistema de créditos avulsos / free monthly
   if (rpcResult && rpcResult.via !== 'no_subscription') {
     if (rpcResult.ok) return rpcResult;
-    const direct = await checkSubscriptionDirect(userId, 'analysis');
-    if (direct.ok && direct.plan === 'pro') return direct;
+    /* Havia aqui uma segunda chance para o Pro, de quando a RPC nao conhecia o
+       plano pro e negava por engano. A RPC da migracao 034 conhece e aplica o
+       teto de 100/mes; manter a segunda chance seria reautorizar exatamente a
+       analise que o teto acabou de barrar — e ainda incrementar de novo. */
     return rpcResult;
   }
 
@@ -713,10 +749,24 @@ async function getLatestSubscription(userId) {
   return { sub: Array.isArray(rows) ? rows[0] : null };
 }
 
-async function resetStarterCounterIfNeeded(sub) {
-  if (!sub || sub.plan !== 'starter') return sub;
-  const shouldReset = !sub.analyses_reset_at ||
-    (sub.current_period_start && new Date(sub.analyses_reset_at).getTime() < new Date(sub.current_period_start).getTime());
+/* Zera o contador quando o ciclo de cobranca vira. Servia so ao Starter; agora
+   o Pro tambem tem cota mensal, e os dois usam a mesma coluna, a mesma ancora
+   (current_period_start) e portanto a mesma data de virada — a que o painel
+   mostra como "renova em". */
+async function resetMonthlyCounterIfNeeded(sub) {
+  if (!sub || (sub.plan !== 'starter' && sub.plan !== 'pro')) return sub;
+  /* Espelho da condicao na RPC (migracao 034). O terceiro caso — assinatura sem
+     current_period_start — nao era tratado, e sem ele o contador nunca zerava
+     para quem tem o periodo do Stripe ausente. Sem teto ninguem notava; com
+     teto, e bloqueio permanente. */
+  const resetAt = sub.analyses_reset_at ? new Date(sub.analyses_reset_at).getTime() : null;
+  const agora = new Date();
+  const inicioDoMes = Date.UTC(agora.getUTCFullYear(), agora.getUTCMonth(), 1);
+  const shouldReset = resetAt === null || (
+    sub.current_period_start
+      ? resetAt < new Date(sub.current_period_start).getTime()
+      : resetAt < inicioDoMes
+  );
   if (!shouldReset) return sub;
 
   const patch = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?id=eq.${encodeURIComponent(sub.id)}`, {
@@ -730,7 +780,7 @@ async function resetStarterCounterIfNeeded(sub) {
     body: JSON.stringify({ analyses_used_this_month: 0, analyses_reset_at: new Date().toISOString() }),
   });
   if (!patch.ok) {
-    console.error('resetStarterCounterIfNeeded failed:', patch.status);
+    console.error('resetMonthlyCounterIfNeeded failed:', patch.status);
     return { ...sub, _reset_error: 'subscription_reset_' + patch.status };
   }
   const rows = await patch.json().catch(() => []);
@@ -746,22 +796,25 @@ async function checkSubscriptionDirect(userId, context = 'analysis') {
     const plan = resolvePlan(sub);
     if (plan === 'free') return { ok: false, via: 'no_subscription' };
 
-    if (plan === 'pro') {
-      return { ok: true, via: 'pro_direct', plan: 'pro' };
-    }
-
-    if (plan !== 'starter') {
+    if (plan !== 'starter' && plan !== 'pro') {
       return { ok: false, reason: 'invalid_plan', plan };
     }
 
-    sub = await resetStarterCounterIfNeeded(sub);
+    /* O Pro saia daqui com `ok` sem contar nada — era o que "ilimitado"
+       significava na pratica. Agora percorre o mesmo caminho do Starter, so com
+       teto maior: mesmo contador, mesmo reset e mesmo optimistic-lock no PATCH,
+       que e o que impede duas requisicoes simultaneas de gastarem a mesma
+       unidade. */
+    const cap = CAP_DO_PLANO[plan];
+
+    sub = await resetMonthlyCounterIfNeeded(sub);
     if (sub && sub._reset_error) {
       return { ok: false, reason: 'infrastructure_error', detail: sub._reset_error };
     }
 
     const used = Number(sub?.analyses_used_this_month || 0);
-    if (used >= STARTER_ANALYSES_CAP) {
-      return { ok: false, reason: 'plan_limit', plan: 'starter', used, limit: STARTER_ANALYSES_CAP };
+    if (used >= cap) {
+      return { ok: false, reason: 'plan_limit', plan, used, limit: cap };
     }
 
     const patch = await fetch(
@@ -785,7 +838,10 @@ async function checkSubscriptionDirect(userId, context = 'analysis') {
     if (!Array.isArray(rows) || !rows.length) {
       return { ok: false, reason: 'infrastructure_error', detail: 'subscription_patch_race' };
     }
-    return { ok: true, via: context === 'create_cv' ? 'starter_direct_cv' : 'starter_direct', plan: 'starter', used: used + 1, limit: STARTER_ANALYSES_CAP };
+    const via = plan === 'pro'
+      ? (context === 'create_cv' ? 'pro_direct_cv' : 'pro_direct')
+      : (context === 'create_cv' ? 'starter_direct_cv' : 'starter_direct');
+    return { ok: true, via, plan, used: used + 1, limit: cap };
   } catch (err) {
     console.error('checkSubscriptionDirect exception:', err.message);
     return { ok: false, reason: 'infrastructure_error', detail: 'subscription_direct_exception' };
@@ -797,12 +853,11 @@ async function checkAndDeductCreditForCV(userId) {
     return { ok: false, reason: 'infrastructure_error', detail: 'missing_config' };
   }
 
-  // Pro também é ilimitado para geração/otimização de currículo. Fazemos a
-  // validação direta antes da RPC legada para evitar bloqueio por contador
-  // defasado quando o usuário já está com plano ativo.
+  /* Mesma regra do fluxo de analise: validacao direta antes da RPC legada, e a
+     recusa do Pro tambem sai por aqui em vez de cair nos creditos avulsos. */
   try {
     const proPrecheck = await checkSubscriptionDirect(userId, 'create_cv');
-    if (proPrecheck && proPrecheck.ok && proPrecheck.plan === 'pro') return proPrecheck;
+    if (proPrecheck && proPrecheck.plan === 'pro') return proPrecheck;
   } catch (err) {
     console.error('create_cv pro precheck exception:', err.message);
   }
@@ -838,8 +893,7 @@ async function checkAndDeductCreditForCV(userId) {
   // 'no_subscription' → cai nos créditos avulsos, mas NUNCA em free_monthly
   if (rpcResult && rpcResult.via !== 'no_subscription') {
     if (rpcResult.ok) return rpcResult;
-    const direct = await checkSubscriptionDirect(userId, 'create_cv');
-    if (direct.ok && direct.plan === 'pro') return direct;
+    // Mesmo motivo do fluxo de análise: a RPC agora aplica o teto do Pro.
     return rpcResult;
   }
 
@@ -989,9 +1043,7 @@ export default async function handler(req, res) {
       if (cvDeduct.reason === 'no_credits') {
         return res.status(402).json({ error: 'sem_creditos', message: 'CV otimizado não está disponível no plano gratuito. Assine um plano ou adquira créditos.' });
       }
-      if (cvDeduct.reason === 'plan_limit') {
-        return res.status(402).json({ error: 'plan_limit', message: 'Limite do plano Starter atingido para este mês.' });
-      }
+      if (cvDeduct.reason === 'plan_limit') return respostaDeTeto(res, cvDeduct);
       if (cvDeduct.reason === 'invalid_plan') {
         return res.status(403).json({ error: 'invalid_plan', message: 'Plano não reconhecido.' });
       }
@@ -1436,7 +1488,8 @@ Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato
 
     const pDeduct = await checkAndDeductCredit(pUser.id);
     if (!pDeduct.ok) {
-      if (pDeduct.reason === 'no_credits' || pDeduct.reason === 'plan_limit') {
+      if (pDeduct.reason === 'plan_limit') return respostaDeTeto(res, pDeduct);
+      if (pDeduct.reason === 'no_credits') {
         return res.status(402).json({ error: 'sem_creditos', message: 'Você não tem créditos disponíveis para o Raio-X do currículo.' });
       }
       if (pDeduct.reason === 'invalid_plan') {
@@ -1573,7 +1626,8 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
       // Cache hit ainda consome crédito — o resultado foi salvo, mas o limite deve ser respeitado
       const deduct = await checkAndDeductCredit(authenticatedUserId);
       if (!deduct.ok) {
-        if (deduct.reason === 'no_credits' || deduct.reason === 'plan_limit') {
+        if (deduct.reason === 'plan_limit') return respostaDeTeto(res, deduct);
+        if (deduct.reason === 'no_credits') {
           return res.status(402).json({ error: 'sem_creditos' });
         }
         if (deduct.reason === 'invalid_plan') {
@@ -1612,7 +1666,8 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
   if (authenticatedUserId) {
     _deductResult = await checkAndDeductCredit(authenticatedUserId);
     if (!_deductResult.ok) {
-      if (_deductResult.reason === 'no_credits' || _deductResult.reason === 'plan_limit') {
+      if (_deductResult.reason === 'plan_limit') return respostaDeTeto(res, _deductResult);
+      if (_deductResult.reason === 'no_credits') {
         return res.status(402).json({ error: 'sem_creditos' });
       }
       if (_deductResult.reason === 'invalid_plan') {

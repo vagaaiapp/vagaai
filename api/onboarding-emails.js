@@ -178,7 +178,7 @@ const EMAILS = {
     const isPro = plan === 'pro';
     const label = isPro ? 'Pro' : 'Starter';
     const items = isPro
-      ? [['⚡ Análises ilimitadas', 'Analise todas as vagas que quiser, sem contador.'],
+      ? [['⚡ 100 análises por mês', 'Folga para analisar toda vaga que aparecer, sem racionar.'],
          ['🎤 Treino de entrevista', 'Treine com perguntas geradas para a SUA vaga e receba feedback da IA.'],
          ['🔔 Alertas diários sem limite', 'Todas as vagas compatíveis, com análise da IA no topo do e-mail.']]
       : [['⚡ 10 análises por mês', 'Analise as vagas mais importantes antes de aplicar.'],
@@ -259,7 +259,7 @@ const EMAILS = {
   <div style="padding:2rem">
     <h1 style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">Olá, ${name}!</h1>
     <p style="color:#8a9e90;font-size:14px;line-height:1.7;margin-bottom:1.5rem">
-      Está em busca ativa? Seu plano gratuito inclui <strong style="color:#3ecf8e">1 análise completa por mês</strong>. E o plano Pro libera análises ilimitadas, currículo ajustado para cada vaga e treino de entrevista.
+      Está em busca ativa? Seu plano gratuito inclui <strong style="color:#3ecf8e">1 análise completa por mês</strong>. E o plano Pro libera 100 análises por mês, currículo ajustado para cada vaga e treino de entrevista.
     </p>
     <div style="background:#161d19;border-radius:10px;padding:1.2rem;margin-bottom:1.5rem">
       <div style="font-size:13px;font-weight:700;color:#e8ede9;margin-bottom:.5rem">💡 Dica da semana</div>

@@ -4,6 +4,7 @@
 // Fonte única de planos/permissões: lib/entitlements.js
 
 import { resolvePlan, planEntitlements } from '../lib/entitlements.js';
+import { checarCotaMensal, inicioDoCiclo } from '../lib/cotas.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
@@ -276,11 +277,39 @@ export default async function handler(req, res) {
       free_monthly_available: freeMonthlyAvailable,
       unlimited_analyses:    ent.can_analyze_unlimited,
       analyses_limit:        ent.analyses_limit,
+      letters_limit:         ent.letters_limit,
+      interviews_limit:      ent.interviews_limit,
       cv_otimizado:          ent.cv_otimizado || credits > 0,
       simulador_entrevista:  ent.simulador_entrevista,
       rastreador:            true, // disponível para todos
       alertas:               ent.alerts_enabled, // retrocompat (agora true p/ todos)
     };
+
+    /* Uso do ciclo — o painel precisa MOSTRAR o consumo, nao so ser barrado por
+       ele. Teto invisivel e teto que vira surpresa: a pessoa descobre o limite
+       exatamente no momento em que precisa da ferramenta.
+
+       Analises saem do contador (subscriptions.analyses_used_this_month);
+       cartas e treinos saem de count(*) nas tabelas da migracao 026. So para
+       plano pago: no free os tres sao zero e as duas consultas seriam gastas
+       para nao dizer nada. */
+    let uso = null;
+    if (isActiveSub) {
+      const [cartas, treinos] = await Promise.all([
+        checarCotaMensal({ userId: user.id, plan: effectivePlan, recurso: 'carta',  sub }),
+        checarCotaMensal({ userId: user.id, plan: effectivePlan, recurso: 'treino', sub }),
+      ]);
+      const inicio = inicioDoCiclo(sub);
+      const reinicia = new Date(inicio);
+      reinicia.setMonth(reinicia.getMonth() + 1);
+      uso = {
+        ciclo_inicio:    inicio,
+        ciclo_reinicia:  reinicia.toISOString(),
+        analises: { usado: sub?.analyses_used_this_month || 0, limite: ent.analyses_limit },
+        cartas:   { usado: cartas.usado,  limite: ent.letters_limit },
+        treinos:  { usado: treinos.usado, limite: ent.interviews_limit },
+      };
+    }
 
     // Preço — só para planos pagos ativos
     const precos = { starter: 'R$19,90/mês', pro: 'R$39,90/mês' };
@@ -300,6 +329,7 @@ export default async function handler(req, res) {
       total_purchased_legacy: totalPurchased,
       free_monthly_available: freeMonthlyAvailable,
       preco: isActiveSub ? (precos[effectivePlan] || null) : null,
+      uso,
       entitlements,
       avatar_url: avatarUrl,
     });

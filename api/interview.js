@@ -10,6 +10,7 @@
 
 import { resolvePlan } from '../lib/entitlements.js';
 import { checkAndCountLimit } from '../lib/ratelimit.js';
+import { checarCotaMensal, mensagemDeCota } from '../lib/cotas.js';
 import { transcribeAudio } from '../lib/transcribe.js';
 
 export const config = {
@@ -46,16 +47,20 @@ function checkUserRateLimit(userId) {
   return checkAndCountLimit({ key: `u:${userId}:entrevista`, limit: USER_LIMIT, windowMs: USER_WINDOW_MS });
 }
 
+// Devolve { plan, sub }. O `sub` vem junto porque a cota mensal de treinos
+// (lib/cotas.js) precisa de current_period_start para saber onde o ciclo comeca
+// — buscar de novo seria uma segunda ida ao banco pela mesma linha.
 async function getUserPlan(userId) {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${userId}&order=created_at.desc&limit=1&select=plan,status`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${userId}&order=created_at.desc&limit=1&select=plan,status,current_period_start`, {
       headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
     });
     const rows = await res.json();
+    const sub = rows?.[0] || null;
     // Fonte única de verdade de plano/status (lib/entitlements.js)
-    return resolvePlan(rows?.[0]);
+    return { plan: resolvePlan(sub), sub };
   } catch {
-    return 'free';
+    return { plan: 'free', sub: null };
   }
 }
 
@@ -367,7 +372,7 @@ export default async function handler(req, res) {
   const user = await getUserFromToken(token);
   if (!user) return res.status(401).json({ error: 'Invalid token' });
 
-  const plan = await getUserPlan(user.id);
+  const { plan, sub } = await getUserPlan(user.id);
   if (plan !== 'pro') {
     return res.status(403).json({
       error: 'plano_insuficiente',
@@ -382,6 +387,24 @@ export default async function handler(req, res) {
 
   if (!(await checkUserRateLimit(user.id))) {
     return res.status(429).json({ error: 'Limite de uso atingido. Tente novamente mais tarde.' });
+  }
+
+  /* Cota mensal — so em `generate`, que e onde a sessao nasce e onde esta o
+     custo grande (8 perguntas de uma vez). `evaluate` e `transcribe` ficam de
+     fora de proposito: bloquear no meio deixaria a pessoa com 8 perguntas na
+     tela e nenhuma avaliacao, que e pior do que nao ter comecado. Quem passou
+     pela porta termina o treino inteiro. */
+  if (action === 'generate') {
+    const cota = await checarCotaMensal({ userId: user.id, plan, recurso: 'treino', sub });
+    if (!cota.ok) {
+      return res.status(429).json({
+        error: 'cota_mensal',
+        message: mensagemDeCota('treino', cota.limite, cota.desde),
+        plan,
+        usado: cota.usado,
+        limite: cota.limite,
+      });
+    }
   }
 
   const { job, cv, question, answer, audioBase64, analysis_id, cargo, empresa, analise } = req.body || {};
