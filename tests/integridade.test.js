@@ -1202,3 +1202,23 @@ describe('Tetos de custo de IA', () => {
     }
   });
 });
+
+/* A análise é a rota mais cara do produto e a única aberta sem login (3 grátis
+   por IP). Até 2026-08-29 ela não validava tamanho: {"job":"x","cv":"y"} ia
+   direto para a IA e voltava "Resposta inválida" depois de gastar a chamada.
+   Descoberto sondando a API em produção, não lendo o código. */
+describe('A análise recusa entrada curta antes de gastar IA', () => {
+  const analyze = read('api/analyze.js');
+
+  it('valida tamanho mínimo de currículo e de vaga', () => {
+    assert.match(analyze, /cvBruto\.length < 120/, 'sem mínimo para o currículo');
+    assert.match(analyze, /jobBruto\.length < 80/, 'sem mínimo para a vaga');
+  });
+
+  it('a validação vem antes da autenticação e do gasto', () => {
+    const iValida = analyze.indexOf('cvBruto.length < 120');
+    const iAuth = analyze.indexOf("const authHeader = req.headers['authorization'] || '';");
+    assert.ok(iValida > 0 && iAuth > 0, 'não achei os dois pontos');
+    assert.ok(iValida < iAuth, 'entrada curta deve ser recusada antes de qualquer trabalho');
+  });
+});

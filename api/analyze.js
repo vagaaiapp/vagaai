@@ -1520,6 +1520,23 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
     return res.status(400).json({ error: 'CV e descrição da vaga são obrigatórios.' });
   }
 
+  /* Tamanho minimo. A carta e o treino ja recusavam abaixo de 50 caracteres; a
+     analise nao validava nada, entao `{"job":"x","cv":"y"}` chegava a chamar a
+     IA e voltava "Resposta invalida da IA" depois de gastar a chamada. E a rota
+     mais cara do produto e a unica aberta sem login (3 gratis por IP), entao
+     era o caminho mais barato para queimar credito alheio.
+
+     120 para o curriculo espelha o que a rota profile_cv ja exigia; 80 para a
+     vaga porque anuncio curto e comum e ainda rende analise util. */
+  const cvBruto = String(cv).trim();
+  const jobBruto = String(job).trim();
+  if (cvBruto.length < 120) {
+    return res.status(400).json({ error: 'Currículo muito curto para análise (mínimo ~120 caracteres).' });
+  }
+  if (jobBruto.length < 80) {
+    return res.status(400).json({ error: 'Descrição da vaga muito curta para análise (mínimo ~80 caracteres).' });
+  }
+
   if (!process.env.ANTHROPIC_API_KEY) {
     return res.status(500).json({ error: 'Chave de API não configurada.' });
   }
