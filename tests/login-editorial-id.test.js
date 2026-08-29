@@ -10,7 +10,7 @@ const css = fs.readFileSync(path.join(root, 'login', 'editorial-id.css'), 'utf8'
 test('login usa a identidade editorial depois da fundação visual', () => {
   assert.match(html, /EB\+Garamond/);
   assert.match(html, /Figtree/);
-  assert.match(html, /\/login\/editorial-id\.css\?v=20260828-id1/);
+  assert.match(html, /\/login\/editorial-id\.css\?v=20260828-id2/);
   assert.ok(html.indexOf('/login/editorial-id.css') > html.indexOf('/assets/product-ui.css'));
   assert.match(html, /class="auth-brand-cluster"/);
 });
@@ -32,6 +32,7 @@ test('camada visual é escopada e cobre responsividade e tema escuro', () => {
   assert.match(css, /--auth-page:\s*#ffffeb/);
   assert.match(css, /--auth-forest:\s*#034f46/);
   assert.match(css, /--auth-mint:\s*#77edb9/);
+  assert.match(css, /body\[data-vagaai-ui="auth"\] nav\s*\{[^}]*position:\s*absolute/s);
   assert.match(css, /html:not\(\[data-theme="light"\]\)/);
   assert.match(css, /@media \(max-width:\s*760px\)/);
   assert.match(css, /@media \(max-width:\s*390px\)/);
