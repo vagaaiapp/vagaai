@@ -1,0 +1,512 @@
+/* VagaAI · Inicio do dashboard
+   Esta camada e apenas composicional. IDs, copy, estados e acoes continuam
+   pertencendo ao HTML/JS existente em /dashboard. */
+
+body[data-vagaai-ui="dashboard"] #tab-painel.dashboard-home-v3 {
+  --home-line: #cbd4c7;
+  --home-line-strong: #18261b;
+  --home-paper: #fffef3;
+  --home-paper-soft: #f1f2e7;
+  --home-forest: #071d13;
+  width: 100%;
+  max-width: 1280px;
+}
+
+[data-theme="dark"] body[data-vagaai-ui="dashboard"] #tab-painel.dashboard-home-v3 {
+  --home-line: #263a2d;
+  --home-line-strong: #8ca797;
+  --home-paper: #0d1610;
+  --home-paper-soft: #111d15;
+}
+
+/* Estado atual: informa onde a pessoa esta sem competir com a proxima acao. */
+#tab-painel.dashboard-home-v3 .pg-greeting {
+  align-items: center;
+  margin: 0 0 30px;
+  padding: 3px 0 24px;
+  border-bottom: 1px solid var(--home-line);
+}
+
+#tab-painel.dashboard-home-v3 .pg-ident {
+  align-items: center;
+  gap: 16px;
+}
+
+#tab-painel.dashboard-home-v3 .pg-avatar {
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(7, 29, 19, .16);
+  border-radius: 50%;
+  box-shadow: none;
+}
+
+#tab-painel.dashboard-home-v3 .pg-title {
+  margin: 0;
+  font-family: Lora, Georgia, serif;
+  font-size: clamp(31px, 3vw, 42px);
+  line-height: 1.08;
+  letter-spacing: -.045em;
+}
+
+#tab-painel.dashboard-home-v3 .pg-pills {
+  gap: 8px;
+  margin-top: 9px;
+}
+
+#tab-painel.dashboard-home-v3 .pg-pill {
+  min-height: 28px;
+  padding: 5px 10px;
+  border: 1px solid var(--home-line);
+  border-radius: 7px;
+  background: transparent;
+  box-shadow: none;
+  font-size: 12px;
+}
+
+#tab-painel.dashboard-home-v3 .pg-meta {
+  gap: 7px;
+}
+
+#tab-painel.dashboard-home-v3 .pg-date,
+#tab-painel.dashboard-home-v3 .pg-plano {
+  font-size: 12px;
+}
+
+/* Unico hero da tela: prioridade, justificativa e contexto da vaga. */
+#tab-painel.dashboard-home-v3 > .blk-label {
+  margin: 0 0 11px;
+}
+
+#tab-painel.dashboard-home-v3 > .blk-label .blk-title {
+  color: var(--gb-emerald);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+[data-theme="dark"] #tab-painel.dashboard-home-v3 > .blk-label .blk-title {
+  color: var(--gb-bright);
+}
+
+#tab-painel.dashboard-home-v3 .pba-card {
+  min-height: 356px;
+  overflow: hidden;
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, .55fr);
+  border: 1px solid #31483a;
+  border-radius: 22px;
+  background-position: center 66%;
+  box-shadow: none;
+}
+
+#tab-painel.dashboard-home-v3 .pba-card::before {
+  background:
+    linear-gradient(90deg, rgba(3, 25, 16, .98) 0%, rgba(3, 28, 18, .91) 48%, rgba(3, 25, 16, .56) 100%);
+}
+
+#tab-painel.dashboard-home-v3 .pba-card::after {
+  opacity: .34;
+}
+
+#tab-painel.dashboard-home-v3 .pba-left {
+  padding: 48px 52px;
+}
+
+#tab-painel.dashboard-home-v3 .pba-eyebrow {
+  margin-bottom: 18px;
+  color: #78e2ac;
+  font-size: 11px;
+  letter-spacing: .1em;
+}
+
+#tab-painel.dashboard-home-v3 .pba-title {
+  max-width: 680px;
+  margin-bottom: 13px;
+  font-size: clamp(32px, 3.2vw, 44px);
+  line-height: 1.12;
+  letter-spacing: -.045em;
+}
+
+#tab-painel.dashboard-home-v3 .pba-desc {
+  max-width: 660px;
+  margin-bottom: 28px;
+  color: #c8d9cf;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+#tab-painel.dashboard-home-v3 .pba-btn-primary,
+#tab-painel.dashboard-home-v3 .pba-btn-ghost {
+  min-height: 46px;
+  padding: 0 20px;
+  border-radius: 8px;
+  box-shadow: none;
+  font-size: 13px;
+}
+
+#tab-painel.dashboard-home-v3 .pba-btn-primary {
+  background: var(--gb-bright);
+}
+
+#tab-painel.dashboard-home-v3 .pba-btn-primary:hover {
+  background: #70dda8;
+  transform: none;
+}
+
+#tab-painel.dashboard-home-v3 .pba-right {
+  align-items: stretch;
+  padding: 44px 38px 44px 0;
+}
+
+#tab-painel.dashboard-home-v3 .pba-priority {
+  min-height: 0;
+  padding: 15px 0 15px 34px;
+  border: 0;
+  border-left: 1px solid rgba(213, 235, 222, .24);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+#tab-painel.dashboard-home-v3 .pba-priority-kicker {
+  color: #91aa9b;
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+#tab-painel.dashboard-home-v3 .pba-priority-cargo {
+  font-size: 17px;
+}
+
+#tab-painel.dashboard-home-v3 .pba-score-row {
+  margin-top: 20px;
+}
+
+#tab-painel.dashboard-home-v3 .pba-ring-wrap {
+  width: 110px;
+  height: 110px;
+}
+
+#tab-painel.dashboard-home-v3 .pba-ring-inner {
+  font-size: 32px;
+}
+
+/* Abaixo do hero, a tela vira um workspace continuo e nao uma vitrine de cards. */
+#tab-painel.dashboard-home-v3 .product-workspace {
+  gap: 46px;
+  margin: 46px 0 38px;
+}
+
+#tab-painel.dashboard-home-v3 .workspace-section-label {
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 0 2px;
+}
+
+#tab-painel.dashboard-home-v3 .workspace-section-label h2 {
+  font-size: 17px;
+  letter-spacing: -.02em;
+}
+
+#tab-painel.dashboard-home-v3 .workspace-section-link,
+#tab-painel.dashboard-home-v3 .opp-open-link,
+#tab-painel.dashboard-home-v3 .opp-footer-btn,
+#tab-painel.dashboard-home-v3 .bus-read-btn {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+#tab-painel.dashboard-home-v3 .profile-value-stage,
+#tab-painel.dashboard-home-v3 .bus-card,
+#tab-painel.dashboard-home-v3 .opp-list-card {
+  border: 1px solid var(--home-line);
+  border-radius: 16px;
+  background: var(--home-paper);
+  box-shadow: none;
+}
+
+#tab-painel.dashboard-home-v3 .pv-summary-head {
+  grid-template-columns: minmax(0, 8fr) minmax(260px, 4fr);
+}
+
+#tab-painel.dashboard-home-v3 .pv-summary-story {
+  padding: 40px 42px;
+}
+
+#tab-painel.dashboard-home-v3 .pv-eyebrow {
+  font-size: 11px;
+  letter-spacing: .09em;
+}
+
+#tab-painel.dashboard-home-v3 .pv-title {
+  max-width: 760px;
+  font-size: clamp(28px, 2.4vw, 34px);
+  line-height: 1.22;
+}
+
+#tab-painel.dashboard-home-v3 .pv-desc {
+  max-width: 760px;
+  font-size: 14px;
+}
+
+#tab-painel.dashboard-home-v3 .pv-completion-block {
+  padding: 37px 36px;
+  border-left: 1px solid var(--home-line);
+  background: var(--home-paper-soft);
+}
+
+#tab-painel.dashboard-home-v3 .pv-completion-row strong {
+  font-size: 60px;
+}
+
+#tab-painel.dashboard-home-v3 .pv-progress i {
+  background: var(--gb-mid);
+}
+
+#tab-painel.dashboard-home-v3 .pv-summary-grid {
+  border-top-color: var(--home-line);
+}
+
+#tab-painel.dashboard-home-v3 .pv-panel {
+  padding: 29px 42px 32px;
+}
+
+#tab-painel.dashboard-home-v3 .pv-panel + .pv-panel {
+  border-left-color: var(--home-line);
+}
+
+#tab-painel.dashboard-home-v3 .pv-strengths {
+  gap: 0;
+}
+
+#tab-painel.dashboard-home-v3 .pv-strength {
+  padding: 5px 14px;
+  border: 0;
+  border-left: 2px solid var(--gb-mid);
+  border-radius: 0;
+  background: transparent;
+}
+
+#tab-painel.dashboard-home-v3 .profile-value-tools {
+  border-top-color: var(--home-line);
+}
+
+#tab-painel.dashboard-home-v3 .profile-value-tools-head {
+  padding: 19px 24px 5px;
+}
+
+#tab-painel.dashboard-home-v3 .profile-value-tools .fer-card {
+  min-height: 82px;
+  border-right-color: var(--home-line);
+  background: transparent;
+}
+
+#tab-painel.dashboard-home-v3 .profile-value-tools .fer-card:hover {
+  background: var(--home-paper-soft);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Progresso: verde indica avancos; amber fica reservado para alertas reais. */
+#tab-painel.dashboard-home-v3 .bus-card {
+  padding: 34px 38px 29px;
+}
+
+#tab-painel.dashboard-home-v3 .bus-heading small,
+#tab-painel.dashboard-home-v3 .opp-list-kicker {
+  font-size: 11px;
+  letter-spacing: .09em;
+}
+
+#tab-painel.dashboard-home-v3 .bus-heading h3,
+#tab-painel.dashboard-home-v3 .opp-list-title-t {
+  font-size: 29px;
+}
+
+#tab-painel.dashboard-home-v3 .bus-foot {
+  border-color: rgba(26, 122, 74, .2);
+  background: rgba(78, 206, 145, .08);
+}
+
+#tab-painel.dashboard-home-v3 .bus-foot-icon {
+  background: rgba(78, 206, 145, .18);
+  color: var(--gb-emerald);
+}
+
+#tab-painel.dashboard-home-v3 .bus-foot-lbl {
+  color: var(--gb-emerald);
+}
+
+[data-theme="dark"] #tab-painel.dashboard-home-v3 .bus-foot-icon,
+[data-theme="dark"] #tab-painel.dashboard-home-v3 .bus-foot-lbl {
+  color: var(--gb-bright);
+}
+
+#tab-painel.dashboard-home-v3 .opp-list-head {
+  padding: 24px 28px;
+  border-bottom-color: var(--home-line);
+}
+
+#tab-painel.dashboard-home-v3 .opp-item {
+  padding: 22px 28px;
+  background: transparent;
+}
+
+#tab-painel.dashboard-home-v3 .opp-item:hover {
+  background: var(--home-paper-soft);
+}
+
+#tab-painel.dashboard-home-v3 .opp-item-score {
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+#tab-painel.dashboard-home-v3 .opp-footer {
+  border-top-color: var(--home-line);
+}
+
+@media (max-width: 1100px) {
+  #tab-painel.dashboard-home-v3 .pba-card {
+    grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr);
+  }
+
+  #tab-painel.dashboard-home-v3 .pba-left {
+    padding: 42px 36px;
+  }
+
+  #tab-painel.dashboard-home-v3 .pba-right {
+    padding-right: 30px;
+  }
+}
+
+@media (max-width: 1023px) {
+  #tab-painel.dashboard-home-v3 .pba-card {
+    grid-template-columns: 1fr;
+  }
+
+  #tab-painel.dashboard-home-v3 .pba-right {
+    padding: 0 32px 32px;
+  }
+
+  #tab-painel.dashboard-home-v3 .pba-priority {
+    padding: 24px 0 0;
+    border-top: 1px solid rgba(213, 235, 222, .24);
+    border-left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  #tab-painel.dashboard-home-v3 .pg-greeting {
+    align-items: flex-start;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+  }
+
+  #tab-painel.dashboard-home-v3 .pg-ident {
+    align-items: center;
+  }
+
+  #tab-painel.dashboard-home-v3 .pg-avatar {
+    width: 42px;
+    height: 42px;
+  }
+
+  #tab-painel.dashboard-home-v3 .pg-title {
+    font-size: 29px;
+  }
+
+  #tab-painel.dashboard-home-v3 .pba-card {
+    min-height: 0;
+    border-radius: 16px;
+    background-position: 60% center;
+  }
+
+  #tab-painel.dashboard-home-v3 .pba-left {
+    padding: 32px 24px 28px;
+  }
+
+  #tab-painel.dashboard-home-v3 .pba-title {
+    font-size: 30px;
+  }
+
+  #tab-painel.dashboard-home-v3 .pba-btns {
+    gap: 9px;
+  }
+
+  #tab-painel.dashboard-home-v3 .pba-right {
+    padding: 0 20px 22px;
+  }
+
+  #tab-painel.dashboard-home-v3 .pba-priority {
+    padding-top: 20px;
+  }
+
+  #tab-painel.dashboard-home-v3 .product-workspace {
+    gap: 36px;
+    margin-top: 36px;
+  }
+
+  #tab-painel.dashboard-home-v3 .profile-value-stage,
+  #tab-painel.dashboard-home-v3 .bus-card,
+  #tab-painel.dashboard-home-v3 .opp-list-card {
+    border-radius: 14px;
+  }
+
+  #tab-painel.dashboard-home-v3 .pv-summary-story,
+  #tab-painel.dashboard-home-v3 .pv-completion-block,
+  #tab-painel.dashboard-home-v3 .pv-panel {
+    padding-right: 23px;
+    padding-left: 23px;
+  }
+
+  #tab-painel.dashboard-home-v3 .pv-strengths {
+    gap: 14px;
+  }
+
+  #tab-painel.dashboard-home-v3 .profile-value-tools .fer-card {
+    border-right: 0;
+  }
+
+  #tab-painel.dashboard-home-v3 .bus-card {
+    padding: 27px 22px;
+  }
+
+  #tab-painel.dashboard-home-v3 .bus-heading h3,
+  #tab-painel.dashboard-home-v3 .opp-list-title-t {
+    font-size: 25px;
+  }
+
+  #tab-painel.dashboard-home-v3 .opp-list-head {
+    align-items: flex-start;
+    gap: 16px;
+    padding: 22px;
+  }
+
+  #tab-painel.dashboard-home-v3 .opp-head-actions {
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  #tab-painel.dashboard-home-v3 .opp-head-actions::-webkit-scrollbar {
+    display: none;
+  }
+
+  #tab-painel.dashboard-home-v3 .opp-item {
+    padding: 18px 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #tab-painel.dashboard-home-v3 *,
+  #tab-painel.dashboard-home-v3 *::before,
+  #tab-painel.dashboard-home-v3 *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
