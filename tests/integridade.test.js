@@ -1216,9 +1216,13 @@ describe('A análise recusa entrada curta antes de gastar IA', () => {
   });
 
   it('a validação vem antes da autenticação e do gasto', () => {
-    const iValida = analyze.indexOf('cvBruto.length < 120');
-    const iAuth = analyze.indexOf("const authHeader = req.headers['authorization'] || '';");
-    assert.ok(iValida > 0 && iAuth > 0, 'não achei os dois pontos');
+    /* Ancora na desestruturação do caminho principal, não em `authHeader`:
+       esse literal aparece antes em outras rotas do mesmo arquivo e a primeira
+       ocorrência fazia o teste comparar pontos de fluxos diferentes. */
+    const iRota = analyze.indexOf('const { cv, job, job_url: requestedJobUrl }');
+    const iValida = analyze.indexOf('cvBruto.length < 120', iRota);
+    const iAuth = analyze.indexOf("const authHeader = req.headers['authorization']", iRota);
+    assert.ok(iRota > 0 && iValida > 0 && iAuth > 0, 'não achei os pontos do caminho principal');
     assert.ok(iValida < iAuth, 'entrada curta deve ser recusada antes de qualquer trabalho');
   });
 });
