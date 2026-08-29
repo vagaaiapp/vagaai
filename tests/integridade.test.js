@@ -98,7 +98,7 @@ describe('Integridade entre páginas', () => {
       const src = read(pagina);
       assert.match(src, /class="[^"]*vui-theme-control/, `${pagina} não usa o controle compartilhado`);
       assert.match(src, /aria-label="Alternar tema claro ou escuro"/, `${pagina} não descreve a ação do controle`);
-      assert.match(src, /product-ui\.css\?v=20260824-theme2/, `${pagina} não carrega a versão atual do componente`);
+      assert.match(src, /product-ui\.css\?v=20260829-shell3/, `${pagina} não carrega a versão atual do componente`);
       assert.doesNotMatch(src, /vui-theme-label/, `${pagina} ainda exibe texto no controle de tema`);
     }
 
