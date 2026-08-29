@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR" data-theme="light">
 <head>
   <!-- Google Analytics 4 (com Consent Mode v2, LGPD), mesmo setup da home -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XCT8K58VWF"></script>
@@ -20,7 +20,7 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     (function(){
       var s=(localStorage.getItem('vagaai_theme') || localStorage.getItem('vagaai-theme'));
@@ -433,21 +433,26 @@
       .compare-table th,.compare-table td{padding:12px 14px}
     }
   </style>
+  <link rel="stylesheet" href="/assets/editorial-public.css?v=20260829-id1">
 </head>
-<body>
+<body class="editorial-public page-company">
 
 <div class="scroll-progress" id="scroll-progress"></div>
 <div class="cursor-glow" id="cursor-glow"></div>
 
 <!-- NAV -->
 <div class="nav-shell">
-  <nav class="nav">
+  <nav class="nav" id="nav">
     <a class="brand" href="/">
       <img src="/logo.svg" class="logo-dark" alt="VagaAI" height="34">
       <img src="/logo-light.svg" class="logo-light" alt="VagaAI" height="34">
       <span class="hire-badge">Hire</span>
     </a>
-    <div class="nav-links">
+    <div class="product-switch" aria-label="Escolher experiência VagaAI">
+      <a href="/">Para candidatos</a>
+      <a class="is-active" href="/paraempresas">Para empresas</a>
+    </div>
+    <div class="nav-links" id="nav-links">
       <a href="#como-funciona">Como funciona</a>
       <a href="#diferenciais">Diferenciais</a>
       <a href="#plano">Plano</a>
@@ -460,7 +465,7 @@
       </button>
       <a href="#cadastro" class="btn btn-primary">Cadastrar empresa</a>
     </div>
-    <button class="menu-btn" id="menu-btn" aria-label="Menu">
+    <button class="menu-btn" id="menu-btn" aria-label="Abrir menu" aria-controls="nav-links" aria-expanded="false">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
   </nav>
@@ -908,6 +913,22 @@ themeBtn.addEventListener('click', function(){
   var t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = t;
   localStorage.setItem('vagaai_theme', t);
+});
+
+// MOBILE NAV
+var menuBtn = document.getElementById('menu-btn');
+var companyNav = document.getElementById('nav');
+menuBtn.addEventListener('click', function(){
+  var opened = companyNav.classList.toggle('open');
+  menuBtn.setAttribute('aria-expanded', opened ? 'true' : 'false');
+  menuBtn.setAttribute('aria-label', opened ? 'Fechar menu' : 'Abrir menu');
+});
+document.querySelectorAll('#nav-links a').forEach(function(link){
+  link.addEventListener('click', function(){
+    companyNav.classList.remove('open');
+    menuBtn.setAttribute('aria-expanded', 'false');
+    menuBtn.setAttribute('aria-label', 'Abrir menu');
+  });
 });
 
 // SCROLL PROGRESS

@@ -15,7 +15,7 @@
 // 2) "/sitemap.xml" — antes era um arquivo estático com 5 URLs fixas, sem os
 //    posts do blog. Agora é gerado com os posts publicados + lastmod real.
 // 3) "/blog/post" — a causa raiz de NENHUM post estar indexado: a página era
-//    100% client-side (título "Blog — VagaAI" genérico, canonical apontando
+//    100% client-side (título "Blog | VagaAI" genérico, canonical apontando
 //    pra /blog em vez do próprio post, corpo só "Carregando…" no HTML bruto).
 //    O Google decide indexação pelo HTML que recebe primeiro — via canonical
 //    ele explicitamente dizia "não me indexe, o conteúdo real é /blog".
@@ -224,7 +224,7 @@ async function handleBlogPost(request) {
   const image = post.cover_url || `${SITE}/og.png`;
 
   html = html
-    .replace('<title>Blog — VagaAI</title>', `<title>${title} — Blog VagaAI</title>`)
+    .replace('<title>Blog | VagaAI</title>', `<title>${title} — Blog VagaAI</title>`)
     .replace('<link rel="canonical" id="canonicalLink" href="https://www.vagaai.app.br/blog">', `<link rel="canonical" id="canonicalLink" href="${postUrl}">`)
     .replace('<meta property="og:url" id="ogUrl" content="https://www.vagaai.app.br/blog">', `<meta property="og:url" id="ogUrl" content="${postUrl}">`)
     .replace('<meta property="og:title" id="ogTitle" content="Blog VagaAI">', `<meta property="og:title" id="ogTitle" content="${title}">`)

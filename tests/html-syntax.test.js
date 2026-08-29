@@ -7,6 +7,13 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const files = [
   'index.template.html',
+  'blog/post/index.html',
+  'paraempresas/index.html',
+  'criar-curriculo/index.html',
+  'termos/index.html',
+  'obrigado/index.html',
+  'cancelado/index.html',
+  '404.html',
   'onboarding/vaga/index.html',
   'onboarding/curriculo/index.html',
   'app/index.html',
