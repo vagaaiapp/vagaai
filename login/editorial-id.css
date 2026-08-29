@@ -1,0 +1,336 @@
+/* VagaAI auth — identidade editorial compartilhada com a LP e os funis. */
+
+body[data-vagaai-ui="auth"] {
+  --auth-page: #ffffeb;
+  --auth-paper: #fffef1;
+  --auth-paper-soft: #f5f4df;
+  --auth-ink: #191919;
+  --auth-forest: #034f46;
+  --auth-mint: #77edb9;
+  --auth-muted: #626257;
+  --auth-line: rgba(25, 25, 25, .28);
+  --auth-danger: #a6382d;
+  --auth-danger-soft: #fff0e9;
+  --auth-serif: 'EB Garamond', Georgia, serif;
+  --auth-sans: 'Figtree', Arial, sans-serif;
+  min-height: 100svh;
+  padding: 102px 24px 24px;
+  background: var(--auth-page) !important;
+  color: var(--auth-ink) !important;
+  font-family: var(--auth-sans) !important;
+  font-size: 16px;
+  justify-content: center;
+}
+
+body[data-vagaai-ui="auth"] nav {
+  position: fixed;
+  z-index: 30;
+  top: 18px;
+  left: 50%;
+  right: auto;
+  width: min(1200px, calc(100% - 48px));
+  height: 72px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(-50%);
+  border: 2px solid var(--auth-ink);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--auth-paper) 94%, transparent) !important;
+  box-shadow: none;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+body[data-vagaai-ui="auth"] .auth-brand-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 4px 5px 4px 14px;
+  border: 1px solid var(--auth-line);
+  border-radius: 14px;
+  background: var(--auth-paper-soft);
+}
+
+body[data-vagaai-ui="auth"] .nav-logo {
+  color: var(--auth-ink);
+  font-family: var(--auth-serif);
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+
+body[data-vagaai-ui="auth"] .nav-logo span { color: var(--auth-forest); }
+
+body[data-vagaai-ui="auth"] .theme-btn {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border: 2px solid var(--auth-ink) !important;
+  border-radius: 10px !important;
+  background: var(--auth-paper) !important;
+  color: var(--auth-ink) !important;
+  box-shadow: none !important;
+}
+
+body[data-vagaai-ui="auth"] .theme-btn:hover {
+  border-color: var(--auth-forest) !important;
+  background: var(--auth-mint) !important;
+  color: var(--auth-ink) !important;
+}
+
+body[data-vagaai-ui="auth"] .card {
+  width: min(100%, 520px);
+  max-width: 520px;
+  margin: 0;
+  padding: 34px 44px 24px;
+  overflow: hidden;
+  border: 2px solid var(--auth-ink) !important;
+  border-radius: 32px !important;
+  background: var(--auth-paper) !important;
+  box-shadow: none !important;
+}
+
+body[data-vagaai-ui="auth"] .card-title {
+  margin-bottom: 8px;
+  color: var(--auth-ink);
+  font-family: var(--auth-serif) !important;
+  font-size: clamp(36px, 5vw, 44px) !important;
+  font-weight: 600;
+  line-height: .98;
+  letter-spacing: -.045em;
+}
+
+body[data-vagaai-ui="auth"] .card-sub {
+  margin-bottom: 20px;
+  color: var(--auth-muted);
+  font-family: var(--auth-sans);
+  font-size: 16px !important;
+  line-height: 1.55;
+}
+
+body[data-vagaai-ui="auth"] .tabs {
+  gap: 4px;
+  padding: 4px;
+  overflow: visible;
+  border: 1px solid var(--auth-line);
+  border-radius: 14px;
+  background: var(--auth-paper-soft);
+  margin-bottom: 22px;
+}
+
+body[data-vagaai-ui="auth"] .tab {
+  min-height: 42px;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--auth-muted);
+  font-family: var(--auth-sans);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+body[data-vagaai-ui="auth"] .tab.active {
+  border-color: var(--auth-ink);
+  background: var(--auth-paper);
+  color: var(--auth-ink);
+}
+
+body[data-vagaai-ui="auth"] .tab:not(.active):hover {
+  background: color-mix(in srgb, var(--auth-mint) 28%, transparent);
+  color: var(--auth-ink);
+}
+
+body[data-vagaai-ui="auth"] .field { gap: 7px; margin-bottom: 14px; }
+
+body[data-vagaai-ui="auth"] :is(label, .foot, .back) {
+  color: var(--auth-ink);
+  font-family: var(--auth-sans);
+  font-size: 14px;
+}
+
+body[data-vagaai-ui="auth"] label { font-weight: 700; }
+
+body[data-vagaai-ui="auth"] :is(input[type="email"], input[type="password"], input[type="text"]) {
+  min-height: 52px;
+  padding: 13px 15px;
+  border: 2px solid var(--auth-ink);
+  border-radius: 12px;
+  background: var(--auth-paper);
+  color: var(--auth-ink);
+  font-family: var(--auth-sans);
+  font-size: 16px;
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="auth"] :is(input[type="email"], input[type="password"], input[type="text"])::placeholder {
+  color: color-mix(in srgb, var(--auth-muted) 78%, transparent);
+  opacity: 1;
+}
+
+body[data-vagaai-ui="auth"] :is(input[type="email"], input[type="password"], input[type="text"]):focus {
+  border-color: var(--auth-forest);
+  outline: 3px solid color-mix(in srgb, var(--auth-mint) 46%, transparent);
+  outline-offset: 2px;
+}
+
+body[data-vagaai-ui="auth"] .toggle-pw {
+  right: 13px;
+  width: 34px;
+  height: 34px;
+  justify-content: center;
+  border-radius: 8px;
+  color: var(--auth-muted);
+}
+
+body[data-vagaai-ui="auth"] .toggle-pw:hover {
+  background: var(--auth-paper-soft);
+  color: var(--auth-forest);
+}
+
+body[data-vagaai-ui="auth"] :is(.btn, .btn-google, .btn-outline) {
+  min-height: 50px;
+  border: 2px solid var(--auth-ink);
+  border-radius: 12px;
+  font-family: var(--auth-sans);
+  font-size: 15px;
+  font-weight: 800;
+  box-shadow: none;
+  transition: transform .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease;
+}
+
+body[data-vagaai-ui="auth"] .btn {
+  background: var(--auth-forest);
+  color: var(--auth-page);
+}
+
+body[data-vagaai-ui="auth"] .btn:hover:not(:disabled) {
+  border-color: var(--auth-ink);
+  background: var(--auth-mint);
+  color: var(--auth-ink);
+  transform: translateY(-1px);
+}
+
+body[data-vagaai-ui="auth"] :is(.btn-google, .btn-outline) {
+  background: var(--auth-paper);
+  color: var(--auth-ink);
+}
+
+body[data-vagaai-ui="auth"] :is(.btn-google, .btn-outline):hover {
+  border-color: var(--auth-forest);
+  background: var(--auth-paper-soft);
+  color: var(--auth-forest);
+  transform: translateY(-1px);
+}
+
+body[data-vagaai-ui="auth"] .forgot-link,
+body[data-vagaai-ui="auth"] .foot a,
+body[data-vagaai-ui="auth"] .foot button.link-btn {
+  color: var(--auth-forest);
+  font-family: var(--auth-sans);
+  font-weight: 700;
+}
+
+body[data-vagaai-ui="auth"] .divider {
+  margin: 16px 0;
+  color: var(--auth-muted);
+  font-family: var(--auth-sans);
+  font-size: 13px;
+}
+
+body[data-vagaai-ui="auth"] .divider::before { background: var(--auth-line); }
+body[data-vagaai-ui="auth"] .divider span { background: var(--auth-paper); }
+
+body[data-vagaai-ui="auth"] .alert {
+  border-width: 1px;
+  border-radius: 12px;
+  font-family: var(--auth-sans);
+}
+
+body[data-vagaai-ui="auth"] .alert-success {
+  border-color: var(--auth-forest);
+  background: color-mix(in srgb, var(--auth-mint) 22%, var(--auth-paper));
+  color: var(--auth-forest);
+}
+
+body[data-vagaai-ui="auth"] .alert-error {
+  border-color: var(--auth-danger);
+  background: var(--auth-danger-soft);
+  color: var(--auth-danger);
+}
+
+body[data-vagaai-ui="auth"] .foot {
+  margin-top: 16px;
+  color: var(--auth-muted);
+}
+
+body[data-vagaai-ui="auth"] .back {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--auth-line);
+}
+
+body[data-vagaai-ui="auth"] .back a { color: var(--auth-muted); }
+body[data-vagaai-ui="auth"] .back a:hover { color: var(--auth-forest); }
+
+html:not([data-theme="light"]) body[data-vagaai-ui="auth"] {
+  --auth-page: #111812;
+  --auth-paper: #191e1a;
+  --auth-paper-soft: #242b25;
+  --auth-ink: #ffffeb;
+  --auth-forest: #77edb9;
+  --auth-mint: #77edb9;
+  --auth-muted: #b8bcae;
+  --auth-line: rgba(255, 255, 235, .28);
+  --auth-danger: #ff9184;
+  --auth-danger-soft: #341f1c;
+}
+
+@media (max-width: 760px) {
+  body[data-vagaai-ui="auth"] {
+    padding: 96px 12px 28px;
+    justify-content: flex-start;
+  }
+
+  body[data-vagaai-ui="auth"] nav {
+    top: 8px;
+    width: calc(100% - 24px);
+    height: 68px;
+    padding: 6px 8px;
+    border-radius: 16px;
+  }
+
+  body[data-vagaai-ui="auth"] .auth-brand-cluster {
+    min-height: 48px;
+    padding-left: 12px;
+  }
+
+  body[data-vagaai-ui="auth"] .card {
+    padding: 32px 24px 26px;
+    border-radius: 24px !important;
+  }
+
+  body[data-vagaai-ui="auth"] .card-title {
+    font-size: clamp(34px, 11vw, 40px) !important;
+  }
+}
+
+@media (max-width: 390px) {
+  body[data-vagaai-ui="auth"] .card { padding-inline: 19px; }
+  body[data-vagaai-ui="auth"] .field-row { gap: 12px; }
+  body[data-vagaai-ui="auth"] .forgot-link { text-align: right; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-vagaai-ui="auth"] *,
+  body[data-vagaai-ui="auth"] *::before,
+  body[data-vagaai-ui="auth"] *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
