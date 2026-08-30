@@ -229,9 +229,16 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 [data-theme="light"] nav{background:rgba(242,246,243,0.95)!important}
 [data-theme="light"] .page-loading{background:var(--bg)}
 </style>
-<script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
+<link rel="stylesheet" href="/assets/product-ui.css?v=20260829-shell3">
+<link rel="stylesheet" href="/assets/admin-editorial.css?v=20260829-admin3">
+<script>
+(function(){
+  var savedTheme=localStorage.getItem('vagaai_theme');
+  document.documentElement.setAttribute('data-theme',savedTheme==='light'?'light':'dark');
+})();
+</script>
 </head>
-<body>
+<body data-vagaai-ui="admin">
 
 <!-- LOADING OVERLAY -->
 <div class="page-loading" id="pageLoading">
@@ -241,7 +248,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
 <nav>
   <a href="/" class="nav-logo">
-    <img src="/logo.svg" alt="VagaAI" height="38">
+    <img src="/logo.svg" alt="VagaAI" height="38" class="admin-logo-dark">
+    <img src="/logo-light.svg" alt="" height="38" class="admin-logo-light" aria-hidden="true">
   </a>
   <div class="nav-right">
     <span class="nav-badge">Restrito</span>
@@ -1544,7 +1552,7 @@ async function logout() {
 function toggleTheme() {
   var isLight = document.documentElement.getAttribute('data-theme') === 'light';
   if (isLight) {
-    document.documentElement.removeAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme', 'dark');
     localStorage.setItem('vagaai_theme', 'dark');
   } else {
     document.documentElement.setAttribute('data-theme', 'light');

@@ -1,0 +1,572 @@
+/* VagaAI · modulos de produto
+   Refinamento compartilhado para analise, curriculo, candidaturas, entrevista,
+   carta, alertas e plano. A camada nao cria conteudo nem altera estados. */
+
+body[data-vagaai-ui="dashboard"],
+body[data-vagaai-ui="analysis"],
+body[data-vagaai-ui="curriculum"],
+body[data-vagaai-ui="interview"],
+body[data-vagaai-ui="cover-letter"] {
+  --module-paper: #fffef3;
+  --module-paper-soft: #f1f2e7;
+  --module-line: #cbd4c7;
+  --module-line-strong: #18261b;
+  --module-forest: #071d13;
+  --module-forest-2: #0d4b31;
+}
+
+[data-theme="dark"] body[data-vagaai-ui="dashboard"],
+[data-theme="dark"] body[data-vagaai-ui="analysis"],
+[data-theme="dark"] body[data-vagaai-ui="curriculum"],
+[data-theme="dark"] body[data-vagaai-ui="interview"],
+[data-theme="dark"] body[data-vagaai-ui="cover-letter"] {
+  --module-paper: #0d1610;
+  --module-paper-soft: #111d15;
+  --module-line: #263a2d;
+  --module-line-strong: #8ca797;
+}
+
+/* ── Modulos internos do dashboard ───────────────────────────── */
+body[data-vagaai-ui="dashboard"] .product-module-v3 {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+body[data-vagaai-ui="dashboard"] .product-module-v3 .cand-header,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .interview-page-head,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .al-page-header {
+  margin-bottom: 28px;
+  padding: 3px 0 24px;
+  border-bottom: 1px solid var(--module-line);
+}
+
+body[data-vagaai-ui="dashboard"] .product-module-v3 .cand-title,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .interview-page-head h1,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .al-title {
+  font-family: Lora, Georgia, serif;
+  font-size: clamp(34px, 3.5vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -.045em;
+}
+
+body[data-vagaai-ui="dashboard"] .product-module-v3 .cand-description,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .interview-page-head p,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .al-desc {
+  max-width: 780px;
+  color: var(--t2);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+body[data-vagaai-ui="dashboard"] .product-module-v3 .cand-summary,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .interview-focus,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .al-radar,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .planx-stage {
+  overflow: hidden;
+  border: 1px solid #31483a;
+  border-radius: 22px;
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="dashboard"] .product-module-v3 .cand-priority,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .interview-focus-main,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .al-radar-main,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .planx-intro {
+  background: var(--module-forest);
+}
+
+body[data-vagaai-ui="dashboard"] .product-module-v3 .cand-journey,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .interview-journey,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .al-radar-profile,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .planx-dossier {
+  background: var(--module-forest-2);
+}
+
+body[data-vagaai-ui="dashboard"] .product-module-v3 .cp-cta,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .interview-primary,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .al-next-btn.primary,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .planx-primary {
+  border-radius: 8px;
+  background: var(--gb-bright);
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="dashboard"] .product-module-v3 .cand-view-switcher,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .interview-filters,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .al-quick-filters {
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="dashboard"] .product-module-v3 .cvs-btn,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .int-filter,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .al-qf,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .cand-adv-btn,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .cand-new-btn,
+body[data-vagaai-ui="dashboard"] .product-module-v3 .al-new-btn {
+  border-radius: 8px;
+}
+
+/* Candidaturas: uma decisao dominante, controles e lista sem elevacao falsa. */
+body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .cand-page {
+  gap: 30px;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .cand-summary {
+  min-height: 350px;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .cand-priority {
+  padding: 42px 46px;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .cand-journey {
+  padding: 38px 34px;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .cand-workspace-head {
+  margin: 12px 0 -14px;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .cand-workspace-head h2,
+body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .cand-group-title {
+  font-family: Manrope, sans-serif;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .cand-toolbar {
+  padding-bottom: 16px;
+  border-bottom-color: var(--module-line);
+}
+
+body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .cand-adv-panel,
+body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .cand-list-card,
+body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .kk-col,
+body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .cal-card {
+  border-color: var(--module-line);
+  border-radius: 14px;
+  background: var(--module-paper);
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .cand-row {
+  background: transparent;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .cand-row:hover {
+  background: var(--module-paper-soft);
+}
+
+/* Hub de entrevista: prepara primeiro, historico e filtros ficam quietos. */
+body[data-vagaai-ui="dashboard"] #tab-entrevistas.product-module-v3 .interview-focus {
+  min-height: 390px;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-entrevistas.product-module-v3 .interview-focus-main {
+  padding: 46px 48px;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-entrevistas.product-module-v3 .interview-journey {
+  padding: 42px 36px;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-entrevistas.product-module-v3 .interview-list-card,
+body[data-vagaai-ui="dashboard"] #tab-entrevistas.product-module-v3 .trh-item,
+body[data-vagaai-ui="dashboard"] #tab-entrevistas.product-module-v3 .interview-gate {
+  border-color: var(--module-line);
+  border-radius: 14px;
+  background: var(--module-paper);
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-entrevistas.product-module-v3 .int-row {
+  background: transparent;
+}
+
+/* Alertas: radar e lista seguem a mesma gramatica do Inicio. */
+body[data-vagaai-ui="dashboard"] #tab-alertas.product-module-v3 .al-radar-main {
+  min-height: 360px;
+  padding: 44px 46px;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-alertas.product-module-v3 .al-radar-profile {
+  padding: 40px 36px;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-alertas.product-module-v3 .al-smart-stats {
+  margin: 22px 0 42px;
+  border-color: var(--module-line);
+}
+
+body[data-vagaai-ui="dashboard"] #tab-alertas.product-module-v3 .al-smart-stats .al-metric {
+  border-right-color: var(--module-line);
+}
+
+body[data-vagaai-ui="dashboard"] #tab-alertas.product-module-v3 .al-clean-jobs,
+body[data-vagaai-ui="dashboard"] #tab-alertas.product-module-v3 .al-support-panel {
+  border-color: var(--module-line);
+  border-radius: 14px;
+  background: var(--module-paper);
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-alertas.product-module-v3 .al-job-card {
+  background: transparent;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-alertas.product-module-v3 .al-job-card:hover {
+  background: var(--module-paper-soft);
+}
+
+/* Plano: assinatura como estado e uso; recursos como linhas, nao vitrine. */
+body[data-vagaai-ui="dashboard"] #tab-plano.product-module-v3 .planx-stage {
+  min-height: 360px;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-plano.product-module-v3 .planx-intro {
+  padding: 48px 50px;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-plano.product-module-v3 .planx-dossier {
+  padding: 44px 40px;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-plano.product-module-v3 .planx-value,
+body[data-vagaai-ui="dashboard"] #tab-plano.product-module-v3 .planx-account {
+  border-color: var(--module-line);
+  border-radius: 16px;
+  background: var(--module-paper);
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="dashboard"] #tab-plano.product-module-v3 .planx-next {
+  background: var(--module-paper-soft);
+}
+
+body[data-vagaai-ui="dashboard"] #tab-plano.product-module-v3 .planx-resource {
+  background: transparent;
+}
+
+/* ── Analise de vaga ─────────────────────────────────────────── */
+body[data-vagaai-ui="analysis"] .container {
+  max-width: 1280px;
+}
+
+body[data-vagaai-ui="analysis"] .app-intro {
+  margin-bottom: 26px;
+  padding: 2px 0 25px;
+  border-bottom: 1px solid var(--module-line);
+}
+
+body[data-vagaai-ui="analysis"] .app-intro .page-title {
+  font-size: clamp(36px, 4vw, 50px);
+  line-height: 1.08;
+  letter-spacing: -.045em;
+}
+
+body[data-vagaai-ui="analysis"] .analysis-workspace {
+  grid-template-columns: minmax(0, 8fr) minmax(310px, 4fr);
+  gap: 20px;
+}
+
+body[data-vagaai-ui="analysis"] .analysis-form-card,
+body[data-vagaai-ui="analysis"] .analysis-side-card,
+body[data-vagaai-ui="analysis"] .result-hero,
+body[data-vagaai-ui="analysis"] .result-card,
+body[data-vagaai-ui="analysis"] .limit-section {
+  border-color: var(--module-line);
+  border-radius: 16px;
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="analysis"] .analysis-side-card {
+  background: var(--module-forest);
+}
+
+body[data-vagaai-ui="analysis"] .analysis-task-number {
+  border-radius: 8px;
+}
+
+body[data-vagaai-ui="analysis"] .btn-analyze,
+body[data-vagaai-ui="analysis"] .btn-fetch,
+body[data-vagaai-ui="analysis"] .btn-gerar-cv {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+/* ── Curriculo principal ─────────────────────────────────────── */
+body[data-vagaai-ui="curriculum"] .container {
+  max-width: 1280px;
+}
+
+body[data-vagaai-ui="curriculum"] .curriculum-page-head {
+  margin-bottom: 28px;
+  padding: 3px 0 24px;
+  border-bottom: 1px solid var(--module-line);
+}
+
+body[data-vagaai-ui="curriculum"] .curriculum-page-head .page-title {
+  font-size: clamp(36px, 4vw, 48px);
+  line-height: 1.08;
+  letter-spacing: -.045em;
+}
+
+body[data-vagaai-ui="curriculum"] .profile-head.curriculum-master,
+body[data-vagaai-ui="curriculum"] .gap-panel.profile-intel,
+body[data-vagaai-ui="curriculum"] #versionsPanel,
+body[data-vagaai-ui="curriculum"] .curriculum-details,
+body[data-vagaai-ui="curriculum"] .sec-card {
+  border-color: var(--module-line);
+  border-radius: 16px;
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="curriculum"] .profile-story,
+body[data-vagaai-ui="curriculum"] .profile-proof,
+body[data-vagaai-ui="curriculum"] .profile-market {
+  background: transparent;
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="curriculum"] .profile-action,
+body[data-vagaai-ui="curriculum"] .btn-primary,
+body[data-vagaai-ui="curriculum"] .btn-save {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+/* ── Carta de apresentacao ───────────────────────────────────── */
+body[data-vagaai-ui="cover-letter"] .carta-intro {
+  padding-bottom: 25px;
+  border-bottom: 1px solid var(--module-line);
+}
+
+body[data-vagaai-ui="cover-letter"] .carta-workspace,
+body[data-vagaai-ui="cover-letter"] .carta-loading-state,
+body[data-vagaai-ui="cover-letter"] .carta-result-workspace {
+  border-color: var(--module-line);
+  border-radius: 16px;
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="cover-letter"] .carta-context-side {
+  background: var(--module-forest);
+}
+
+body[data-vagaai-ui="cover-letter"] .carta-job-entry,
+body[data-vagaai-ui="cover-letter"] .carta-cv-connected,
+body[data-vagaai-ui="cover-letter"] .carta-new-letter,
+body[data-vagaai-ui="cover-letter"] .rd-carta-actions button {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="cover-letter"] .carta-submit-row .btn-generate {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+/* ── Treino de entrevista: superficie que ainda usava o visual antigo. ── */
+body[data-vagaai-ui="interview"]::before {
+  display: none;
+}
+
+body[data-vagaai-ui="interview"] .container {
+  width: min(100%, 1120px);
+  max-width: 1120px;
+  padding: 44px 30px 72px;
+}
+
+body[data-vagaai-ui="interview"] #screenSetup.active,
+body[data-vagaai-ui="interview"] #screenGate.active,
+body[data-vagaai-ui="interview"] #screenLoading.active,
+body[data-vagaai-ui="interview"] #screenInterview.active,
+body[data-vagaai-ui="interview"] #screenResult.active {
+  max-width: 940px;
+  margin: 0 auto;
+}
+
+body[data-vagaai-ui="interview"] #screenSetup.active {
+  padding: 42px 44px 44px;
+  border: 1px solid var(--module-line);
+  border-radius: 18px;
+  background: var(--module-paper);
+}
+
+body[data-vagaai-ui="interview"] #screenSetup .page-title {
+  max-width: 720px;
+  font-size: clamp(36px, 4.5vw, 50px);
+  line-height: 1.08;
+  letter-spacing: -.045em;
+}
+
+body[data-vagaai-ui="interview"] #screenSetup .page-sub {
+  max-width: 720px;
+  margin-bottom: 30px;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+body[data-vagaai-ui="interview"] #screenSetup .field {
+  margin: 0;
+  padding: 24px 0;
+  border-top: 1px solid var(--module-line);
+}
+
+body[data-vagaai-ui="interview"] textarea,
+body[data-vagaai-ui="interview"] .url-input,
+body[data-vagaai-ui="interview"] .btn-fetch,
+body[data-vagaai-ui="interview"] .audio-answer {
+  border-color: var(--module-line);
+  border-radius: 9px;
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="interview"] .btn-primary,
+body[data-vagaai-ui="interview"] .btn-eval,
+body[data-vagaai-ui="interview"] .btn-next,
+body[data-vagaai-ui="interview"] .pro-gate-btn {
+  border-radius: 8px;
+  box-shadow: none;
+  transform: none;
+}
+
+body[data-vagaai-ui="interview"] .interview-header,
+body[data-vagaai-ui="interview"] .question-card,
+body[data-vagaai-ui="interview"] .feedback-card,
+body[data-vagaai-ui="interview"] .result-header-card,
+body[data-vagaai-ui="interview"] .answer-summary {
+  border-color: var(--module-line);
+  border-radius: 14px;
+  background: var(--module-paper);
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="interview"] .question-card {
+  padding: 34px 36px;
+}
+
+body[data-vagaai-ui="interview"] .question-text {
+  max-width: 800px;
+  font-size: clamp(23px, 2.5vw, 30px);
+  line-height: 1.32;
+  letter-spacing: -.025em;
+}
+
+body[data-vagaai-ui="interview"] .pro-gate {
+  overflow: hidden;
+  padding: 54px 44px;
+  border: 1px solid #31483a;
+  border-radius: 20px;
+  background: var(--module-forest);
+  color: #fff;
+  box-shadow: none;
+}
+
+body[data-vagaai-ui="interview"] .pro-gate-icon {
+  display: none;
+}
+
+body[data-vagaai-ui="interview"] .pro-gate-title {
+  font-size: clamp(30px, 4vw, 42px);
+  line-height: 1.15;
+  letter-spacing: -.035em;
+}
+
+body[data-vagaai-ui="interview"] .pro-gate-sub {
+  max-width: 590px;
+  color: #b9cdc1;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+@media (max-width: 1180px) {
+  body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .cand-summary,
+  body[data-vagaai-ui="dashboard"] #tab-entrevistas.product-module-v3 .interview-focus,
+  body[data-vagaai-ui="dashboard"] #tab-alertas.product-module-v3 .al-radar,
+  body[data-vagaai-ui="dashboard"] #tab-plano.product-module-v3 .planx-stage {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-vagaai-ui="analysis"] .analysis-workspace {
+    grid-template-columns: minmax(0, 1fr) 310px;
+  }
+}
+
+@media (max-width: 768px) {
+  body[data-vagaai-ui="dashboard"] .product-module-v3 .cand-header,
+  body[data-vagaai-ui="dashboard"] .product-module-v3 .interview-page-head,
+  body[data-vagaai-ui="dashboard"] .product-module-v3 .al-page-header {
+    margin-bottom: 22px;
+    padding-bottom: 20px;
+  }
+
+  body[data-vagaai-ui="dashboard"] .product-module-v3 .cand-title,
+  body[data-vagaai-ui="dashboard"] .product-module-v3 .interview-page-head h1,
+  body[data-vagaai-ui="dashboard"] .product-module-v3 .al-title {
+    font-size: 32px;
+  }
+
+  body[data-vagaai-ui="dashboard"] .product-module-v3 .cand-summary,
+  body[data-vagaai-ui="dashboard"] .product-module-v3 .interview-focus,
+  body[data-vagaai-ui="dashboard"] .product-module-v3 .al-radar,
+  body[data-vagaai-ui="dashboard"] .product-module-v3 .planx-stage {
+    border-radius: 16px;
+  }
+
+  body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .cand-priority,
+  body[data-vagaai-ui="dashboard"] #tab-entrevistas.product-module-v3 .interview-focus-main,
+  body[data-vagaai-ui="dashboard"] #tab-alertas.product-module-v3 .al-radar-main,
+  body[data-vagaai-ui="dashboard"] #tab-plano.product-module-v3 .planx-intro {
+    padding: 30px 24px;
+  }
+
+  body[data-vagaai-ui="dashboard"] #tab-vagas.product-module-v3 .cand-journey,
+  body[data-vagaai-ui="dashboard"] #tab-alertas.product-module-v3 .al-radar-profile,
+  body[data-vagaai-ui="dashboard"] #tab-plano.product-module-v3 .planx-dossier {
+    padding: 28px 24px;
+  }
+
+  body[data-vagaai-ui="analysis"] .analysis-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-vagaai-ui="analysis"] .app-intro .page-title,
+  body[data-vagaai-ui="curriculum"] .curriculum-page-head .page-title {
+    font-size: 34px;
+  }
+
+  body[data-vagaai-ui="interview"] .container {
+    padding: 26px 16px 92px;
+  }
+
+  body[data-vagaai-ui="interview"] #screenSetup.active {
+    padding: 29px 22px 24px;
+    border-radius: 14px;
+  }
+
+  body[data-vagaai-ui="interview"] #screenSetup .page-title {
+    font-size: 34px;
+  }
+
+  body[data-vagaai-ui="interview"] .question-card {
+    padding: 24px 20px;
+  }
+
+  body[data-vagaai-ui="interview"] .pro-gate {
+    padding: 38px 24px;
+    border-radius: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-vagaai-ui="dashboard"] .product-module-v3 *,
+  body[data-vagaai-ui="analysis"] *,
+  body[data-vagaai-ui="curriculum"] *,
+  body[data-vagaai-ui="interview"] *,
+  body[data-vagaai-ui="cover-letter"] * {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
