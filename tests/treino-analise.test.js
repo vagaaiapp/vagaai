@@ -75,7 +75,7 @@ describe('prompt do treino — bloco da análise', () => {
 
   it('o campo chega ao handler e é repassado', () => {
     assert.match(source, /empresa,\s*analise\s*\}\s*=\s*req\.body/);
-    assert.match(source, /generateQuestions\(job,\s*cv,\s*analise\)/);
+    assert.match(source, /generateQuestions\(job,\s*cv,\s*analise,\s*user\.id\)/);
     assert.match(source, /\$\{blocoDaAnalise\(analise\)\}/);
   });
 });

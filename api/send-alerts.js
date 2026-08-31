@@ -6,6 +6,7 @@
 
 import crypto from 'crypto';
 import { resolvePlan, planEntitlements, coerceFrequency } from '../lib/entitlements.js';
+import { recordAnthropicUsage } from '../lib/ai-usage.js';
 import { buildResendTags, recordEmailSent } from './_lib/email-tracking.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -1920,7 +1921,7 @@ async function upsertAlertCache(userId, alertId, jobs, { isDemand = false } = {}
 // se a IA falhar ou demorar, devolve as vagas como estavam (nunca bloqueia o envio).
 // Resumo executivo do lote (Pro): 2 frases em PT-BR citando a melhor vaga e o
 // porquê. Retorna '' em qualquer falha — o e-mail nunca depende disto.
-async function aiProSummary(topJobs, profile, cvHint = '') {
+async function aiProSummary(topJobs, profile, cvHint = '', userId = null) {
   if (!process.env.ANTHROPIC_API_KEY || !Array.isArray(topJobs) || !topJobs.length) return '';
   const lines = topJobs.map((j, i) =>
     `${i + 1}. ${String(j.title || '').slice(0, 80)} | ${String(j.company || '').slice(0, 40)} (${String(j.location || '').slice(0, 30)})`
@@ -1949,6 +1950,10 @@ ${lines}`;
     });
     if (!resp.ok) return '';
     const data = await resp.json();
+    await recordAnthropicUsage(data, {
+      userId, endpoint: 'send-alerts', action: 'pro_summary',
+      promptVersion: 'alert-summary-2026-08-31-v1', requestId: resp.headers.get('request-id'),
+    });
     const text = (data.content?.[0]?.text || '').trim();
     // Guarda-chuva: resposta longa demais ou com cara de erro → descarta
     if (!text || text.length > 420) return '';
@@ -1956,7 +1961,7 @@ ${lines}`;
   } catch { return ''; }
 }
 
-async function aiRescoreJobs(jobs, profile, cvHint = '', limite = 20) {
+async function aiRescoreJobs(jobs, profile, cvHint = '', limite = 20, userId = null) {
   if (!process.env.ANTHROPIC_API_KEY || !Array.isArray(jobs) || jobs.length < 2) return jobs;
   const top = jobs.slice(0, Math.max(2, limite));
   // Inclui salário e um trecho da descrição — só título|empresa|local fazia a IA
@@ -1999,6 +2004,10 @@ Para cada vaga dê um score de 0 a 100 de compatibilidade, pesando aderência de
     });
     if (!resp.ok) { console.warn('aiRescoreJobs: HTTP', resp.status); return jobs; }
     const data = await resp.json();
+    await recordAnthropicUsage(data, {
+      userId, endpoint: 'send-alerts', action: 'rescore_jobs',
+      promptVersion: 'alert-rescore-2026-08-31-v1', requestId: resp.headers.get('request-id'),
+    });
     const scores = parseAiScores(data.content?.[0]?.text || '');
     if (!scores) return jobs;
     const map = new Map(scores.map(s => [s.i, s]));
@@ -2261,7 +2270,7 @@ async function processUserAlert(profile, options = {}) {
         ].filter(Boolean).join(' | ').slice(0, 400);
       }
     } catch (e) { /* sem CV → re-rank segue só com o perfil */ }
-    jobs = await aiRescoreJobs(jobs, profile, cvHint, poolIA);
+    jobs = await aiRescoreJobs(jobs, profile, cvHint, poolIA, userId);
   }
 
   // Volume por plano: free=5, starter=15, pro=sem limite
@@ -2284,7 +2293,7 @@ async function processUserAlert(profile, options = {}) {
   // o lote e a melhor vaga. Fail-open: qualquer falha → e-mail sai sem resumo.
   let proSummary = '';
   if (!isTest && plan === 'pro' && jobs.length >= 2 && Date.now() < deadline - 9000) {
-    proSummary = await aiProSummary(jobs.slice(0, 6), profile, cvHint);
+    proSummary = await aiProSummary(jobs.slice(0, 6), profile, cvHint, userId);
   }
 
   // Envia email (copy e profundidade variam por plano)

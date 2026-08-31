@@ -1,3 +1,5 @@
+import { sanitizeBlogHtml } from './lib/blog-content.js';
+
 // /middleware.js — intercepta "/", "/sitemap.xml" e "/blog/post" na borda
 // (Edge Middleware).
 //
@@ -125,7 +127,19 @@ async function handleSitemap() {
     { loc: '/termos', changefreq: 'monthly', priority: '0.4' },
   ];
 
-  const posts = (await supabaseFetch('/rest/v1/blog_posts?published=eq.true&select=slug,created_at&order=created_at.desc&limit=500', SITEMAP_TIMEOUT_MS)) || [];
+  // PostgREST pode impor um teto por resposta. Paginar aqui evita que o post
+  // 501 desapareca silenciosamente do sitemap quando o blog crescer.
+  const posts = [];
+  const pageSize = 500;
+  for (let offset = 0; offset < 50000; offset += pageSize) {
+    const page = await supabaseFetch(
+      `/rest/v1/blog_posts?published=eq.true&select=slug,created_at&order=created_at.desc&limit=${pageSize}&offset=${offset}`,
+      SITEMAP_TIMEOUT_MS
+    );
+    if (!Array.isArray(page)) break;
+    posts.push(...page);
+    if (page.length < pageSize) break;
+  }
 
   const staticUrls = staticPages.map(p =>
     `  <url>\n    <loc>${SITE}${p.loc}</loc>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`
@@ -156,12 +170,11 @@ function renderPostArticle(p) {
   const date = new Date(p.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
   const coverHtml = p.cover_url ? `<img class="post-cover" src="${escHtml(p.cover_url)}" alt="${escHtml(p.title)}">` : '';
   const catHtml = cats.length ? `<div class="post-cat">${escHtml(cats[0])}</div>` : '';
-  // p.content é HTML de rich-text escrito pelo admin no CMS interno (não é
-  // input de usuário público) — mesmo modelo de confiança do client-side,
-  // que já injeta via innerHTML sem escapar.
+  // Mesmo conteudo escrito por admin passa por allowlist: sessao comprometida
+  // ou HTML colado de outra origem nao pode virar stored XSS publico.
   return `${catHtml}${coverHtml}<h1 class="post-title">${escHtml(p.title)}</h1>`
     + `<div class="post-meta"><span>📅 ${date}</span></div>`
-    + `<div class="post-content">${p.content || ''}</div>`
+    + `<div class="post-content">${sanitizeBlogHtml(p.content || '')}</div>`
     + `<div class="post-cta"><h3>Teste o VagaAI gratuitamente</h3>`
     + `<p>Cole a vaga e seu currículo. Receba score ATS, falhas e sugestões em 30 segundos.</p>`
     + `<a class="btn btn-primary" href="/app">Analisar minha vaga →</a></div>`;

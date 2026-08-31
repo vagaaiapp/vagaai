@@ -8,6 +8,7 @@ import {
   guardAccountUsage,
   releaseFreeEntitlement,
 } from '../lib/abuse.js';
+import { recordAnthropicUsage } from '../lib/ai-usage.js';
 
 // ─── Score breakdown determinístico ──────────────────────────────────────────
 
@@ -89,8 +90,13 @@ function respostaDeTeto(res, deduct) {
 
 // ─── Hash de conteúdo (cv + job) ─────────────────────────────────────────────
 
+const ANALYSIS_PROMPT_VERSION = 'analysis-2026-08-31-v1';
+
 function contentHash(cv, job) {
-  return createHash('sha256').update(cv.trim() + '\n||||\n' + job.trim()).digest('hex').slice(0, 40);
+  return createHash('sha256')
+    .update(ANALYSIS_PROMPT_VERSION + '\n||||\n' + cv.trim() + '\n||||\n' + job.trim())
+    .digest('hex')
+    .slice(0, 40);
 }
 
 function normalizeJobUrl(value) {
@@ -1090,6 +1096,10 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
         return res.status(500).json({ error: 'Erro ao gerar currículo. Tente novamente.' });
       }
       const data = await response.json();
+      await recordAnthropicUsage(data, {
+        userId: cvUser.id, endpoint: 'analyze', action: 'create_cv',
+        promptVersion: 'create-cv-2026-08-31-v1', requestId: response.headers.get('request-id'),
+      });
       const cvText = data.content?.[0]?.text || '';
       if (!cvText.trim()) {
         await refundAnalysisCredit(cvUser.id, cvDeduct);
@@ -1204,6 +1214,10 @@ ${rawCv}`;
       }
 
       const extractData = await extractRes.json();
+      await recordAnthropicUsage(extractData, {
+        endpoint: 'analyze', action: 'onboarding_cv_extract',
+        promptVersion: 'onboarding-extract-2026-08-31-v1', requestId: extractRes.headers.get('request-id'),
+      });
       let extractText = String(extractData.content?.[0]?.text || '')
         .trim()
         .replace(/^```(?:json)?/i, '')
@@ -1385,6 +1399,10 @@ Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato
         return res.status(502).json({ error: 'Erro ao gerar currículo. Tente novamente.' });
       }
       const obData = await obRes.json();
+      await recordAnthropicUsage(obData, {
+        endpoint: 'analyze', action: 'onboarding_cv',
+        promptVersion: 'onboarding-cv-2026-08-31-v1', requestId: obRes.headers.get('request-id'),
+      });
       let obText = obData.content?.[0]?.text || '';
       obText = obText.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
 
@@ -1543,6 +1561,10 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
         return res.status(500).json({ error: 'Erro ao analisar currículo. Tente novamente.' });
       }
       const data = await response.json();
+      await recordAnthropicUsage(data, {
+        userId: pUser.id, endpoint: 'analyze', action: 'profile_cv',
+        promptVersion: 'profile-cv-2026-08-31-v1', requestId: response.headers.get('request-id'),
+      });
       let raw = data.content?.[0]?.text || '';
       raw = raw.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
       let profile;
@@ -1884,6 +1906,10 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
     }
 
     const data = await response.json();
+    await recordAnthropicUsage(data, {
+      userId: authenticatedUserId, endpoint: 'analyze', action: 'analysis',
+      promptVersion: ANALYSIS_PROMPT_VERSION, requestId: response.headers.get('request-id'),
+    });
     if (data.stop_reason === 'max_tokens') {
       console.error('Anthropic response truncated (max_tokens reached)');
       if (authenticatedUserId) await refundAnalysisCredit(authenticatedUserId, _deductResult).catch(() => {});

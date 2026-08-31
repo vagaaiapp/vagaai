@@ -13,6 +13,7 @@ import { checkAndCountLimit } from '../lib/ratelimit.js';
 import { checarCotaMensal, mensagemDeCota } from '../lib/cotas.js';
 import { transcribeAudio } from '../lib/transcribe.js';
 import { abuseHttpResponse, anonymousKeys, guardAccountUsage } from '../lib/abuse.js';
+import { recordAnthropicUsage } from '../lib/ai-usage.js';
 
 export const config = {
   api: {
@@ -65,7 +66,7 @@ async function getUserPlan(userId) {
   }
 }
 
-async function callClaude(prompt, maxTokens = 2000, temperature = 0.7) {
+async function callClaude(prompt, maxTokens = 2000, temperature = 0.7, telemetry = {}) {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -82,6 +83,11 @@ async function callClaude(prompt, maxTokens = 2000, temperature = 0.7) {
   });
   if (!response.ok) throw new Error(`Anthropic ${response.status}`);
   const data = await response.json();
+  await recordAnthropicUsage(data, {
+    endpoint: 'interview',
+    ...telemetry,
+    requestId: response.headers.get('request-id'),
+  });
   return data.content?.[0]?.text || '';
 }
 
@@ -133,7 +139,7 @@ function blocoDaAnalise(analise) {
   ].filter(Boolean).join('\n');
 }
 
-async function generateQuestions(job, cv, analise) {
+async function generateQuestions(job, cv, analise, userId) {
   const prompt = `Voce e um especialista em processos seletivos no Brasil. Analise a vaga e o curriculo abaixo e gere 8 perguntas de entrevista personalizadas.
 
 VAGA:
@@ -168,11 +174,13 @@ ESTILO: nunca use travessao (\u2014) no texto. Ele quase nao aparece na escrita 
 
 Responda APENAS com o JSON, sem markdown.`;
 
-  const text = await callClaude(prompt, 2000);
+  const text = await callClaude(prompt, 2000, 0.7, {
+    userId, action: 'generate', promptVersion: 'interview-generate-2026-08-31-v1',
+  });
   return JSON.parse(cleanJsonText(text));
 }
 
-async function evaluateAnswer(question, answer, job, cv) {
+async function evaluateAnswer(question, answer, job, cv, userId) {
   const prompt = `Voce e um recrutador senior experiente no mercado brasileiro. Avalie a resposta do candidato para a pergunta de entrevista.
 
 CONTEXTO DA VAGA:
@@ -197,7 +205,9 @@ Seja direto e honesto. Nota 5 = resposta excelente, 3 = aceitavel mas pode melho
 
 ESTILO: nunca use travessao (\u2014) no texto. Ele quase nao aparece na escrita profissional brasileira e denuncia texto gerado por IA. Use virgula, dois-pontos, parenteses ou duas frases.`;
 
-  const text = await callClaude(prompt, 1500);
+  const text = await callClaude(prompt, 1500, 0.7, {
+    userId, action: 'evaluate', promptVersion: 'interview-evaluate-2026-08-31-v1',
+  });
   return JSON.parse(cleanJsonText(text));
 }
 
@@ -338,7 +348,9 @@ async function handleCvVoice(req, res) {
 
   const ctx = context && typeof context === 'object' ? context : {};
   const spec = CVV_PROMPTS[field];
-  const raw = await callClaude(spec.build(transcript, ctx), spec.maxTokens, 0.4);
+  const raw = await callClaude(spec.build(transcript, ctx), spec.maxTokens, 0.4, {
+    userId: user?.id, action: `cv_voice_${field}`, promptVersion: 'cv-voice-2026-08-31-v1',
+  });
   const text = cvvLimparSaida(raw, field);
 
   if (!text) return res.status(502).json({ error: 'Falha ao organizar o texto. Tente gravar novamente.' });
@@ -420,7 +432,7 @@ export default async function handler(req, res) {
       if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
       if (!job || job.length < 50) return res.status(400).json({ error: 'Vaga muito curta' });
       if (!cv || cv.length < 50) return res.status(400).json({ error: 'CV muito curto' });
-      const result = await generateQuestions(job, cv, analise);
+      const result = await generateQuestions(job, cv, analise, user.id);
 
       /* A sessao nasce aqui e e fechada pelo navegador quando a pessoa responde
          a ultima pergunta. Antes o treino inteiro vivia so em memoria: fechar a
@@ -465,7 +477,7 @@ export default async function handler(req, res) {
       if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
       if (!question) return res.status(400).json({ error: 'Pergunta obrigatoria' });
       if (!answer || answer.trim().length < 10) return res.status(400).json({ error: 'Resposta muito curta' });
-      const result = await evaluateAnswer(question, answer, job || '', cv || '');
+      const result = await evaluateAnswer(question, answer, job || '', cv || '', user.id);
       return res.status(200).json(result);
     }
 

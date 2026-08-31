@@ -61,6 +61,10 @@ const SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
 let allPosts = [];
 let activeCategory = new URLSearchParams(location.search).get('cat') || null;
+const POSTS_PAGE_SIZE = 24;
+let nextPostsOffset = 0;
+let hasMorePosts = true;
+let loadingPosts = false;
 
 function esc(value) {
   return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -145,7 +149,7 @@ function renderPosts() {
 
   document.getElementById('postCount').textContent = filtered.length === 1
     ? '1 artigo para esta etapa.'
-    : `${filtered.length} artigos para explorar.`;
+    : `${filtered.length} artigos para explorar${hasMorePosts ? ' até aqui' : ''}.`;
 
   if (!filtered.length) {
     container.className = 'empty-state';
@@ -163,6 +167,14 @@ function renderPosts() {
   container.innerHTML = filtered.map(renderPostCard).join('');
 }
 
+function updateLoadMore() {
+  const wrap = document.getElementById('blogLoadMore');
+  const button = document.getElementById('loadMorePosts');
+  wrap.hidden = !hasMorePosts || !allPosts.length;
+  button.disabled = loadingPosts;
+  button.textContent = loadingPosts ? 'Carregando…' : 'Carregar mais artigos';
+}
+
 document.getElementById('postsContainer').addEventListener('click', event => {
   const card = event.target.closest('.post-card');
   if (!card) return;
@@ -173,23 +185,42 @@ document.getElementById('postsContainer').addEventListener('click', event => {
   });
 });
 
-(async function loadPosts() {
+async function loadPosts() {
+  if (loadingPosts || !hasMorePosts) return;
   const container = document.getElementById('postsContainer');
+  loadingPosts = true;
+  updateLoadMore();
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/blog_posts?published=eq.true&select=title,slug,excerpt,cover_url,categories,created_at&order=created_at.desc`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/blog_posts?published=eq.true&select=title,slug,excerpt,cover_url,categories,created_at&order=created_at.desc&limit=${POSTS_PAGE_SIZE}&offset=${nextPostsOffset}`, {
       headers: { apikey: SUPABASE_ANON }
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    allPosts = await response.json();
-    if (!Array.isArray(allPosts)) allPosts = [];
+    const page = await response.json();
+    if (!Array.isArray(page)) throw new Error('Resposta inválida');
+    const known = new Set(allPosts.map(post => post.slug));
+    allPosts.push(...page.filter(post => post && post.slug && !known.has(post.slug)));
+    nextPostsOffset += page.length;
+    hasMorePosts = page.length === POSTS_PAGE_SIZE;
     renderCategoryFilter();
     renderPosts();
   } catch (_) {
-    container.className = 'empty-state';
-    container.innerHTML = '<div><h3>Não foi possível carregar os artigos</h3><p>Recarregue a página em alguns instantes.</p><button class="button button-outline" type="button" onclick="location.reload()">Tentar novamente</button></div>';
-    document.getElementById('postCount').textContent = 'Conteúdo temporariamente indisponível.';
+    if (!allPosts.length) {
+      container.className = 'empty-state';
+      container.innerHTML = '<div><h3>Não foi possível carregar os artigos</h3><p>Recarregue a página em alguns instantes.</p><button class="button button-outline" type="button" onclick="location.reload()">Tentar novamente</button></div>';
+      document.getElementById('postCount').textContent = 'Conteúdo temporariamente indisponível.';
+    }
+  } finally {
+    loadingPosts = false;
+    updateLoadMore();
   }
-})();
+}
+
+document.getElementById('loadMorePosts').addEventListener('click', () => {
+  track('blog_carregar_mais', { artigos_carregados: allPosts.length });
+  loadPosts();
+});
+
+loadPosts();
 
 document.querySelectorAll('a[href^="/onboarding/"]').forEach(link => link.addEventListener('click', () => {
   track('blog_cta_click', { path: link.href.includes('/curriculo/') ? 'no_cv' : 'with_cv', label: (link.textContent || '').trim(), placement: link.closest('footer') ? 'footer' : link.closest('section') ? 'content' : 'header' });

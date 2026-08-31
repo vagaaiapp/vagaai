@@ -269,12 +269,14 @@
         var coverHtml = p.cover_url ? '<img class="post-cover" src="' + esc(p.cover_url) + '" alt="' + esc(p.title) + '">' : '';
         var catHtml = cats.length ? '<div class="post-cat">' + esc(cats[0]) + '</div>' : '';
 
+        var sanitizer = await import('/lib/blog-content.js');
+        var safeContent = sanitizer.sanitizeBlogHtml(p.content || '');
         container.className = '';
         container.innerHTML = catHtml
           + coverHtml
           + '<h1 class="post-title">' + esc(p.title) + '</h1>'
           + '<div class="post-meta"><span>📅 ' + date + '</span></div>'
-          + '<div class="post-content">' + (p.content || '') + '</div>'
+          + '<div class="post-content">' + safeContent + '</div>'
           + '<div class="post-cta">'
           + '<h3>Teste o VagaAI gratuitamente</h3>'
           + '<p>Cole a vaga e seu currículo. Receba score ATS, falhas e sugestões em 30 segundos.</p>'

@@ -296,6 +296,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <button class="admin-tab" onclick="switchTab('alerts')" data-tab="alerts">🔔 Alertas</button>
     <button class="admin-tab" onclick="switchTab('email')" data-tab="email">✉️ E-mail Marketing</button>
     <button class="admin-tab" onclick="switchTab('abuse')" data-tab="abuse">🛡️ Abusos</button>
+    <button class="admin-tab" onclick="switchTab('ai-cost')" data-tab="ai-cost">⚙️ Custos IA</button>
   </div>
 
   <!-- ═══════════════ ABA: VISÃO GERAL ═══════════════ -->
@@ -618,6 +619,26 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       <div class="table-wrap"><table><thead><tr><th>Conta</th><th>Dispositivos (30d)</th><th>Último acesso</th><th>Ação</th></tr></thead><tbody id="abuseAccountsBody"></tbody></table></div>
     </div>
   </div><!-- /panel-abuse -->
+
+  <!-- ═══════════════ ABA: CUSTOS DE IA ═══════════════ -->
+  <div id="panel-ai-cost" class="tab-panel" style="display:none">
+    <div class="section-header">
+      <div class="section-title">Uso e custo estimado da IA</div>
+      <button class="btn-nav ghost" onclick="loadAiUsage()" style="font-size:12px">↻ Atualizar</button>
+    </div>
+    <div class="ga4-period-bar">
+      <button class="ga4-period-btn" onclick="loadAiUsage(7)" data-ai-days="7">7 dias</button>
+      <button class="ga4-period-btn active" onclick="loadAiUsage(30)" data-ai-days="30">30 dias</button>
+      <button class="ga4-period-btn" onclick="loadAiUsage(90)" data-ai-days="90">90 dias</button>
+    </div>
+    <div class="metrics-grid" id="aiUsageMetrics"></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Endpoint</th><th>Ação</th><th>Chamadas</th><th>Entrada</th><th>Saída</th><th>Cache lido</th><th>Custo estimado</th></tr></thead>
+        <tbody id="aiUsageBody"><tr class="empty-row"><td colspan="7">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+  </div><!-- /panel-ai-cost -->
 
 </div><!-- /container -->
 
@@ -957,9 +978,10 @@ function renderGA4(d) {
 
 var _alertsLoaded = false;
 var _abuseLoaded = false;
+var _aiUsageLoaded = false;
 
 function switchTab(tab) {
-  ['overview','users','finance','traffic','alerts','email','abuse'].forEach(function(t) {
+  ['overview','users','finance','traffic','alerts','email','abuse','ai-cost'].forEach(function(t) {
     var panel = document.getElementById('panel-' + t);
     var btn   = document.querySelector('.admin-tab[data-tab="' + t + '"]');
     if (panel) panel.style.display = t === tab ? '' : 'none';
@@ -975,6 +997,50 @@ function switchTab(tab) {
     loadEmailMarketingData(_emailFunnel);
   }
   if (tab === 'abuse' && !_abuseLoaded) loadAbuseData();
+  if (tab === 'ai-cost' && !_aiUsageLoaded) loadAiUsage(30);
+}
+
+async function loadAiUsage(days) {
+  _aiUsageLoaded = true;
+  days = days || 30;
+  document.querySelectorAll('[data-ai-days]').forEach(function(btn) {
+    btn.classList.toggle('active', Number(btn.dataset.aiDays) === Number(days));
+  });
+  var metrics = document.getElementById('aiUsageMetrics');
+  var body = document.getElementById('aiUsageBody');
+  metrics.innerHTML = '<div class="ga4-loading">Carregando custos…</div>';
+  try {
+    if (!_ga4Token) {
+      var sessionResult = await sb.auth.getSession();
+      _ga4Token = sessionResult.data.session && sessionResult.data.session.access_token;
+    }
+    var response = await fetch('/api/admin?action=ai_usage&days=' + days, { headers: { Authorization: 'Bearer ' + _ga4Token } });
+    var data = await response.json().catch(function(){ return {}; });
+    if (!response.ok) throw new Error(data.error || 'Erro ao carregar');
+    if (!data.available) {
+      metrics.innerHTML = '<div class="ga4-not-configured" style="grid-column:1/-1">A migração 036 precisa ser aplicada no Supabase para começar a medir tokens e custos.</div>';
+      body.innerHTML = '<tr class="empty-row"><td colspan="7">Painel aguardando a migração.</td></tr>';
+      return;
+    }
+    var total = data.total || {};
+    var usd = Number(total.estimated_cost_usd || 0);
+    var cacheRead = Number(total.cache_read_input_tokens || 0);
+    var input = Number(total.input_tokens || 0);
+    var cacheRate = input + cacheRead ? Math.round((cacheRead / (input + cacheRead)) * 100) : 0;
+    metrics.innerHTML = [
+      ['Custo estimado', 'US$ ' + usd.toFixed(4), days + ' dias'],
+      ['Chamadas', Number(total.requests || 0).toLocaleString('pt-BR'), 'respostas cobradas'],
+      ['Tokens de saída', Number(total.output_tokens || 0).toLocaleString('pt-BR'), 'principal componente de custo'],
+      ['Leitura em cache', cacheRate + '%', Number(cacheRead).toLocaleString('pt-BR') + ' tokens']
+    ].map(function(item){ return '<div class="metric-card"><div class="metric-label">' + item[0] + '</div><div class="metric-value">' + item[1] + '</div><div class="metric-sub">' + item[2] + '</div></div>'; }).join('');
+    var rows = Array.isArray(data.rows) ? data.rows : [];
+    body.innerHTML = rows.length ? rows.map(function(row) {
+      return '<tr><td>' + escHtml(row.endpoint) + '</td><td>' + escHtml(row.action) + '</td><td>' + Number(row.requests || 0).toLocaleString('pt-BR') + '</td><td>' + Number(row.input_tokens || 0).toLocaleString('pt-BR') + '</td><td>' + Number(row.output_tokens || 0).toLocaleString('pt-BR') + '</td><td>' + Number(row.cache_read_input_tokens || 0).toLocaleString('pt-BR') + '</td><td>US$ ' + Number(row.estimated_cost_usd || 0).toFixed(4) + '</td></tr>';
+    }).join('') : '<tr class="empty-row"><td colspan="7">Nenhuma chamada medida neste período.</td></tr>';
+  } catch (error) {
+    metrics.innerHTML = '<div class="error-state" style="grid-column:1/-1">' + escHtml(error.message) + '</div>';
+    body.innerHTML = '<tr class="empty-row"><td colspan="7">Não foi possível carregar.</td></tr>';
+  }
 }
 
 async function loadAbuseData() {

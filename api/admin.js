@@ -3,6 +3,7 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const GA4_PROPERTY_ID  = process.env.GA4_PROPERTY_ID;
 const GA4_SA_JSON      = process.env.GA4_SA_JSON; // Service Account JSON (nunca expira)
+import { sanitizeBlogHtml } from '../lib/blog-content.js';
 
 const serviceHeaders = () => ({
   apikey: SUPABASE_SERVICE_KEY,
@@ -437,6 +438,76 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const { action, userId, credits, claimId } = req.body || {};
 
+    if (action === 'save_blog_post') {
+      const post = req.body?.post;
+      const id = typeof req.body?.id === 'string' ? req.body.id : '';
+      if (!post || typeof post !== 'object' || Array.isArray(post)) {
+        return res.status(400).json({ error: 'Post inválido.' });
+      }
+      if (id && !/^[a-f0-9-]{36}$/i.test(id)) return res.status(400).json({ error: 'ID inválido.' });
+      const title = String(post.title || '').trim().slice(0, 300);
+      const slug = String(post.slug || '').trim().toLowerCase();
+      if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 180) {
+        return res.status(400).json({ error: 'Título ou slug inválido.' });
+      }
+      const cover = String(post.cover_url || '').trim().slice(0, 2000);
+      if (cover) {
+        try {
+          const url = new URL(cover);
+          if (url.protocol !== 'https:') return res.status(400).json({ error: 'A capa deve usar HTTPS.' });
+        } catch {
+          return res.status(400).json({ error: 'URL de capa inválida.' });
+        }
+      }
+      const categories = (Array.isArray(post.categories) ? post.categories : [])
+        .map(item => String(item || '').trim().slice(0, 80))
+        .filter(Boolean)
+        .slice(0, 12);
+      const payload = {
+        title,
+        slug,
+        excerpt: String(post.excerpt || '').trim().slice(0, 600),
+        cover_url: cover,
+        seo_title: String(post.seo_title || '').trim().slice(0, 180),
+        content: sanitizeBlogHtml(String(post.content || '').slice(0, 500000)),
+        published: post.published === true,
+        categories: JSON.stringify(categories),
+        updated_at: new Date().toISOString(),
+      };
+      const saveRes = await fetch(
+        id
+          ? `${SUPABASE_URL}/rest/v1/blog_posts?id=eq.${encodeURIComponent(id)}`
+          : `${SUPABASE_URL}/rest/v1/blog_posts`,
+        {
+          method: id ? 'PATCH' : 'POST',
+          headers: { ...serviceHeaders(), Prefer: 'return=representation' },
+          body: JSON.stringify(payload),
+        }
+      );
+      const rows = await saveRes.json().catch(() => []);
+      if (!saveRes.ok || !Array.isArray(rows) || !rows[0]) {
+        console.error('save_blog_post HTTP', saveRes.status);
+        return res.status(500).json({ error: 'Não foi possível salvar o post.' });
+      }
+      await auditar(user.email, id ? 'atualizar_post' : 'criar_post', rows[0].id, {
+        published: payload.published,
+      });
+      return res.status(200).json({ ok: true, post: rows[0] });
+    }
+
+    if (action === 'delete_blog_post') {
+      const id = typeof req.body?.id === 'string' ? req.body.id : '';
+      if (!/^[a-f0-9-]{36}$/i.test(id)) return res.status(400).json({ error: 'ID inválido.' });
+      const deleteRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/blog_posts?id=eq.${encodeURIComponent(id)}`,
+        { method: 'DELETE', headers: { ...serviceHeaders(), Prefer: 'return=representation' } }
+      );
+      const rows = await deleteRes.json().catch(() => []);
+      if (!deleteRes.ok) return res.status(500).json({ error: 'Não foi possível excluir o post.' });
+      await auditar(user.email, 'excluir_post', id, { removidos: Array.isArray(rows) ? rows.length : 0 });
+      return res.status(200).json({ ok: true, removed: Array.isArray(rows) ? rows.length : 0 });
+    }
+
     if (action === 'release_abuse_claim') {
       if (!claimId || !/^[a-f0-9-]{36}$/i.test(claimId)) {
         return res.status(400).json({ error: 'claimId inválido' });
@@ -611,6 +682,38 @@ export default async function handler(req, res) {
     } catch (err) {
       console.error('GA4 error:', err);
       return res.status(500).json({ error: err.message || 'Erro ao buscar dados do GA4' });
+    }
+  }
+
+  // ── GET: custo real estimado por chamada Anthropic ─────────────────────────
+  if (req.query.action === 'ai_usage') {
+    const days = Math.max(1, Math.min(365, parseInt(req.query.days) || 30));
+    try {
+      const usageRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/ai_usage_summary`, {
+        method: 'POST', headers: serviceHeaders(), body: JSON.stringify({ p_days: days }),
+      });
+      if (!usageRes.ok) {
+        if ([404, 400].includes(usageRes.status)) {
+          return res.status(200).json({ ok: true, available: false, reason: 'migration_036_pending' });
+        }
+        throw new Error(`PostgREST ${usageRes.status}`);
+      }
+      const rows = await usageRes.json();
+      const total = (Array.isArray(rows) ? rows : []).reduce((acc, row) => {
+        acc.requests += Number(row.requests) || 0;
+        acc.input_tokens += Number(row.input_tokens) || 0;
+        acc.output_tokens += Number(row.output_tokens) || 0;
+        acc.cache_creation_input_tokens += Number(row.cache_creation_input_tokens) || 0;
+        acc.cache_read_input_tokens += Number(row.cache_read_input_tokens) || 0;
+        acc.estimated_cost_usd += Number(row.estimated_cost_usd) || 0;
+        return acc;
+      }, { requests: 0, input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0, estimated_cost_usd: 0 });
+      total.estimated_cost_usd = Number(total.estimated_cost_usd.toFixed(6));
+      await auditar(user.email, 'ler_custos_ia', null, { days, requests: total.requests });
+      return res.status(200).json({ ok: true, available: true, days, total, rows });
+    } catch (err) {
+      console.error('ai_usage admin error:', err.message);
+      return res.status(500).json({ error: 'Erro ao buscar custos de IA.' });
     }
   }
 

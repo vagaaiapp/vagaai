@@ -5,6 +5,7 @@ import { resolvePlan } from '../lib/entitlements.js';
 import { checkAndCountLimit } from '../lib/ratelimit.js';
 import { checarCotaMensal, mensagemDeCota } from '../lib/cotas.js';
 import { abuseHttpResponse, guardAccountUsage } from '../lib/abuse.js';
+import { recordAnthropicUsage } from '../lib/ai-usage.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
@@ -189,6 +190,10 @@ Retorne APENAS este JSON (sem markdown):
 
     if (!response.ok) throw new Error(`Anthropic ${response.status}`);
     const data = await response.json();
+    await recordAnthropicUsage(data, {
+      userId: user.id, endpoint: 'cover-letter', action: 'generate',
+      promptVersion: 'cover-letter-2026-08-31-v1', requestId: response.headers.get('request-id'),
+    });
 
     /* A resposta passou de um texto para tres (carta, curta e mensagem) mais a
        lista de requisitos citados. Truncada, o JSON chega invalido e o

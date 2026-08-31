@@ -566,7 +566,8 @@ async function editPost(id) {
     document.getElementById('postExcerpt').value = p.excerpt || '';
     document.getElementById('postCover').value = p.cover_url || '';
     document.getElementById('seoTitle').value = p.seo_title || '';
-    document.getElementById('editorContent').innerHTML = p.content || '';
+    var sanitizer = await import('/lib/blog-content.js');
+    document.getElementById('editorContent').innerHTML = sanitizer.sanitizeBlogHtml(p.content || '');
     document.getElementById('codeEditor').value = p.content || '';
     setPublishUI(p.published);
     renderCatTags();
@@ -595,26 +596,25 @@ async function savePost(publish) {
     document.getElementById('editorContent').innerHTML = codeEditorEl.value;
   }
   var content = document.getElementById('editorContent').innerHTML;
+  // Limpa na fronteira de escrita e ainda existe uma segunda barreira na
+  // renderizacao publica para proteger posts antigos.
+  var sanitizer = await import('/lib/blog-content.js');
+  content = sanitizer.sanitizeBlogHtml(content);
   var published = publish ? true : _isPublished;
   if (!title) { toast('Adicione um título', true); return; }
   if (!slug) { toast('Adicione um slug', true); return; }
   document.getElementById('postSlug').value = slug;
   document.getElementById('slugPreview').textContent = slug;
   var body = { title, slug, excerpt, cover_url, seo_title, content, published,
-    categories: JSON.stringify(_categories), updated_at: new Date().toISOString() };
+    categories: _categories };
   try {
-    var method = _currentPost ? 'PATCH' : 'POST';
-    var url = _currentPost
-      ? SUPABASE_URL + '/rest/v1/blog_posts?id=eq.' + _currentPost.id
-      : SUPABASE_URL + '/rest/v1/blog_posts';
-    var res = await fetch(url, {
-      method, headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + (await getFreshToken()),
-        'Content-Type': 'application/json', Prefer: 'return=representation' },
-      body: JSON.stringify(body)
+    var res = await fetch('/api/admin', {
+      method: 'POST', headers: { Authorization: 'Bearer ' + (await getFreshToken()), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'save_blog_post', id: _currentPost && _currentPost.id, post: body })
     });
-    if (!res.ok) throw new Error(await res.text());
-    var rows = await res.json();
-    if (rows && rows[0]) _currentPost = rows[0];
+    var saved = await res.json();
+    if (!res.ok) throw new Error(saved.error || 'Não foi possível salvar.');
+    if (saved.post) _currentPost = saved.post;
     _isPublished = published; setPublishUI(published);
     document.getElementById('deleteBtn').style.display = 'inline-flex';
     document.getElementById('deleteWrap').style.display = 'block';
@@ -629,9 +629,11 @@ async function deletePost() {
   if (!_currentPost) return;
   if (!confirm('Excluir "' + (_currentPost.title || 'este post') + '"? Não é possível desfazer.')) return;
   try {
-    await fetch(SUPABASE_URL + '/rest/v1/blog_posts?id=eq.' + _currentPost.id, {
-      method: 'DELETE', headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + (await getFreshToken()) }
+    var response = await fetch('/api/admin', {
+      method: 'POST', headers: { Authorization: 'Bearer ' + (await getFreshToken()), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete_blog_post', id: _currentPost.id })
     });
+    if (!response.ok) throw new Error((await response.json().catch(function(){ return {}; })).error || 'Não foi possível excluir.');
     toast('Post excluído'); backToList();
   } catch(e) { toast('Erro ao excluir', true); }
 }
@@ -723,13 +725,14 @@ async function uploadImageFile(file) {
 }
 
 // ── Tab Visual / Código ───────────────────────────────────────────────────────
-function switchTab(tab) {
+async function switchTab(tab) {
   var visual = document.getElementById('editorContent');
   var code = document.getElementById('codeEditor');
   var tV = document.getElementById('tabVisual');
   var tC = document.getElementById('tabCode');
   if (tab === 'visual') {
-    visual.innerHTML = code.value;
+    var sanitizer = await import('/lib/blog-content.js');
+    visual.innerHTML = sanitizer.sanitizeBlogHtml(code.value);
     visual.style.display = ''; code.style.display = 'none';
     tV.classList.add('active'); tC.classList.remove('active');
   } else {
@@ -795,7 +798,9 @@ function updatePreview() {
   var desc = document.getElementById('postExcerpt').value.trim();
   var slug = document.getElementById('postSlug').value.trim() || slugify(document.getElementById('postTitle').value.trim()) || 'slug';
   document.getElementById('gpTitle').textContent = title + ' — VagaAI';
-  document.getElementById('gpDesc').innerHTML = desc || '<span style="color:#aaa">Adicione uma meta descrição abaixo...</span>';
+  var gpDesc = document.getElementById('gpDesc');
+  if (desc) gpDesc.textContent = desc;
+  else gpDesc.innerHTML = '<span style="color:#aaa">Adicione uma meta descrição abaixo...</span>';
   document.getElementById('gpSlug').textContent = slug;
   document.getElementById('slugPreview').textContent = slug || '...';
   // SEO counters
