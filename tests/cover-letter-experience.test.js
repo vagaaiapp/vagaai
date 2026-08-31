@@ -20,7 +20,7 @@ test('entrada preserva vaga, currículo, tom, motivação e geração real', () 
     assert.match(page, new RegExp(`id="${id}"`), `campo ${id} foi removido`);
   }
   for (const tone of ['direto', 'formal', 'criativo']) assert.match(page, new RegExp(`id="tom-${tone}"`));
-  assert.match(page, /fetch\('\/api\/cover-letter'/);
+  assert.match(page, /VagaAIAbuse\.fetch : fetch\)\('\/api\/cover-letter'/);
   assert.match(page, /vagaaiTrack\('carta_gerada'/);
 });
 

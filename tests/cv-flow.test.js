@@ -117,7 +117,7 @@ describe('Fluxo canônico de currículo', () => {
     assert.match(cv, /Escolha como apresentar seu currículo/);
     assert.match(cv, /Editar conteúdo do currículo/);
     assert.match(cv, /Baixar Word/);
-    assert.match(cv, /Baixar PDF/);
+    assert.match(cv, /Salvar em PDF/);
   });
 
   it('explica os modelos sem jargão e recomenda o uso de cada grupo', () => {

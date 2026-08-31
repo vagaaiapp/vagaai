@@ -9,6 +9,7 @@
 import { lookup as dnsLookup } from 'dns';
 import { promisify } from 'util';
 import { checkAndCountLimit } from '../lib/ratelimit.js';
+import { anonymousKeys } from '../lib/abuse.js';
 
 const lookupAll = promisify((hostname, opts, cb) => dnsLookup(hostname, opts, cb));
 
@@ -182,8 +183,8 @@ async function safeFetch(url, headers, timeoutMs = FETCH_TIMEOUT_MS) {
 const RATE_LIMIT = 20;
 const RATE_WINDOW_MS = 60000;
 
-async function checkRateLimit(ip) {
-  return checkAndCountLimit({ key: `ip:${ip}:fetchjob`, limit: RATE_LIMIT, windowMs: RATE_WINDOW_MS });
+async function checkRateLimit(key) {
+  return checkAndCountLimit({ key, limit: RATE_LIMIT, windowMs: RATE_WINDOW_MS });
 }
 
 // ── Handler ────────────────────────────────────────────────────────────────────
@@ -196,10 +197,8 @@ export default async function handler(req, res) {
   // Prefere x-real-ip (definido pela Vercel, não spoofável) e, na ausência, o
   // ÚLTIMO salto do x-forwarded-for. O 1º item do XFF é forjável pelo cliente —
   // usá-lo permitiria burlar o rate-limit (mesma lógica do analyze.js).
-  const clientIp = (req.headers['x-real-ip'] || '').trim()
-    || (req.headers['x-forwarded-for'] || '').split(',').map(s => s.trim()).filter(Boolean).pop()
-    || 'unknown';
-  if (!(await checkRateLimit(clientIp))) {
+  const rateKey = anonymousKeys(req, res, 'fetchjob').ip;
+  if (!(await checkRateLimit(rateKey))) {
     return res.status(429).json({ error: 'Muitas requisições. Tente novamente em um minuto.' });
   }
 

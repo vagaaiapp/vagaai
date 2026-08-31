@@ -4,6 +4,12 @@ const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const GA4_PROPERTY_ID  = process.env.GA4_PROPERTY_ID;
 const GA4_SA_JSON      = process.env.GA4_SA_JSON; // Service Account JSON (nunca expira)
 
+const serviceHeaders = () => ({
+  apikey: SUPABASE_SERVICE_KEY,
+  Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+  'Content-Type': 'application/json',
+});
+
 /* Quem e admin mora em public.admins (migracao 031), nao aqui. A lista
    estava duplicada entre este arquivo e a politica blog_admin_all do banco:
    tirar alguem do time exigia lembrar dos dois, e um esquecimento deixava
@@ -189,7 +195,12 @@ async function fetchGA4Data(days = 30) {
       dimensionFilter: {
         filter: {
           fieldName: 'eventName',
-          inListFilter: { values: ['analyze_start', 'analyze_complete', 'begin_checkout', 'cv_download_click'] },
+          inListFilter: { values: [
+            'analysis_started', 'analysis_completed', 'begin_checkout', 'sign_up',
+            'purchase', 'company_lead_submitted', 'cv_download_click',
+            // aliases historicos mantidos no relatorio durante a migracao
+            'analyze_start', 'analyze_complete', 'onboarding_vaga_completed', 'checkout_iniciado'
+          ] },
         },
       },
     }),
@@ -248,11 +259,15 @@ async function fetchGA4Data(days = 30) {
 
   const eventMap = {};
   for (const row of (eventsRes.rows || [])) eventMap[row.dimensionValues[0].value] = parseInt(row.metricValues[0].value || 0);
+  const sumEvents = (...names) => names.reduce((total, name) => total + (eventMap[name] || 0), 0);
   const funnel = {
-    analyze_start:    eventMap['analyze_start']    || 0,
-    analyze_complete: eventMap['analyze_complete'] || 0,
-    begin_checkout:   eventMap['begin_checkout']   || 0,
-    cv_download:      eventMap['cv_download_click']|| 0,
+    analysis_started:   sumEvents('analysis_started', 'analyze_start'),
+    analysis_completed: sumEvents('analysis_completed', 'analyze_complete', 'onboarding_vaga_completed'),
+    begin_checkout:     sumEvents('begin_checkout', 'checkout_iniciado'),
+    sign_up:            eventMap['sign_up'] || 0,
+    purchase:           eventMap['purchase'] || 0,
+    company_lead:       eventMap['company_lead_submitted'] || 0,
+    cv_download:        eventMap['cv_download_click'] || 0,
   };
 
   const pages = (pagesRes.rows || []).map(r => ({
@@ -420,7 +435,34 @@ export default async function handler(req, res) {
 
   // ── POST: ações de gerenciamento de usuário ──────────────────────────────────
   if (req.method === 'POST') {
-    const { action, userId, credits } = req.body || {};
+    const { action, userId, credits, claimId } = req.body || {};
+
+    if (action === 'release_abuse_claim') {
+      if (!claimId || !/^[a-f0-9-]{36}$/i.test(claimId)) {
+        return res.status(400).json({ error: 'claimId inválido' });
+      }
+      const releaseRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/release_free_entitlement`, {
+        method: 'POST', headers: serviceHeaders(), body: JSON.stringify({ p_claim_id: claimId, p_user_id: null }),
+      });
+      const releaseReceipt = await releaseRes.json().catch(() => ({}));
+      if (!releaseRes.ok) return res.status(500).json({ error: 'Não foi possível liberar a gratuidade.' });
+      await auditar(user.email, 'liberar_gratuidade', claimId, { released: releaseReceipt.released || 0 });
+      return res.status(200).json({ ok: true, release: releaseReceipt });
+    }
+
+    if (action === 'reset_abuse_devices') {
+      if (!userId || !/^[a-f0-9-]{36}$/i.test(userId)) {
+        return res.status(400).json({ error: 'userId inválido' });
+      }
+      const deleteRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/abuse_devices?user_id=eq.${encodeURIComponent(userId)}`,
+        { method: 'DELETE', headers: { ...serviceHeaders(), Prefer: 'return=representation' } }
+      );
+      const deleted = await deleteRes.json().catch(() => []);
+      if (!deleteRes.ok) return res.status(500).json({ error: 'Não foi possível redefinir os dispositivos.' });
+      await auditar(user.email, 'redefinir_dispositivos', userId, { removidos: Array.isArray(deleted) ? deleted.length : 0 });
+      return res.status(200).json({ ok: true, removed: Array.isArray(deleted) ? deleted.length : 0 });
+    }
 
     // Adicionar créditos avulsos
     if (action === 'add_credits') {
@@ -465,6 +507,51 @@ export default async function handler(req, res) {
     }
 
     return res.status(400).json({ error: 'Ação desconhecida' });
+  }
+
+  if (req.query.action === 'abuse') {
+    try {
+      const sb = (path) => fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: serviceHeaders() });
+      const [claimsRes, eventsRes, devicesRes, cleanupRes] = await Promise.all([
+        sb('abuse_claims?status=eq.active&select=id,user_id,resource,risk_score,challenge_passed,created_at&order=created_at.desc&limit=200'),
+        sb('abuse_events?select=id,user_id,event_type,resource,decision,reason,risk_score,device_hash,ip_hash,created_at&order=created_at.desc&limit=200'),
+        sb('abuse_devices?select=user_id,device_hash,last_seen_at&order=last_seen_at.desc&limit=1000'),
+        fetch(`${SUPABASE_URL}/rest/v1/rpc/cleanup_abuse_data`, {
+          method: 'POST', headers: serviceHeaders(), body: JSON.stringify({ p_days: 90 }),
+        }),
+      ]);
+      if (!claimsRes.ok || !eventsRes.ok || !devicesRes.ok) {
+        return res.status(200).json({ ok: true, available: false, reason: 'migration_035_pending' });
+      }
+      const claims = await claimsRes.json();
+      const events = await eventsRes.json();
+      const devices = await devicesRes.json();
+      const deviceCounts = {};
+      const deviceLastSeen = {};
+      devices.forEach(row => {
+        deviceCounts[row.user_id] = (deviceCounts[row.user_id] || 0) + 1;
+        if (!deviceLastSeen[row.user_id] || row.last_seen_at > deviceLastSeen[row.user_id]) deviceLastSeen[row.user_id] = row.last_seen_at;
+      });
+      const decisions = { allow: 0, challenge: 0, deny: 0, release: 0 };
+      events.forEach(row => { if (Object.prototype.hasOwnProperty.call(decisions, row.decision)) decisions[row.decision] += 1; });
+      const sharedAccounts = Object.values(deviceCounts).filter(count => count > 5).length;
+      const mask = value => value ? `${value.slice(0, 8)}…${value.slice(-4)}` : '';
+      return res.status(200).json({
+        ok: true,
+        available: true,
+        metrics: { active_claims: claims.length, denied: decisions.deny, challenged: decisions.challenge, shared_accounts: sharedAccounts },
+        claims,
+        shared_accounts: Object.entries(deviceCounts)
+          .filter(([, count]) => count > 5)
+          .map(([user_id, devices_count]) => ({ user_id, devices_count, last_seen_at: deviceLastSeen[user_id] }))
+          .sort((a, b) => b.devices_count - a.devices_count),
+        events: events.map(row => ({ ...row, device_hash: mask(row.device_hash), ip_hash: mask(row.ip_hash) })),
+        cleanup: cleanupRes.ok ? await cleanupRes.json().catch(() => null) : null,
+      });
+    } catch (err) {
+      console.error('abuse admin error:', err);
+      return res.status(500).json({ error: 'Erro ao buscar sinais de abuso.' });
+    }
   }
 
   // ── GET: dados de alertas (dismiss feedback + histórico) ─────────────────────

@@ -23,6 +23,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <script defer src="/_vercel/insights/script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/sessao.js"></script>
+<script src="/js/abuse-challenge.js"></script>
 <script src="/onboarding/shared.js"></script>
 <script src="/js/cv-voice.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -586,7 +587,7 @@ textarea::placeholder,input::placeholder{color:var(--muted);opacity:.75}
       <button class="ob-btn" style="margin-top:0" onclick="openSignup()">Criar conta grátis e ver tudo →</button>
       <div class="ob-plan-note">
         No plano <b>Grátis</b>: 1 análise completa por mês, currículo salvo e alertas semanais.<br>
-        No <b>Pro</b> (R$39,90/mês): 100 análises por mês, carta de apresentação e simulador de entrevista.
+        No <b>Pro</b> (R$39,90/mês): 100 análises por mês, carta de apresentação e treino de entrevista.
       </div>
     </div>
   </section>
@@ -1468,7 +1469,7 @@ async function generateDirectedCv() {
   btn.textContent = 'Montando seu currículo...';
 
   try {
-    var res = await fetch('/api/analyze', {
+    var quickCvOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1481,7 +1482,10 @@ async function generateDirectedCv() {
         habilidades: f.skills,
         contato: {}
       })
-    });
+    };
+    var res = await (window.VagaAIAbuse
+      ? window.VagaAIAbuse.fetch('/api/analyze', quickCvOptions)
+      : fetch('/api/analyze', quickCvOptions));
     var data = await res.json().catch(function() { return {}; });
     if (res.status === 429) {
       _analysisRunning = false;
@@ -1590,6 +1594,7 @@ async function startAnalysis() {
   scheduleBaseCvStructure();
 
   track('onboarding_vaga_pasted', { job_chars: state.job.length });
+  track('analysis_started', { source: 'onboarding_vaga' });
   resetStep4(); // pode estar exibindo erro/limite/interrupção de uma tentativa anterior
   goStep(4);
 
@@ -1617,11 +1622,14 @@ async function startAnalysis() {
   try {
     var payload = { cv: state.cv, job: state.job };
     if (state.jobUrl) payload.job_url = state.jobUrl; // guarda a origem da vaga
-    var res = await fetch('/api/analyze', {
+    var analysisOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
-    });
+    };
+    var res = await (window.VagaAIAbuse
+      ? window.VagaAIAbuse.fetch('/api/analyze', analysisOptions)
+      : fetch('/api/analyze', analysisOptions));
 
     clearInterval(tipTimer);
     clearTimeout(slowTimer);
@@ -1649,7 +1657,7 @@ async function startAnalysis() {
 
     renderResult(data);
     restoreRadarDraft();
-    track('onboarding_vaga_completed', { score: data.score });
+    track('analysis_completed', { score: data.score, source: 'onboarding_vaga' });
     goStep(5);
   } catch (err) {
     clearInterval(tipTimer);

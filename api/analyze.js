@@ -1,6 +1,13 @@
 import { createHash } from 'crypto';
-import { resolvePlan } from '../lib/entitlements.js';
+import { resolvePlan, planEntitlements } from '../lib/entitlements.js';
 import { checkAndCountLimit, countLimit, isWithinLimit } from '../lib/ratelimit.js';
+import {
+  abuseHttpResponse,
+  anonymousKeys,
+  claimFreeEntitlement,
+  guardAccountUsage,
+  releaseFreeEntitlement,
+} from '../lib/abuse.js';
 
 // ─── Score breakdown determinístico ──────────────────────────────────────────
 
@@ -52,12 +59,12 @@ function normalizeKeywords(result) {
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-const STARTER_ANALYSES_CAP = 10;
 /* Teto mensal de analises do Pro. Espelha v_pro_cap na RPC
    check_and_increment_analyses (migracao 034) — a RPC e a trava de verdade
-   (FOR UPDATE), este numero so age quando ela esta fora do ar. Os dois sao
-   comparados por teste. */
-const PRO_ANALYSES_CAP = 100;
+   (FOR UPDATE). Os limites de aplicacao vêm da fonte unica de entitlements e
+   sao comparados com a RPC por teste. */
+const STARTER_ANALYSES_CAP = planEntitlements('starter').analyses_limit;
+const PRO_ANALYSES_CAP = planEntitlements('pro').analyses_limit;
 const CAP_DO_PLANO = { starter: STARTER_ANALYSES_CAP, pro: PRO_ANALYSES_CAP };
 
 /* Resposta de teto mensal atingido. Sai separada de 'sem_creditos' porque as
@@ -174,74 +181,30 @@ async function setCachedResult(hash, result, userId = null) {
   }).catch(() => {});
 }
 
-// ─── Rate limit por IP (usuários anônimos) ────────────────────────────────────
+// ─── Limite anônimo por dispositivo + velocidade de rede ─────────────────────
+// IP isolado não identifica uma pessoa (CGNAT, empresa, faculdade). O benefício
+// acompanha o cookie HttpOnly assinado; a rede só segura automação em volume.
+const ANON_ANALYSIS_DEVICE_LIMIT = 1;
+const ANON_ANALYSIS_DEVICE_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+const ANON_ANALYSIS_IP_LIMIT = 10;
+const ANON_ANALYSIS_IP_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-const IP_FREE_LIMIT = 1; // 1 análise gratuita por IP a cada 30 dias
-
-// Liberação temporária para testes internos. Remove este bloco após 04/08/2026
-// (23:59:59 BRT). Não afeta usuários autenticados, planos ou outros IPs.
-
-async function checkRateLimit(ip) {
-  // Usa a SERVICE key: a tabela ip_rate_limits tem RLS habilitada e nega anon,
-  // impedindo que o usuário zere o próprio contador via PostgREST (anon key é pública).
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return { allowed: true };
-  try {
-    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/ip_rate_limits?ip=eq.${encodeURIComponent(ip)}&last_seen=gte.${encodeURIComponent(cutoff)}&select=count`,
-      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
-    );
-    const rows = await res.json();
-    // Bloqueado apenas se atingiu o limite nos últimos 30 dias
-    if (rows.length > 0 && (rows[0].count || 0) >= IP_FREE_LIMIT) return { allowed: false };
-    return { allowed: true };
-  } catch (err) {
-    console.error('Rate limit check error:', err);
-    return { allowed: true }; // fail-open
-  }
+async function checkAnonymousAnalysis(req, res) {
+  const keys = anonymousKeys(req, res, 'analysis-anon');
+  const deviceAllowed = await isWithinLimit({
+    key: keys.device, limit: ANON_ANALYSIS_DEVICE_LIMIT, windowMs: ANON_ANALYSIS_DEVICE_WINDOW_MS,
+  });
+  if (!deviceAllowed) return { allowed: false, reason: 'anonymous_device_limit', keys };
+  const networkAllowed = await checkAndCountLimit({
+    key: keys.ip, limit: ANON_ANALYSIS_IP_LIMIT, windowMs: ANON_ANALYSIS_IP_WINDOW_MS,
+  });
+  return { allowed: networkAllowed, reason: networkAllowed ? '' : 'network_abuse_limit', keys };
 }
 
-async function recordIpUsage(ip) {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return;
-  try {
-    // Verifica se já existe registro recente (últimos 30 dias) para incrementar
-    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const existing = await fetch(
-      `${SUPABASE_URL}/rest/v1/ip_rate_limits?ip=eq.${encodeURIComponent(ip)}&last_seen=gte.${encodeURIComponent(cutoff)}&select=count`,
-      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
-    ).then(r => r.json()).catch(() => []);
-
-    const newCount = existing.length > 0 ? (existing[0].count || 1) + 1 : 1;
-    await fetch(`${SUPABASE_URL}/rest/v1/ip_rate_limits`, {
-      method: 'POST',
-      headers: {
-        apikey: SUPABASE_SERVICE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-        'Content-Type': 'application/json',
-        Prefer: 'resolution=merge-duplicates',
-      },
-      body: JSON.stringify({ ip, count: newCount, last_seen: new Date().toISOString() }),
-    });
-  } catch (err) {
-    console.error('Record IP usage error:', err);
+async function recordAnonymousAnalysis(check) {
+  if (check?.keys?.device) {
+    await countLimit({ key: check.keys.device, windowMs: ANON_ANALYSIS_DEVICE_WINDOW_MS });
   }
-  // Cleanup fire-and-forget: remove registros com mais de 30 dias
-  const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-  fetch(`${SUPABASE_URL}/rest/v1/ip_rate_limits?last_seen=lt.${encodeURIComponent(cutoff)}`, {
-    method: 'DELETE',
-    headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
-  }).catch(() => {});
-}
-
-// IP do cliente para rate-limit. Prefere x-real-ip (definido pela Vercel, não
-// spoofável pelo cliente) em vez do 1º item de x-forwarded-for, que o cliente
-// pode forjar enviando o próprio header.
-function clientIp(req) {
-  const realIp = (req.headers['x-real-ip'] || '').trim();
-  if (realIp) return realIp;
-  const xff = (req.headers['x-forwarded-for'] || '').split(',').map(s => s.trim()).filter(Boolean);
-  // Sem x-real-ip: usa o ÚLTIMO salto do XFF (o mais próximo do proxy confiável).
-  return xff.length ? xff[xff.length - 1] : 'unknown';
 }
 
 // ─── Créditos (usuários autenticados) ────────────────────────────────────────
@@ -270,6 +233,12 @@ const FREE_MONTHLY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 async function refundAnalysisCredit(userId, deductResult) {
   if (!userId || !deductResult || !deductResult.ok) return;
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return;
+
+  if (deductResult.abuseClaim) {
+    await releaseFreeEntitlement(deductResult.abuseClaim).catch(error => {
+      console.error('refund abuse claim error:', error.message);
+    });
+  }
 
   // Estorno da análise grátis mensal: remove o marcador para que uma falha de
   // IA não consuma a gratuidade do usuário. O claim foi feito ANTES da IA
@@ -392,7 +361,7 @@ async function claimFreeMonthly(userId) {
 // Apenas erros de negócio (no_credits, plan_limit, invalid_plan) são esperados.
 // A IA só é chamada após confirmação atômica de consumo.
 
-async function checkAndDeductCredit(userId) {
+async function checkAndDeductCredit(userId, abuse = null) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
     return { ok: false, reason: 'infrastructure_error', detail: 'missing_config' };
   }
@@ -503,8 +472,20 @@ async function checkAndDeductCredit(userId) {
     // Portão 2 (fecha a corrida): claim ATÔMICO antes da IA. A tabela analyses
     // só é populada DEPOIS da IA (~10s), então 2 requisições simultâneas
     // passavam o portão 1 juntas; aqui só uma vence o marcador.
+    const abuseClaim = abuse
+      ? await claimFreeEntitlement({
+          user: abuse.user,
+          req: abuse.req,
+          res: abuse.res,
+          resource: 'analysis',
+          challengeToken: abuse.challengeToken || '',
+        })
+      : { ok: false, action: 'deny', reason: 'invalid_identity' };
+    if (!abuseClaim.ok) return { ok: false, reason: 'abuse_guard', abuseDecision: abuseClaim };
+
     const claim = await claimFreeMonthly(userId);
-    if (claim.ok) return { ok: true, via: 'free_monthly', plan: 'free' };
+    if (claim.ok) return { ok: true, via: 'free_monthly', plan: 'free', abuseClaim };
+    await releaseFreeEntitlement(abuseClaim).catch(() => {});
     if (claim.infra) return { ok: false, reason: 'infrastructure_error', detail: 'free_claim' };
     return { ok: false, reason: 'no_credits' };
   }
@@ -727,7 +708,7 @@ function checkCvRateLimit(userId) {
 // ou usuários sob CGNAT antes da primeira geração.
 const OB_CV_ANON_LIMIT = 2;
 const OB_CV_WINDOW_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
-const OB_CV_IP_ABUSE_LIMIT = 100;
+const OB_CV_IP_ABUSE_LIMIT = 10;
 const OB_CV_IP_ABUSE_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 horas
 const OB_CV_EXTRACT_IP_LIMIT = 8;
 const OB_CV_EXTRACT_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 horas
@@ -964,6 +945,7 @@ export default async function handler(req, res) {
 
   // ── Modo: criar currículo otimizado ─────────────────────────────────────────
   const { action } = req.body || {};
+  const challengeToken = typeof req.body?.turnstile_token === 'string' ? req.body.turnstile_token : '';
   if (action === 'claim_onboarding_analysis') {
     const authHeader = req.headers['authorization'] || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
@@ -971,6 +953,11 @@ export default async function handler(req, res) {
 
     const user = await getUserFromToken(token);
     if (!user?.id) return res.status(401).json({ error: 'Token invalido. Faca login novamente.' });
+
+    const usageGuard = await guardAccountUsage({
+      user, req, res, resource: 'claim_onboarding_analysis', challengeToken,
+    });
+    if (!usageGuard.ok) return abuseHttpResponse(res, usageGuard);
 
     const { result, cv, job } = req.body || {};
     if (!result || typeof result !== 'object' || Array.isArray(result)) {
@@ -1011,6 +998,11 @@ export default async function handler(req, res) {
     if (!cvToken) return res.status(401).json({ error: 'Autenticação necessária para criar currículo.' });
     const cvUser = await getUserFromToken(cvToken);
     if (!cvUser?.id) return res.status(401).json({ error: 'Token inválido. Faça login novamente.' });
+
+    const cvUsageGuard = await guardAccountUsage({
+      user: cvUser, req, res, resource: 'create_cv', challengeToken,
+    });
+    if (!cvUsageGuard.ok) return abuseHttpResponse(res, cvUsageGuard);
 
     // 2. Rate limit por usuário
     if (!(await checkCvRateLimit(cvUser.id))) {
@@ -1150,9 +1142,9 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
       return res.status(400).json({ error: 'Currículo muito longo (máx. 15.000 caracteres).' });
     }
 
-    const extractIp = clientIp(req);
+    const extractKeys = anonymousKeys(req, res, 'obcvextract');
     if (!(await checkAndCountLimit({
-      key: `ip:${extractIp}:obcvextract`,
+      key: extractKeys.ip,
       limit: OB_CV_EXTRACT_IP_LIMIT,
       windowMs: OB_CV_EXTRACT_WINDOW_MS,
     }))) {
@@ -1306,9 +1298,8 @@ ${rawCv}`;
       return res.status(500).json({ error: 'Chave de API não configurada.' });
     }
 
-    const obIp = clientIp(req);
-    const obAnonHash = createHash('sha256').update(obAnonId).digest('hex').slice(0, 32);
-    const obAnonKey = `anon:${obAnonHash}:obcv`;
+    const obKeys = anonymousKeys(req, res, 'obcv');
+    const obAnonKey = obKeys.device;
 
     if (!(await isWithinLimit({
       key: obAnonKey,
@@ -1323,7 +1314,7 @@ ${rawCv}`;
     }
 
     if (!(await checkAndCountLimit({
-      key: `ip:${obIp}:obcv-abuse`,
+      key: obKeys.ip,
       limit: OB_CV_IP_ABUSE_LIMIT,
       windowMs: OB_CV_IP_ABUSE_WINDOW_MS,
     }))) {
@@ -1471,6 +1462,11 @@ Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato
     const pUser = await getUserFromToken(pToken);
     if (!pUser?.id) return res.status(401).json({ error: 'Token inválido. Faça login novamente.' });
 
+    const profileUsageGuard = await guardAccountUsage({
+      user: pUser, req, res, resource: 'profile_cv', challengeToken,
+    });
+    if (!profileUsageGuard.ok) return abuseHttpResponse(res, profileUsageGuard);
+
     if (!(await checkCvRateLimit(pUser.id))) {
       return res.status(429).json({ error: 'Limite de análises atingido. Aguarde antes de tentar novamente.' });
     }
@@ -1486,8 +1482,11 @@ Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato
       return res.status(500).json({ error: 'Chave de API não configurada.' });
     }
 
-    const pDeduct = await checkAndDeductCredit(pUser.id);
+    const pDeduct = await checkAndDeductCredit(pUser.id, {
+      user: pUser, req, res, challengeToken,
+    });
     if (!pDeduct.ok) {
+      if (pDeduct.reason === 'abuse_guard') return abuseHttpResponse(res, pDeduct.abuseDecision);
       if (pDeduct.reason === 'plan_limit') return respostaDeTeto(res, pDeduct);
       if (pDeduct.reason === 'no_credits') {
         return res.status(402).json({ error: 'sem_creditos', message: 'Você não tem créditos disponíveis para o Raio-X do currículo.' });
@@ -1598,10 +1597,21 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
   const authHeader = req.headers['authorization'] || '';
   const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
   let authenticatedUserId = null;
+  let authenticatedUser = null;
 
   if (bearerToken) {
     const user = await getUserFromToken(bearerToken);
-    if (user && user.id) authenticatedUserId = user.id;
+    if (user && user.id) {
+      authenticatedUser = user;
+      authenticatedUserId = user.id;
+    }
+  }
+
+  if (authenticatedUser) {
+    const analysisUsageGuard = await guardAccountUsage({
+      user: authenticatedUser, req, res, resource: 'analysis', challengeToken,
+    });
+    if (!analysisUsageGuard.ok) return abuseHttpResponse(res, analysisUsageGuard);
   }
 
   /* Teto de taxa antes de qualquer trabalho. Vem depois da autenticacao porque
@@ -1624,8 +1634,11 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
 
     if (authenticatedUserId) {
       // Cache hit ainda consome crédito — o resultado foi salvo, mas o limite deve ser respeitado
-      const deduct = await checkAndDeductCredit(authenticatedUserId);
+      const deduct = await checkAndDeductCredit(authenticatedUserId, {
+        user: authenticatedUser, req, res, challengeToken,
+      });
       if (!deduct.ok) {
+        if (deduct.reason === 'abuse_guard') return abuseHttpResponse(res, deduct.abuseDecision);
         if (deduct.reason === 'plan_limit') return respostaDeTeto(res, deduct);
         if (deduct.reason === 'no_credits') {
           return res.status(402).json({ error: 'sem_creditos' });
@@ -1649,23 +1662,30 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
       } catch (_) {}
     } else {
       // Anônimo: aplica rate limit mesmo em cache hit
-      const _ip = clientIp(req);
-      const { allowed } = await checkRateLimit(_ip);
-      if (!allowed) {
-        return res.status(429).json({ error: 'limite_atingido' });
+      const anonymousCheck = await checkAnonymousAnalysis(req, res);
+      if (!anonymousCheck.allowed) {
+        return res.status(429).json({
+          error: 'limite_atingido', reason: anonymousCheck.reason,
+          message: anonymousCheck.reason === 'network_abuse_limit'
+            ? 'Muitas análises foram solicitadas nesta rede. Aguarde 24 horas e tente novamente.'
+            : 'A análise gratuita deste dispositivo já foi utilizada. Crie sua conta ou conheça o Pro.',
+        });
       }
-      await recordIpUsage(_ip);
+      await recordAnonymousAnalysis(anonymousCheck);
     }
 
     return res.status(200).json(cachedResult);
   }
 
   // ─── Cache miss: verifica limite / créditos ───────────────────────────────
-  let _ip = null;
+  let _anonymousCheck = null;
   let _deductResult = { ok: false }; // rastreia o resultado para estorno em falha
   if (authenticatedUserId) {
-    _deductResult = await checkAndDeductCredit(authenticatedUserId);
+    _deductResult = await checkAndDeductCredit(authenticatedUserId, {
+      user: authenticatedUser, req, res, challengeToken,
+    });
     if (!_deductResult.ok) {
+      if (_deductResult.reason === 'abuse_guard') return abuseHttpResponse(res, _deductResult.abuseDecision);
       if (_deductResult.reason === 'plan_limit') return respostaDeTeto(res, _deductResult);
       if (_deductResult.reason === 'no_credits') {
         return res.status(402).json({ error: 'sem_creditos' });
@@ -1678,10 +1698,14 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
       return res.status(503).json({ error: 'service_unavailable', message: 'Serviço temporariamente indisponível. Tente novamente em instantes.' });
     }
   } else {
-    _ip = clientIp(req);
-    const { allowed } = await checkRateLimit(_ip);
-    if (!allowed) {
-      return res.status(429).json({ error: 'limite_atingido' });
+    _anonymousCheck = await checkAnonymousAnalysis(req, res);
+    if (!_anonymousCheck.allowed) {
+      return res.status(429).json({
+        error: 'limite_atingido', reason: _anonymousCheck.reason,
+        message: _anonymousCheck.reason === 'network_abuse_limit'
+          ? 'Muitas análises foram solicitadas nesta rede. Aguarde 24 horas e tente novamente.'
+          : 'A análise gratuita deste dispositivo já foi utilizada. Crie sua conta ou conheça o Pro.',
+      });
     }
   }
 
@@ -1915,7 +1939,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
         result._credits_remaining = credRows[0]?.credits ?? null;
       } catch (_) {}
     } else {
-      await recordIpUsage(_ip);
+      await recordAnonymousAnalysis(_anonymousCheck);
     }
 
     // Score comparativo — benchmark interno

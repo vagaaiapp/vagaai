@@ -192,7 +192,7 @@ document.getElementById('postsContainer').addEventListener('click', event => {
 })();
 
 document.querySelectorAll('a[href^="/onboarding/"]').forEach(link => link.addEventListener('click', () => {
-  track('cta_funil', { caminho: 'com_curriculo', rotulo: (link.textContent || '').trim(), secao: link.closest('section') ? 'blog' : 'cabecalho' });
+  track('blog_cta_click', { path: link.href.includes('/curriculo/') ? 'no_cv' : 'with_cv', label: (link.textContent || '').trim(), placement: link.closest('footer') ? 'footer' : link.closest('section') ? 'content' : 'header' });
 }));
 
 const cookiePrefs = document.getElementById('cookiePrefs');

@@ -10,6 +10,7 @@ try{if(localStorage.getItem('vagaai_cookie_consent')==='granted')gtag('consent',
 gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 </script>
 <script src="/cookie-consent.js" defer></script>
+<script src="/js/eventos.js" defer></script>
 <script defer src="/_vercel/insights/script.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -117,7 +118,7 @@ input:focus{outline:none;border-color:var(--green-border)}
 
   <!-- ── VIEW: Login / Cadastro (tabs) ── -->
   <div class="view active" id="viewAuth">
-    <div class="card-title" id="authTitle">Entrar na sua conta</div>
+    <h1 class="card-title" id="authTitle">Entrar na sua conta</h1>
     <p class="card-sub" id="authSub">Acesse com e-mail e senha.</p>
 
     <button class="btn-google" onclick="loginWithGoogle()">
@@ -305,6 +306,8 @@ function switchTab(mode) {
   document.getElementById('tabLogin').classList.toggle('active', !isSignup);
   document.getElementById('tabSignup').classList.toggle('active', isSignup);
   document.getElementById('authBtn').textContent = isSignup ? 'Criar conta' : 'Entrar';
+  document.getElementById('authTitle').textContent = isSignup ? 'Criar sua conta grátis' : 'Entrar na sua conta';
+  document.getElementById('authSub').textContent = isSignup ? 'Comece sem cartão de crédito.' : 'Acesse com e-mail e senha.';
   document.getElementById('confirmField').style.display = isSignup ? 'flex' : 'none';
   document.getElementById('forgotLink').style.display = isSignup ? 'none' : 'inline';
   document.getElementById('authFoot').innerHTML = isSignup
@@ -353,8 +356,10 @@ async function handleAuth() {
       btn.disabled = false; btn.textContent = 'Criar conta';
     } else if (data.session) {
       // Email confirmation disabled — logged in directly
+      if (window.vagaaiTrack) window.vagaaiTrack('sign_up', { method: 'email' });
       window.location.href = _nextDest();
     } else {
+      if (window.vagaaiTrack) window.vagaaiTrack('sign_up', { method: 'email' });
       sucEl.innerHTML = '✓ Conta criada! Verifique seu e-mail para confirmar o cadastro.<br><small style="opacity:.8">Não encontrou? Verifique o spam.</small>';
       sucEl.classList.add('show');
       btn.disabled = false; btn.textContent = 'Criar conta';
@@ -367,6 +372,7 @@ async function handleAuth() {
       errEl.textContent = msg; errEl.classList.add('show');
       btn.disabled = false; btn.textContent = 'Entrar';
     } else {
+      if (window.vagaaiTrack) window.vagaaiTrack('login', { method: 'email' });
       window.location.href = _nextDest();
     }
   }

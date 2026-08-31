@@ -10,6 +10,7 @@
   gtag('js',new Date());gtag('config','G-XCT8K58VWF');
   </script>
   <script src="/cookie-consent.js" defer></script>
+  <script src="/js/eventos.js" defer></script>
   <script defer src="/_vercel/insights/script.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -767,11 +768,11 @@
   <div class="container">
     <div class="center reveal">
       <span class="eyebrow">Cadastro</span>
-      <h2 class="section-title">Comece agora.<br><em class="green italic">Leva menos de 3 minutos.</em></h2>
+      <h2 class="section-title" id="companyFormTitle">Comece agora.<br><em class="green italic">Leva menos de 3 minutos.</em></h2>
       <p class="section-copy">Preencha os dados abaixo. Nossa equipe ativa sua conta e entra em contato em até 48h.</p>
     </div>
 
-    <div class="form-wrap reveal delay-1">
+    <form class="form-wrap reveal delay-1" id="companyLeadForm" aria-labelledby="companyFormTitle" novalidate>
       <div class="form-progress">
         <div class="form-progress-bar" id="form-progress-bar" style="width:33%"></div>
       </div>
@@ -789,15 +790,15 @@
           <div class="form-grid">
             <div class="form-group full">
               <label class="form-label" for="f-empresa">Nome da empresa *</label>
-              <input class="form-input" id="f-empresa" type="text" placeholder="Ex: Acme Tecnologia">
+              <input class="form-input" id="f-empresa" name="empresa" type="text" placeholder="Ex: Acme Tecnologia" autocomplete="organization" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="f-site">Site da empresa</label>
-              <input class="form-input" id="f-site" type="text" placeholder="acme.com.br">
+              <input class="form-input" id="f-site" name="site" type="url" placeholder="https://acme.com.br" autocomplete="url" inputmode="url">
             </div>
             <div class="form-group">
               <label class="form-label" for="f-linkedin">LinkedIn da empresa</label>
-              <input class="form-input" id="f-linkedin" type="text" placeholder="linkedin.com/company/acme">
+              <input class="form-input" id="f-linkedin" name="linkedin" type="url" placeholder="https://linkedin.com/company/acme" autocomplete="url" inputmode="url">
             </div>
           </div>
         </div>
@@ -812,15 +813,15 @@
           <div class="form-grid">
             <div class="form-group">
               <label class="form-label" for="f-nome">Seu nome *</label>
-              <input class="form-input" id="f-nome" type="text" placeholder="Nome completo">
+              <input class="form-input" id="f-nome" name="nome" type="text" placeholder="Nome completo" autocomplete="name" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="f-cargo">Seu cargo *</label>
-              <input class="form-input" id="f-cargo" type="text" placeholder="Ex: Head de RH">
+              <input class="form-input" id="f-cargo" name="cargo" type="text" placeholder="Ex: Head de RH" autocomplete="organization-title" required>
             </div>
             <div class="form-group full">
               <label class="form-label" for="f-email">E-mail profissional *</label>
-              <input class="form-input" id="f-email" type="email" placeholder="voce@empresa.com.br">
+              <input class="form-input" id="f-email" name="email" type="email" placeholder="voce@empresa.com.br" autocomplete="email" inputmode="email" required>
             </div>
           </div>
         </div>
@@ -836,24 +837,24 @@
             <div class="form-group full">
               <label class="form-label">Quantas vagas vocês abrem por mês?</label>
               <div class="form-options" id="vagas-options">
-                <div class="form-option" data-val="1-5">1 a 5 vagas</div>
-                <div class="form-option" data-val="6-20">6 a 20 vagas</div>
-                <div class="form-option" data-val="21-50">21 a 50 vagas</div>
-                <div class="form-option" data-val="50+">Mais de 50</div>
+                <button class="form-option" type="button" data-val="1-5" aria-pressed="false">1 a 5 vagas</button>
+                <button class="form-option" type="button" data-val="6-20" aria-pressed="false">6 a 20 vagas</button>
+                <button class="form-option" type="button" data-val="21-50" aria-pressed="false">21 a 50 vagas</button>
+                <button class="form-option" type="button" data-val="50+" aria-pressed="false">Mais de 50</button>
               </div>
-              <input type="hidden" id="f-vagas">
+              <input type="hidden" id="f-vagas" name="vagas_mes">
             </div>
             <div class="form-group full">
               <label class="form-label">Principal área de contratação</label>
               <div class="form-options" id="area-options" style="grid-template-columns:repeat(3,1fr)">
-                <div class="form-option" data-val="tecnologia">Tecnologia</div>
-                <div class="form-option" data-val="marketing">Marketing</div>
-                <div class="form-option" data-val="vendas">Vendas</div>
-                <div class="form-option" data-val="produto">Produto</div>
-                <div class="form-option" data-val="rh">RH / Pessoas</div>
-                <div class="form-option" data-val="outra">Outra</div>
+                <button class="form-option" type="button" data-val="tecnologia" aria-pressed="false">Tecnologia</button>
+                <button class="form-option" type="button" data-val="marketing" aria-pressed="false">Marketing</button>
+                <button class="form-option" type="button" data-val="vendas" aria-pressed="false">Vendas</button>
+                <button class="form-option" type="button" data-val="produto" aria-pressed="false">Produto</button>
+                <button class="form-option" type="button" data-val="rh" aria-pressed="false">RH / Pessoas</button>
+                <button class="form-option" type="button" data-val="outra" aria-pressed="false">Outra</button>
               </div>
-              <input type="hidden" id="f-area">
+              <input type="hidden" id="f-area" name="area">
             </div>
           </div>
         </div>
@@ -861,7 +862,7 @@
       </div><!-- /form-body -->
 
       <!-- SUCCESS -->
-      <div class="success-state" id="success-state">
+      <div class="success-state" id="success-state" role="status" aria-live="polite">
         <div class="success-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
@@ -869,21 +870,21 @@
         <p>Nossa equipe ativará sua conta e entrará em contato no e-mail informado em até 48h. Bem-vinda ao VagaAI Hire.</p>
       </div>
 
-      <div class="form-error" id="form-error"></div>
+      <div class="form-error" id="form-error" role="alert" aria-live="assertive"></div>
 
       <div class="form-footer" id="form-footer">
-        <button class="form-back" id="form-back" style="visibility:hidden">
+        <button class="form-back" id="form-back" type="button" style="visibility:hidden">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
           Voltar
         </button>
-        <button class="form-next" id="form-next">
+        <button class="form-next" id="form-next" type="submit">
           Continuar
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </button>
       </div>
       <p class="form-note" id="form-note">Sem cartão de crédito · Sem contrato · Cancele quando quiser</p>
 
-    </div>
+    </form>
   </div>
 </section>
 
@@ -978,6 +979,17 @@ revealEls.forEach(function(el){ io.observe(el); });
 var currentStep = 1;
 var totalSteps = 3;
 var formData = {};
+var companyLeadStarted = false;
+
+function trackCompanyLead(name, props){
+  if (window.vagaaiTrack) window.vagaaiTrack(name, props || {});
+}
+
+function markCompanyLeadStarted(){
+  if (companyLeadStarted) return;
+  companyLeadStarted = true;
+  trackCompanyLead('company_lead_started', { source: 'paraempresas' });
+}
 
 function showStep(n){
   clearFormError();
@@ -1031,9 +1043,13 @@ function validateStep(n){
   return true;
 }
 
-document.getElementById('form-next').addEventListener('click', function(){
+document.getElementById('companyLeadForm').addEventListener('focusin', markCompanyLeadStarted);
+document.getElementById('companyLeadForm').addEventListener('submit', function(event){
+  event.preventDefault();
+  markCompanyLeadStarted();
   if(!validateStep(currentStep)) return;
   if(currentStep < totalSteps){
+    trackCompanyLead('company_lead_step_completed', { step: currentStep });
     showStep(currentStep + 1);
   } else {
     submitForm();
@@ -1047,14 +1063,18 @@ document.getElementById('form-back').addEventListener('click', function(){
 document.querySelectorAll('#vagas-options .form-option').forEach(function(opt){
   opt.addEventListener('click', function(){
     document.querySelectorAll('#vagas-options .form-option').forEach(function(o){ o.classList.remove('selected'); });
+    document.querySelectorAll('#vagas-options .form-option').forEach(function(o){ o.setAttribute('aria-pressed', 'false'); });
     opt.classList.add('selected');
+    opt.setAttribute('aria-pressed', 'true');
     document.getElementById('f-vagas').value = opt.dataset.val;
   });
 });
 document.querySelectorAll('#area-options .form-option').forEach(function(opt){
   opt.addEventListener('click', function(){
     document.querySelectorAll('#area-options .form-option').forEach(function(o){ o.classList.remove('selected'); });
+    document.querySelectorAll('#area-options .form-option').forEach(function(o){ o.setAttribute('aria-pressed', 'false'); });
     opt.classList.add('selected');
+    opt.setAttribute('aria-pressed', 'true');
     document.getElementById('f-area').value = opt.dataset.val;
   });
 });
@@ -1084,12 +1104,14 @@ async function submitForm(){
     document.getElementById('form-note').style.display = 'none';
     document.getElementById('form-progress-bar').style.width = '100%';
     document.getElementById('success-state').classList.add('show');
+    trackCompanyLead('company_lead_submitted', { source: 'paraempresas' });
   } catch(e) {
     btn.disabled = false;
     btn.style.opacity = '1';
     var err = document.getElementById('form-error');
     err.textContent = 'Erro ao enviar. Tente novamente ou escreva para contato@vagaai.app.br';
     err.classList.add('show');
+    trackCompanyLead('company_lead_error', { source: 'paraempresas' });
   }
 }
 

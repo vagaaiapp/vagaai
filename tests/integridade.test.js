@@ -855,7 +855,11 @@ describe('Eventos de produto', () => {
       'curriculo_salvo': ['curriculo/index.html', 'app/index.html'],
       'carta_gerada': ['carta/index.html'],
       'alerta_configurado': ['dashboard/index.html'],
-      'checkout_iniciado': ['dashboard/index.html', 'js/lp-editorial.js'],
+      'analysis_started': ['app/index.html', 'onboarding/vaga/index.html'],
+      'analysis_completed': ['app/index.html', 'onboarding/vaga/index.html'],
+      'begin_checkout': ['dashboard/index.html', 'js/lp-editorial.js'],
+      'sign_up': ['login/index.html', 'js/sessao.js'],
+      'company_lead_submitted': ['paraempresas/index.html'],
     };
     for (const [evento, arquivos] of Object.entries(esperado)) {
       for (const arq of arquivos) {
@@ -992,6 +996,15 @@ describe('Rastreamento de conversão', () => {
     assert.match(obrigado, /gtag\('event',\s*'purchase'/, 'sem evento purchase no GA4');
     assert.match(obrigado, /var ADS_ID\s*=/, 'sem ponto de configuração do Google Ads');
     assert.match(obrigado, /send_to:\s*ADS_ID/, 'ADS_ID declarado mas não usado no envio');
+  });
+
+  it('só registra a compra depois de validar a sessão no Stripe', () => {
+    const subscription = read('api/subscription.js');
+    assert.match(obrigado, /action=verify_checkout/);
+    assert.match(obrigado, /verification\.verified/);
+    assert.match(subscription, /action === 'verify_checkout'/);
+    assert.match(subscription, /session\.status === 'complete'/);
+    assert.match(subscription, /payment_status/);
   });
 
   it('a mesma compra não conta duas vezes ao recarregar', () => {
@@ -1271,17 +1284,15 @@ describe('Teto mensal do Pro vale nos tres lados', () => {
   };
 
   it('analises: entitlements, api/analyze.js e a RPC dizem o mesmo numero', () => {
-    const noJs = analyze.match(/const PRO_ANALYSES_CAP = (\d+);/);
-    assert.ok(noJs, 'PRO_ANALYSES_CAP ausente em api/analyze.js');
+    assert.match(analyze, /const PRO_ANALYSES_CAP = planEntitlements\('pro'\)\.analyses_limit;/,
+      'api/analyze.js precisa ler o teto da fonte unica de entitlements');
 
     const sql = ultimaDefinicaoDe('check_and_increment_analyses');
     const noBanco = sql.match(/v_pro_cap\s+CONSTANT INTEGER := (\d+);/);
     assert.ok(noBanco, 'v_pro_cap ausente na RPC');
 
-    assert.equal(doPlano('pro', 'analyses_limit'), noJs[1],
-      `entitlements diz ${doPlano('pro', 'analyses_limit')} e api/analyze.js diz ${noJs[1]}`);
-    assert.equal(noJs[1], noBanco[1],
-      `api/analyze.js diz ${noJs[1]} e a RPC aplica ${noBanco[1]}`);
+    assert.equal(doPlano('pro', 'analyses_limit'), noBanco[1],
+      `entitlements diz ${doPlano('pro', 'analyses_limit')} e a RPC aplica ${noBanco[1]}`);
   });
 
   it('nenhum plano volta a prometer uso sem teto', () => {

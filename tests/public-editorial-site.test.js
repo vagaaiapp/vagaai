@@ -60,7 +60,8 @@ test('artigo preserva conteúdo dinâmico, SEO e aquisição', () => {
   assert.match(html, /select=\*/);
   assert.match(html, /id="canonicalLink"/);
   assert.match(html, /class="post-content"/);
-  assert.match(html, /href="\/app">Analisar minha vaga/);
+  assert.match(html, /href="\/onboarding\/vaga\/1\?entry=cv&amp;new=1&amp;utm_source=blog/);
+  assert.match(html, /'blog_cta_click'/);
   assert.match(html, /G-XCT8K58VWF/);
   assert.match(html, /src="\/cookie-consent\.js"/);
   assert.match(middleware, /replace\('<title>Blog \| VagaAI<\/title>'/);

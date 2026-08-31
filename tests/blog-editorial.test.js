@@ -35,10 +35,10 @@ test('blog preserva aquisição, métricas e consentimento', () => {
   assert.match(html, /G-XCT8K58VWF/);
   assert.match(html, /src="\/js\/eventos\.js"/);
   assert.match(html, /src="\/cookie-consent\.js"/);
-  assert.match(html, /href="\/onboarding\/vaga\/1\?entry=cv&amp;new=1"/);
+  assert.match(html, /href="\/onboarding\/vaga\/1\?entry=cv&amp;new=1&amp;utm_source=blog/);
   assert.match(script, /'blog_filtro'/);
   assert.match(script, /'blog_artigo_aberto'/);
-  assert.match(script, /'cta_funil'/);
+  assert.match(script, /'blog_cta_click'/);
 });
 
 test('blog cobre desktop, tablet, mobile e movimento reduzido', () => {

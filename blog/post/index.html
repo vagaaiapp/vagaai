@@ -9,6 +9,7 @@
   gtag('js',new Date());gtag('config','G-XCT8K58VWF');
   </script>
   <script src="/cookie-consent.js" defer></script>
+  <script src="/js/eventos.js" defer></script>
   <script defer src="/_vercel/insights/script.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -153,10 +154,9 @@
         <a href="/paraempresas">Para empresas</a>
       </div>
       <div class="nav-links">
-        <a href="/#recursos">Benefícios</a>
+        <a href="/#recursos">Recursos</a>
         <a href="/#planos">Planos</a>
         <a href="/blog">Blog</a>
-        <a href="/paraempresas" style="color:var(--green);font-weight:700">Para empresas</a>
       </div>
       <div class="nav-actions">
         <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">
@@ -164,7 +164,7 @@
           <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
         <a class="btn btn-secondary" href="https://www.vagaai.app.br/login">Entrar</a>
-        <a class="btn btn-primary" href="https://www.vagaai.app.br/app">Analisar vaga grátis</a>
+        <a class="btn btn-primary" href="/onboarding/vaga/1?entry=cv&amp;new=1&amp;utm_source=blog&amp;utm_medium=content&amp;utm_campaign=article_header" onclick="trackBlogCta('article_header')">Analisar vaga grátis</a>
         <button class="menu" aria-label="Abrir menu" onclick="toggleMenu()">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
         </button>
@@ -214,6 +214,9 @@
       }
     });
     function toggleMenu() { document.getElementById('nav').classList.toggle('open'); }
+    function trackBlogCta(placement) {
+      if (window.vagaaiTrack) window.vagaaiTrack('blog_cta_click', { path: 'with_cv', placement: placement });
+    }
     document.querySelectorAll('.nav-links a').forEach(function(a) {
       a.addEventListener('click', function() { document.getElementById('nav').classList.remove('open'); });
     });
@@ -275,7 +278,7 @@
           + '<div class="post-cta">'
           + '<h3>Teste o VagaAI gratuitamente</h3>'
           + '<p>Cole a vaga e seu currículo. Receba score ATS, falhas e sugestões em 30 segundos.</p>'
-          + '<a class="btn btn-primary" href="/app">Analisar minha vaga →</a>'
+          + '<a class="btn btn-primary" href="/onboarding/vaga/1?entry=cv&amp;new=1&amp;utm_source=blog&amp;utm_medium=content&amp;utm_campaign=article_body" onclick="trackBlogCta(\'article_body\')">Analisar minha vaga →</a>'
           + '</div>';
       } catch (e) {
         container.className = '';

@@ -203,6 +203,7 @@ body:not(.embedded) .entrev-shell{margin-left:230px}
 <script>(function(){var t=localStorage.getItem('vagaai_theme');document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light')})()</script>
 <link rel="stylesheet" href="/assets/product-ui.css?v=20260829-shell3">
 <link rel="stylesheet" href="/assets/product-modules.css?v=20260829-modules1">
+<script src="/js/abuse-challenge.js"></script>
 </head>
 <body data-vagaai-ui="interview">
 
@@ -236,7 +237,7 @@ body:not(.embedded) .entrev-shell{margin-left:230px}
         <span>·</span>
         <span>✓ Dicas personalizadas</span>
       </div>
-      <a href="/dashboard#plano" class="pro-gate-btn">⚡ Desbloquear simulador</a>
+      <a href="/dashboard#plano" class="pro-gate-btn">⚡ Desbloquear treino</a>
       <p style="font-size:11px;color:var(--muted);margin-top:.75rem">Cancele quando quiser</p>
     </div>
   </div>
@@ -633,7 +634,7 @@ async function generateInterview(options) {
 
   try {
     var _t = await getFreshToken();
-    var res = await fetch('/api/interview', {
+    var res = await (window.VagaAIAbuse ? window.VagaAIAbuse.fetch : fetch)('/api/interview', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _t },
       body: JSON.stringify({

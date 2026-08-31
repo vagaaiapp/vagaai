@@ -101,6 +101,39 @@ function avatarAction(req) {
   try { return new URL(req.url, 'https://vagaai.app.br').searchParams.get('action') || ''; } catch { return ''; }
 }
 
+function checkoutSessionId(req) {
+  if (req.query && req.query.session_id) return String(req.query.session_id);
+  try { return new URL(req.url, 'https://vagaai.app.br').searchParams.get('session_id') || ''; } catch { return ''; }
+}
+
+async function handleCheckoutVerification(req, res) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+  if (!process.env.STRIPE_SECRET_KEY) return res.status(503).json({ error: 'Stripe not configured' });
+  const sessionId = checkoutSessionId(req);
+  if (!/^cs_(?:test|live)_[A-Za-z0-9]+$/.test(sessionId)) {
+    return res.status(400).json({ error: 'invalid_session' });
+  }
+  try {
+    const stripeRes = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`, {
+      headers: { Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}` },
+    });
+    if (!stripeRes.ok) return res.status(stripeRes.status === 404 ? 404 : 502).json({ error: 'checkout_unavailable' });
+    const session = await stripeRes.json();
+    const paid = session.status === 'complete' && ['paid', 'no_payment_required'].includes(session.payment_status);
+    if (!paid) return res.status(409).json({ error: 'payment_not_confirmed' });
+    return res.status(200).json({
+      verified: true,
+      transaction_id: session.id,
+      value: Number(session.amount_total || 0) / 100,
+      currency: String(session.currency || 'brl').toUpperCase(),
+      mode: session.mode || null,
+    });
+  } catch (err) {
+    console.error('checkout verification error:', err);
+    return res.status(502).json({ error: 'checkout_unavailable' });
+  }
+}
+
 async function handleAvatar(req, res) {
   if (!SUPABASE_URL || !SUPABASE_KEY || !SUPABASE_SERVICE_KEY) {
     return res.status(500).json({ error: 'O envio de foto não está configurado neste ambiente.' });
@@ -175,6 +208,7 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
 
   const action = avatarAction(req);
+  if (action === 'verify_checkout') return handleCheckoutVerification(req, res);
   if (action === 'avatar' && (req.method === 'POST' || req.method === 'DELETE')) return handleAvatar(req, res);
 
   if (req.method === 'POST') {

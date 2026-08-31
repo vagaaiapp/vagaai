@@ -41,6 +41,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <script src="/onboarding/shared.js"></script>
 <script src="/js/sessao.js"></script>
 <script src="/js/eventos.js"></script>
+<script src="/js/abuse-challenge.js"></script>
 <script src="/js/profile-avatar.js"></script>
 <script src="/js/cv-voice.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1060,6 +1061,31 @@ var userPlanSub = null;  // objeto completo da subscription
 // em vez de bloquear permanentemente quem tem 0 créditos avulsos.
 var freeMonthlyAvailable = false;
 
+function getAnalysisLimit() {
+  var raw = userPlanSub && userPlanSub.entitlements && userPlanSub.entitlements.analyses_limit;
+  var parsed = Number(raw);
+  if (isFinite(parsed) && parsed > 0) return parsed;
+  return userPlan === 'pro' ? 100 : userPlan === 'starter' ? 10 : 1;
+}
+
+function getAnalysisUsed() {
+  var fromUsage = userPlanSub && userPlanSub.uso && userPlanSub.uso.analises
+    ? Number(userPlanSub.uso.analises.usado) : NaN;
+  if (isFinite(fromUsage)) return fromUsage;
+  return Number(userPlanSub && userPlanSub.analyses_used_this_month) || 0;
+}
+
+function paidAnalysisAvailable() {
+  return (userPlan === 'starter' || userPlan === 'pro') && getAnalysisUsed() < getAnalysisLimit();
+}
+
+function registerPaidAnalysisUse() {
+  if (!(userPlan === 'starter' || userPlan === 'pro') || !userPlanSub) return;
+  var next = Math.min(getAnalysisLimit(), getAnalysisUsed() + 1);
+  userPlanSub.analyses_used_this_month = next;
+  if (userPlanSub.uso && userPlanSub.uso.analises) userPlanSub.uso.analises.usado = next;
+}
+
 function toggleAppDropdown() {
   var dd = document.getElementById('appUserDropdown');
   if (!dd) return;
@@ -1160,32 +1186,16 @@ async function loadUserCredits(session) {
 
     updateCreditsUI();
 
-    // 3. Decide se bloqueia ou libera
-    if (userPlan === 'pro') return; // Pro: sempre libera
-
-    if (userPlan === 'starter') {
-      // Starter: libera enquanto tiver análises restantes no mês
-      var used = userPlanSub ? (userPlanSub.analyses_used_this_month || 0) : 0;
-      if (used < 10) return; // ainda tem análises
-      showLimitReachedStarter();
+    // 3. Decide se bloqueia ou libera usando os limites devolvidos pela fonte
+    // única de entitlements. Pro também tem teto mensal: 100 análises.
+    if (userPlan === 'starter' || userPlan === 'pro') {
+      if (paidAnalysisAvailable()) return;
+      showLimitReachedPaid();
       return;
     }
 
-    // Free: antes de bloquear, verifica se a análise gratuita mensal está
-    // disponível (nenhuma análise nos últimos 30 dias — mesma regra do backend)
-    freeMonthlyAvailable = false;
-    try {
-      var thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      var aRes = await fetch(
-        SUPABASE_URL + '/rest/v1/analyses?user_id=eq.' + session.user.id
-          + '&created_at=gte.' + encodeURIComponent(thirtyDaysAgo) + '&select=id&limit=1',
-        { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + session.access_token } }
-      );
-      var aRows = await aRes.json();
-      freeMonthlyAvailable = Array.isArray(aRows) && aRows.length === 0;
-    } catch(e) {}
-    updateCreditsUI();
-
+    // Free usa a disponibilidade já calculada por /api/subscription. Assim o
+    // cliente não reimplementa a janela de 30 dias nem diverge do backend.
     var fromSignup = false;
     try { fromSignup = !!localStorage.getItem('vagaai_from_signup'); } catch(e) {}
     if (userCredits <= 0 && !freeMonthlyAvailable && !fromSignup) showLimitReached();
@@ -1196,11 +1206,8 @@ function updateCreditsUI() {
   var navEl = document.getElementById('navCredits');
   var numEl = document.getElementById('navCreditsNum');
 
-  if (userPlan === 'pro') {
-    numEl.textContent = '∞';
-  } else if (userPlan === 'starter') {
-    var used = userPlanSub ? (userPlanSub.analyses_used_this_month || 0) : 0;
-    numEl.textContent = Math.max(0, 10 - used);
+  if (userPlan === 'pro' || userPlan === 'starter') {
+    numEl.textContent = Math.max(0, getAnalysisLimit() - getAnalysisUsed());
   } else {
     // Free: soma a análise gratuita mensal ao contador quando disponível
     numEl.textContent = userCredits > 0 ? userCredits : (freeMonthlyAvailable ? 1 : 0);
@@ -1227,14 +1234,15 @@ function updateCreditsUI() {
   }
 }
 
-function showLimitReachedStarter() {
-  // Starter esgotou as 10 análises do mês
+function showLimitReachedPaid() {
+  var planLabel = userPlan === 'pro' ? 'Pro' : 'Starter';
+  var limit = getAnalysisLimit();
   document.getElementById('formSection').style.display = 'none';
   document.getElementById('freeNotice').style.display = 'none';
   document.getElementById('limitSection').classList.add('show');
   document.getElementById('limitIcon').innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>';
   document.getElementById('limitTitle').textContent = 'Limite mensal atingido';
-  document.getElementById('limitSub').textContent = 'Você usou as 10 análises do plano Starter este mês. Renova no início do próximo mês ou faça upgrade para Pro.';
+  document.getElementById('limitSub').textContent = 'Você usou as ' + limit + ' análises do plano ' + planLabel + ' neste ciclo. A contagem zera na renovação da assinatura.' + (userPlan === 'starter' ? ' No Pro, o limite sobe para 100 análises por mês.' : '');
   document.getElementById('limitPlans').style.display = 'none';
   document.getElementById('limitDashLink').style.display = 'block';
   var signupCTA = document.getElementById('limitSignupCTA');
@@ -1582,11 +1590,15 @@ async function gerarCV() {
       }
     } catch(_) {}
 
-    var res = await fetch('/api/analyze', {
+    var res = await (window.VagaAIAbuse ? window.VagaAIAbuse.fetch('/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...authHeader },
       body: JSON.stringify({ action: 'create_cv', nome, cargo_objetivo: cargo, experiencias, formacao, habilidades, job: jobCtx || undefined })
-    });
+    }) : fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeader },
+      body: JSON.stringify({ action: 'create_cv', nome, cargo_objetivo: cargo, experiencias, formacao, habilidades, job: jobCtx || undefined })
+    }));
     var data = await res.json().catch(function(){ return {}; });
     if (!res.ok || !data.cv_text) {
       appToast(data.message || data.error || 'Erro ao gerar currículo. Tente novamente.', 'error');
@@ -2180,7 +2192,7 @@ async function analyze() {
 }
 
 async function doAnalyze(job, cv) {
-  track('analyze_start');
+  track('analysis_started', { source: 'app' });
   document.getElementById('analyzeBtn').disabled = true;
   document.getElementById('formSection').style.display = 'none';
   document.getElementById('freeNotice').style.display = 'none';
@@ -2222,7 +2234,7 @@ async function doAnalyze(job, cv) {
       if (_freshTok) headers['Authorization'] = 'Bearer ' + _freshTok;
     }
 
-    var res = await fetch('/api/analyze', {
+    var analyzeOptions = {
       method: 'POST',
       headers: headers,
       body: JSON.stringify({
@@ -2231,7 +2243,10 @@ async function doAnalyze(job, cv) {
         job_url: (document.getElementById('jobUrl') && document.getElementById('jobUrl').value.trim()) || ''
       }),
       signal: controller.signal
-    });
+    };
+    var res = await (window.VagaAIAbuse
+      ? window.VagaAIAbuse.fetch('/api/analyze', analyzeOptions)
+      : fetch('/api/analyze', analyzeOptions));
 
     clearTimeout(slowTimer);
     clearTimeout(hardTimer);
@@ -2250,12 +2265,17 @@ async function doAnalyze(job, cv) {
        descreve um bug nosso e nao o que aconteceu. */
     if (data.error === 'cota_mensal') {
       document.getElementById('loadingSection').classList.remove('show');
-      restoreForm(data.message || 'Você usou todas as análises do seu plano neste ciclo. A contagem zera na renovação da assinatura.');
+      if (userPlanSub) {
+        userPlanSub.analyses_used_this_month = Number(data.limite) || getAnalysisLimit();
+        if (userPlanSub.uso && userPlanSub.uso.analises) userPlanSub.uso.analises.usado = userPlanSub.analyses_used_this_month;
+      }
+      updateCreditsUI();
+      showLimitReachedPaid();
       return;
     }
     if (res.status === 402 || data.error === 'sem_creditos') {
       document.getElementById('loadingSection').classList.remove('show');
-      if (userPlan === 'pro') {
+      if (userPlan === 'pro' || userPlan === 'starter') {
         restoreForm('Não conseguimos validar a autorização da análise agora. Atualize a página e tente novamente. Se persistir, fale com o suporte.');
         return;
       }
@@ -2282,7 +2302,12 @@ async function doAnalyze(job, cv) {
     if (!authSession) localStorage.setItem('vagaai_analyzed', JSON.stringify({ts: Date.now()}));
     else freeMonthlyAvailable = false;
 
-    // Atualiza créditos legados apenas para plano free (pro/starter mostram ∞ ou contagem mensal)
+    // Atualiza o consumo apresentado sem esperar uma recarga da assinatura.
+    if (authSession && (userPlan === 'starter' || userPlan === 'pro')) {
+      registerPaidAnalysisUse();
+      updateCreditsUI();
+    }
+    // Créditos legados só existem para o plano grátis.
     if (authSession && data._credits_remaining != null && (!userPlan || userPlan === 'free')) {
       userCredits = data._credits_remaining;
       document.getElementById('navCreditsNum').textContent = userCredits;
@@ -2297,7 +2322,7 @@ async function doAnalyze(job, cv) {
       track('milestone_unlocked', { milestone: ms.milestone, credits: totalCred });
     }
 
-    track('analyze_complete', { score: data.score, nivel: data.nivel });
+    track('analysis_completed', { score: data.score, nivel: data.nivel, source: 'app' });
     // Salva para pré-preenchimento em /entrevista e /carta
     try { localStorage.setItem('vagaai_last_job', job); localStorage.setItem('vagaai_last_cv', cv); } catch(e) {}
 
@@ -2606,7 +2631,7 @@ function showResult(d) {
   // 12. Botão de nova análise
   var newBtn = document.getElementById('newAnalysisBtn');
   if (authSession) {
-    var hasAccess = userPlan === 'pro' || (userPlan === 'starter' && (userPlanSub ? (userPlanSub.analyses_used_this_month||0) < 10 : true)) || userCredits > 0 || freeMonthlyAvailable;
+    var hasAccess = paidAnalysisAvailable() || userCredits > 0 || freeMonthlyAvailable;
     newBtn.disabled = !hasAccess;
     newBtn.textContent = hasAccess ? '← Nova análise' : '← Sem créditos';
   } else {
@@ -2636,11 +2661,10 @@ function showResult(d) {
 function tryNewAnalysis() {
   if (authSession) {
     // Usuário logado: verifica acesso (plano, créditos ou análise mensal grátis)
-    var starterOk = userPlan === 'starter' && (userPlanSub ? (userPlanSub.analyses_used_this_month||0) < 10 : true);
-    var hasAccess = userPlan === 'pro' || starterOk || userCredits > 0 || freeMonthlyAvailable;
+    var hasAccess = paidAnalysisAvailable() || userCredits > 0 || freeMonthlyAvailable;
     if (!hasAccess) {
       document.getElementById('resultSection').classList.remove('show');
-      if (userPlan === 'starter') showLimitReachedStarter();
+      if (userPlan === 'starter' || userPlan === 'pro') showLimitReachedPaid();
       else showLimitReached();
       return;
     }

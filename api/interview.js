@@ -12,6 +12,7 @@ import { resolvePlan } from '../lib/entitlements.js';
 import { checkAndCountLimit } from '../lib/ratelimit.js';
 import { checarCotaMensal, mensagemDeCota } from '../lib/cotas.js';
 import { transcribeAudio } from '../lib/transcribe.js';
+import { abuseHttpResponse, anonymousKeys, guardAccountUsage } from '../lib/abuse.js';
 
 export const config = {
   api: {
@@ -220,16 +221,6 @@ const CVV_USER_WINDOW_MS = 60 * 60 * 1000;
 const CVV_ANON_IP_LIMIT = 12;
 const CVV_ANON_IP_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-// IP do cliente para rate-limit. Prefere x-real-ip (definido pela Vercel, não
-// spoofável pelo cliente) em vez do 1º item de x-forwarded-for. Mesma função
-// de analyze.js.
-function clientIp(req) {
-  const realIp = (req.headers['x-real-ip'] || '').trim();
-  if (realIp) return realIp;
-  const xff = (req.headers['x-forwarded-for'] || '').split(',').map(s => s.trim()).filter(Boolean);
-  return xff.length ? xff[xff.length - 1] : 'unknown';
-}
-
 // Regra que vale para os três formatos: a IA reescreve, nunca inventa.
 const CVV_REGRAS = `REGRAS OBRIGATORIAS:
 - Use SOMENTE o que a pessoa falou. Nunca invente empresa, cargo, tecnologia, numero ou resultado.
@@ -316,9 +307,16 @@ async function handleCvVoice(req, res) {
   const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
   const user = token ? await getUserFromToken(token) : null;
 
+  if (user) {
+    const decision = await guardAccountUsage({
+      user, req, res, resource: 'cv_voice', challengeToken: req.body?.turnstile_token || ''
+    });
+    if (!decision.ok) return abuseHttpResponse(res, decision);
+  }
+
   const ok = user
     ? await checkAndCountLimit({ key: `u:${user.id}:cvvoice`, limit: CVV_USER_LIMIT, windowMs: CVV_USER_WINDOW_MS })
-    : await checkAndCountLimit({ key: `ip:${clientIp(req)}:cvvoice`, limit: CVV_ANON_IP_LIMIT, windowMs: CVV_ANON_IP_WINDOW_MS });
+    : await checkAndCountLimit({ key: anonymousKeys(req, res, 'cvvoice').ip, limit: CVV_ANON_IP_LIMIT, windowMs: CVV_ANON_IP_WINDOW_MS });
   if (!ok) {
     return res.status(429).json({
       error: user
@@ -383,6 +381,14 @@ export default async function handler(req, res) {
       message: 'O Treino de entrevista é do plano Pro: 8 perguntas geradas para esta vaga e para o seu currículo, com avaliação da sua resposta em cada uma.',
       plan
     });
+  }
+
+
+  if (action === 'generate') {
+    const abuseDecision = await guardAccountUsage({
+      user, req, res, resource: 'interview', challengeToken: req.body?.turnstile_token || ''
+    });
+    if (!abuseDecision.ok) return abuseHttpResponse(res, abuseDecision);
   }
 
   if (!(await checkUserRateLimit(user.id))) {

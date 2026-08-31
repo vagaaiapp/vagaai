@@ -612,7 +612,10 @@
     var fetchFn = options.fetchFn || (typeof fetch === 'function' ? fetch.bind(globalThis) : null);
     if (!fetchFn) return { claimed: false, reason: 'missing_fetch', state: state };
 
-    var response = await fetchFn('/api/analyze', {
+    var protectedFetch = root && root.VagaAIAbuse && typeof root.VagaAIAbuse.fetch === 'function'
+      ? root.VagaAIAbuse.fetch
+      : fetchFn;
+    var response = await protectedFetch('/api/analyze', {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + session.access_token,
@@ -828,7 +831,10 @@
     var fetchFn = options.fetchFn || (typeof fetch === 'function' ? fetch.bind(globalThis) : null);
     if (!fetchFn) return null;
     try {
-      var response = await fetchFn('/api/analyze', {
+      var protectedFetch = root && root.VagaAIAbuse && typeof root.VagaAIAbuse.fetch === 'function'
+        ? root.VagaAIAbuse.fetch
+        : fetchFn;
+      var response = await protectedFetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'onboarding_cv_extract', cv: text.slice(0, 15000) })

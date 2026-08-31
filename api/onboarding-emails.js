@@ -180,7 +180,7 @@ const EMAILS = {
     const items = isPro
       ? [['⚡ 100 análises por mês', 'Folga para analisar toda vaga que aparecer, sem racionar.'],
          ['🎤 Treino de entrevista', 'Treine com perguntas geradas para a SUA vaga e receba feedback da IA.'],
-         ['🔔 Alertas diários sem limite', 'Todas as vagas compatíveis, com análise da IA no topo do e-mail.']]
+         ['🔔 Até 5 alertas diários', 'Todas as vagas encontradas em cada envio, com as mais compatíveis no topo.']]
       : [['⚡ 10 análises por mês', 'Analise as vagas mais importantes antes de aplicar.'],
          ['📄 Currículo otimizado em PDF', 'Gere a versão otimizada pronta para enviar.'],
          ['✉️ Carta de apresentação', 'Uma carta personalizada para cada vaga, em segundos.']];

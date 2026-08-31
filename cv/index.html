@@ -13,6 +13,8 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/onboarding/shared.js"></script>
 <script src="/js/sessao.js"></script>
+<script src="/js/eventos.js"></script>
+<script src="/js/abuse-challenge.js"></script>
 <script src="/js/cv-voice.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1070,7 +1072,7 @@ html.no-photo .mod-header{display:block}
     <span class="app-saved"><i></i> Alterações salvas</span>
     <button class="app-icon-btn vui-theme-control" type="button" onclick="toggleAppTheme()" aria-label="Alternar tema claro ou escuro" title="Alternar tema"><span class="vui-theme-control-icon" aria-hidden="true"><svg class="vui-theme-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg><svg class="vui-theme-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span></button>
     <a class="app-outline-btn" id="appCvBack" href="/curriculo" onclick="return goBackToCurriculos(event)" style="text-decoration:none">Voltar aos currículos</a>
-    <button class="app-primary-btn" type="button" onclick="mobPrint()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>Baixar PDF</button>
+    <button class="app-primary-btn" type="button" onclick="mobPrint()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>Salvar em PDF</button>
   </div>
 </header>
 
@@ -1398,7 +1400,7 @@ html.no-photo .mod-header{display:block}
         <div class="csv-download-row" id="s4DownloadRow">
           <button class="csv-dl-btn primary" id="s4PdfBtn" onclick="s4StartPdfDownload()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Baixar PDF
+            Salvar em PDF
           </button>
         </div>
         <button id="s4DocBtn" onclick="s4DownloadDoc(this)" style="background:none;border:none;padding:.3rem 0;font-size:12px;color:var(--app-t3);cursor:pointer;font-family:'Manrope',sans-serif;display:flex;align-items:center;gap:.35rem;margin-top:.35rem">
@@ -1587,7 +1589,7 @@ html.no-photo .mod-header{display:block}
             <svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5"/></svg>Baixar Word
           </button>
           <button class="base-download-btn primary" type="button" onclick="mobPrint()">
-            <svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Baixar PDF
+            <svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Salvar em PDF
           </button>
         </div>
       </footer>
@@ -1930,7 +1932,7 @@ html.no-photo .mod-header{display:block}
       <button class="pf-btn secondary" type="button" id="pfCompactBtn" onclick="compactCurrentTemplate()">Ajustar em 1 página</button>
       <button class="pf-btn primary" type="button" id="pfDownloadBtn" onclick="printAfterPreflight()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <span id="pfDownloadLbl">Baixar PDF</span>
+        <span id="pfDownloadLbl">Imprimir ou salvar em PDF</span>
       </button>
       <button class="pf-btn doc-btn" type="button" onclick="downloadWordDoc()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -3077,7 +3079,7 @@ async function printAfterPreflight() {
   })
   .finally(function() {
     if (btn) btn.style.pointerEvents = '';
-    if (lbl) lbl.textContent = 'Baixar PDF';
+    if (lbl) lbl.textContent = 'Imprimir ou salvar em PDF';
   });
 }
 
@@ -5007,7 +5009,7 @@ function _enterReviewMode(ctx) {
     changes.map(function(c) { return '<div class="s4rb-change"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>' + c + '</span></div>'; }).join(''),
     '</div>',
     '<div class="s4rb-actions">',
-    '  <button class="csv-dl-btn primary" onclick="s4StartPdfDownload()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Baixar PDF</button>',
+    '  <button class="csv-dl-btn primary" onclick="s4StartPdfDownload()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Salvar em PDF</button>',
     '  <button class="s4rb-review-btn" onclick="goToStep(2)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Revisar alterações</button>',
     '</div>'
   ].join('');

@@ -532,7 +532,8 @@ describe('Onboarding adaptativo', () => {
   it('expõe uma ação de extração separada da geração gratuita', () => {
     assert.match(analyzeSource, /action === 'onboarding_cv_extract'/);
     assert.match(analyzeSource, /OB_CV_EXTRACT_IP_LIMIT/);
-    assert.match(analyzeSource, /ip:\$\{extractIp\}:obcvextract/);
+    assert.match(analyzeSource, /anonymousKeys\(req, res, 'obcvextract'\)/);
+    assert.match(analyzeSource, /key: extractKeys\.ip/);
   });
 
   it('limita a geração gratuita pelo navegador e usa o IP apenas contra abuso', () => {
@@ -548,10 +549,11 @@ describe('Onboarding adaptativo', () => {
     );
 
     assert.match(analyzeSource, /const OB_CV_ANON_LIMIT = 2/);
-    assert.match(analyzeSource, /const OB_CV_IP_ABUSE_LIMIT = 100/);
-    assert.match(analyzeSource, /anon:\$\{obAnonHash\}:obcv/);
-    assert.match(analyzeSource, /ip:\$\{obIp\}:obcv-abuse/);
-    assert.doesNotMatch(analyzeSource, /ip:\$\{obIp\}:obcv`/);
+    assert.match(analyzeSource, /const OB_CV_IP_ABUSE_LIMIT = 10/);
+    assert.match(analyzeSource, /anonymousKeys\(req, res, 'obcv'\)/);
+    assert.match(analyzeSource, /const obAnonKey = obKeys\.device/);
+    assert.match(analyzeSource, /key: obKeys\.ip/);
+    assert.doesNotMatch(analyzeSource, /ip:\$\{obIp\}/);
     assert.match(curriculoHtml, /limitData\.reason === 'network_abuse_limit'/);
     assert.match(curriculoHtml, /function showNetworkLimit\(\)/);
   });

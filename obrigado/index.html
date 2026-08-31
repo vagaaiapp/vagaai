@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VagaAI | Pagamento confirmado!</title>
+<title>VagaAI | Confirmação de pagamento</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,9 +70,9 @@ nav{position:fixed;top:0;left:0;right:0;background:rgba(10,15,13,0.92);backdrop-
 </nav>
 
 <div class="card">
-  <div class="icon">🎉</div>
-  <div class="title">Pagamento confirmado!</div>
-  <p class="sub" id="purchaseSub">Sua assinatura está ativa e os recursos do seu plano já estão liberados na sua conta.</p>
+  <div class="icon" id="purchaseIcon">…</div>
+  <div class="title" id="purchaseTitle">Confirmando pagamento…</div>
+  <p class="sub" id="purchaseSub">Estamos validando a compra com o Stripe antes de registrar a conversão.</p>
   <div id="purchaseDetail" style="display:none;background:rgba(62,207,142,0.08);border:1px solid var(--green-border);border-radius:10px;padding:.75rem 1rem;margin-bottom:1.2rem;font-size:14px;color:var(--green);font-weight:600;text-align:left"></div>
 
   <div class="steps">
@@ -113,23 +113,48 @@ nav{position:fixed;top:0;left:0;right:0;background:rgba(10,15,13,0.92);backdrop-
 var ADS_ID    = '';   // ex.: 'AW-123456789'
 var ADS_LABEL = '';   // ex.: 'AbC-D_efGhIjKlM'
 
-(function() {
+(async function() {
   var params = new URLSearchParams(window.location.search);
+  var sessionId = params.get('session_id') || '';
+  var title = document.getElementById('purchaseTitle');
+  var sub = document.getElementById('purchaseSub');
+  var icon = document.getElementById('purchaseIcon');
+
+  if (!sessionId) {
+    if (title) title.textContent = 'Pagamento em processamento';
+    if (sub) sub.textContent = 'Acesse o painel para acompanhar a ativação. Nenhuma conversão foi registrada sem a confirmação do Stripe.';
+    if (icon) icon.textContent = '⌛';
+    return;
+  }
+
+  var verification;
+  try {
+    var response = await fetch('/api/subscription?action=verify_checkout&session_id=' + encodeURIComponent(sessionId), { cache: 'no-store' });
+    verification = await response.json().catch(function(){ return {}; });
+    if (!response.ok || !verification.verified) throw new Error('not_verified');
+  } catch(e) {
+    if (title) title.textContent = 'Estamos confirmando seu pagamento';
+    if (sub) sub.textContent = 'A confirmação pode levar alguns instantes. Consulte o painel antes de tentar comprar novamente.';
+    if (icon) icon.textContent = '⌛';
+    return;
+  }
+
+  if (title) title.textContent = 'Pagamento confirmado!';
+  if (sub) sub.textContent = 'Sua assinatura está ativa e os recursos do seu plano já estão liberados na sua conta.';
+  if (icon) icon.textContent = '🎉';
+  document.title = 'VagaAI | Pagamento confirmado';
 
   /* Recarregar a página não pode contar a mesma venda de novo. A chave é a
-     sessão do Stripe quando ela vem na URL; sem ela, cai para a própria query,
-     que já distingue compras diferentes (plano vs créditos, preços). */
-  var chave = 'vg_conv_' + (params.get('session_id') || params.get('checkout') || window.location.search || 'default');
+     sessão já verificada diretamente no Stripe. */
+  var chave = 'vg_conv_' + verification.transaction_id;
   var jaContou = false;
   try { jaContou = sessionStorage.getItem(chave) === '1'; } catch(e) {}
 
-  // Só manda `value` quando o preço realmente veio na URL: mandar número
-  // chutado envenena o lance por valor, que é pior do que não mandar nada.
-  var precoRaw = params.get('price');
-  var valor = precoRaw ? parseFloat(precoRaw.replace(/\./g, '').replace(',', '.')) : null;
+  // Valor e moeda vêm da sessão verificada, nunca de parâmetros editáveis.
+  var valor = Number(verification.value);
   if (!isFinite(valor) || valor <= 0) valor = null;
 
-  var payload = { currency: 'BRL', transaction_id: params.get('session_id') || undefined };
+  var payload = { currency: verification.currency || 'BRL', transaction_id: verification.transaction_id };
   if (valor !== null) payload.value = valor;
 
   if (!jaContou) {
@@ -137,30 +162,27 @@ var ADS_LABEL = '';   // ex.: 'AbC-D_efGhIjKlM'
     try { if (typeof gtag === 'function') gtag('event', 'purchase', payload); } catch(e) {}
     try {
       if (typeof gtag === 'function' && ADS_ID && ADS_LABEL) {
-        var ads = { send_to: ADS_ID + '/' + ADS_LABEL, currency: 'BRL' };
+        var ads = { send_to: ADS_ID + '/' + ADS_LABEL, currency: payload.currency };
         if (valor !== null) ads.value = valor;
         if (payload.transaction_id) ads.transaction_id = payload.transaction_id;
         gtag('event', 'conversion', ads);
       }
     } catch(e) {}
+    try { window.va && window.va('event', { name: 'purchase_success', transaction_id: verification.transaction_id }); } catch(e) {}
   }
-  try { window.va && window.va('event', { name: 'purchase_success' }); } catch(e) {}
+  renderPurchaseDetails(verification);
 })();
 
-// Mostra detalhes da compra via URL params (?credits=10&price=39%2C90)
-(function() {
-  var params = new URLSearchParams(window.location.search);
-  var credits = params.get('credits');
-  var price = params.get('price');
+// Mostra apenas os detalhes devolvidos pela sessão confirmada no Stripe.
+function renderPurchaseDetails(verification) {
   var detail = document.getElementById('purchaseDetail');
-  var sub = document.getElementById('purchaseSub');
-  if (credits && detail) {
-    var label = credits === '1' ? '1 crédito' : credits + ' créditos';
-    detail.textContent = '✓ ' + label + (price ? ' · R$' + price : '') + ' adicionados à sua conta';
-    detail.style.display = 'block';
-    if (sub) sub.textContent = 'Tudo certo! Já pode começar a usar.';
-  }
-})();
+  var value = Number(verification && verification.value);
+  if (!detail || !isFinite(value) || value <= 0) return;
+  var currency = String(verification.currency || 'BRL').toUpperCase();
+  var formatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: currency }).format(value);
+  detail.textContent = '✓ Pagamento de ' + formatted + ' confirmado pelo Stripe';
+  detail.style.display = 'block';
+}
 
 function toggleTheme(){var l=document.documentElement.getAttribute('data-theme')==='light';if(l){document.documentElement.removeAttribute('data-theme');localStorage.setItem('vagaai_theme','dark')}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('vagaai_theme','light')}var b=document.getElementById('themeBtn');if(b)b.textContent=l?'☀️':'🌙'}
 ;(function(){var b=document.getElementById('themeBtn');if(b)b.textContent=document.documentElement.getAttribute('data-theme')==='light'?'🌙':'☀️'})();

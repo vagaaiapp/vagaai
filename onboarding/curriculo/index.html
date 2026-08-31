@@ -23,6 +23,7 @@ gtag('js',new Date());gtag('config','G-XCT8K58VWF');
 <script defer src="/_vercel/insights/script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/sessao.js"></script>
+<script src="/js/abuse-challenge.js"></script>
 <script src="/onboarding/shared.js"></script>
 <script src="/js/cv-voice.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -459,7 +460,7 @@ select:focus{outline:none;border-color:var(--green-border)}
       </button>
       <div class="ob-plan-note">
         No plano <b>Grátis</b>: currículo salvo, 1 análise de vaga por mês e alertas semanais.<br>
-        No <b>Pro</b> (R$39,90/mês): 100 análises por mês, carta de apresentação e simulador de entrevista.
+        No <b>Pro</b> (R$39,90/mês): 100 análises por mês, carta de apresentação e treino de entrevista.
       </div>
     </div>
   </section>
@@ -1049,11 +1050,14 @@ function mergeImportedForm(primary, fallback) {
 async function structureImportedCv(raw) {
   var local = parseImportedCvLocally(raw);
   try {
-    var response = await fetch('/api/analyze', {
+    var extractOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action:'onboarding_cv_extract', cv:String(raw || '').slice(0, 15000) })
-    });
+    };
+    var response = await (window.VagaAIAbuse
+      ? window.VagaAIAbuse.fetch('/api/analyze', extractOptions)
+      : fetch('/api/analyze', extractOptions));
     if (!response.ok) throw new Error('extract_' + response.status);
     var payload = await response.json();
     return mergeImportedForm(payload.form || {}, local);
@@ -1300,7 +1304,7 @@ async function generateCv() {
   }
 
   try {
-    var res = await fetch('/api/analyze', {
+    var generationOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1313,7 +1317,10 @@ async function generateCv() {
         contato: { email: f.email, telefone: f.tel, cidade: f.cidade },
         anon_id: getAnonymousBrowserId()
       })
-    });
+    };
+    var res = await (window.VagaAIAbuse
+      ? window.VagaAIAbuse.fetch('/api/analyze', generationOptions)
+      : fetch('/api/analyze', generationOptions));
     clearInterval(tipTimer);
 
     if (res.status === 429) {

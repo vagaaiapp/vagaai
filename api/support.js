@@ -1,4 +1,5 @@
 import { checkAndCountLimit } from '../lib/ratelimit.js';
+import { anonymousKeys } from '../lib/abuse.js';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -62,8 +63,8 @@ function sendAutoReply(to, isCompanyLead) {
 // o teto de 5/hora era, na prática, 5 por instância quente.
 const SUPPORT_LIMIT = 5;                  // máx 5 mensagens
 const SUPPORT_WINDOW_MS = 60 * 60 * 1000; // por hora
-async function checkRateLimit(ip) {
-  return checkAndCountLimit({ key: `ip:${ip}:suporte`, limit: SUPPORT_LIMIT, windowMs: SUPPORT_WINDOW_MS });
+async function checkRateLimit(key) {
+  return checkAndCountLimit({ key, limit: SUPPORT_LIMIT, windowMs: SUPPORT_WINDOW_MS });
 }
 
 // ── Lead B2B (/paraempresas) ─────────────────────────────────────────────────
@@ -147,10 +148,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const clientIp = (req.headers['x-real-ip'] || '').trim()
-    || (req.headers['x-forwarded-for'] || '').split(',').map(s => s.trim()).filter(Boolean).pop()
-    || 'unknown';
-  if (!(await checkRateLimit(clientIp))) {
+  const rateKey = anonymousKeys(req, res, 'suporte').ip;
+  if (!(await checkRateLimit(rateKey))) {
     return res.status(429).json({ error: 'Muitas mensagens. Tente novamente mais tarde.' });
   }
 

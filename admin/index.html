@@ -295,6 +295,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <button class="admin-tab" onclick="switchTab('traffic')" data-tab="traffic">📈 Tráfego</button>
     <button class="admin-tab" onclick="switchTab('alerts')" data-tab="alerts">🔔 Alertas</button>
     <button class="admin-tab" onclick="switchTab('email')" data-tab="email">✉️ E-mail Marketing</button>
+    <button class="admin-tab" onclick="switchTab('abuse')" data-tab="abuse">🛡️ Abusos</button>
   </div>
 
   <!-- ═══════════════ ABA: VISÃO GERAL ═══════════════ -->
@@ -597,6 +598,27 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
   </div><!-- /panel-email -->
 
+  <!-- ═══════════════ ABA: ABUSOS ═══════════════ -->
+  <div id="panel-abuse" class="tab-panel" style="display:none">
+    <div class="section-header">
+      <div class="section-title">Proteção de uso e gratuidades</div>
+      <button class="btn-nav ghost" onclick="loadAbuseData()" style="font-size:12px">↻ Atualizar</button>
+    </div>
+    <div class="metrics-grid" id="abuseMetrics"></div>
+    <div class="section">
+      <div class="section-header"><div class="section-title">Gratuidades ativas</div></div>
+      <div class="table-wrap"><table><thead><tr><th>Data</th><th>Conta</th><th>Recurso</th><th>Risco</th><th>Desafio</th><th>Ação</th></tr></thead><tbody id="abuseClaimsBody"></tbody></table></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><div class="section-title">Eventos recentes</div></div>
+      <div class="table-wrap"><table><thead><tr><th>Data</th><th>Decisão</th><th>Motivo</th><th>Recurso</th><th>Dispositivo</th><th>Rede</th></tr></thead><tbody id="abuseEventsBody"></tbody></table></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><div class="section-title">Contas com muitos dispositivos</div></div>
+      <div class="table-wrap"><table><thead><tr><th>Conta</th><th>Dispositivos (30d)</th><th>Último acesso</th><th>Ação</th></tr></thead><tbody id="abuseAccountsBody"></tbody></table></div>
+    </div>
+  </div><!-- /panel-abuse -->
+
 </div><!-- /container -->
 
 <!-- MODAL: Gerenciar créditos -->
@@ -862,7 +884,7 @@ function renderGA4(d) {
     + '</div>';
 
   // ── Funil + Top páginas ──
-  var maxFunnel = Math.max(f.analyze_start || 1, 1);
+  var maxFunnel = Math.max(f.analysis_started || 0, f.sign_up || 0, f.company_lead || 0, 1);
   function funnelBar(label, val, base) {
     var pct = base > 0 ? Math.round((val / base) * 100) : 0;
     var barW = Math.round((val / maxFunnel) * 100);
@@ -876,10 +898,13 @@ function renderGA4(d) {
 
   html += '<div class="ga4-two-col">'
     + '<div><div class="ga4-box-title">Funil de conversão</div><div class="ga4-funnel">'
-    + funnelBar('Análise iniciada', f.analyze_start||0, f.analyze_start||0)
-    + funnelBar('Análise concluída', f.analyze_complete||0, f.analyze_start||1)
-    + funnelBar('Checkout iniciado', f.begin_checkout||0, f.analyze_start||1)
-    + funnelBar('CV baixado', f.cv_download||0, f.analyze_complete||1)
+    + funnelBar('Cadastro concluído', f.sign_up||0, f.sign_up||0)
+    + funnelBar('Análise iniciada', f.analysis_started||0, f.analysis_started||0)
+    + funnelBar('Análise concluída', f.analysis_completed||0, f.analysis_started||1)
+    + funnelBar('Checkout iniciado', f.begin_checkout||0, f.analysis_completed||1)
+    + funnelBar('Compra confirmada', f.purchase||0, f.begin_checkout||1)
+    + funnelBar('CV baixado', f.cv_download||0, f.analysis_completed||1)
+    + funnelBar('Lead de empresa', f.company_lead||0, f.company_lead||0)
     + '</div></div>'
     + '<div><div class="ga4-box-title">Top páginas</div><div class="ga4-pages">'
     + (pages.length ? pages.map(function(p) {
@@ -931,9 +956,10 @@ function renderGA4(d) {
 // ─── Navegação por abas ───────────────────────────────────────────────────────
 
 var _alertsLoaded = false;
+var _abuseLoaded = false;
 
 function switchTab(tab) {
-  ['overview','users','finance','traffic','alerts','email'].forEach(function(t) {
+  ['overview','users','finance','traffic','alerts','email','abuse'].forEach(function(t) {
     var panel = document.getElementById('panel-' + t);
     var btn   = document.querySelector('.admin-tab[data-tab="' + t + '"]');
     if (panel) panel.style.display = t === tab ? '' : 'none';
@@ -948,6 +974,78 @@ function switchTab(tab) {
   if (tab === 'email' && !_emailLoaded) {
     loadEmailMarketingData(_emailFunnel);
   }
+  if (tab === 'abuse' && !_abuseLoaded) loadAbuseData();
+}
+
+async function loadAbuseData() {
+  _abuseLoaded = true;
+  var metrics = document.getElementById('abuseMetrics');
+  metrics.innerHTML = '<div class="ga4-loading">Carregando proteção…</div>';
+  try {
+    if (!_ga4Token) {
+      var sessionResult = await sb.auth.getSession();
+      _ga4Token = sessionResult.data.session && sessionResult.data.session.access_token;
+    }
+    var response = await fetch('/api/admin?action=abuse', { headers: { Authorization: 'Bearer ' + _ga4Token } });
+    var data = await response.json().catch(function(){ return {}; });
+    if (!response.ok) throw new Error(data.error || 'Erro ao carregar');
+    if (!data.available) {
+      metrics.innerHTML = '<div class="ga4-not-configured" style="grid-column:1/-1">A migração 035 ainda precisa ser aplicada no Supabase para ativar este painel.</div>';
+      document.getElementById('abuseClaimsBody').innerHTML = '<tr class="empty-row"><td colspan="6">Painel aguardando a migração.</td></tr>';
+      document.getElementById('abuseEventsBody').innerHTML = '<tr class="empty-row"><td colspan="6">Painel aguardando a migração.</td></tr>';
+      document.getElementById('abuseAccountsBody').innerHTML = '<tr class="empty-row"><td colspan="4">Painel aguardando a migração.</td></tr>';
+      return;
+    }
+    var m = data.metrics || {};
+    metrics.innerHTML = [
+      ['Gratuidades ativas', m.active_claims || 0, 'green'],
+      ['Bloqueios recentes', m.denied || 0, 'red'],
+      ['Desafios recentes', m.challenged || 0, 'yellow'],
+      ['Contas compartilhadas', m.shared_accounts || 0, 'blue']
+    ].map(function(item){ return '<div class="metric-card"><div class="metric-label">' + item[0] + '</div><div class="metric-value ' + (item[2] === 'green' ? 'accent' : '') + '">' + item[1] + '</div><div class="metric-sub">últimos 200 eventos</div></div>'; }).join('');
+    var claims = data.claims || [];
+    document.getElementById('abuseClaimsBody').innerHTML = claims.length ? claims.map(function(row){
+      return '<tr><td>' + fmtDate(row.created_at) + '</td><td class="mono">' + escHtml(String(row.user_id || '').slice(0, 8)) + '…</td><td>' + escHtml(row.resource) + '</td><td>' + (row.risk_score || 0) + '</td><td>' + (row.challenge_passed ? 'Sim' : 'Não') + '</td><td><button class="btn-user-action add" onclick="releaseAbuseClaim(\'' + row.id + '\')">Liberar</button></td></tr>';
+    }).join('') : '<tr class="empty-row"><td colspan="6">Nenhuma gratuidade ativa.</td></tr>';
+    var events = data.events || [];
+    document.getElementById('abuseEventsBody').innerHTML = events.length ? events.map(function(row){
+      return '<tr><td>' + fmtDate(row.created_at) + '</td><td><span class="badge ' + (row.decision === 'deny' ? 'red' : row.decision === 'challenge' ? 'yellow' : 'green') + '">' + escHtml(row.decision) + '</span></td><td>' + escHtml(row.reason || '-') + '</td><td>' + escHtml(row.resource) + '</td><td class="mono">' + escHtml(row.device_hash || '-') + '</td><td class="mono">' + escHtml(row.ip_hash || '-') + '</td></tr>';
+    }).join('') : '<tr class="empty-row"><td colspan="6">Nenhum evento recente.</td></tr>';
+    var accounts = data.shared_accounts || [];
+    document.getElementById('abuseAccountsBody').innerHTML = accounts.length ? accounts.map(function(row){
+      return '<tr><td class="mono">' + escHtml(String(row.user_id || '').slice(0, 8)) + '…</td><td>' + row.devices_count + '</td><td>' + fmtDate(row.last_seen_at) + '</td><td><button class="btn-user-action add" onclick="resetAbuseDevices(\'' + row.user_id + '\')">Redefinir</button></td></tr>';
+    }).join('') : '<tr class="empty-row"><td colspan="4">Nenhuma conta acima do limiar.</td></tr>';
+  } catch (error) {
+    metrics.innerHTML = '<div class="error-state" style="grid-column:1/-1">' + escHtml(error.message) + '</div>';
+  }
+}
+
+async function releaseAbuseClaim(claimId) {
+  if (!confirm('Liberar esta gratuidade para uma nova tentativa?')) return;
+  var response = await fetch('/api/admin', {
+    method: 'POST', headers: { Authorization: 'Bearer ' + _ga4Token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'release_abuse_claim', claimId: claimId })
+  });
+  if (!response.ok) {
+    var data = await response.json().catch(function(){ return {}; });
+    alert(data.error || 'Não foi possível liberar.');
+    return;
+  }
+  await loadAbuseData();
+}
+
+async function resetAbuseDevices(userId) {
+  if (!confirm('Redefinir os dispositivos desta conta e permitir novos acessos?')) return;
+  var response = await fetch('/api/admin', {
+    method: 'POST', headers: { Authorization: 'Bearer ' + _ga4Token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'reset_abuse_devices', userId: userId })
+  });
+  if (!response.ok) {
+    var data = await response.json().catch(function(){ return {}; });
+    alert(data.error || 'Não foi possível redefinir.');
+    return;
+  }
+  await loadAbuseData();
 }
 
 // ─── Aba Alertas ──────────────────────────────────────────────────────────────

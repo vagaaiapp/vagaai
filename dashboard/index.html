@@ -3679,10 +3679,10 @@ if(localStorage.getItem('vagaai_theme')==='dark')document.documentElement.setAtt
         <div>
           <div class="interview-gate-kicker">Recurso Pro</div>
           <h2>Você já tem vagas prontas para treinar.</h2>
-          <p>Desbloqueie o simulador para gerar perguntas personalizadas, avaliar suas respostas e chegar mais preparado na entrevista.</p>
+          <p>Desbloqueie o treino para gerar perguntas personalizadas, avaliar suas respostas e chegar mais preparado na entrevista.</p>
         </div>
         <div class="interview-gate-actions">
-          <button class="btn-cta" onclick="switchDashTab('plano')">Desbloquear simulador</button>
+          <button class="btn-cta" onclick="switchDashTab('plano')">Desbloquear treino</button>
           <button class="int-secondary-btn" onclick="switchDashTab('app')">Analisar nova vaga</button>
         </div>
       </div>
@@ -4237,7 +4237,7 @@ function buildPBACard(analyses, tracked) {
     var hasDate = !!(interviewJob.interview_at);
     var iDateFmt = hasDate ? formatInterviewAt(interviewJob.interview_at) : '';
     if (titleEl) titleEl.textContent = 'Prepare-se para a entrevista de ' + cargo;
-    if (descEl) descEl.textContent = (hasDate ? 'Entrevista em ' + iDateFmt + ' - ' + cargo + (emp ? ' na ' + emp : '') : 'Em processo de entrevista para ' + cargo + (emp ? ' na ' + emp : '')) + '. Use o simulador para chegar mais preparado e aumentar suas chances.'
+    if (descEl) descEl.textContent = (hasDate ? 'Entrevista em ' + iDateFmt + ' - ' + cargo + (emp ? ' na ' + emp : '') : 'Em processo de entrevista para ' + cargo + (emp ? ' na ' + emp : '')) + '. Use o treino para chegar mais preparado e aumentar suas chances.'
       + (treinoLiberado ? '' : ' O treino de entrevista é do plano Pro.');
     if (btnPri) { btnPri.textContent = 'Treinar entrevista →'; (function(aid){ btnPri.onclick = function(){ switchDashTab('entrevista', '/entrevista' + (aid ? '?analysis_id=' + encodeURIComponent(aid) : '')); }; })(interviewJob.analysis_id); }
     if (btnSec) { btnSec.textContent = 'Ver candidatura'; (function(tid, aid){ btnSec.onclick = function(){ openCandidaturasSmart({ trackerId: tid, analysisId: aid, openDetail: true, view: 'lista' }); }; })(interviewJob.id, interviewJob.analysis_id); }
@@ -4568,7 +4568,7 @@ function buildFerramentas() {
   var sub = window._subscriptionData;
   var plano = sub && sub.plan;
   var ent = (sub && sub.entitlements) || {};
-  var seloCarta = (plano && plano === 'free') ? 'Starter' : '';
+  var seloCarta = (plano && plano === 'free') ? 'Pro' : '';
   var seloTreino = (plano && !(plano === 'pro' || ent.simulador_entrevista)) ? 'Pro' : '';
 
   var estCarta = seloCarta ? 'Escreva a carta a partir da vaga analisada'
@@ -4942,7 +4942,7 @@ function buildFunilCard(analyses, tracked) {
       } else if (entrevistas === 0 && candidaturas >= 2) {
         txt = 'Nenhuma entrevista ' + janela + '. Considere fazer follow-up nas candidaturas aplicadas.';
       } else if (entrevistas > 0 && candidaturas > 0) {
-        txt = convRate + '% das candidaturas avançaram para entrevista (' + entrevistas + ' de ' + candidaturas + '). Use o simulador para se preparar.';
+        txt = convRate + '% das candidaturas avançaram para entrevista (' + entrevistas + ' de ' + candidaturas + '). Use o treino para se preparar.';
       } else {
         txt = 'Como regra geral, candidaturas de compatibilidade alta respondem mais. Com mais candidaturas registradas, isto vira um número seu.';
       }
@@ -5430,7 +5430,7 @@ function renderInterviewHub() {
     if (focusStatus) focusStatus.textContent = isInterview ? 'Em entrevista' : isOffer ? 'Oferta recebida' : 'Vaga analisada';
     if (focusMeta) focusMeta.textContent = (firstHasCv ? 'CV otimizado' : 'Currículo principal') + (firstGaps ? ' · ' + firstGaps + ' pontos para defender' : ' · pronta para praticar');
     if (focusAction) {
-      focusAction.textContent = hasAccess ? 'Começar treino →' : 'Desbloquear simulador';
+      focusAction.textContent = hasAccess ? 'Começar treino →' : 'Desbloquear treino';
       focusAction.onclick = hasAccess
         ? function() { window.location.href = '/entrevista?analysis_id=' + encodeURIComponent(first.analysisData.id); }
         : function() { switchDashTab('plano'); };
@@ -8264,12 +8264,11 @@ function openRequestedDashboardTab() {
 
 /* ── Stripe helpers ─────────────────────────────────────────────── */
 function openAuthCheckout(baseUrl) {
-  // A landing page ja registrava checkout_iniciado; o upgrade de dentro do
-  // produto nao registrava nada — o caminho mais provavel de conversao era
-  // justamente o invisivel.
-  if (window.vagaaiTrack) vagaaiTrack('checkout_iniciado', {
-    origem: 'app',
-    plano_atual: (window._subscriptionData && window._subscriptionData.plan) || 'free'
+  // Landing e produto usam o nome recomendado pelo GA4 para o mesmo passo.
+  if (window.vagaaiTrack) vagaaiTrack('begin_checkout', {
+    source: 'dashboard',
+    current_plan: (window._subscriptionData && window._subscriptionData.plan) || 'free',
+    currency: 'BRL'
   });
   // Já assinante: payment links não impedem 2ª assinatura paralela (dupla
   // cobrança). Quem tem plano pago gerencia upgrade/downgrade pelo Portal.
@@ -8336,7 +8335,7 @@ function marcarItensPagosNoMenu(sub) {
   var plano = (sub && sub.plan) || 'free';
   var ent = (sub && sub.entitlements) || {};
   var itens = [
-    { tab: 'carta',       bloqueado: plano === 'free',                     selo: 'Starter' },
+    { tab: 'carta',       bloqueado: plano === 'free',                     selo: 'Pro' },
     { tab: 'entrevistas', bloqueado: !(plano === 'pro' || ent.simulador_entrevista), selo: 'Pro' }
   ];
   itens.forEach(function(it) {
@@ -8530,7 +8529,7 @@ function renderPlanTiles(sub) {
 
   var featureRows = [
     { icon:'analysis', title:plan === 'pro' ? '100 análises por mês' : plan === 'starter' ? '10 análises por mês' : 'Análise inicial', desc:'Compare currículo e vaga quando precisar', on:!!ent.can_analyze || plan !== 'free', state:(plan === 'pro' || plan === 'starter') ? (used + '/' + limit) : (!!ent.can_analyze ? 'Disponível' : 'Pro') },
-    { icon:'cv', title:'Currículo direcionado', desc:'Versões para cada oportunidade', on:!!ent.cv_otimizado, state:ent.cv_otimizado ? 'Incluído' : 'Starter' },
+    { icon:'cv', title:'Currículo direcionado', desc:'Versões para cada oportunidade', on:!!ent.cv_otimizado, state:ent.cv_otimizado ? 'Incluído' : 'Pro' },
     { icon:'interview', title:'Treino de entrevista', desc:'Perguntas e feedback personalizados', on:!!ent.simulador_entrevista, state:ent.simulador_entrevista ? 'Incluído' : 'Pro' },
     { icon:'tracker', title:'Alertas e rastreador', desc:'Descoberta e acompanhamento de vagas', on:!!ent.rastreador || plan === 'free', state:'Incluído' }
   ];
@@ -8598,8 +8597,8 @@ function renderPlanTiles(sub) {
 
   var resources = [
     { title:'Análise de vaga', desc:'Compatibilidade, requisitos, o que falta e resumo da empresa.', on:!!ent.can_analyze || plan !== 'free', state:(plan === 'pro' || plan === 'starter') ? (used + ' de ' + limit) : (!!ent.can_analyze ? 'Ativo' : 'Pro') },
-    { title:'Currículo otimizado', desc:'Versões direcionadas sem alterar seu documento principal.', on:!!ent.cv_otimizado, state:ent.cv_otimizado ? 'Ativo' : 'Starter' },
-    { title:'Carta de apresentação', desc:'Texto personalizado com base na vaga e no seu perfil.', on:plan !== 'free', state:usoCartas && usoCartas.limite ? (usoCartas.usado + ' de ' + usoCartas.limite) : (plan !== 'free' ? 'Ativo' : 'Starter') },
+    { title:'Currículo otimizado', desc:'Versões direcionadas sem alterar seu documento principal.', on:!!ent.cv_otimizado, state:ent.cv_otimizado ? 'Ativo' : 'Pro' },
+    { title:'Carta de apresentação', desc:'Texto personalizado com base na vaga e no seu perfil.', on:plan !== 'free', state:usoCartas && usoCartas.limite ? (usoCartas.usado + ' de ' + usoCartas.limite) : (plan !== 'free' ? 'Ativo' : 'Pro') },
     { title:'Treino de entrevista', desc:'Perguntas, áudio e feedback ligados à oportunidade.', on:!!ent.simulador_entrevista, state:usoTreinos && usoTreinos.limite ? (usoTreinos.usado + ' de ' + usoTreinos.limite) : (ent.simulador_entrevista ? 'Ativo' : 'Pro') },
     { title:'Alertas de vagas', desc:'Seleções periódicas guiadas pelas suas preferências.', on:!!ent.alertas || plan === 'free', state:'Ativo' },
     { title:'Rastreador', desc:'Histórico, status e próximos passos das candidaturas.', on:!!ent.rastreador || plan === 'free', state:'Ativo' }

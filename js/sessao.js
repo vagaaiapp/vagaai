@@ -100,6 +100,19 @@
     return (Date.now() - t) < HERANCA_MS;
   }
 
+  function registrarCadastro(user) {
+    if (!user || !user.id || !contaRecemCriada(user.created_at)) return;
+    try {
+      if (localStorage.getItem('vagaai_from_signup') !== '1') return;
+      var chave = 'vagaai_sign_up_tracked_' + user.id;
+      if (sessionStorage.getItem(chave) === '1') return;
+      var tracker = global.vagaaiTrack;
+      if (typeof tracker !== 'function') return;
+      tracker('sign_up', { method: 'onboarding' });
+      sessionStorage.setItem(chave, '1');
+    } catch (e) {}
+  }
+
   /* Chamado pelo funil anônimo antes da primeira escrita de dado pessoal.
      Se o cache era de uma conta, apaga — o visitante também não deve ver o
      currículo de quem usou a máquina antes. */
@@ -137,6 +150,7 @@
       }
       localStorage.setItem(DONO, userId);
     } catch (e) {}
+    if (user && typeof user === 'object') registrarCadastro(user);
     return trocou;
   }
 

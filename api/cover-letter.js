@@ -4,6 +4,7 @@
 import { resolvePlan } from '../lib/entitlements.js';
 import { checkAndCountLimit } from '../lib/ratelimit.js';
 import { checarCotaMensal, mensagemDeCota } from '../lib/cotas.js';
+import { abuseHttpResponse, guardAccountUsage } from '../lib/abuse.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
@@ -60,6 +61,11 @@ export default async function handler(req, res) {
       plan
     });
   }
+
+  const abuseDecision = await guardAccountUsage({
+    user, req, res, resource: 'cover_letter', challengeToken: req.body?.turnstile_token || ''
+  });
+  if (!abuseDecision.ok) return abuseHttpResponse(res, abuseDecision);
 
   if (!(await checkUserRateLimit(user.id))) {
     return res.status(429).json({ error: 'Limite de uso atingido. Tente novamente mais tarde.' });

@@ -201,7 +201,10 @@
       // Vive em /api/interview (action=cv_voice), nao em endpoint proprio: o
       // Hobby plan da Vercel limita a 12 Serverless Functions por deploy e o
       // projeto ja estava no teto.
-      var res = await fetch('/api/interview', {
+      var protectedFetch = window.VagaAIAbuse && typeof window.VagaAIAbuse.fetch === 'function'
+        ? window.VagaAIAbuse.fetch
+        : fetch;
+      var res = await protectedFetch('/api/interview', {
         method: 'POST',
         headers: headers,
         body: JSON.stringify({ action: 'cv_voice', field: field, audioBase64: b64, context: ctx })

@@ -361,7 +361,7 @@ planLink.addEventListener('click', event => {
     localStorage.setItem('vagaai_pending_checkout', JSON.stringify({ url: checkoutUrl, ts: Date.now() }));
   } catch (_) {}
   const activeBilling = billingButtons.find(button => button.classList.contains('is-active'));
-  track('checkout_iniciado', { plano: 'pro', periodo: activeBilling?.dataset.billing || 'monthly' });
+  track('begin_checkout', { plan: 'pro', billing_period: activeBilling?.dataset.billing || 'monthly', currency: 'BRL' });
   window.location.href = '/login';
 });
 
