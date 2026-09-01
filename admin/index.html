@@ -730,17 +730,13 @@ function safeExternalUrl(value) {
 
 var _leadsData = [];
 
-async function loadLeads() {
+function loadLeads(rows) {
   var tbody = document.getElementById('leadsBody');
   try {
-    var session = (await sb.auth.getSession()).data.session;
-    if (!session) return;
-    var res = await fetch(
-      SUPABASE_URL + '/rest/v1/email_leads?select=email,source,created_at&order=created_at.desc&limit=200',
-      { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + session.access_token } }
-    );
-    var rows = await res.json();
-    if (!Array.isArray(rows)) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:1rem;font-size:13px">Sem permissão para ver leads.</td></tr>'; return; }
+    if (!Array.isArray(rows)) {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:1rem;font-size:13px">Não foi possível carregar os leads.</td></tr>';
+      return;
+    }
     _leadsData = rows;
     var countEl = document.getElementById('leadsCount');
     if (countEl) countEl.textContent = rows.length ? '(' + rows.length + ')' : '';
@@ -1444,7 +1440,8 @@ function render(data) {
   renderUsers(users, creditMap, analysisCountMap);
   renderAnalyses(analyses, users);
   renderPayments(charges, stripe_);
-  loadLeads();
+  loadLeads(sb_.emailLeads);
+  renderSources(data.integrations || {});
 }
 
 // ─── Metric cards ─────────────────────────────────────────────────────────────
@@ -1734,9 +1731,9 @@ function toggleTheme() {
 // ─── Job Sources table ────────────────────────────────────────────────────────
 
 var JOB_SOURCES = [
-  { n:1,  name:'JSearch (RapidAPI)',  url:'https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch', coverage:'Global · LinkedIn · Indeed · Glassdoor', type:'API REST',  key:'JSEARCH_API_KEY',           status:'ok',      note:'200 req/mês grátis' },
-  { n:2,  name:'Jooble',              url:'https://jooble.org/api/about',  coverage:'Brasil · Global',            type:'API REST',  key:'JOOBLE_API_KEY',             status:'demo',    note:'Modo demo sem chave' },
-  { n:3,  name:'Adzuna BR',           url:'https://developer.adzuna.com',  coverage:'Brasil',                     type:'API REST',  key:'ADZUNA_APP_ID + APP_KEY',    status:'ok',      note:'Configurado' },
+  { n:1,  id:'jsearch', name:'JSearch (RapidAPI)',  url:'https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch', coverage:'Global · LinkedIn · Indeed · Glassdoor', type:'API REST',  key:'JSEARCH_API_KEY' },
+  { n:2,  id:'jooble',  name:'Jooble',              url:'https://jooble.org/api/about',  coverage:'Brasil · Global',            type:'API REST',  key:'JOOBLE_API_KEY' },
+  { n:3,  id:'adzuna',  name:'Adzuna BR',           url:'https://developer.adzuna.com',  coverage:'Brasil',                     type:'API REST',  key:'ADZUNA_APP_ID + APP_KEY' },
   { n:4,  name:'Indeed Brasil',       url:'https://br.indeed.com',         coverage:'Brasil',                     type:'RSS',       key:'-',                          status:'free',    note:'Sem chave' },
   { n:5,  name:'Vagas.com',           url:'https://vagas.com.br',          coverage:'Brasil',                     type:'RSS',       key:'-',                          status:'free',    note:'Sem chave' },
   { n:6,  name:'InfoJobs',            url:'https://infojobs.com.br',       coverage:'Brasil',                     type:'RSS',       key:'-',                          status:'free',    note:'Sem chave' },
@@ -1753,21 +1750,25 @@ var JOB_SOURCES = [
   { n:17, name:'Remote OK',           url:'https://remoteok.com',          coverage:'Global · Remoto',            type:'API REST',  key:'-',                          status:'free',    note:'Só vagas remotas' },
   { n:18, name:'Arbeitnow',           url:'https://arbeitnow.com',         coverage:'Global · Remoto',            type:'API REST',  key:'-',                          status:'free',    note:'Só vagas remotas' },
   { n:19, name:'The Muse',            url:'https://themuse.com',           coverage:'Global · Remoto',            type:'API REST',  key:'-',                          status:'free',    note:'Mapeamento por categoria' },
-  { n:20, name:'SerpAPI (Google Jobs)',url:'https://serpapi.com',          coverage:'Global · LinkedIn · Google', type:'API REST',  key:'SERPAPI_KEY',                status:'none',    note:'$50/mês — não configurado' },
+  { n:20, id:'serpapi', name:'SerpAPI (Google Jobs)',url:'https://serpapi.com',          coverage:'Global · LinkedIn · Google', type:'API REST',  key:'SERPAPI_KEY' },
 ];
 
-function renderSources() {
+function renderSources(integrations) {
   var body = document.getElementById('sourcesBody');
   if (!body) return;
+  integrations = integrations || {};
   body.innerHTML = JOB_SOURCES.map(function(s) {
+    var configured = s.id ? integrations[s.id] === true : null;
+    var status = s.id ? (configured ? 'ok' : 'none') : s.status;
+    var note = s.id ? (configured ? 'Configurado' : 'Não configurado') : s.note;
     var statusBadge, statusDot;
-    if (s.status === 'ok') {
+    if (status === 'ok') {
       statusBadge = '<span class="badge green">✓ Ativo</span>';
       statusDot = 'var(--green)';
-    } else if (s.status === 'free') {
+    } else if (status === 'free') {
       statusBadge = '<span class="badge green">✓ Ativo</span>';
       statusDot = 'var(--green)';
-    } else if (s.status === 'demo') {
+    } else if (status === 'demo') {
       statusBadge = '<span class="badge yellow">⚠ Demo</span>';
       statusDot = 'var(--yellow)';
     } else {
@@ -1790,7 +1791,7 @@ function renderSources() {
       + '<td style="font-size:12px;color:var(--muted)">' + escHtml(s.coverage) + '</td>'
       + '<td>' + typeBadge + '</td>'
       + '<td>' + keyHtml + '</td>'
-      + '<td>' + statusBadge + ' <span style="font-size:11px;color:var(--muted);margin-left:.3rem">' + escHtml(s.note) + '</span></td>'
+      + '<td>' + statusBadge + ' <span style="font-size:11px;color:var(--muted);margin-left:.3rem">' + escHtml(note) + '</span></td>'
       + '</tr>';
   }).join('');
 }

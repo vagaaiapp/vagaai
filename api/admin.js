@@ -112,7 +112,27 @@ async function fetchSupabaseData() {
   );
   const analyses = await analysesRes.json();
 
-  return { users, totalUsers, credits, analyses };
+  // Esta leitura precisa atravessar a fronteira administrativa do backend.
+  // Consultar email_leads no navegador com o token do usuario depende de uma
+  // policy de RLS mais ampla e fazia o painel exibir "Sem permissao" mesmo para
+  // admins validos.
+  const emailLeadsRes = await sb(
+    '/rest/v1/email_leads?select=email,source,created_at&order=created_at.desc&limit=200'
+  );
+  const emailLeadsData = await emailLeadsRes.json();
+  const emailLeads = emailLeadsRes.ok && Array.isArray(emailLeadsData) ? emailLeadsData : null;
+
+  return { users, totalUsers, credits, analyses, emailLeads };
+}
+
+function integrationStatus() {
+  return {
+    jsearch: Boolean(process.env.JSEARCH_API_KEY),
+    jooble: Boolean(process.env.JOOBLE_API_KEY),
+    adzuna: Boolean(process.env.ADZUNA_APP_ID && process.env.ADZUNA_APP_KEY),
+    serpapi: Boolean(process.env.SERPAPI_KEY),
+    turnstile: Boolean(process.env.TURNSTILE_SITE_KEY && process.env.TURNSTILE_SECRET_KEY),
+  };
 }
 
 // ─── GA4 helpers ─────────────────────────────────────────────────────────────
@@ -737,6 +757,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       supabase: supabaseData,
       stripe: stripeData,
+      integrations: integrationStatus(),
     });
   } catch (err) {
     console.error('Admin handler error:', err);

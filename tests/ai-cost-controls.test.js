@@ -38,7 +38,8 @@ test('telemetria e privada, resumida no admin e falha aberta', () => {
   const migration = read('migrations/036_ai_usage_observability.sql');
   const helper = read('lib/ai-usage.js');
   const admin = read('api/admin.js');
-  assert.match(migration, /revoke all on table public\.ai_usage_events from anon, authenticated/i);
+  assert.match(migration, /revoke all on table public\.ai_usage_events from PUBLIC, anon, authenticated/i);
+  assert.match(migration, /BEGIN;[\s\S]*revoke insert, update, delete on public\.blog_posts[\s\S]*COMMIT;/i);
   assert.match(migration, /ai_usage_summary/);
   assert.match(helper, /Telemetria nunca interrompe/);
   assert.match(admin, /req\.query\.action === 'ai_usage'/);

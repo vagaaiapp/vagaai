@@ -1,6 +1,8 @@
 -- Medicao de custo de IA por endpoint/acao/usuario.
 -- Aplicar depois da 035. Somente service_role escreve ou le.
 
+BEGIN;
+
 -- O CMS agora salva pelo /api/admin, que sanitiza no servidor. Revogar a
 -- escrita direta impede contornar essa fronteira chamando o PostgREST.
 revoke insert, update, delete on public.blog_posts from authenticated;
@@ -30,7 +32,7 @@ create index if not exists ai_usage_events_user_created_at_idx
   where user_id is not null;
 
 alter table public.ai_usage_events enable row level security;
-revoke all on table public.ai_usage_events from anon, authenticated;
+revoke all on table public.ai_usage_events from PUBLIC, anon, authenticated;
 grant all on table public.ai_usage_events to service_role;
 grant usage, select on sequence public.ai_usage_events_id_seq to service_role;
 
@@ -92,3 +94,5 @@ $$;
 
 revoke all on function public.ai_usage_summary(integer) from public, anon, authenticated;
 grant execute on function public.ai_usage_summary(integer) to service_role;
+
+COMMIT;
