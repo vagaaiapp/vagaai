@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-blog-studio-preview>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/loading-comet.css">
 <script src="/js/loading-comet.js" defer></script>
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>if(localStorage.getItem('vagaai_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
 <style>
@@ -181,6 +181,7 @@ nav{position:sticky;top:0;z-index:200;background:var(--surface);border-bottom:1p
 .empty-state{text-align:center;padding:4rem 2rem;color:var(--muted)}
 .empty-state h3{font-size:16px;font-weight:600;color:var(--text);margin-bottom:.4rem}
 </style>
+<link rel="stylesheet" href="/assets/admin-blog-studio-preview.css">
 </head>
 <body>
 
@@ -216,7 +217,7 @@ nav{position:sticky;top:0;z-index:200;background:var(--surface);border-bottom:1p
       </button>
     </div>
   </div>
-  <div class="posts-grid" id="postsGrid">
+  <div class="posts-grid" id="postsGrid" aria-live="polite">
     <div style="text-align:center;padding:2rem;color:var(--muted);font-size:13px">Carregando...</div>
   </div>
 </div>
@@ -459,7 +460,7 @@ var _viewsLoading = false;
 async function loadPosts() {
   var grid = document.getElementById('postsGrid');
   try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/blog_posts?select=id,title,slug,published,created_at,updated_at&order=created_at.desc', {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/blog_posts?select=id,title,slug,published,created_at,updated_at,cover_url,categories,excerpt&order=created_at.desc', {
       headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + (await getFreshToken()) }
     });
     var posts = await res.json();
@@ -865,5 +866,6 @@ function toast(msg, err) {
 }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 </script>
+<script src="/js/admin-blog-studio-preview.js"></script>
 </body>
 </html>
