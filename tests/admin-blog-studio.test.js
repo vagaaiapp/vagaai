@@ -7,15 +7,15 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = relative => fs.readFileSync(path.join(root, relative), 'utf8');
 const html = read('admin/blog/index.html');
-const css = read('assets/admin-blog-studio-preview.css');
-const script = read('js/admin-blog-studio-preview.js');
+const css = read('assets/admin-blog-studio.css');
+const script = read('js/admin-blog-studio.js');
 
 test('studio editorial e a interface oficial do admin do blog', () => {
   assert.match(html, /<html lang="pt-BR" data-blog-studio-preview>/);
   assert.doesNotMatch(html, /get\('preview'\)===['"]studio['"]/);
   assert.match(css, /html\[data-blog-studio-preview\]/);
   assert.match(script, /hasAttribute\('data-blog-studio-preview'\)/);
-  assert.match(html, /src="\/js\/admin-blog-studio-preview\.js"/);
+  assert.match(html, /src="\/js\/admin-blog-studio\.js"/);
 });
 
 test('centro de producao usa dados reais e mantem as acoes existentes', () => {
