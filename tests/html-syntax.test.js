@@ -19,7 +19,8 @@ const files = [
   'app/index.html',
   'curriculo/index.html',
   'cv/index.html',
-  'dashboard/index.html'
+  'dashboard/index.html',
+  'admin/index.html'
 ];
 
 function inlineScripts(file) {

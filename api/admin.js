@@ -1,6 +1,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const GA4_PROPERTY_ID  = process.env.GA4_PROPERTY_ID;
 const GA4_SA_JSON      = process.env.GA4_SA_JSON; // Service Account JSON (nunca expira)
 import { sanitizeBlogHtml } from '../lib/blog-content.js';
@@ -10,6 +11,18 @@ const serviceHeaders = () => ({
   Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
   'Content-Type': 'application/json',
 });
+
+function escEmailHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+const SUPPORT_STATUSES = new Set(['new', 'in_progress', 'waiting_user', 'resolved']);
+const SUPPORT_PRIORITIES = new Set(['low', 'normal', 'high', 'urgent']);
+const UUID_RE = /^[a-f0-9-]{36}$/i;
 
 /* Quem e admin mora em public.admins (migracao 031), nao aqui. A lista
    estava duplicada entre este arquivo e a politica blog_admin_all do banco:
@@ -528,6 +541,118 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, removed: Array.isArray(rows) ? rows.length : 0 });
     }
 
+    if (action === 'update_support_ticket') {
+      const ticketId = typeof req.body?.ticketId === 'string' ? req.body.ticketId : '';
+      const status = typeof req.body?.status === 'string' ? req.body.status : '';
+      const priority = typeof req.body?.priority === 'string' ? req.body.priority : '';
+      const adminNotes = typeof req.body?.adminNotes === 'string' ? req.body.adminNotes.trim() : '';
+      if (!UUID_RE.test(ticketId)) return res.status(400).json({ error: 'Chamado inválido.' });
+      if (!SUPPORT_STATUSES.has(status) || !SUPPORT_PRIORITIES.has(priority)) {
+        return res.status(400).json({ error: 'Status ou prioridade inválidos.' });
+      }
+      if (adminNotes.length > 10000) return res.status(400).json({ error: 'Nota interna muito longa.' });
+      const updatedAt = new Date().toISOString();
+      const updateRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/support_tickets?id=eq.${encodeURIComponent(ticketId)}`,
+        {
+          method: 'PATCH',
+          headers: { ...serviceHeaders(), Prefer: 'return=representation' },
+          body: JSON.stringify({
+            status,
+            priority,
+            admin_notes: adminNotes,
+            resolved_at: status === 'resolved' ? updatedAt : null,
+            updated_at: updatedAt,
+          }),
+        }
+      );
+      const updatedRows = await updateRes.json().catch(() => []);
+      if (!updateRes.ok || !Array.isArray(updatedRows) || !updatedRows[0]) {
+        return res.status(500).json({ error: 'Não foi possível atualizar o chamado.' });
+      }
+      await auditar(user.email, 'atualizar_chamado', ticketId, { status, priority });
+      return res.status(200).json({ ok: true, ticket: updatedRows[0] });
+    }
+
+    if (action === 'reply_support_ticket') {
+      const ticketId = typeof req.body?.ticketId === 'string' ? req.body.ticketId : '';
+      const message = typeof req.body?.message === 'string' ? req.body.message.trim() : '';
+      if (!UUID_RE.test(ticketId)) return res.status(400).json({ error: 'Chamado inválido.' });
+      if (!message || message.length > 10000) return res.status(400).json({ error: 'Resposta inválida.' });
+      if (!RESEND_API_KEY) return res.status(500).json({ error: 'Serviço de e-mail não configurado.' });
+
+      const ticketRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/support_tickets?id=eq.${encodeURIComponent(ticketId)}&select=id,email,category,first_response_at&limit=1`,
+        { headers: serviceHeaders() }
+      );
+      const ticketRows = await ticketRes.json().catch(() => []);
+      const ticket = Array.isArray(ticketRows) ? ticketRows[0] : null;
+      if (!ticketRes.ok || !ticket) return res.status(404).json({ error: 'Chamado não encontrado.' });
+
+      const pendingRes = await fetch(`${SUPABASE_URL}/rest/v1/support_replies`, {
+        method: 'POST',
+        headers: { ...serviceHeaders(), Prefer: 'return=representation' },
+        body: JSON.stringify({
+          ticket_id: ticketId,
+          author_type: 'admin',
+          author_email: user.email,
+          message,
+          delivery_status: 'pending',
+        }),
+      });
+      const pendingRows = await pendingRes.json().catch(() => []);
+      const reply = Array.isArray(pendingRows) ? pendingRows[0] : null;
+      if (!pendingRes.ok || !reply) return res.status(500).json({ error: 'Não foi possível registrar a resposta.' });
+
+      const categoryLabels = {
+        duvida: 'Dúvida', problema: 'Problema técnico', cobranca: 'Cobrança e pagamento',
+        sugestao: 'Sugestão', outro: 'Atendimento',
+      };
+      const emailRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: 'VagaAI Suporte <noreply@vagaai.app.br>',
+          to: [ticket.email],
+          reply_to: 'contato@vagaai.app.br',
+          subject: `Resposta do suporte VagaAI | ${categoryLabels[ticket.category] || 'Atendimento'}`,
+          html: `<div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fffdf0;color:#171914;border:1px solid #d9dccf;border-radius:18px;overflow:hidden">
+  <div style="padding:22px 28px;border-bottom:1px solid #d9dccf"><strong style="font-family:Georgia,serif;font-size:24px">Vaga<span style="color:#35c981">ai.</span></strong></div>
+  <div style="padding:28px"><p style="margin:0 0 14px;color:#516157;font-size:13px">Olá! Esta é a resposta da equipe VagaAI:</p><div style="font-size:15px;line-height:1.75;white-space:pre-wrap">${escEmailHtml(message)}</div><p style="margin:24px 0 0;color:#66766b;font-size:12px">Se precisar continuar o atendimento, responda este e-mail.</p></div>
+</div>`,
+        }),
+      });
+      const emailReceipt = await emailRes.json().catch(() => ({}));
+      if (!emailRes.ok) {
+        await fetch(`${SUPABASE_URL}/rest/v1/support_replies?id=eq.${encodeURIComponent(reply.id)}`, {
+          method: 'PATCH', headers: serviceHeaders(), body: JSON.stringify({ delivery_status: 'failed' }),
+        });
+        return res.status(502).json({ error: 'A resposta não foi entregue. Tente novamente.' });
+      }
+
+      const now = new Date().toISOString();
+      await Promise.all([
+        fetch(`${SUPABASE_URL}/rest/v1/support_replies?id=eq.${encodeURIComponent(reply.id)}`, {
+          method: 'PATCH',
+          headers: serviceHeaders(),
+          body: JSON.stringify({ delivery_status: 'sent', provider_message_id: emailReceipt.id || null }),
+        }),
+        fetch(`${SUPABASE_URL}/rest/v1/support_tickets?id=eq.${encodeURIComponent(ticketId)}`, {
+          method: 'PATCH',
+          headers: serviceHeaders(),
+          body: JSON.stringify({
+            status: 'waiting_user',
+            first_response_at: ticket.first_response_at || now,
+            last_reply_at: now,
+            resolved_at: null,
+            updated_at: now,
+          }),
+        }),
+      ]);
+      await auditar(user.email, 'responder_chamado', ticketId, { delivery: 'sent' });
+      return res.status(200).json({ ok: true, reply: { ...reply, delivery_status: 'sent', provider_message_id: emailReceipt.id || null } });
+    }
+
     if (action === 'release_abuse_claim') {
       if (!claimId || !/^[a-f0-9-]{36}$/i.test(claimId)) {
         return res.status(400).json({ error: 'claimId inválido' });
@@ -598,6 +723,60 @@ export default async function handler(req, res) {
     }
 
     return res.status(400).json({ error: 'Ação desconhecida' });
+  }
+
+  if (req.query.action === 'support') {
+    try {
+      const ticketsRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/support_tickets?select=*&order=created_at.desc&limit=300`,
+        { headers: serviceHeaders() }
+      );
+      if (!ticketsRes.ok) {
+        if ([400, 404].includes(ticketsRes.status)) {
+          return res.status(200).json({ ok: true, available: false, reason: 'migration_037_pending' });
+        }
+        throw new Error(`PostgREST ${ticketsRes.status}`);
+      }
+      const tickets = await ticketsRes.json();
+      const [repliesRes, subscriptionsRes, creditsRes, usersRes] = await Promise.all([
+        fetch(`${SUPABASE_URL}/rest/v1/support_replies?select=*&order=created_at.asc&limit=1000`, { headers: serviceHeaders() }),
+        fetch(`${SUPABASE_URL}/rest/v1/subscriptions?select=user_id,plan,status&limit=1000`, { headers: serviceHeaders() }),
+        fetch(`${SUPABASE_URL}/rest/v1/user_credits?select=user_id,credits&limit=1000`, { headers: serviceHeaders() }),
+        fetch(`${SUPABASE_URL}/auth/v1/admin/users?page=1&per_page=1000`, { headers: serviceHeaders() }),
+      ]);
+      const replies = repliesRes.ok ? await repliesRes.json() : [];
+      const subscriptions = subscriptionsRes.ok ? await subscriptionsRes.json() : [];
+      const credits = creditsRes.ok ? await creditsRes.json() : [];
+      const usersPayload = usersRes.ok ? await usersRes.json() : { users: [] };
+      const subscriptionByUser = Object.fromEntries((Array.isArray(subscriptions) ? subscriptions : []).map(row => [row.user_id, row]));
+      const creditsByUser = Object.fromEntries((Array.isArray(credits) ? credits : []).map(row => [row.user_id, Number(row.credits) || 0]));
+      const userById = Object.fromEntries((usersPayload.users || []).map(row => [row.id, row]));
+      const repliesByTicket = {};
+      (Array.isArray(replies) ? replies : []).forEach(row => {
+        if (!repliesByTicket[row.ticket_id]) repliesByTicket[row.ticket_id] = [];
+        repliesByTicket[row.ticket_id].push(row);
+      });
+      const enriched = (Array.isArray(tickets) ? tickets : []).map(ticket => {
+        const subscription = subscriptionByUser[ticket.user_id] || null;
+        const authUser = userById[ticket.user_id] || null;
+        return {
+          ...ticket,
+          replies: repliesByTicket[ticket.id] || [],
+          customer: {
+            plan: subscription?.plan || 'free',
+            subscription_status: subscription?.status || null,
+            credits: creditsByUser[ticket.user_id] || 0,
+            last_sign_in_at: authUser?.last_sign_in_at || null,
+            created_at: authUser?.created_at || null,
+          },
+        };
+      });
+      await auditar(user.email, 'ler_suporte', null, { chamados: enriched.length });
+      return res.status(200).json({ ok: true, available: true, tickets: enriched });
+    } catch (err) {
+      console.error('support admin error:', err.message);
+      return res.status(500).json({ error: 'Erro ao buscar chamados de suporte.' });
+    }
   }
 
   if (req.query.action === 'abuse') {

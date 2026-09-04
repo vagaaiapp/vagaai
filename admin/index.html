@@ -231,6 +231,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 </style>
 <link rel="stylesheet" href="/assets/product-ui.css?v=20260829-shell3">
 <link rel="stylesheet" href="/assets/admin-editorial.css?v=20260829-admin3">
+<link rel="stylesheet" href="/assets/admin-support.css?v=20260903-support1">
 <script>
 (function(){
   var savedTheme=localStorage.getItem('vagaai_theme');
@@ -291,6 +292,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   <div class="admin-tabs">
     <button class="admin-tab active" onclick="switchTab('overview')" data-tab="overview">📊 Visão Geral</button>
     <button class="admin-tab" onclick="switchTab('users')" data-tab="users">👥 Usuários</button>
+    <button class="admin-tab" onclick="switchTab('support')" data-tab="support">💬 Suporte <span class="support-tab-badge" id="supportNavBadge">0</span></button>
     <button class="admin-tab" onclick="switchTab('finance')" data-tab="finance">💰 Financeiro</button>
     <button class="admin-tab" onclick="switchTab('traffic')" data-tab="traffic">📈 Tráfego</button>
     <button class="admin-tab" onclick="switchTab('alerts')" data-tab="alerts">🔔 Alertas</button>
@@ -418,6 +420,69 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   </div>
 
   </div><!-- /panel-users -->
+
+  <!-- ═══════════════ ABA: SUPORTE ═══════════════ -->
+  <div id="panel-support" class="tab-panel" style="display:none">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Central de suporte</div>
+        <div style="margin-top:4px;color:var(--muted);font-size:12px">Mensagens, contexto do cliente e acompanhamento em um só lugar.</div>
+      </div>
+      <button class="btn-nav ghost" onclick="loadSupportData()" style="font-size:12px">↻ Atualizar</button>
+    </div>
+
+    <div class="support-kpis" id="supportKpis">
+      <div class="support-kpi"><div class="support-kpi-label">Novos</div><div class="support-kpi-value">-</div><div class="support-kpi-sub">aguardando leitura</div></div>
+      <div class="support-kpi"><div class="support-kpi-label">Em atendimento</div><div class="support-kpi-value">-</div><div class="support-kpi-sub">em andamento</div></div>
+      <div class="support-kpi"><div class="support-kpi-label">Aguardando usuário</div><div class="support-kpi-value">-</div><div class="support-kpi-sub">resposta enviada</div></div>
+      <div class="support-kpi"><div class="support-kpi-label">Resolvidos</div><div class="support-kpi-value">-</div><div class="support-kpi-sub">nos últimos 30 dias</div></div>
+      <div class="support-kpi"><div class="support-kpi-label">Primeira resposta</div><div class="support-kpi-value">-</div><div class="support-kpi-sub">tempo médio</div></div>
+    </div>
+    <div class="support-category-summary" id="supportCategorySummary"></div>
+
+    <div class="support-toolbar" aria-label="Filtros dos chamados">
+      <input class="support-control support-search" id="supportSearch" type="search" placeholder="Buscar usuário, mensagem ou ID" oninput="renderSupportInbox()" aria-label="Buscar chamados">
+      <select class="support-control" id="supportStatusFilter" onchange="renderSupportInbox()" aria-label="Filtrar por status">
+        <option value="all">Todos os status</option>
+        <option value="new">Novos</option>
+        <option value="in_progress">Em atendimento</option>
+        <option value="waiting_user">Aguardando usuário</option>
+        <option value="resolved">Resolvidos</option>
+      </select>
+      <select class="support-control" id="supportCategoryFilter" onchange="renderSupportInbox()" aria-label="Filtrar por motivo">
+        <option value="all">Todos os motivos</option>
+        <option value="duvida">Dúvida</option>
+        <option value="problema">Problema técnico</option>
+        <option value="cobranca">Cobrança e pagamento</option>
+        <option value="sugestao">Sugestão</option>
+        <option value="outro">Outro</option>
+      </select>
+      <select class="support-control" id="supportPeriodFilter" onchange="renderSupportInbox()" aria-label="Filtrar por período">
+        <option value="all">Todo o período</option>
+        <option value="7">Últimos 7 dias</option>
+        <option value="30">Últimos 30 dias</option>
+        <option value="90">Últimos 90 dias</option>
+      </select>
+      <select class="support-control" id="supportPlanFilter" onchange="renderSupportInbox()" aria-label="Filtrar por plano">
+        <option value="all">Todos os planos</option>
+        <option value="free">Plano Free</option>
+        <option value="starter">Plano Starter</option>
+        <option value="pro">Plano Pro</option>
+      </select>
+    </div>
+
+    <div class="support-workspace">
+      <aside class="support-list-column" aria-label="Lista de chamados">
+        <div class="support-list-head"><span>Caixa de entrada</span><span id="supportVisibleCount">0 chamados</span></div>
+        <div class="support-ticket-list" id="supportTicketList">
+          <div class="ga4-loading">Carregando chamados…</div>
+        </div>
+      </aside>
+      <section class="support-detail-column" id="supportDetailColumn" aria-live="polite">
+        <div class="support-empty"><div><span class="support-empty-mark">✦</span><strong>Selecione um atendimento</strong><br><span style="font-size:12px">A mensagem e o contexto do cliente aparecem aqui.</span></div></div>
+      </section>
+    </div>
+  </div><!-- /panel-support -->
 
   <!-- ═══════════════ ABA: FINANCEIRO ═══════════════ -->
   <div id="panel-finance" class="tab-panel" style="display:none">
@@ -726,6 +791,16 @@ function safeExternalUrl(value) {
   }
 }
 
+function _href(value) {
+  var raw = String(value || '').trim();
+  if (raw.toLowerCase().startsWith('mailto:')) {
+    var address = raw.slice(7);
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(address) || address.length > 254) return '';
+    return 'mailto:' + encodeURIComponent(address);
+  }
+  return safeExternalUrl(raw);
+}
+
 // ─── Email Leads ──────────────────────────────────────────────────────────────
 
 var _leadsData = [];
@@ -817,6 +892,7 @@ async function loadData(tokenOverride) {
     }
     _data = await res.json();
     render(_data);
+    loadSupportData(true);
 
     // GA4 — não bloqueia o admin se falhar
     if (ga4Res.ok) {
@@ -975,9 +1051,20 @@ function renderGA4(d) {
 var _alertsLoaded = false;
 var _abuseLoaded = false;
 var _aiUsageLoaded = false;
+var _supportLoaded = false;
+var _supportTickets = [];
+var _supportSelectedId = null;
+
+var SUPPORT_STATUS_LABELS = {
+  new: 'Novo', in_progress: 'Em atendimento', waiting_user: 'Aguardando usuário', resolved: 'Resolvido'
+};
+var SUPPORT_CATEGORY_LABELS = {
+  duvida: 'Dúvida', problema: 'Problema técnico', cobranca: 'Cobrança e pagamento', sugestao: 'Sugestão', outro: 'Outro'
+};
+var SUPPORT_PRIORITY_LABELS = { low: 'Baixa', normal: 'Normal', high: 'Alta', urgent: 'Urgente' };
 
 function switchTab(tab) {
-  ['overview','users','finance','traffic','alerts','email','abuse','ai-cost'].forEach(function(t) {
+  ['overview','users','support','finance','traffic','alerts','email','abuse','ai-cost'].forEach(function(t) {
     var panel = document.getElementById('panel-' + t);
     var btn   = document.querySelector('.admin-tab[data-tab="' + t + '"]');
     if (panel) panel.style.display = t === tab ? '' : 'none';
@@ -994,6 +1081,251 @@ function switchTab(tab) {
   }
   if (tab === 'abuse' && !_abuseLoaded) loadAbuseData();
   if (tab === 'ai-cost' && !_aiUsageLoaded) loadAiUsage(30);
+  if (tab === 'support' && !_supportLoaded) loadSupportData();
+}
+
+function supportTimeAgo(iso) {
+  if (!iso) return '-';
+  var minutes = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60000));
+  if (minutes < 1) return 'agora';
+  if (minutes < 60) return minutes + ' min';
+  var hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours + 'h';
+  var days = Math.floor(hours / 24);
+  return days < 30 ? days + 'd' : fmtDateShort(iso);
+}
+
+function supportDuration(minutes) {
+  if (!Number.isFinite(minutes)) return '-';
+  if (minutes < 60) return Math.max(1, Math.round(minutes)) + ' min';
+  if (minutes < 1440) return (minutes / 60).toFixed(minutes < 600 ? 1 : 0).replace('.', ',') + 'h';
+  return (minutes / 1440).toFixed(1).replace('.', ',') + 'd';
+}
+
+function renderSupportMetrics() {
+  var tickets = _supportTickets;
+  var newCount = tickets.filter(function(t){ return t.status === 'new'; }).length;
+  var progressCount = tickets.filter(function(t){ return t.status === 'in_progress'; }).length;
+  var waitingCount = tickets.filter(function(t){ return t.status === 'waiting_user'; }).length;
+  var cutoff30 = Date.now() - 30 * 86400000;
+  var resolvedCount = tickets.filter(function(t){ return t.status === 'resolved' && new Date(t.resolved_at || t.updated_at).getTime() >= cutoff30; }).length;
+  var responseMinutes = tickets.filter(function(t){ return t.first_response_at; }).map(function(t){
+    return Math.max(0, (new Date(t.first_response_at).getTime() - new Date(t.created_at).getTime()) / 60000);
+  });
+  var responseAverage = responseMinutes.length ? responseMinutes.reduce(function(sum, value){ return sum + value; }, 0) / responseMinutes.length : NaN;
+  var values = [newCount, progressCount, waitingCount, resolvedCount, supportDuration(responseAverage)];
+  var cards = document.querySelectorAll('#supportKpis .support-kpi-value');
+  values.forEach(function(value, index){ if (cards[index]) cards[index].textContent = value; });
+
+  var badge = document.getElementById('supportNavBadge');
+  if (badge) {
+    badge.textContent = newCount > 99 ? '99+' : String(newCount);
+    badge.classList.toggle('visible', newCount > 0);
+  }
+
+  var categoryCounts = {};
+  tickets.forEach(function(ticket){ categoryCounts[ticket.category] = (categoryCounts[ticket.category] || 0) + 1; });
+  var categorySummary = document.getElementById('supportCategorySummary');
+  if (categorySummary) {
+    categorySummary.innerHTML = Object.keys(SUPPORT_CATEGORY_LABELS).filter(function(key){ return categoryCounts[key]; }).map(function(key){
+      return '<span class="support-category-chip">' + escHtml(SUPPORT_CATEGORY_LABELS[key]) + ' <strong>' + categoryCounts[key] + '</strong></span>';
+    }).join('');
+  }
+}
+
+function filteredSupportTickets() {
+  var search = String(document.getElementById('supportSearch').value || '').trim().toLowerCase();
+  var status = document.getElementById('supportStatusFilter').value;
+  var category = document.getElementById('supportCategoryFilter').value;
+  var plan = document.getElementById('supportPlanFilter').value;
+  var period = document.getElementById('supportPeriodFilter').value;
+  var cutoff = period === 'all' ? 0 : Date.now() - Number(period) * 86400000;
+  var statusRank = { new: 0, in_progress: 1, waiting_user: 2, resolved: 3 };
+  var priorityRank = { urgent: 0, high: 1, normal: 2, low: 3 };
+  return _supportTickets.filter(function(ticket) {
+    var haystack = [ticket.email, ticket.message, ticket.id, SUPPORT_CATEGORY_LABELS[ticket.category], ticket.user_id].join(' ').toLowerCase();
+    if (search && haystack.indexOf(search) === -1) return false;
+    if (status !== 'all' && ticket.status !== status) return false;
+    if (category !== 'all' && ticket.category !== category) return false;
+    var ticketPlan = String(ticket.customer && ticket.customer.plan || 'free').toLowerCase();
+    if (plan !== 'all' && ticketPlan !== plan) return false;
+    if (cutoff && new Date(ticket.created_at).getTime() < cutoff) return false;
+    return true;
+  }).sort(function(a, b) {
+    var byStatus = (statusRank[a.status] || 0) - (statusRank[b.status] || 0);
+    if (byStatus) return byStatus;
+    var byPriority = (priorityRank[a.priority] || 0) - (priorityRank[b.priority] || 0);
+    if (byPriority) return byPriority;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+}
+
+function renderSupportInbox() {
+  var tickets = filteredSupportTickets();
+  var count = document.getElementById('supportVisibleCount');
+  if (count) count.textContent = tickets.length + (tickets.length === 1 ? ' chamado' : ' chamados');
+  if (!tickets.some(function(ticket){ return ticket.id === _supportSelectedId; })) {
+    _supportSelectedId = tickets[0] ? tickets[0].id : null;
+  }
+  var list = document.getElementById('supportTicketList');
+  if (!tickets.length) {
+    list.innerHTML = '<div class="ga4-not-configured" style="margin:16px;padding:24px 14px">Nenhum chamado corresponde aos filtros.</div>';
+    renderSupportDetail();
+    return;
+  }
+  list.innerHTML = tickets.map(function(ticket) {
+    var message = String(ticket.message || '').replace(/\s+/g, ' ').trim();
+    if (message.length > 105) message = message.slice(0, 102) + '...';
+    var plan = String(ticket.customer && ticket.customer.plan || 'free').toUpperCase();
+    var priority = ticket.priority === 'high' || ticket.priority === 'urgent'
+      ? '<span class="support-mini-tag" style="color:var(--red);border-color:var(--red-border)">' + escHtml(SUPPORT_PRIORITY_LABELS[ticket.priority]) + '</span>' : '';
+    return '<button type="button" class="support-ticket-item ' + (ticket.status === 'new' ? 'unread ' : '') + (ticket.id === _supportSelectedId ? 'active' : '') + '" onclick="selectSupportTicket(\'' + ticket.id + '\')">'
+      + '<div class="support-ticket-top"><span class="support-ticket-email">' + escHtml(ticket.email) + '</span><span class="support-ticket-age">' + supportTimeAgo(ticket.created_at) + '</span></div>'
+      + '<div class="support-ticket-subject">' + escHtml(SUPPORT_CATEGORY_LABELS[ticket.category] || ticket.category) + '</div>'
+      + '<div class="support-ticket-preview">' + escHtml(message) + '</div>'
+      + '<div class="support-ticket-meta"><span class="support-dot ' + ticket.status + '"></span><span class="support-mini-tag">' + escHtml(SUPPORT_STATUS_LABELS[ticket.status] || ticket.status) + '</span><span class="support-mini-tag">' + escHtml(plan) + '</span>' + priority + '</div>'
+      + '</button>';
+  }).join('');
+  renderSupportDetail();
+}
+
+function selectSupportTicket(ticketId) {
+  _supportSelectedId = ticketId;
+  renderSupportInbox();
+  if (window.innerWidth < 721) document.getElementById('supportDetailColumn').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderSupportDetail() {
+  var column = document.getElementById('supportDetailColumn');
+  var ticket = _supportTickets.find(function(item){ return item.id === _supportSelectedId; });
+  if (!ticket) {
+    column.innerHTML = '<div class="support-empty"><div><span class="support-empty-mark">✦</span><strong>Nenhum atendimento selecionado</strong><br><span style="font-size:12px">Ajuste os filtros ou selecione uma mensagem.</span></div></div>';
+    return;
+  }
+  var customer = ticket.customer || {};
+  var replies = Array.isArray(ticket.replies) ? ticket.replies : [];
+  var thread = '<article class="support-message"><div class="support-message-meta"><span>Mensagem do usuário</span><span>' + escHtml(fmtDate(ticket.created_at)) + ' · ' + escHtml(supportTimeAgo(ticket.created_at)) + '</span></div><div class="support-message-body">' + escHtml(ticket.message) + '</div></article>';
+  thread += replies.map(function(reply) {
+    var delivery = reply.delivery_status === 'sent' ? 'Enviado' : reply.delivery_status === 'failed' ? 'Falhou' : reply.delivery_status === 'received' ? 'Recebido' : 'Enviando';
+    return '<article class="support-message ' + (reply.author_type === 'admin' ? 'admin' : '') + '"><div class="support-message-meta"><span>' + (reply.author_type === 'admin' ? 'Equipe VagaAI' : 'Usuário') + '<span class="support-message-delivery">· ' + delivery + '</span></span><span>' + escHtml(fmtDate(reply.created_at)) + '</span></div><div class="support-message-body">' + escHtml(reply.message) + '</div></article>';
+  }).join('');
+  var statusOptions = Object.keys(SUPPORT_STATUS_LABELS).map(function(key){ return '<option value="' + key + '"' + (ticket.status === key ? ' selected' : '') + '>' + SUPPORT_STATUS_LABELS[key] + '</option>'; }).join('');
+  var priorityOptions = Object.keys(SUPPORT_PRIORITY_LABELS).map(function(key){ return '<option value="' + key + '"' + (ticket.priority === key ? ' selected' : '') + '>' + SUPPORT_PRIORITY_LABELS[key] + '</option>'; }).join('');
+  var emailHref = _href('mailto:' + ticket.email);
+  column.innerHTML = '<div class="support-detail">'
+    + '<header class="support-detail-header"><div><div class="support-detail-kicker">Chamado ' + escHtml(ticket.id.slice(0, 8).toUpperCase()) + '</div><h2 class="support-detail-title">' + escHtml(SUPPORT_CATEGORY_LABELS[ticket.category] || ticket.category) + '</h2><div class="support-detail-email"><a href="' + emailHref + '">' + escHtml(ticket.email) + '</a> · recebido ' + escHtml(supportTimeAgo(ticket.created_at)) + '</div></div><span class="support-status-badge">' + escHtml(SUPPORT_STATUS_LABELS[ticket.status] || ticket.status) + '</span></header>'
+    + '<div class="support-customer-card"><div class="support-customer-grid">'
+    + '<div><div class="support-customer-label">Plano</div><div class="support-customer-value">' + escHtml(String(customer.plan || 'free').toUpperCase()) + (customer.subscription_status ? ' · ' + escHtml(customer.subscription_status) : '') + '</div></div>'
+    + '<div><div class="support-customer-label">Créditos</div><div class="support-customer-value">' + Number(customer.credits || 0).toLocaleString('pt-BR') + '</div></div>'
+    + '<div><div class="support-customer-label">Último acesso</div><div class="support-customer-value">' + escHtml(customer.last_sign_in_at ? supportTimeAgo(customer.last_sign_in_at) : 'Não identificado') + '</div></div>'
+    + '<div><div class="support-customer-label">Origem</div><div class="support-customer-value">' + (ticket.source === 'dashboard' ? 'Dashboard' : 'Público') + '</div></div>'
+    + '</div></div>'
+    + '<div class="support-thread">' + thread + '</div>'
+    + '<div class="support-editor"><div class="support-editor-row"><label>Status<select class="support-control" id="supportDetailStatus">' + statusOptions + '</select></label><label>Prioridade<select class="support-control" id="supportDetailPriority">' + priorityOptions + '</select></label></div>'
+    + '<label>Notas internas<textarea class="support-control support-textarea support-notes" id="supportAdminNotes" placeholder="Contexto visível somente para administradores">' + escHtml(ticket.admin_notes || '') + '</textarea></label>'
+    + '<div class="support-detail-actions"><span class="support-feedback" id="supportActionFeedback"></span><button class="btn-nav ghost" id="supportSaveButton" onclick="saveSupportTicket()">Salvar organização</button></div>'
+    + '<label>Responder ao cliente<textarea class="support-control support-textarea" id="supportReplyMessage" placeholder="Escreva uma resposta clara e objetiva"></textarea></label>'
+    + '<div class="support-detail-actions"><span class="support-feedback" id="supportReplyFeedback"></span><button class="btn-nav primary" id="supportReplyButton" onclick="sendSupportReply()">Enviar resposta por e-mail</button></div>'
+    + '</div></div>';
+}
+
+async function loadSupportData(silent) {
+  var list = document.getElementById('supportTicketList');
+  if (!silent && list) list.innerHTML = '<div class="ga4-loading">Carregando chamados…</div>';
+  try {
+    if (!_ga4Token) {
+      var sessionResult = await sb.auth.getSession();
+      _ga4Token = sessionResult.data.session && sessionResult.data.session.access_token;
+    }
+    var response = await fetch('/api/admin?action=support', { headers: { Authorization: 'Bearer ' + _ga4Token } });
+    var data = await response.json().catch(function(){ return {}; });
+    if (!response.ok) throw new Error(data.error || 'Erro ao carregar o suporte.');
+    _supportLoaded = true;
+    if (!data.available) {
+      _supportTickets = [];
+      renderSupportMetrics();
+      if (list) list.innerHTML = '<div class="ga4-not-configured" style="margin:16px">A migração 037 precisa ser aplicada no Supabase para ativar a central de suporte.</div>';
+      var detail = document.getElementById('supportDetailColumn');
+      if (detail) detail.innerHTML = '<div class="support-empty"><div><span class="support-empty-mark">✦</span><strong>Central pronta para ativação</strong><br><span style="font-size:12px">Aplique a migração 037 para começar a registrar os atendimentos.</span></div></div>';
+      return;
+    }
+    _supportTickets = Array.isArray(data.tickets) ? data.tickets : [];
+    if (_supportSelectedId && !_supportTickets.some(function(ticket){ return ticket.id === _supportSelectedId; })) _supportSelectedId = null;
+    renderSupportMetrics();
+    renderSupportInbox();
+  } catch(error) {
+    _supportLoaded = false;
+    if (!silent && list) list.innerHTML = '<div class="error-state" style="margin:16px">' + escHtml(error.message) + '</div>';
+  }
+}
+
+function setSupportFeedback(id, message, state) {
+  var element = document.getElementById(id);
+  if (!element) return;
+  element.textContent = message || '';
+  element.className = 'support-feedback' + (state ? ' ' + state : '');
+}
+
+async function saveSupportTicket() {
+  var ticket = _supportTickets.find(function(item){ return item.id === _supportSelectedId; });
+  if (!ticket) return;
+  var button = document.getElementById('supportSaveButton');
+  button.disabled = true;
+  setSupportFeedback('supportActionFeedback', 'Salvando...', '');
+  try {
+    var response = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + _ga4Token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'update_support_ticket', ticketId: ticket.id,
+        status: document.getElementById('supportDetailStatus').value,
+        priority: document.getElementById('supportDetailPriority').value,
+        adminNotes: document.getElementById('supportAdminNotes').value,
+      })
+    });
+    var data = await response.json().catch(function(){ return {}; });
+    if (!response.ok) throw new Error(data.error || 'Não foi possível salvar.');
+    var updated = data.ticket || {};
+    Object.assign(ticket, updated);
+    renderSupportMetrics();
+    renderSupportInbox();
+    setSupportFeedback('supportActionFeedback', 'Organização salva.', 'ok');
+  } catch(error) {
+    setSupportFeedback('supportActionFeedback', error.message, 'error');
+  } finally {
+    button = document.getElementById('supportSaveButton');
+    if (button) button.disabled = false;
+  }
+}
+
+async function sendSupportReply() {
+  var ticket = _supportTickets.find(function(item){ return item.id === _supportSelectedId; });
+  var field = document.getElementById('supportReplyMessage');
+  var message = field ? field.value.trim() : '';
+  if (!ticket || !message) {
+    setSupportFeedback('supportReplyFeedback', 'Escreva uma resposta antes de enviar.', 'error');
+    return;
+  }
+  var button = document.getElementById('supportReplyButton');
+  button.disabled = true;
+  setSupportFeedback('supportReplyFeedback', 'Enviando...', '');
+  try {
+    var response = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + _ga4Token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'reply_support_ticket', ticketId: ticket.id, message: message })
+    });
+    var data = await response.json().catch(function(){ return {}; });
+    if (!response.ok) throw new Error(data.error || 'Não foi possível enviar a resposta.');
+    field.value = '';
+    await loadSupportData(true);
+    setSupportFeedback('supportReplyFeedback', 'Resposta enviada.', 'ok');
+  } catch(error) {
+    setSupportFeedback('supportReplyFeedback', error.message, 'error');
+  } finally {
+    button = document.getElementById('supportReplyButton');
+    if (button) button.disabled = false;
+  }
 }
 
 async function loadAiUsage(days) {

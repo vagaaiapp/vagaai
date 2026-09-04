@@ -4,6 +4,7 @@ import { anonymousKeys } from '../lib/abuse.js';
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 async function getUserFromToken(token) {
   try {
@@ -65,6 +66,57 @@ const SUPPORT_LIMIT = 5;                  // máx 5 mensagens
 const SUPPORT_WINDOW_MS = 60 * 60 * 1000; // por hora
 async function checkRateLimit(key) {
   return checkAndCountLimit({ key, limit: SUPPORT_LIMIT, windowMs: SUPPORT_WINDOW_MS });
+}
+
+async function createSupportTicket(payload) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return null;
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/support_tickets`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      },
+      body: JSON.stringify(payload),
+    });
+    const rows = await response.json().catch(() => []);
+    if (!response.ok || !Array.isArray(rows) || !rows[0]) {
+      console.error('support ticket persistence failed:', response.status);
+      return null;
+    }
+    return rows[0];
+  } catch (error) {
+    console.error('support ticket persistence failed:', error.message);
+    return null;
+  }
+}
+
+async function markSupportNotification(ticketId, status, providerMessageId = null) {
+  if (!ticketId || !SUPABASE_URL || !SUPABASE_SERVICE_KEY) return;
+  try {
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/support_tickets?id=eq.${encodeURIComponent(ticketId)}`,
+      {
+        method: 'PATCH',
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({
+          notification_status: status,
+          notification_message_id: providerMessageId,
+          updated_at: new Date().toISOString(),
+        }),
+      }
+    );
+    if (!response.ok) console.error('support notification status failed:', response.status);
+  } catch (error) {
+    console.error('support notification status failed:', error.message);
+  }
 }
 
 // ── Lead B2B (/paraempresas) ─────────────────────────────────────────────────
@@ -170,7 +222,8 @@ export default async function handler(req, res) {
   if (typeof mensagem !== 'string' || mensagem.trim().length < 10 || mensagem.length > 5000) {
     return res.status(400).json({ error: 'Mensagem inválida.' });
   }
-  if (typeof motivo !== 'string' || motivo.length > 50) {
+  const supportReasons = new Set(['duvida', 'problema', 'cobranca', 'sugestao', 'outro']);
+  if (typeof motivo !== 'string' || !supportReasons.has(motivo)) {
     return res.status(400).json({ error: 'Motivo inválido.' });
   }
 
@@ -181,11 +234,13 @@ export default async function handler(req, res) {
   // Autenticação opcional — enriquece o e-mail com dados do usuário
   const authHeader = req.headers['authorization'] || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
-  let userId = null;
+  let authenticatedUser = null;
   if (token) {
     const user = await getUserFromToken(token);
-    if (user?.id) userId = user.id;
+    if (user?.id) authenticatedUser = user;
   }
+  const userId = authenticatedUser?.id || null;
+  const contactEmail = authenticatedUser?.email || email;
 
   const motivoLabels = {
     duvida: 'Dúvida',
@@ -205,14 +260,22 @@ export default async function handler(req, res) {
       <div style="background:#ffffff;padding:28px;border:1px solid #e5e5e5;border-top:none;border-radius:0 0 12px 12px">
         <h2 style="margin:0 0 20px;font-size:18px;color:#0a0f0d">Nova mensagem de suporte</h2>
         <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
-          <tr><td style="padding:8px 0;font-size:13px;color:#666;width:130px">De</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#0a0f0d">${esc(email)}</td></tr>
+          <tr><td style="padding:8px 0;font-size:13px;color:#666;width:130px">De</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#0a0f0d">${esc(contactEmail)}</td></tr>
           <tr><td style="padding:8px 0;font-size:13px;color:#666">Motivo</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#0a0f0d">${esc(motivoLabel)}</td></tr>
           ${userId ? `<tr><td style="padding:8px 0;font-size:13px;color:#666">User ID</td><td style="padding:8px 0;font-size:13px;color:#888;font-family:monospace">${esc(userId)}</td></tr>` : ''}
         </table>
         <div style="background:#f5f5f5;border-radius:8px;padding:16px;font-size:14px;color:#333;line-height:1.6;white-space:pre-wrap">${esc(mensagem)}</div>
-        <p style="margin:20px 0 0;font-size:12px;color:#999">Responda diretamente para este e-mail: ${esc(email)}</p>
+        <p style="margin:20px 0 0;font-size:12px;color:#999">Responda diretamente para este e-mail: ${esc(contactEmail)}</p>
       </div>
     </div>`;
+
+  const ticket = await createSupportTicket({
+    user_id: userId,
+    email: contactEmail,
+    category: motivo,
+    message: mensagem.trim(),
+    source: userId ? 'dashboard' : 'public',
+  });
 
   try {
     const r = await fetch('https://api.resend.com/emails', {
@@ -224,8 +287,8 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         from: 'VagaAI Suporte <noreply@vagaai.app.br>',
         to: ['contato@vagaai.app.br'],
-        reply_to: email,
-        subject: `[Suporte] ${motivoLabel}: ${email}`,
+        reply_to: contactEmail,
+        subject: `[Suporte] ${motivoLabel}: ${contactEmail}`,
         html,
       }),
     });
@@ -233,13 +296,17 @@ export default async function handler(req, res) {
     if (!r.ok) {
       const err = await r.text();
       console.error('Resend error:', err);
+      await markSupportNotification(ticket?.id, 'failed');
       return res.status(500).json({ error: 'Erro ao enviar. Tente novamente.' });
     }
 
-    sendAutoReply(email, false);
-    return res.status(200).json({ ok: true });
+    const receipt = await r.json().catch(() => ({}));
+    await markSupportNotification(ticket?.id, 'sent', receipt.id || null);
+    sendAutoReply(contactEmail, false);
+    return res.status(200).json({ ok: true, ticket_id: ticket?.id || null });
   } catch (err) {
     console.error('Support handler error:', err);
+    await markSupportNotification(ticket?.id, 'failed');
     return res.status(500).json({ error: 'Erro interno. Tente novamente.' });
   }
 }
