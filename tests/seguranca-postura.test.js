@@ -9,6 +9,24 @@ import fs from 'node:fs';
 const ler = (p) => fs.readFileSync(new URL('../' + p, import.meta.url), 'utf8');
 const admin = ler('api/admin.js');
 const analyze = ler('api/analyze.js');
+const login = ler('login/index.html');
+const adminLogin = ler('admin-login/index.html');
+
+function supabasePublicConfig(source) {
+  return {
+    url: source.match(/https:\/\/[a-z0-9]+\.supabase\.co/)?.[0] || '',
+    key: source.match(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/)?.[0] || '',
+  };
+}
+
+describe('os logins usam a mesma configuração pública do Supabase', () => {
+  it('login administrativo não fica preso a uma chave pública antiga', () => {
+    const principal = supabasePublicConfig(login);
+    const administrativo = supabasePublicConfig(adminLogin);
+    assert.ok(principal.url && principal.key, 'configuração pública não encontrada no login principal');
+    assert.deepEqual(administrativo, principal);
+  });
+});
 
 describe('quem é admin tem uma fonte só', () => {
   it('api/admin.js não carrega a lista de e-mails', () => {
