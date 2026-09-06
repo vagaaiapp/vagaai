@@ -14,6 +14,7 @@ import { checarCotaMensal, mensagemDeCota } from '../lib/cotas.js';
 import { transcribeAudio } from '../lib/transcribe.js';
 import { abuseHttpResponse, anonymousKeys, guardAccountUsage } from '../lib/abuse.js';
 import { recordAnthropicUsage } from '../lib/ai-usage.js';
+import { guardedAnthropicFetch } from '../lib/ai-guard.js';
 
 export const config = {
   api: {
@@ -67,7 +68,7 @@ async function getUserPlan(userId) {
 }
 
 async function callClaude(prompt, maxTokens = 2000, temperature = 0.7, telemetry = {}) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await guardedAnthropicFetch({
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -80,7 +81,7 @@ async function callClaude(prompt, maxTokens = 2000, temperature = 0.7, telemetry
       temperature,
       messages: [{ role: 'user', content: prompt }],
     }),
-  });
+  }, { endpoint: 'interview', ...telemetry });
   if (!response.ok) throw new Error(`Anthropic ${response.status}`);
   const data = await response.json();
   await recordAnthropicUsage(data, {

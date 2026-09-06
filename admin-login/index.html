@@ -62,7 +62,7 @@ label{
   font-size:13px;
   font-weight:600
 }
-input[type="email"],input[type="password"]{
+input[type="email"],input[type="password"],input[type="text"]{
   background:#0a0f0d;
   border:1px solid rgba(255,255,255,0.07);
   border-radius:10px;
@@ -128,6 +128,12 @@ input:focus{
   color:#64c8ff;
   margin-bottom:1.5rem
 }
+.mfa-panel{display:none;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid rgba(255,255,255,.09)}
+.mfa-panel.show{display:block}
+.mfa-qr{display:none;width:180px;height:180px;margin:1rem auto;background:#fff;border-radius:12px;padding:8px}
+.mfa-secret{display:none;overflow-wrap:anywhere;text-align:center;font-family:monospace;font-size:11px;color:#8a9e90;margin-bottom:1rem}
+.btn-secondary{background:transparent;color:#e8ede9;border:1px solid rgba(255,255,255,.18)}
+.btn-secondary:hover{background:rgba(255,255,255,.06)}
 </style>
 </head>
 <body>
@@ -158,6 +164,19 @@ input:focus{
   <div class="alert alert-error" id="errorMsg"></div>
   <div class="alert alert-success" id="successMsg"></div>
 
+  <div class="mfa-panel" id="mfaPanel">
+    <h3 id="mfaTitle" style="font-size:17px;margin-bottom:.45rem">Proteja o acesso administrativo</h3>
+    <p id="mfaCopy" style="font-size:13px;color:#8a9e90;line-height:1.55;margin-bottom:1rem">Use um aplicativo autenticador para adicionar uma segunda etapa ao login.</p>
+    <img id="mfaQr" class="mfa-qr" alt="QR code do autenticador">
+    <div id="mfaSecret" class="mfa-secret"></div>
+    <button class="btn" id="mfaStartBtn" onclick="startMfaEnrollment()">Configurar autenticador</button>
+    <div id="mfaCodeWrap" style="display:none">
+      <div class="field"><label for="mfaCode">Código de 6 dígitos</label><input type="text" id="mfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></div>
+      <button class="btn" id="mfaVerifyBtn" onclick="verifyMfaCode()">Confirmar código</button>
+    </div>
+    <button class="btn btn-secondary" id="mfaSkipBtn" onclick="goAdmin()">Configurar depois</button>
+  </div>
+
   <div id="resetForm" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.07)">
     <h3 style="font-size:16px;margin-bottom:0.5rem">Resetar Senha</h3>
     <p style="font-size:13px;color:#8a9e90;margin-bottom:1rem">Para resetar sua senha, acesse o painel Supabase:</p>
@@ -181,6 +200,7 @@ input:focus{
   const SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
   const ADMIN_EMAILS = ['jvhr96@gmail.com'];
+  let pendingFactorId = null;
 
   // Wait for supabase to load
   let supabase = null;
@@ -200,11 +220,88 @@ input:focus{
     return;
   }
 
+  function showError(message) {
+    const errorEl = document.getElementById('errorMsg');
+    errorEl.textContent = message;
+    errorEl.classList.add('show');
+  }
+
+  window.goAdmin = () => { window.location.href = '/admin'; };
+
+  async function prepareMfa(offerEnrollment) {
+    const aal = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aal.error) throw aal.error;
+    if (aal.data?.currentLevel === 'aal2') return window.goAdmin();
+    const factorsResult = await supabase.auth.mfa.listFactors();
+    if (factorsResult.error) throw factorsResult.error;
+    const verified = (factorsResult.data?.totp || []).find(factor => factor.status === 'verified');
+    if (verified) {
+      pendingFactorId = verified.id;
+      document.getElementById('mfaPanel').classList.add('show');
+      document.getElementById('mfaTitle').textContent = 'Confirme a segunda etapa';
+      document.getElementById('mfaCopy').textContent = 'Digite o código atual do seu aplicativo autenticador.';
+      document.getElementById('mfaStartBtn').style.display = 'none';
+      document.getElementById('mfaCodeWrap').style.display = 'block';
+      document.getElementById('mfaSkipBtn').style.display = 'none';
+      document.getElementById('mfaCode').focus();
+      return;
+    }
+    if (!offerEnrollment) return window.goAdmin();
+    document.getElementById('mfaPanel').classList.add('show');
+  }
+
+  window.startMfaEnrollment = async () => {
+    const button = document.getElementById('mfaStartBtn');
+    button.disabled = true;
+    button.textContent = 'Preparando…';
+    try {
+      const listed = await supabase.auth.mfa.listFactors();
+      for (const factor of (listed.data?.totp || []).filter(item => item.status === 'unverified')) {
+        await supabase.auth.mfa.unenroll({ factorId: factor.id });
+      }
+      const enrolled = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'VagaAI Admin' });
+      if (enrolled.error) throw enrolled.error;
+      pendingFactorId = enrolled.data.id;
+      const qr = document.getElementById('mfaQr');
+      qr.src = enrolled.data.totp.qr_code;
+      qr.style.display = 'block';
+      const secret = document.getElementById('mfaSecret');
+      secret.textContent = 'Chave manual: ' + enrolled.data.totp.secret;
+      secret.style.display = 'block';
+      document.getElementById('mfaCopy').textContent = 'Escaneie o QR code no Google Authenticator, Microsoft Authenticator ou 1Password e confirme o código.';
+      button.style.display = 'none';
+      document.getElementById('mfaCodeWrap').style.display = 'block';
+      document.getElementById('mfaSkipBtn').style.display = 'none';
+      document.getElementById('mfaCode').focus();
+    } catch (error) {
+      showError(error.message || 'Não foi possível preparar o autenticador.');
+      button.disabled = false;
+      button.textContent = 'Configurar autenticador';
+    }
+  };
+
+  window.verifyMfaCode = async () => {
+    const code = document.getElementById('mfaCode').value.replace(/\D/g, '');
+    const button = document.getElementById('mfaVerifyBtn');
+    if (!pendingFactorId || code.length !== 6) return showError('Digite o código de 6 dígitos.');
+    button.disabled = true;
+    button.textContent = 'Confirmando…';
+    try {
+      const result = await supabase.auth.mfa.challengeAndVerify({ factorId: pendingFactorId, code });
+      if (result.error) throw result.error;
+      window.goAdmin();
+    } catch (error) {
+      showError('Código inválido ou expirado. Tente novamente.');
+      button.disabled = false;
+      button.textContent = 'Confirmar código';
+    }
+  };
+
   // Check if already logged in
   try {
     const { data } = await supabase.auth.getSession();
     if (data?.session) {
-      window.location.href = '/admin';
+      await prepareMfa(false);
     }
   } catch (e) {
     console.error('Session check error:', e);
@@ -249,12 +346,10 @@ input:focus{
         return;
       }
 
-      successEl.textContent = 'Login bem-sucedido! Redirecionando...';
+      successEl.textContent = 'Senha confirmada.';
       successEl.classList.add('show');
-
-      setTimeout(() => {
-        window.location.href = '/admin';
-      }, 1000);
+      document.getElementById('loginBtn').style.display = 'none';
+      await prepareMfa(true);
     } catch (e) {
       console.error('Login error:', e);
       errorEl.textContent = 'Erro ao conectar. Tente novamente.';
@@ -267,6 +362,9 @@ input:focus{
   // Enter key submit
   document.getElementById('password').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') window.handleLogin();
+  });
+  document.getElementById('mfaCode').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') window.verifyMfaCode();
   });
 
   // Toggle reset form

@@ -9,6 +9,7 @@ import {
   releaseFreeEntitlement,
 } from '../lib/abuse.js';
 import { recordAnthropicUsage } from '../lib/ai-usage.js';
+import { guardedAnthropicFetch } from '../lib/ai-guard.js';
 
 // ─── Score breakdown determinístico ──────────────────────────────────────────
 
@@ -1076,7 +1077,7 @@ ESTILO: nunca use travessao (\u2014) no texto. Ele quase nao aparece na escrita 
 Responda APENAS com o texto do currículo, sem explicações adicionais.`;
 
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await guardedAnthropicFetch({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1089,7 +1090,7 @@ Responda APENAS com o texto do currículo, sem explicações adicionais.`;
           temperature: 0.3,
           messages: [{ role: 'user', content: cvPrompt }],
         }),
-      });
+      }, { userId: cvUser.id, endpoint: 'analyze', action: 'create_cv' });
       if (!response.ok) {
         // IA falhou: estorna somente se houve cobrança real
         await refundAnalysisCredit(cvUser.id, cvDeduct);
@@ -1191,7 +1192,7 @@ CURRÍCULO:
 ${rawCv}`;
 
     try {
-      const extractRes = await fetch('https://api.anthropic.com/v1/messages', {
+      const extractRes = await guardedAnthropicFetch({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1206,7 +1207,7 @@ ${rawCv}`;
           temperature: 0,
           messages: [{ role: 'user', content: extractPrompt }],
         }),
-      });
+      }, { endpoint: 'analyze', action: 'onboarding_cv_extract' });
 
       if (!extractRes.ok) {
         console.error('onboarding_cv_extract: IA retornou', extractRes.status);
@@ -1380,7 +1381,7 @@ Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato
 }`;
 
     try {
-      const obRes = await fetch('https://api.anthropic.com/v1/messages', {
+      const obRes = await guardedAnthropicFetch({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1393,7 +1394,7 @@ Responda APENAS com JSON válido, sem markdown e sem explicação, neste formato
           temperature: 0.3,
           messages: [{ role: 'user', content: obPrompt }],
         }),
-      });
+      }, { endpoint: 'analyze', action: 'onboarding_cv' });
       if (!obRes.ok) {
         console.error('onboarding_cv: IA retornou', obRes.status);
         return res.status(502).json({ error: 'Erro ao gerar currículo. Tente novamente.' });
@@ -1542,7 +1543,7 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
 }`;
 
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await guardedAnthropicFetch({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1555,7 +1556,7 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
           temperature: 0.2,
           messages: [{ role: 'user', content: profilePrompt }],
         }),
-      });
+      }, { userId: pUser.id, endpoint: 'analyze', action: 'profile_cv' });
       if (!response.ok) {
         await refundAnalysisCredit(pUser.id, pDeduct);
         return res.status(500).json({ error: 'Erro ao analisar currículo. Tente novamente.' });
@@ -1873,7 +1874,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
 }`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await guardedAnthropicFetch({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1886,7 +1887,7 @@ Responda APENAS com um JSON válido, sem texto adicional, no seguinte formato:
         temperature: 0,   // determinístico — mesmo input, mesmo output
         messages: [{ role: 'user', content: prompt }],
       }),
-    });
+    }, { userId: authenticatedUserId, endpoint: 'analyze', action: 'analysis' });
 
     if (!response.ok) {
       const errText = await response.text();

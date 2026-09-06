@@ -138,6 +138,33 @@ async function fetchSupabaseData() {
   return { users, totalUsers, credits, analyses, emailLeads };
 }
 
+function jwtAal(token) {
+  try {
+    const payload = JSON.parse(Buffer.from(String(token).split('.')[1] || '', 'base64url').toString('utf8'));
+    return payload?.aal === 'aal2' ? 'aal2' : 'aal1';
+  } catch {
+    return 'aal1';
+  }
+}
+
+async function adminMfaPolicy(token) {
+  const mandatory = process.env.ADMIN_MFA_REQUIRED === 'true';
+  try {
+    const response = await fetch(`${SUPABASE_URL}/auth/v1/factors`, {
+      headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) {
+      return { required: mandatory, verifiedFactor: false, currentLevel: jwtAal(token), available: false };
+    }
+    const data = await response.json();
+    const factors = [...(data?.totp || []), ...(data?.phone || [])];
+    const verifiedFactor = factors.some(factor => factor?.status === 'verified');
+    return { required: mandatory || verifiedFactor, verifiedFactor, currentLevel: jwtAal(token), available: true };
+  } catch {
+    return { required: mandatory, verifiedFactor: false, currentLevel: jwtAal(token), available: false };
+  }
+}
+
 function integrationStatus() {
   return {
     jsearch: Boolean(process.env.JSEARCH_API_KEY),
@@ -465,6 +492,17 @@ export default async function handler(req, res) {
   const user = await getUserFromToken(token);
   if (!user || !(await isAdmin(user.email))) {
     return res.status(403).json({ error: 'Acesso negado. Apenas administradores.' });
+  }
+
+  const mfa = await adminMfaPolicy(token);
+  if (mfa.required && mfa.currentLevel !== 'aal2') {
+    return res.status(403).json({
+      error: 'mfa_required',
+      message: mfa.verifiedFactor
+        ? 'Confirme o código do autenticador para acessar o admin.'
+        : 'Configure a autenticação em duas etapas para acessar o admin.',
+      enrollment_required: !mfa.verifiedFactor,
+    });
   }
 
   // ── POST: ações de gerenciamento de usuário ──────────────────────────────────
@@ -898,6 +936,11 @@ export default async function handler(req, res) {
         throw new Error(`PostgREST ${usageRes.status}`);
       }
       const rows = await usageRes.json();
+      const budgetRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/ai_budget_summary`, {
+        method: 'POST', headers: serviceHeaders(), body: JSON.stringify({ p_days: days }),
+      });
+      const budgetRows = budgetRes.ok ? await budgetRes.json() : [];
+      const budgetAvailable = budgetRes.ok;
       const total = (Array.isArray(rows) ? rows : []).reduce((acc, row) => {
         acc.requests += Number(row.requests) || 0;
         acc.input_tokens += Number(row.input_tokens) || 0;
@@ -909,7 +952,19 @@ export default async function handler(req, res) {
       }, { requests: 0, input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0, estimated_cost_usd: 0 });
       total.estimated_cost_usd = Number(total.estimated_cost_usd.toFixed(6));
       await auditar(user.email, 'ler_custos_ia', null, { days, requests: total.requests });
-      return res.status(200).json({ ok: true, available: true, days, total, rows });
+      return res.status(200).json({
+        ok: true, available: true, days, total, rows,
+        budget: {
+          available: budgetAvailable,
+          rows: Array.isArray(budgetRows) ? budgetRows : [],
+          limits: {
+            subject_daily_usd: Number(process.env.AI_SUBJECT_DAILY_BUDGET_USD) || 1.5,
+            subject_monthly_usd: Number(process.env.AI_SUBJECT_MONTHLY_BUDGET_USD) || 8,
+            global_hourly_usd: Number(process.env.AI_GLOBAL_HOURLY_BUDGET_USD) || 5,
+            global_daily_usd: Number(process.env.AI_GLOBAL_DAILY_BUDGET_USD) || 25,
+          },
+        },
+      });
     } catch (err) {
       console.error('ai_usage admin error:', err.message);
       return res.status(500).json({ error: 'Erro ao buscar custos de IA.' });

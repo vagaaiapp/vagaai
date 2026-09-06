@@ -6,6 +6,7 @@ import { checkAndCountLimit } from '../lib/ratelimit.js';
 import { checarCotaMensal, mensagemDeCota } from '../lib/cotas.js';
 import { abuseHttpResponse, guardAccountUsage } from '../lib/abuse.js';
 import { recordAnthropicUsage } from '../lib/ai-usage.js';
+import { guardedAnthropicFetch } from '../lib/ai-guard.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
@@ -173,7 +174,7 @@ Retorne APENAS este JSON (sem markdown):
 }`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await guardedAnthropicFetch({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -186,7 +187,7 @@ Retorne APENAS este JSON (sem markdown):
         temperature: 0.6,
         messages: [{ role: 'user', content: prompt }],
       }),
-    });
+    }, { userId: user.id, endpoint: 'cover-letter', action: 'generate' });
 
     if (!response.ok) throw new Error(`Anthropic ${response.status}`);
     const data = await response.json();

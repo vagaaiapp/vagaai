@@ -887,6 +887,10 @@ async function loadData(tokenOverride) {
 
     if (!res.ok) {
       var err = await res.json().catch(function(){ return {}; });
+      if (err.error === 'mfa_required') {
+        window.location.href = '/admin-login?mfa=1&next=' + encodeURIComponent(window.location.pathname);
+        return;
+      }
       showError(err.error || 'Erro ao carregar dados. Status: ' + res.status);
       return;
     }
@@ -1355,11 +1359,18 @@ async function loadAiUsage(days) {
     var cacheRead = Number(total.cache_read_input_tokens || 0);
     var input = Number(total.input_tokens || 0);
     var cacheRate = input + cacheRead ? Math.round((cacheRead / (input + cacheRead)) * 100) : 0;
+    var budgetRows = data.budget && Array.isArray(data.budget.rows) ? data.budget.rows : [];
+    var budgetBlocked = budgetRows.filter(function(row) {
+      return row.status === 'released' && /budget|concurrency/.test(String(row.reason || ''));
+    }).reduce(function(total, row) { return total + Number(row.reservations || 0); }, 0);
+    var budgetLimits = data.budget && data.budget.limits ? data.budget.limits : {};
     metrics.innerHTML = [
       ['Custo estimado', 'US$ ' + usd.toFixed(4), days + ' dias'],
       ['Chamadas', Number(total.requests || 0).toLocaleString('pt-BR'), 'respostas cobradas'],
       ['Tokens de saída', Number(total.output_tokens || 0).toLocaleString('pt-BR'), 'principal componente de custo'],
-      ['Leitura em cache', cacheRate + '%', Number(cacheRead).toLocaleString('pt-BR') + ' tokens']
+      ['Leitura em cache', cacheRate + '%', Number(cacheRead).toLocaleString('pt-BR') + ' tokens'],
+      ['Circuit breaker', data.budget && data.budget.available ? 'Ativo' : 'Pendente', budgetBlocked + ' chamadas bloqueadas'],
+      ['Teto global', 'US$ ' + Number(budgetLimits.global_daily_usd || 0).toFixed(2), 'por 24 horas']
     ].map(function(item){ return '<div class="metric-card"><div class="metric-label">' + item[0] + '</div><div class="metric-value">' + item[1] + '</div><div class="metric-sub">' + item[2] + '</div></div>'; }).join('');
     var rows = Array.isArray(data.rows) ? data.rows : [];
     body.innerHTML = rows.length ? rows.map(function(row) {

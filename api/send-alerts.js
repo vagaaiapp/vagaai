@@ -7,6 +7,7 @@
 import crypto from 'crypto';
 import { resolvePlan, planEntitlements, coerceFrequency } from '../lib/entitlements.js';
 import { recordAnthropicUsage } from '../lib/ai-usage.js';
+import { guardedAnthropicFetch } from '../lib/ai-guard.js';
 import { buildResendTags, recordEmailSent } from './_lib/email-tracking.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -1933,7 +1934,7 @@ PERFIL: ${profile.cargo_desejado || ''} · ${profile.nivel || 'qualquer'} · ${p
 VAGAS DE HOJE:
 ${lines}`;
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await guardedAnthropicFetch({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1947,7 +1948,7 @@ ${lines}`;
         messages: [{ role: 'user', content: prompt }],
       }),
       signal: AbortSignal.timeout(6000),
-    });
+    }, { userId, endpoint: 'send-alerts', action: 'pro_summary' });
     if (!resp.ok) return '';
     const data = await resp.json();
     await recordAnthropicUsage(data, {
@@ -1987,7 +1988,7 @@ Para cada vaga dê um score de 0 a 100 de compatibilidade, pesando aderência de
 [{"i":0,"score":87,"motivo":"Power BI e senioridade pleno batem"},{"i":1,"score":42,"motivo":"Cargo proximo, mas presencial em outra cidade"}]`;
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await guardedAnthropicFetch({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -2001,7 +2002,7 @@ Para cada vaga dê um score de 0 a 100 de compatibilidade, pesando aderência de
         messages: [{ role: 'user', content: prompt }],
       }),
       signal: AbortSignal.timeout(7000),
-    });
+    }, { userId, endpoint: 'send-alerts', action: 'rescore_jobs' });
     if (!resp.ok) { console.warn('aiRescoreJobs: HTTP', resp.status); return jobs; }
     const data = await resp.json();
     await recordAnthropicUsage(data, {
