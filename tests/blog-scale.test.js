@@ -15,8 +15,8 @@ test('listagem pagina artigos e oferece carregar mais', () => {
 
 test('sitemap nao para no post 500', () => {
   const middleware = read('middleware.js');
+  assert.match(middleware, /runtime: 'nodejs'/);
   assert.match(middleware, /for \(let offset = 0; offset < 50000; offset \+= pageSize\)/);
   assert.match(middleware, /limit=\$\{pageSize\}&offset=\$\{offset\}/);
   assert.doesNotMatch(middleware, /order=created_at\.desc&limit=500['"]/);
 });
-

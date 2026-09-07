@@ -1,9 +1,9 @@
 import { sanitizeBlogHtml } from './lib/blog-content.js';
 
 // /middleware.js — intercepta "/", "/sitemap.xml" e "/blog/post" na borda
-// (Edge Middleware).
+// (Routing Middleware da Vercel).
 //
-// Por quê Edge Middleware e não uma Serverless Function em api/: o plano
+// Por quê Routing Middleware e não uma Serverless Function em api/: o plano
 // Hobby da Vercel tem limite de 12 Serverless Functions por deploy, e o
 // projeto já estava exatamente nesse limite (por isso api/generate-cv-pdf.js
 // está excluído no .vercelignore). Middleware roda num primitivo separado da
@@ -28,7 +28,7 @@ import { sanitizeBlogHtml } from './lib/blog-content.js';
 // catch e serve o template puro (sem seção de blog / sem dados do post, mas
 // nunca derruba a página) — o site nunca pode ficar fora do ar por causa disso.
 
-export const config = { matcher: ['/', '/sitemap.xml', '/blog/post'] };
+export const config = { runtime: 'nodejs', matcher: ['/', '/sitemap.xml', '/blog/post'] };
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
