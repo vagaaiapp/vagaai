@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  var PLAYER_SRC = 'https://unpkg.com/lottie-web@5.13.0/build/player/lottie.min.js';
+  var PLAYER_SRC = 'https://unpkg.com/lottie-web@5.13.0/build/player/lottie_light.min.js';
   var ANIMATION_PATH = '/assets/vagaai-loading-rocket.json';
   var LOADING_TEXT = /^(carregando|gerando|processando|avaliando|montando|preparando|analisando|ainda processando)/i;
   var TAGS = 'div,td,p,span,strong,h1,h2';

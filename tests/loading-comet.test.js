@@ -30,10 +30,10 @@ test('todas as superfícies com carregamento usam os recursos compartilhados', (
   }
 });
 
-test('o componente usa o Lottie enviado com player completo e fallback local', () => {
+test('o componente usa o Lottie enviado com player leve e fallback local', () => {
   const css = read('loading-comet.css');
   const script = read('js/loading-comet.js');
-  assert.match(script, /lottie-web@5\.13\.0\/build\/player\/lottie\.min\.js/);
+  assert.match(script, /lottie-web@5\.13\.0\/build\/player\/lottie_light\.min\.js/);
   assert.match(script, /ANIMATION_PATH = '\/assets\/vagaai-loading-rocket\.json'/);
   assert.match(script, /lottie\.loadAnimation/);
   assert.match(script, /animationData: animationData/);
