@@ -58,3 +58,8 @@ test('identidade cobre quatro larguras tema escuro e movimento reduzido', () => 
   assert.match(css, /prefers-reduced-motion: reduce/);
   assert.doesNotMatch(css, /linear-gradient|radial-gradient/);
 });
+test('studio do blog valida a sessão administrativa no backend', () => {
+  assert.doesNotMatch(html, /ADMIN_EMAILS/);
+  assert.match(html, /\/api\/admin\?action=session/);
+  assert.match(html, /mfa=1&next=/);
+});

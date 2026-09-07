@@ -39,7 +39,7 @@ describe('quem é admin tem uma fonte só', () => {
   });
 
   it('as telas administrativas consultam o backend em vez de duplicar e-mails', () => {
-    for (const file of ['admin/index.html', 'admin-login/index.html']) {
+    for (const file of ['admin/index.html', 'admin-login/index.html', 'admin/blog/index.html']) {
       const source = ler(file);
       assert.doesNotMatch(source, /ADMIN_EMAILS/);
       assert.match(source, /\/api\/admin\?action=session/);
