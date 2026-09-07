@@ -92,6 +92,73 @@ async function getUserFromToken(token) {
 
 // ─── Supabase helpers ─────────────────────────────────────────────────────────
 
+const ADMIN_PAGE_SIZE = 500;
+const ADMIN_MAX_PAGES = 20;
+
+/* O PostgREST limita respostas grandes e o painel antigo aceitava esse teto
+   silenciosamente. Centralizamos a paginação para que a visão operacional não
+   pare de crescer em 200, 300 ou 1.000 registros. O limite de páginas continua
+   sendo uma proteção de custo: quando ele é alcançado, `truncated` fica visível
+   para o chamador em vez de virar uma contagem falsa. */
+async function fetchRestCollection(path, { pageSize = ADMIN_PAGE_SIZE, maxPages = ADMIN_MAX_PAGES } = {}) {
+  const rows = [];
+  let page = 0;
+  let lastStatus = 200;
+  while (page < maxPages) {
+    const joiner = path.includes('?') ? '&' : '?';
+    const response = await fetch(
+      `${SUPABASE_URL}${path}${joiner}limit=${pageSize}&offset=${page * pageSize}`,
+      { headers: serviceHeaders() }
+    );
+    lastStatus = response.status;
+    if (!response.ok) {
+      return { ok: false, status: response.status, rows, truncated: false };
+    }
+    const batch = await response.json().catch(() => []);
+    if (!Array.isArray(batch)) break;
+    rows.push(...batch);
+    page += 1;
+    if (batch.length < pageSize) return { ok: true, status: response.status, rows, truncated: false };
+  }
+  return { ok: true, status: lastStatus, rows, truncated: page >= maxPages };
+}
+
+async function fetchAuthUsers({ perPage = 1000, maxPages = ADMIN_MAX_PAGES } = {}) {
+  const users = [];
+  let total = null;
+  let page = 1;
+  let lastStatus = 200;
+  while (page <= maxPages) {
+    const response = await fetch(
+      `${SUPABASE_URL}/auth/v1/admin/users?page=${page}&per_page=${perPage}`,
+      { headers: serviceHeaders() }
+    );
+    lastStatus = response.status;
+    if (!response.ok) return { ok: false, status: response.status, users, total, truncated: false };
+    const payload = await response.json().catch(() => ({}));
+    const batch = Array.isArray(payload.users) ? payload.users : [];
+    if (total == null && Number.isFinite(Number(payload.total))) total = Number(payload.total);
+    users.push(...batch);
+    if (batch.length < perPage) return { ok: true, status: response.status, users, total: total ?? users.length, truncated: false };
+    page += 1;
+  }
+  return { ok: true, status: lastStatus, users, total: total ?? users.length, truncated: true };
+}
+
+async function fetchRestCount(path) {
+  try {
+    const response = await fetch(`${SUPABASE_URL}${path}`, {
+      headers: { ...serviceHeaders(), Prefer: 'count=exact', Range: '0-0' },
+    });
+    if (!response.ok) return null;
+    const range = response.headers.get('content-range') || '';
+    const match = range.match(/\/(\d+|\*)$/);
+    return match && match[1] !== '*' ? Number(match[1]) : null;
+  } catch {
+    return null;
+  }
+}
+
 async function fetchSupabaseData() {
   const sb = (path, params = '') =>
     fetch(`${SUPABASE_URL}${path}${params}`, {
@@ -101,41 +168,45 @@ async function fetchSupabaseData() {
       },
     });
 
-  // Total users count from auth.users (via admin API)
-  const usersRes = await fetch(
-    `${SUPABASE_URL}/auth/v1/admin/users?page=1&per_page=1000`,
-    {
-      headers: {
-        apikey: SUPABASE_SERVICE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-      },
-    }
-  );
-  const usersData = await usersRes.json();
+  // Auth users are paginated so the table does not silently stop at 1.000.
+  const usersData = await fetchAuthUsers({ perPage: 1000 });
   const users = usersData.users || [];
   const totalUsers = usersData.total || users.length;
 
   // user_credits
-  const creditsRes = await sb('/rest/v1/user_credits?select=user_id,credits');
-  const credits = await creditsRes.json();
+  const creditsData = await fetchRestCollection('/rest/v1/user_credits?select=user_id,credits', { pageSize: 1000 });
+  const credits = creditsData.ok ? creditsData.rows : [];
 
   // analyses with job_info fields
   const analysesRes = await sb(
     '/rest/v1/analyses?select=id,user_id,score,nivel,job_excerpt,created_at,result&order=created_at.desc&limit=500'
   );
   const analyses = await analysesRes.json();
+  const totalAnalyses = await fetchRestCount('/rest/v1/analyses?select=id');
 
   // Esta leitura precisa atravessar a fronteira administrativa do backend.
   // Consultar email_leads no navegador com o token do usuario depende de uma
   // policy de RLS mais ampla e fazia o painel exibir "Sem permissao" mesmo para
   // admins validos.
-  const emailLeadsRes = await sb(
-    '/rest/v1/email_leads?select=email,source,created_at&order=created_at.desc&limit=200'
+  const emailLeadsData = await fetchRestCollection(
+    '/rest/v1/email_leads?select=email,source,created_at&order=created_at.desc',
+    { pageSize: 500 }
   );
-  const emailLeadsData = await emailLeadsRes.json();
-  const emailLeads = emailLeadsRes.ok && Array.isArray(emailLeadsData) ? emailLeadsData : null;
+  const emailLeads = emailLeadsData.ok ? emailLeadsData.rows : null;
+  const totalEmailLeads = await fetchRestCount('/rest/v1/email_leads?select=email');
 
-  return { users, totalUsers, credits, analyses, emailLeads };
+  return {
+    users,
+    totalUsers,
+    usersTruncated: Boolean(usersData.truncated),
+    credits,
+    creditsTruncated: Boolean(creditsData.truncated),
+    analyses,
+    totalAnalyses: totalAnalyses ?? (Array.isArray(analyses) ? analyses.length : 0),
+    emailLeads,
+    emailLeadsTruncated: Boolean(emailLeadsData.truncated),
+    totalEmailLeads: totalEmailLeads ?? (Array.isArray(emailLeads) ? emailLeads.length : 0),
+  };
 }
 
 function jwtAal(token) {
@@ -458,15 +529,35 @@ async function fetchStripeData() {
     return res.json();
   };
 
+  async function stripeList(resource, filters = {}) {
+    const all = [];
+    let startingAfter = null;
+    const maxPages = 20;
+    for (let page = 0; page < maxPages; page += 1) {
+      const params = new URLSearchParams({ ...filters, limit: '100' });
+      if (startingAfter) params.set('starting_after', startingAfter);
+      const payload = await stripeGet(`/${resource}?${params.toString()}`);
+      if (!payload) return null;
+      const batch = Array.isArray(payload.data) ? payload.data : [];
+      all.push(...batch);
+      if (!payload.has_more || batch.length === 0) {
+        return { ...payload, data: all, has_more: false };
+      }
+      startingAfter = batch[batch.length - 1]?.id || null;
+      if (!startingAfter) return { ...payload, data: all, has_more: true };
+    }
+    return { data: all, has_more: true, truncated: true };
+  }
+
   const thirtyDaysAgo = Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60;
 
   const [paymentIntents, balance, charges] = await Promise.all([
-    stripeGet(`/payment_intents?limit=100&created[gte]=${thirtyDaysAgo}`),
+    stripeList('payment_intents', { 'created[gte]': String(thirtyDaysAgo) }),
     stripeGet('/balance'),
-    stripeGet('/charges?limit=100'),
+    stripeList('charges', { 'created[gte]': String(thirtyDaysAgo) }),
   ]);
 
-  return { paymentIntents, balance, charges };
+  return { paymentIntents, balance, charges, periodDays: 30 };
 }
 
 // ─── Handler ──────────────────────────────────────────────────────────────────
@@ -772,30 +863,30 @@ export default async function handler(req, res) {
 
   if (req.query.action === 'support') {
     try {
-      const ticketsRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/support_tickets?select=*&order=created_at.desc&limit=300`,
-        { headers: serviceHeaders() }
+      const ticketsData = await fetchRestCollection(
+        '/rest/v1/support_tickets?select=*&order=created_at.desc',
+        { pageSize: 500 }
       );
-      if (!ticketsRes.ok) {
-        if ([400, 404].includes(ticketsRes.status)) {
+      if (!ticketsData.ok) {
+        if ([400, 404].includes(ticketsData.status)) {
           return res.status(200).json({ ok: true, available: false, reason: 'migration_037_pending' });
         }
-        throw new Error(`PostgREST ${ticketsRes.status}`);
+        throw new Error(`PostgREST ${ticketsData.status}`);
       }
-      const tickets = await ticketsRes.json();
-      const [repliesRes, subscriptionsRes, creditsRes, usersRes] = await Promise.all([
-        fetch(`${SUPABASE_URL}/rest/v1/support_replies?select=*&order=created_at.asc&limit=1000`, { headers: serviceHeaders() }),
-        fetch(`${SUPABASE_URL}/rest/v1/subscriptions?select=user_id,plan,status&limit=1000`, { headers: serviceHeaders() }),
-        fetch(`${SUPABASE_URL}/rest/v1/user_credits?select=user_id,credits&limit=1000`, { headers: serviceHeaders() }),
-        fetch(`${SUPABASE_URL}/auth/v1/admin/users?page=1&per_page=1000`, { headers: serviceHeaders() }),
+      const tickets = ticketsData.rows;
+      const [repliesData, subscriptionsData, creditsData, usersData] = await Promise.all([
+        fetchRestCollection('/rest/v1/support_replies?select=*&order=created_at.asc', { pageSize: 1000 }),
+        fetchRestCollection('/rest/v1/subscriptions?select=user_id,plan,status'),
+        fetchRestCollection('/rest/v1/user_credits?select=user_id,credits', { pageSize: 1000 }),
+        fetchAuthUsers({ perPage: 1000 }),
       ]);
-      const replies = repliesRes.ok ? await repliesRes.json() : [];
-      const subscriptions = subscriptionsRes.ok ? await subscriptionsRes.json() : [];
-      const credits = creditsRes.ok ? await creditsRes.json() : [];
-      const usersPayload = usersRes.ok ? await usersRes.json() : { users: [] };
-      const subscriptionByUser = Object.fromEntries((Array.isArray(subscriptions) ? subscriptions : []).map(row => [row.user_id, row]));
-      const creditsByUser = Object.fromEntries((Array.isArray(credits) ? credits : []).map(row => [row.user_id, Number(row.credits) || 0]));
-      const userById = Object.fromEntries((usersPayload.users || []).map(row => [row.id, row]));
+      const replies = repliesData.ok ? repliesData.rows : [];
+      const subscriptions = subscriptionsData.ok ? subscriptionsData.rows : [];
+      const credits = creditsData.ok ? creditsData.rows : [];
+      const userRows = usersData.ok ? usersData.users : [];
+      const subscriptionByUser = Object.fromEntries(subscriptions.map(row => [row.user_id, row]));
+      const creditsByUser = Object.fromEntries(credits.map(row => [row.user_id, Number(row.credits) || 0]));
+      const userById = Object.fromEntries(userRows.map(row => [row.id, row]));
       const repliesByTicket = {};
       (Array.isArray(replies) ? replies : []).forEach(row => {
         if (!repliesByTicket[row.ticket_id]) repliesByTicket[row.ticket_id] = [];
@@ -817,7 +908,12 @@ export default async function handler(req, res) {
         };
       });
       await auditar(user.email, 'ler_suporte', null, { chamados: enriched.length });
-      return res.status(200).json({ ok: true, available: true, tickets: enriched });
+      return res.status(200).json({
+        ok: true,
+        available: true,
+        tickets: enriched,
+        truncated: Boolean(ticketsData.truncated || repliesData.truncated || subscriptionsData.truncated || creditsData.truncated || usersData.truncated),
+      });
     } catch (err) {
       console.error('support admin error:', err.message);
       return res.status(500).json({ error: 'Erro ao buscar chamados de suporte.' });
@@ -826,21 +922,20 @@ export default async function handler(req, res) {
 
   if (req.query.action === 'abuse') {
     try {
-      const sb = (path) => fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: serviceHeaders() });
-      const [claimsRes, eventsRes, devicesRes, cleanupRes] = await Promise.all([
-        sb('abuse_claims?status=eq.active&select=id,user_id,resource,risk_score,challenge_passed,created_at&order=created_at.desc&limit=200'),
-        sb('abuse_events?select=id,user_id,event_type,resource,decision,reason,risk_score,device_hash,ip_hash,created_at&order=created_at.desc&limit=200'),
-        sb('abuse_devices?select=user_id,device_hash,last_seen_at&order=last_seen_at.desc&limit=1000'),
+      const [claimsData, eventsData, devicesData, cleanupRes] = await Promise.all([
+        fetchRestCollection('/rest/v1/abuse_claims?status=eq.active&select=id,user_id,resource,risk_score,challenge_passed,created_at&order=created_at.desc', { pageSize: 500 }),
+        fetchRestCollection('/rest/v1/abuse_events?select=id,user_id,event_type,resource,decision,reason,risk_score,device_hash,ip_hash,created_at&order=created_at.desc', { pageSize: 500 }),
+        fetchRestCollection('/rest/v1/abuse_devices?select=user_id,device_hash,last_seen_at&order=last_seen_at.desc', { pageSize: 1000 }),
         fetch(`${SUPABASE_URL}/rest/v1/rpc/cleanup_abuse_data`, {
           method: 'POST', headers: serviceHeaders(), body: JSON.stringify({ p_days: 90 }),
         }),
       ]);
-      if (!claimsRes.ok || !eventsRes.ok || !devicesRes.ok) {
+      if (!claimsData.ok || !eventsData.ok || !devicesData.ok) {
         return res.status(200).json({ ok: true, available: false, reason: 'migration_035_pending' });
       }
-      const claims = await claimsRes.json();
-      const events = await eventsRes.json();
-      const devices = await devicesRes.json();
+      const claims = claimsData.rows;
+      const events = eventsData.rows;
+      const devices = devicesData.rows;
       const deviceCounts = {};
       const deviceLastSeen = {};
       devices.forEach(row => {
@@ -861,6 +956,7 @@ export default async function handler(req, res) {
           .map(([user_id, devices_count]) => ({ user_id, devices_count, last_seen_at: deviceLastSeen[user_id] }))
           .sort((a, b) => b.devices_count - a.devices_count),
         events: events.map(row => ({ ...row, device_hash: mask(row.device_hash), ip_hash: mask(row.ip_hash) })),
+        truncated: Boolean(claimsData.truncated || eventsData.truncated || devicesData.truncated),
         cleanup: cleanupRes.ok ? await cleanupRes.json().catch(() => null) : null,
       });
     } catch (err) {
@@ -872,17 +968,14 @@ export default async function handler(req, res) {
   // ── GET: dados de alertas (dismiss feedback + histórico) ─────────────────────
   if (req.query.action === 'alerts') {
     try {
-      const sb = (path) => fetch(`${SUPABASE_URL}${path}`, {
-        headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
-      });
-      const [dismissedRes, historyRes, profilesRes] = await Promise.all([
-        sb('/rest/v1/job_alert_sent?dismissed_reason=not.is.null&select=user_id,job_title,job_company,dismissed_reason,dismissed_at&order=dismissed_at.desc&limit=200'),
-        sb('/rest/v1/job_alert_history?select=user_id,sent_at,jobs_count,status,error&order=sent_at.desc&limit=100'),
-        sb('/rest/v1/job_alert_profiles?select=user_id,ativo,cargo_desejado,cidade,frequencia,ultimo_envio,next_run_at&order=created_at.desc'),
+      const [dismissedData, historyData, profilesData] = await Promise.all([
+        fetchRestCollection('/rest/v1/job_alert_sent?dismissed_reason=not.is.null&select=user_id,job_title,job_company,dismissed_reason,dismissed_at&order=dismissed_at.desc', { pageSize: 500 }),
+        fetchRestCollection('/rest/v1/job_alert_history?select=user_id,sent_at,jobs_count,status,error&order=sent_at.desc', { pageSize: 500 }),
+        fetchRestCollection('/rest/v1/job_alert_profiles?select=user_id,ativo,cargo_desejado,cidade,frequencia,ultimo_envio,next_run_at&order=created_at.desc', { pageSize: 500 }),
       ]);
-      const dismissed = dismissedRes.ok ? await dismissedRes.json() : [];
-      const history   = historyRes.ok   ? await historyRes.json()   : [];
-      const profiles  = profilesRes.ok  ? await profilesRes.json()  : [];
+      const dismissed = dismissedData.ok ? dismissedData.rows : [];
+      const history   = historyData.ok   ? historyData.rows   : [];
+      const profiles  = profilesData.ok  ? profilesData.rows  : [];
 
       const reasonCounts = {};
       dismissed.forEach(d => {
@@ -890,7 +983,14 @@ export default async function handler(req, res) {
         reasonCounts[r] = (reasonCounts[r] || 0) + 1;
       });
 
-      return res.status(200).json({ ok: true, dismissed, reason_counts: reasonCounts, history, profiles });
+      return res.status(200).json({
+        ok: true,
+        dismissed,
+        reason_counts: reasonCounts,
+        history,
+        profiles,
+        truncated: Boolean(dismissedData.truncated || historyData.truncated || profilesData.truncated),
+      });
     } catch (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -987,11 +1087,12 @@ export default async function handler(req, res) {
       }),
     ]);
 
-    /* Este caminho devolve ate 500 analises com o result completo — conteudo
-       de curriculo de clientes reais. E a leitura mais sensivel do produto e
-       ate agora nao deixava rastro nenhum. */
+    /* O painel devolve as 500 análises mais recentes com o result completo —
+       conteúdo de currículo de clientes reais — e uma contagem exata separada.
+       A leitura sensível continua auditada sem carregar o histórico inteiro. */
     await auditar(user.email, 'ler_painel', null, {
       analises: Array.isArray(supabaseData?.analyses) ? supabaseData.analyses.length : null,
+      total_analises: supabaseData?.totalAnalyses ?? null,
       usuarios: supabaseData?.totalUsers ?? null
     });
 

@@ -11,6 +11,7 @@ const admin = ler('api/admin.js');
 const analyze = ler('api/analyze.js');
 const login = ler('login/index.html');
 const adminLogin = ler('admin-login/index.html');
+const adminUi = ler('admin/index.html');
 
 function supabasePublicConfig(source) {
   return {
@@ -73,6 +74,8 @@ describe('cache de análise tem dono e prazo', () => {
   it('grava o user_id de quem gerou', () => {
     assert.match(analyze, /setCachedResult\(hash, result, authenticatedUserId\)/);
     assert.match(analyze, /user_id: userId \|\| null/);
+    assert.match(analyze, /user_id=eq\.\$\{encodeURIComponent\(userId\)\}/);
+    assert.match(analyze, /if \(!SUPABASE_URL \|\| !SUPABASE_SERVICE_KEY \|\| !userId\) return null/);
   });
 
   it('dispara a limpeza por idade', () => {
@@ -88,6 +91,34 @@ describe('log não vira depósito de dado pessoal', () => {
       'voltou a despejar 300 caracteres do currículo montado pela IA no log da Vercel'
     );
     assert.match(analyze, /onboarding_cv: JSON inválido \| chars=/);
+  });
+});
+
+describe('renderização do admin escapa dados de analytics', () => {
+  it('não injeta path, país, cidade, fonte ou dispositivo sem escape', () => {
+    assert.match(adminUi, /ga4-list-name.*escHtml\(name\)/s);
+    assert.match(adminUi, /ga4-page-path.*escHtml\(p\.path/);
+    assert.match(adminUi, /flex:1;font-size:13px.*escHtml\(label\)/s);
+  });
+});
+
+describe('vínculos e links externos ficam isolados', () => {
+  it('carta e entrevista verificam o dono da análise antes de salvar', () => {
+    for (const arquivo of ['api/cover-letter.js', 'api/interview.js']) {
+      const src = ler(arquivo);
+      assert.match(src, /verifyAnalysisOwnership/);
+      assert.match(src, /analyses\?id=eq\.\$\{encodeURIComponent\(analysisId\)\}&user_id=eq\.\$\{encodeURIComponent\(userId\)\}/);
+      assert.match(src, /Análise não pertence a esta conta/);
+    }
+  });
+
+  it('links de vagas usam esquema HTTP e escape contextual', () => {
+    const dash = ler('dashboard/index.html');
+    const alerts = ler('api/send-alerts.js');
+    assert.match(dash, /function _escAttr\(s\)/);
+    assert.match(dash, /data-link="' \+ _escAttr\(linkSafe/);
+    assert.match(alerts, /function safeJobLink\(value\)/);
+    assert.match(alerts, /url\.protocol !== 'http:' && url\.protocol !== 'https:'/);
   });
 });
 

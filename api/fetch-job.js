@@ -8,6 +8,9 @@
 
 import { lookup as dnsLookup } from 'dns';
 import { promisify } from 'util';
+import { request as httpRequest } from 'http';
+import { request as httpsRequest } from 'https';
+import { Readable } from 'stream';
 import { checkAndCountLimit } from '../lib/ratelimit.js';
 import { anonymousKeys } from '../lib/abuse.js';
 
@@ -123,10 +126,41 @@ async function resolveDnsAndValidate(hostname) {
         return { ok: false, reason: 'Destino não permitido' };
       }
     }
-    return { ok: true };
+    return { ok: true, addresses: entries };
   } catch (err) {
     return { ok: false, reason: 'DNS sem resposta' };
   }
+}
+
+// Faz a conexão no endereço já validado, preservando Host/SNI do hostname
+// original. Assim a validação DNS e a conexão usam o mesmo IP, fechando a
+// janela de TOCTOU de um DNS rebinding entre lookup e fetch.
+async function fetchPinned(url, headers, address, timeoutMs) {
+  const parsed = new URL(url);
+  const requestFn = parsed.protocol === 'https:' ? httpsRequest : httpRequest;
+  const port = parsed.port ? Number(parsed.port) : (parsed.protocol === 'https:' ? 443 : 80);
+  const requestHeaders = { ...headers, Host: parsed.host };
+  return new Promise((resolve, reject) => {
+    const request = requestFn({
+      protocol: parsed.protocol,
+      hostname: address.address,
+      port,
+      path: `${parsed.pathname}${parsed.search}`,
+      method: 'GET',
+      headers: requestHeaders,
+      ...(parsed.protocol === 'https:' ? { servername: parsed.hostname } : {}),
+    }, response => {
+      resolve({
+        ok: response.statusCode >= 200 && response.statusCode < 300,
+        status: response.statusCode || 0,
+        headers: new Headers(response.headers),
+        body: Readable.toWeb(response),
+      });
+    });
+    request.setTimeout(timeoutMs, () => request.destroy(new Error('Tempo limite excedido')));
+    request.once('error', reject);
+    request.end();
+  });
 }
 
 // Fetch com redirect:manual, validação de cada salto e DNS re-resolve por salto
@@ -142,11 +176,7 @@ async function safeFetch(url, headers, timeoutMs = FETCH_TIMEOUT_MS) {
     const dnsCheck = await resolveDnsAndValidate(urlCheck.parsed.hostname);
     if (!dnsCheck.ok) throw new Error(dnsCheck.reason);
 
-    const fetchRes = await fetch(currentUrl, {
-      headers,
-      redirect: 'manual',
-      signal: AbortSignal.timeout(timeoutMs),
-    });
+    const fetchRes = await fetchPinned(currentUrl, headers, dnsCheck.addresses[0], timeoutMs);
 
     // Segue redirecionamentos 3xx
     if (fetchRes.status >= 300 && fetchRes.status < 400) {

@@ -33,8 +33,11 @@ async function getUserFromToken(token) {
   }
 }
 
-function avatarPathIsSafe(path) {
-  return /^[0-9a-f-]+\/avatar\.(?:png|jpeg|webp)$/i.test(String(path || ''));
+function avatarPathIsSafe(path, userId = null) {
+  const value = String(path || '');
+  if (!/^[0-9a-f-]+\/avatar\.(?:png|jpeg|webp)$/i.test(value)) return false;
+  if (userId && value.slice(0, value.indexOf('/')).toLowerCase() !== String(userId).toLowerCase()) return false;
+  return true;
 }
 
 function avatarExtension(contentType) {
@@ -61,8 +64,8 @@ async function ensureAvatarBucket() {
   if (!created.ok && created.status !== 409) throw new Error('Não foi possível criar o armazenamento da foto.');
 }
 
-async function signAvatarUrl(path) {
-  if (!avatarPathIsSafe(path) || !SUPABASE_SERVICE_KEY) return '';
+async function signAvatarUrl(path, userId = null) {
+  if (!avatarPathIsSafe(path, userId) || !SUPABASE_SERVICE_KEY) return '';
   try {
     const res = await fetch(`${SUPABASE_URL}/storage/v1/object/sign/${AVATAR_BUCKET}/${path}`, {
       method: 'POST',
@@ -145,7 +148,7 @@ async function handleAvatar(req, res) {
   try {
     if (req.method === 'DELETE') {
       const oldPath = user.user_metadata && user.user_metadata.avatar_path;
-      if (avatarPathIsSafe(oldPath)) {
+      if (avatarPathIsSafe(oldPath, user.id)) {
         await fetch(`${SUPABASE_URL}/storage/v1/object/${AVATAR_BUCKET}/${oldPath}`, {
           method: 'DELETE',
           headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
@@ -176,7 +179,7 @@ async function handleAvatar(req, res) {
     });
     if (!upload.ok) throw new Error('Não foi possível enviar a foto.');
     await updateAvatarMetadata(user, path);
-    return res.status(200).json({ ok: true, avatar_url: await signAvatarUrl(path) });
+    return res.status(200).json({ ok: true, avatar_url: await signAvatarUrl(path, user.id) });
   } catch (err) {
     console.error('subscription avatar error:', err);
     return res.status(500).json({ error: err.message || 'Não foi possível atualizar sua foto.' });
@@ -349,7 +352,7 @@ export default async function handler(req, res) {
     const precos = { starter: 'R$19,90/mês', pro: 'R$39,90/mês' };
 
     const avatarPath = user.user_metadata && user.user_metadata.avatar_path;
-    const avatarUrl = await signAvatarUrl(avatarPath);
+    const avatarUrl = await signAvatarUrl(avatarPath, user.id);
     return res.status(200).json({
       plan: effectivePlan,
       status: effectiveStatus,

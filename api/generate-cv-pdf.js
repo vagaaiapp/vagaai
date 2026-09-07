@@ -71,19 +71,27 @@ export default async function handler(req, res) {
     });
 
     const page = await browser.newPage();
+    // O HTML é fornecido pelo cliente autenticado. O PDF só precisa de
+    // layout/estilos, então não há motivo para executar JavaScript enviado
+    // pelo usuário (ou permitir que ele acesse APIs internas).
+    await page.setJavaScriptEnabled(false);
+
+    const isAllowedFontUrl = (value) => {
+      try {
+        const parsed = new URL(value);
+        return parsed.protocol === 'https:'
+          && (parsed.hostname === 'fonts.googleapis.com' || parsed.hostname === 'fonts.gstatic.com');
+      } catch (_) {
+        return false;
+      }
+    };
 
     // Block external network requests to keep latency low; fonts are inlined via
     // the Google Fonts @import already embedded in the HTML styles.
     await page.setRequestInterception(true);
     page.on('request', req => {
       const url = req.url();
-      if (url.startsWith('data:') || url.startsWith('about:') || url.includes('fonts.googleapis') || url.includes('fonts.gstatic')) {
-        req.continue();
-      } else if (req.resourceType() === 'document' && req.frame() === page.mainFrame()) {
-        // Só o documento principal. Subframe também é resourceType 'document':
-        // liberar todos deixava um <iframe src="http://169.254.169.254/..."> no
-        // HTML enviado pelo cliente buscar endereço interno e devolver o
-        // conteúdo renderizado dentro do PDF.
+      if (url.startsWith('data:') || url === 'about:blank' || isAllowedFontUrl(url)) {
         req.continue();
       } else {
         req.abort();

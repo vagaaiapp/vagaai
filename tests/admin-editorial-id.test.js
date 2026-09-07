@@ -47,7 +47,9 @@ test('admin usa hierarquia editorial sem sacrificar densidade operacional', () =
 
 test('dados operacionais sensiveis atravessam somente a API administrativa', () => {
   assert.match(api, /email_leads\?select=email,source,created_at/);
-  assert.match(api, /return \{ users, totalUsers, credits, analyses, emailLeads \}/);
+  assert.match(api, /totalAnalyses/);
+  assert.match(api, /totalEmailLeads/);
+  assert.match(api, /usersTruncated/);
   assert.doesNotMatch(html, /rest\/v1\/email_leads/);
   assert.match(html, /loadLeads\(sb_\.emailLeads\)/);
 });

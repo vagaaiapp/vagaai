@@ -7207,17 +7207,18 @@ function renderAlertJobsGrid() {
     var reasonTags = '<span class="al-job-reason-tag">'+_esc(j.location || 'Brasil')+'</span>' +
       (j.salary ? '<span class="al-job-reason-tag">Salário informado</span>' : '<span class="al-job-reason-tag warn">Salário não informado</span>');
     // j.link vem do feed externo de vagas (Adzuna, Jooble, JSearch, SerpAPI).
-    // _esc escapa & < >, mas não impede href="javascript:..." — e este é o
-    // dado menos confiável do painel, porque não passa por nenhum usuário.
+    // safeExternalUrl elimina esquemas perigosos. _escAttr protege o valor
+    // restante quando ele entra em atributos HTML gerados pelo painel.
     var linkSafe = safeExternalUrl(j.link);
+    var analyzeAttr = _escAttr(analyzeUrl);
     html += '<div class="al-job-card">' +
       '<div class="al-job-opportunity"><div class="al-job-match' + scoreClass + '">' + score + '%</div><div><div class="al-job-title">' + _esc(j.title || '') + '</div><div class="al-job-company">' + _esc(company) + '</div><span class="al-job-origin">' + _esc(seenLabel) + ' · origem: ' + _esc(originLabel) + '</span></div></div>' +
       '<div class="al-job-reason"><strong>' + matchTitle + '</strong><span>' + _esc(matchCopy) + '</span><div class="al-job-reason-tags">' + reasonTags + '</div></div>' +
       '<div class="al-job-conditions"><strong>' + _esc(j.location || 'Brasil') + '</strong><span>' + (j.salary ? _esc(j.salary) : 'Salário não informado') + '</span></div>' +
       '<div class="al-job-actions">' +
-        '<button class="al-jact-btn analyze" onclick="openAnalyzerInDashboard(this.dataset.url)" data-url="' + _esc(analyzeUrl) + '">Analisar</button>' +
-        (linkSafe ? '<a class="al-jact-btn" href="' + _esc(linkSafe) + '" target="_blank" rel="noopener" style="text-decoration:none" data-faixa="' + (score >= 75 ? 'alta' : score >= 50 ? 'media' : 'baixa') + '" onclick="_trackVagaAlerta(this.dataset.faixa)">Ver vaga</a>' : '') +
-        '<button class="al-jact-btn al-jact-icon" aria-label="Excluir recomendação" title="Excluir vaga" data-link="' + _esc(j.link || '') + '" onclick="_dismissJobFromCache(this.dataset.link)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>' +
+        '<button class="al-jact-btn analyze" onclick="openAnalyzerInDashboard(this.dataset.url)" data-url="' + analyzeAttr + '">Analisar</button>' +
+        (linkSafe ? '<a class="al-jact-btn" href="' + _escAttr(linkSafe) + '" target="_blank" rel="noopener" style="text-decoration:none" data-faixa="' + (score >= 75 ? 'alta' : score >= 50 ? 'media' : 'baixa') + '" onclick="_trackVagaAlerta(this.dataset.faixa)">Ver vaga</a>' : '') +
+        '<button class="al-jact-btn al-jact-icon" aria-label="Excluir recomendação" title="Excluir vaga" data-link="' + _escAttr(linkSafe || '') + '" onclick="_dismissJobFromCache(this.dataset.link)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>' +
       '</div>' +
     '</div>';
   });
@@ -7248,6 +7249,7 @@ function renderAlertJobsGrid() {
 }
 
 function _esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function _escAttr(s) { return String(s||'').replace(/[&<>"']/g, function(ch) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
 
 function _getRateLimitInfo() {
   if (!_alertCache || !_alertCache.last_manual_at) return { blocked: false };

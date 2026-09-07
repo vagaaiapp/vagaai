@@ -152,12 +152,12 @@ describe('Integridade entre páginas', () => {
     assert.equal(sandbox._r('https://vaga.com/x'), 'https://vaga.com/x');
   });
 
-  it('o gerador de PDF só carrega o documento principal', () => {
-    // Subframe também é resourceType 'document': liberar todos permitia um
-    // <iframe src="http://169.254.169.254/..."> render­izar endereço interno
-    // dentro do PDF devolvido ao usuário.
+  it('o gerador de PDF não executa JS nem permite navegação arbitrária', () => {
     const pdf = read('api/generate-cv-pdf.js');
-    assert.match(pdf, /resourceType\(\)\s*===\s*'document'\s*&&\s*req\.frame\(\)\s*===\s*page\.mainFrame\(\)/);
+    assert.match(pdf, /page\.setJavaScriptEnabled\(false\)/);
+    assert.match(pdf, /url === 'about:blank'/);
+    assert.match(pdf, /parsed\.hostname === 'fonts\.googleapis\.com'/);
+    assert.doesNotMatch(pdf, /resourceType\(\)\s*===\s*'document'\s*&&\s*req\.frame\(\)\s*===\s*page\.mainFrame\(\)/);
   });
 
   it('as lacunas de mercado são calculadas num lugar só', () => {
@@ -1196,7 +1196,7 @@ describe('Tetos de custo de IA', () => {
     /* Cache hit também debita crédito e grava histórico: um laço sobre a mesma
        vaga não pode passar só porque o resultado veio do cache. */
     const iLimite = analyze.indexOf('checkAnaliseRateLimit(authenticatedUserId)');
-    const iCache = analyze.indexOf('const cached = await getCachedResult(hash)');
+    const iCache = analyze.indexOf('const cached = await getCachedResult(hash, authenticatedUserId)');
     assert.ok(iLimite > 0 && iCache > 0, 'não achei os dois pontos');
     assert.ok(iLimite < iCache, 'o rate limit precisa vir antes da checagem de cache');
   });

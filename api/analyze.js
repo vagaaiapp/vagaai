@@ -132,11 +132,13 @@ function attachJobMetadata(result, jobUrl) {
 
 // ─── Cache de análise ─────────────────────────────────────────────────────────
 
-async function getCachedResult(hash) {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return null;
+async function getCachedResult(hash, userId = null) {
+  // Resultados contêm currículo e dados de carreira. Nunca reutilize uma
+  // entrada anônima ou de outra conta, mesmo quando o hash da vaga/CV coincide.
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !userId) return null;
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/analysis_cache?hash=eq.${hash}&select=result`,
+      `${SUPABASE_URL}/rest/v1/analysis_cache?hash=eq.${encodeURIComponent(hash)}&user_id=eq.${encodeURIComponent(userId)}&select=result`,
       { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
     );
     const rows = await res.json();
@@ -152,13 +154,11 @@ async function getCachedResult(hash) {
    curriculo, e ate a migracao 029 ficava sem dono e sem prazo: excluir a conta
    nao o alcancava, porque nao havia como saber de quem era.
 
-   A chave de busca continua sendo o hash (e o que faz o cache acertar); o
-   user_id existe para o direito ao esquecimento (ON DELETE CASCADE) e para a
-   limpeza por idade. Colisao entre pessoas e inviavel: o hash e sha256 do
-   curriculo inteiro mais a vaga, truncado em 160 bits, entao acerto de cache
-   exige entrada identica byte a byte. */
+   A chave de busca combina hash e user_id. Assim o cache continua economizando
+   custo para a mesma conta, sem expor currículo/resultado entre contas.
+   user_id também permite o direito ao esquecimento (ON DELETE CASCADE). */
 async function setCachedResult(hash, result, userId = null) {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return;
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !userId) return;
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/analysis_cache`, {
       method: 'POST',
@@ -1649,7 +1649,7 @@ Responda APENAS com um JSON válido (sem markdown, sem crases), exatamente neste
 
   // ─── Verifica cache ANTES de debitar créditos ─────────────────────────────
   const hash = contentHash(cv, job);
-  const cached = await getCachedResult(hash);
+  const cached = await getCachedResult(hash, authenticatedUserId);
 
   if (cached) {
     console.log('Cache hit:', hash);

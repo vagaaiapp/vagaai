@@ -31,6 +31,21 @@ function checkUserRateLimit(userId) {
   return checkAndCountLimit({ key: `u:${userId}:carta`, limit: USER_LIMIT, windowMs: USER_WINDOW_MS });
 }
 
+async function verifyAnalysisOwnership(analysisId, userId) {
+  if (!analysisId) return { ok: true };
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/analyses?id=eq.${encodeURIComponent(analysisId)}&user_id=eq.${encodeURIComponent(userId)}&select=id&limit=1`,
+      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+    );
+    if (!res.ok) return { ok: false, infra: true };
+    const rows = await res.json();
+    return { ok: Array.isArray(rows) && rows.length > 0 };
+  } catch (_) {
+    return { ok: false, infra: true };
+  }
+}
+
 // Devolve { plan, sub }. O `sub` vem junto porque a cota mensal de cartas
 // (lib/cotas.js) precisa de current_period_start para saber onde o ciclo comeca
 // — buscar de novo seria uma segunda ida ao banco pela mesma linha.
@@ -92,6 +107,10 @@ export default async function handler(req, res) {
   const { job, cv, tom, analise, motivacao, analysis_id, cargo, empresa } = req.body || {};
   if (!job || job.length < 50) return res.status(400).json({ error: 'Vaga muito curta' });
   if (!cv || cv.length < 50) return res.status(400).json({ error: 'CV muito curto' });
+  const analysisId = typeof analysis_id === 'string' ? analysis_id.trim() : '';
+  const ownership = await verifyAnalysisOwnership(analysisId, user.id);
+  if (ownership.infra) return res.status(503).json({ error: 'Serviço temporariamente indisponível.' });
+  if (!ownership.ok) return res.status(403).json({ error: 'Análise não pertence a esta conta.' });
 
   /* A analise ja sabe quais requisitos o curriculo comprova, quais faltam e o
      que a empresa valoriza. Sem isso a carta e escrita de texto cru — ou seja,
@@ -244,7 +263,7 @@ Retorne APENAS este JSON (sem markdown):
         },
         body: JSON.stringify({
           user_id: user.id,
-          analysis_id: typeof analysis_id === 'string' && analysis_id ? analysis_id : null,
+          analysis_id: analysisId || null,
           cargo: typeof cargo === 'string' ? cargo.slice(0, 200) : null,
           empresa: typeof empresa === 'string' ? empresa.slice(0, 200) : null,
           assunto: result.assunto || null,

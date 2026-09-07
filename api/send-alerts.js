@@ -1694,6 +1694,16 @@ function deduplicateJobs(jobs) {
 }
 
 // Normaliza campos do objeto de vaga (Jooble pode variar)
+function safeJobLink(value) {
+  try {
+    const url = new URL(String(value || '').trim());
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
+    return url.href.slice(0, 2000);
+  } catch (_) {
+    return '';
+  }
+}
+
 function normalizeJob(j) {
   return {
     title: j.title || j.position || 'Vaga',
@@ -1701,7 +1711,7 @@ function normalizeJob(j) {
     location: j.location || j.city || 'Brasil',
     snippet: j.snippet || j.description || '',
     salary: j.salary || '',
-    link: j.link || j.url || 'https://vagaai.app.br',
+    link: safeJobLink(j.link || j.url),
     _score: j._score || 0,
     _source: j._source || '',          // preserva a fonte p/ o filtro (BR_SOURCES)
     // preserva a data de publicação; Jooble entrega raw com `updated`

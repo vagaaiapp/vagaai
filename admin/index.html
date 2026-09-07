@@ -968,7 +968,7 @@ function ga4Delta(cur, prev, lbl) {
 function ga4ListBar(name, val, max) {
   var pct = max > 0 ? Math.round((val / max) * 100) : 0;
   return '<div class="ga4-list-row">'
-    + '<span class="ga4-list-name">' + name + '</span>'
+    + '<span class="ga4-list-name">' + escHtml(name) + '</span>'
     + '<div class="ga4-list-bar-wrap"><div class="ga4-list-bar" style="width:' + pct + '%"></div></div>'
     + '<span class="ga4-list-val">' + (val||0).toLocaleString('pt-BR') + '</span>'
     + '</div>';
@@ -1020,7 +1020,7 @@ function renderGA4(d) {
     + '</div></div>'
     + '<div><div class="ga4-box-title">Top páginas</div><div class="ga4-pages">'
     + (pages.length ? pages.map(function(p) {
-        return '<div class="ga4-page-row"><span class="ga4-page-path">' + p.path + '</span><span class="ga4-page-views">' + (p.views||0).toLocaleString('pt-BR') + ' views · ' + (p.users||0).toLocaleString('pt-BR') + ' users</span></div>';
+        return '<div class="ga4-page-row"><span class="ga4-page-path">' + escHtml(p.path || '') + '</span><span class="ga4-page-views">' + (p.views||0).toLocaleString('pt-BR') + ' views · ' + (p.users||0).toLocaleString('pt-BR') + ' users</span></div>';
       }).join('') : '<div style="color:var(--muted);font-size:13px;padding:1rem">Sem dados</div>')
     + '</div></div></div>';
 
@@ -1049,7 +1049,7 @@ function renderGA4(d) {
         var label = dv.name.charAt(0).toUpperCase() + dv.name.slice(1);
         return '<div class="ga4-device-row">'
           + '<span class="ga4-device-icon">' + icon + '</span>'
-          + '<span style="flex:1;font-size:13px">' + label + '</span>'
+          + '<span style="flex:1;font-size:13px">' + escHtml(label) + '</span>'
           + '<div class="ga4-list-bar-wrap" style="max-width:120px"><div class="ga4-list-bar" style="width:' + pct + '%"></div></div>'
           + '<span style="font-size:12px;color:var(--muted);margin-left:.5rem;min-width:60px;text-align:right">' + dv.users.toLocaleString('pt-BR') + ' (' + pct + '%)</span>'
           + '</div>';
@@ -1526,7 +1526,7 @@ function renderAlertsTab(d) {
       var pct = Math.round((e[1]/maxCount)*100);
       return '<div style="margin-bottom:10px">' +
         '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">' +
-          '<span style="color:var(--text)">' + e[0] + '</span>' +
+          '<span style="color:var(--text)">' + escHtml(e[0]) + '</span>' +
           '<span style="color:var(--muted);font-weight:700">' + e[1] + '</span>' +
         '</div>' +
         '<div style="height:5px;background:var(--border);border-radius:3px">' +
@@ -1546,9 +1546,9 @@ function renderAlertsTab(d) {
       var nextRun = p.next_run_at ? new Date(p.next_run_at).toLocaleDateString('pt-BR') : '-';
       return '<div style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">' +
-          '<strong style="color:var(--text)">' + (p.cargo_desejado || '-') + '</strong>' + status +
+          '<strong style="color:var(--text)">' + escHtml(p.cargo_desejado || '-') + '</strong>' + status +
         '</div>' +
-        '<div style="color:var(--muted)">' + (p.cidade || 'Qualquer local') + ' · ' + (p.frequencia || 'semanal') + ' · próx: ' + nextRun + '</div>' +
+        '<div style="color:var(--muted)">' + escHtml(p.cidade || 'Qualquer local') + ' · ' + escHtml(p.frequencia || 'semanal') + ' · próx: ' + escHtml(nextRun) + '</div>' +
       '</div>';
     }).join('');
   }
@@ -1561,10 +1561,10 @@ function renderAlertsTab(d) {
     var rows = dismissed.slice(0, 30).map(function(d) {
       var at = d.dismissed_at ? new Date(d.dismissed_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
       return '<tr>' +
-        '<td style="padding:7px 10px;color:var(--text);font-size:12px">' + (d.job_title||'-') + '</td>' +
-        '<td style="padding:7px 10px;color:var(--muted);font-size:12px">' + (d.job_company||'-') + '</td>' +
-        '<td style="padding:7px 10px;color:var(--yellow);font-size:12px">' + (d.dismissed_reason||'-') + '</td>' +
-        '<td style="padding:7px 10px;color:var(--muted);font-size:11px">' + at + '</td>' +
+        '<td style="padding:7px 10px;color:var(--text);font-size:12px">' + escHtml(d.job_title||'-') + '</td>' +
+        '<td style="padding:7px 10px;color:var(--muted);font-size:12px">' + escHtml(d.job_company||'-') + '</td>' +
+        '<td style="padding:7px 10px;color:var(--yellow);font-size:12px">' + escHtml(d.dismissed_reason||'-') + '</td>' +
+        '<td style="padding:7px 10px;color:var(--muted);font-size:11px">' + escHtml(at) + '</td>' +
       '</tr>';
     }).join('');
     dismissEl.innerHTML = '<table style="width:100%;border-collapse:collapse">' +
@@ -1585,10 +1585,10 @@ function renderAlertsTab(d) {
       var at = new Date(h.sent_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
       var statusColor = h.status === 'sent' ? 'var(--green)' : 'var(--red)';
       return '<tr style="border-bottom:1px solid var(--border)">' +
-        '<td style="padding:7px 10px;color:var(--muted);font-size:11px">' + at + '</td>' +
-        '<td style="padding:7px 10px;font-size:12px;color:' + statusColor + ';font-weight:600">' + (h.status||'-') + '</td>' +
-        '<td style="padding:7px 10px;color:var(--text);font-size:12px">' + (h.jobs_count||0) + ' vagas</td>' +
-        '<td style="padding:7px 10px;color:var(--muted);font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">' + (h.error||'') + '</td>' +
+        '<td style="padding:7px 10px;color:var(--muted);font-size:11px">' + escHtml(at) + '</td>' +
+        '<td style="padding:7px 10px;font-size:12px;color:' + statusColor + ';font-weight:600">' + escHtml(h.status||'-') + '</td>' +
+        '<td style="padding:7px 10px;color:var(--text);font-size:12px">' + escHtml(h.jobs_count||0) + ' vagas</td>' +
+        '<td style="padding:7px 10px;color:var(--muted);font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">' + escHtml(h.error||'') + '</td>' +
       '</tr>';
     }).join('');
     histEl.innerHTML = '<table style="width:100%;border-collapse:collapse">' +
@@ -1773,6 +1773,7 @@ function render(data) {
   var totalUsers = sb_.totalUsers || users.length;
   var credits = sb_.credits || [];
   var analyses = Array.isArray(sb_.analyses) ? sb_.analyses : [];
+  var totalAnalyses = Number.isFinite(Number(sb_.totalAnalyses)) ? Number(sb_.totalAnalyses) : analyses.length;
 
   // Build credit map
   var creditMap = {};
@@ -1793,7 +1794,7 @@ function render(data) {
 
   var totalCredits = credits.reduce(function(s, c){ return s + (c.credits || 0); }, 0);
 
-  renderMetrics(totalUsers, analyses.length, totalRevenueCents, totalCredits);
+  renderMetrics(totalUsers, totalAnalyses, totalRevenueCents, totalCredits);
   renderChart(charges);
   renderUsers(users, creditMap, analysisCountMap);
   renderAnalyses(analyses, users);
@@ -1817,7 +1818,7 @@ function renderMetrics(totalUsers, totalAnalyses, totalRevCents, totalCredits) {
     + '<div class="metric-sub">no total</div>'
     + '</div>'
     + '<div class="metric-card green-accent">'
-    + '<div class="metric-label">Receita Total</div>'
+    + '<div class="metric-label">Receita — últimos 30 dias</div>'
     + '<div class="metric-value accent" style="font-size:22px">'
       + (totalRevCents != null ? fmtBRL(totalRevCents) : '<span style="color:var(--muted);font-size:14px">Stripe não configurado</span>')
     + '</div>'
