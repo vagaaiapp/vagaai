@@ -1,5 +1,6 @@
 import { createHash } from 'crypto';
 import { resolvePlan, planEntitlements } from '../lib/entitlements.js';
+import { inicioDoCiclo } from '../lib/cotas.js';
 import { checkAndCountLimit, countLimit, isWithinLimit } from '../lib/ratelimit.js';
 import {
   abuseHttpResponse,
@@ -739,22 +740,27 @@ async function getLatestSubscription(userId) {
 
 /* Zera o contador quando o ciclo de cobranca vira. Servia so ao Starter; agora
    o Pro tambem tem cota mensal, e os dois usam a mesma coluna, a mesma ancora
-   (current_period_start) e portanto a mesma data de virada — a que o painel
-   mostra como "renova em". */
+   (inicioDoCiclo) e portanto a mesma data de virada — a que o painel mostra
+   como "renova em". */
 async function resetMonthlyCounterIfNeeded(sub) {
   if (!sub || (sub.plan !== 'starter' && sub.plan !== 'pro')) return sub;
-  /* Espelho da condicao na RPC (migracao 034). O terceiro caso — assinatura sem
-     current_period_start — nao era tratado, e sem ele o contador nunca zerava
-     para quem tem o periodo do Stripe ausente. Sem teto ninguem notava; com
-     teto, e bloqueio permanente. */
+  /* Espelho da condicao na RPC (migracao 039, que substituiu a da 034). A RPC
+     e a trava de verdade (FOR UPDATE); este caminho so age quando ela esta
+     fora do ar — mas as duas condicoes tem que dizer a mesma coisa, senao o
+     fallback libera o que a RPC barra. Assinatura sem current_period_start cai
+     no mes de calendario, dentro de inicioDoCiclo. */
   const resetAt = sub.analyses_reset_at ? new Date(sub.analyses_reset_at).getTime() : null;
-  const agora = new Date();
-  const inicioDoMes = Date.UTC(agora.getUTCFullYear(), agora.getUTCMonth(), 1);
-  const shouldReset = resetAt === null || (
-    sub.current_period_start
-      ? resetAt < new Date(sub.current_period_start).getTime()
-      : resetAt < inicioDoMes
-  );
+  /* inicioDoCiclo (lib/cotas.js) e a MESMA ancora usada por cartas e treinos e
+     pelo "zera em" que o painel mostra (api/subscription.js). Antes daqui saia
+     um `new Date(sub.current_period_start)` cru, e cru ele e o inicio do
+     periodo de COBRANCA: no trimestral so avanca a cada 3 meses, no anual a
+     cada 12. O contador entao zerava uma vez por trimestre em vez de uma vez
+     por mes — quem gastasse as 100 analises no primeiro mes ficava bloqueado
+     nos dois seguintes, pagando, enquanto as cartas (que ja rolavam mes a mes)
+     zeravam normalmente e o painel prometia uma data que nao acontecia.
+     inicioDoCiclo rola o periodo mes a mes; no plano mensal e no-op. */
+  const ancora = new Date(inicioDoCiclo(sub)).getTime();
+  const shouldReset = resetAt === null || resetAt < ancora;
   if (!shouldReset) return sub;
 
   const patch = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?id=eq.${encodeURIComponent(sub.id)}`, {
