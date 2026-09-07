@@ -11,6 +11,8 @@ test('admin API exige AAL2 para fator verificado ou flag obrigatoria', () => {
   assert.match(api, /factor\?\.status === 'verified'/);
   assert.match(api, /mfa\.required && mfa\.currentLevel !== 'aal2'/);
   assert.match(api, /error: 'mfa_required'/);
+  assert.match(api, /req\.query\.action === 'session'/);
+  assert.match(api, /admin: true/);
 });
 
 test('login oferece cadastro, desafio e verificacao TOTP', () => {
@@ -21,8 +23,10 @@ test('login oferece cadastro, desafio e verificacao TOTP', () => {
   assert.match(page, /currentLevel === 'aal2'/);
   assert.match(page, /autocomplete="one-time-code"/);
   assert.match(page, /forceMfaSetup = query\.get\('mfa'\) === '1'/);
-  assert.match(page, /prepareMfa\(forceMfaSetup\)/);
+  assert.match(page, /prepareMfa\(forceMfaSetup \|\| access\.needsMfa\)/);
   assert.match(page, /\^\\\/admin\(\?:\\\/\|\$\|\\\?\)\//);
+  assert.match(page, /checkAdminAccess\(data\.session\)/);
+  assert.doesNotMatch(page, /ADMIN_EMAILS/);
 
   const safeAdminPath = value => /^\/admin(?:\/|$|\?)/.test(value) ? value : '/admin';
   assert.equal(safeAdminPath('/admin/blog'), '/admin/blog');
@@ -38,4 +42,6 @@ test('admin redireciona sessão AAL1 para o desafio sem encerrar login', () => {
   assert.match(page, /\/admin-login\?mfa=1/);
   assert.match(page, /href="\/admin-login\?mfa=1&amp;next=%2Fadmin"/);
   assert.match(page, /aria-label="Configurar autenticação em duas etapas"/);
+  assert.match(page, /\/api\/admin\?action=session/);
+  assert.doesNotMatch(page, /ADMIN_EMAILS/);
 });

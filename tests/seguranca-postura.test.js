@@ -38,6 +38,14 @@ describe('quem é admin tem uma fonte só', () => {
     assert.match(admin, /rest\/v1\/admins\?email=eq\./);
   });
 
+  it('as telas administrativas consultam o backend em vez de duplicar e-mails', () => {
+    for (const file of ['admin/index.html', 'admin-login/index.html']) {
+      const source = ler(file);
+      assert.doesNotMatch(source, /ADMIN_EMAILS/);
+      assert.match(source, /\/api\/admin\?action=session/);
+    }
+  });
+
   it('o controle de acesso falha fechado', () => {
     // Se a consulta não responder, ninguém entra. Controle de acesso que abre
     // quando a infraestrutura tosse não é controle de acesso.

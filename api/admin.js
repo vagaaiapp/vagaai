@@ -505,6 +505,13 @@ export default async function handler(req, res) {
     });
   }
 
+  // Verificação leve usada pelas telas administrativas antes de revelar a UI.
+  // A autorização continua tendo uma única fonte: public.admins, consultada
+  // acima pelo backend. Nenhuma lista de e-mails precisa existir no navegador.
+  if (req.method === 'GET' && req.query.action === 'session') {
+    return res.status(200).json({ ok: true, admin: true });
+  }
+
   // ── POST: ações de gerenciamento de usuário ──────────────────────────────────
   if (req.method === 'POST') {
     const { action, userId, credits, claimId } = req.body || {};

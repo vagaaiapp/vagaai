@@ -747,7 +747,6 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 <script>
 var SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
 var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
-var ADMIN_EMAILS = ['contato@vagaai.app.br', 'jvhr96@gmail.com'];
 
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 var _data = null;
@@ -861,7 +860,19 @@ function initials(email) {
 async function init() {
   var { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = '/admin-login?next=' + encodeURIComponent(window.location.pathname); return; }
-  if (!ADMIN_EMAILS.includes(session.user.email)) { window.location.href = '/dashboard'; return; }
+
+  var accessRes = await fetch('/api/admin?action=session', {
+    headers: { Authorization: 'Bearer ' + session.access_token },
+  });
+  if (!accessRes.ok) {
+    var accessError = await accessRes.json().catch(function(){ return {}; });
+    if (accessError.error === 'mfa_required') {
+      window.location.href = '/admin-login?mfa=1&next=' + encodeURIComponent(window.location.pathname);
+      return;
+    }
+    window.location.href = '/dashboard';
+    return;
+  }
 
   // Auth ok — exibe a página
   document.documentElement.style.visibility = '';
