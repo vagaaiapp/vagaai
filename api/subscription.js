@@ -348,8 +348,19 @@ export default async function handler(req, res) {
       };
     }
 
-    // Preço — só para planos pagos ativos
-    const precos = { starter: 'R$19,90/mês', pro: 'R$39,90/mês' };
+    /* Preco — so para planos pagos ativos.
+       Chaveado por plano E periodicidade: quem assina o Pro trimestral paga
+       R$29,90/mes, e a tabela antiga (so por plano) respondia R$39,90 para ele.
+       Periodicidade desconhecida — billing_interval NULL nas assinaturas
+       anteriores a migracao 040 — devolve null em vez de chutar a mensal: nao
+       saber o preco e um estado exibivel, dizer o preco errado nao e. */
+    const PRECOS = {
+      'starter:mensal':   'R$19,90/mês',
+      'pro:mensal':       'R$39,90/mês',
+      'pro:trimestral':   'R$29,90/mês',
+    };
+    const billing = sub && sub.billing_interval ? sub.billing_interval : null;
+    const preco = isActiveSub && billing ? (PRECOS[`${effectivePlan}:${billing}`] || null) : null;
 
     const avatarPath = user.user_metadata && user.user_metadata.avatar_path;
     const avatarUrl = await signAvatarUrl(avatarPath, user.id);
@@ -365,7 +376,8 @@ export default async function handler(req, res) {
       credits_legacy: credits,
       total_purchased_legacy: totalPurchased,
       free_monthly_available: freeMonthlyAvailable,
-      preco: isActiveSub ? (precos[effectivePlan] || null) : null,
+      preco,
+      billing_interval: isActiveSub ? billing : null,
       uso,
       entitlements,
       avatar_url: avatarUrl,

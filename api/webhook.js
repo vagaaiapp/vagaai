@@ -192,6 +192,29 @@ function inferCreditsFromAmount(amount) {
   return null;
 }
 
+// A partir da versao de API 2025-03-31.basil o Stripe moveu current_period_start
+// e current_period_end da raiz da Subscription para dentro de cada item
+// (items.data[].current_period_*). O repo nao fixa Stripe-Version em lugar
+// nenhum, entao a forma do payload depende da versao configurada no endpoint —
+// e uma troca de versao no painel do Stripe silenciaria os dois campos.
+//
+// Nao e hipotetico: a Pro ativa em producao tem stripe_subscription_id e
+// stripe_customer_id preenchidos (so upsertSubscription escreve isso junto com
+// plan/status) e current_period_end NULL, numa coluna que existe desde a
+// criacao da tabela. O periodo chegou undefined e foi gravado como NULL.
+//
+// Sem periodo, o painel nao consegue mostrar "renova em" e a cota mensal cai no
+// fallback de mes de calendario (lib/cotas.js). Ler dos dois lugares vale nas
+// duas versoes, entao nao ha o que escolher.
+function periodoDaSubscription(sub) {
+  const item = (sub && sub.items && sub.items.data && sub.items.data[0]) || null;
+  const raiz = (v) => (typeof v === 'number' ? v : null);
+  return {
+    start: raiz(sub && sub.current_period_start) ?? raiz(item && item.current_period_start),
+    end:   raiz(sub && sub.current_period_end)   ?? raiz(item && item.current_period_end),
+  };
+}
+
 function getRawBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -383,7 +406,7 @@ export default async function handler(req, res) {
   // seguintes da mesma assinatura estourariam a UNIQUE(stripe_subscription_id)
   // com 409 silencioso — cancelamentos e renovações nunca persistiriam.
   // Requer a UNIQUE(user_id) criada na migração 021.
-  async function upsertSubscription(userId, stripeSubId, stripeCustomerId, plan, status, periodEnd, periodStart, isNew = false) {
+  async function upsertSubscription(userId, stripeSubId, stripeCustomerId, plan, status, periodEnd, periodStart, isNew = false, billing = null) {
     const now = new Date();
     const body = {
       user_id: userId,
@@ -397,6 +420,11 @@ export default async function handler(req, res) {
       current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
       updated_at: now.toISOString(),
     };
+    /* So entra no body quando conhecida. O merge-duplicates do PostgREST
+       sobrescreve o que estiver no body, entao mandar null aqui apagaria a
+       periodicidade ja gravada — e o cancelamento (que chama sem billing) e
+       justamente quem nao sabe qual era. */
+    if (billing) body.billing_interval = billing;
     if (isNew) {
       body.analyses_used_this_month = 0;
       body.analyses_reset_at = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
@@ -521,8 +549,9 @@ export default async function handler(req, res) {
       console.warn(`Webhook: no user found for customer ${customerId} — pedindo retry ao Stripe`);
       return res.status(503).json({ error: 'user_not_resolved_yet', customer: customerId });
     }
+    const periodo = periodoDaSubscription(sub);
     try {
-      await upsertSubscription(userId, sub.id, customerId, planInfo.plan, sub.status, sub.current_period_end, sub.current_period_start, eventType === 'customer.subscription.created');
+      await upsertSubscription(userId, sub.id, customerId, planInfo.plan, sub.status, periodo.end, periodo.start, eventType === 'customer.subscription.created', planInfo.billing);
     } catch (e) {
       // 5xx → Stripe re-tenta; sem isso uma falha do Supabase perderia o evento
       // (plano não provisionado, renovação/past_due não registrado).
@@ -540,7 +569,7 @@ export default async function handler(req, res) {
     // atualizar cartão. Dedup por período — um novo past_due em outra fatura
     // (outro current_period_end) gera novo aviso.
     if (eventType === 'customer.subscription.updated' && sub.status === 'past_due' && email) {
-      if (await claimMarker(`payfail_${sub.id}_${sub.current_period_end || 'x'}`, userId)) {
+      if (await claimMarker(`payfail_${sub.id}_${periodo.end || 'x'}`, userId)) {
         sendLifecycleEmail(email, 'payment_failed');
       }
     }

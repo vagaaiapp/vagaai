@@ -8500,7 +8500,12 @@ function renderPlanTiles(sub) {
   _planxSet('planxTitle', title);
   _planxSet('planoHeroSub', copy);
 
-  var price = plan === 'pro' ? 'R$39,90/mês' : plan === 'starter' ? 'R$19,90/mês' : 'R$0';
+  /* O preco vem do backend (api/subscription.js), que o resolve por plano E
+     periodicidade. Hardcodar por plano aqui dizia "R$39,90/mes" para quem
+     assina o Pro trimestral e paga R$29,90/mes. Assinatura antiga sem
+     billing_interval devolve null: mostra '-', que e honesto, em vez de um
+     numero que nao e o da fatura. */
+  var price = plan === 'free' ? 'R$0' : (sub.preco || '-');
   _planxSet('planoCardPreco', unavailable ? '-' : price);
   _planxSet('planxPriceLabel', unavailable ? 'Status indisponível' : isPaid ? (sub.cancel_at_period_end ? 'Sem nova cobrança' : 'Renovação automática') : 'Sem cobrança');
   /* Era '∞' para o Pro. O Pro passou a ter teto de 100/mes, e mostrar infinito
