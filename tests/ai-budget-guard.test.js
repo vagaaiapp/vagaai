@@ -39,6 +39,7 @@ test('CSP nasce em report-only e robots protege areas internas', () => {
   const vercel = read('vercel.json');
   assert.match(vercel, /Content-Security-Policy-Report-Only/);
   assert.doesNotMatch(vercel, /"key"\s*:\s*"Content-Security-Policy"/);
+  assert.match(vercel, /worker-src 'self' blob: https:\/\/cdn\.jsdelivr\.net/);
   const robots = read('robots.txt');
   assert.match(robots, /User-agent: GPTBot/);
   assert.match(robots, /User-agent: ClaudeBot/);

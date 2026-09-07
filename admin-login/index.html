@@ -199,7 +199,11 @@ input:focus{
 (async () => {
   const SUPABASE_URL = 'https://kbcjchjepgejdezeuwwh.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiY2pjaGplcGdlamRlemV1d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NzA4OTcsImV4cCI6MjA5MjM0Njg5N30.k2julxPkEm4kgtw5dBy6S8hlSrVBqebe-A_GfzcW2HA';
-  const ADMIN_EMAILS = ['jvhr96@gmail.com'];
+  const ADMIN_EMAILS = ['contato@vagaai.app.br', 'jvhr96@gmail.com'];
+  const query = new URLSearchParams(window.location.search);
+  const forceMfaSetup = query.get('mfa') === '1';
+  const requestedNext = query.get('next') || '';
+  const safeNext = /^\/admin(?:\/|$|\?)/.test(requestedNext) ? requestedNext : '/admin';
   let pendingFactorId = null;
 
   // Wait for supabase to load
@@ -226,7 +230,7 @@ input:focus{
     errorEl.classList.add('show');
   }
 
-  window.goAdmin = () => { window.location.href = '/admin'; };
+  window.goAdmin = () => { window.location.href = safeNext; };
 
   async function prepareMfa(offerEnrollment) {
     const aal = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -301,7 +305,11 @@ input:focus{
   try {
     const { data } = await supabase.auth.getSession();
     if (data?.session) {
-      await prepareMfa(false);
+      if (!ADMIN_EMAILS.includes(data.session.user.email)) {
+        window.location.href = '/dashboard';
+        return;
+      }
+      await prepareMfa(forceMfaSetup);
     }
   } catch (e) {
     console.error('Session check error:', e);
